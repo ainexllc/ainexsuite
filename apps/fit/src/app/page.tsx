@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@ainexsuite/auth';
+import { useAuth, useAppActivation } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
+  signOut as firebaseSignOut,
 } from 'firebase/auth';
 import type { FirebaseError } from 'firebase/app';
 import {
@@ -31,6 +32,7 @@ import {
 } from 'lucide-react';
 import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
+import { AppActivationBox } from '@ainexsuite/auth';
 
 const demoSteps = [
   { text: 'Syncing your wearable data and recent workouts…', emoji: '📡' },
@@ -163,7 +165,17 @@ const resolvedLegalLinks = legalLinks.map((link) => ({
   href: resolveHref(link.href, link.external),
 }));
 
-function PublicFitHomePage() {
+type PublicFitHomePageProps = {
+  showActivation?: boolean;
+  onActivated?: () => void;
+  onSwitchToLogin?: () => void;
+};
+
+function PublicFitHomePage({
+  showActivation = false,
+  onActivated,
+  onSwitchToLogin,
+}: PublicFitHomePageProps) {
   const router = useRouter();
   const [activeDemo, setActiveDemo] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -324,9 +336,17 @@ function PublicFitHomePage() {
               </div>
             </div>
 
-            <div id="login" className="relative mb-[75px]">
-              <div className="absolute inset-0 -translate-y-6 rounded-3xl bg-gradient-to-tr from-[#f97316]/15 via-transparent to-[#6366f1]/20 blur-2xl" />
-              <div className="relative w-full overflow-hidden rounded-3xl border border-[#f97316]/20 bg-[#050505]/90 p-8 text-white shadow-[0_25px_80px_-25px_rgba(249,115,22,0.35)] backdrop-blur-xl">
+            {showActivation ? (
+              <AppActivationBox
+                appName="fit"
+                appDisplayName="Fit"
+                onActivated={onActivated}
+                onDifferentEmail={onSwitchToLogin}
+              />
+            ) : (
+              <div id="login" className="relative mb-[75px]">
+                <div className="absolute inset-0 -translate-y-6 rounded-3xl bg-gradient-to-tr from-[#f97316]/15 via-transparent to-[#6366f1]/20 blur-2xl" />
+                <div className="relative w-full overflow-hidden rounded-3xl border border-[#f97316]/20 bg-[#050505]/90 p-8 text-white shadow-[0_25px_80px_-25px_rgba(249,115,22,0.35)] backdrop-blur-xl">
                 <div className="mb-6 flex items-start justify-between">
                   <div className="space-y-2">
                     <span className="inline-flex items-center gap-2 rounded-full border border-[#f97316]/30 bg-[#f97316]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f97316]">
@@ -443,6 +463,7 @@ function PublicFitHomePage() {
                 </p>
               </div>
             </div>
+            )}
           </div>
         </section>
 
@@ -559,24 +580,31 @@ function PublicFitHomePage() {
 
 export default function FitHomePage() {
   const { user, loading } = useAuth();
+  const { needsActivation, checking } = useAppActivation('fit');
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
+  const [showActivation, setShowActivation] = useState(false);
 
+  // Update loading message based on auth state
   useEffect(() => {
-    if (loading) {
+    if (loading || checking) {
       setLoadingMessage('Checking authentication...');
       return;
     }
 
-    if (user) {
+    if (user && !needsActivation) {
       setLoadingMessage('Welcome back! Redirecting you to your training hub…');
+    } else if (user && needsActivation) {
+      setLoadingMessage('');
+      setShowActivation(true); // Show activation box for signed-in users who need to activate
     } else {
       setLoadingMessage('');
     }
-  }, [loading, user]);
+  }, [loading, checking, user, needsActivation]);
 
+  // Redirect to workspace if user is signed in and activated
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && !checking && user && !needsActivation) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -585,9 +613,10 @@ export default function FitHomePage() {
     }
 
     return undefined;
-  }, [loading, user, router]);
+  }, [loading, checking, user, needsActivation, router]);
 
-  if (loading || user) {
+  // Show loading spinner while checking auth or during redirect
+  if (loading || checking || (user && !needsActivation)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">
@@ -600,7 +629,7 @@ export default function FitHomePage() {
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
-              {user && (
+              {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
                   Redirecting to your workspace
@@ -613,5 +642,15 @@ export default function FitHomePage() {
     );
   }
 
-  return <PublicFitHomePage />;
+  // Show public homepage with activation box or login form
+  return (
+    <PublicFitHomePage
+      showActivation={showActivation}
+      onActivated={() => window.location.reload()}
+      onSwitchToLogin={async () => {
+        await firebaseSignOut(auth);
+        setShowActivation(false);
+      }}
+    />
+  );
 }
