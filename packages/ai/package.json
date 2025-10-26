@@ -1,0 +1,33 @@
+{
+  "name": "@ainexsuite/ai",
+  "version": "1.0.0",
+  "description": "Grok AI integration for AINexSuite",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "@ainexsuite/firebase": "workspace:*",
+    "@ainexsuite/auth": "workspace:*",
+    "@ainexsuite/types": "workspace:*",
+    "react": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^19.1.0",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

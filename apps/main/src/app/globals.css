@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Icon Button */
+@layer components {
+  .icon-button {
+    @apply grid place-items-center rounded-full p-2
+           text-ink-500 transition-all duration-150
+           hover:bg-surface-muted hover:text-ink-700
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500;
+  }
+}

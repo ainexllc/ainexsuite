@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.progress-bar {
+  transition: width 0.3s ease;
+}
+
+.skill-badge {
+  @apply px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.skill-badge.beginner {
+  @apply bg-skill-beginner/20 text-skill-beginner;
+}
+
+.skill-badge.intermediate {
+  @apply bg-skill-intermediate/20 text-skill-intermediate;
+}
+
+.skill-badge.advanced {
+  @apply bg-skill-advanced/20 text-skill-advanced;
+}
+
+.skill-badge.expert {
+  @apply bg-skill-expert/20 text-skill-expert;
+}
+
+.skill-badge.master {
+  @apply bg-skill-master/20 text-skill-master;
+}

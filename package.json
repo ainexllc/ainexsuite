@@ -1,0 +1,57 @@
+{
+  "name": "ainexsuite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AINexSuite - Multi-app productivity suite with 8 apps + main dashboard",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:main": "turbo run dev --filter @ainexsuite/main",
+    "dev:notes": "turbo run dev --filter @ainexsuite/notes",
+    "dev:journey": "turbo run dev --filter @ainexsuite/journey",
+    "dev:todo": "turbo run dev --filter @ainexsuite/todo",
+    "dev:track": "turbo run dev --filter @ainexsuite/track",
+    "dev:moments": "turbo run dev --filter @ainexsuite/moments",
+    "dev:grow": "turbo run dev --filter @ainexsuite/grow",
+    "dev:pulse": "turbo run dev --filter @ainexsuite/pulse",
+    "dev:fit": "turbo run dev --filter @ainexsuite/fit",
+    "build": "turbo run build",
+    "build:apps": "turbo run build --filter './apps/*'",
+    "build:packages": "turbo run build --filter './packages/*'",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
+    "test:e2e": "turbo run test:e2e",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "deploy:all": "pnpm run -r --workspace-concurrency=1 deploy",
+    "deploy:main": "turbo run deploy --filter @ainexsuite/main",
+    "deploy:notes": "turbo run deploy --filter @ainexsuite/notes",
+    "deploy:journey": "turbo run deploy --filter @ainexsuite/journey",
+    "deploy:todo": "turbo run deploy --filter @ainexsuite/todo",
+    "deploy:track": "turbo run deploy --filter @ainexsuite/track",
+    "deploy:moments": "turbo run deploy --filter @ainexsuite/moments",
+    "deploy:grow": "turbo run deploy --filter @ainexsuite/grow",
+    "deploy:pulse": "turbo run deploy --filter @ainexsuite/pulse",
+    "deploy:fit": "turbo run deploy --filter @ainexsuite/fit"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/generators/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4",
+    "turbo": "^1.11.3",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@8.15.1",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

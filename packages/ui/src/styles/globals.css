@@ -1,0 +1,315 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * AINexSuite Design Tokens & Utilities
+ * ------------------------------------
+ * This stylesheet mirrors the documented NoteNex design system so every app
+ * shares a single source of truth for colors, typography, spacing, and surfaces.
+ */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* Typography tokens */
+    --font-geist-sans: 'Geist Sans', system-ui, sans-serif;
+    --font-geist-mono: 'Geist Mono', 'SFMono-Regular', ui-monospace, monospace;
+    --font-kanit: 'Kanit', system-ui, sans-serif;
+
+    /* Container & layout */
+    --container-max-width-xs: 100%;
+    --container-max-width-sm: 720px;
+    --container-max-width-md: 960px;
+    --container-max-width-lg: 1184px;
+    --container-max-width-xl: 1280px;
+    --container-max-width-2xl: 1440px;
+    --container-max-width-3xl: 1600px;
+
+    --app-shell-max-width-xs: 100%;
+    --app-shell-max-width-sm: 560px;
+    --app-shell-max-width-md: 720px;
+    --app-shell-max-width-lg: 820px;
+    --app-shell-max-width-xl: 880px;
+    --app-shell-wide-max-width-sm: 700px;
+    --app-shell-wide-max-width-md: 1120px;
+    --app-shell-wide-max-width-lg: 1280px;
+    --app-shell-wide-max-width-xl: 1440px;
+
+    --note-board-max-width-sm: 520px;
+    --note-board-max-width-md: 720px;
+    --note-board-max-width-lg: 1024px;
+    --note-board-max-width-xl: 1200px;
+
+    --app-shell-grid-gap: 1.5rem;
+    --app-shell-utility-width: 320px;
+    --app-shell-inspector-width: clamp(260px, 24vw, 340px);
+
+    /* Surfaces (RGB for opacity control) */
+    --color-surface-base: 20 20 22;
+    --color-surface-muted: 28 28 31;
+    --color-surface-elevated: 36 36 40;
+    --color-surface-card: 36 36 40;
+    --color-surface-hover: 42 42 45;
+    --color-surface-overlay: 10 10 12;
+
+    /* Borders */
+    --color-outline-subtle: 50 50 54;
+    --color-outline-base: 50 50 54;
+    --color-outline-strong: 249 115 22;
+
+    /* Ink scale */
+    --color-ink-50: 12 12 12;
+    --color-ink-100: 24 24 24;
+    --color-ink-200: 45 45 45;
+    --color-ink-300: 72 72 78;
+    --color-ink-400: 110 110 120;
+    --color-ink-500: 158 158 170;
+    --color-ink-600: 196 196 208;
+    --color-ink-700: 222 222 230;
+    --color-ink-800: 240 240 245;
+    --color-ink-900: 247 247 250;
+
+    /* Accent scale (orange) */
+    --color-accent-50: 255 247 237;
+    --color-accent-100: 255 237 213;
+    --color-accent-200: 254 215 170;
+    --color-accent-300: 253 186 116;
+    --color-accent-400: 251 146 60;
+    --color-accent-500: 249 115 22;
+    --color-accent-600: 234 88 12;
+    --color-accent-700: 194 65 12;
+    --color-accent-800: 154 52 18;
+    --color-accent-900: 124 45 18;
+
+    /* Semantic colors */
+    --color-success: 34 197 94;
+    --color-warning: 250 204 21;
+    --color-danger: 239 68 68;
+
+    /* Radii & shadows */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+
+    --shadow-sm: 0 4px 20px rgba(10, 10, 15, 0.18);
+    --shadow-md: 0 10px 40px rgba(10, 10, 15, 0.22);
+    --shadow-lg: 0 20px 60px rgba(10, 10, 15, 0.28);
+
+    --transition-base: 160ms ease;
+
+    /* Legacy aliases for backwards compatibility */
+    --surface-base: rgb(var(--color-surface-base));
+    --surface-muted: rgb(var(--color-surface-muted));
+    --surface-elevated: rgb(var(--color-surface-elevated));
+    --surface-card: rgb(var(--color-surface-card));
+    --surface-hover: rgb(var(--color-surface-hover));
+    --surface-overlay: rgba(var(--color-surface-overlay) / 0.85);
+
+    --outline-subtle: rgba(var(--color-outline-subtle) / 1);
+    --outline-base: rgba(var(--color-outline-base) / 1);
+    --outline-strong: rgba(var(--color-outline-strong) / 1);
+
+    --ink-400: rgb(var(--color-ink-400));
+    --ink-500: rgb(var(--color-ink-500));
+    --ink-600: rgb(var(--color-ink-600));
+    --ink-700: rgb(var(--color-ink-700));
+    --ink-800: rgb(var(--color-ink-800));
+    --ink-900: rgb(var(--color-ink-900));
+
+    --accent-400: rgb(var(--color-accent-400));
+    --accent-500: rgb(var(--color-accent-500));
+    --accent-600: rgb(var(--color-accent-600));
+    --accent-700: rgb(var(--color-accent-700));
+
+    --success-500: rgb(var(--color-success));
+    --warning-500: rgb(var(--color-warning));
+    --danger-500: rgb(var(--color-danger));
+  }
+
+  .theme-light {
+    color-scheme: light;
+
+    --color-surface-base: 250 251 252;
+    --color-surface-muted: 243 244 246;
+    --color-surface-elevated: 255 255 255;
+    --color-surface-card: 255 255 255;
+    --color-surface-hover: 241 241 246;
+    --color-surface-overlay: 255 255 255;
+
+    --color-outline-subtle: 229 231 235;
+    --color-outline-base: 229 231 235;
+    --color-outline-strong: 249 115 22;
+
+    --color-ink-50: 247 247 250;
+    --color-ink-100: 240 240 245;
+    --color-ink-200: 222 222 230;
+    --color-ink-300: 196 196 208;
+    --color-ink-400: 158 158 170;
+    --color-ink-500: 110 110 120;
+    --color-ink-600: 72 72 78;
+    --color-ink-700: 45 45 45;
+    --color-ink-800: 24 24 24;
+    --color-ink-900: 12 12 12;
+
+    --shadow-sm: 0 4px 16px rgba(20, 20, 30, 0.08);
+    --shadow-md: 0 12px 32px rgba(20, 20, 30, 0.12);
+    --shadow-lg: 0 24px 48px rgba(20, 20, 30, 0.18);
+
+    /* Legacy aliases */
+    --surface-base: rgb(var(--color-surface-base));
+    --surface-muted: rgb(var(--color-surface-muted));
+    --surface-elevated: rgb(var(--color-surface-elevated));
+    --surface-card: rgb(var(--color-surface-card));
+    --surface-hover: rgb(var(--color-surface-hover));
+    --surface-overlay: rgba(var(--color-surface-overlay) / 0.85);
+
+    --outline-subtle: rgba(var(--color-outline-subtle) / 1);
+    --outline-base: rgba(var(--color-outline-base) / 1);
+    --outline-strong: rgba(var(--color-outline-strong) / 1);
+
+    --ink-400: rgb(var(--color-ink-400));
+    --ink-500: rgb(var(--color-ink-500));
+    --ink-600: rgb(var(--color-ink-600));
+    --ink-700: rgb(var(--color-ink-700));
+    --ink-800: rgb(var(--color-ink-800));
+    --ink-900: rgb(var(--color-ink-900));
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-geist-sans);
+    background-color: rgb(var(--color-surface-base));
+    color: rgb(var(--color-ink-900));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  ::selection {
+    background: rgba(var(--color-accent-500) / 0.25);
+    color: rgb(var(--color-ink-900));
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--color-surface-elevated));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-surface-muted));
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--color-surface-hover));
+  }
+}
+
+.surface-base {
+  background-color: rgb(var(--color-surface-base));
+}
+
+.surface-elevated {
+  background-color: rgb(var(--color-surface-elevated));
+  box-shadow: var(--shadow-sm);
+}
+
+.surface-card {
+  background-color: rgb(var(--color-surface-card));
+  box-shadow: var(--shadow-sm);
+}
+
+.surface-muted {
+  background-color: rgb(var(--color-surface-muted));
+}
+
+.surface-hover {
+  background-color: rgb(var(--color-surface-hover));
+}
+
+.glass-panel {
+  background-color: rgba(var(--color-surface-overlay) / 0.85);
+  backdrop-filter: blur(16px);
+}
+
+.hover\:surface-card:hover {
+  background-color: rgb(var(--color-surface-card));
+}
+
+.hover\:surface-hover:hover {
+  background-color: rgb(var(--color-surface-hover));
+}
+
+.hover\:surface-elevated:hover {
+  background-color: rgb(var(--color-surface-elevated));
+}
+
+.hover\:surface-muted:hover {
+  background-color: rgb(var(--color-surface-muted));
+}
+
+.focus-ring,
+.focus-visible\:focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--color-accent-500) / 0.18);
+}
+
+.masonry-grid {
+  column-count: 1;
+  column-gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}
+
+@media (min-width: 1280px) {
+  .masonry-grid {
+    column-count: 4;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+.text-balance {
+  text-wrap: balance;
+}

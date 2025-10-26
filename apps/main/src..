@@ -1,0 +1,15 @@
+import { ProfileDropdown } from '@/components/profile-dropdown';
+import { NavigationPanel } from '@/components/navigation-panel';
+import { ActivityPanel } from '@/components/activity-panel';
+import UniversalSearch from '@/components/universal-search';
+import ActivityFeed from '@/components/activity-feed';
+import { LogoWordmark } from '@/components/branding/logo-wordmark';
+import Image from 'next/image';
+import {
+  clsx,
+  getAppsUsedCount,
+} from 'clsx';
+import { Footer } from '@/components/footer';
+
+// Environment-aware app URLs
+const isDev = process.env.NODE_ENV === 'development';

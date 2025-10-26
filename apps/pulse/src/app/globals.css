@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.metric-input {
+  @apply px-3 py-2 bg-surface-elevated shadow-sm rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none;
+}
+
+.metric-card {
+  @apply bg-surface-card shadow-sm rounded-lg p-4;
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@ainexsuite/config",
+  "version": "1.0.0",
+  "description": "Shared configurations for AINexSuite",
+  "main": "./index.js",
+  "exports": {
+    "./tailwind": "./tailwind.config.js",
+    "./eslint": "./eslint.config.js",
+    "./typescript": "./tsconfig.json"
+  },
+  "files": [
+    "tailwind.config.js",
+    "eslint.config.js",
+    "tsconfig.json"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  }
+}

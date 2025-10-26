@@ -1,0 +1,159 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user owns the resource
+    function isOwner(ownerId) {
+      return request.auth != null && request.auth.uid == ownerId;
+    }
+
+    // Helper function to validate string field
+    function isValidString(field, minLen, maxLen) {
+      return field is string
+        && field.size() >= minLen
+        && field.size() <= maxLen;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId;
+      allow update: if isOwner(userId)
+        && request.resource.data.uid == userId;
+      allow delete: if isOwner(userId);
+    }
+
+    // Notes collection
+    match /notes/{noteId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId)
+        && isValidString(request.resource.data.title, 1, 200)
+        && isValidString(request.resource.data.body, 0, 10000);
+      allow update: if isOwner(resource.data.ownerId)
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Journal entries collection
+    match /journal_entries/{entryId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId)
+        && request.resource.data.date is string
+        && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+      allow update: if isOwner(resource.data.ownerId);
+      allow delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Todos collection
+    match /todos/{todoId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId)
+        && isValidString(request.resource.data.title, 1, 200);
+      allow update: if isOwner(resource.data.ownerId);
+      allow delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Projects collection
+    match /projects/{projectId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Habits collection
+    match /habits/{habitId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Habit completions collection
+    match /habit_completions/{completionId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId)
+        && exists(/databases/$(database)/documents/habits/$(request.resource.data.habitId))
+        && get(/databases/$(database)/documents/habits/$(request.resource.data.habitId)).data.ownerId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Moments collection
+    match /moments/{momentId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Moment collections
+    match /moment_collections/{collectionId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Learning goals collection
+    match /learning_goals/{goalId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Learning sessions collection
+    match /learning_sessions/{sessionId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Health metrics collection
+    match /health_metrics/{metricId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Health goals collection
+    match /health_goals/{goalId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Workouts collection
+    match /workouts/{workoutId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Personal records collection
+    match /personal_records/{recordId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId);
+      allow update, delete: if isOwner(resource.data.ownerId);
+    }
+
+    // Exercises collection (read-only for all authenticated users)
+    match /exercises/{exerciseId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can write (via Cloud Functions)
+    }
+
+    // Activities collection (for cross-app activity feed)
+    match /activities/{activityId} {
+      allow read: if isOwner(resource.data.ownerId);
+      allow create: if isOwner(request.resource.data.ownerId)
+        && request.resource.data.app in ['notes', 'journal', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit']
+        && request.resource.data.action in ['created', 'updated', 'deleted', 'completed', 'archived', 'pinned']
+        && isValidString(request.resource.data.itemType, 1, 50)
+        && isValidString(request.resource.data.itemTitle, 1, 200);
+      allow update: if false; // Activities are immutable
+      allow delete: if isOwner(resource.data.ownerId); // Users can delete their own activity logs
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
