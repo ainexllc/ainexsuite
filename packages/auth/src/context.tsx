@@ -11,6 +11,7 @@ import { auth } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User } from '@ainexsuite/types';
 import { setSessionCookie, removeSessionCookie } from './session';
+import { AuthBootstrap } from './auth-bootstrap';
 
 interface AuthContextType {
   user: User | null;
@@ -153,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout: signOutUser,
       }}
     >
+      <AuthBootstrap />
       {children}
     </AuthContext.Provider>
   );
