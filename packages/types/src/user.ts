@@ -16,7 +16,13 @@ export interface User {
   // The app user signed up with (e.g., "journey", "notes", "suite")
   primaryApp?: SearchableApp | 'suite';
 
+  // NEW: Simplified app access control
+  // Array of app slugs user is eligible to access
+  // Source of truth for app activation
+  appsEligible: string[];  // e.g. ['notes', 'journey', 'todo']
+
   // Which apps user has approved to use (SSO permissions)
+  // DEPRECATED: Use appsEligible instead. Kept for backward compatibility.
   // User grants permission when accessing a new app
   appPermissions: {
     notes?: { approved: boolean; approvedAt: Timestamp };

@@ -6,7 +6,7 @@ const nextConfig = {
     NEXT_PUBLIC_MAIN_DOMAIN: 'www.ainexsuite.com',
   },
   images: {
-    domains: ['firebasestorage.googleapis.com'],
+    domains: ['firebasestorage.googleapis.com', 'lh3.googleusercontent.com'],
   },
 };
 
