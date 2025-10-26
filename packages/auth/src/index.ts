@@ -7,6 +7,7 @@ export * from './session';
 export * from './context';
 export * from './auth-bootstrap';
 export * from './app-activation-modal';
+export * from './app-activation-box';
 export * from './use-app-activation';
 export * from './email-detection';
 export * from './auth-errors';
