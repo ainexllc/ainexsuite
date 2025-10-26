@@ -10,7 +10,15 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User } from '@ainexsuite/types';
-import { setSessionCookie, removeSessionCookie } from './session';
+import {
+  setSessionCookie,
+  removeSessionCookie,
+  initializeSession,
+  updateLastActivity,
+  shouldRefreshSession,
+  clearSessionData,
+  isSessionExpired,
+} from './session';
 import { AuthBootstrap } from './auth-bootstrap';
 
 interface AuthContextType {
@@ -46,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (response.ok) {
             const { sessionCookie, user: userData } = await response.json();
-            setSessionCookie(sessionCookie);
+            initializeSession(sessionCookie);
             setUser(userData);
           } else {
             // Fallback: Create minimal user object from Firebase user
@@ -139,9 +147,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  // Automatic session refresh
+  useEffect(() => {
+    if (!firebaseUser) return;
+
+    // Check session status every minute
+    const refreshInterval = setInterval(async () => {
+      try {
+        // Check if session has expired
+        if (isSessionExpired()) {
+          console.warn('Session expired, signing out');
+          await firebaseSignOut(auth);
+          clearSessionData();
+          setUser(null);
+          setFirebaseUser(null);
+          return;
+        }
+
+        // Check if session needs refresh (75% of max age elapsed)
+        if (shouldRefreshSession()) {
+          console.log('Refreshing session token');
+
+          // Force token refresh
+          const newToken = await firebaseUser.getIdToken(true);
+
+          // Create new session cookie
+          const response = await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken: newToken }),
+          });
+
+          if (response.ok) {
+            const { sessionCookie } = await response.json();
+            initializeSession(sessionCookie);
+            console.log('Session refreshed successfully');
+          }
+        }
+
+        // Update last activity
+        updateLastActivity();
+      } catch (error) {
+        console.error('Session refresh error:', error);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(refreshInterval);
+  }, [firebaseUser]);
+
   const signOutUser = useCallback(async () => {
     await firebaseSignOut(auth);
-    removeSessionCookie();
+    clearSessionData();
     setUser(null);
     setFirebaseUser(null);
   }, []);
