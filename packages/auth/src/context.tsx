@@ -17,6 +17,7 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -135,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signOut = useCallback(async () => {
+  const signOutUser = useCallback(async () => {
     await firebaseSignOut(auth);
     removeSessionCookie();
     setUser(null);
@@ -143,7 +144,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, firebaseUser, loading, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        firebaseUser,
+        loading,
+        signOut: signOutUser,
+        logout: signOutUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

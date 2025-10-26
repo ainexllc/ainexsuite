@@ -10,6 +10,7 @@ export function getTextColorForBackground(color: NoteColor): {
   muted: string;
   placeholder: string;
 } {
+  void color;
   // All colors use dark gray text in light theme, white text in dark theme
   return {
     title: "text-gray-900 dark:text-white",

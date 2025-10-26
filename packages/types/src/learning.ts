@@ -19,7 +19,7 @@ export interface LearningGoal extends BaseDocument {
   active: boolean;
 }
 
-export type CreateLearningGoalInput = Omit<LearningGoal, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateLearningGoalInput = Omit<LearningGoal, 'id' | 'ownerId' | 'createdAt' | 'updatedAt'>;
 
 export type UpdateLearningGoalInput = Partial<Omit<LearningGoal, 'id' | 'ownerId' | 'createdAt'>>;
 

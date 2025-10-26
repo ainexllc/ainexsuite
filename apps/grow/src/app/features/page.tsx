@@ -9,7 +9,7 @@ import {
   Target,
   CalendarCheck,
   Sparkles,
-  NotepadText,
+  FileText,
   Workflow,
 } from 'lucide-react';
 
@@ -121,7 +121,7 @@ export default function GrowFeaturesPage() {
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <NotepadText className="h-5 w-5 text-indigo-300 mt-1" />
+                <FileText className="h-5 w-5 text-indigo-300 mt-1" />
                 <span>
                   <strong className="text-white">Insight summaries:</strong> Weekly AI reflections summarize progress, highlight skill gaps, and recommend focus areas.
                 </span>

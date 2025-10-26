@@ -35,7 +35,7 @@ export interface QuestionAnswerOptions {
  */
 export async function generateText(options: TextGenerationOptions): Promise<string> {
   const client = getGrokClient();
-  const { prompt, systemPrompt, temperature, maxTokens } = options;
+  const { prompt, systemPrompt } = options;
 
   return client.ask(prompt, systemPrompt);
 }

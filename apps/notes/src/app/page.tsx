@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@ainexsuite/auth';
+import { useAuth } from '@/lib/auth/auth-context';
 import { auth } from '@ainexsuite/firebase';
 import {
   signInWithPopup,
@@ -558,9 +558,10 @@ function PublicNotesHomePage() {
 }
 
 export default function NotesHomePage() {
-  const { user, loading } = useAuth();
+  const { user, status } = useAuth();
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
+  const loading = status === 'loading';
 
   useEffect(() => {
     if (loading) {

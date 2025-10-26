@@ -81,10 +81,11 @@ export const noteConverter: FirestoreDataConverter<Note> = {
 export function createNotePayload(
   ownerId: string,
   overrides: Partial<
-    Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "sharedWith">
+    Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "sharedWith" | "deletedAt">
   > & {
     type: NoteDoc["type"];
     reminderAt?: Date | null;
+    deletedAt?: Date | null;
     sharedWith?: NoteCollaborator[];
   },
 ) {

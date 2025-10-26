@@ -31,6 +31,7 @@ import {
   createNotePayload,
 } from "@/lib/firebase/note-converter";
 import type {
+  Note,
   ChecklistItem,
   NoteAttachment,
   NoteDraft,

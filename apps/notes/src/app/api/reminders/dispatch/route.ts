@@ -10,7 +10,6 @@ import type { ReminderDoc } from "@/lib/types/reminder";
 import { serverEnv } from "@/env";
 import { adminNoteDoc, adminPreferenceDoc } from "@/lib/firebase/admin-collections";
 import type { UserPreferenceDoc } from "@/lib/types/settings";
-import type { UserPreferenceDoc } from "@/lib/types/settings";
 
 const MAX_REMINDERS_PER_RUN = 50;
 

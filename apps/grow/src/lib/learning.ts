@@ -57,7 +57,10 @@ export async function createLearningGoal(
       itemType: 'goal',
       itemId: docRef.id,
       itemTitle: input.title,
-      metadata: { progress: input.progress },
+      metadata: {
+        currentLevel: input.currentLevel,
+        targetLevel: input.targetLevel,
+      },
     });
   } catch (error) {
     console.error('Failed to log activity:', error);
@@ -84,7 +87,10 @@ export async function updateLearningGoal(
       itemType: 'goal',
       itemId: id,
       itemTitle: updates.title || 'Learning Goal',
-      metadata: { progress: updates.progress },
+      metadata: {
+        ...(updates.currentLevel !== undefined && { currentLevel: updates.currentLevel }),
+        ...(updates.targetLevel !== undefined && { targetLevel: updates.targetLevel }),
+      },
     });
   } catch (error) {
     console.error('Failed to log activity:', error);
