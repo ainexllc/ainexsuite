@@ -4,6 +4,23 @@
       "collectionGroup": "notes",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "pinned", "order": "DESCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notes",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "sharedWithUserIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "pinned", "order": "DESCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notes",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "ownerId", "order": "ASCENDING" },
         { "fieldPath": "pinned", "order": "DESCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
@@ -119,6 +136,14 @@
         { "fieldPath": "ownerId", "order": "ASCENDING" },
         { "fieldPath": "action", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reminders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "fireAt", "order": "ASCENDING" }
       ]
     }
   ],
