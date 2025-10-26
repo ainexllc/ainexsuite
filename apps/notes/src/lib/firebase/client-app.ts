@@ -7,6 +7,7 @@ import {
 } from "firebase/auth";
 import {
   initializeFirestore,
+  getFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
   type Firestore,
@@ -56,11 +57,16 @@ export async function getFirebaseAuth(): Promise<Auth> {
 
 export function getFirebaseFirestore(): Firestore {
   if (!firestoreInstance) {
-    firestoreInstance = initializeFirestore(getFirebaseApp(), {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-      }),
-    });
+    try {
+      firestoreInstance = initializeFirestore(getFirebaseApp(), {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
+    } catch (error) {
+      // If Firestore is already initialized, use the existing instance
+      firestoreInstance = getFirestore(getFirebaseApp());
+    }
   }
 
   return firestoreInstance;
