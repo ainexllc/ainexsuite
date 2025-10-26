@@ -38,7 +38,13 @@ const demoSteps = [
   { text: 'Drafting prompts so your next note starts focused…', emoji: '✨' },
 ];
 
-const navLinks = [
+type NavLink = {
+  href: string;
+  label: string;
+  external?: boolean;
+};
+
+const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
   { href: '/faq', label: 'FAQ' },
@@ -102,50 +108,59 @@ const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN
 const marketingLink = (path: string) =>
   path.startsWith('/') && mainDomain ? `${mainDomain}${path}` : path;
 
-const productLinks = [
+type FooterLink = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+const productLinks: FooterLink[] = [
   { label: 'Capture Tools', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'Templates', href: '/templates' },
+  { label: 'Templates', href: '/templates', external: true },
 ];
 
-const companyLinks = [
+const companyLinks: FooterLink[] = [
   { label: 'About', href: '/about' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Careers', href: '/careers' },
+  { label: 'Blog', href: '/blog', external: true },
+  { label: 'Careers', href: '/careers', external: true },
 ];
 
-const resourceLinks = [
-  { label: 'Help Center', href: '/help' },
+const resourceLinks: FooterLink[] = [
+  { label: 'Help Center', href: '/help', external: true },
   { label: 'Contact Us', href: 'mailto:notes@ainexsuite.com' },
-  { label: 'Documentation', href: '/docs' },
+  { label: 'Documentation', href: '/docs', external: true },
 ];
 
-const legalLinks = [
-  { label: 'Privacy Policy', href: '/privacy' },
-  { label: 'Terms of Service', href: '/terms' },
-  { label: 'Cookie Policy', href: '/cookies' },
-  { label: 'Acceptable Use Policy', href: '/acceptable-use' },
-  { label: 'GDPR', href: '/gdpr' },
+const legalLinks: FooterLink[] = [
+  { label: 'Privacy Policy', href: '/privacy', external: true },
+  { label: 'Terms of Service', href: '/terms', external: true },
+  { label: 'Cookie Policy', href: '/cookies', external: true },
+  { label: 'Acceptable Use Policy', href: '/acceptable-use', external: true },
+  { label: 'GDPR', href: '/gdpr', external: true },
 ];
+
+const resolveHref = (href: string, external = false) =>
+  external ? marketingLink(href) : href;
 
 const resolvedProductLinks = productLinks.map((link) => ({
   ...link,
-  href: marketingLink(link.href),
+  href: resolveHref(link.href, link.external),
 }));
 
 const resolvedCompanyLinks = companyLinks.map((link) => ({
   ...link,
-  href: marketingLink(link.href),
+  href: resolveHref(link.href, link.external),
 }));
 
 const resolvedResourceLinks = resourceLinks.map((link) => ({
   ...link,
-  href: marketingLink(link.href),
+  href: resolveHref(link.href, link.external),
 }));
 
 const resolvedLegalLinks = legalLinks.map((link) => ({
   ...link,
-  href: marketingLink(link.href),
+  href: resolveHref(link.href, link.external),
 }));
 
 function PublicNotesHomePage() {
@@ -215,15 +230,18 @@ function PublicNotesHomePage() {
             <LogoWordmark iconSize={88} />
           </Link>
           <div className="hidden items-center gap-3 md:flex">
-            {navLinks.map((item) => (
-              <a
-                key={item.href}
-                href={marketingLink(item.href)}
-                className="text-sm text-white/60 transition hover:text-white"
-              >
-                {item.label}
-              </a>
-            ))}
+            {navLinks.map((item) => {
+              const href = resolveHref(item.href, item.external);
+              return (
+                <a
+                  key={item.href}
+                  href={href}
+                  className="text-sm text-white/60 transition hover:text-white"
+                >
+                  {item.label}
+                </a>
+              );
+            })}
           </div>
           <button
             type="button"
@@ -238,16 +256,19 @@ function PublicNotesHomePage() {
         {isMobileMenuOpen && (
           <div className="absolute inset-x-0 top-full mt-2 px-6 pb-6 md:hidden z-40">
             <nav className="space-y-3 rounded-3xl border border-white/5 bg-[#0b0b0b]/90 p-6 text-sm font-medium text-white/70">
-              {navLinks.map((item) => (
-                <a
-                  key={item.href}
-                  href={marketingLink(item.href)}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block rounded-2xl px-4 py-3 transition hover:bg-white/5 hover:text-white"
-                >
-                  {item.label}
-                </a>
-              ))}
+              {navLinks.map((item) => {
+                const href = resolveHref(item.href, item.external);
+                return (
+                  <a
+                    key={item.href}
+                    href={href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block rounded-2xl px-4 py-3 transition hover:bg-white/5 hover:text-white"
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
             </nav>
           </div>
         )}

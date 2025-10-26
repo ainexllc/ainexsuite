@@ -14,6 +14,7 @@
     "dev:grow": "turbo run dev --filter @ainexsuite/grow",
     "dev:pulse": "turbo run dev --filter @ainexsuite/pulse",
     "dev:fit": "turbo run dev --filter @ainexsuite/fit",
+    "dev:notenex": "turbo run dev --filter @ainexsuite/notenex",
     "build": "turbo run build",
     "build:apps": "turbo run build --filter './apps/*'",
     "build:packages": "turbo run build --filter './packages/*'",
@@ -33,7 +34,8 @@
     "deploy:moments": "turbo run deploy --filter @ainexsuite/moments",
     "deploy:grow": "turbo run deploy --filter @ainexsuite/grow",
     "deploy:pulse": "turbo run deploy --filter @ainexsuite/pulse",
-    "deploy:fit": "turbo run deploy --filter @ainexsuite/fit"
+    "deploy:fit": "turbo run deploy --filter @ainexsuite/fit",
+    "deploy:notenex": "turbo run deploy --filter @ainexsuite/notenex"
   },
   "workspaces": [
     "apps/*",

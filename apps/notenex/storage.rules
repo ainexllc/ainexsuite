@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for NoteNex
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper function to validate image file types
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Helper function to validate file size (max 10MB for images)
+    function isValidSize() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // User note attachments
+    match /users/{userId}/notes/{noteId}/attachments/{filename} {
+      // Allow users to read/write their own note attachments
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && isValidImage() && isValidSize();
+      allow delete: if isOwner(userId);
+    }
+
+    // User profile images (if needed in the future)
+    match /users/{userId}/profile/{filename} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) && isValidImage() && isValidSize();
+      allow delete: if isOwner(userId);
+    }
+
+    // Deny all other access by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

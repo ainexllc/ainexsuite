@@ -75,13 +75,13 @@
 ## Phase 3 — Marketing Content Parity
 - [ ] Determine handling for marketing subroutes (Option A vs. B) per app:
   - [x] Fit — Local `/features`, `/pricing`, `/faq`, `/about` pages with product copy.
-  - [ ] Grow — Decide on local vs. shared pages.
-  - [ ] Notes — Decide on local vs. shared pages.
-  - [ ] Todo — Decide on local vs. shared pages.
-  - [ ] Pulse — Decide on local vs. shared pages.
-  - [ ] Track — Decide on local vs. shared pages.
-  - [ ] Journey — Decide on local vs. shared pages.
-  - [ ] Moments — Decide on local vs. shared pages.
+  - [x] Grow — Local `/features`, `/pricing`, `/faq`, `/about` pages with product copy.
+  - [x] Notes — Local `/features`, `/pricing`, `/faq`, `/about` pages with product copy.
+  - [x] Todo — Local `/features`, `/pricing`, `/faq`, `/about` pages with planning-focused copy.
+  - [x] Pulse — Local `/features`, `/pricing`, `/faq`, `/about` pages emphasizing health analytics.
+  - [x] Track — Local `/features`, `/pricing`, `/faq`, `/about` pages aligned to habit momentum.
+  - [x] Journey — Local `/features`, `/pricing`, `/faq`, `/about` pages celebrating reflective storytelling.
+  - [x] Moments — Local `/features`, `/pricing`, `/faq`, `/about` pages tailored to multimedia storytelling.
   - [x] Main — Reference implementation.
 - [ ] Align shared assets (hero images, favicons) across apps; copy to each repo as needed.
 - [ ] Ensure legal/footer links resolve correctly in every app environment; customize copy if required.
