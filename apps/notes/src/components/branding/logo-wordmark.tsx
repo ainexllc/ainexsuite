@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { clsx } from "clsx";
+import { useTheme } from "@/components/providers/theme-provider";
 
 type LogoWordmarkProps = {
   href?: string;
@@ -14,10 +15,11 @@ type LogoWordmarkProps = {
 export function LogoWordmark({
   href,
   className,
-  iconSize = 87.2,
-  variant = "dark",
+  iconSize = 64,
+  variant,
 }: LogoWordmarkProps) {
-  const isLight = variant === "light";
+  const { theme } = useTheme();
+  const isLight = variant ? variant === "light" : theme === "light";
   const fontSize = iconSize * 0.52;
   const letterSpacing = iconSize * -0.018;
   const xOffset = iconSize * 0.28;
@@ -31,13 +33,8 @@ export function LogoWordmark({
       )}
       style={{ fontSize: `${fontSize}px`, letterSpacing: `${letterSpacing}px` }}
     >
-      <span className="text-orange-500">AI</span>
-      <span
-        className={clsx(isLight ? "text-ink-900" : "text-white")}
-        style={{ paddingRight: "1px" }}
-      >
-        Ne
-      </span>
+      <span className="text-orange-500">Note</span>
+      <span className={clsx(isLight ? "text-ink-900" : "text-white")} style={{ paddingRight: '1px' }}>Ne</span>
       <span
         className="relative inline-block"
         style={{
@@ -82,12 +79,6 @@ export function LogoWordmark({
           />
         </svg>
       </span>
-      <span
-        className="text-blue-500 font-[family-name:var(--font-kanit)] font-semibold"
-        style={{ marginLeft: "-8px", transform: "translateY(2px)" }}
-      >
-        Suite
-      </span>
     </div>
   );
 
@@ -101,4 +92,3 @@ export function LogoWordmark({
     </Link>
   );
 }
-

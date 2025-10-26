@@ -1,12 +1,12 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { NoteBoard } from "@/components/notes/note-board";
+import { ArchiveBoard } from "@/components/notes/archive-board";
 
-export default function WorkspacePage() {
+export default function ArchivePage() {
   return (
     <AppShell>
       <ProtectedRoute>
-        <NoteBoard />
+        <ArchiveBoard />
       </ProtectedRoute>
     </AppShell>
   );
