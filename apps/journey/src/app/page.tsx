@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@ainexsuite/auth';
+import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
+  signOut as firebaseSignOut,
 } from 'firebase/auth';
 import type { FirebaseError } from 'firebase/app';
 import {
@@ -163,7 +164,17 @@ const resolvedLegalLinks = legalLinks.map((link) => ({
   href: resolveHref(link.href, link.external),
 }));
 
-function PublicJourneyHomePage() {
+type PublicJourneyHomePageProps = {
+  showActivation?: boolean;
+  onActivated?: () => void;
+  onSwitchToLogin?: () => void;
+};
+
+function PublicJourneyHomePage({
+  showActivation = false,
+  onActivated,
+  onSwitchToLogin,
+}: PublicJourneyHomePageProps) {
   const router = useRouter();
   const [activeDemo, setActiveDemo] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -324,125 +335,134 @@ function PublicJourneyHomePage() {
               </div>
             </div>
 
-            <div id="login" className="relative mb-[75px]">
-              <div className="absolute inset-0 -translate-y-6 rounded-3xl bg-gradient-to-tr from-[#f97316]/15 via-transparent to-[#6366f1]/20 blur-2xl" />
-              <div className="relative w-full overflow-hidden rounded-3xl border border-[#f97316]/20 bg-[#050505]/90 p-8 text-white shadow-[0_25px_80px_-25px_rgba(249,115,22,0.35)] backdrop-blur-xl">
-                <div className="mb-6 flex items-start justify-between">
-                  <div className="space-y-2">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-[#f97316]/30 bg-[#f97316]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f97316]">
-                      Reflection Suite
-                    </span>
-                    <h2 className="text-3xl font-semibold text-white">
-                      {isSignUp ? 'Join AINex Journey' : 'Welcome back'}
-                    </h2>
-                    <p className="text-sm text-white/70">
-                      {isSignUp
-                        ? 'Create your account to explore deeper insight loops.'
-                        : 'Sign in to access your personal reflection studio.'}
-                    </p>
-                  </div>
-                  <Lock className="mt-1 h-5 w-5 text-[#f97316]" />
-                </div>
-
-                {error && (
-                  <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                    {error}
-                  </div>
-                )}
-
-                <form onSubmit={handleEmailAuth} className="space-y-4 mb-4">
-                  <div>
-                    <label className="block text-xs font-medium text-white/70 mb-2">
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        autoComplete="email"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
-                        required
-                      />
+            {showActivation ? (
+              <AppActivationBox
+                appName="journey"
+                appDisplayName="Journey"
+                onActivated={onActivated}
+                onDifferentEmail={onSwitchToLogin}
+              />
+            ) : (
+              <div id="login" className="relative mb-[75px]">
+                <div className="absolute inset-0 -translate-y-6 rounded-3xl bg-gradient-to-tr from-[#f97316]/15 via-transparent to-[#6366f1]/20 blur-2xl" />
+                <div className="relative w-full overflow-hidden rounded-3xl border border-[#f97316]/20 bg-[#050505]/90 p-8 text-white shadow-[0_25px_80px_-25px_rgba(249,115,22,0.35)] backdrop-blur-xl">
+                  <div className="mb-6 flex items-start justify-between">
+                    <div className="space-y-2">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-[#f97316]/30 bg-[#f97316]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f97316]">
+                        Reflection Suite
+                      </span>
+                      <h2 className="text-3xl font-semibold text-white">
+                        {isSignUp ? 'Join AINex Journey' : 'Welcome back'}
+                      </h2>
+                      <p className="text-sm text-white/70">
+                        {isSignUp
+                          ? 'Create your account to explore deeper insight loops.'
+                          : 'Sign in to access your personal reflection studio.'}
+                      </p>
                     </div>
+                    <Lock className="mt-1 h-5 w-5 text-[#f97316]" />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-white/70 mb-2">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
-                        required
-                      />
+                  {error && (
+                    <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                      {error}
                     </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={signInLoading}
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#f97316] text-white font-semibold hover:bg-[#ea6a0f] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {signInLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <LogIn className="h-5 w-5" />
-                    )}
-                    {signInLoading ? 'Loading...' : isSignUp ? 'Create Account' : 'Sign In'}
-                  </button>
-                </form>
-
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="px-2 bg-[#050505]/90 text-white/60">or</span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleGoogleAuth}
-                  disabled={signInLoading}
-                  className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {signInLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-white" />
-                  ) : (
-                    <Chrome className="h-5 w-5 text-[#f97316]" />
                   )}
-                  Continue with Google
-                </button>
 
-                <div className="mt-4 text-center text-xs text-white/60">
-                  {isSignUp ? 'Already reflecting with us?' : 'Need an account?'}{' '}
+                  <form onSubmit={handleEmailAuth} className="space-y-4 mb-4">
+                    <div>
+                      <label className="block text-xs font-medium text-white/70 mb-2">
+                        Email
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          autoComplete="email"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-white/70 mb-2">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={signInLoading}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#f97316] text-white font-semibold hover:bg-[#ea6a0f] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {signInLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <LogIn className="h-5 w-5" />
+                      )}
+                      {signInLoading ? 'Loading...' : isSignUp ? 'Create Account' : 'Sign In'}
+                    </button>
+                  </form>
+
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-white/10" />
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="px-2 bg-[#050505]/90 text-white/60">or</span>
+                    </div>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsSignUp(!isSignUp);
-                      setError('');
-                    }}
-                    className="text-[#f97316] font-semibold hover:text-[#ea6a0f] transition"
+                    onClick={handleGoogleAuth}
+                    disabled={signInLoading}
+                    className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isSignUp ? 'Sign In' : 'Sign Up'}
+                    {signInLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-white" />
+                    ) : (
+                      <Chrome className="h-5 w-5 text-[#f97316]" />
+                    )}
+                    Continue with Google
                   </button>
-                </div>
 
-                <p className="mt-4 text-xs text-white/50 text-center">
-                  Your reflections stay encrypted and private. Export or delete anytime.
-                </p>
+                  <div className="mt-4 text-center text-xs text-white/60">
+                    {isSignUp ? 'Already reflecting with us?' : 'Need an account?'}{' '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSignUp(!isSignUp);
+                        setError('');
+                      }}
+                      className="text-[#f97316] font-semibold hover:text-[#ea6a0f] transition"
+                    >
+                      {isSignUp ? 'Sign In' : 'Sign Up'}
+                    </button>
+                  </div>
+
+                  <p className="mt-4 text-xs text-white/50 text-center">
+                    Your reflections stay encrypted and private. Export or delete anytime.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -559,24 +579,33 @@ function PublicJourneyHomePage() {
 
 export default function JourneyHomePage() {
   const { user, loading } = useAuth();
+  const { needsActivation, checking } = useAppActivation('journey');
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
+  const [showActivation, setShowActivation] = useState(false);
+
+  // Show activation box for signed-in users who need to activate
+  useEffect(() => {
+    if (user && needsActivation) {
+      setShowActivation(true);
+    }
+  }, [user, needsActivation]);
 
   useEffect(() => {
-    if (loading) {
+    if (loading || checking) {
       setLoadingMessage('Checking authentication...');
       return;
     }
 
-    if (user) {
+    if (user && !needsActivation) {
       setLoadingMessage('Welcome back! Redirecting you to your reflection studio…');
     } else {
       setLoadingMessage('');
     }
-  }, [loading, user]);
+  }, [loading, checking, user, needsActivation]);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && !checking && user && !needsActivation) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -585,9 +614,9 @@ export default function JourneyHomePage() {
     }
 
     return undefined;
-  }, [loading, user, router]);
+  }, [loading, checking, user, needsActivation, router]);
 
-  if (loading || user) {
+  if (loading || checking || (user && !needsActivation)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">
@@ -600,7 +629,7 @@ export default function JourneyHomePage() {
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
-              {user && (
+              {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
                   Redirecting to your workspace
@@ -613,5 +642,14 @@ export default function JourneyHomePage() {
     );
   }
 
-  return <PublicJourneyHomePage />;
+  return (
+    <PublicJourneyHomePage
+      showActivation={showActivation}
+      onActivated={() => window.location.reload()}
+      onSwitchToLogin={async () => {
+        await firebaseSignOut(auth);
+        setShowActivation(false);
+      }}
+    />
+  );
 }
