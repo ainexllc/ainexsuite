@@ -58,8 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(userData);
           } else {
             // Fallback: Create minimal user object from Firebase user
+            // In dev mode, pre-activate all apps to avoid repeated activation modals
             console.warn('Session endpoint failed, using Firebase user data');
             const now = Date.now();
+            const isDev = process.env.NODE_ENV === 'development';
             const userData: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email || '',
@@ -78,18 +80,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               createdAt: now,
               lastLoginAt: now,
               apps: {
-                notes: false,
-                journey: false,
-                todo: false,
-                track: false,
-                moments: false,
-                grow: false,
-                pulse: false,
-                fit: false,
+                notes: isDev,
+                journey: isDev,
+                todo: isDev,
+                track: isDev,
+                moments: isDev,
+                grow: isDev,
+                pulse: isDev,
+                fit: isDev,
               },
               appPermissions: {},
               appsUsed: {},
-              appsEligible: [],
+              appsEligible: isDev ? ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit'] : [],
               trialStartDate: now,
               subscriptionStatus: 'trial',
               suiteAccess: false,
@@ -98,8 +100,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (error) {
           // Fallback: Create minimal user object from Firebase user
+          // In dev mode, pre-activate all apps to avoid repeated activation modals
           console.error('Session creation error:', error);
           const now = Date.now();
+          const isDev = process.env.NODE_ENV === 'development';
           const userData: User = {
             uid: firebaseUser.uid,
             email: firebaseUser.email || '',
@@ -118,18 +122,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             createdAt: now,
             lastLoginAt: now,
             apps: {
-              notes: false,
-              journey: false,
-              todo: false,
-              track: false,
-              moments: false,
-              grow: false,
-              pulse: false,
-              fit: false,
+              notes: isDev,
+              journey: isDev,
+              todo: isDev,
+              track: isDev,
+              moments: isDev,
+              grow: isDev,
+              pulse: isDev,
+              fit: isDev,
             },
             appPermissions: {},
             appsUsed: {},
-            appsEligible: [],
+            appsEligible: isDev ? ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit'] : [],
             trialStartDate: now,
             subscriptionStatus: 'trial',
             suiteAccess: false,

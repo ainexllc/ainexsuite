@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
         }
         
         // Create minimal user object for local dev
+        // In dev mode, all apps are pre-activated to avoid repeated activation modals
         const user = {
           uid: userData.uid || 'dev-user',
           email: userData.email || 'dev@example.com',
@@ -67,17 +68,18 @@ export async function POST(request: NextRequest) {
           createdAt: Date.now(),
           lastLoginAt: Date.now(),
           apps: {
-            notes: false,
-            journey: false,
-            todo: false,
-            track: false,
-            moments: false,
-            grow: false,
-            pulse: false,
-            fit: false,
+            notes: true,
+            journey: true,
+            todo: true,
+            track: true,
+            moments: true,
+            grow: true,
+            pulse: true,
+            fit: true,
           },
           appPermissions: {},
           appsUsed: {},
+          appsEligible: ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit'],
           trialStartDate: Date.now(),
           subscriptionStatus: 'trial' as const,
           suiteAccess: false,
