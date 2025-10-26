@@ -28,6 +28,13 @@ import {
   GoogleAuthProvider,
 } from 'firebase/auth';
 import type { FirebaseError } from 'firebase/app';
+import {
+  checkEmailExists,
+  getAccountConflictMessage,
+  parseAuthError,
+  getAuthErrorWithSuggestion,
+  type EmailStatus,
+} from '@ainexsuite/auth';
 
 const demoSteps = [
   { text: 'Reading your latest reflections for key signals…', emoji: '🔎' },
@@ -93,6 +100,9 @@ function PublicHomePage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<EmailStatus | null>(null);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -102,21 +112,69 @@ function PublicHomePage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Check email when user enters it
+  const handleEmailCheck = async (emailValue: string) => {
+    if (!emailValue || !emailValue.includes('@')) {
+      setEmailStatus(null);
+      setEmailChecked(false);
+      return;
+    }
+
+    setCheckingEmail(true);
+    setError('');
+
+    try {
+      const status = await checkEmailExists(emailValue);
+      setEmailStatus(status);
+      setEmailChecked(true);
+
+      // If email exists, show helpful message
+      if (status.exists) {
+        const message = getAccountConflictMessage(status);
+        setError(message);
+
+        // Auto-switch to sign-in mode if email exists
+        if (isSignUp) {
+          setIsSignUp(false);
+        }
+      } else if (!isSignUp && emailChecked) {
+        // If email doesn't exist and user is trying to sign in, suggest signup
+        setError('No account found with this email. Would you like to sign up?');
+      }
+    } catch (err) {
+      console.error('Email check error:', err);
+      // Don't show error to user for email check failures
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignInLoading(true);
     setError('');
 
     try {
+      // Check email one more time before submission
+      if (!emailChecked) {
+        await handleEmailCheck(email);
+      }
+
       if (isSignUp) {
+        // Prevent signup if email already exists
+        if (emailStatus?.exists) {
+          setError(getAccountConflictMessage(emailStatus));
+          setSignInLoading(false);
+          return;
+        }
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
       router.push('/workspace');
     } catch (err: unknown) {
-      const firebaseError = err as FirebaseError;
-      setError(firebaseError.message || 'Authentication failed. Please try again.');
+      const errorInfo = parseAuthError(err);
+      setError(getAuthErrorWithSuggestion(err));
     } finally {
       setSignInLoading(false);
     }
@@ -132,8 +190,9 @@ function PublicHomePage() {
       router.push('/workspace');
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
-      if (firebaseError.code !== 'auth/popup-closed-by-user') {
-        setError(firebaseError.message || 'Authentication failed. Please try again.');
+      // Don't show error if user just closed the popup
+      if (firebaseError.code !== 'auth/popup-closed-by-user' && firebaseError.code !== 'auth/cancelled-popup-request') {
+        setError(getAuthErrorWithSuggestion(err));
       }
       setSignInLoading(false);
     }
@@ -263,12 +322,23 @@ function PublicHomePage() {
                       <input
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          // Reset email status when user changes email
+                          setEmailChecked(false);
+                          setEmailStatus(null);
+                          if (error) setError('');
+                        }}
+                        onBlur={(e) => handleEmailCheck(e.target.value)}
                         placeholder="you@example.com"
                         autoComplete="email"
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
                         required
+                        disabled={checkingEmail}
                       />
+                      {checkingEmail && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 animate-spin" />
+                      )}
                     </div>
                   </div>
 
@@ -337,6 +407,12 @@ function PublicHomePage() {
                     onClick={() => {
                       setIsSignUp(!isSignUp);
                       setError('');
+                      setEmailChecked(false);
+                      setEmailStatus(null);
+                      // Recheck email when switching modes
+                      if (email && email.includes('@')) {
+                        handleEmailCheck(email);
+                      }
                     }}
                     className="text-[#f97316] font-semibold hover:text-[#ea6a0f] transition"
                   >
