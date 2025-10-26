@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthProvider } from "@/lib/auth/auth-context";
+import { AuthProvider } from "@ainexsuite/auth";
 import { NotesProvider } from "@/components/providers/notes-provider";
 import { LabelsProvider } from "@/components/providers/labels-provider";
 import { RemindersProvider } from "@/components/providers/reminders-provider";

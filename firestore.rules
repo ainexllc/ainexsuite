@@ -22,6 +22,32 @@ service cloud.firestore {
       allow update: if isOwner(userId)
         && request.resource.data.uid == userId;
       allow delete: if isOwner(userId);
+
+      // Notes subcollection for notes app
+      match /notes/{noteId} {
+        allow read: if isOwner(userId) 
+          || request.auth.uid in resource.data.get('sharedWithUserIds', []);
+        allow create: if isOwner(userId)
+          && isValidString(request.resource.data.title, 1, 200)
+          && isValidString(request.resource.data.body, 0, 10000);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+      }
+
+      // Labels subcollection for notes app
+      match /labels/{labelId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Reminders subcollection for notes app
+      match /reminders/{reminderId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Preferences subcollection for notes app
+      match /preferences/{preferenceId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // Notes collection

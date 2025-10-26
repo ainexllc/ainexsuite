@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2, LogIn } from "lucide-react";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth } from "@ainexsuite/auth";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -12,11 +12,16 @@ export function ProtectedRoute({
   children,
   fallbackAction,
 }: ProtectedRouteProps) {
-  const { status, signInWithGoogle } = useAuth();
+  const { user, loading } = useAuth();
 
-  const handleFallback = fallbackAction ?? signInWithGoogle;
+  // Redirect to Main app for login
+  const handleFallback = fallbackAction ?? (() => {
+    const isDev = process.env.NODE_ENV === 'development';
+    const mainUrl = isDev ? 'http://localhost:3000' : 'https://www.ainexsuite.com';
+    window.location.href = `${mainUrl}?returnTo=${encodeURIComponent(window.location.href)}`;
+  });
 
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <span className="icon-button h-12 w-12 animate-spin bg-surface-muted text-accent-500">
@@ -29,7 +34,7 @@ export function ProtectedRoute({
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!user) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-5 text-center">
         <div className="surface-card max-w-md p-10 text-center">
