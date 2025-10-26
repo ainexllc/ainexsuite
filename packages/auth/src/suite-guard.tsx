@@ -29,10 +29,8 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
     }
 
     if (!user) {
-      // Redirect to login if not authenticated
-      const isDev = process.env.NODE_ENV === 'development';
-      const loginUrl = isDev ? 'http://localhost:3010/login' : 'https://www.ainexsuite.com/login';
-      window.location.href = loginUrl;
+      // Redirect non-logged-in users to public homepage
+      window.location.href = '/';
       return;
     }
 
