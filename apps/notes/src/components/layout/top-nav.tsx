@@ -33,7 +33,7 @@ export function TopNav({
   onOpenAiAssistant,
   onSearchFocus,
 }: TopNavProps) {
-  const { status, user, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { theme } = useTheme();
   const { searchQuery, setSearchQuery } = useNotes();
   const [isProfileOpen, setProfileOpen] = useState(false);
@@ -121,7 +121,7 @@ export function TopNav({
             </button>
           )}
 
-          {status === "authenticated" ? (
+          {user && !authLoading ? (
             <div className="relative">
               <button
                 type="button"
@@ -162,15 +162,7 @@ export function TopNav({
                 }}
               />
             </div>
-          ) : (
-            <button
-              type="button"
-              className="rounded-full bg-surface-muted/80 px-3 py-1.5 text-xs font-medium text-ink-600 shadow-sm transition hover:bg-surface-muted hover:text-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
-              onClick={() => void signInWithGoogle()}
-            >
-              Sign in
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
     </header>
