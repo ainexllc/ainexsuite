@@ -13,7 +13,6 @@ import {
   Pin,
   Shield,
   Sparkles,
-  X,
 } from "lucide-react";
 import type { ReminderChannel, UserPreference } from "@/lib/types/settings";
 
@@ -280,28 +279,18 @@ export function SettingsPanel({ preferences, isLoading, onUpdate, onClose }: Set
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-600">
-            <Shield className="h-3.5 w-3.5" />
-            Settings
-          </div>
-          <h2 className="text-lg font-semibold text-ink-800">Notification preferences</h2>
-          <p className="text-sm text-muted">
-            Configure how we nudge you about reminders and workspace updates.
-          </p>
+      <div className="space-y-1 mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full bg-accent-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-600">
+          <Shield className="h-3.5 w-3.5" />
+          Settings
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-500 transition hover:bg-surface-muted hover:text-ink-700"
-          aria-label="Close settings"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <h2 className="text-lg font-semibold text-ink-800">Notification preferences</h2>
+        <p className="text-sm text-muted">
+          Configure how we nudge you about reminders and workspace updates.
+        </p>
       </div>
 
-      <div className="mt-6 flex-1 overflow-y-auto pr-1">
+      <div className="flex-1 overflow-y-auto pr-1">
         <div className="space-y-6 pb-10">
           <section className="space-y-4 rounded-3xl border border-outline-subtle/60 bg-surface-muted/50 p-5 shadow-inner">
             <div className="flex items-start gap-3">
