@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useAppActivation } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import {
@@ -582,8 +582,12 @@ export default function NotesHomePage() {
   const { user, loading } = useAuth();
   const { needsActivation, checking } = useAppActivation('notes');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
   const [showActivation, setShowActivation] = useState(false);
+
+  // Check if user is coming from logout
+  const isFromLogout = searchParams.get('from') === 'logout';
 
   // Update loading message based on auth state
   useEffect(() => {
@@ -594,13 +598,13 @@ export default function NotesHomePage() {
 
     if (user && !needsActivation) {
       setLoadingMessage('Welcome back! Redirecting you to your notes workspace…');
-    } else if (user && needsActivation) {
+    } else if (user && needsActivation && !isFromLogout) {
       setLoadingMessage('');
       setShowActivation(true); // Show activation box for signed-in users who need to activate
     } else {
       setLoadingMessage('');
     }
-  }, [loading, checking, user, needsActivation]);
+  }, [loading, checking, user, needsActivation, isFromLogout]);
 
   // Redirect to workspace if user is signed in and activated
   useEffect(() => {

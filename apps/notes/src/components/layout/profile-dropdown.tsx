@@ -70,7 +70,7 @@ export function ProfileDropdown({ isOpen, onClose, onOpenSettings, onOpenActivit
   const handleSignOut = async () => {
     await signOut();
     onClose();
-    router.push('/');
+    router.push('/?from=logout');
   };
 
   return (
