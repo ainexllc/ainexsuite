@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import type { JournalEntry } from '@ainexsuite/types';
 import { getJournalEntries } from '@/lib/journal';
-import { TopNav } from '@/components/top-nav';
+import { AppShell } from '@/components/layout/app-shell';
+import { Container } from '@/components/layout/container';
 import { Calendar } from '@/components/calendar';
 import { EntryCard } from '@/components/entry-card';
 import { EntryEditor } from '@/components/entry-editor';
@@ -21,6 +22,7 @@ function JourneyWorkspaceContent() {
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [isCreatingEntry, setIsCreatingEntry] = useState(false);
   const [viewMode, setViewMode] = useState<'timeline' | 'calendar'>('timeline');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadEntries = useCallback(async () => {
     try {
@@ -42,27 +44,38 @@ function JourneyWorkspaceContent() {
     }
   }, [user, selectedDate, loadEntries]);
 
+  // Filter entries by search query
+  const filteredEntries = searchQuery
+    ? entries.filter(
+        (entry) =>
+          entry.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          entry.content?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : entries;
+
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-ink-600">Loading entries...</div>
-      </div>
+      <AppShell onSearchChange={setSearchQuery} searchQuery={searchQuery}>
+        <Container className="py-12">
+          <div className="text-center text-gray-600 dark:text-gray-400">Loading entries...</div>
+        </Container>
+      </AppShell>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-ink-600">Please sign in to access Journey.</div>
-      </div>
+      <AppShell onSearchChange={setSearchQuery} searchQuery={searchQuery}>
+        <Container className="py-12">
+          <div className="text-center text-gray-600 dark:text-gray-400">Please sign in to access Journey.</div>
+        </Container>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen surface-base">
-      <TopNav />
-
-      <main className="max-w-7xl mx-auto p-6">
+    <AppShell onSearchChange={setSearchQuery} searchQuery={searchQuery}>
+      <Container className="py-8 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
@@ -104,26 +117,28 @@ function JourneyWorkspaceContent() {
 
             {viewMode === 'timeline' ? (
               <div className="space-y-4">
-                {entries.length === 0 ? (
+                {filteredEntries.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-ink-600 mb-4">No entries this month</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      {searchQuery ? 'No entries found' : 'No entries this month'}
+                    </p>
                     <button
                       onClick={() => setIsCreatingEntry(true)}
-                      className="text-accent-500 hover:text-accent-600 font-medium"
+                      className="text-purple-500 hover:text-purple-600 dark:text-purple-400 font-medium"
                       type="button"
                     >
                       Create your first entry
                     </button>
                   </div>
                 ) : (
-                  entries.map((entry) => (
+                  filteredEntries.map((entry) => (
                     <EntryCard key={entry.id} entry={entry} onClick={() => setEditingEntry(entry)} />
                   ))
                 )}
               </div>
             ) : (
               <Calendar
-                entries={entries}
+                entries={filteredEntries}
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
                 onCreateEntry={(date) => {
@@ -155,26 +170,26 @@ function JourneyWorkspaceContent() {
             </div>
           </div>
         </div>
-      </main>
 
-      {(isCreatingEntry || editingEntry) && (
-        <EntryEditor
-          entry={editingEntry}
-          initialDate={selectedDate}
-          onClose={() => {
-            setIsCreatingEntry(false);
-            setEditingEntry(null);
-          }}
-          onSave={() => {
-            void loadEntries();
-            setIsCreatingEntry(false);
-            setEditingEntry(null);
-          }}
-        />
-      )}
+        {(isCreatingEntry || editingEntry) && (
+          <EntryEditor
+            entry={editingEntry}
+            initialDate={selectedDate}
+            onClose={() => {
+              setIsCreatingEntry(false);
+              setEditingEntry(null);
+            }}
+            onSave={() => {
+              void loadEntries();
+              setIsCreatingEntry(false);
+              setEditingEntry(null);
+            }}
+          />
+        )}
 
-      <AIAssistant />
-    </div>
+        <AIAssistant />
+      </Container>
+    </AppShell>
   );
 }
 
