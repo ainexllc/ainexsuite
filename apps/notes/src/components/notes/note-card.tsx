@@ -320,7 +320,8 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                       key={pattern.id}
                       type="button"
                       className={clsx(
-                        "inline-flex shrink-0 h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
+                        "inline-flex shrink-0 h-8 w-8 rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 shadow-sm",
+                        "border-gray-300 dark:border-gray-600",
                         pattern.previewClass,
                         pattern.id === (note.pattern || "none") && "ring-2 ring-accent-600",
                       )}
