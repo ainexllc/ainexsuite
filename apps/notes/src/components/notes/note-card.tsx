@@ -310,7 +310,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
               </button>
               {showPatternPicker ? (
                 <div
-                  className="absolute bottom-12 right-0 z-30 flex flex-wrap gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl max-w-[200px]"
+                  className="absolute bottom-12 right-0 z-30 flex flex-row flex-nowrap items-center gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl"
                   onClick={(event) => event.stopPropagation()}
                 >
                   {NOTE_PATTERNS.map((pattern) => (
@@ -318,7 +318,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                       key={pattern.id}
                       type="button"
                       className={clsx(
-                        "h-10 w-10 rounded-lg border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
+                        "inline-flex shrink-0 h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
                         pattern.previewClass,
                         pattern.id === (note.pattern || "none") && "ring-2 ring-accent-600",
                       )}
