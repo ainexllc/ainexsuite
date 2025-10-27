@@ -1204,7 +1204,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           setShowPalette(false);
                         }}
                         className={clsx(
-                          "h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
+                          "inline-flex shrink-0 h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
                           option.swatchClass,
                           option.id === color && "ring-2 ring-accent-600",
                         )}
@@ -1241,7 +1241,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           setShowPatternPicker(false);
                         }}
                         className={clsx(
-                          "h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
+                          "inline-flex shrink-0 h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
                           patternOption.previewClass,
                           patternOption.id === pattern && "ring-2 ring-accent-600",
                         )}
