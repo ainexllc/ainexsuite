@@ -1194,7 +1194,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   <Palette className="h-4 w-4" />
                 </button>
                 {showPalette ? (
-                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl">
+                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl">
                     {NOTE_COLORS.map((option) => (
                       <button
                         key={option.id}
@@ -1231,7 +1231,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   <LayoutGrid className="h-4 w-4" />
                 </button>
                 {showPatternPicker ? (
-                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl">
+                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl">
                     {NOTE_PATTERNS.map((patternOption) => (
                       <button
                         key={patternOption.id}
