@@ -1243,9 +1243,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           setPattern(patternOption.id);
                           setShowPatternPicker(false);
                         }}
-                        style={{ flexShrink: 0 }}
+                        style={{ display: 'inline-block', flexShrink: 0, width: '32px', height: '32px' }}
                         className={clsx(
-                          "h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
+                          "rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
                           patternOption.previewClass,
                           patternOption.id === pattern && "ring-2 ring-accent-600",
                         )}
