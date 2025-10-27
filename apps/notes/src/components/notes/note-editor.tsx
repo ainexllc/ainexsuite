@@ -1231,7 +1231,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   <LayoutGrid className="h-4 w-4" />
                 </button>
                 {showPatternPicker ? (
-                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl">
+                  <div
+                    className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl"
+                    style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', gap: '0.5rem' }}
+                  >
                     {NOTE_PATTERNS.map((patternOption) => (
                       <button
                         key={patternOption.id}
@@ -1240,8 +1243,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           setPattern(patternOption.id);
                           setShowPatternPicker(false);
                         }}
+                        style={{ flexShrink: 0 }}
                         className={clsx(
-                          "inline-flex shrink-0 h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
+                          "h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
                           patternOption.previewClass,
                           patternOption.id === pattern && "ring-2 ring-accent-600",
                         )}
