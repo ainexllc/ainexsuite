@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth } from "@ainexsuite/auth";
 import { useTheme } from "@/components/providers/theme-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import { LogoWordmark } from "@/components/branding/logo-wordmark";

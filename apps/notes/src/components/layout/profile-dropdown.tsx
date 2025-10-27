@@ -6,7 +6,7 @@ import { Settings, Moon, Sun, RefreshCw, LogOut, Activity } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";
 import { useTheme } from "@/components/providers/theme-provider";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth } from "@ainexsuite/auth";
 
 type ProfileDropdownProps = {
   isOpen: boolean;
