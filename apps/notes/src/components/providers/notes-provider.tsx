@@ -9,7 +9,7 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth } from "@ainexsuite/auth";
 import type { Note, NoteAttachment, NoteDraft, NoteType, NoteColor } from "@/lib/types/note";
 import {
   addAttachments,
@@ -71,7 +71,7 @@ type NotesProviderProps = {
 };
 
 export function NotesProvider({ children }: NotesProviderProps) {
-  const { status, user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [ownedNotes, setOwnedNotes] = useState<Note[]>([]);
   const [sharedNotes, setSharedNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,10 +88,10 @@ export function NotesProvider({ children }: NotesProviderProps) {
     trashed: Note[];
   }>({ merged: [], filtered: [], pinned: [], others: [], trashed: [] });
 
-  const userId = user?.id ?? null;
+  const userId = user?.uid ?? null;
 
   useEffect(() => {
-    if (status !== "authenticated" || !userId) {
+    if (!user || !userId) {
       setOwnedNotes([]);
       setSharedNotes([]);
       setPendingNotes([]);
