@@ -1182,6 +1182,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 <button
                   type="button"
                   onClick={() => {
+                    setShowPatternPicker(false);
                     setShowPalette((prev) => !prev);
                     setShowLabelPicker(false);
                   }}

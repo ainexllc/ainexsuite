@@ -95,6 +95,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
 
   const handleOpenPalette = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    setShowPatternPicker(false);
     setShowPalette((prev) => !prev);
   };
 
@@ -113,6 +114,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
 
   const handleOpenPatternPicker = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    setShowPalette(false);
     setShowPatternPicker((prev) => !prev);
   };
 
