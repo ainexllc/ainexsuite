@@ -119,17 +119,17 @@ export function NotesProvider({ children }: NotesProviderProps) {
       unsubscribeOwned();
       unsubscribeShared();
     };
-  }, [status, userId]);
+  }, [user, userId]);
 
   useEffect(() => {
-    if (status !== "authenticated" || !userId) {
+    if (!user || !userId) {
       return;
     }
 
     if (ownedLoaded && sharedLoaded) {
       setLoading(false);
     }
-  }, [ownedLoaded, sharedLoaded, status, userId]);
+  }, [ownedLoaded, sharedLoaded, user, userId]);
 
   const handleCreate = useCallback(
     async (input: CreateNoteInput) => {
