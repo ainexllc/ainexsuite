@@ -13,3 +13,10 @@ import { Footer } from '@/components/footer';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
+
+
+
+
+
+
+

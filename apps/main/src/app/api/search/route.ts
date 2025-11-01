@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         appCounts: {
           notes: 0,
           journey: 0,
-          tasks: 0,
+          todo: 0,
           track: 0,
           moments: 0,
           grow: 0,
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     const appsToSearch: SearchableApp[] = appsFilter || [
       'notes',
       'journey',
-      'tasks',
+      'todo',
       'track',
       'moments',
       'grow',
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     const appCounts: Record<SearchableApp, number> = {
       notes: 0,
       journey: 0,
-      tasks: 0,
+      todo: 0,
       track: 0,
       moments: 0,
       grow: 0,
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Search Tasks
-    if (appsToSearch.includes('tasks')) {
+    if (appsToSearch.includes('todo')) {
       const tasksRef = collection(db, 'tasks');
       const tasksQuery = query(
         tasksRef,
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
 
         if (matchesTitle || matchesDescription) {
           allResults.push(taskToSearchResult(task, doc.id));
-          appCounts.tasks++;
+          appCounts.todo++;
         }
       });
     }
@@ -284,7 +284,7 @@ export async function GET(request: NextRequest) {
         const matchesName = workout.name.toLowerCase().includes(searchLower);
         const matchesNotes = workout.notes?.toLowerCase().includes(searchLower);
         const matchesExercises = workout.exercises.some((ex) =>
-          ex.name.toLowerCase().includes(searchLower)
+          ex.exerciseName.toLowerCase().includes(searchLower)
         );
 
         if (matchesName || matchesNotes || matchesExercises) {

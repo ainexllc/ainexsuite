@@ -36,18 +36,27 @@ const noteColorSafelist = noteTones.flatMap((tone) => [
 
 const config: Config = {
   darkMode: "class",
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "../../packages/ui/src/**/*.{js,ts,jsx,tsx}",
+    "../../packages/ui/dist/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
       colors: {
         surface: {
           DEFAULT: withOpacityValue("--color-surface-base"),
+          base: withOpacityValue("--color-surface-base"),
           muted: withOpacityValue("--color-surface-muted"),
           elevated: withOpacityValue("--color-surface-elevated"),
+        },
+        background: {
+          base: withOpacityValue("--color-surface-base"),
         },
         overlay: withOpacityValue("--color-surface-overlay"),
         outline: {
           subtle: withOpacityValue("--color-outline-subtle"),
+          base: withOpacityValue("--color-outline-base"),
           strong: withOpacityValue("--color-outline-strong"),
         },
         accent: {

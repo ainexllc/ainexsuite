@@ -83,7 +83,7 @@ export function LogoWordmark({
         </svg>
       </span>
       <span
-        className="text-blue-500 font-[family-name:var(--font-kanit)] font-semibold"
+        className="text-[#f97316] font-[family-name:var(--font-kanit)] font-semibold"
         style={{ marginLeft: "-8px", transform: "translateY(2px)" }}
       >
         Suite

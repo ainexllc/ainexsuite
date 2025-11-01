@@ -12,7 +12,7 @@ interface UniversalSearchProps {
 const APP_ICONS: Record<SearchableApp, React.ReactNode> = {
   notes: <FileText className="h-4 w-4" />,
   journey: <BookOpen className="h-4 w-4" />,
-  tasks: <CheckSquare className="h-4 w-4" />,
+  todo: <CheckSquare className="h-4 w-4" />,
   track: <Target className="h-4 w-4" />,
   moments: <ImageIcon className="h-4 w-4" />,
   grow: <BookOpen className="h-4 w-4" />,
@@ -23,7 +23,7 @@ const APP_ICONS: Record<SearchableApp, React.ReactNode> = {
 const APP_NAMES: Record<SearchableApp, string> = {
   notes: 'Notes',
   journey: 'Journey',
-  tasks: 'Tasks',
+  todo: 'Todo',
   track: 'Track',
   moments: 'Moments',
   grow: 'Grow',
@@ -34,7 +34,7 @@ const APP_NAMES: Record<SearchableApp, string> = {
 const APP_COLORS: Record<SearchableApp, string> = {
   notes: 'bg-yellow-500/10 text-yellow-500',
   journey: 'bg-blue-500/10 text-blue-500',
-  tasks: 'bg-green-500/10 text-green-500',
+  todo: 'bg-green-500/10 text-green-500',
   track: 'bg-purple-500/10 text-purple-500',
   moments: 'bg-pink-500/10 text-pink-500',
   grow: 'bg-indigo-500/10 text-indigo-500',
@@ -50,7 +50,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
   const [appCounts, setAppCounts] = useState<Record<SearchableApp, number>>({
     notes: 0,
     journey: 0,
-    tasks: 0,
+    todo: 0,
     track: 0,
     moments: 0,
     grow: 0,

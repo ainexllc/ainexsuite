@@ -30,7 +30,7 @@ import {
 const APP_ICONS: Record<SearchableApp, React.ReactNode> = {
   notes: <FileText className="h-4 w-4" />,
   journey: <BookOpen className="h-4 w-4" />,
-  tasks: <CheckSquare className="h-4 w-4" />,
+  todo: <CheckSquare className="h-4 w-4" />,
   track: <Target className="h-4 w-4" />,
   moments: <ImageIcon className="h-4 w-4" />,
   grow: <BookOpen className="h-4 w-4" />,
@@ -49,7 +49,7 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 
 const APP_COLORS: Record<SearchableApp, string> = {
   notes: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-  journal: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  journey: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   todo: 'bg-green-500/10 text-green-500 border-green-500/20',
   track: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
   moments: 'bg-pink-500/10 text-pink-500 border-pink-500/20',

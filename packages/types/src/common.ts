@@ -53,7 +53,27 @@ export type NoteColor =
 
 export type NotePattern = 'none' | 'dots' | 'lines' | 'grid';
 
-export type MoodType = 'happy' | 'sad' | 'calm' | 'energetic' | 'stressed';
+export type MoodType =
+  | 'happy'
+  | 'sad'
+  | 'neutral'
+  | 'excited'
+  | 'anxious'
+  | 'grateful'
+  | 'angry'
+  | 'peaceful'
+  | 'stressed'
+  | 'hopeful'
+  | 'tired'
+  | 'energetic'
+  | 'confused'
+  | 'confident'
+  | 'lonely'
+  | 'loved'
+  | 'frustrated'
+  | 'inspired'
+  | 'bored'
+  | 'content';
 
 export type Priority = 'high' | 'medium' | 'low';
 

@@ -29,7 +29,8 @@ export async function POST(
     }
 
     // For development, always succeed
-    if (process.env.NODE_ENV === 'development') {
+    const isDevelopment = process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test';
+    if (isDevelopment) {
       return NextResponse.json(
         { success: true, message: 'App permission granted' },
         { status: 200 }
@@ -69,7 +70,7 @@ export async function POST(
       console.error('Cloud Function error:', message);
 
       // For development, still return success
-      if (process.env.NODE_ENV === 'development') {
+      if (isDevelopment) {
         return NextResponse.json(
           { success: true, message: 'App permission granted (dev)' },
           { status: 200 }

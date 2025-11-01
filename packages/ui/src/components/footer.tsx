@@ -50,12 +50,12 @@ export function Footer({
 
   return (
     <footer className="bg-background-base border-t border-outline-base dark:bg-zinc-900/80 dark:border-white/10">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="space-y-2">
             <h3 className="text-xs font-semibold text-ink-900 dark:text-white tracking-wider uppercase">Product</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {defaultProductLinks.map((link) => (
                 <li key={link.label}>
                   <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
@@ -65,9 +65,9 @@ export function Footer({
               ))}
             </ul>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h3 className="text-xs font-semibold text-ink-900 dark:text-white tracking-wider uppercase">Company</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {defaultCompanyLinks.map((link) => (
                 <li key={link.label}>
                   <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
@@ -77,9 +77,9 @@ export function Footer({
               ))}
             </ul>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h3 className="text-xs font-semibold text-ink-900 dark:text-white tracking-wider uppercase">Resources</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {defaultResourceLinks.map((link) => (
                 <li key={link.label}>
                   <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
@@ -89,9 +89,9 @@ export function Footer({
               ))}
             </ul>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-2">
             <h3 className="text-xs font-semibold text-ink-900 dark:text-white tracking-wider uppercase">Legal</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {defaultLegalLinks.map((link) => (
                 <li key={link.label}>
                   <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
@@ -104,9 +104,9 @@ export function Footer({
         </div>
 
         {/* Social Links and Copyright */}
-        <div className="mt-12 border-t border-outline-base dark:border-white/10 pt-8">
+        <div className="mt-6 border-t border-outline-base dark:border-white/10 pt-4">
           {socialLinks && socialLinks.length > 0 && (
-            <div className="flex justify-center gap-6 mb-6">
+            <div className="flex justify-center gap-6 mb-4">
               {socialLinks.map((link) => (
                 <a
                   key={link.label}
@@ -121,7 +121,7 @@ export function Footer({
               ))}
             </div>
           )}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1">
             <p className="text-sm text-ink-600 dark:text-white/60 font-medium">
               &copy; {new Date().getFullYear()} {appName}. All rights reserved.
             </p>

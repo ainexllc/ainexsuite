@@ -4,21 +4,23 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
+import { useVisualStyle } from '@/lib/theme/visual-style';
+import { AinexStudiosLogo } from '@/components/branding/ainex-studios-logo';
 import {
   Loader2,
-  Brain,
-  BarChart3,
-  Palette,
   Sparkles,
-  LogIn,
-  Shield,
   Menu,
   X,
   Chrome,
   Lock,
   Mail,
+  Brain,
+  BarChart3,
+  Shield,
+  Palette,
+  Paintbrush,
+  LogIn,
 } from 'lucide-react';
 import { auth } from '@ainexsuite/firebase';
 import {
@@ -29,12 +31,9 @@ import {
 } from 'firebase/auth';
 import type { FirebaseError } from 'firebase/app';
 import {
-  checkEmailExists,
-  getAccountConflictMessage,
   parseAuthError,
-  getAuthErrorWithSuggestion,
-  type EmailStatus,
 } from '@ainexsuite/auth';
+import clsx from 'clsx';
 
 const demoSteps = [
   { text: 'Reading your latest reflections for key signals…', emoji: '🔎' },
@@ -49,176 +48,187 @@ const navLinks = [
   { href: '/about', label: 'About' },
 ];
 
-const featureCards = [
+const heroHighlights = [
+  {
+    title: 'AI Coached Prompts',
+    description: 'Nudge toward deeper insights without getting micromanaged.',
+  },
+  {
+    title: 'Multimedia Journaling',
+    description: 'Upload a photo, record voice, or just type—your way, your record.',
+  },
+];
+
+const suiteBenefits = [
   {
     title: 'Adaptive Insight Engine',
-    description:
-      'Surface mood shifts, recurring themes, and creative streaks tuned to the way you write.',
+    description: 'Surface mood paths, recurring themes, and creative streaks travel to the day you write.',
     icon: Brain,
   },
   {
     title: 'Momentum Dashboards',
-    description:
-      'Watch trends across mood, energy, and output with visuals built for momentum—not vanity metrics.',
+    description: 'Watch trends evolve mood, insight frequency, and forward to fuel for momentum—not guilt.',
     icon: BarChart3,
   },
   {
     title: 'Locked-Down Privacy',
-    description:
-      'Zero-knowledge encryption, local-first drafts, and granular export control keep every entry in your hands.',
+    description: 'Zero-knowledge encryption, local-first drafts, and granular control keeps every entry private.',
     icon: Shield,
   },
 ];
 
-const aiHighlights = [
-  {
-    emoji: '🧠',
-    title: 'Context Coach',
-    description:
-      'Understands tone, topics, and energy before shaping your next prompt.',
-  },
-  {
-    emoji: '🗂️',
-    title: 'Auto-Organized Memory',
-    description:
-      'Tags every entry with themes, projects, and moods so you can surface anything fast.',
-  },
-  {
-    emoji: '📊',
-    title: 'Progress Signals',
-    description:
-      'Highlights habits and inflection points before they harden into patterns.',
-  },
-];
-
-function PublicHomePage() {
+export default function HomePage() {
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeDemo, setActiveDemo] = useState(0);
+  const { selectedVariant, variants, selectVariantById, cycleVariant } = useVisualStyle();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [signInLoading, setSignInLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [activeDemo, setActiveDemo] = useState(0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<EmailStatus | null>(null);
-  const [checkingEmail, setCheckingEmail] = useState(false);
-  const [emailChecked, setEmailChecked] = useState(false);
+  const [signInLoading, setSignInLoading] = useState(false);
+  const [error, setError] = useState('');
 
+  // Auto-rotate demo steps
   useEffect(() => {
-    const timer = setInterval(() => {
+    const interval = setInterval(() => {
       setActiveDemo((prev) => (prev + 1) % demoSteps.length);
     }, 3200);
-
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, []);
 
-  // Check email when user enters it
-  const handleEmailCheck = async (emailValue: string) => {
-    if (!emailValue || !emailValue.includes('@')) {
-      setEmailStatus(null);
-      setEmailChecked(false);
-      return;
+  // Redirect if authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/workspace');
     }
+  }, [user, authLoading, router]);
 
-    setCheckingEmail(true);
+  const handleGoogleSignIn = async () => {
     setError('');
-
+    setSignInLoading(true);
     try {
-      const status = await checkEmailExists(emailValue);
-      setEmailStatus(status);
-      setEmailChecked(true);
-
-      // If email exists, show helpful message
-      if (status.exists) {
-        const message = getAccountConflictMessage(status);
-        setError(message);
-
-        // Auto-switch to sign-in mode if email exists
-        if (isSignUp) {
-          setIsSignUp(false);
-        }
-      } else if (!isSignUp && emailChecked) {
-        // If email doesn't exist and user is trying to sign in, suggest signup
-        setError('No account found with this email. Would you like to sign up?');
-      }
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push('/workspace');
     } catch (err) {
-      console.error('Email check error:', err);
-      // Don't show error to user for email check failures
+      const firebaseError = err as FirebaseError;
+      const errorInfo = parseAuthError(firebaseError);
+      setError(errorInfo.userMessage);
     } finally {
-      setCheckingEmail(false);
+      setSignInLoading(false);
     }
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSignInLoading(true);
     setError('');
 
-    try {
-      // Check email one more time before submission
-      if (!emailChecked) {
-        await handleEmailCheck(email);
-      }
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
 
+    setSignInLoading(true);
+    try {
       if (isSignUp) {
-        // Prevent signup if email already exists
-        if (emailStatus?.exists) {
-          setError(getAccountConflictMessage(emailStatus));
-          setSignInLoading(false);
-          return;
-        }
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
       router.push('/workspace');
-    } catch (err: unknown) {
-      const errorInfo = parseAuthError(err);
-      setError(getAuthErrorWithSuggestion(err));
+    } catch (err) {
+      const firebaseError = err as FirebaseError;
+      const errorInfo = parseAuthError(firebaseError);
+      setError(errorInfo.userMessage);
     } finally {
       setSignInLoading(false);
     }
   };
 
-  const handleGoogleAuth = async () => {
-    setSignInLoading(true);
-    setError('');
-
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push('/workspace');
-    } catch (err: unknown) {
-      const firebaseError = err as FirebaseError;
-      // Don't show error if user just closed the popup
-      if (firebaseError.code !== 'auth/popup-closed-by-user' && firebaseError.code !== 'auth/cancelled-popup-request') {
-        setError(getAuthErrorWithSuggestion(err));
-      }
-      setSignInLoading(false);
-    }
-  };
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#050505]">
+        <Loader2 className={clsx('h-8 w-8 animate-spin', selectedVariant.loaderColor)} />
+      </div>
+    );
+  }
 
   return (
     <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-white">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.14),rgba(5,5,5,0.95)_55%),radial-gradient(circle_at_bottom,rgba(99,102,241,0.12),rgba(5,5,5,0.95)_65%)]" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#f97316]/25 blur-[150px]" />
-      <div className="pointer-events-none absolute top-1/3 right-[-12%] h-[360px] w-[360px] rounded-full bg-[#6366f1]/20 blur-[160px]" />
-      <header className="relative z-50 border-b border-white/10 bg-[#050505]/90 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8">
-          <Link href="/" className="flex items-center">
-            <LogoWordmark iconSize={88} />
-          </Link>
+      <div className={`pointer-events-none absolute inset-0 -z-10 ${selectedVariant.heroAtmosphere}`} />
+      {/* Theme-aware atmospheric glows */}
+      <div
+        className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full blur-[150px]"
+        style={{
+          backgroundColor: selectedVariant.id === 'ember-glow'
+            ? 'rgba(249, 115, 22, 0.4)'
+            : 'rgba(56, 189, 248, 0.35)'
+        }}
+      />
+      <div
+        className="pointer-events-none absolute top-1/3 right-[-12%] h-[460px] w-[460px] rounded-full blur-[160px]"
+        style={{
+          backgroundColor: selectedVariant.id === 'ember-glow'
+            ? 'rgba(234, 88, 12, 0.3)'
+            : 'rgba(14, 165, 233, 0.25)'
+        }}
+      />
+      <header
+        className="relative z-50 border-b"
+        style={{
+          borderColor: selectedVariant.id === 'ember-glow'
+            ? 'rgba(249, 115, 22, 0.2)'
+            : 'rgba(56, 189, 248, 0.2)'
+        }}
+      >
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-70" />
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            background: selectedVariant.id === 'ember-glow'
+              ? 'linear-gradient(to right, rgba(249, 115, 22, 0.05), transparent, rgba(234, 88, 12, 0.05))'
+              : 'linear-gradient(to right, rgba(56, 189, 248, 0.05), transparent, rgba(14, 165, 233, 0.05))'
+          }}
+        />
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-6">
+          <div className="flex items-center gap-6">
+            <AinexStudiosLogo align="center" size="lg" className="hidden sm:flex" />
+            <AinexStudiosLogo align="center" size="md" className="sm:hidden" />
+          </div>
+
           <div className="hidden items-center gap-3 md:flex">
             {navLinks.map((item) => (
-              <a key={item.href} href={item.href} className="text-sm text-white/60 transition hover:text-white">
+              <a
+                key={item.href}
+                href={item.href}
+                className="group relative inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-white/70 transition hover:text-white"
+              >
                 {item.label}
+                <span
+                  className="pointer-events-none absolute inset-x-4 bottom-1 h-px scale-x-0 rounded-full transition duration-300 ease-out group-hover:scale-x-100"
+                  style={{
+                    backgroundColor: selectedVariant.id === 'ember-glow'
+                      ? '#6366f1'
+                      : '#38bdf8'
+                  }}
+                />
               </a>
             ))}
+            <button
+              type="button"
+              onClick={cycleVariant}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-white/20 bg-white/10 text-white transition hover:border-white/40 hover:bg-white/20"
+              aria-label="Cycle visual style"
+            >
+              <Paintbrush className="h-4 w-4" />
+            </button>
           </div>
+
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white transition hover:bg-white/5 md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white transition hover:bg-white/10 md:hidden"
             aria-label="Toggle navigation"
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -227,7 +237,7 @@ function PublicHomePage() {
 
         {isMobileMenuOpen && (
           <div className="absolute inset-x-0 top-full mt-2 px-6 pb-6 md:hidden z-40">
-            <nav className="space-y-3 rounded-3xl border border-white/5 bg-[#0b0b0b]/90 p-6 text-sm font-medium text-white/70">
+            <nav className="space-y-3 rounded-3xl border border-white/5 bg-[#0b0b0b]/95 p-6 text-sm font-medium text-white/70">
               {navLinks.map((item) => (
                 <a
                   key={item.href}
@@ -238,22 +248,44 @@ function PublicHomePage() {
                   {item.label}
                 </a>
               ))}
+              <button
+                type="button"
+                onClick={() => {
+                  cycleVariant();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                Cycle visual style
+              </button>
             </nav>
           </div>
         )}
       </header>
 
-      <main className="pt-28">
-        <section className="relative overflow-hidden">
-
+      <main className="pt-8">
+        <section className="relative overflow-hidden pb-16 sm:pb-20 lg:pb-24">
           <div className="relative mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-center lg:px-8">
             <div className="space-y-8">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-800/70 px-4 py-1 text-xs font-medium uppercase tracking-wide text-white/60">
+              <span
+                className="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-medium uppercase tracking-wide"
+                style={{
+                  borderColor: selectedVariant.id === 'ember-glow'
+                    ? 'rgba(249, 115, 22, 0.3)'
+                    : 'rgba(125, 211, 252, 0.4)',
+                  backgroundColor: selectedVariant.id === 'ember-glow'
+                    ? 'rgba(249, 115, 22, 0.1)'
+                    : 'rgba(125, 211, 252, 0.1)',
+                  color: selectedVariant.id === 'ember-glow'
+                    ? '#f97316'
+                    : '#7dd3fc'
+                }}
+              >
                 <Shield className="h-3.5 w-3.5" />
                 Encrypted by default
               </span>
               <h1 className="text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-                <span className="bg-gradient-to-r from-[#FF7A18] to-[#FFB347] bg-clip-text text-transparent">
+                <span className={`bg-gradient-to-r ${selectedVariant.headlineGradient} bg-clip-text text-transparent`}>
                   You write. AI finds insights.
                 </span>
                 <br />
@@ -263,9 +295,119 @@ function PublicHomePage() {
                 Every time you open your workspace, AI reflects on your recent entries, delivers fresh summaries, and asks thoughtful questions to guide your next session.
               </p>
 
-              <div className="grid gap-4 rounded-3xl border border-white/10 bg-zinc-800/80 p-5 backdrop-blur sm:grid-cols-2">
+              <div
+                className="mt-6 w-full rounded-3xl border bg-white/[0.04] px-6 py-5 backdrop-blur"
+                style={{
+                  borderColor: selectedVariant.id === 'ember-glow'
+                    ? 'rgba(249, 115, 22, 0.2)'
+                    : 'rgba(56, 189, 248, 0.2)',
+                  boxShadow: selectedVariant.id === 'ember-glow'
+                    ? '0 12px 40px -20px rgba(249, 115, 22, 0.5)'
+                    : '0 12px 40px -20px rgba(56, 189, 248, 0.5)'
+                }}
+              >
+                <div className="flex flex-wrap items-center gap-6 sm:gap-8">
+                  <div className="flex flex-col gap-1">
+                    <span
+                      className="text-xl font-semibold sm:text-2xl"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#f97316'
+                          : '#7dd3fc'
+                      }}
+                    >
+                      2.1K
+                    </span>
+                    <span className="text-[11px] uppercase tracking-[0.3em] text-white/40">
+                      writers in private beta
+                    </span>
+                    <span
+                      className="text-xs"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#6366f1'
+                          : '#7dd3fc'
+                      }}
+                    >
+                      +34% weekly growth
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span
+                      className="text-xl font-semibold sm:text-2xl"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#f97316'
+                          : '#7dd3fc'
+                      }}
+                    >
+                      3.2×
+                    </span>
+                    <span className="text-[11px] uppercase tracking-[0.3em] text-white/40">
+                      faster insight capture
+                    </span>
+                    <span
+                      className="text-xs"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#6366f1'
+                          : '#7dd3fc'
+                      }}
+                    >
+                      vs personal baselines
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span
+                      className="text-xl font-semibold sm:text-2xl"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#f97316'
+                          : '#7dd3fc'
+                      }}
+                    >
+                      100%
+                    </span>
+                    <span className="text-[11px] uppercase tracking-[0.3em] text-white/40">
+                      entries encrypted edge-side
+                    </span>
+                    <span
+                      className="text-xs"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#6366f1'
+                          : '#7dd3fc'
+                      }}
+                    >
+                      zero-knowledge key custody
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="grid gap-4 rounded-3xl border bg-white/[0.03] p-5 backdrop-blur sm:grid-cols-2"
+                style={{
+                  borderColor: selectedVariant.id === 'ember-glow'
+                    ? 'rgba(99, 102, 241, 0.25)'
+                    : 'rgba(56, 189, 248, 0.25)',
+                  boxShadow: selectedVariant.id === 'ember-glow'
+                    ? '0 12px 40px -20px rgba(249, 115, 22, 0.5)'
+                    : '0 12px 40px -20px rgba(56, 189, 248, 0.5)'
+                }}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f97316]/10 text-[#f97316]">
+                  <div
+                    className="flex h-10 w-10 items-center justify-center rounded-full"
+                    style={{
+                      backgroundColor: selectedVariant.id === 'ember-glow'
+                        ? 'rgba(249, 115, 22, 0.15)'
+                        : 'rgba(56, 189, 248, 0.15)',
+                      color: selectedVariant.id === 'ember-glow'
+                        ? '#f97316'
+                        : '#7dd3fc'
+                    }}
+                  >
                     <Sparkles className="h-5 w-5" />
                   </div>
                   <div>
@@ -274,7 +416,17 @@ function PublicHomePage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f97316]/10 text-[#f97316]">
+                  <div
+                    className="flex h-10 w-10 items-center justify-center rounded-full"
+                    style={{
+                      backgroundColor: selectedVariant.id === 'ember-glow'
+                        ? 'rgba(249, 115, 22, 0.15)'
+                        : 'rgba(56, 189, 248, 0.15)',
+                      color: selectedVariant.id === 'ember-glow'
+                        ? '#f97316'
+                        : '#7dd3fc'
+                    }}
+                  >
                     <Palette className="h-5 w-5" />
                   </div>
                   <div>
@@ -285,12 +437,42 @@ function PublicHomePage() {
               </div>
             </div>
 
-            <div id="login" className="relative mb-[75px]">
-              <div className="absolute inset-0 -translate-y-6 rounded-3xl bg-gradient-to-tr from-[#f97316]/15 via-transparent to-[#6366f1]/20 blur-2xl" />
-              <div className="relative w-full overflow-hidden rounded-3xl border border-[#f97316]/20 bg-[#050505]/90 p-8 text-white shadow-[0_25px_80px_-25px_rgba(249,115,22,0.35)] backdrop-blur-xl">
+            <div id="login" className="relative">
+              <div
+                className="absolute inset-0 -translate-y-6 rounded-3xl blur-2xl"
+                style={{
+                  background: selectedVariant.id === 'ember-glow'
+                    ? 'linear-gradient(to top right, rgba(249, 115, 22, 0.15), transparent, rgba(234, 88, 12, 0.2))'
+                    : 'linear-gradient(to top right, rgba(56, 189, 248, 0.15), transparent, rgba(14, 165, 233, 0.2))'
+                }}
+              />
+              <div
+                className="relative w-full overflow-hidden rounded-3xl border bg-[#050505]/90 p-8 text-white backdrop-blur-xl"
+                style={{
+                  borderColor: selectedVariant.id === 'ember-glow'
+                    ? 'rgba(249, 115, 22, 0.2)'
+                    : 'rgba(56, 189, 248, 0.25)',
+                  boxShadow: selectedVariant.id === 'ember-glow'
+                    ? '0 25px 80px -25px rgba(249, 115, 22, 0.35)'
+                    : '0 25px 80px -25px rgba(56, 189, 248, 0.35)'
+                }}
+              >
                 <div className="mb-6 flex items-start justify-between">
                   <div className="space-y-2">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-[#f97316]/30 bg-[#f97316]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f97316]">
+                    <span
+                      className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]"
+                      style={{
+                        borderColor: selectedVariant.id === 'ember-glow'
+                          ? 'rgba(249, 115, 22, 0.3)'
+                          : 'rgba(125, 211, 252, 0.4)',
+                        backgroundColor: selectedVariant.id === 'ember-glow'
+                          ? 'rgba(249, 115, 22, 0.1)'
+                          : 'rgba(125, 211, 252, 0.1)',
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#f97316'
+                          : '#7dd3fc'
+                      }}
+                    >
                       Early Access
                     </span>
                     <h2 className="text-3xl font-semibold text-white">
@@ -298,11 +480,18 @@ function PublicHomePage() {
                     </h2>
                     <p className="text-sm text-white/70">
                       {isSignUp
-                        ? 'Create your account to access all Ainex apps.'
-                        : 'Sign in to access your workspace across every Ainex app.'}
+                        ? 'Create your account to access AINexAgent.'
+                        : 'Sign in to access your AI workspace.'}
                     </p>
                   </div>
-                  <Lock className="mt-1 h-5 w-5 text-[#f97316]" />
+                  <Lock
+                    className="mt-1 h-5 w-5"
+                    style={{
+                      color: selectedVariant.id === 'ember-glow'
+                        ? '#f97316'
+                        : '#7dd3fc'
+                    }}
+                  />
                 </div>
 
                 {error && (
@@ -322,23 +511,23 @@ function PublicHomePage() {
                       <input
                         type="email"
                         value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          // Reset email status when user changes email
-                          setEmailChecked(false);
-                          setEmailStatus(null);
-                          if (error) setError('');
-                        }}
-                        onBlur={(e) => handleEmailCheck(e.target.value)}
+                        onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
                         autoComplete="email"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
+                        className="w-full rounded-xl border border-white/15 bg-white/5 py-2.5 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-transparent transition"
+                        style={{
+                          boxShadow: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.boxShadow = selectedVariant.id === 'ember-glow'
+                            ? '0 0 0 2px rgba(249, 115, 22, 0.5)'
+                            : '0 0 0 2px rgba(56, 189, 248, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.boxShadow = 'none';
+                        }}
                         required
-                        disabled={checkingEmail}
                       />
-                      {checkingEmail && (
-                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 animate-spin" />
-                      )}
                     </div>
                   </div>
 
@@ -354,7 +543,18 @@ function PublicHomePage() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
                         autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
+                        className="w-full rounded-xl border border-white/15 bg-white/5 py-2.5 pl-10 pr-4 text-white placeholder-white/40 focus:outline-none focus:border-transparent transition"
+                        style={{
+                          boxShadow: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.boxShadow = selectedVariant.id === 'ember-glow'
+                            ? '0 0 0 2px rgba(249, 115, 22, 0.5)'
+                            : '0 0 0 2px rgba(56, 189, 248, 0.5)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.boxShadow = 'none';
+                        }}
                         required
                       />
                     </div>
@@ -363,12 +563,34 @@ function PublicHomePage() {
                   <button
                     type="submit"
                     disabled={signInLoading}
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#f97316] text-white font-semibold hover:bg-[#ea6a0f] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{
+                      background: selectedVariant.id === 'ember-glow'
+                        ? '#f97316'
+                        : 'linear-gradient(to right, #38bdf8, #7dd3fc, #818cf8)',
+                      color: selectedVariant.id === 'ember-glow'
+                        ? '#ffffff'
+                        : '#0f172a'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedVariant.id === 'ember-glow') {
+                        e.currentTarget.style.background = '#ea6a0f';
+                      } else {
+                        e.currentTarget.style.background = 'linear-gradient(to right, #7dd3fc, #a5f3fc, #a5b4fc)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedVariant.id === 'ember-glow') {
+                        e.currentTarget.style.background = '#f97316';
+                      } else {
+                        e.currentTarget.style.background = 'linear-gradient(to right, #38bdf8, #7dd3fc, #818cf8)';
+                      }
+                    }}
                   >
                     {signInLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin text-current" />
                     ) : (
-                      <LogIn className="h-5 w-5" />
+                      <LogIn className="h-5 w-5 text-current" />
                     )}
                     {signInLoading ? 'Loading...' : isSignUp ? 'Create Account' : 'Sign In'}
                   </button>
@@ -387,14 +609,21 @@ function PublicHomePage() {
                 {/* Google Sign In */}
                 <button
                   type="button"
-                  onClick={handleGoogleAuth}
+                  onClick={handleGoogleSignIn}
                   disabled={signInLoading}
                   className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {signInLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin text-white" />
                   ) : (
-                    <Chrome className="h-5 w-5 text-[#f97316]" />
+                    <Chrome
+                      className="h-5 w-5"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#f97316'
+                          : '#7dd3fc'
+                      }}
+                    />
                   )}
                   Continue with Google
                 </button>
@@ -407,14 +636,23 @@ function PublicHomePage() {
                     onClick={() => {
                       setIsSignUp(!isSignUp);
                       setError('');
-                      setEmailChecked(false);
-                      setEmailStatus(null);
-                      // Recheck email when switching modes
-                      if (email && email.includes('@')) {
-                        handleEmailCheck(email);
-                      }
                     }}
-                    className="text-[#f97316] font-semibold hover:text-[#ea6a0f] transition"
+                    className="font-semibold transition"
+                    style={{
+                      color: selectedVariant.id === 'ember-glow'
+                        ? '#f97316'
+                        : '#7dd3fc'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = selectedVariant.id === 'ember-glow'
+                        ? '#ea6a0f'
+                        : '#a5f3fc';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = selectedVariant.id === 'ember-glow'
+                        ? '#f97316'
+                        : '#7dd3fc';
+                    }}
                   >
                     {isSignUp ? 'Sign In' : 'Sign Up'}
                   </button>
@@ -428,13 +666,14 @@ function PublicHomePage() {
           </div>
         </section>
 
-        <section id="features" className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl -mt-8">
+        <section id="features" className="relative mx-auto max-w-7xl px-4 py-16 sm:py-20 lg:py-24 sm:px-6 lg:px-8">
+          <div className="pointer-events-none absolute inset-0 -z-10 rounded-[48px] border border-white/5 bg-gradient-to-b from-white/10 via-white/0 to-transparent" />
+          <div className="mx-auto max-w-5xl">
             <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-zinc-800/80 shadow-lg">
               <iframe
                 className="absolute inset-0 h-full w-full"
                 src="https://www.youtube.com/embed/ccw3-B2nKaQ"
-                title="JournalNex demo video"
+                title="AINexAgent demo video"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
@@ -442,57 +681,72 @@ function PublicHomePage() {
             </div>
           </div>
 
-          <div className="mx-auto mt-16 max-w-3xl text-center">
+          <div className="mx-auto mt-12 sm:mt-16 lg:mt-20 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl">Built for writers who demand more than a blank page</h2>
-            <p className="mt-3 text-lg text-white/70">
+            <p className="mt-4 text-lg text-white/70">
               From onboarding to analytics, every workflow keeps you consistent, curious, and moving forward.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {featureCards.map((feature) => {
-              const Icon = feature.icon;
+          <div className="mt-10 sm:mt-12 lg:mt-16 grid gap-6 lg:grid-cols-3">
+            {suiteBenefits.map((benefit) => {
+              const Icon = benefit.icon;
               return (
                 <div
-                  key={feature.title}
+                  key={benefit.title}
                   className="rounded-3xl border border-white/10 bg-zinc-800/90 p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f97316]/10 text-[#f97316]">
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${selectedVariant.featureIconWrapper}`}
+                  >
                     <Icon className="h-7 w-7" />
                   </div>
-                  <h3 className="mt-5 text-xl font-semibold text-white">{feature.title}</h3>
-                  <p className="mt-3 text-sm text-white/60">{feature.description}</p>
+                  <h3 className="mt-5 text-xl font-semibold text-white">{benefit.title}</h3>
+                  <p className="mt-3 text-sm text-white/60">{benefit.description}</p>
                 </div>
               );
             })}
           </div>
         </section>
 
-        <section id="ai-power" className="relative overflow-hidden border-y border-white/5 py-20">
+        <section id="ai-power" className="relative overflow-hidden border-y border-white/5 bg-[#040404]/80 py-16 sm:py-20 lg:py-24">
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.18),transparent_60%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.16),transparent_60%)]" />
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
               <div className="flex-1 space-y-6">
                 <h2 className="text-3xl font-semibold text-white sm:text-4xl">An AI collaborator that actually knows you</h2>
                 <p className="text-lg text-white/70">
-                  JournalNex learns from your own words to surface inflection points, ask sharper questions, and keep you tethered to what matters most.
+                  AINexAgent learns from your own words to surface inflection points, ask sharper questions, and keep you tethered to what matters most.
                 </p>
                 <ul className="space-y-4 text-white/70">
-                  {aiHighlights.map((item) => (
-                    <li key={item.title} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-800/80 p-4">
-                      <span className="text-xl">{item.emoji}</span>
-                      <div>
-                        <p className="font-semibold text-white">{item.title}</p>
-                        <p className="text-sm text-white/60">{item.description}</p>
-                      </div>
-                    </li>
-                  ))}
+                  <li className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-800/80 p-4">
+                    <span className="text-xl">🧠</span>
+                    <div>
+                      <p className="font-semibold text-white">Context Coach</p>
+                      <p className="text-sm text-white/60">Understands tone, topics, and energy before shaping your next prompt.</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-800/80 p-4">
+                    <span className="text-xl">🗂️</span>
+                    <div>
+                      <p className="font-semibold text-white">Auto-Organized Memory</p>
+                      <p className="text-sm text-white/60">Tags every entry with themes, projects, and moods so you can surface anything fast.</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-800/80 p-4">
+                    <span className="text-xl">📊</span>
+                    <div>
+                      <p className="font-semibold text-white">Progress Signals</p>
+                      <p className="text-sm text-white/60">Highlights habits and inflection points before they harden into patterns.</p>
+                    </div>
+                  </li>
                 </ul>
               </div>
               <div className="flex-1">
                 <div className="rounded-3xl border border-white/10 bg-zinc-800/80 p-6 shadow-lg">
                   <div className="flex items-center gap-3 rounded-full border border-white/10 bg-zinc-700/60 px-4 py-2 text-sm text-white/60">
                     <LogIn className="h-5 w-5" />
-                    JournalNex Copilot
+                    AINexAgent Copilot
                   </div>
                   <div className="mt-6 space-y-4">
                     <p className="text-sm text-white/60">Live demo</p>
@@ -512,116 +766,71 @@ function PublicHomePage() {
           </div>
         </section>
 
-        <section id="themes" className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+        <section id="themes" className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20 lg:py-24">
+          <div className="pointer-events-none absolute inset-0 -z-10 rounded-[48px] border border-white/5 bg-gradient-to-tr from-white/10 via-white/0 to-transparent" />
           <div className="rounded-3xl border border-white/10 bg-zinc-800/80 p-8 shadow-lg backdrop-blur">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl space-y-4">
                 <h2 className="text-3xl font-semibold text-white sm:text-4xl">Make the workspace feel like yours</h2>
                 <p className="text-lg text-white/70">
-                  Swap palettes and layouts built for flow, focus, or deep reflection—without losing the personalization you already love.
+                  Swap palettes and layouts tuned for focus, flow, or deep reflection—every variant keeps the brand grounded in AINEX Studios.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-white/60">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#FF7A18]" />
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#FFB347]" />
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f97316]/40" />
+                  {selectedVariant.themeSwatches.map((swatch, index) => (
+                    <span
+                      key={`${selectedVariant.id}-swatch-${index}`}
+                      className={clsx(
+                        'inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10',
+                        swatch,
+                      )}
+                    />
+                  ))}
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                {['Clarity Canvas', 'Deep Focus', 'Momentum Dashboard', 'Mindful Planning', 'Night Shift Studio'].map((layout) => (
-                  <div key={layout} className="rounded-2xl border border-white/10 bg-zinc-700/70 p-4 text-sm font-medium text-white">
-                    {layout}
-                  </div>
-                ))}
+                {variants.map((variant) => {
+                  const isActive = variant.id === selectedVariant.id;
+                  return (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      onClick={() => selectVariantById(variant.id)}
+                      className={clsx(
+                        'rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-colors',
+                        'bg-zinc-700/70 text-white/80 hover:bg-white/10 hover:text-white',
+                        isActive
+                          ? 'border-white/40 text-white'
+                          : 'border-white/10',
+                      )}
+                      aria-pressed={isActive}
+                    >
+                      <span className="block text-xs uppercase tracking-[0.3em] text-white/50">Palette</span>
+                      <span className="mt-1 block text-lg font-semibold text-white">{variant.label}</span>
+                      <span className="mt-2 block text-xs text-white/60">
+                        {isActive ? 'Active now' : 'Tap to preview'}
+                      </span>
+                      <div className="mt-3 flex items-center gap-1.5">
+                        {variant.themeSwatches.map((swatch, swatchIndex) => (
+                          <span
+                            key={`${variant.id}-swatch-${swatchIndex}`}
+                            className={clsx(
+                              'inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/10',
+                              swatch,
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
       </main>
 
-      <Footer 
-        appName="AINexSuite"
-        productLinks={[
-          { label: 'Features', href: '/features' },
-          { label: 'Pricing', href: '/pricing' },
-          { label: 'FAQ', href: '/faq' },
-        ]}
-        companyLinks={[
-          { label: 'About', href: '/about' },
-          { label: 'Blog', href: '/blog' },
-          { label: 'Careers', href: '/careers' },
-        ]}
-        resourceLinks={[
-          { label: 'Help Center', href: '/help' },
-          { label: 'Contact Us', href: 'mailto:support@ainexsuite.com' },
-          { label: 'Documentation', href: '/docs' },
-        ]}
-        legalLinks={[
-          { label: 'Privacy Policy', href: '/privacy' },
-          { label: 'Terms of Service', href: '/terms' },
-          { label: 'Cookie Policy', href: '/cookies' },
-          { label: 'Acceptable Use Policy', href: '/acceptable-use' },
-          { label: 'GDPR', href: '/gdpr' },
-        ]}
-      />
+      {/* Footer */}
+      <Footer />
     </div>
   );
-}
-
-export default function HomePage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
-
-  useEffect(() => {
-    if (loading) {
-      setLoadingMessage('Checking authentication...');
-      return;
-    }
-
-    if (user) {
-      setLoadingMessage('Welcome back! Redirecting you to your workspace...');
-    } else {
-      setLoadingMessage('');
-    }
-  }, [loading, user]);
-
-  useEffect(() => {
-    if (!loading && user) {
-      const timer = setTimeout(() => {
-        router.push('/workspace');
-      }, 800);
-
-      return () => clearTimeout(timer);
-    }
-
-    return undefined;
-  }, [loading, user, router]);
-
-  if (loading || user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
-            </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
-          </div>
-          {loadingMessage && (
-            <div className="space-y-2">
-              <p className="text-lg font-medium text-white">{loadingMessage}</p>
-              {user && (
-                <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
-                  Redirecting to your workspace
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return <PublicHomePage />;
 }

@@ -8,3 +8,10 @@ type SharedFooterProps = ComponentProps<typeof SharedFooter>;
 export function Footer(props: SharedFooterProps) {
   return <SharedFooter appName="AINex Track" {...props} />;
 }
+
+
+
+
+
+
+

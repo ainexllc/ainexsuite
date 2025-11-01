@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 /* Icon Button */
 @layer components {
   .icon-button {
@@ -9,5 +52,21 @@
            text-ink-500 transition-all duration-150
            hover:bg-surface-muted hover:text-ink-700
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 300ms ease-out;
+  }
+
+  .animate-slide-in-left {
+    animation: slide-in-left 300ms ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 300ms ease-out;
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 300ms ease-out;
   }
 }

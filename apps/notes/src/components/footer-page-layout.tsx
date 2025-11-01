@@ -36,7 +36,7 @@ export function FooterPageLayout({ children, maxWidth = 'medium' }: FooterPageLa
 
       <main className={`mx-auto ${maxWidthClasses[maxWidth]} px-6 pt-36 pb-12`}>{children}</main>
 
-      <Footer />
+      <Footer appName="AINex Notes" />
     </div>
   );
 }

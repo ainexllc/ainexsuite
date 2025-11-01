@@ -27,6 +27,7 @@
     --color-surface-overlay: 10 10 12;
 
     --color-outline-subtle: 50 50 54;
+    --color-outline-base: 50 50 54;
     --color-outline-strong: 249 115 22;
 
     --color-ink-50: 12 12 12;
@@ -65,6 +66,7 @@
     --color-surface-overlay: 0 0 0;
 
     --color-outline-subtle: 229 231 235;
+    --color-outline-base: 229 231 235;
     --color-outline-strong: 249 115 22;
 
     --color-ink-50: 247 247 250;
@@ -273,6 +275,7 @@
     --color-surface-overlay: 15 23 42;
 
     --color-outline-subtle: 226 232 240;
+    --color-outline-base: 226 232 240;
     --color-outline-strong: 148 163 184;
 
     --color-ink-50: 248 250 252;

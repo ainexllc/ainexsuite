@@ -10,6 +10,7 @@ import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
 import ActivityFeed from '@/components/activity-feed';
 import { LogoWordmark } from '@/components/branding/logo-wordmark';
+import { useVisualStyle } from '@/lib/theme/visual-style';
 import Image from 'next/image';
 import {
   FileText,
@@ -104,6 +105,7 @@ const apps = [
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { selectedVariant } = useVisualStyle();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
@@ -119,12 +121,12 @@ export default function WorkspacePage() {
 
   // Filter apps based on what user has accessed
   const appsUsedCount = user ? getAppsUsedCount(user) : 0;
-  const displayedApps = appsUsedCount === 0 
+  const displayedApps = appsUsedCount === 0
     ? apps // Show all apps if none accessed
-    : apps.filter(app => user?.appsUsed?.[app.slug]); // Show only accessed apps
-  
+    : apps.filter(app => user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]); // Show only accessed apps
+
   // Get list of accessed apps
-  const accessedApps = apps.filter(app => user?.appsUsed?.[app.slug]);
+  const accessedApps = apps.filter(app => user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]);
 
   // Cmd+K / Ctrl+K keyboard shortcut for search
   useEffect(() => {
@@ -171,14 +173,39 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#1A1A1D]">
+    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-white">
+      <div className={`pointer-events-none absolute inset-0 -z-10 ${selectedVariant.heroAtmosphere}`} />
+      {/* Theme-aware atmospheric glows */}
+      <div
+        className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full blur-[150px]"
+        style={{
+          backgroundColor: selectedVariant.id === 'ember-glow'
+            ? 'rgba(249, 115, 22, 0.4)'
+            : 'rgba(56, 189, 248, 0.35)'
+        }}
+      />
+      <div
+        className="pointer-events-none absolute top-1/3 right-[-12%] h-[460px] w-[460px] rounded-full blur-[160px]"
+        style={{
+          backgroundColor: selectedVariant.id === 'ember-glow'
+            ? 'rgba(234, 88, 12, 0.3)'
+            : 'rgba(14, 165, 233, 0.25)'
+        }}
+      />
+
       <div className="relative z-10 flex min-h-screen flex-col text-ink-900">
         {/* Fixed Top Navigation */}
         <header
-          className={clsx(
-            "fixed inset-x-0 top-0 z-30 backdrop-blur-2xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_16px_-4极x_rgba(249,115,22,0.3)] transition-colors",
-            "bg-[#1A1A1D]/95 border-b border-outline-subtle/60"
-          )}
+          className="fixed inset-x-0 top-0 z-30 backdrop-blur-2xl transition-colors border-b"
+          style={{
+            backgroundColor: 'rgba(5, 5, 5, 0.95)',
+            borderColor: selectedVariant.id === 'ember-glow'
+              ? 'rgba(249, 115, 22, 0.2)'
+              : 'rgba(56, 189, 248, 0.2)',
+            boxShadow: selectedVariant.id === 'ember-glow'
+              ? '0 8px 30px -12px rgba(249, 115, 22, 0.3)'
+              : '0 8px 30px -12px rgba(56, 189, 248, 0.3)'
+          }}
         >
           <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6 cq-nav">
             {/* Left: Hamburger + Logo */}
@@ -234,7 +261,25 @@ export default function WorkspacePage() {
               <button
                 type="button"
                 onClick={() => setActivePanel(activePanel === 'ai-assistant' ? null : 'ai-assistant')}
-                className="icon-button h-9 w-9 bg-blue-100 text-blue-600 shadow-sm hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
+                className="icon-button h-9 w-9 shadow-sm transition-all"
+                style={{
+                  backgroundColor: selectedVariant.id === 'ember-glow'
+                    ? 'rgba(249, 115, 22, 0.15)'
+                    : 'rgba(56, 189, 248, 0.15)',
+                  color: selectedVariant.id === 'ember-glow'
+                    ? '#f97316'
+                    : '#7dd3fc'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = selectedVariant.id === 'ember-glow'
+                    ? 'rgba(249, 115, 22, 0.25)'
+                    : 'rgba(56, 189, 248, 0.25)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = selectedVariant.id === 'ember-glow'
+                    ? 'rgba(249, 115, 22, 0.15)'
+                    : 'rgba(56, 189, 248, 0.15)';
+                }}
                 aria-label="AI Assistant"
               >
                 <Sparkles className="h-4 w-4" />
@@ -298,11 +343,11 @@ export default function WorkspacePage() {
           <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* Welcome Section */}
             <div className="mb-12">
-              <h2 className="text-3xl font-bold text-ink-900 mb-2">
+              <h2 className="text-3xl font-bold text-white mb-2">
                 Welcome back, {user.displayName || 'there'}! 👋
               </h2>
-              <p className="text-lg text-ink-600">
-                {appsUsedCount === 0 
+              <p className="text-lg text-white/70">
+                {appsUsedCount === 0
                   ? 'Explore our apps to get started with your productivity journey'
                   : appsUsedCount === 1
                   ? 'Try another app to unlock the full Suite with a 30-day trial'
@@ -311,16 +356,27 @@ export default function WorkspacePage() {
             </div>
 
             {/* Apps Summary */}
-            <div className="mb-8 p-6 bg-surface-card rounded-xl border border-outline-base">
+            <div
+              className="mb-8 p-6 rounded-xl border backdrop-blur"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                borderColor: selectedVariant.id === 'ember-glow'
+                  ? 'rgba(249, 115, 22, 0.2)'
+                  : 'rgba(56, 189, 248, 0.2)',
+                boxShadow: selectedVariant.id === 'ember-glow'
+                  ? '0 12px 40px -20px rgba(249, 115, 22, 0.5)'
+                  : '0 12px 40px -20px rgba(56, 189, 248, 0.5)'
+              }}
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-ink-900 mb-2">
-                    {appsUsedCount === 0 
-                      ? 'Your Apps (0)' 
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    {appsUsedCount === 0
+                      ? 'Your Apps (0)'
                       : `Your Apps (${appsUsedCount})`}
                   </h3>
                   {appsUsedCount === 0 ? (
-                    <p className="text-sm text-ink-600">
+                    <p className="text-sm text-white/60">
                       Start exploring our apps below to begin tracking your progress
                     </p>
                   ) : (
@@ -328,10 +384,20 @@ export default function WorkspacePage() {
                       {accessedApps.map((app) => (
                         <div
                           key={app.slug}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-muted"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)'
+                          }}
                         >
-                          <app.icon className="h-4 w-4 text-ink-600" />
-                          <span className="text-sm text-ink-700">{app.name}</span>
+                          <app.icon
+                            className="h-4 w-4"
+                            style={{
+                              color: selectedVariant.id === 'ember-glow'
+                                ? '#f97316'
+                                : '#7dd3fc'
+                            }}
+                          />
+                          <span className="text-sm text-white/80">{app.name}</span>
                         </div>
                       ))}
                     </div>
@@ -339,8 +405,15 @@ export default function WorkspacePage() {
                 </div>
                 {appsUsedCount === 1 && (
                   <div className="text-right">
-                    <p className="text-sm text-ink-600 mb-1">Try another app to unlock:</p>
-                    <p className="text-sm font-medium text-accent-500">
+                    <p className="text-sm text-white/60 mb-1">Try another app to unlock:</p>
+                    <p
+                      className="text-sm font-medium"
+                      style={{
+                        color: selectedVariant.id === 'ember-glow'
+                          ? '#f97316'
+                          : '#7dd3fc'
+                      }}
+                    >
                       Full Suite Access
                     </p>
                   </div>
@@ -357,8 +430,8 @@ export default function WorkspacePage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-ink-600 mb-4">No apps accessed yet</p>
-                <p className="text-sm text-ink-500">Click on any app to get started!</p>
+                <p className="text-white/70 mb-4">No apps accessed yet</p>
+                <p className="text-sm text-white/50">Click on any app to get started!</p>
               </div>
             )}
 
