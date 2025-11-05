@@ -71,7 +71,7 @@ type NotesProviderProps = {
 };
 
 export function NotesProvider({ children }: NotesProviderProps) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: _authLoading } = useAuth();
   const [ownedNotes, setOwnedNotes] = useState<Note[]>([]);
   const [sharedNotes, setSharedNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);

@@ -85,7 +85,7 @@ function sanitizePhone(value: string): { normalized: string; digits: string } {
   };
 }
 
-export function SettingsPanel({ preferences, isLoading, onUpdate, onClose }: SettingsPanelProps) {
+export function SettingsPanel({ preferences, isLoading, onUpdate, onClose: _onClose }: SettingsPanelProps) {
   const [phoneInput, setPhoneInput] = useState(preferences.smsNumber ?? "");
   const [phoneSaveState, setPhoneSaveState] = useState<SaveState>("idle");
   const [phoneError, setPhoneError] = useState<string | null>(null);
