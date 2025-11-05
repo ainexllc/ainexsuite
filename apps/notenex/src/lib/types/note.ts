@@ -75,7 +75,7 @@ export type NoteDoc = {
   sharedWithUserIds: string[];
 };
 
-export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "sharedWith"> & {
+export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "deletedAt" | "sharedWith"> & {
   id: string;
   createdAt: Date;
   updatedAt: Date;
