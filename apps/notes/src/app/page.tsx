@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useAppActivation } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
@@ -578,7 +578,7 @@ function PublicNotesHomePage({
   );
 }
 
-export default function NotesHomePage() {
+function NotesHomePageContent() {
   const { user, loading } = useAuth();
   const { needsActivation, checking } = useAppActivation('notes');
   const router = useRouter();
@@ -656,5 +656,27 @@ export default function NotesHomePage() {
         setShowActivation(false);
       }}
     />
+  );
+}
+
+export default function NotesHomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+          <div className="text-center space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+              </div>
+              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+            </div>
+            <p className="text-lg font-medium text-white">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <NotesHomePageContent />
+    </Suspense>
   );
 }
