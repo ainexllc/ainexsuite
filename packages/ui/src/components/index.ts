@@ -61,6 +61,17 @@ export {
   TableCaption,
 } from "./table";
 
+// Marketing Components
+export {
+  HomepageTemplate,
+  type HomepageTemplateProps,
+  type DemoStep,
+  type NavLink,
+  type FeatureCard,
+  type AIHighlight,
+  type FooterLink,
+} from "./marketing/homepage-template";
+
 // Existing Components
 export { Footer } from "./footer";
 export { Paywall } from "./paywall";
