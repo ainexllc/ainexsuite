@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "postinstall": "pnpm build:deps",
+    "build:deps": "cd ../.. && pnpm turbo run build --filter=@ainexsuite/types --filter=@ainexsuite/firebase --filter=@ainexsuite/auth --filter=@ainexsuite/ui"
   },
   "dependencies": {
     "@ainexsuite/auth": "workspace:*",
