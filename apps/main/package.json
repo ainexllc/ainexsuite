@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
     "deploy": "vercel --prod",
     "postinstall": "npm run build:deps",
-    "build:deps": "cd ../.. && npm run build:workspace",
+    "build:deps": "cd ../.. && npm run build:workspace"
   },
   "dependencies": {
     "@ainexsuite/auth": "workspace:*",
