@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm turbo run build --filter=@ainexsuite/main",
-  "devCommand": "pnpm dev",
+  "buildCommand": "cd ../.. && pnpm install && pnpm turbo run build --filter=@ainexsuite/main",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "ignoreCommand": "cd ../.. && git diff --quiet HEAD^ HEAD -- ./apps/main ./packages ./package.json ./pnpm-lock.yaml ./turbo.json"
 }
