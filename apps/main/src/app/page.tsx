@@ -3,8 +3,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { auth } from '@ainexsuite/firebase';
-import { signOut as firebaseSignOut } from 'firebase/auth';
 import { Loader2, Brain, BarChart3, Shield, Palette, Sparkles } from 'lucide-react';
 import { AinexStudiosLogo } from '@/components/branding/ainex-studios-logo';
 import { Footer } from '@/components/footer';

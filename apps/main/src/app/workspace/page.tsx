@@ -28,7 +28,6 @@ import {
   Sparkles,
   ChevronDown,
 } from 'lucide-react';
-import { clsx } from 'clsx';
 import { getAppsUsedCount } from '@ainexsuite/auth';
 import { Footer } from '@/components/footer';
 

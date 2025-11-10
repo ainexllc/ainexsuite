@@ -11,7 +11,6 @@ import {
   getVariantById,
   getNextVariant,
   type GradientVariantId,
-  type GradientVariant,
 } from '@/lib/theme/visual-style';
 
 const STORAGE_KEY = 'ainexsuite:visual-style';
@@ -72,7 +71,7 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
 
     // Save to Firestore if user is authenticated
     if (!authLoading && user) {
-      async function saveUserTheme() {
+      void (async () => {
         try {
           const userRef = doc(db, 'users', user!.uid);
 
@@ -88,9 +87,7 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
         } catch (error) {
           console.error('Error saving theme preference to Firestore:', error);
         }
-      }
-
-      void saveUserTheme();
+      })();
     }
   }, [selectedId, user, authLoading]);
 
