@@ -1,38 +1,27 @@
-# Vercel Project Cleanup Guide
+# Vercel Project Cleanup & Naming Guide
 
 **Date**: November 10, 2025
-**Status**: Action Required
+**Status**: Action Required - Consolidate and Rename
 
 ---
 
-## ⚠️ Old Project Found
+## 🔄 Project Consolidation Needed
 
-The project **"ainexsuite"** (prj_RlA8kTMJwv9DdZ5jEtUzzaO5xCIK) is an old monorepo-level project that should no longer be used.
+You currently have TWO projects for the main app:
+1. **"main"** (prj_qWQuZ68lqYmfGA0hJJwygUtRW0s4)
+2. **"ainexsuite"** (prj_RlA8kTMJwv9DdZ5jEtUzzaO5xCIK)
 
-**Dashboard URL**: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite
-
-### Issues with This Project
-- ❌ No framework detected (framework: null)
-- ❌ All recent deployments CANCELED or ERROR
-- ❌ Configured at repository root, not app-specific
-- ❌ Cannot properly build monorepo apps
-- ❌ Conflicts with new individual app projects
-
-### Current Status
-- Last deployment: CANCELED
-- Created: January 24, 2025
-- Node version: 22.x
-- Live: false
+**Goal**: Consolidate into ONE project named **"ainexsuite-main"** for consistent naming.
 
 ---
 
-## ✅ Correct Projects to Use
+## ✅ Target Project Structure
 
-You should be using these **7 individual app projects** instead:
+You should have these **7 projects** with consistent naming:
 
 | App | Project Name | Status | Dashboard URL |
 |-----|--------------|--------|---------------|
-| Main | **main** | ✅ Active | https://vercel.com/dinohorn35-gmailcoms-projects/main |
+| Main | **ainexsuite-main** | 🔄 Needs Rename | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-main |
 | Journey | **ainexsuite-journey** | ✅ Active | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-journey |
 | Notes | **ainexsuite-notes** | ✅ Active | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-notes |
 | Todo | **ainexsuite-todo** | ✅ Active | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-todo |
@@ -40,32 +29,55 @@ You should be using these **7 individual app projects** instead:
 | Grow | **ainexsuite-grow** | ✅ Active | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-grow |
 | Track | **ainexsuite-track** | ✅ Active | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-track |
 
+**Perfect naming consistency**: All projects follow the `ainexsuite-[app]` pattern!
+
 ---
 
-## 🗑️ Recommended Action: Delete Old Project
+## 🔧 Recommended Actions (Choose One Path)
 
-### Option 1: Delete via Dashboard (Recommended)
+### Path A: Rename "main" to "ainexsuite-main" (Easier)
 
-1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite
-2. Click: **Settings** (bottom of sidebar)
-3. Scroll to: **Delete Project** section
-4. Type: `ainexsuite` to confirm
-5. Click: **Delete**
+**Step 1: Rename the "main" project**
+1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/main/settings
+2. Under **General** → **Project Name**
+3. Change from `main` to `ainexsuite-main`
+4. Click **Save**
 
-**Why delete?**
-- Prevents confusion between old and new projects
-- Stops failed deployment attempts
-- Cleans up your project list
-- No impact on the 7 working projects
+**Step 2: Delete the "ainexsuite" project**
+1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite/settings
+2. Scroll to bottom → **Delete Project**
+3. Type: `ainexsuite` to confirm
+4. Click: **Delete**
 
-### Option 2: Pause Deployments (Alternative)
+**Why this path?**
+- The "main" project has Next.js framework detected
+- Less configuration needed
+- Cleaner starting point
 
-If you want to keep it for historical reasons:
+---
 
-1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite
-2. Go to: **Settings → Git**
-3. Disable: **Automatic Deployments**
-4. This prevents new deployments but keeps historical data
+### Path B: Rename "ainexsuite" to "ainexsuite-main"
+
+**Step 1: Configure the "ainexsuite" project**
+1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite/settings
+2. Under **General** → **Project Name**: Change to `ainexsuite-main`
+3. Under **General** → **Framework Preset**: Select **Next.js**
+4. Under **Git** → **Root Directory**: Set to `apps/main`
+5. Under **Build & Development Settings**:
+   - Build Command: `cd ../.. && pnpm turbo run build --filter=@ainexsuite/main`
+   - Output Directory: `.next`
+   - Install Command: `cd ../.. && pnpm install`
+6. Click **Save** for each setting
+
+**Step 2: Delete the "main" project**
+1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/main/settings
+2. Scroll to bottom → **Delete Project**
+3. Type: `main` to confirm
+4. Click: **Delete**
+
+**Why this path?**
+- You want to use the "ainexsuite" name specifically
+- Requires more configuration but keeps that project
 
 ---
 

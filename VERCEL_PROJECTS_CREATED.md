@@ -11,13 +11,43 @@ All 7 Vercel projects have been successfully created and linked:
 
 | App | Project Name | Project ID | Dashboard URL |
 |-----|--------------|------------|---------------|
-| Main | main | prj_qWQuZ68lqYmfGA0hJJwygUtRW0s4 | https://vercel.com/dinohorn35-gmailcoms-projects/main |
+| Main | **ainexsuite-main** | prj_qWQuZ68lqYmfGA0hJJwygUtRW0s4 or prj_RlA8kTMJwv9DdZ5jEtUzzaO5xCIK | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-main |
 | Journey | ainexsuite-journey | prj_fS5vskHrC6t4P6PR9APDCFZvc1y4 | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-journey |
 | Notes | ainexsuite-notes | prj_2frXVyo3VBqYKGQpvukDVK7JJOL9 | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-notes |
 | Todo | ainexsuite-todo | prj_aL0K7qBIi0zN3ry3nLLwxzwcwAyy | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-todo |
 | Moments | ainexsuite-moments | prj_kQrxgJDlJBaps4NLzyHLW3pHlv6p | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-moments |
 | Grow | ainexsuite-grow | prj_fHkxkE3uGUEBeTjaM3q7COU8QMPx | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-grow |
 | Track | ainexsuite-track | prj_DmQ6gHMjLanp6UvqccgE0fDf0X5m | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-track |
+
+**Note**: You need to rename either the "main" or "ainexsuite" project to "ainexsuite-main" and delete the other one.
+
+---
+
+## 🔄 FIRST STEP: Rename Main Project
+
+Before proceeding with environment variables and domains, you need to consolidate the main project:
+
+### Option 1: Rename "main" to "ainexsuite-main" (Recommended)
+
+1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/main/settings
+2. Under **General** → **Project Name**
+3. Change from `main` to `ainexsuite-main`
+4. Click **Save**
+5. Then go to: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite
+6. Settings → Scroll to bottom → **Delete Project**
+
+### Option 2: Rename "ainexsuite" to "ainexsuite-main"
+
+1. Go to: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite/settings
+2. Under **General** → **Project Name**
+3. Change from `ainexsuite` to `ainexsuite-main`
+4. Click **Save**
+5. Configure Git Root Directory to `apps/main`
+6. Set Framework Preset to **Next.js**
+7. Then go to: https://vercel.com/dinohorn35-gmailcoms-projects/main
+8. Settings → Scroll to bottom → **Delete Project**
+
+**Why this matters**: Having consistent naming (ainexsuite-main, ainexsuite-journey, etc.) makes it much easier to manage all projects.
 
 ---
 
