@@ -8,7 +8,6 @@ import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   Loader2,
   Shield,
-  Sparkles,
   PenSquare,
   Brain,
   Compass,
@@ -27,9 +26,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Gathering today's reflections and spotting emotional shifts…', emoji: '🧠' },
+  { text: 'Gathering today\'s reflections and spotting emotional shifts…', emoji: '🧠' },
   { text: 'Connecting memories to projects, people, and priorities…', emoji: '🕸️' },
-  { text: 'Drafting prompts to deepen tomorrow's journaling session…', emoji: '📝' },
+  { text: 'Drafting prompts to deepen tomorrow\'s journaling session…', emoji: '📝' },
 ];
 
 const navLinks: NavLink[] = [

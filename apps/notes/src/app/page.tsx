@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
-import { Loader2, Shield, Sparkles, PenSquare, FolderTree, Wand2, BookOpen, Stamp } from 'lucide-react';
+import { Loader2, Shield, PenSquare, FolderTree, Wand2, BookOpen, Stamp } from 'lucide-react';
 import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
 import { HomepageTemplate } from '@ainexsuite/ui/components';
@@ -19,7 +19,7 @@ import type {
 
 const demoSteps: DemoStep[] = [
   { text: 'Indexing your latest captures and highlights…', emoji: '🗂️' },
-  { text: 'Generating synthesis cards from yesterday's thinking…', emoji: '📝' },
+  { text: 'Generating synthesis cards from yesterday\'s thinking…', emoji: '📝' },
   { text: 'Drafting prompts so your next note starts focused…', emoji: '✨' },
 ];
 
@@ -170,7 +170,7 @@ function NotesHomePageContent() {
           badge: { icon: Shield, text: 'Secure knowledge base' },
           headline: 'Capture. Synthesize. Share clarity.',
           subheadline: 'AINex Notes transforms scattered thoughts into searchable insight.',
-          description: 'Record ideas from anywhere, organize them automatically, and surface connections you didn't know existed.',
+          description: 'Record ideas from anywhere, organize them automatically, and surface connections you didn\'t know existed.',
           highlights: [
             {
               icon: BookOpen,
@@ -196,7 +196,7 @@ function NotesHomePageContent() {
           videoUrl: 'https://www.youtube.com/embed/2QznyN9l0SI',
           videoTitle: 'AINex Notes walkthrough',
           sectionTitle: 'Built for thinkers, strategists, and storytellers',
-          sectionDescription: 'Whether you're drafting a product spec or personal journal, Notes keeps every insight discoverable.',
+          sectionDescription: 'Whether you\'re drafting a product spec or personal journal, Notes keeps every insight discoverable.',
           cards: featureCards,
         }}
         aiPower={{

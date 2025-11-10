@@ -4,6 +4,11 @@
 **Architecture**: Turborepo with shared packages
 **Date**: November 6, 2025
 
+## ⚠️ CRITICAL: Git Safety Policy
+**See global ~/.claude/CLAUDE.md for full git safety guidelines**
+- ❌ NEVER rebase, force push, or commit without explicit user request
+- ✅ ALWAYS confirm before ANY git operations
+
 ## 📁 Project Structure
 
 ```
@@ -76,78 +81,69 @@ ainexsuite/
 - Syncing configurations
 - Applying security patches
 
-**Available Skills** (Create if needed):
-1. `cross-app-footer-updater` - Update footer across all apps
-2. `theme-consistency-checker` - Ensure theme alignment
-3. `shared-component-propagator` - Update shared UI components
-4. `config-synchronizer` - Sync shared configs
-5. `type-propagator` - Update TypeScript types
+**Available Global Skills** (see `~/.claude/skills/`):
+1. 🧭 **cross-app-navigation-sync** - Sync navigation components across all apps
+2. 🎨 **theme-consistency-enforcer** - Enforce theme standards and consistency
+3. 🔍 **monorepo-consistency-audit** - Audit entire monorepo for issues
+4. 📦 **component-library-migrator** - Migrate components to shared packages
+5. 📐 **layout-standardizer** - Standardize page layouts across apps
+6. 🚀 **app-shell-generator** - Generate new app shells
 
-## 🛠️ Project-Specific Skills to Create
+**How to Use:**
+- Skills activate automatically when you describe relevant tasks
+- Or explicitly: "Use cross-app-navigation-sync to update navigation"
+- Full documentation: `~/.claude/CLAUDE.md` (Skills section)
 
-### Priority 1: Component Synchronization
+## 🛠️ Active Cross-App Skills
 
-**Skill Name**: `cross-app-component-sync`
-
-**Purpose**: Update the same component across multiple apps while respecting theme differences
-
-**Triggers**:
-- "update footer across all apps"
-- "sync component to all apps"
-- "propagate component changes"
-
-**Logic**:
-```yaml
-1. Identify which apps use the component
-2. Check for theme-specific variations
-3. Update base component in shared package
-4. Apply theme-specific overrides per app
-5. Verify consistency with git diff
-6. Run build check on all affected apps
-```
-
-### Priority 2: Theme Propagation
-
-**Skill Name**: `theme-propagator`
-
-**Purpose**: Apply theme changes while maintaining app-specific color schemes
+### 🧭 cross-app-navigation-sync (Blue #3b82f6)
+**Purpose**: Synchronize navigation components across all apps while maintaining theme-specific styling
 
 **Triggers**:
-- "update theme across apps"
-- "sync theme system"
-- "apply theme changes"
+- "update navigation across all apps"
+- "sync navigation components"
+- "standardize app navigation"
 
-**Logic**:
-```yaml
-1. Detect base theme changes
-2. Map to app-specific color palettes:
-   - Journey: Orange (#f97316) / Forest (#22c55e)
-   - Notes: Blue (#3b82f6)
-   - Main: Multi-theme support
-3. Update Tailwind configs
-4. Rebuild all apps
-5. Visual regression test
-```
+**Capabilities**:
+- Detects apps using shared navigation components
+- Migrates apps to NavigationPanel/TopNav pattern
+- Maintains theme-specific colors (Journey: Orange, Notes: Blue)
+- Verifies consistency with build checks
 
-### Priority 3: Configuration Sync
+**Location**: `~/.claude/skills/cross-app-navigation-sync/`
 
-**Skill Name**: `config-synchronizer`
-
-**Purpose**: Sync shared configurations (Firebase, Next.js, TypeScript, ESLint)
+### 🎨 theme-consistency-enforcer (Purple #a855f7)
+**Purpose**: Enforce consistent theming and design tokens across all apps
 
 **Triggers**:
-- "sync configs across apps"
-- "update shared configuration"
-- "propagate config changes"
+- "check theme consistency"
+- "enforce theme standards"
+- "validate design tokens"
 
-**Logic**:
-```yaml
-1. Identify shared config files
-2. Update in shared package
-3. Propagate to apps if overridden
-4. Verify no breaking changes
-5. Run build tests
-```
+**Capabilities**:
+- Audits Tailwind configs and CSS variables
+- Identifies hardcoded colors
+- Validates dark mode implementation
+- Fixes theme inconsistencies automatically
+
+**Location**: `~/.claude/skills/theme-consistency-enforcer/`
+
+### 🔍 monorepo-consistency-audit (Red #ef4444)
+**Purpose**: Comprehensive audit of the entire monorepo for consistency issues
+
+**Triggers**:
+- "audit monorepo"
+- "check for inconsistencies"
+- "consistency report"
+
+**Capabilities**:
+- Navigation component audit
+- Theme consistency check
+- Component duplication detection
+- Layout standardization review
+- Dependency version analysis
+
+**Location**: `~/.claude/skills/monorepo-consistency-audit/`
 
 ## 📋 Pre-Change Checklist
 
@@ -283,11 +279,31 @@ When working in this project:
 
 ## 🔗 Related Documentation
 
-- Global CLAUDE.md: `~/.claude/CLAUDE.md`
-- Visual Reference: `~/.claude/VISUAL_REFERENCE.md`
-- Skills Directory: `.claude/skills/`
-- Shared Packages: `packages/*/README.md`
+### Global Documentation
+- **Global CLAUDE.md**: `~/.claude/CLAUDE.md` - Core configuration and settings
+- **Visual Reference**: `~/.claude/VISUAL_REFERENCE.md` - Icon and color guide
+- **Skills Directory**: `~/.claude/skills/` - Global skills (17 active)
+- **Agents Directory**: `~/.claude/agents/` - Subagents (17 active)
+
+### Project-Specific Documentation
+- **Turborepo Commands**: `.claude/reference/turborepo-commands.md` - Complete development commands
+- **Cross-App Testing**: `.claude/checklists/cross-app-testing.md` - Testing checklist for multi-app changes
+- **Project Skills**: `.claude/skills/` - Project-specific skills (if any)
+- **Shared Packages**: `packages/*/README.md` - Documentation for shared packages
+
+### Quick Reference
+```bash
+# View global skills
+ls ~/.claude/skills/
+
+# View project checklists
+ls .claude/checklists/
+
+# View project references
+ls .claude/reference/
+```
 
 ---
 *Project CLAUDE.md created: November 6, 2025*
 *Multi-app consistency guidelines established*
+*Skills and references updated: November 6, 2025*

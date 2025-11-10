@@ -8,7 +8,6 @@ import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   Loader2,
   Shield,
-  Sparkles,
   CalendarClock,
   Target,
   BarChart3,
@@ -27,7 +26,7 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Prioritizing today's deep work blocks across projects…', emoji: '🧠' },
+  { text: 'Prioritizing today\'s deep work blocks across projects…', emoji: '🧠' },
   { text: 'Syncing meetings, deadlines, and rituals into one plan…', emoji: '🗓️' },
   { text: 'Drafting focus prompts to keep every task crystal clear…', emoji: '✅' },
 ];

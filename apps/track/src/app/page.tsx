@@ -8,7 +8,6 @@ import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   Loader2,
   Shield,
-  Sparkles,
   Target,
   BarChart3,
   CalendarDays,
@@ -27,7 +26,7 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Scanning streaks and energy logs to shape today's focus…', emoji: '🔥' },
+  { text: 'Scanning streaks and energy logs to shape today\'s focus…', emoji: '🔥' },
   { text: 'Highlighting habit conflicts and suggesting better timing…', emoji: '⏱️' },
   { text: 'Drafting a weekly rhythm tuned to your goals and season…', emoji: '🗓️' },
 ];
