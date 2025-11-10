@@ -43,7 +43,7 @@ export function TaskList({ tasks, projects, onTaskClick, onTaskUpdate }: TaskLis
   return (
     <div className="space-y-2">
       {tasks.map((task) => {
-        const project = getProject(task.projectId);
+        const project = getProject(task.projectId ?? undefined);
         const isOverdue = task.dueDate && task.dueDate < Date.now() && !task.completed;
 
         return (
