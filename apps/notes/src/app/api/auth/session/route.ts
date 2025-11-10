@@ -109,25 +109,56 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Production: Call Firebase Cloud Function
-    const response = await fetch(
-      `https://us-central1-alnexsuite.cloudfunctions.net/generateSessionCookie`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    // Production: Create session cookie server-side
+    const { getAdminAuth, getAdminFirestore } = await import('@/lib/firebase/admin-app');
+    const { FieldValue } = await import('firebase-admin/firestore');
+
+    const adminAuth = getAdminAuth();
+    const adminDb = getAdminFirestore();
+
+    // Verify ID token
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+
+    // Create session cookie
+    const sessionCookie = await adminAuth.createSessionCookie(idToken, {
+      expiresIn: SESSION_COOKIE_MAX_AGE,
+    });
+
+    // Get or create user document
+    const userRef = adminDb.collection('users').doc(decodedToken.uid);
+    const userDoc = await userRef.get();
+
+    let user;
+    if (!userDoc.exists) {
+      // Create new user
+      const now = Date.now();
+      user = {
+        uid: decodedToken.uid,
+        email: decodedToken.email || '',
+        displayName: decodedToken.name || decodedToken.email || 'User',
+        photoURL: decodedToken.picture || '',
+        createdAt: now,
+        lastLoginAt: now,
+        preferences: {
+          theme: 'dark',
+          language: 'en',
+          timezone: 'America/New_York',
+          notifications: { email: true, push: true, inApp: true },
         },
-        body: JSON.stringify({ data: { idToken } }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to generate session cookie: ${errorText}`);
+        apps: {},
+        appPermissions: {},
+        appsUsed: {},
+        appsEligible: [],
+        trialStartDate: now,
+        subscriptionStatus: 'trial',
+        suiteAccess: false,
+      };
+      await userRef.set(user);
+    } else {
+      user = userDoc.data();
+      // Update last login
+      await userRef.update({ lastLoginAt: FieldValue.serverTimestamp() });
     }
-
-    const { result } = await response.json();
-    const { sessionCookie, user } = result;
 
     // Set session cookie on response
     const res = NextResponse.json({ sessionCookie, user });
