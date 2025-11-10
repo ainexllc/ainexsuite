@@ -13,7 +13,11 @@ import * as admin from 'firebase-admin';
 // Initialize Firebase Admin
 admin.initializeApp();
 
-const GROK_API_KEY = process.env.GROK_API_KEY || '';
+const GROK_API_KEY = process.env.GROK_API_KEY;
+if (!GROK_API_KEY) {
+  console.warn('GROK_API_KEY environment variable is not set. AI features will not be available.');
+}
+
 const GROK_MODEL = 'grok-beta';
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 14 * 1000; // 14 days in milliseconds
 
@@ -171,10 +175,19 @@ export const checkAuthStatus = functions
  */
 export const chatWithGrok = functions
   .region('us-central1')
+  .runWith({ timeoutSeconds: 120, memory: '512MB' })
   .https.onCall(async (data, context) => {
     // Verify user is authenticated
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    }
+
+    // Verify Grok API key is configured
+    if (!GROK_API_KEY) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'AI features are not configured. Please contact support.'
+      );
     }
 
     const { appName, messages, systemPrompt, userContext } = data;
