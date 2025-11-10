@@ -40,7 +40,7 @@ export interface SentimentInsight {
   type: 'pattern' | 'anomaly' | 'achievement' | 'suggestion';
   title: string;
   description: string;
-  data?: any;
+  data?: Record<string, unknown>;
   createdAt: Date;
   read: boolean;
   priority: 'low' | 'medium' | 'high';
