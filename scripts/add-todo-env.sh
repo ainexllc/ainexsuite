@@ -1,0 +1,141 @@
+#!/bin/bash
+# Add environment variables to ainexsuite-todo project
+
+cd /Users/dino/ainex/ainexsuite/apps/todo
+
+# Add public variables
+echo "www.ainexsuite.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN production
+echo "www.ainexsuite.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN preview
+echo "www.ainexsuite.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN development
+
+echo "AIzaSyAvYZXrWGomqINh20NNiMlWxddm5eetkKc" | vercel env add NEXT_PUBLIC_FIREBASE_API_KEY production
+echo "AIzaSyAvYZXrWGomqINh20NNiMlWxddm5eetkKc" | vercel env add NEXT_PUBLIC_FIREBASE_API_KEY preview
+echo "AIzaSyAvYZXrWGomqINh20NNiMlWxddm5eetkKc" | vercel env add NEXT_PUBLIC_FIREBASE_API_KEY development
+
+echo "alnexsuite.firebaseapp.com" | vercel env add NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN production
+echo "alnexsuite.firebaseapp.com" | vercel env add NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN preview
+echo "alnexsuite.firebaseapp.com" | vercel env add NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN development
+
+echo "alnexsuite" | vercel env add NEXT_PUBLIC_FIREBASE_PROJECT_ID production
+echo "alnexsuite" | vercel env add NEXT_PUBLIC_FIREBASE_PROJECT_ID preview
+echo "alnexsuite" | vercel env add NEXT_PUBLIC_FIREBASE_PROJECT_ID development
+
+echo "alnexsuite.firebasestorage.app" | vercel env add NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET production
+echo "alnexsuite.firebasestorage.app" | vercel env add NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET preview
+echo "alnexsuite.firebasestorage.app" | vercel env add NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET development
+
+echo "1062785888767" | vercel env add NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID production
+echo "1062785888767" | vercel env add NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID preview
+echo "1062785888767" | vercel env add NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID development
+
+echo "1:1062785888767:web:9e29360b8b12e9723a77ca" | vercel env add NEXT_PUBLIC_FIREBASE_APP_ID production
+echo "1:1062785888767:web:9e29360b8b12e9723a77ca" | vercel env add NEXT_PUBLIC_FIREBASE_APP_ID preview
+echo "1:1062785888767:web:9e29360b8b12e9723a77ca" | vercel env add NEXT_PUBLIC_FIREBASE_APP_ID development
+
+echo "todo" | vercel env add NEXT_PUBLIC_APP_NAME production
+echo "todo" | vercel env add NEXT_PUBLIC_APP_NAME preview
+echo "todo" | vercel env add NEXT_PUBLIC_APP_NAME development
+
+# Add secret variables
+echo "alnexsuite" | vercel env add FIREBASE_ADMIN_PROJECT_ID production --sensitive
+echo "alnexsuite" | vercel env add FIREBASE_ADMIN_PROJECT_ID preview --sensitive
+echo "alnexsuite" | vercel env add FIREBASE_ADMIN_PROJECT_ID development --sensitive
+
+echo "firebase-adminsdk-fbsvc@alnexsuite.iam.gserviceaccount.com" | vercel env add FIREBASE_ADMIN_CLIENT_EMAIL production --sensitive
+echo "firebase-adminsdk-fbsvc@alnexsuite.iam.gserviceaccount.com" | vercel env add FIREBASE_ADMIN_CLIENT_EMAIL preview --sensitive
+echo "firebase-adminsdk-fbsvc@alnexsuite.iam.gserviceaccount.com" | vercel env add FIREBASE_ADMIN_CLIENT_EMAIL development --sensitive
+
+cat <<'EOF' | vercel env add FIREBASE_ADMIN_PRIVATE_KEY production --sensitive
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/E3RpZpWsKQ5h
+EuhCGkwIhUB6jaVTaeSCgOgvKJb/EtLhR1BXpm8pnPxjLoLkfAI0Jp6q0nbTh3oT
+2ekuR9iG3w+EN8ppIIOiO/loTaZU6fN0oLbwmfCGzafCkT7H502gLPMmfJFSU0pu
+inEJ5e+E0YHUKPneKTZ4R7VqtLd5wJhN4Or9RnvYuJh8LjKjGA1u1mXJMLS4OPhG
+Q4KR59IiUUelTWhzm8CiU2eXVPce6eNU+ai+5hCm4wE2jz6nm91frkG87MCBHbKG
+zARMiGda9Y7ijfWJxM6oaXlEI/4Eim8MGMhrQjZlz8jjOZLGEq4UuTl5Mq/Y/nFG
+3hpOR0ovAgMBAAECggEAX2XmsrMJmkV7TOMkO9CmUoC5AxcSSnWtpayXf+gLj3mF
++Pzic4iAqq2a4yf3KP1zGjeH83CV7CGRRTUAc19ij1/x/sjeEaOupQK9kKJoH7AY
+oYuWGsU47gziq8VZq3Pj8UtP8NCzu38jQ9JyAoefENiLMfJtYkqATAg9XvOwQSQV
+Y/xTwbtWZtSxvwqVyxQ1NLJcQgmJozO3rwSrt1lsmMsYcwbagXWVYiMjJJfZscth
+D5dpsu5HPbtrTps6PGBmsQvkm8mbCTV8Khn6NpgT9RdHNps1O0MGS0MBJFjxRrMk
+aPpzZc+dDC9C9+X0KwEApf4HmS08Cvn+EF0TTKKMUQKBgQD42aY0znwB9/a1qq/k
+DId2UFu+cP9IiHhFpWHKv0KIRo1lpRoXyUI+V60CLpdZAnT40bBTjhtl9UxY7dWE
+1ztTSwoOT2XGVJwp4v/HAmJHTBa6WOeLldU4buzfIA8X76NQx9YE5XdgB9wH5i4Y
+/1ooffK0qQ9MTqiXdCV7jJ8C3wKBgQDEkNzm4r8RYKQmoS+3wUNu6sBTSjSkB/88
+EGlltCGvIOkoWQ+vYN8QKtuOk46FDt66EV4cUgAJJ58jWlgx777n9pXgzYEqXsMk
+PV3xuvdonnWk5TOLpoBW1GN9A5GqIl9Ho19WX8O0AJp+jxLSXq6Sl5x5B1o2ci3Q
+4rFEs9FysQKBgQCJ4U5OA/qBvLpdfe1nFeoYi/3JTyKjNbouHKxKgh6DE1RU9V23
+wDOMB1g81UPWdZ4KH2TrZtmXbIqY225q5DZiuDkiJKvncAn2y2edBJ0fk/Ej3w6s
+MKCrXAqytjimsohywca7f8jc1H39gnQYNaPmu6I2p1VqmkqfYCNEiW2xUQKBgGEM
+eNRR3S4SPdmIuYuLEuUfaCd3OrhF7oFURQVew0a5BATUvAbF2DwePNqPBc2yAstx
+KbrnzXa3pj2JLIQzL1lNiMA+Fmi58rTgy5I+0kpH+iOYujNX2IOGRzyA15ldcRdo
+lPiLPY+QwLZ9ozhUYPKlgi7LL4I0K2S3l/goo99xAoGAaZGuWyuBItCJEYek0Nd0
+mgFOTR3nDOsfkMMEv7F+RncXnhdFrle8RZXuBHAiQSR7NujuPgp3yEnWz5M2ZtNB
+DYcWgCMSvzNF4ks1aFOzML7j6QnYOz+V1F7Gp8uznts1xomhSJ1tTuM2NBNA9j3d
+ICQWMcFYR1Fe+BQ/qGjpC9Q=
+-----END PRIVATE KEY-----
+EOF
+
+cat <<'EOF' | vercel env add FIREBASE_ADMIN_PRIVATE_KEY preview --sensitive
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/E3RpZpWsKQ5h
+EuhCGkwIhUB6jaVTaeSCgOgvKJb/EtLhR1BXpm8pnPxjLoLkfAI0Jp6q0nbTh3oT
+2ekuR9iG3w+EN8ppIIOiO/loTaZU6fN0oLbwmfCGzafCkT7H502gLPMmfJFSU0pu
+inEJ5e+E0YHUKPneKTZ4R7VqtLd5wJhN4Or9RnvYuJh8LjKjGA1u1mXJMLS4OPhG
+Q4KR59IiUUelTWhzm8CiU2eXVPce6eNU+ai+5hCm4wE2jz6nm91frkG87MCBHbKG
+zARMiGda9Y7ijfWJxM6oaXlEI/4Eim8MGMhrQjZlz8jjOZLGEq4UuTl5Mq/Y/nFG
+3hpOR0ovAgMBAAECggEAX2XmsrMJmkV7TOMkO9CmUoC5AxcSSnWtpayXf+gLj3mF
++Pzic4iAqq2a4yf3KP1zGjeH83CV7CGRRTUAc19ij1/x/sjeEaOupQK9kKJoH7AY
+oYuWGsU47gziq8VZq3Pj8UtP8NCzu38jQ9JyAoefENiLMfJtYkqATAg9XvOwQSQV
+Y/xTwbtWZtSxvwqVyxQ1NLJcQgmJozO3rwSrt1lsmMsYcwbagXWVYiMjJJfZscth
+D5dpsu5HPbtrTps6PGBmsQvkm8mbCTV8Khn6NpgT9RdHNps1O0MGS0MBJFjxRrMk
+aPpzZc+dDC9C9+X0KwEApf4HmS08Cvn+EF0TTKKMUQKBgQD42aY0znwB9/a1qq/k
+DId2UFu+cP9IiHhFpWHKv0KIRo1lpRoXyUI+V60CLpdZAnT40bBTjhtl9UxY7dWE
+1ztTSwoOT2XGVJwp4v/HAmJHTBa6WOeLldU4buzfIA8X76NQx9YE5XdgB9wH5i4Y
+/1ooffK0qQ9MTqiXdCV7jJ8C3wKBgQDEkNzm4r8RYKQmoS+3wUNu6sBTSjSkB/88
+EGlltCGvIOkoWQ+vYN8QKtuOk46FDt66EV4cUgAJJ58jWlgx777n9pXgzYEqXsMk
+PV3xuvdonnWk5TOLpoBW1GN9A5GqIl9Ho19WX8O0AJp+jxLSXq6Sl5x5B1o2ci3Q
+4rFEs9FysQKBgQCJ4U5OA/qBvLpdfe1nFeoYi/3JTyKjNbouHKxKgh6DE1RU9V23
+wDOMB1g81UPWdZ4KH2TrZtmXbIqY225q5DZiuDkiJKvncAn2y2edBJ0fk/Ej3w6s
+MKCrXAqytjimsohywca7f8jc1H39gnQYNaPmu6I2p1VqmkqfYCNEiW2xUQKBgGEM
+eNRR3S4SPdmIuYuLEuUfaCd3OrhF7oFURQVew0a5BATUvAbF2DwePNqPBc2yAstx
+KbrnzXa3pj2JLIQzL1lNiMA+Fmi58rTgy5I+0kpH+iOYujNX2IOGRzyA15ldcRdo
+lPiLPY+QwLZ9ozhUYPKlgi7LL4I0K2S3l/goo99xAoGAaZGuWyuBItCJEYek0Nd0
+mgFOTR3nDOsfkMMEv7F+RncXnhdFrle8RZXuBHAiQSR7NujuPgp3yEnWz5M2ZtNB
+DYcWgCMSvzNF4ks1aFOzML7j6QnYOz+V1F7Gp8uznts1xomhSJ1tTuM2NBNA9j3d
+ICQWMcFYR1Fe+BQ/qGjpC9Q=
+-----END PRIVATE KEY-----
+EOF
+
+cat <<'EOF' | vercel env add FIREBASE_ADMIN_PRIVATE_KEY development --sensitive
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/E3RpZpWsKQ5h
+EuhCGkwIhUB6jaVTaeSCgOgvKJb/EtLhR1BXpm8pnPxjLoLkfAI0Jp6q0nbTh3oT
+2ekuR9iG3w+EN8ppIIOiO/loTaZU6fN0oLbwmfCGzafCkT7H502gLPMmfJFSU0pu
+inEJ5e+E0YHUKPneKTZ4R7VqtLd5wJhN4Or9RnvYuJh8LjKjGA1u1mXJMLS4OPhG
+Q4KR59IiUUelTWhzm8CiU2eXVPce6eNU+ai+5hCm4wE2jz6nm91frkG87MCBHbKG
+zARMiGda9Y7ijfWJxM6oaXlEI/4Eim8MGMhrQjZlz8jjOZLGEq4UuTl5Mq/Y/nFG
+3hpOR0ovAgMBAAECggEAX2XmsrMJmkV7TOMkO9CmUoC5AxcSSnWtpayXf+gLj3mF
++Pzic4iAqq2a4yf3KP1zGjeH83CV7CGRRTUAc19ij1/x/sjeEaOupQK9kKJoH7AY
+oYuWGsU47gziq8VZq3Pj8UtP8NCzu38jQ9JyAoefENiLMfJtYkqATAg9XvOwQSQV
+Y/xTwbtWZtSxvwqVyxQ1NLJcQgmJozO3rwSrt1lsmMsYcwbagXWVYiMjJJfZscth
+D5dpsu5HPbtrTps6PGBmsQvkm8mbCTV8Khn6NpgT9RdHNps1O0MGS0MBJFjxRrMk
+aPpzZc+dDC9C9+X0KwEApf4HmS08Cvn+EF0TTKKMUQKBgQD42aY0znwB9/a1qq/k
+DId2UFu+cP9IiHhFpWHKv0KIRo1lpRoXyUI+V60CLpdZAnT40bBTjhtl9UxY7dWE
+1ztTSwoOT2XGVJwp4v/HAmJHTBa6WOeLldU4buzfIA8X76NQx9YE5XdgB9wH5i4Y
+/1ooffK0qQ9MTqiXdCV7jJ8C3wKBgQDEkNzm4r8RYKQmoS+3wUNu6sBTSjSkB/88
+EGlltCGvIOkoWQ+vYN8QKtuOk46FDt66EV4cUgAJJ58jWlgx777n9pXgzYEqXsMk
+PV3xuvdonnWk5TOLpoBW1GN9A5GqIl9Ho19WX8O0AJp+jxLSXq6Sl5x5B1o2ci3Q
+4rFEs9FysQKBgQCJ4U5OA/qBvLpdfe1nFeoYi/3JTyKjNbouHKxKgh6DE1RU9V23
+wDOMB1g81UPWdZ4KH2TrZtmXbIqY225q5DZiuDkiJKvncAn2y2edBJ0fk/Ej3w6s
+MKCrXAqytjimsohywca7f8jc1H39gnQYNaPmu6I2p1VqmkqfYCNEiW2xUQKBgGEM
+eNRR3S4SPdmIuYuLEuUfaCd3OrhF7oFURQVew0a5BATUvAbF2DwePNqPBc2yAstx
+KbrnzXa3pj2JLIQzL1lNiMA+Fmi58rTgy5I+0kpH+iOYujNX2IOGRzyA15ldcRdo
+lPiLPY+QwLZ9ozhUYPKlgi7LL4I0K2S3l/goo99xAoGAaZGuWyuBItCJEYek0Nd0
+mgFOTR3nDOsfkMMEv7F+RncXnhdFrle8RZXuBHAiQSR7NujuPgp3yEnWz5M2ZtNB
+DYcWgCMSvzNF4ks1aFOzML7j6QnYOz+V1F7Gp8uznts1xomhSJ1tTuM2NBNA9j3d
+ICQWMcFYR1Fe+BQ/qGjpC9Q=
+-----END PRIVATE KEY-----
+EOF
+
+echo "Done! All environment variables added to ainexsuite-todo"

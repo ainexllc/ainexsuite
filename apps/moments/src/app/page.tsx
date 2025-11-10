@@ -177,7 +177,7 @@ function MomentsHomePageContent() {
         hero={{
           badge: { icon: Shield, text: 'Private gallery vault' },
           headline: 'Capture the moment.',
-          subheadline: 'AINex Moments organizes life's highlights into stories worth revisiting.',
+          subheadline: "AINex Moments organizes life's highlights into stories worth revisiting.",
           description: 'From travel logs to family milestones, every memory gets context, tags, and a place in your personal timeline.',
           highlights: [
             {
@@ -196,7 +196,7 @@ function MomentsHomePageContent() {
           badgeText: 'Memory Vault',
           signUpTitle: 'Join AINex Moments',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to organize and relive life's best moments.',
+          signUpDescription: "Create your account to organize and relive life's best moments.",
           signInDescription: 'Sign in to access your curated memory gallery.',
           footerText: 'Your memories stay encrypted and private. Export or download anytime.',
         }}

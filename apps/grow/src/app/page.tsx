@@ -178,7 +178,7 @@ function GrowHomePageContent() {
           badge: { icon: Shield, text: 'Mastery-first learning' },
           headline: 'Learn faster. Retain more.',
           subheadline: 'AINex Grow transforms curiosity into mastery with AI-guided paths and accountability.',
-          description: 'Whether you're upskilling, pivoting careers, or exploring passions, Grow keeps you progressing with intention.',
+          description: "Whether you're upskilling, pivoting careers, or exploring passions, Grow keeps you progressing with intention.",
           highlights: [
             {
               icon: Lightbulb,

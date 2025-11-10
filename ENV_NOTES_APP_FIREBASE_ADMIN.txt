@@ -1,0 +1,49 @@
+================================================================================
+FIREBASE ADMIN CREDENTIALS FOR VERCEL - NOTES APP
+================================================================================
+
+IMPORTANT: These 3 environment variables are REQUIRED for authentication to work.
+They must be added to Vercel BEFORE the app can create session cookies.
+
+Go to: https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-notes/settings/environment-variables
+
+================================================================================
+ADD THESE 3 VARIABLES TO VERCEL:
+================================================================================
+
+1. FIREBASE_ADMIN_PROJECT_ID
+
+   Value: alnexsuite
+   
+   Environment: Production, Preview, Development (all three)
+
+================================================================================
+
+2. FIREBASE_ADMIN_CLIENT_EMAIL
+
+   Value: firebase-adminsdk-fbsvc@alnexsuite.iam.gserviceaccount.com
+   
+   Environment: Production, Preview, Development (all three)
+
+================================================================================
+
+3. FIREBASE_ADMIN_PRIVATE_KEY
+
+   IMPORTANT: Copy the ENTIRE value below AS A SINGLE LINE.
+   Vercel will handle the \n line breaks automatically.
+   
+   Value (copy this entire line):
+   -----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/E3RpZpWsKQ5h\nEuhCGkwIhUB6jaVTaeSCgOgvKJb/EtLhR1BXpm8pnPxjLoLkfAI0Jp6q0nbTh3oT\n2ekuR9iG3w+EN8ppIIOiO/loTaZU6fN0oLbwmfCGzafCkT7H502gLPMmfJFSU0pu\ninEJ5e+E0YHUKPneKTZ4R7VqtLd5wJhN4Or9RnvYuJh8LjKjGA1u1mXJMLS4OPhG\nQ4KR59IiUUelTWhzm8CiU2eXVPce6eNU+ai+5hCm4wE2jz6nm91frkG87MCBHbKG\nzARMiGda9Y7ijfWJxM6oaXlEI/4Eim8MGMhrQjZlz8jjOZLGEq4UuTl5Mq/Y/nFG\n3hpOR0ovAgMBAAECggEAX2XmsrMJmkV7TOMkO9CmUoC5AxcSSnWtpayXf+gLj3mF\n+Pzic4iAqq2a4yf3KP1zGjeH83CV7CGRRTUAc19ij1/x/sjeEaOupQK9kKJoH7AY\noYuWGsU47gziq8VZq3Pj8UtP8NCzu38jQ9JyAoefENiLMfJtYkqATAg9XvOwQSQV\nY/xTwbtWZtSxvwqVyxQ1NLJcQgmJozO3rwSrt1lsmMsYcwbagXWVYiMjJJfZscth\nD5dpsu5HPbtrTps6PGBmsQvkm8mbCTV8Khn6NpgT9RdHNps1O0MGS0MBJFjxRrMk\naPpzZc+dDC9C9+X0KwEApf4HmS08Cvn+EF0TTKKMUQKBgQD42aY0znwB9/a1qq/k\nDId2UFu+cP9IiHhFpWHKv0KIRo1lpRoXyUI+V60CLpdZAnT40bBTjhtl9UxY7dWE\n1ztTSwoOT2XGVJwp4v/HAmJHTBa6WOeLldU4buzfIA8X76NQx9YE5XdgB9wH5i4Y\n/1ooffK0qQ9MTqiXdCV7jJ8C3wKBgQDEkNzm4r8RYKQmoS+3wUNu6sBTSjSkB/88\nEGlltCGvIOkoWQ+vYN8QKtuOk46FDt66EV4cUgAJJ58jWlgx777n9pXgzYEqXsMk\nPV3xuvdonnWk5TOLpoBW1GN9A5GqIl9Ho19WX8O0AJp+jxLSXq6Sl5x5B1o2ci3Q\n4rFEs9FysQKBgQCJ4U5OA/qBvLpdfe1nFeoYi/3JTyKjNbouHKxKgh6DE1RU9V23\nwDOMB1g81UPWdZ4KH2TrZtmXbIqY225q5DZiuDkiJKvncAn2y2edBJ0fk/Ej3w6s\nMKCrXAqytjimsohywca7f8jc1H39gnQYNaPmu6I2p1VqmkqfYCNEiW2xUQKBgGEM\neNRR3S4SPdmIuYuLEuUfaCd3OrhF7oFURQVew0a5BATUvAbF2DwePNqPBc2yAstx\nKbrnzXa3pj2JLIQzL1lNiMA+Fmi58rTgy5I+0kpH+iOYujNX2IOGRzyA15ldcRdo\nlPiLPY+QwLZ9ozhUYPKlgi7LL4I0K2S3l/goo99xAoGAaZGuWyuBItCJEYek0Nd0\nmgFOTR3nDOsfkMMEv7F+RncXnhdFrle8RZXuBHAiQSR7NujuPgp3yEnWz5M2ZtNB\nDYcWgCMSvzNF4ks1aFOzML7j6QnYOz+V1F7Gp8uznts1xomhSJ1tTuM2NBNA9j3d\nICQWMcFYR1Fe+BQ/qGjpC9Q=\n-----END PRIVATE KEY-----
+   
+   Environment: Production, Preview, Development (all three)
+
+================================================================================
+AFTER ADDING THESE VARIABLES:
+================================================================================
+
+1. Redeploy the notes app to pick up the new environment variables
+2. Wait for deployment to complete (2-3 minutes)
+3. Test authentication again - the 500 error should be resolved
+4. The session cookie will be created properly
+
+================================================================================

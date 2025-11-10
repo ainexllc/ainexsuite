@@ -27,7 +27,7 @@ const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 14 * 1000; // 14 days in milliseco
  */
 export const generateSessionCookie = functions
   .region('us-central1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (data: any, context: any) => {
     const { idToken } = data;
 
     if (!idToken) {
@@ -89,23 +89,23 @@ export const generateSessionCookie = functions
 
         await admin.firestore().collection('users').doc(decodedToken.uid).set(userData);
       } else {
-        userData = userDoc.data();
-        
+        userData = userDoc.data() || {};
+
         // Migrate existing users to new Suite tracking fields if needed
         const updateFields: any = {
           lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
         };
-        
-        if (!userData.appsUsed) {
+
+        if (!userData?.appsUsed) {
           updateFields.appsUsed = {};
         }
-        if (!userData.trialStartDate) {
-          updateFields.trialStartDate = userData.createdAt || Date.now();
+        if (!userData?.trialStartDate) {
+          updateFields.trialStartDate = userData?.createdAt || Date.now();
         }
-        if (!userData.subscriptionStatus) {
+        if (!userData?.subscriptionStatus) {
           updateFields.subscriptionStatus = 'trial';
         }
-        if (userData.suiteAccess === undefined) {
+        if (userData?.suiteAccess === undefined) {
           updateFields.suiteAccess = false;
         }
         
@@ -138,7 +138,7 @@ export const generateSessionCookie = functions
  */
 export const checkAuthStatus = functions
   .region('us-central1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (data: any, context: any) => {
     const { sessionCookie } = data;
 
     if (!sessionCookie) {
@@ -176,7 +176,7 @@ export const checkAuthStatus = functions
 export const chatWithGrok = functions
   .region('us-central1')
   .runWith({ timeoutSeconds: 120, memory: '512MB' })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (data: any, context: any) => {
     // Verify user is authenticated
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
