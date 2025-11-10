@@ -30,7 +30,7 @@ export function TaskEditor({ task, projects, defaultProjectId, onClose, onSave }
   const [projectId, setProjectId] = useState<string | undefined>(
     task?.projectId || defaultProjectId || undefined
   );
-  const [dueDate, setDueDate] = useState<number | undefined>(task?.dueDate);
+  const [dueDate, setDueDate] = useState<number | undefined>(task?.dueDate ?? undefined);
   const [subtasks, setSubtasks] = useState<Subtask[]>(task?.subtasks || []);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [saving, setSaving] = useState(false);
