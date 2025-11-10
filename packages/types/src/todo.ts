@@ -35,3 +35,7 @@ export interface Project {
 export type CreateProjectInput = Omit<Project, 'id' | 'todoCount' | 'completedCount' | 'createdAt'>;
 
 export type UpdateProjectInput = Partial<Omit<Project, 'id' | 'ownerId' | 'todoCount' | 'completedCount' | 'createdAt'>>;
+
+// Type aliases for backward compatibility
+export type TodoTask = Todo;
+export type TodoProject = Project;
