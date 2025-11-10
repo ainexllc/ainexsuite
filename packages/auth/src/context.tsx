@@ -11,7 +11,6 @@ import { auth } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User } from '@ainexsuite/types';
 import {
-  setSessionCookie,
   removeSessionCookie,
   initializeSession,
   updateLastActivity,

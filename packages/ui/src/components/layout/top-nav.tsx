@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Menu, Search, X } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";

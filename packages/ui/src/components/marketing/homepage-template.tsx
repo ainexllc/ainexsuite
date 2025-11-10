@@ -7,7 +7,6 @@ import {
   Loader2,
   Menu,
   X,
-  Shield,
   Sparkles,
   LogIn,
   Chrome,
