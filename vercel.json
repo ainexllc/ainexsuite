@@ -4,5 +4,5 @@
   "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": "apps/main/.next",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- ./apps/main ./packages"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- ./apps/main ./packages ./package.json ./pnpm-lock.yaml ./vercel.json ./turbo.json"
 }
