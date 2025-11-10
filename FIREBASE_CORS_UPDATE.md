@@ -86,11 +86,27 @@ export const myHttpFunction = functions
 5. Session cookie set with domain=`ainexnotes.com`
 6. User is authenticated on ainexnotes.com only
 
+### Multi-App User Behavior
+- **Single App User (1 app)**:
+  - Can use standalone domain (`ainexnotes.com`) OR subdomain (`notes.ainexsuite.com`)
+  - No dashboard redirect
+  - Simple, focused experience
+
+- **Multi-App User (2+ apps)**:
+  - System detects `appsUsed` count >= 2
+  - On login, redirected to `ainexsuite.com/workspace` (dashboard)
+  - Dashboard shows all activated apps
+  - Clicks "Open Notes" → Opens `notes.ainexsuite.com` (SSO)
+  - Can still directly access `notes.ainexsuite.com` (shows "Dashboard" link)
+
 ### Cross-Domain Considerations
-- **Subdomain apps**: Share authentication seamlessly
-- **Standalone apps**: Each requires independent login
-- **Main dashboard** (www.ainexsuite.com): Central hub showing all user's apps
-- **User preference**: Can access any app via subdomain OR standalone URL
+- **Subdomain apps**: Share authentication via `.ainexsuite.com` cookie (SSO)
+- **Standalone apps**: Independent authentication per domain
+- **Main dashboard** (www.ainexsuite.com): Required for users with 2+ apps
+- **Trial & Subscription**: 30-day trial starts when user activates 2nd app
+- **Paywall**: Shows when trying to activate 3rd+ app after trial expires
+
+See `USER_WORKFLOW.md` for complete user journey scenarios and implementation details.
 
 ## Implementation Steps
 

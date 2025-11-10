@@ -221,11 +221,28 @@
 - [ ] Test todo functionality
 
 ### Cross-Domain Testing
-- [ ] Login on www.ainexsuite.com
-- [ ] Navigate to notes.ainexsuite.com → Stay logged in ✅
-- [ ] Navigate to journey.ainexsuite.com → Stay logged in ✅
-- [ ] Navigate to todo.ainexsuite.com → Stay logged in ✅
-- [ ] Navigate to ainexnotes.com → Redirected to login (expected) ✅
+- [ ] **Single App User Test**:
+  - [ ] New user registers on ainexnotes.com
+  - [ ] Can access notes.ainexsuite.com and ainexnotes.com
+  - [ ] No dashboard redirect (only 1 app)
+
+- [ ] **Multi-App User Test**:
+  - [ ] User activates 2nd app (e.g., journey)
+  - [ ] System detects 2+ apps
+  - [ ] On next login → Redirected to ainexsuite.com/workspace
+  - [ ] Dashboard shows both apps (Notes, Journey)
+  - [ ] Click "Open Notes" → Opens notes.ainexsuite.com with SSO
+  - [ ] Click "Open Journey" → Opens journey.ainexsuite.com with SSO
+
+- [ ] **Subdomain SSO**:
+  - [ ] Login on www.ainexsuite.com
+  - [ ] Navigate to notes.ainexsuite.com → Stay logged in ✅
+  - [ ] Navigate to journey.ainexsuite.com → Stay logged in ✅
+  - [ ] Navigate to todo.ainexsuite.com → Stay logged in ✅
+
+- [ ] **Standalone Domain**:
+  - [ ] Navigate to ainexnotes.com → Redirected to login (expected) ✅
+  - [ ] Login works independently on standalone domain
 
 ### Smart Deployment Testing
 - [ ] Make change to `apps/notes/src/app/page.tsx`
