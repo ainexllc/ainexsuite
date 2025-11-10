@@ -8,7 +8,7 @@ import { deleteJournalEntry } from '@/lib/firebase/firestore';
 import { deleteAllEntryFiles } from '@/lib/firebase/storage';
 import { useToast } from '@/lib/toast';
 import { useRouter } from 'next/navigation';
-import { Paperclip, Trash2, Edit, Link, Lock, LockOpen } from 'lucide-react';
+import { Paperclip, Trash2, Edit, Link, Lock, Unlock } from 'lucide-react';
 import { useState } from 'react';
 import { usePrivacy } from '@/contexts/privacy-context';
 import { BlurredContent } from '@/components/privacy/blurred-content';
@@ -196,7 +196,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                 ) : isLocked ? (
                   <Lock className="w-4 h-4 text-red-500" />
                 ) : (
-                  <LockOpen className="w-4 h-4 text-green-500" />
+                  <Unlock className="w-4 h-4 text-green-500" />
                 )}
               </div>
             )}

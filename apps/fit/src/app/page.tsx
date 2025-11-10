@@ -209,7 +209,7 @@ function FitHomePageContent() {
         }}
         aiPower={{
           title: 'An AI coach that trains with you',
-          description: 'Fit adapts in real time, surfaces recovery needs, and celebrates wins you didn't even notice.',
+          description: "Fit adapts in real time, surfaces recovery needs, and celebrates wins you didn't even notice.",
           highlights: aiHighlights,
           demoCard: {
             title: 'Today\'s Training',
