@@ -75,7 +75,7 @@ export type MoodType =
   | 'bored'
   | 'content';
 
-export type Priority = 'high' | 'medium' | 'low';
+export type Priority = 'urgent' | 'high' | 'medium' | 'low';
 
 export type HabitFrequency = 'daily' | 'weekly' | 'custom';
 
