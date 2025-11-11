@@ -27,6 +27,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Detect cookie domain from request hostname
+    const hostname = request.headers.get('host') || '';
+    let cookieDomain = SESSION_COOKIE_DOMAIN; // Default: .ainexsuite.com
+
+    // If accessing via standalone domain (e.g., ainexnotes.com, www.ainexnotes.com)
+    if (hostname.includes('ainexnotes.com')) {
+      cookieDomain = '.ainexnotes.com';
+    } else if (hostname.includes('ainexjourney.com')) {
+      cookieDomain = '.ainexjourney.com';
+    } else if (hostname.includes('ainextodo.com')) {
+      cookieDomain = '.ainextodo.com';
+    } else if (hostname.includes('ainextrack.com')) {
+      cookieDomain = '.ainextrack.com';
+    } else if (hostname.includes('ainexmoments.com')) {
+      cookieDomain = '.ainexmoments.com';
+    } else if (hostname.includes('ainexgrow.com')) {
+      cookieDomain = '.ainexgrow.com';
+    } else if (hostname.includes('ainexpulse.com')) {
+      cookieDomain = '.ainexpulse.com';
+    } else if (hostname.includes('ainexfit.com')) {
+      cookieDomain = '.ainexfit.com';
+    }
+
+    console.log(`[Session] Request hostname: ${hostname}, Cookie domain: ${cookieDomain}`);
+
     // For local development, skip Cloud Function and create session from token
     if (process.env.NODE_ENV === 'development') {
       try {
@@ -90,7 +115,7 @@ export async function POST(request: NextRequest) {
 
         const res = NextResponse.json({ sessionCookie, user });
         res.cookies.set('__session', sessionCookie, {
-          domain: SESSION_COOKIE_DOMAIN,
+          domain: cookieDomain,
           maxAge: SESSION_COOKIE_MAX_AGE / 1000,
           httpOnly: true,
           secure: false, // Allow insecure cookies in dev
@@ -166,7 +191,7 @@ export async function POST(request: NextRequest) {
     const res = NextResponse.json({ sessionCookie, user });
 
     res.cookies.set('__session', sessionCookie, {
-      domain: SESSION_COOKIE_DOMAIN,
+      domain: cookieDomain,
       maxAge: SESSION_COOKIE_MAX_AGE / 1000, // Convert to seconds
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
