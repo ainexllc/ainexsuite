@@ -152,7 +152,7 @@ function MainHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} />}
         appName="journaling"
         demoSteps={demoSteps}
         navLinks={navLinks}

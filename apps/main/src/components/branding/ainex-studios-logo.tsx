@@ -7,6 +7,7 @@ interface AinexStudiosLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   align?: 'start' | 'center';
+  asLink?: boolean;
 }
 
 const sizeConfig = {
@@ -40,20 +41,12 @@ export function AinexStudiosLogo({
   className = '',
   size = 'lg',
   align = 'center',
+  asLink = true,
 }: AinexStudiosLogoProps) {
   const config = sizeConfig[size];
 
-  return (
-    <Link
-      href="/"
-      className={clsx(
-        'flex flex-col justify-center leading-none transition-opacity hover:opacity-80',
-        config.gap,
-        align === 'start' ? 'items-start text-left' : 'items-center text-center',
-        className
-      )}
-      style={{ transform: 'scale(1.15)' }}
-    >
+  const content = (
+    <>
       <div
         className={clsx('font-brand font-black tracking-tight text-white', config.ainex)}
         style={{ letterSpacing: '-0.015em' }}
@@ -66,13 +59,35 @@ export function AinexStudiosLogo({
       </div>
       <div
         className={clsx('font-brand font-semibold uppercase text-blue-500', config.studios)}
-        style={{ 
-          letterSpacing: config.letterSpacing, 
-          marginLeft: align === 'start' ? '-0.3em' : '0' 
+        style={{
+          letterSpacing: config.letterSpacing,
+          marginLeft: align === 'start' ? '-0.3em' : '0'
         }}
       >
         SUITE
       </div>
-    </Link>
+    </>
+  );
+
+  const containerClassName = clsx(
+    'flex flex-col justify-center leading-none',
+    config.gap,
+    align === 'start' ? 'items-start text-left' : 'items-center text-center',
+    asLink && 'transition-opacity hover:opacity-80',
+    className
+  );
+
+  if (asLink) {
+    return (
+      <Link href="/" className={containerClassName} style={{ transform: 'scale(1.15)' }}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={containerClassName} style={{ transform: 'scale(1.15)' }}>
+      {content}
+    </div>
   );
 }
