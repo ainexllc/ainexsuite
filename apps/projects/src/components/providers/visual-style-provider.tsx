@@ -96,7 +96,7 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
       variants: gradientVariants,
       selectedVariant: getVariantById(selectedId),
       selectVariantById: (id: GradientVariantId) => setSelectedId(getVariantById(id).id),
-      cycleVariant: () => setSelectedId((currentId) => getNextVariant(currentId).id),
+      cycleVariant: () => setSelectedId((currentId: GradientVariantId) => getNextVariant(currentId).id),
     }),
     [selectedId]
   );

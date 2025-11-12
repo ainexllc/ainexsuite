@@ -8,6 +8,7 @@ import { Loader2, Search, Menu, X, Sparkles, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
+import { Whiteboard } from '@/components/whiteboard/Whiteboard';
 
 export default function WorkspacePage() {
   const { user, loading } = useAuth();
@@ -195,37 +196,25 @@ export default function WorkspacePage() {
           </div>
         </header>
 
-        {/* Main Content - Empty workspace area */}
+        {/* Main Content - Whiteboard Area */}
         <main className="flex-1 overflow-x-hidden pt-16">
           <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            {/* Welcome Section */}
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-white mb-2">
-                Welcome to Projects, {user.displayName || 'there'}! 👋
-              </h2>
-              <p className="text-lg text-white/70">
-                Your project workspace is ready for development
-              </p>
-            </div>
-
-            {/* Empty Workspace Area */}
-            <div className="min-h-[600px] rounded-xl border border-white/10 bg-white/5 backdrop-blur p-12 text-center">
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="h-24 w-24 mx-auto rounded-full bg-blue-500/20 flex items-center justify-center">
-                  <Sparkles className="h-12 w-12 text-blue-400" />
-                </div>
-                <h3 className="text-2xl font-semibold text-white">Workspace Ready</h3>
-                <p className="text-white/60">
-                  This workspace area is ready for future development. The top navigation matches the main app exactly.
+            {/* Welcome and Whiteboard Section */}
+            <section className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-white mb-2">
+                  Welcome to Projects, {user.displayName ? user.displayName.split(' ')[0] : 'there'}!
+                </h2>
+                <p className="text-lg text-white/70">
+                  Your project workspace with whiteboard
                 </p>
-                <div className="pt-4">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-4 py-2 text-sm text-blue-400">
-                    <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
-                    Projects App - Development Mode
-                  </div>
-                </div>
               </div>
-            </div>
+
+              {/* Whiteboard Area */}
+              <div className="h-[600px] rounded-xl border border-white/10 bg-white/5 backdrop-blur overflow-hidden">
+                <Whiteboard />
+              </div>
+            </section>
           </div>
         </main>
       </div>

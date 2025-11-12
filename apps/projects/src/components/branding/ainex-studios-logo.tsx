@@ -64,7 +64,7 @@ export function AinexStudiosLogo({
           marginLeft: align === 'start' ? '-0.3em' : '0'
         }}
       >
-        SUITE
+        PROJECTS
       </div>
     </>
   );
