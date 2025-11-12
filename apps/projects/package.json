@@ -1,0 +1,39 @@
+{
+  "name": "@ainexsuite/projects",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AINexSuite projects app for project management and tracking",
+  "scripts": {
+    "dev": "next dev -p 3009",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
+    "deploy": "vercel --prod",
+    "postinstall": "npm run build:deps",
+    "build:deps": "cd ../.. && npm run build:workspace"
+  },
+  "dependencies": {
+    "@ainexsuite/auth": "workspace:*",
+    "@ainexsuite/firebase": "workspace:*",
+    "@ainexsuite/types": "workspace:*",
+    "@ainexsuite/ui": "workspace:*",
+    "firebase-admin": "^12.0.0",
+    "geist": "^1.2.0",
+    "lucide-react": "^0.312.0",
+    "next": "^15.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@ainexsuite/config": "workspace:*",
+    "@types/node": "^20.11.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^15.5.4",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  }
+}

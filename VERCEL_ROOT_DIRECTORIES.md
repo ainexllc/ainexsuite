@@ -11,6 +11,7 @@
 | ainexsuite-journey | `apps/journey` | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-journey/settings/git |
 | ainexsuite-notes | `apps/notes` | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-notes/settings/git |
 | ainexsuite-todo | `apps/todo` | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-todo/settings/git |
+| ainexsuite-projects | `apps/projects` | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-projects/settings/git |
 | ainexsuite-moments | `apps/moments` | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-moments/settings/git |
 | ainexsuite-grow | `apps/grow` | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-grow/settings/git |
 | ainexsuite-track | `apps/track` | https://vercel.com/dinohorn35-gmailcoms-projects/ainexsuite-track/settings/git |
@@ -64,6 +65,13 @@ Root Directory: apps/grow
 Repository: ainexllc/ainexsuite
 Production Branch: main
 Root Directory: apps/track
+```
+
+### ainexsuite-projects
+```
+Repository: ainexllc/ainexsuite
+Production Branch: main
+Root Directory: apps/projects
 ```
 
 ## Setup Instructions
