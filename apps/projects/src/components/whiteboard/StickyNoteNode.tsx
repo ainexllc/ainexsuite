@@ -2,136 +2,155 @@
 
 import { memo, useState, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { X } from 'lucide-react';
+import { X, FolderPlus } from 'lucide-react';
 
 export type StickyNoteData = {
   text: string;
+  title?: string;
   color: string;
   size?: 'small' | 'medium' | 'large';
   locked?: boolean;
   isDarkMode?: boolean;
   onDelete?: () => void;
   onTextChange?: (text: string) => void;
+  onTitleChange?: (title: string) => void;
 };
 
 function StickyNoteNode({ data }: NodeProps) {
   const nodeData = data as StickyNoteData;
   const [text, setText] = useState(nodeData.text);
+  const [title, setTitle] = useState(nodeData.title || '');
+  const [isHovered, setIsHovered] = useState(false);
   const noteSize = nodeData.size || 'medium';
 
   const sizeStyles = {
-    small: { width: '150px', minHeight: '100px', textareaHeight: '60px' },
-    medium: { width: '200px', minHeight: '150px', textareaHeight: '110px' },
-    large: { width: '250px', minHeight: '200px', textareaHeight: '160px' },
+    small: { width: '200px', minHeight: '140px', maxHeight: '450px' },
+    medium: { width: '260px', minHeight: '200px', maxHeight: '450px' },
+    large: { width: '320px', minHeight: '260px', maxHeight: '450px' },
   };
 
-  const { isDarkMode = true } = nodeData;
+  // isDarkMode available in nodeData but not currently used for styling
 
   useEffect(() => {
     setText(nodeData.text);
   }, [nodeData.text]);
+
+  useEffect(() => {
+    setTitle(nodeData.title || '');
+  }, [nodeData.title]);
 
   const handleTextChange = (newText: string) => {
     setText(newText);
     nodeData.onTextChange?.(newText);
   };
 
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    nodeData.onTitleChange?.(newTitle);
+  };
+
+  const handleStyle = {
+    background: '#3b82f6',
+    width: 12,
+    height: 12,
+    border: '3px solid #0a0a0a',
+    borderRadius: '50%',
+    boxShadow: '0 0 0 2px #3b82f6, 0 0 8px #3b82f6',
+    zIndex: 10,
+    opacity: isHovered ? 1 : 0,
+    transition: 'opacity 0.2s',
+  };
+
   return (
     <div
-      className={`rounded-lg p-3 select-none transition-shadow ${
+      className={`rounded-3xl select-none transition-shadow border-2 border-transparent hover:border-cyan-500 shadow-lg flex flex-col ${
         nodeData.locked ? 'cursor-not-allowed' : 'cursor-move'
       }`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{
         backgroundColor: nodeData.color,
         ...sizeStyles[noteSize],
         color: 'rgb(17 24 39)',
-        boxShadow: isDarkMode
-          ? '0 8px 30px -12px rgba(56, 189, 248, 0.3)'
-          : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       }}
     >
-      {/* Connection Handles */}
+      {/* Connection Handles - Only visible on hover */}
       <Handle
         type="target"
         position={Position.Top}
         id="top"
-        style={{
-          background: '#3b82f6',
-          width: 12,
-          height: 12,
-          border: '3px solid #0a0a0a',
-          borderRadius: '50%',
-          boxShadow: '0 0 0 2px #3b82f6, 0 0 8px #3b82f6',
-          zIndex: 10,
-          top: 0,
-        }}
+        style={{ ...handleStyle, top: 0 }}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right"
-        style={{
-          background: '#3b82f6',
-          width: 12,
-          height: 12,
-          border: '3px solid #0a0a0a',
-          borderRadius: '50%',
-          boxShadow: '0 0 0 2px #3b82f6, 0 0 8px #3b82f6',
-          zIndex: 10,
-          right: 0,
-        }}
+        style={{ ...handleStyle, right: 0 }}
       />
       <Handle
         type="source"
         position={Position.Bottom}
         id="bottom"
-        style={{
-          background: '#3b82f6',
-          width: 12,
-          height: 12,
-          border: '3px solid #0a0a0a',
-          borderRadius: '50%',
-          boxShadow: '0 0 0 2px #3b82f6, 0 0 8px #3b82f6',
-          zIndex: 10,
-          bottom: 0,
-        }}
+        style={{ ...handleStyle, bottom: 0 }}
       />
       <Handle
         type="target"
         position={Position.Left}
         id="left"
-        style={{
-          background: '#3b82f6',
-          width: 12,
-          height: 12,
-          border: '3px solid #0a0a0a',
-          borderRadius: '50%',
-          boxShadow: '0 0 0 2px #3b82f6, 0 0 8px #3b82f6',
-          zIndex: 10,
-          left: 0,
-        }}
+        style={{ ...handleStyle, left: 0 }}
       />
 
-      <div className="flex justify-end mb-1">
-        <button
-          onClick={nodeData.onDelete}
-          className="p-1 rounded transition-colors hover:bg-black/10 text-gray-700"
-          title="Delete note"
-        >
-          <X className="w-3 h-3" />
-        </button>
+      {/* Pin button - hidden by default, shown on hover (matching notes app) */}
+      <button
+        onClick={nodeData.onDelete}
+        className={`absolute right-4 top-4 rounded-full bg-white/70 p-2 text-gray-700 shadow-sm transition ${
+          isHovered ? 'flex' : 'hidden'
+        }`}
+        title="Delete note"
+      >
+        <X className="w-4 h-4" />
+      </button>
+
+      {/* Content container with padding matching notes app (px-5 py-4) - Scrollable */}
+      <div className="px-5 pt-4 pb-2 flex-1 overflow-y-auto">
+        {/* Title - always visible */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          className="w-full bg-transparent border-none outline-none text-base font-semibold placeholder:text-gray-500/60 text-gray-900 nodrag pr-6"
+          placeholder="Title"
+        />
+
+        {/* Note Content - matching notes app spacing (mt-3) */}
+        <textarea
+          value={text}
+          onChange={(e) => handleTextChange(e.target.value)}
+          className="w-full bg-transparent border-none outline-none resize-none text-sm placeholder:text-gray-500/60 text-gray-800 nodrag whitespace-pre-wrap mt-3"
+          placeholder="Take a note..."
+          style={{
+            minHeight: '60px',
+          }}
+        />
       </div>
 
-      <textarea
-        value={text}
-        onChange={(e) => handleTextChange(e.target.value)}
-        className="w-full bg-transparent border-none outline-none resize-none text-sm placeholder:text-gray-500 text-gray-800 nodrag"
-        placeholder="Type your note..."
-        style={{
-          fontFamily: 'Courier New, monospace',
-          height: sizeStyles[noteSize].textareaHeight
-        }}
-      />
+      {/* Footer - matching notes app */}
+      <footer className="px-5 pb-3 pt-2 flex items-center justify-end border-t border-gray-900/10">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className="nodrag p-2 rounded-full transition-colors hover:bg-gray-900/10 text-gray-700"
+            title="Create project from note"
+            onClick={(e) => {
+              e.stopPropagation();
+              // TODO: Implement create project functionality
+              alert('Create project from this note');
+            }}
+          >
+            <FolderPlus className="w-4 h-4" />
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useEffect, useMemo } from 'react';
 import {
-  StickyNote as StickyNoteIcon, Trash2, Sun, Moon, Undo2, Redo2, CheckSquare, Trash, Network, Download, Upload,
+  StickyNote as StickyNoteIcon, Trash2, Sun, Moon, Undo2, Redo2, CheckSquare, Trash, Network, Download, Upload, Maximize2, Minimize2,
 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { db } from '@ainexsuite/firebase';
@@ -24,6 +24,7 @@ import {
   NodeTypes,
   MarkerType,
   ConnectionLineType,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import '@xyflow/react/dist/base.css';
@@ -73,15 +74,20 @@ interface WhiteboardProps {
 
 function WhiteboardInner(_props: WhiteboardProps) {
   const { user } = useAuth();
+  const { screenToFlowPosition } = useReactFlow();
+  const whiteboardRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      (window as Window & { whiteboardElement?: HTMLDivElement }).whiteboardElement = node;
+    }
+  }, []);
 
   // React Flow state
   const [nodes, setNodesState, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdgesState, onEdgesChangeRaw] = useEdgesState<Edge>([]);
 
-  // Wrap onEdgesChange with logging
+  // Wrap onEdgesChange
   const onEdgesChange = useCallback(
-    (changes: any) => {
-      console.log('onEdgesChange called with changes:', changes);
+    (changes: unknown) => {
       onEdgesChangeRaw(changes);
     },
     [onEdgesChangeRaw]
@@ -101,9 +107,12 @@ function WhiteboardInner(_props: WhiteboardProps) {
   // UI state
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [stickyNoteColor, setStickyNoteColor] = useState('#fef08a');
-  const [stickyNoteSize, setStickyNoteSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [stickyNoteSize] = useState<'small' | 'medium' | 'large'>('small');
   const [edgeType, setEdgeType] = useState<'smoothstep' | 'straight' | 'default' | 'step'>('smoothstep');
+  const [arrowType, setArrowType] = useState<'none' | 'end' | 'start' | 'both'>('end');
+  const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted'>('solid');
 
   // Define node types
   const nodeTypes: NodeTypes = useMemo(
@@ -120,20 +129,60 @@ function WhiteboardInner(_props: WhiteboardProps) {
     return selectedNodes + selectedEdges;
   }, [nodes, edges]);
 
-  // Stable default edge options
+  // Track if we have selected edges
+  const hasSelectedEdges = useMemo(() => edges.some(e => e.selected), [edges]);
+
+  // Helper to get marker config based on arrow direction
+  const getMarkerConfig = useCallback((direction: 'end' | 'start' | 'both' | 'none') => {
+    const markerConfig = {
+      type: MarkerType.ArrowClosed,
+      width: 16,
+      height: 16,
+      color: '#06b6d4',
+    };
+
+    // Always return both properties, set to undefined if not needed
+    // This ensures old markers are removed when changing direction
+    return {
+      markerEnd: (direction === 'end' || direction === 'both') ? markerConfig : undefined,
+      markerStart: (direction === 'start' || direction === 'both') ? markerConfig : undefined,
+    };
+  }, []);
+
+  // Helper to get stroke dash array based on line style
+  const getStrokeDashArray = useCallback((style: 'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted') => {
+    switch (style) {
+      case 'dashed':
+      case 'animated-dashed':
+        return '10 5'; // 10px dash, 5px gap
+      case 'dotted':
+      case 'animated-dotted':
+        return '2 4'; // 2px dot, 4px gap
+      case 'solid':
+      case 'animated-solid':
+      default:
+        return undefined; // No dash array = solid line
+    }
+  }, []);
+
+  // Helper to determine if line style should be animated
+  const isAnimatedStyle = useCallback((style: 'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted') => {
+    return style.startsWith('animated-');
+  }, []);
+
+  // Stable default edge options with proper marker configuration
   const defaultEdgeOptions = useMemo(
     () => ({
       type: edgeType,
-      animated: true,
-      style: edgeStyles,
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20,
-        height: 20,
-        color: '#06b6d4',
+      animated: isAnimatedStyle(lineStyle), // Animate based on style prefix
+      style: {
+        stroke: '#06b6d4',
+        strokeWidth: 2,
+        strokeDasharray: getStrokeDashArray(lineStyle),
       },
+      ...getMarkerConfig(arrowType),
     }),
-    [edgeType]
+    [edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]
   );
 
   // Load whiteboard data from Firestore
@@ -156,6 +205,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 ...node.data,
                 onDelete: () => deleteNode(node.id),
                 onTextChange: (text: string) => updateNodeText(node.id, text),
+                onTitleChange: (title: string) => updateNodeTitle(node.id, title),
               },
             }));
             setNodes(nodesWithCallbacks);
@@ -182,7 +232,34 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 }
               }
 
-              setEdges(validEdges);
+              // Restore edge preferences
+              if (data.edgeType) {
+                setEdgeType(data.edgeType);
+              }
+              if (data.arrowType) {
+                setArrowType(data.arrowType);
+              }
+              if (data.lineStyle) {
+                setLineStyle(data.lineStyle);
+              }
+
+              // Apply saved preferences to edges
+              const savedArrowType = data.arrowType || 'end';
+              const savedLineStyle = data.lineStyle || 'solid';
+
+              const edgesWithSettings = validEdges.map((edge: Edge) => ({
+                ...edge,
+                animated: isAnimatedStyle(savedLineStyle),
+                style: {
+                  ...edge.style,
+                  stroke: '#06b6d4',
+                  strokeWidth: 2,
+                  strokeDasharray: getStrokeDashArray(savedLineStyle),
+                },
+                ...getMarkerConfig(savedArrowType),
+              }));
+
+              setEdges(edgesWithSettings);
             }
           } else {
             // No nodes loaded, clear edges too
@@ -219,6 +296,11 @@ function WhiteboardInner(_props: WhiteboardProps) {
           size: node.data.size || 'medium',
         };
 
+        // Include title if it exists
+        if (node.data.title) {
+          data.title = node.data.title;
+        }
+
         // Only include defined values
         if (node.data.isDarkMode !== undefined) {
           data.isDarkMode = node.data.isDarkMode;
@@ -242,12 +324,15 @@ function WhiteboardInner(_props: WhiteboardProps) {
         nodes: nodesToSave,
         edges: validEdges,
         isDarkMode,
+        edgeType,
+        arrowType,
+        lineStyle,
         updatedAt: new Date().toISOString(),
       });
     } catch (error) {
       console.error('Error saving whiteboard:', error);
     }
-  }, [user, nodes, edges, isDarkMode, isLoaded]);
+  }, [user, nodes, edges, isDarkMode, edgeType, arrowType, lineStyle, isLoaded]);
 
   // Auto-save when nodes, edges, or dark mode changes
   useEffect(() => {
@@ -259,6 +344,36 @@ function WhiteboardInner(_props: WhiteboardProps) {
 
     return () => clearTimeout(timeoutId);
   }, [nodes, edges, isDarkMode, saveWhiteboard, isLoaded]);
+
+  // Update edges when edge type, arrow type, or line style changes
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    // If there are selected edges, only update those
+    // Otherwise update all edges
+    setEdgesState((eds) =>
+      eds.map((edge) => {
+        // Skip non-selected edges if there are selected edges
+        const shouldUpdate = !hasSelectedEdges || edge.selected;
+
+        if (!shouldUpdate) {
+          return edge;
+        }
+
+        return {
+          ...edge,
+          type: edgeType,
+          animated: isAnimatedStyle(lineStyle),
+          style: {
+            stroke: '#06b6d4',
+            strokeWidth: 2,
+            strokeDasharray: getStrokeDashArray(lineStyle),
+          },
+          ...getMarkerConfig(arrowType),
+        };
+      })
+    );
+  }, [edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle, isLoaded]);
 
   // React Flow connection handler
   const onConnect = useCallback(
@@ -305,6 +420,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
         console.log('✅ NEW EDGE CREATED');
         console.log('Updated edges array:', newEdges);
         console.log('New edge count:', newEdges.length);
+        console.log('Newly created edge details:', newEdges[newEdges.length - 1]);
         takeSnapshot();
         return newEdges;
       });
@@ -343,26 +459,18 @@ function WhiteboardInner(_props: WhiteboardProps) {
     [setNodesState]
   );
 
-  // Add sticky note
-  const addStickyNote = useCallback(() => {
-    takeSnapshot();
-    const nodeId = `note-${Date.now()}`;
-    const newNode: Node = {
-      id: nodeId,
-      type: 'stickyNote',
-      position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
-      data: {
-        text: '',
-        color: stickyNoteColor,
-        size: stickyNoteSize,
-        isDarkMode,
-        onDelete: () => deleteNode(nodeId),
-        onTextChange: (text: string) => updateNodeText(nodeId, text),
-      },
-    };
+  const updateNodeTitle = useCallback(
+    (nodeId: string, title: string) => {
+      setNodesState((nds) =>
+        nds.map((n) =>
+          n.id === nodeId ? { ...n, data: { ...n.data, title } } : n
+        )
+      );
+    },
+    [setNodesState]
+  );
 
-    setNodesState((nds) => [...nds, newNode]);
-  }, [stickyNoteColor, stickyNoteSize, isDarkMode, setNodesState, deleteNode, updateNodeText, takeSnapshot]);
+  // Note: Sticky notes are added via drag and drop from the toolbar
 
   // Update all node handlers when they change - ONLY when isDarkMode changes
   useEffect(() => {
@@ -424,6 +532,78 @@ function WhiteboardInner(_props: WhiteboardProps) {
   const toggleDarkMode = useCallback(() => {
     setIsDarkMode((prev) => !prev);
   }, []);
+
+  // Toggle fullscreen
+  const toggleFullscreen = useCallback(() => {
+    const elem = (window as Window & { whiteboardElement?: HTMLDivElement }).whiteboardElement;
+
+    if (!elem) return;
+
+    if (!isFullscreen) {
+      if (elem.requestFullscreen) {
+        void elem.requestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        void document.exitFullscreen();
+      }
+      setIsFullscreen(false);
+    }
+  }, [isFullscreen]);
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Handle drag and drop
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      const type = event.dataTransfer.getData('application/reactflow');
+      const color = event.dataTransfer.getData('color');
+
+      if (type === 'stickyNote') {
+        const position = screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
+        });
+
+        takeSnapshot();
+        const nodeId = `note-${Date.now()}`;
+        const newNode: Node = {
+          id: nodeId,
+          type: 'stickyNote',
+          position,
+          data: {
+            text: '',
+            title: '',
+            color: color || stickyNoteColor,
+            size: stickyNoteSize,
+            isDarkMode,
+            onDelete: () => deleteNode(nodeId),
+            onTextChange: (text: string) => updateNodeText(nodeId, text),
+            onTitleChange: (title: string) => updateNodeTitle(nodeId, title),
+          },
+        };
+
+        setNodesState((nds) => [...nds, newNode]);
+      }
+    },
+    [screenToFlowPosition, stickyNoteColor, stickyNoteSize, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, takeSnapshot]
+  );
 
   // Export whiteboard to JSON
   const exportToJSON = useCallback(() => {
@@ -491,6 +671,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
             isDarkMode,
             onDelete: () => deleteNode(node.id),
             onTextChange: (text: string) => updateNodeText(node.id, text),
+            onTitleChange: (title: string) => updateNodeTitle(node.id, title),
           },
         }));
 
@@ -527,39 +708,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
   }, [undo, redo]);
 
   return (
-    <div className={`w-full h-full relative rounded-lg overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-      {/* Debug Panel */}
-      <div className={`absolute top-4 right-4 z-50 rounded-lg p-3 text-xs font-mono max-w-sm ${
-        isDarkMode ? 'bg-gray-900/95 border border-cyan-500/30 text-white' : 'bg-white/95 border border-blue-500/30 text-gray-900'
-      }`}>
-        <div className={`font-bold mb-2 ${isDarkMode ? 'text-cyan-400' : 'text-blue-600'}`}>Debug Info</div>
-        <div>Nodes: {nodes.length}</div>
-        <div>Edges: {edges.length}</div>
-        {edges.length > 0 && (
-          <>
-            <div className="mt-2 space-y-1">
-              <div className={`font-semibold ${isDarkMode ? 'text-cyan-300' : 'text-blue-500'}`}>Edges:</div>
-              {edges.map((edge, idx) => (
-                <div key={edge.id} className={`text-[10px] p-1 rounded ${isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
-                  {idx + 1}. {edge.source} → {edge.target}
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => {
-                console.log('Clearing all edges');
-                setEdgesState([]);
-              }}
-              className={`mt-2 w-full px-2 py-1 rounded text-xs ${
-                isDarkMode ? 'bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400' : 'bg-red-100 hover:bg-red-200 border border-red-300 text-red-700'
-              }`}
-            >
-              Clear All Edges
-            </button>
-          </>
-        )}
-      </div>
-
+    <div ref={whiteboardRef} className={`w-full h-full relative rounded-lg overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -567,6 +716,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onEdgeClick={onEdgeClick}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         fitView
         elevateEdgesOnSelect
@@ -589,73 +740,51 @@ function WhiteboardInner(_props: WhiteboardProps) {
           nodeColor={isDarkMode ? '#60a5fa' : '#3b82f6'}
         />
 
-        {/* Toolbar Panel */}
-        <Panel position="top-left" className={`flex flex-col gap-2 backdrop-blur-xl rounded-2xl p-3 shadow-2xl border ${
+        {/* Toolbar Panel - Full View No Scroll */}
+        <Panel position="top-left" className={`backdrop-blur-xl rounded-xl shadow-2xl border ${
           isDarkMode
             ? 'bg-gradient-to-br from-gray-800/85 to-gray-900/85 border-white/10'
             : 'bg-gradient-to-br from-white/85 to-gray-50/85 border-gray-200'
         }`}>
+          <div className="flex flex-col gap-1 p-2">
           {/* Sticky Notes Section */}
-          <div className="flex flex-col gap-1.5">
-            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+          <div className="flex flex-col gap-1">
+            <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
               Sticky Notes
             </span>
 
-            <button
-              onClick={addStickyNote}
-              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm shadow-lg transition-all ${
-                isDarkMode
-                  ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white'
-                  : 'bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-500 hover:to-amber-500 text-gray-900'
-              }`}
-              title="Add sticky note"
-            >
-              <StickyNoteIcon className="w-4 h-4" />
-              <span>Add Note</span>
-            </button>
-
-            {/* Sticky Note Color Picker */}
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={stickyNoteColor}
-                onChange={(e) => setStickyNoteColor(e.target.value)}
-                className={`w-8 h-8 rounded cursor-pointer border-2 ${
-                  isDarkMode ? 'border-white/20' : 'border-gray-300'
-                }`}
-                title="Note color"
-              />
-              <div className="flex gap-1">
-                {['#fef08a', '#a7f3d0', '#bfdbfe', '#fbbf24', '#fca5a5'].map((presetColor) => (
-                  <button
-                    key={presetColor}
-                    onClick={() => setStickyNoteColor(presetColor)}
-                    className={`w-6 h-6 rounded border-2 transition-transform hover:scale-110 ${
-                      stickyNoteColor === presetColor ? 'ring-2 ring-blue-500 ring-offset-1' : ''
-                    } ${isDarkMode ? 'border-white/20' : 'border-gray-300'}`}
-                    style={{ backgroundColor: presetColor }}
-                    title="Select color"
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Sticky Note Size Selector */}
-            <div className="flex gap-1">
-              {(['small', 'medium', 'large'] as const).map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setStickyNoteSize(size)}
-                  className={`flex-1 px-2 py-1 text-xs rounded-lg transition-all capitalize ${
-                    stickyNoteSize === size
-                      ? 'bg-blue-500 text-white'
+            {/* Draggable Color Swatches */}
+            <div className="grid grid-cols-3 gap-1">
+              {[
+                { color: '#fef08a', label: 'Yellow' },
+                { color: '#a7f3d0', label: 'Green' },
+                { color: '#bfdbfe', label: 'Blue' },
+                { color: '#fbbf24', label: 'Amber' },
+                { color: '#fca5a5', label: 'Red' },
+                { color: '#e9d5ff', label: 'Purple' },
+              ].map(({ color, label }) => (
+                <div
+                  key={color}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('application/reactflow', 'stickyNote');
+                    e.dataTransfer.setData('color', color);
+                    e.dataTransfer.effectAllowed = 'move';
+                    setStickyNoteColor(color);
+                  }}
+                  className={`flex flex-col items-center justify-center gap-0.5 p-2 rounded-lg border shadow-md transition-all cursor-move hover:scale-105 ${
+                    stickyNoteColor === color
+                      ? 'ring-1 ring-cyan-500'
                       : isDarkMode
-                      ? 'bg-white/10 text-white/70 hover:bg-white/20'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'border-white/20'
+                      : 'border-gray-300'
                   }`}
+                  style={{ backgroundColor: color }}
+                  title={`Drag ${label} note`}
                 >
-                  {size}
-                </button>
+                  <StickyNoteIcon className="w-4 h-4 text-gray-700" />
+                  <span className="text-[9px] font-medium text-gray-700">{label}</span>
+                </div>
               ))}
             </div>
           </div>
@@ -809,6 +938,108 @@ function WhiteboardInner(_props: WhiteboardProps) {
 
           <div className={`h-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} my-1`} />
 
+          {/* Arrow Direction Selector */}
+          <div className="flex flex-col gap-1.5">
+            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+              Arrow Direction
+            </span>
+            <div className="grid grid-cols-2 gap-1">
+              {([
+                { type: 'end' as const, label: 'End', symbol: '—▶' },
+                { type: 'start' as const, label: 'Start', symbol: '◀—' },
+                { type: 'both' as const, label: 'Both', symbol: '◀—▶' },
+                { type: 'none' as const, label: 'None', symbol: '——' },
+              ]).map(({ type, label, symbol }) => (
+                <button
+                  key={type}
+                  onClick={() => setArrowType(type)}
+                  className={`px-2 py-1.5 text-xs rounded-lg transition-all flex flex-col items-center gap-0.5 ${
+                    arrowType === type
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium'
+                      : isDarkMode
+                      ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                  title={`Arrow: ${label}`}
+                >
+                  <span className="text-sm leading-none font-mono">{symbol}</span>
+                  <span className="text-[10px]">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={`h-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} my-1`} />
+
+          {/* Line Style Selector */}
+          <div className="flex flex-col gap-1.5">
+            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+              Line Style
+            </span>
+
+            {/* Static Styles */}
+            <div className="flex flex-col gap-1">
+              <span className={`text-[10px] uppercase tracking-wide ${isDarkMode ? 'text-white/40' : 'text-gray-500'}`}>
+                Static
+              </span>
+              <div className="grid grid-cols-3 gap-1">
+                {([
+                  { style: 'solid' as const, label: 'Solid', preview: '────' },
+                  { style: 'dashed' as const, label: 'Dashed', preview: '─ ─ ─' },
+                  { style: 'dotted' as const, label: 'Dotted', preview: '· · · ·' },
+                ]).map(({ style, label, preview }) => (
+                  <button
+                    key={style}
+                    onClick={() => setLineStyle(style)}
+                    className={`px-1.5 py-1.5 text-xs rounded-lg transition-all flex flex-col items-center gap-0.5 ${
+                      lineStyle === style
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium'
+                        : isDarkMode
+                        ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={`Line: ${label}`}
+                  >
+                    <span className="text-xs leading-none font-mono tracking-wider">{preview}</span>
+                    <span className="text-[9px]">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Animated Styles */}
+            <div className="flex flex-col gap-1">
+              <span className={`text-[10px] uppercase tracking-wide ${isDarkMode ? 'text-white/40' : 'text-gray-500'}`}>
+                Animated
+              </span>
+              <div className="grid grid-cols-3 gap-1">
+                {([
+                  { style: 'animated-solid' as const, label: 'Solid', preview: '⟿⟿⟿' },
+                  { style: 'animated-dashed' as const, label: 'Dashed', preview: '⟿ ⟿' },
+                  { style: 'animated-dotted' as const, label: 'Dotted', preview: '⋯⋯⋯' },
+                ]).map(({ style, label, preview }) => (
+                  <button
+                    key={style}
+                    onClick={() => setLineStyle(style)}
+                    className={`px-1.5 py-1.5 text-xs rounded-lg transition-all flex flex-col items-center gap-0.5 ${
+                      lineStyle === style
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium'
+                        : isDarkMode
+                        ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={`Line: ${label} (Animated)`}
+                  >
+                    <span className="text-xs leading-none font-mono tracking-wider">{preview}</span>
+                    <span className="text-[9px]">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className={`h-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} my-1`} />
+
           {/* Export/Import Section */}
           <div className="flex flex-col gap-1.5">
             <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
@@ -886,6 +1117,30 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 </>
               )}
             </button>
+
+            {/* Fullscreen Toggle */}
+            <button
+              onClick={toggleFullscreen}
+              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm transition-all ${
+                isDarkMode
+                  ? 'bg-white/10 hover:bg-white/20 text-white/90'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+              title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-4 h-4" />
+                  <span>Exit</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-4 h-4" />
+                  <span>Fullscreen</span>
+                </>
+              )}
+            </button>
+          </div>
           </div>
         </Panel>
       </ReactFlow>
