@@ -10,5 +10,6 @@
  */
 
 export * from './lib/utils';
+export * from './utils/reactFlowEdgeUtils';
 export * from './components/paywall';
 export * from './components/footer';

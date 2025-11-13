@@ -1,10 +1,10 @@
 {
-  "name": "@ainexsuite/projects",
+  "name": "@ainexsuite/workflow",
   "version": "1.0.0",
   "private": true,
-  "description": "AINexSuite projects app for project management and tracking",
+  "description": "AINexSuite workflow app for visual workflow automation and building",
   "scripts": {
-    "dev": "next dev -p 3009",
+    "dev": "next dev -p 3010",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
@@ -18,6 +18,7 @@
     "@ainexsuite/types": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "@xyflow/react": "^12.9.2",
+    "firebase": "^10.7.2",
     "firebase-admin": "^12.0.0",
     "geist": "^1.2.0",
     "lucide-react": "^0.312.0",
