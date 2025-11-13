@@ -6,12 +6,14 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 interface RectangleNodeData extends Record<string, unknown> {
   label: string;
+  color?: string;
 }
 
 export type RectangleNodeType = Node<RectangleNodeData, 'rectangle'>;
 
 function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
   const { theme } = useTheme();
+  const nodeColor = data.color || theme.primary;
   const [label, setLabel] = useState(data.label || 'Process');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -32,14 +34,13 @@ function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
   }, []);
 
   const handleStyle = {
-    background: theme.primary,
-    width: 12,
-    height: 12,
-    border: '3px solid #0a0a0a',
+    background: nodeColor,
+    width: 8,
+    height: 8,
+    border: '2px solid #fff',
     borderRadius: '50%',
-    boxShadow: `0 0 0 2px ${theme.primary}, 0 0 8px ${theme.primary}`,
     zIndex: 10,
-    opacity: isHovered || selected ? 1 : 0.4,
+    opacity: isHovered || selected ? 1 : 0,
     transition: 'opacity 0.2s',
   };
 
@@ -50,7 +51,7 @@ function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
       style={{ width: '100%', height: '100%' }}
     >
       <NodeResizer
-        color={theme.primary}
+        color={nodeColor}
         isVisible={selected}
         minWidth={120}
         minHeight={60}
@@ -87,8 +88,8 @@ function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
         className="flex h-full w-full items-center justify-center rounded-lg border-2 px-4 py-2 transition-all"
         style={{
           backgroundColor: 'rgba(10, 10, 10, 0.7)',
-          borderColor: selected ? theme.primary : `rgba(${theme.primaryRgb}, 0.3)`,
-          boxShadow: selected ? `0 0 0 2px rgba(${theme.primaryRgb}, 0.5)` : 'none',
+          borderColor: selected ? nodeColor : `${nodeColor}50`,
+          boxShadow: selected ? `0 0 0 2px ${nodeColor}80` : 'none',
         }}
         onDoubleClick={handleDoubleClick}
       >
