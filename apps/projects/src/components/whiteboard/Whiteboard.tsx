@@ -216,8 +216,6 @@ function WhiteboardInner(_props: WhiteboardProps) {
               const { validEdges, orphanedEdges } = validateEdges(data.edges, nodesWithCallbacks);
 
               if (orphanedEdges.length > 0) {
-                console.warn(`Found ${orphanedEdges.length} orphaned edge(s):`, orphanedEdges);
-
                 // Clean up orphaned edges from Firestore
                 try {
                   void setDoc(whiteboardRef, {
@@ -226,7 +224,6 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     isDarkMode: data.isDarkMode,
                     updatedAt: new Date().toISOString(),
                   });
-                  console.log(`Cleaned up ${orphanedEdges.length} orphaned edge(s) from Firestore`);
                 } catch (updateError) {
                   console.error('Error cleaning up orphaned edges in Firestore:', updateError);
                 }
@@ -279,6 +276,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
     };
 
     void loadWhiteboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, setNodes, setEdges]);
 
   // Save whiteboard to Firestore
@@ -378,24 +376,15 @@ function WhiteboardInner(_props: WhiteboardProps) {
   // React Flow connection handler
   const onConnect = useCallback(
     (params: Connection) => {
-      console.log('=== WHITEBOARD CONNECTION ATTEMPT ===');
-      console.log('Connection params:', params);
-
       // Validate that both source and target nodes exist
       const sourceNode = nodes.find(n => n.id === params.source);
       const targetNode = nodes.find(n => n.id === params.target);
 
       if (!sourceNode || !targetNode) {
-        console.error('⚠️ CONNECTION BLOCKED - Invalid node reference');
-        console.log('Source node exists:', !!sourceNode);
-        console.log('Target node exists:', !!targetNode);
         return;
       }
 
       setEdgesState((eds) => {
-        console.log('Current edges in state:', eds);
-        console.log('Number of edges:', eds.length);
-
         // Check for duplicate edges (same source and target)
         const isDuplicate = eds.some(
           (edge) =>
@@ -406,21 +395,10 @@ function WhiteboardInner(_props: WhiteboardProps) {
         );
 
         if (isDuplicate) {
-          console.warn('⚠️ DUPLICATE EDGE BLOCKED - Edge already exists between these notes');
-          console.log('Existing edge:', eds.find(e =>
-            e.source === params.source &&
-            e.target === params.target &&
-            e.sourceHandle === params.sourceHandle &&
-            e.targetHandle === params.targetHandle
-          ));
           return eds;
         }
 
         const newEdges = addEdge(params, eds);
-        console.log('✅ NEW EDGE CREATED');
-        console.log('Updated edges array:', newEdges);
-        console.log('New edge count:', newEdges.length);
-        console.log('Newly created edge details:', newEdges[newEdges.length - 1]);
         takeSnapshot();
         return newEdges;
       });
@@ -683,7 +661,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
       }
     };
     input.click();
-  }, [isDarkMode, deleteNode, updateNodeText, setNodesState, setEdgesState, takeSnapshot]);
+  }, [isDarkMode, deleteNode, updateNodeText, updateNodeTitle, setNodesState, setEdgesState, takeSnapshot]);
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
