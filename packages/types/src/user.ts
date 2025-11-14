@@ -2,6 +2,8 @@ import type { Timestamp, UserPreferences } from './common';
 import type { SearchableApp } from './search';
 
 export type SubscriptionStatus = 'trial' | 'active' | 'expired';
+export type AccountType = 'single-app' | 'multi-app' | 'suite';
+export type DomainPreference = 'subdomain' | 'standalone';
 
 export interface User {
   uid: string;
@@ -15,6 +17,10 @@ export interface User {
   // App-scoped authentication
   // The app user signed up with (e.g., "journey", "notes", "suite")
   primaryApp?: SearchableApp | 'suite';
+
+  // NEW: Account type detection (auto-calculated)
+  accountType?: AccountType; // 'single-app' | 'multi-app' | 'suite'
+  preferredDomain?: DomainPreference; // 'subdomain' | 'standalone'
 
   // NEW: Simplified app access control
   // Array of app slugs user is eligible to access
@@ -61,6 +67,7 @@ export interface User {
   };
 
   trialStartDate?: Timestamp;
+  trialEndDate?: Timestamp; // Auto-calculated (trialStartDate + 30 days)
   subscriptionStatus: SubscriptionStatus;
   subscriptionExpiresAt?: Timestamp;
   suiteAccess: boolean; // true = has suite access, false = needs suite subscription
