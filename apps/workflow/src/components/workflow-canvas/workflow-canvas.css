@@ -79,6 +79,18 @@
   pointer-events: all !important;
 }
 
+/* Force edge visibility */
+.react-flow__edge-path {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure edges render above background but below nodes */
+.react-flow__edges {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
 .react-flow__controls {
   box-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.2);
 }
@@ -136,4 +148,22 @@
 /* Panel background styling */
 .react-flow__panel {
   color: #ffffff;
+}
+
+.workflow-tool-menu {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--theme-primary-rgb), 0.5) transparent;
+}
+
+.workflow-tool-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.workflow-tool-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.workflow-tool-menu::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--theme-primary-rgb), 0.4);
+  border-radius: 9999px;
 }

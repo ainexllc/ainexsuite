@@ -29,6 +29,13 @@ import RectangleNode from './nodes/RectangleNode';
 import DiamondNode from './nodes/DiamondNode';
 import OvalNode from './nodes/OvalNode';
 import ParallelogramNode from './nodes/ParallelogramNode';
+import SwimlaneNode from './nodes/SwimlaneNode';
+import SubprocessNode from './nodes/SubprocessNode';
+import StickyNoteNode from './nodes/StickyNoteNode';
+import IconNode from './nodes/IconNode';
+import DatabaseNode from './nodes/DatabaseNode';
+import DocumentsNode from './nodes/DocumentsNode';
+import { SmartEdge } from './edges/SmartEdge';
 import { ShapePalette } from './ShapePalette';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useUndoRedo } from './hooks/useUndoRedo';
@@ -41,6 +48,12 @@ const nodeTypes = {
   diamond: DiamondNode,
   oval: OvalNode,
   parallelogram: ParallelogramNode,
+  swimlane: SwimlaneNode,
+  subprocess: SubprocessNode,
+  'sticky-note': StickyNoteNode,
+  icon: IconNode,
+  database: DatabaseNode,
+  documents: DocumentsNode,
 };
 
 /**
@@ -73,16 +86,133 @@ const validateEdges = (edges: Edge[], nodes: Node[]) => {
   return { validEdges, orphanedEdges };
 };
 
+/**
+ * Firestore does not allow undefined values, so we serialize and parse objects
+ * before saving to strip any `undefined` keys React Flow may add.
+ */
+const sanitizeForFirestore = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
+
+type EdgeValidationMode = 'strict' | 'relaxed';
+type BranchTemplate = 'ifElse' | 'loop';
+type NodeCategory = 'start' | 'action' | 'decision' | 'data' | 'note' | 'container';
+
+const paletteNodeTypes = [
+  'rectangle',
+  'diamond',
+  'oval',
+  'parallelogram',
+  'swimlane',
+  'subprocess',
+  'sticky-note',
+  'icon',
+  'database',
+  'documents',
+] as const;
+
+const defaultNodeData: Record<string, Record<string, unknown>> = {
+  rectangle: { label: 'Process' },
+  diamond: { label: 'Decision?' },
+  oval: { label: 'Start' },
+  parallelogram: { label: 'Input' },
+  swimlane: { label: 'Swimlane', orientation: 'horizontal', lanes: 3 },
+  subprocess: { label: 'Subprocess', detail: 'Describe the nested flow...' },
+  'sticky-note': { label: 'Quick note...' },
+  icon: { label: 'Service', emoji: '🧩' },
+  database: { label: 'Database' },
+  documents: { label: 'Documents' },
+};
+
+const nodeCategoryMap: Record<string, NodeCategory> = {
+  rectangle: 'action',
+  parallelogram: 'action',
+  diamond: 'decision',
+  oval: 'start',
+  swimlane: 'container',
+  subprocess: 'container',
+  'sticky-note': 'note',
+  icon: 'action',
+  database: 'data',
+  documents: 'data',
+};
+
+const allowedTargetsByCategory: Record<NodeCategory, NodeCategory[]> = {
+  start: ['action', 'decision', 'data', 'container'],
+  action: ['action', 'decision', 'data', 'note', 'container'],
+  decision: ['action', 'data', 'note', 'container'],
+  data: ['action', 'decision', 'container', 'note'],
+  container: ['action', 'decision', 'data', 'note'],
+  note: [],
+};
+
+const isConnectionAllowed = (
+  sourceType?: string,
+  targetType?: string,
+  mode: EdgeValidationMode = 'strict'
+) => {
+  if (mode === 'relaxed' || !sourceType || !targetType) {
+    return true;
+  }
+
+  if (targetType === 'oval') {
+    return false;
+  }
+
+  const sourceCategory = nodeCategoryMap[sourceType];
+  const targetCategory = nodeCategoryMap[targetType];
+
+  if (!sourceCategory || !targetCategory) {
+    return true;
+  }
+
+  return allowedTargetsByCategory[sourceCategory]?.includes(targetCategory) ?? true;
+};
+
+const formatNodeTypeLabel = (type?: string) => {
+  if (!type) return 'Unknown';
+  return type
+    .split('-')
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ');
+};
+
+const getNodeDimensions = (nodeType: string) => {
+  switch (nodeType) {
+    case 'diamond':
+      return { width: 140, height: 140 };
+    case 'oval':
+      return { width: 120, height: 120 };
+    case 'swimlane':
+      return { width: 320, height: 220 };
+    case 'subprocess':
+      return { width: 220, height: 140 };
+    case 'sticky-note':
+      return { width: 180, height: 140 };
+    case 'icon':
+      return { width: 160, height: 160 };
+    case 'database':
+      return { width: 180, height: 180 };
+    case 'documents':
+      return { width: 200, height: 140 };
+    default:
+      return { width: 160, height: 80 };
+  }
+};
+
 function WorkflowCanvasInner() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const nodeIdCounter = useRef(0);
-  const getId = () => `node_${nodeIdCounter.current++}`;
+  const getId = useCallback(() => `node_${nodeIdCounter.current++}`, []);
+  const edgeIdCounter = useRef(0);
+  const getEdgeId = useCallback(() => `edge_${edgeIdCounter.current++}`, []);
   const [nodes, setNodesState, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdgesState, onEdgesChange] = useEdgesState<Edge>([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [edgeType, setEdgeType] = useState<'default' | 'straight' | 'step' | 'smoothstep'>('smoothstep');
   const [arrowType, setArrowType] = useState<'none' | 'end' | 'start' | 'both'>('end');
   const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted'>('solid');
+  const [autoRouteEdges, setAutoRouteEdges] = useState(true);
+  const [edgeValidationMode, setEdgeValidationMode] = useState<EdgeValidationMode>('strict');
+  const [connectionWarning, setConnectionWarning] = useState<string | null>(null);
   const [snapToGrid, setSnapToGrid] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [editingEdge, setEditingEdge] = useState<string | null>(null);
@@ -158,6 +288,12 @@ function WorkflowCanvasInner() {
     }
   }, [nodes, edges]);
 
+  useEffect(() => {
+    if (!connectionWarning) return;
+    const timeout = setTimeout(() => setConnectionWarning(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [connectionWarning]);
+
   // Helper to get marker config based on arrow direction
   const getMarkerConfig = useCallback((direction: 'end' | 'start' | 'both' | 'none') => {
     const markerConfig = {
@@ -196,10 +332,17 @@ function WorkflowCanvasInner() {
     return style.startsWith('animated-');
   }, []);
 
+  const edgeTypes = useMemo(
+    () => ({
+      smart: SmartEdge,
+    }),
+    []
+  );
+
   // Stable default edge options with proper marker configuration
   const defaultEdgeOptions = useMemo(
     () => ({
-      type: edgeType,
+      type: (autoRouteEdges ? 'smart' : edgeType) as Edge['type'],
       animated: isAnimatedStyle(lineStyle), // Animate based on style prefix
       style: {
         stroke: theme.primary,
@@ -208,7 +351,7 @@ function WorkflowCanvasInner() {
       },
       ...getMarkerConfig(arrowType),
     }),
-    [theme.primary, edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]
+    [theme.primary, edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle, autoRouteEdges]
   );
 
   // Load workflow from Firestore (only on mount/user change)
@@ -321,7 +464,7 @@ function WorkflowCanvasInner() {
 
         return {
           ...edge,
-          type: edgeType,
+          type: (autoRouteEdges ? 'smart' : edgeType) as Edge['type'],
           animated: isAnimatedStyle(lineStyle),
           style: {
             stroke: theme.primary,
@@ -332,7 +475,7 @@ function WorkflowCanvasInner() {
         };
       })
     );
-  }, [theme.id, theme.primary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]); // Run when any edge style changes
+  }, [theme.id, theme.primary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle, autoRouteEdges]); // Run when any edge style changes
 
   // Periodic edge validation - clean up orphaned edges when nodes change
   // Only trigger on nodes changes, not edges changes, to avoid interfering with edge creation
@@ -359,19 +502,17 @@ function WorkflowCanvasInner() {
         const viewport = reactFlowInstance.getViewport();
         const workflowRef = doc(db, 'workflows', user.uid);
 
-        await setDoc(
-          workflowRef,
-          {
-            nodes,
-            edges,
-            viewport,
-            edgeType,
-            arrowType,
-            lineStyle,
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
+        const payload = sanitizeForFirestore({
+          nodes,
+          edges,
+          viewport,
+          edgeType,
+          arrowType,
+          lineStyle,
+          updatedAt: new Date().toISOString(),
+        });
+
+        await setDoc(workflowRef, payload, { merge: true });
       } catch (error) {
         console.error('Error saving workflow:', error);
       }
@@ -643,6 +784,14 @@ function WorkflowCanvasInner() {
     onDelete: handleDelete,
   });
 
+  const handleAutoRouteToggle = useCallback(() => {
+    setAutoRouteEdges((prev) => !prev);
+  }, []);
+
+  const handleEdgeValidationModeChange = useCallback((mode: EdgeValidationMode) => {
+    setEdgeValidationMode(mode);
+  }, []);
+
   const onConnect = useCallback(
     (params: Connection) => {
       // eslint-disable-next-line no-console
@@ -650,7 +799,6 @@ function WorkflowCanvasInner() {
       // eslint-disable-next-line no-console
       console.log('Connection params:', params);
 
-      // Validate that both source and target nodes exist
       if (!params.source || !params.target) {
         // eslint-disable-next-line no-console
         console.error('❌ CONNECTION BLOCKED - Missing source or target');
@@ -660,25 +808,26 @@ function WorkflowCanvasInner() {
       const sourceNode = nodes.find(n => n.id === params.source);
       const targetNode = nodes.find(n => n.id === params.target);
 
-      if (!sourceNode) {
+      if (!sourceNode || !targetNode) {
         // eslint-disable-next-line no-console
-        console.error(`❌ CONNECTION BLOCKED - Source node "${params.source}" not found`);
+        console.error('❌ CONNECTION BLOCKED - Source or target node missing in state');
         return;
       }
 
-      if (!targetNode) {
+      if (!isConnectionAllowed(sourceNode.type, targetNode.type, edgeValidationMode)) {
+        const warning = `Cannot connect ${formatNodeTypeLabel(sourceNode.type)} to ${formatNodeTypeLabel(targetNode.type)} in strict mode.`;
+        setConnectionWarning(warning);
         // eslint-disable-next-line no-console
-        console.error(`❌ CONNECTION BLOCKED - Target node "${params.target}" not found`);
+        console.warn('❌ CONNECTION BLOCKED - Violates strict validation rules');
         return;
       }
+
+      const nextType = (autoRouteEdges ? 'smart' : edgeType) as Edge['type'];
+      const strokeDasharray = getStrokeDashArray(lineStyle);
+      const markerConfig = getMarkerConfig(arrowType);
+      const animated = isAnimatedStyle(lineStyle);
 
       setEdgesState((eds) => {
-        // eslint-disable-next-line no-console
-        console.log('Current edges in state:', eds);
-        // eslint-disable-next-line no-console
-        console.log('Number of edges:', eds.length);
-
-        // Check for duplicate edges (same source and target)
         const isDuplicate = eds.some(
           (edge) =>
             edge.source === params.source &&
@@ -690,30 +839,41 @@ function WorkflowCanvasInner() {
         if (isDuplicate) {
           // eslint-disable-next-line no-console
           console.warn('⚠️ DUPLICATE EDGE BLOCKED - Edge already exists between these nodes');
-          // eslint-disable-next-line no-console
-          console.log('Existing edge:', eds.find(e =>
-            e.source === params.source &&
-            e.target === params.target &&
-            e.sourceHandle === params.sourceHandle &&
-            e.targetHandle === params.targetHandle
-          ));
           return eds;
         }
 
-        const newEdges = addEdge(params, eds);
+        const newEdges = addEdge(params, eds).map((edge) => ({
+          ...edge,
+          type: nextType,
+          animated,
+          style: {
+            stroke: theme.primary,
+            strokeWidth: 2,
+            strokeDasharray,
+          },
+          ...markerConfig,
+        }));
+
         // eslint-disable-next-line no-console
         console.log('✅ NEW EDGE CREATED');
-        // eslint-disable-next-line no-console
-        console.log('Updated edges array:', newEdges);
-        // eslint-disable-next-line no-console
-        console.log('New edge count:', newEdges.length);
-        // eslint-disable-next-line no-console
-        console.log('Newly created edge details:', newEdges[newEdges.length - 1]);
         takeSnapshot();
         return newEdges;
       });
     },
-    [nodes, setEdgesState, takeSnapshot]
+    [
+      nodes,
+      setEdgesState,
+      takeSnapshot,
+      autoRouteEdges,
+      edgeType,
+      lineStyle,
+      theme.primary,
+      getMarkerConfig,
+      getStrokeDashArray,
+      isAnimatedStyle,
+      edgeValidationMode,
+      arrowType,
+    ]
   );
 
   // Click on edge to select it (not delete)
@@ -754,9 +914,8 @@ function WorkflowCanvasInner() {
         return;
       }
 
-      // Only handle drops for our specific node types
-      const validTypes = ['rectangle', 'diamond', 'oval', 'parallelogram'];
-      if (!validTypes.includes(type)) {
+      // Only handle drops for supported node types
+      if (!(paletteNodeTypes as readonly string[]).includes(type)) {
         return;
       }
 
@@ -766,30 +925,13 @@ function WorkflowCanvasInner() {
         y: event.clientY,
       });
 
-      const labels: Record<string, string> = {
-        rectangle: 'Process',
-        diamond: 'Decision?',
-        oval: 'Start',
-        parallelogram: 'Input',
-      };
-
-      // Set dimensions based on node type
-      // Circle (oval) and diamond need equal width/height to maintain proper shape
-      const getNodeDimensions = (nodeType: string) => {
-        if (nodeType === 'diamond') {
-          return { width: 140, height: 140 };
-        } else if (nodeType === 'oval') {
-          return { width: 120, height: 120 }; // Perfect circle
-        } else {
-          return { width: 160, height: 80 };
-        }
-      };
+      const baseData = defaultNodeData[type] ? { ...defaultNodeData[type] } : { label: 'New Node' };
 
       const newNode: Node = {
         id: getId(),
         type,
         position,
-        data: { label: labels[type] || 'New Node' },
+        data: baseData,
         style: getNodeDimensions(type),
       };
 
@@ -797,7 +939,113 @@ function WorkflowCanvasInner() {
       takeSnapshot();
       setNodesState((nds) => [...nds, newNode]);
     },
-    [reactFlowInstance, setNodesState, takeSnapshot]
+    [reactFlowInstance, setNodesState, takeSnapshot, getId]
+  );
+
+  const handleAddBranchTemplate = useCallback(
+    (template: BranchTemplate) => {
+      if (!reactFlowInstance) return;
+
+      const bounds = reactFlowWrapper.current?.getBoundingClientRect();
+      const fallbackWidth =
+        reactFlowWrapper.current?.clientWidth ?? (typeof window !== 'undefined' ? window.innerWidth : 0);
+      const fallbackHeight =
+        reactFlowWrapper.current?.clientHeight ?? (typeof window !== 'undefined' ? window.innerHeight : 0);
+      const centerPoint = reactFlowInstance.screenToFlowPosition({
+        x: bounds ? bounds.left + bounds.width / 2 : fallbackWidth / 2,
+        y: bounds ? bounds.top + bounds.height / 2 : fallbackHeight / 2,
+      });
+
+      const newNodes: Node[] = [];
+      const newEdges: Edge[] = [];
+      const baseEdgeType = (autoRouteEdges ? 'smart' : edgeType) as Edge['type'];
+      const strokeDasharray = getStrokeDashArray(lineStyle);
+      const markerConfig = getMarkerConfig(arrowType);
+      const animated = isAnimatedStyle(lineStyle);
+
+      const createNode = (
+        type: string,
+        offsetX: number,
+        offsetY: number,
+        overrides: Record<string, unknown> = {}
+      ) => {
+        const node: Node = {
+          id: getId(),
+          type,
+          position: {
+            x: centerPoint.x + offsetX,
+            y: centerPoint.y + offsetY,
+          },
+          data: {
+            ...(defaultNodeData[type] || { label: 'Node' }),
+            ...overrides,
+          },
+          style: getNodeDimensions(type),
+        };
+        newNodes.push(node);
+        return node;
+      };
+
+      const connectNodes = (source: Node, target: Node, label?: string) => {
+        const edge: Edge = {
+          id: getEdgeId(),
+          source: source.id,
+          target: target.id,
+          type: baseEdgeType,
+          animated,
+          style: {
+            stroke: theme.primary,
+            strokeWidth: 2,
+            strokeDasharray,
+          },
+          label,
+          ...markerConfig,
+        };
+        newEdges.push(edge);
+      };
+
+      if (template === 'ifElse') {
+        const decision = createNode('diamond', 0, -40, { label: 'Decision?' });
+        const yesNode = createNode('rectangle', -220, 120, { label: 'Yes branch' });
+        const noNode = createNode('rectangle', 220, 120, { label: 'No branch' });
+        const mergeNode = createNode('rectangle', 0, 260, { label: 'Merge' });
+
+        connectNodes(decision, yesNode, 'Yes');
+        connectNodes(decision, noNode, 'No');
+        connectNodes(yesNode, mergeNode);
+        connectNodes(noNode, mergeNode);
+      } else {
+        const entry = createNode('rectangle', -200, 0, { label: 'Entry' });
+        const action = createNode('rectangle', 0, 0, { label: 'Loop Action' });
+        const decision = createNode('diamond', 200, 0, { label: 'Continue?' });
+        const exitNode = createNode('rectangle', 0, 200, { label: 'Exit' });
+
+        connectNodes(entry, action);
+        connectNodes(action, decision);
+        connectNodes(decision, action, 'Repeat');
+        connectNodes(decision, exitNode, 'Done');
+      }
+
+      takeSnapshot();
+      setNodesState((nds) => [...nds, ...newNodes]);
+      setEdgesState((eds) => [...eds, ...newEdges]);
+    },
+    [
+      reactFlowInstance,
+      autoRouteEdges,
+      edgeType,
+      lineStyle,
+      getStrokeDashArray,
+      getMarkerConfig,
+      isAnimatedStyle,
+      theme.primary,
+      takeSnapshot,
+      setNodesState,
+      setEdgesState,
+      arrowType,
+      getId,
+      getEdgeId,
+    ]
   );
 
   const onDragStart = useCallback((event: React.DragEvent, nodeType: string) => {
@@ -846,6 +1094,12 @@ function WorkflowCanvasInner() {
         onSnapToGridToggle={() => setSnapToGrid(!snapToGrid)}
         onAlignNodes={handleAlignNodes}
         onDistributeNodes={handleDistributeNodes}
+        autoRouteEdges={autoRouteEdges}
+        onAutoRouteToggle={handleAutoRouteToggle}
+        edgeValidationMode={edgeValidationMode}
+        onEdgeValidationModeChange={handleEdgeValidationModeChange}
+        connectionWarning={connectionWarning}
+        onAddBranchTemplate={handleAddBranchTemplate}
       />
 
       <div className="flex-1 react-flow-dark relative" ref={reactFlowWrapper}>
@@ -871,6 +1125,7 @@ function WorkflowCanvasInner() {
           connectOnClick={true}
           elevateEdgesOnSelect={true}
           edgesReconnectable={true}
+          edgeTypes={edgeTypes}
         >
           <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme.primary} />
           <Controls />

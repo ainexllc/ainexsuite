@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, type ComponentType, type ReactNode } from 'react';
 import {
   Square,
   Diamond,
@@ -28,6 +28,15 @@ import {
   SunMedium,
   Shapes,
   Keyboard,
+  KanbanSquare,
+  StickyNote,
+  Image,
+  Database,
+  Files,
+  ShieldCheck,
+  GitBranch,
+  Repeat2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeSwitcher } from '../ThemeSwitcher';
@@ -35,7 +44,7 @@ import { ThemeSwitcher } from '../ThemeSwitcher';
 interface ShapeTemplateProps {
   type: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   onDragStart: (event: React.DragEvent, nodeType: string) => void;
 }
 
@@ -46,7 +55,7 @@ function ShapeTemplate({ type, label, icon: Icon, onDragStart }: ShapeTemplatePr
     <div
       draggable
       onDragStart={(event) => onDragStart(event, type)}
-      className="group flex cursor-grab flex-col items-center gap-1.5 rounded border transition-all active:cursor-grabbing p-2"
+      className="group flex cursor-grab flex-col items-center gap-1.5 rounded border p-2 transition-all active:cursor-grabbing"
       style={{
         borderColor: 'rgba(255, 255, 255, 0.1)',
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -80,7 +89,7 @@ interface ToolButtonProps {
   onClick: () => void;
   disabled?: boolean;
   title: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   variant?: 'default' | 'danger';
 }
 
@@ -124,10 +133,11 @@ function ToolButton({
 
 interface PaletteSectionProps {
   title: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   defaultOpen?: boolean;
   highlight?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
+  storageId: string;
 }
 
 function PaletteSection({
@@ -136,8 +146,24 @@ function PaletteSection({
   defaultOpen = false,
   highlight = false,
   children,
+  storageId,
 }: PaletteSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  // Hydrate the persisted state on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = window.localStorage.getItem(storageId);
+    if (saved !== null) {
+      setIsOpen(saved === 'true');
+    }
+  }, [storageId]);
+
+  // Persist whenever the section toggles
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(storageId, String(isOpen));
+  }, [isOpen, storageId]);
 
   return (
     <div
@@ -155,7 +181,7 @@ function PaletteSection({
           {icon}
           <span>{title}</span>
         </span>
-        <span className="text-white/40">{isOpen ? '−' : '+'}</span>
+        <span className="text-white/40">{isOpen ? '-' : '+'}</span>
       </button>
       {isOpen && <div className="mt-2 flex flex-col gap-2">{children}</div>}
     </div>
@@ -164,6 +190,8 @@ function PaletteSection({
 
 type ArrowType = 'none' | 'end' | 'start' | 'both';
 type LineStyle = 'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted';
+type EdgeValidationMode = 'strict' | 'relaxed';
+type BranchTemplate = 'ifElse' | 'loop';
 
 interface ShapePaletteProps {
   onDragStart: (event: React.DragEvent, nodeType: string) => void;
@@ -190,6 +218,12 @@ interface ShapePaletteProps {
   onSnapToGridToggle: () => void;
   onAlignNodes: (alignment: 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v') => void;
   onDistributeNodes: (direction: 'horizontal' | 'vertical') => void;
+  autoRouteEdges: boolean;
+  onAutoRouteToggle: () => void;
+  edgeValidationMode: EdgeValidationMode;
+  onEdgeValidationModeChange: (mode: EdgeValidationMode) => void;
+  connectionWarning: string | null;
+  onAddBranchTemplate: (template: BranchTemplate) => void;
 }
 
 export function ShapePalette({
@@ -217,6 +251,12 @@ export function ShapePalette({
   onSnapToGridToggle,
   onAlignNodes,
   onDistributeNodes,
+  autoRouteEdges,
+  onAutoRouteToggle,
+  edgeValidationMode,
+  onEdgeValidationModeChange,
+  connectionWarning,
+  onAddBranchTemplate,
 }: ShapePaletteProps) {
   const { theme } = useTheme();
   const shapes = [
@@ -224,15 +264,36 @@ export function ShapePalette({
     { type: 'diamond', label: 'Decision', icon: Diamond },
     { type: 'oval', label: 'Start/End', icon: Circle },
     { type: 'parallelogram', label: 'Input/Output', icon: Inbox },
+    { type: 'swimlane', label: 'Swimlane', icon: KanbanSquare },
+    { type: 'subprocess', label: 'Subprocess', icon: Workflow },
+    { type: 'sticky-note', label: 'Sticky Note', icon: StickyNote },
+    { type: 'icon', label: 'Icon/Emoji', icon: Image },
+    { type: 'database', label: 'Database', icon: Database },
+    { type: 'documents', label: 'Docs/Queue', icon: Files },
+  ];
+  const backgroundColors = [
+    'rgba(10, 10, 10, 0.7)',
+    'rgba(255, 255, 255, 0.1)',
+    'rgba(239, 68, 68, 0.2)',
+    'rgba(249, 115, 22, 0.2)',
+    'rgba(234, 179, 8, 0.2)',
+    'rgba(34, 197, 94, 0.2)',
+    'rgba(6, 182, 212, 0.2)',
+    'rgba(59, 130, 246, 0.2)',
+    'rgba(139, 92, 246, 0.2)',
+    'rgba(236, 72, 153, 0.2)',
+    'rgba(255, 255, 255, 0.9)',
+    'rgba(0, 0, 0, 0.9)',
   ];
 
   return (
-    <div className="flex h-full w-64 flex-col gap-3 border-r border-white/10 bg-[#050505] p-3">
-      {/* Tools Section */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Tools</h3>
-
-        {/* All Actions in single grid */}
+    <div className="workflow-tool-menu flex h-full w-64 flex-col gap-3 overflow-y-auto border-r border-white/10 bg-[#050505] p-3">
+      <PaletteSection
+        title="Tools"
+        icon={<Wrench className="h-3.5 w-3.5 text-white/50" />}
+        defaultOpen
+        storageId="workflow-section-tools"
+      >
         <div className="grid grid-cols-3 gap-1.5">
           <ToolButton
             onClick={onUndo}
@@ -255,53 +316,45 @@ export function ShapePalette({
           />
           <ToolButton
             onClick={onZoomIn}
-            disabled={false}
             title="Zoom In"
             icon={<ZoomIn className="h-3.5 w-3.5" />}
           />
           <ToolButton
             onClick={onZoomOut}
-            disabled={false}
             title="Zoom Out"
             icon={<ZoomOut className="h-3.5 w-3.5" />}
           />
           <ToolButton
             onClick={onFitView}
-            disabled={false}
             title="Fit View"
             icon={<Maximize2 className="h-3.5 w-3.5" />}
           />
         </div>
-
-        {/* Clear Canvas - Full Width */}
         <ToolButton
           onClick={onClearCanvas}
-          disabled={false}
           title="Clear Canvas"
           icon={<Eraser className="h-3.5 w-3.5" />}
           variant="danger"
         />
-      </div>
+      </PaletteSection>
 
-      {/* Divider */}
-      <div className="h-px bg-white/10" />
-
-      {/* Connector Settings */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5">
-          <Workflow className="h-3 w-3 text-white/50" />
-          <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Connectors</h3>
-        </div>
-
-        {/* Edge Type - Compact 2x2 Grid */}
+      <PaletteSection
+        title="Connectors"
+        icon={<Workflow className="h-3.5 w-3.5 text-white/50" />}
+        storageId="workflow-section-connectors"
+        defaultOpen
+      >
+        <p className="text-[10px] uppercase text-white/40">Edge Type</p>
         <div className="grid grid-cols-2 gap-1.5">
           {(['smoothstep', 'straight', 'step', 'default'] as const).map((type) => (
             <button
               key={type}
               onClick={() => onEdgeTypeChange(type)}
+              disabled={autoRouteEdges}
               className={`
-                px-2 py-1.5 text-[10px] rounded transition-all capitalize
+                rounded px-2 py-1.5 text-[10px] capitalize transition-all
                 ${edgeType === type ? 'font-medium' : 'hover:bg-white/10'}
+                ${autoRouteEdges ? 'cursor-not-allowed opacity-30' : ''}
               `}
               style={{
                 backgroundColor: edgeType === type ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
@@ -314,20 +367,20 @@ export function ShapePalette({
           ))}
         </div>
 
-        {/* Arrow Direction - Compact 4-column Grid */}
+        <p className="text-[10px] uppercase text-white/40">Arrow Direction</p>
         <div className="grid grid-cols-4 gap-1.5">
           {([
-            { type: 'end' as const, symbol: '—▶' },
-            { type: 'start' as const, symbol: '◀—' },
-            { type: 'both' as const, symbol: '◀▶' },
-            { type: 'none' as const, symbol: '——' },
+            { type: 'end' as const, symbol: '-->' },
+            { type: 'start' as const, symbol: '<--' },
+            { type: 'both' as const, symbol: '<->' },
+            { type: 'none' as const, symbol: '---' },
           ]).map(({ type, symbol }) => (
             <button
               key={type}
               onClick={() => onArrowTypeChange(type)}
               title={`Arrow: ${type}`}
               className={`
-                px-1 py-1.5 text-xs rounded transition-all flex items-center justify-center
+                flex items-center justify-center rounded px-1 py-1.5 text-xs transition-all
                 ${arrowType === type ? 'font-medium' : 'hover:bg-white/10'}
               `}
               style={{
@@ -336,12 +389,12 @@ export function ShapePalette({
                 color: arrowType === type ? theme.primary : 'rgba(255, 255, 255, 0.7)',
               }}
             >
-              <span className="text-sm leading-none font-mono">{symbol}</span>
+              <span className="font-mono text-xs leading-none">{symbol}</span>
             </button>
           ))}
         </div>
 
-        {/* Line Style - Compact 3x2 Grid */}
+        <p className="text-[10px] uppercase text-white/40">Line Style</p>
         <div className="grid grid-cols-3 gap-1.5">
           {([
             { style: 'solid' as const, preview: '──' },
@@ -356,7 +409,7 @@ export function ShapePalette({
               onClick={() => onLineStyleChange(style)}
               title={style.replace('-', ' ')}
               className={`
-                px-1 py-1.5 text-xs rounded transition-all flex items-center justify-center
+                flex items-center justify-center rounded px-1 py-1.5 text-xs transition-all
                 ${lineStyle === style ? 'font-medium' : 'hover:bg-white/10'}
               `}
               style={{
@@ -365,125 +418,180 @@ export function ShapePalette({
                 color: lineStyle === style ? theme.primary : 'rgba(255, 255, 255, 0.7)',
               }}
             >
-              <span className="text-sm leading-none font-mono tracking-wider">{preview}</span>
+              <span className="font-mono text-sm leading-none tracking-wider">{preview}</span>
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Divider */}
-      <div className="h-px bg-white/10" />
-
-      {/* Theme */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Theme</h3>
-        <ThemeSwitcher />
-      </div>
-
-      {/* Divider */}
-      <div className="h-px bg-white/10" />
-
-      {/* Node Styling */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5">
-          <Palette className="h-3 w-3 text-white/50" />
-          <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Node Style</h3>
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] uppercase text-white/40">Routing Mode</p>
+          <button
+            type="button"
+            onClick={onAutoRouteToggle}
+            className={`
+              flex items-center justify-between rounded px-3 py-1.5 text-xs transition-all
+              ${autoRouteEdges ? 'bg-white/10 text-white' : 'bg-black/30 text-white/60 hover:text-white'}
+            `}
+            style={{
+              border: autoRouteEdges
+                ? `1px solid rgba(${theme.primaryRgb}, 0.5)`
+                : '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <span>{autoRouteEdges ? 'Smart routing' : 'Manual routing'}</span>
+            <ShieldCheck className={`h-3.5 w-3.5 ${autoRouteEdges ? 'text-white' : 'text-white/50'}`} />
+          </button>
         </div>
 
-        {/* Color Picker */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-white/50">
-            {selectedCount > 0 ? `Color (${selectedCount} selected)` : 'Node Color'}
-          </label>
-          <div className="grid grid-cols-6 gap-1.5">
-            {[
-              theme.primary, // Theme color
-              '#ef4444', // Red
-              '#f97316', // Orange
-              '#eab308', // Yellow
-              '#22c55e', // Green
-              '#06b6d4', // Cyan
-              '#3b82f6', // Blue
-              '#8b5cf6', // Purple
-              '#ec4899', // Pink
-              '#64748b', // Gray
-              '#ffffff', // White
-              '#000000', // Black
-            ].map((color) => (
+          <p className="text-[10px] uppercase text-white/40">Validation Mode</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {(['strict', 'relaxed'] as const).map((mode) => (
               <button
-                key={color}
-                type="button"
-                onClick={() => onNodeColorChange(color)}
-                title={color === theme.primary ? 'Theme color' : color}
+                key={mode}
+                onClick={() => onEdgeValidationModeChange(mode)}
                 className={`
-                  h-8 w-8 rounded border-2 transition-all
-                  ${selectedNodeColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : 'hover:scale-110'}
+                  rounded px-2 py-1.5 text-[10px] uppercase transition-all
+                  ${edgeValidationMode === mode ? 'font-semibold' : 'hover:bg-white/10'}
                 `}
                 style={{
-                  backgroundColor: color,
-                  borderColor: color === '#000000' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+                  backgroundColor:
+                    edgeValidationMode === mode ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
+                  border:
+                    edgeValidationMode === mode ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(255, 255, 255, 0.1)',
+                  color: edgeValidationMode === mode ? theme.primary : 'rgba(255, 255, 255, 0.7)',
                 }}
-                disabled={selectedCount === 0}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Background Color Picker */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-white/50">
-            {selectedCount > 0 ? `Background (${selectedCount} selected)` : 'Background Color'}
-          </label>
-          <div className="grid grid-cols-6 gap-1.5">
-            {[
-              'rgba(10, 10, 10, 0.7)', // Dark (default)
-              'rgba(255, 255, 255, 0.1)', // Light transparent
-              'rgba(239, 68, 68, 0.2)', // Red transparent
-              'rgba(249, 115, 22, 0.2)', // Orange transparent
-              'rgba(234, 179, 8, 0.2)', // Yellow transparent
-              'rgba(34, 197, 94, 0.2)', // Green transparent
-              'rgba(6, 182, 212, 0.2)', // Cyan transparent
-              'rgba(59, 130, 246, 0.2)', // Blue transparent
-              'rgba(139, 92, 246, 0.2)', // Purple transparent
-              'rgba(236, 72, 153, 0.2)', // Pink transparent
-              'rgba(255, 255, 255, 0.9)', // White solid
-              'rgba(0, 0, 0, 0.9)', // Black solid
-            ].map((bgColor, index) => (
-              <button
-                key={bgColor}
-                type="button"
-                onClick={() => onNodeBgColorChange(bgColor)}
-                title={index === 0 ? 'Default dark' : bgColor}
-                className="h-8 w-8 rounded border-2 transition-all hover:scale-110 relative overflow-hidden"
-                style={{
-                  backgroundColor: bgColor,
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                }}
-                disabled={selectedCount === 0}
               >
-                {/* Checkerboard pattern for transparency preview */}
-                <div className="absolute inset-0 opacity-20" style={{
-                  backgroundImage: 'linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%)',
-                  backgroundSize: '4px 4px',
-                  backgroundPosition: '0 0, 0 2px, 2px -2px, -2px 0px',
-                }} />
+                {mode}
               </button>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Divider */}
-      <div className="h-px bg-white/10" />
+        {connectionWarning && (
+          <div className="flex items-center gap-1.5 rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[10px] text-yellow-200">
+            <AlertTriangle className="h-3 w-3" />
+            <span>{connectionWarning}</span>
+          </div>
+        )}
 
-      {/* Grid & Alignment */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5">
-          <Grid3x3 className="h-3 w-3 text-white/50" />
-          <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Alignment</h3>
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[10px] uppercase text-white/40">Branch Templates</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => onAddBranchTemplate('ifElse')}
+              className="flex items-center justify-center gap-1 rounded border border-white/10 px-2 py-1.5 text-[10px] text-white/70 transition-all hover:bg-white/10"
+            >
+              <GitBranch className="h-3.5 w-3.5" />
+              If / Else
+            </button>
+            <button
+              type="button"
+              onClick={() => onAddBranchTemplate('loop')}
+              className="flex items-center justify-center gap-1 rounded border border-white/10 px-2 py-1.5 text-[10px] text-white/70 transition-all hover:bg-white/10"
+            >
+              <Repeat2 className="h-3.5 w-3.5" />
+              Loop
+            </button>
+          </div>
         </div>
+      </PaletteSection>
 
-        {/* Snap to Grid Toggle */}
+      <PaletteSection
+        title="Theme"
+        icon={<SunMedium className="h-3.5 w-3.5 text-white/50" />}
+        storageId="workflow-section-theme"
+      >
+        <ThemeSwitcher />
+      </PaletteSection>
+
+      <PaletteSection
+        title="Node Style"
+        icon={<Palette className="h-3.5 w-3.5 text-white/50" />}
+        highlight={selectedCount > 0}
+        defaultOpen
+        storageId="workflow-section-node-style"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] text-white/50">
+              {selectedCount > 0 ? `Color (${selectedCount} selected)` : 'Node Color'}
+            </label>
+            <div className="grid grid-cols-6 gap-1.5">
+              {[
+                theme.primary,
+                '#ef4444',
+                '#f97316',
+                '#eab308',
+                '#22c55e',
+                '#06b6d4',
+                '#3b82f6',
+                '#8b5cf6',
+                '#ec4899',
+                '#64748b',
+                '#ffffff',
+                '#000000',
+              ].map((color, index) => (
+                <button
+                  key={`${color}-${index}`}
+                  type="button"
+                  onClick={() => onNodeColorChange(color)}
+                  title={color === theme.primary ? 'Theme color' : color}
+                  className={`
+                    h-8 w-8 rounded border-2 transition-all
+                    ${selectedNodeColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : 'hover:scale-110'}
+                  `}
+                  style={{
+                    backgroundColor: color,
+                    borderColor: color === '#000000' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+                  }}
+                  disabled={selectedCount === 0}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] text-white/50">
+              {selectedCount > 0 ? `Background (${selectedCount} selected)` : 'Background Color'}
+            </label>
+            <div className="grid grid-cols-6 gap-1.5">
+              {backgroundColors.map((bgColor, index) => (
+                <button
+                  key={`${bgColor}-${index}`}
+                  type="button"
+                  onClick={() => onNodeBgColorChange(bgColor)}
+                  title={index === 0 ? 'Default dark' : bgColor}
+                  className="relative h-8 w-8 overflow-hidden rounded border-2 transition-all hover:scale-110"
+                  style={{
+                    backgroundColor: bgColor,
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                  }}
+                  disabled={selectedCount === 0}
+                >
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-20"
+                    style={{
+                      backgroundImage:
+                        'linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%)',
+                      backgroundSize: '4px 4px',
+                      backgroundPosition: '0 0, 0 2px, 2px -2px, -2px 0px',
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </PaletteSection>
+
+      <PaletteSection
+        title="Alignment"
+        icon={<Grid3x3 className="h-3.5 w-3.5 text-white/50" />}
+        highlight={selectedCount >= 2}
+        storageId="workflow-section-alignment"
+      >
         <button
           type="button"
           onClick={onSnapToGridToggle}
@@ -501,7 +609,6 @@ export function ShapePalette({
           Snap to Grid
         </button>
 
-        {/* Alignment Buttons */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] text-white/50">
             {selectedCount >= 2 ? `Align (${selectedCount} selected)` : 'Align Nodes'}
@@ -545,7 +652,6 @@ export function ShapePalette({
             />
           </div>
 
-          {/* Distribute Buttons */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] text-white/50">
               {selectedCount >= 3 ? `Distribute (${selectedCount} selected)` : 'Distribute Evenly'}
@@ -590,14 +696,14 @@ export function ShapePalette({
             </div>
           </div>
         </div>
-      </div>
+      </PaletteSection>
 
-      {/* Divider */}
-      <div className="h-px bg-white/10" />
-
-      {/* Shapes Section */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Shapes</h3>
+      <PaletteSection
+        title="Shapes"
+        icon={<Shapes className="h-3.5 w-3.5 text-white/50" />}
+        defaultOpen
+        storageId="workflow-section-shapes"
+      >
         <div className="grid grid-cols-2 gap-2">
           {shapes.map((shape) => (
             <ShapeTemplate
@@ -609,21 +715,25 @@ export function ShapePalette({
             />
           ))}
         </div>
-      </div>
+      </PaletteSection>
 
-      {/* Keyboard Shortcuts - Compact */}
-      <div className="mt-auto flex flex-col gap-1 border-t border-white/10 pt-3">
-        <h3 className="text-[10px] font-semibold text-white/40 uppercase tracking-wide">Shortcuts</h3>
-        <div className="text-[10px] text-white/50 leading-relaxed">
-          <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">Del</kbd> Delete
+      <PaletteSection
+        title="Shortcuts"
+        icon={<Keyboard className="h-3.5 w-3.5 text-white/50" />}
+        storageId="workflow-section-shortcuts"
+      >
+        <div className="flex flex-col gap-1 text-[10px] text-white/50">
+          <div>
+            <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">Del</kbd> Delete
+          </div>
+          <div>
+            <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">⌘Z</kbd> Undo
+          </div>
+          <div>
+            <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">Space</kbd> Pan
+          </div>
         </div>
-        <div className="text-[10px] text-white/50 leading-relaxed">
-          <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">⌘Z</kbd> Undo
-        </div>
-        <div className="text-[10px] text-white/50 leading-relaxed">
-          <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">Space</kbd> Pan
-        </div>
-      </div>
+      </PaletteSection>
     </div>
   );
 }
