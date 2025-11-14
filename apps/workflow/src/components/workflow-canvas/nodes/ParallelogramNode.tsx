@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface ParallelogramNodeData extends Record<string, unknown> {
   label: string;
   color?: string;
+  bgColor?: string;
 }
 
 export type ParallelogramNodeType = Node<ParallelogramNodeData, 'parallelogram'>;
@@ -14,6 +15,7 @@ export type ParallelogramNodeType = Node<ParallelogramNodeData, 'parallelogram'>
 function ParallelogramNode({ data, selected }: NodeProps<ParallelogramNodeType>) {
   const { theme } = useTheme();
   const nodeColor = data.color || theme.primary;
+  const nodeBgColor = data.bgColor || 'rgba(10, 10, 10, 0.7)';
   const [label, setLabel] = useState(data.label || 'Input/Output');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -91,7 +93,7 @@ function ParallelogramNode({ data, selected }: NodeProps<ParallelogramNodeType>)
       >
         <polygon
           points="15,5 100,5 85,95 0,95"
-          fill="rgba(10, 10, 10, 0.7)"
+          fill={nodeBgColor}
           stroke={selected ? nodeColor : `${nodeColor}50`}
           strokeWidth="2"
           style={{

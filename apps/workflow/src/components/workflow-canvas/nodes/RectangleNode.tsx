@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface RectangleNodeData extends Record<string, unknown> {
   label: string;
   color?: string;
+  bgColor?: string;
 }
 
 export type RectangleNodeType = Node<RectangleNodeData, 'rectangle'>;
@@ -14,6 +15,7 @@ export type RectangleNodeType = Node<RectangleNodeData, 'rectangle'>;
 function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
   const { theme } = useTheme();
   const nodeColor = data.color || theme.primary;
+  const nodeBgColor = data.bgColor || 'rgba(10, 10, 10, 0.7)';
   const [label, setLabel] = useState(data.label || 'Process');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -87,7 +89,7 @@ function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
       <div
         className="flex h-full w-full items-center justify-center rounded-lg border-2 px-4 py-2 transition-all"
         style={{
-          backgroundColor: 'rgba(10, 10, 10, 0.7)',
+          backgroundColor: nodeBgColor,
           borderColor: selected ? nodeColor : `${nodeColor}50`,
           boxShadow: selected ? `0 0 0 2px ${nodeColor}80` : 'none',
         }}

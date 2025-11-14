@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface OvalNodeData extends Record<string, unknown> {
   label: string;
   color?: string;
+  bgColor?: string;
 }
 
 export type OvalNodeType = Node<OvalNodeData, 'oval'>;
@@ -14,6 +15,7 @@ export type OvalNodeType = Node<OvalNodeData, 'oval'>;
 function OvalNode({ data, selected }: NodeProps<OvalNodeType>) {
   const { theme } = useTheme();
   const nodeColor = data.color || theme.primary;
+  const nodeBgColor = data.bgColor || 'rgba(10, 10, 10, 0.7)';
   const [label, setLabel] = useState(data.label || 'Start/End');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -94,7 +96,7 @@ function OvalNode({ data, selected }: NodeProps<OvalNodeType>) {
           cx="50"
           cy="50"
           r="48"
-          fill="rgba(10, 10, 10, 0.7)"
+          fill={nodeBgColor}
           stroke={selected ? nodeColor : `${nodeColor}50`}
           strokeWidth="2"
           style={{

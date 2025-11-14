@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface DiamondNodeData extends Record<string, unknown> {
   label: string;
   color?: string;
+  bgColor?: string;
 }
 
 export type DiamondNodeType = Node<DiamondNodeData, 'diamond'>;
@@ -14,6 +15,7 @@ export type DiamondNodeType = Node<DiamondNodeData, 'diamond'>;
 function DiamondNode({ data, selected }: NodeProps<DiamondNodeType>) {
   const { theme } = useTheme();
   const nodeColor = data.color || theme.primary;
+  const nodeBgColor = data.bgColor || 'rgba(10, 10, 10, 0.7)';
   const [label, setLabel] = useState(data.label || 'Decision');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -92,7 +94,7 @@ function DiamondNode({ data, selected }: NodeProps<DiamondNodeType>) {
       >
         <polygon
           points="50,5 95,50 50,95 5,50"
-          fill="rgba(10, 10, 10, 0.7)"
+          fill={nodeBgColor}
           stroke={selected ? nodeColor : `${nodeColor}50`}
           strokeWidth="2"
           style={{
