@@ -27,3 +27,6 @@ export * from './activity';
 export * from './sentiment';
 export * from './prompts';
 export * from './ai';
+
+// App Registry
+export * from './app-registry';

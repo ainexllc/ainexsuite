@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@ainexsuite/auth';
 import { useToast } from '@/lib/toast';
 import { getUserJournalEntries } from '@/lib/firebase/firestore';
 import type { JournalEntry, MoodType } from '@ainexsuite/types';
@@ -41,6 +41,8 @@ export function DashboardView() {
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState('Loading your journal...');
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -48,7 +50,17 @@ export function DashboardView() {
 
   useEffect(() => {
     if (user) {
-      void loadEntries();
+      setLoadingMessage('Loading your journal entries...');
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.warn('[DashboardView] Load timeout - assuming empty database');
+        setLoading(false);
+        setEntries([]);
+      }, 10000); // 10 second timeout
+
+      void loadEntries().finally(() => clearTimeout(timeoutId));
+    } else {
+      setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -57,21 +69,37 @@ export function DashboardView() {
     if (!user) return;
 
     try {
+      console.log('[DashboardView] Starting to load entries for user:', user.uid);
       setLoading(true);
+      setError(null);
+
+      // Set a timeout to show a helpful message if loading takes too long
+      const timeoutId = setTimeout(() => {
+        console.log('[DashboardView] Loading is taking longer than 3 seconds...');
+        setLoadingMessage('Still loading... This is taking longer than expected');
+      }, 3000);
+
+      console.log('[DashboardView] Calling getUserJournalEntries...');
       const { entries: fetchedEntries } = await getUserJournalEntries(user.uid, {
         limit: 100,
         sortBy: 'createdAt',
         sortOrder: 'desc',
       });
+      console.log('[DashboardView] Received entries:', fetchedEntries.length);
+
+      clearTimeout(timeoutId);
       setEntries(fetchedEntries);
+      setLoadingMessage('Loaded successfully!');
     } catch (error) {
-      console.error('Error fetching journal entries:', error);
+      console.error('[DashboardView] Error fetching journal entries:', error);
+      setError('Failed to load journal entries. Please try refreshing the page.');
       toast({
         title: 'Error',
         description: 'Failed to load journal entries. Please refresh the page.',
         variant: 'error',
       });
     } finally {
+      console.log('[DashboardView] Loading complete, setting loading to false');
       setLoading(false);
     }
   };
@@ -149,7 +177,26 @@ export function DashboardView() {
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
+          <p className="text-sm text-white/70">{loadingMessage}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <p className="text-red-400">{error}</p>
+          <button
+            onClick={loadEntries}
+            className="px-4 py-2 bg-[#f97316] text-white rounded-lg hover:bg-[#f97316]/90 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }

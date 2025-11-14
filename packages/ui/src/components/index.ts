@@ -72,6 +72,10 @@ export {
   type FooterLink,
 } from "./marketing/homepage-template";
 
+// Suite Components
+export { SuiteNavigation, type SuiteNavigationProps } from "./suite-navigation";
+export { AppSwitcher, type AppSwitcherProps } from "./app-switcher";
+
 // Existing Components
 export { Footer } from "./footer";
 export { Paywall } from "./paywall";

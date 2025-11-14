@@ -27,6 +27,8 @@ import {
   X,
   Sparkles,
   ChevronDown,
+  Layers,
+  GitBranch,
 } from 'lucide-react';
 import { getAppsUsedCount } from '@ainexsuite/auth';
 import { Footer } from '@/components/footer';
@@ -53,7 +55,7 @@ const apps = [
   },
   {
     name: 'Tasks',
-    slug: 'tasks',
+    slug: 'todo',
     description: 'Manage your to-dos and projects with powerful organization tools. Set priorities, due dates, and never miss a deadline.',
     icon: CheckSquare,
     color: 'from-blue-500 to-cyan-500',
@@ -98,6 +100,22 @@ const apps = [
     icon: Dumbbell,
     color: 'from-orange-500 to-amber-500',
     url: isDev ? 'http://localhost:3008' : 'https://fit.ainexsuite.com',
+  },
+  {
+    name: 'Projects',
+    slug: 'projects',
+    description: 'Visual project whiteboard with sticky notes and kanban boards for team collaboration.',
+    icon: Layers,
+    color: 'from-violet-500 to-purple-500',
+    url: isDev ? 'http://localhost:3009' : 'https://projects.ainexsuite.com',
+  },
+  {
+    name: 'Workflow',
+    slug: 'workflow',
+    description: 'Build visual workflows with drag-and-drop simplicity. Automate processes and tasks.',
+    icon: GitBranch,
+    color: 'from-purple-600 to-indigo-600',
+    url: isDev ? 'http://localhost:3010' : 'https://workflow.ainexsuite.com',
   },
 ];
 
