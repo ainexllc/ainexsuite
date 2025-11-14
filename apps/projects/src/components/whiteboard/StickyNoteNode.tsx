@@ -9,6 +9,8 @@ export type StickyNoteData = {
   title?: string;
   color: string;
   size?: 'small' | 'medium' | 'large';
+  fontSize?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
+  fontFamily?: 'sans' | 'serif' | 'mono' | 'cursive';
   locked?: boolean;
   isDarkMode?: boolean;
   onDelete?: () => void;
@@ -48,6 +50,26 @@ function StickyNoteNode({ data }: NodeProps) {
     setTitle(newTitle);
     nodeData.onTitleChange?.(newTitle);
   };
+
+  // Font size mapping
+  const fontSizeMap = {
+    xs: 'text-xs',    // 12px
+    sm: 'text-sm',    // 14px (default)
+    base: 'text-base', // 16px
+    lg: 'text-lg',    // 18px
+    xl: 'text-xl',    // 20px
+  };
+
+  // Font family mapping
+  const fontFamilyMap = {
+    sans: 'font-sans',           // Default sans-serif
+    serif: 'font-serif',         // Serif fonts
+    mono: 'font-mono',           // Monospace
+    cursive: 'font-cursive',     // Cursive/handwriting style
+  };
+
+  const fontSize = fontSizeMap[nodeData.fontSize || 'sm'];
+  const fontFamily = fontFamilyMap[nodeData.fontFamily || 'sans'];
 
   const handleStyle = {
     background: '#3b82f6',
@@ -126,7 +148,7 @@ function StickyNoteNode({ data }: NodeProps) {
         <textarea
           value={text}
           onChange={(e) => handleTextChange(e.target.value)}
-          className="w-full bg-transparent border-none outline-none resize-none text-sm placeholder:text-gray-500/60 text-gray-800 nodrag whitespace-pre-wrap mt-3"
+          className={`w-full bg-transparent border-none outline-none resize-none placeholder:text-gray-500/60 text-gray-800 nodrag whitespace-pre-wrap mt-3 ${fontSize} ${fontFamily}`}
           placeholder="Take a note..."
           style={{
             minHeight: '60px',

@@ -85,13 +85,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
   const [nodes, setNodesState, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdgesState, onEdgesChangeRaw] = useEdgesState<Edge>([]);
 
-  // Wrap onEdgesChange
-  const onEdgesChange = useCallback(
-    (changes: unknown) => {
-      onEdgesChangeRaw(changes);
-    },
-    [onEdgesChangeRaw]
-  );
+  // Wrap onEdgesChange with proper typing
+  const onEdgesChange = onEdgesChangeRaw;
 
   // Undo/Redo hook
   const {
@@ -110,6 +105,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [stickyNoteColor, setStickyNoteColor] = useState('#fef08a');
   const [stickyNoteSize] = useState<'small' | 'medium' | 'large'>('small');
+  const [stickyNoteFontSize, setStickyNoteFontSize] = useState<'xs' | 'sm' | 'base' | 'lg' | 'xl'>('sm');
+  const [stickyNoteFontFamily, setStickyNoteFontFamily] = useState<'sans' | 'serif' | 'mono' | 'cursive'>('sans');
   const [edgeType, setEdgeType] = useState<'smoothstep' | 'straight' | 'default' | 'step'>('smoothstep');
   const [arrowType, setArrowType] = useState<'none' | 'end' | 'start' | 'both'>('end');
   const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted'>('solid');
@@ -318,9 +315,29 @@ function WhiteboardInner(_props: WhiteboardProps) {
       // Validate edges before saving to prevent orphaned edges from being saved
       const { validEdges } = validateEdges(edges, nodes);
 
+      // Clean edges to remove undefined values
+      const edgesToSave = validEdges.map((edge) => {
+        const cleanEdge: Record<string, unknown> = {
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+        };
+
+        // Only add defined optional properties
+        if (edge.type !== undefined) cleanEdge.type = edge.type;
+        if (edge.sourceHandle !== undefined) cleanEdge.sourceHandle = edge.sourceHandle;
+        if (edge.targetHandle !== undefined) cleanEdge.targetHandle = edge.targetHandle;
+        if (edge.animated !== undefined) cleanEdge.animated = edge.animated;
+        if (edge.style !== undefined) cleanEdge.style = edge.style;
+        if (edge.markerEnd !== undefined) cleanEdge.markerEnd = edge.markerEnd;
+        if (edge.markerStart !== undefined) cleanEdge.markerStart = edge.markerStart;
+
+        return cleanEdge;
+      });
+
       await setDoc(whiteboardRef, {
         nodes: nodesToSave,
-        edges: validEdges,
+        edges: edgesToSave,
         isDarkMode,
         edgeType,
         arrowType,
@@ -570,6 +587,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
             title: '',
             color: color || stickyNoteColor,
             size: stickyNoteSize,
+            fontSize: stickyNoteFontSize,
+            fontFamily: stickyNoteFontFamily,
             isDarkMode,
             onDelete: () => deleteNode(nodeId),
             onTextChange: (text: string) => updateNodeText(nodeId, text),
@@ -580,7 +599,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
         setNodesState((nds) => [...nds, newNode]);
       }
     },
-    [screenToFlowPosition, stickyNoteColor, stickyNoteSize, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, takeSnapshot]
+    [screenToFlowPosition, stickyNoteColor, stickyNoteSize, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, takeSnapshot]
   );
 
   // Export whiteboard to JSON
@@ -767,7 +786,73 @@ function WhiteboardInner(_props: WhiteboardProps) {
             </div>
           </div>
 
-          <div className={`h-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'} my-1`} />
+          <div className={`h-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
+
+          {/* Font Settings Section */}
+          <div className="flex flex-col gap-1">
+            <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+              Text Style
+            </span>
+
+            {/* Font Size */}
+            <div className="flex flex-col gap-0.5">
+              <span className={`text-[9px] ${isDarkMode ? 'text-white/50' : 'text-gray-500'}`}>Size</span>
+              <div className="flex gap-1">
+                {([
+                  { size: 'xs' as const, label: 'XS' },
+                  { size: 'sm' as const, label: 'SM' },
+                  { size: 'base' as const, label: 'MD' },
+                  { size: 'lg' as const, label: 'LG' },
+                  { size: 'xl' as const, label: 'XL' },
+                ]).map(({ size, label }) => (
+                  <button
+                    key={size}
+                    onClick={() => setStickyNoteFontSize(size)}
+                    className={`flex-1 px-1 py-0.5 text-[9px] rounded transition-all ${
+                      stickyNoteFontSize === size
+                        ? 'bg-blue-500 text-white font-medium'
+                        : isDarkMode
+                        ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={`Font size: ${label}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Font Family */}
+            <div className="flex flex-col gap-0.5">
+              <span className={`text-[9px] ${isDarkMode ? 'text-white/50' : 'text-gray-500'}`}>Font</span>
+              <div className="grid grid-cols-2 gap-1">
+                {([
+                  { family: 'sans' as const, label: 'Sans' },
+                  { family: 'serif' as const, label: 'Serif' },
+                  { family: 'mono' as const, label: 'Mono' },
+                  { family: 'cursive' as const, label: 'Cursive' },
+                ]).map(({ family, label }) => (
+                  <button
+                    key={family}
+                    onClick={() => setStickyNoteFontFamily(family)}
+                    className={`px-1.5 py-0.5 text-[9px] rounded transition-all ${
+                      stickyNoteFontFamily === family
+                        ? 'bg-blue-500 text-white font-medium'
+                        : isDarkMode
+                        ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={`Font: ${label}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className={`h-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
 
           {/* Undo/Redo Section */}
           <div className="flex flex-col gap-1.5">

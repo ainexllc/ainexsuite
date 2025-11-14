@@ -9,6 +9,13 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
   ],
+  theme: {
+    extend: {
+      fontFamily: {
+        cursive: ['"Comic Sans MS"', '"Bradley Hand"', '"Brush Script MT"', 'cursive'],
+      },
+    },
+  },
   plugins: [],
 };
 
