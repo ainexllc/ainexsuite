@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { Loader2, FolderKanban, BarChart3, Shield, Users, Target, Zap } from 'lucide-react';
+import { Loader2, Workflow, BarChart3, Shield, Users, Target, Zap } from 'lucide-react';
 import { AinexStudiosLogo } from '@/components/branding/ainex-studios-logo';
 import { Footer } from '@/components/footer';
 import { HomepageTemplate } from '@ainexsuite/ui/components';
@@ -30,9 +30,9 @@ const navLinks: NavLink[] = [
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Project Management',
-    description: 'Organize projects, track milestones, and manage deliverables with intelligent workflows.',
-    icon: FolderKanban,
+    title: 'Project Whiteboard',
+    description: 'Visualize projects with interactive whiteboards, sticky notes, and workflow connections.',
+    icon: Workflow,
   },
   {
     title: 'Team Collaboration',

@@ -14,3 +14,4 @@ export * from './auth-errors';
 export * from './suite-utils';
 export * from './suite-guard';
 export * from './auth-box';
+export * from './user-utils';

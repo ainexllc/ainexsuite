@@ -6,12 +6,16 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 interface ParallelogramNodeData extends Record<string, unknown> {
   label: string;
+  color?: string;
+  bgColor?: string;
 }
 
 export type ParallelogramNodeType = Node<ParallelogramNodeData, 'parallelogram'>;
 
 function ParallelogramNode({ data, selected }: NodeProps<ParallelogramNodeType>) {
   const { theme } = useTheme();
+  const nodeColor = data.color || theme.primary;
+  const nodeBgColor = data.bgColor || 'rgba(10, 10, 10, 0.7)';
   const [label, setLabel] = useState(data.label || 'Input/Output');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -32,14 +36,13 @@ function ParallelogramNode({ data, selected }: NodeProps<ParallelogramNodeType>)
   }, []);
 
   const handleStyle = {
-    background: theme.primary,
-    width: 12,
-    height: 12,
-    border: '3px solid #0a0a0a',
+    background: nodeColor,
+    width: 8,
+    height: 8,
+    border: '2px solid #fff',
     borderRadius: '50%',
-    boxShadow: `0 0 0 2px ${theme.primary}, 0 0 8px ${theme.primary}`,
     zIndex: 10,
-    opacity: isHovered || selected ? 1 : 0.4,
+    opacity: isHovered || selected ? 1 : 0,
     transition: 'opacity 0.2s',
   };
 
@@ -50,7 +53,7 @@ function ParallelogramNode({ data, selected }: NodeProps<ParallelogramNodeType>)
       style={{ width: '100%', height: '100%' }}
     >
       <NodeResizer
-        color={theme.primary}
+        color={nodeColor}
         isVisible={selected}
         minWidth={120}
         minHeight={60}
@@ -90,12 +93,12 @@ function ParallelogramNode({ data, selected }: NodeProps<ParallelogramNodeType>)
       >
         <polygon
           points="15,5 100,5 85,95 0,95"
-          fill="rgba(10, 10, 10, 0.7)"
-          stroke={selected ? theme.primary : `rgba(${theme.primaryRgb}, 0.3)`}
+          fill={nodeBgColor}
+          stroke={selected ? nodeColor : `${nodeColor}50`}
           strokeWidth="2"
           style={{
             filter: selected
-              ? `drop-shadow(0 0 6px rgba(${theme.primaryRgb}, 0.5))`
+              ? `drop-shadow(0 0 6px ${nodeColor}80)`
               : 'none',
           }}
         />

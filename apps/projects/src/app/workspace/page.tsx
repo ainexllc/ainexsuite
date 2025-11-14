@@ -211,7 +211,7 @@ export default function WorkspacePage() {
               </div>
 
               {/* Whiteboard Area */}
-              <div className="h-[600px] rounded-xl border border-white/10 bg-white/5 backdrop-blur overflow-hidden">
+              <div className="h-[calc(100vh-12rem)] min-h-[700px] rounded-xl border border-white/10 bg-white/5 backdrop-blur overflow-hidden">
                 <Whiteboard />
               </div>
             </section>
