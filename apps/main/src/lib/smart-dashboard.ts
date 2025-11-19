@@ -90,7 +90,12 @@ export class SmartDashboardService {
         subtitle: 'Log your first workout',
         priority: 'low' as InsightPriority,
         timestamp: new Date(),
-        actionUrl: '/fit'
+        actionUrl: '/fit',
+        actions: [{
+           label: 'Log Workout',
+           type: 'create_prompt',
+           payload: { type: 'workout' }
+        }]
       });
     }
 

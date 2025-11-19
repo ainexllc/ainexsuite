@@ -121,6 +121,13 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
              setIsCompleted(true); // Hide card or just show success state
              alert("Task created! Check your Todo app.");
              setIsCompleting(false);
+        } else if (action.payload?.type === 'workout') {
+             setIsCompleting(true);
+             const dispatcher = new ActionDispatcher(user.uid);
+             await dispatcher.dispatch("Log workout Quick Session");
+             setIsCompleted(true);
+             alert("Workout logged! Keep it up.");
+             setIsCompleting(false);
         }
     }
   };

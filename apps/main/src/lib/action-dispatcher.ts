@@ -38,8 +38,8 @@ export class ActionDispatcher {
           return { success: true, message: `Note "${action.payload.title}" created!` };
           
         case 'log_workout':
-           // TODO: Implement workout logging
-           return { success: true, message: "Workout logging coming soon!" };
+          await this.logWorkout(action.payload);
+          return { success: true, message: "Workout logged! Keep it up." };
 
         case 'log_mood':
           await this.logMood(action.payload);
@@ -94,11 +94,24 @@ export class ActionDispatcher {
           title: title || 'Untitled Note',
           content: ''
         }
-      };
-    }
-
-    if (lower.startsWith('log mood') || lower.startsWith('i feel') || lower.startsWith('my mood is')) {
-       const mood = command.replace(/^(log mood|i feel|my mood is)/i, '').trim();
+             };
+          }
+      
+          if (lower.startsWith('log workout') || lower.startsWith('track workout') || lower.startsWith('i worked out')) {
+            // Extract name: "Log workout 30 min run" -> "30 min run"
+            const name = command.replace(/^(log|track) workout/i, '').replace(/^i worked out/i, '').trim();
+            return {
+              raw: command,
+              type: 'log_workout',
+              payload: {
+                name: name || 'Quick Workout',
+                duration: 30, // Default to 30 mins
+                date: new Date()
+              }
+            };
+          }
+          
+          if (lower.startsWith('log mood') || lower.startsWith('i feel') || lower.startsWith('my mood is')) {       const mood = command.replace(/^(log mood|i feel|my mood is)/i, '').trim();
        return {
          raw: command,
          type: 'log_mood',
@@ -145,6 +158,19 @@ export class ActionDispatcher {
       title: `Daily Check-in`,
       content: `I'm feeling ${payload.mood} today.`,
       tags: ['quick-log'],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  private async logWorkout(payload: { name: string; duration: number; date: Date }) {
+    await addDoc(collection(db, 'workouts'), {
+      ownerId: this.userId,
+      name: payload.name,
+      duration: payload.duration,
+      date: payload.date,
+      type: 'quick_log',
+      status: 'completed',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });

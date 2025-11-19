@@ -22,6 +22,7 @@ export * from './fitness';
 // Cross-app types
 export * from './search';
 export * from './activity';
+export * from './feedback';
 
 // AI/ML types
 export * from './sentiment';
