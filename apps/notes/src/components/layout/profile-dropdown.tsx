@@ -18,9 +18,13 @@ type ProfileDropdownProps = {
 
 export function ProfileDropdown({ isOpen, onClose, onOpenSettings, onOpenActivity, onRefresh }: ProfileDropdownProps) {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   useEffect(() => {
     if (!isOpen) {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { Loader2, Save, RotateCcw, LayoutGrid, CheckCircle2, AlertCircle, Sparkles, X } from 'lucide-react';
+import { Loader2, Save, RotateCcw, LayoutGrid, CheckCircle2, AlertCircle, Sparkles, X, Palette } from 'lucide-react';
 
 interface AppConfig {
   id: string;
@@ -167,16 +167,21 @@ export default function AppsManagement() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-            <h1 className="text-3xl font-bold text-white mb-2">App Management</h1>
-            <p className="text-zinc-400">Manage theme colors and configurations for all apps.</p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between bg-zinc-900/40 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-sm">
+        <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                <Palette className="h-6 w-6 text-indigo-400" />
+            </div>
+            <div>
+                <h1 className="text-2xl font-bold text-white">App Management</h1>
+                <p className="text-sm text-zinc-400">Manage theme colors and configurations.</p>
+            </div>
         </div>
         {apps.length === 0 && !loading && (
             <button
                 onClick={handleSeed}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
             >
                 <RotateCcw className="h-4 w-4" />
                 Seed Defaults
@@ -185,30 +190,30 @@ export default function AppsManagement() {
       </div>
 
       {error && (
-          <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-2 backdrop-blur-sm">
               <AlertCircle className="h-5 w-5" />
               {error}
           </div>
       )}
 
       {success && (
-          <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-2">
+          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-2 backdrop-blur-sm">
               <CheckCircle2 className="h-5 w-5" />
               {success}
           </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {apps.map((app) => (
-            <div key={app.id} className="bg-zinc-900/50 border border-white/10 rounded-xl overflow-hidden">
-                <div className="p-6 border-b border-white/10 flex items-center justify-between">
+            <div key={app.id} className="group relative bg-zinc-900/20 backdrop-blur-xl border border-white/10 hover:border-white/20 hover:bg-zinc-900/40 transition-all duration-300 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+                <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/5">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-white/5">
+                        <div className="p-2 rounded-lg bg-zinc-900/50 ring-1 ring-white/10">
                             <LayoutGrid className="h-5 w-5" style={{ color: app.primary }} />
                         </div>
-                        <h3 className="font-semibold text-lg text-white">{app.name}</h3>
+                        <h3 className="font-semibold text-base text-white">{app.name}</h3>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                             onClick={() => openAIModal(app.id)}
                             disabled={generatingColors === app.id}
@@ -225,6 +230,7 @@ export default function AppsManagement() {
                             onClick={() => handleSave(app)}
                             disabled={saving === app.id}
                             className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                            title="Save changes"
                         >
                             {saving === app.id ? (
                                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -235,76 +241,60 @@ export default function AppsManagement() {
                     </div>
                 </div>
                 
-                <div className="p-6 space-y-4">
-                    <div>
-                        <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
-                            Primary Color
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <div className="relative">
-                                <input
-                                    type="color"
-                                    value={app.primary}
-                                    onChange={(e) => handleColorChange(app.id, 'primary', e.target.value)}
-                                    className="h-10 w-10 rounded-lg border-0 p-0 bg-transparent cursor-pointer overflow-hidden"
-                                />
-                                <div 
-                                    className="absolute inset-0 rounded-lg pointer-events-none ring-1 ring-white/10"
-                                    style={{ backgroundColor: app.primary }}
-                                />
-                            </div>
+                <div className="p-5 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="relative shrink-0">
                             <input
+                                type="color"
+                                value={app.primary}
+                                onChange={(e) => handleColorChange(app.id, 'primary', e.target.value)}
+                                className="h-10 w-10 rounded-lg border-0 p-0 bg-transparent cursor-pointer overflow-hidden"
+                            />
+                            <div 
+                                className="absolute inset-0 rounded-lg pointer-events-none ring-1 ring-white/10 shadow-inner"
+                                style={{ backgroundColor: app.primary }}
+                            />
+                        </div>
+                        <div className="flex-1 flex flex-col">
+                             <span className="text-xs uppercase tracking-wider text-zinc-500 font-medium mb-1">Primary</span>
+                             <input
                                 type="text"
                                 value={app.primary}
                                 onChange={(e) => handleColorChange(app.id, 'primary', e.target.value)}
-                                className="flex-1 bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-indigo-500"
+                                className="w-full bg-zinc-950/30 rounded-md border border-white/5 px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 font-mono"
                             />
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
-                            Secondary Color
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <div className="relative">
-                                <input
-                                    type="color"
-                                    value={app.secondary}
-                                    onChange={(e) => handleColorChange(app.id, 'secondary', e.target.value)}
-                                    className="h-10 w-10 rounded-lg border-0 p-0 bg-transparent cursor-pointer overflow-hidden"
-                                />
-                                <div 
-                                    className="absolute inset-0 rounded-lg pointer-events-none ring-1 ring-white/10"
-                                    style={{ backgroundColor: app.secondary }}
-                                />
-                            </div>
+                    <div className="flex items-center gap-3">
+                        <div className="relative shrink-0">
                             <input
+                                type="color"
+                                value={app.secondary}
+                                onChange={(e) => handleColorChange(app.id, 'secondary', e.target.value)}
+                                className="h-10 w-10 rounded-lg border-0 p-0 bg-transparent cursor-pointer overflow-hidden"
+                            />
+                            <div 
+                                className="absolute inset-0 rounded-lg pointer-events-none ring-1 ring-white/10 shadow-inner"
+                                style={{ backgroundColor: app.secondary }}
+                            />
+                        </div>
+                        <div className="flex-1 flex flex-col">
+                             <span className="text-xs uppercase tracking-wider text-zinc-500 font-medium mb-1">Secondary</span>
+                             <input
                                 type="text"
                                 value={app.secondary}
                                 onChange={(e) => handleColorChange(app.id, 'secondary', e.target.value)}
-                                className="flex-1 bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-indigo-500"
+                                className="w-full bg-zinc-950/30 rounded-md border border-white/5 px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 font-mono"
                             />
                         </div>
                     </div>
+                </div>
 
-                    <div className="pt-4 mt-2 border-t border-white/5">
-                        <div className="text-xs text-zinc-500 mb-2">Preview</div>
-                        <div className="flex items-center gap-2">
-                            <div 
-                                className="flex-1 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white"
-                                style={{ backgroundColor: app.primary }}
-                            >
-                                Primary
-                            </div>
-                            <div 
-                                className="flex-1 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white"
-                                style={{ backgroundColor: app.secondary }}
-                            >
-                                Secondary
-                            </div>
-                        </div>
-                    </div>
+                 {/* Subtle Preview Strip */}
+                 <div className="flex h-0.5 mt-1">
+                    <div style={{ backgroundColor: app.primary }} className="flex-1 opacity-80" />
+                    <div style={{ backgroundColor: app.secondary }} className="flex-1 opacity-80" />
                 </div>
             </div>
         ))}
@@ -313,13 +303,13 @@ export default function AppsManagement() {
       {/* AI Color Generation Modal */}
       {showAIModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+          <div className="bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl ring-1 ring-white/5">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10">
+                <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
                   <Sparkles className="h-5 w-5 text-purple-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">Generate Colors with AI</h3>
+                <h3 className="text-xl font-semibold text-white">Generate Colors</h3>
               </div>
               <button
                 onClick={() => setShowAIModal(null)}
@@ -332,7 +322,7 @@ export default function AppsManagement() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-zinc-400 mb-4">
-                  Optionally provide details to help AI generate better colors for{' '}
+                  Let AI design the color palette for{' '}
                   <span className="text-white font-medium">
                     {apps.find(a => a.id === showAIModal)?.name}
                   </span>
@@ -340,7 +330,7 @@ export default function AppsManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
                   App Description (Optional)
                 </label>
                 <input
@@ -348,12 +338,12 @@ export default function AppsManagement() {
                   value={aiDescription}
                   onChange={(e) => setAiDescription(e.target.value)}
                   placeholder="e.g., a health and fitness tracking app"
-                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-2 text-sm text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-purple-500"
+                  className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
                   Mood/Feel (Optional)
                 </label>
                 <input
@@ -361,14 +351,14 @@ export default function AppsManagement() {
                   value={aiMood}
                   onChange={(e) => setAiMood(e.target.value)}
                   placeholder="e.g., energetic, calm, professional"
-                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-2 text-sm text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-purple-500"
+                  className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                 />
               </div>
 
               <div className="pt-4 flex gap-3">
                 <button
                   onClick={() => setShowAIModal(null)}
-                  className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 rounded-lg transition-colors text-sm font-medium"
                 >
                   Cancel
                 </button>
@@ -378,7 +368,7 @@ export default function AppsManagement() {
                     if (app) handleGenerateColors(app);
                   }}
                   disabled={generatingColors !== null}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium shadow-lg shadow-purple-500/20"
                 >
                   {generatingColors ? (
                     <>

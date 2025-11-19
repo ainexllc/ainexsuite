@@ -113,8 +113,8 @@ export type HomepageTemplateProps = {
       items: string[];
     };
   };
-  /** Footer links */
-  footer: {
+  /** Footer links (optional) */
+  footer?: {
     appDisplayName: string;
     productLinks: FooterLink[];
     companyLinks: FooterLink[];

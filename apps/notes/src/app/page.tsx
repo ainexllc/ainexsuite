@@ -6,14 +6,13 @@ import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
 import { Loader2, Shield, PenSquare, FolderTree, Wand2, BookOpen, Stamp } from 'lucide-react';
-import { Footer } from '@/components/footer';
+// import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import { useAppColors } from '@ainexsuite/theme';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  FooterLink,
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
@@ -48,31 +47,6 @@ const featureCards: FeatureCard[] = [
   },
 ];
 
-const productLinks: FooterLink[] = [
-  { label: 'Capture Tools', href: '/features' },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'Templates', href: '/templates', external: true },
-];
-
-const companyLinks: FooterLink[] = [
-  { label: 'About', href: '/about' },
-  { label: 'Blog', href: '/blog', external: true },
-  { label: 'Careers', href: '/careers', external: true },
-];
-
-const resourceLinks: FooterLink[] = [
-  { label: 'Help Center', href: '/help', external: true },
-  { label: 'Contact Us', href: 'mailto:notes@ainexsuite.com' },
-  { label: 'Documentation', href: '/docs', external: true },
-];
-
-const legalLinks: FooterLink[] = [
-  { label: 'Privacy Policy', href: '/privacy', external: true },
-  { label: 'Terms of Service', href: '/terms', external: true },
-  { label: 'Cookie Policy', href: '/cookies', external: true },
-  { label: 'Acceptable Use Policy', href: '/acceptable-use', external: true },
-  { label: 'GDPR', href: '/gdpr', external: true },
-];
 
 function NotesHomePageContent() {
   const { user, loading } = useAuth();
@@ -209,13 +183,6 @@ function NotesHomePageContent() {
             }}
           />
         }
-      />
-      <Footer
-        appName="AINex Notes"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
       />
     </>
   );

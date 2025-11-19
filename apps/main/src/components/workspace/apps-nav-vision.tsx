@@ -50,18 +50,16 @@ export function AppsNavVision({ apps, className }: AppsNavVisionProps) {
                    !app.isInstalled && "opacity-80 saturate-50"
                  )}
               >
-                {/* Inner Gradient Sphere */}
+                {/* Inner Sphere */}
                 <div
                   className={clsx(
                     "w-10 h-10 rounded-xl flex items-center justify-center shadow-inner",
-                    app.primaryColor && app.secondaryColor ? "" : "bg-gradient-to-br",
-                    !app.primaryColor && !app.secondaryColor && app.color
+                    !app.primaryColor && "bg-gradient-to-br",
+                    !app.primaryColor && app.color
                   )}
                   style={
-                    app.primaryColor && app.secondaryColor
-                      ? {
-                          background: `linear-gradient(to bottom right, ${app.primaryColor}, ${app.secondaryColor})`,
-                        }
+                    app.primaryColor
+                      ? { backgroundColor: app.primaryColor }
                       : undefined
                   }
                 >
