@@ -11,7 +11,7 @@ export function SpaceSwitcher() {
   const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useTodoStore();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentSpace = spaces.find(s => s.id === currentSpaceId);
+  const currentSpace = spaces.find((s: TaskSpace) => s.id === currentSpaceId);
 
   const getIcon = (type: TaskSpace['type']) => {
     switch (type) {
@@ -83,7 +83,7 @@ export function SpaceSwitcher() {
               <div className="px-2 py-1.5 text-xs font-medium text-white/40 uppercase">
                 Task Spaces
               </div>
-              {spaces.map((space) => (
+              {spaces.map((space: TaskSpace) => (
                 <button
                   key={space.id}
                   onClick={() => {

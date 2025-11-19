@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, X, FileText, CheckSquare, Target, Image as ImageIcon, BookOpen, Activity, Dumbbell, Sparkles } from 'lucide-react';
 import { SearchResult, SearchableApp } from '@ainexsuite/types';
-// import { useRouter } from 'next/navigation'; // Removed unused import
+import { useAuth } from '@ainexsuite/auth';
+import { ActionDispatcher } from '@/lib/action-dispatcher';
 
 interface UniversalSearchProps {
   isOpen: boolean;
@@ -44,13 +45,13 @@ const APP_COLORS: Record<string, string> = {
 };
 
 export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProps) {
+  const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [appCounts, setAppCounts] = useState<Record<string, number>>({});
   const [isAiMode, setIsAiMode] = useState(false);
-  // const router = useRouter(); // Removed unused hook
 
   // Search function with debouncing
   const performSearch = useCallback(async (searchQuery: string) => {
@@ -123,18 +124,20 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
   }, [query, performSearch]);
 
   // Handle result click
-  const handleResultClick = useCallback((result: SearchResult) => {
-    if (result.id === 'ai-command') {
+  const handleResultClick = useCallback(async (result: SearchResult) => {
+    if (result.id === 'ai-command' && user?.uid) {
       // Handle AI Command Execution
       console.log('Executing AI command:', query);
-      // In a real app, this would send the command to an AI service
-      // and then redirect or show a success toast.
-      alert(`AI Command Received: ${query}\n(This is a prototype)`);
+      
+      const dispatcher = new ActionDispatcher(user.uid);
+      const response = await dispatcher.dispatch(query);
+      
+      alert(response.message);
     } else {
       window.open(result.url, '_blank');
     }
     onClose();
-  }, [onClose, query]);
+  }, [onClose, query, user]);
 
   // Keyboard navigation
   useEffect(() => {

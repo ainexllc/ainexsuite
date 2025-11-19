@@ -16,7 +16,7 @@ export function TaskList({ onEditTask }: TaskListProps) {
   if (!currentSpace) return null;
 
   // Filter tasks for current space
-  const spaceTasks = tasks.filter(t => t.spaceId === currentSpace.id);
+  const spaceTasks = tasks.filter((t: Task) => t.spaceId === currentSpace.id);
 
   const handleToggleComplete = async (task: Task) => {
     const newStatus = task.status === 'done' ? 'todo' : 'done';
@@ -25,7 +25,7 @@ export function TaskList({ onEditTask }: TaskListProps) {
 
   return (
     <div className="space-y-1">
-      {spaceTasks.map((task) => (
+      {spaceTasks.map((task: Task) => (
         <div
           key={task.id}
           className="group flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5"

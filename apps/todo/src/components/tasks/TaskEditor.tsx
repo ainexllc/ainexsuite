@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Flag, Users, Save } from 'lucide-react';
 import { useTodoStore } from '../../lib/store';
-import { Task, Priority } from '../../types/models';
+import { Task, Priority, TaskList, Member } from '../../types/models';
 
 interface TaskEditorProps {
   isOpen: boolean;
@@ -26,7 +26,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
   // Load data if editing
   useEffect(() => {
     if (isOpen && editTaskId) {
-      const task = tasks.find(t => t.id === editTaskId);
+      const task = tasks.find((t: Task) => t.id === editTaskId);
       if (task) {
         setTitle(task.title);
         setDescription(task.description || '');
@@ -138,7 +138,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           
           {/* List/Status Selector */}
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {currentSpace.lists.map(list => (
+            {currentSpace.lists.map((list: TaskList) => (
               <button
                 key={list.id}
                 type="button"
@@ -210,7 +210,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
               <Users className="h-3.5 w-3.5" /> Assignees
             </label>
             <div className="flex flex-wrap gap-2">
-              {currentSpace.members.map(member => (
+              {currentSpace.members.map((member: Member) => (
                 <button
                   key={member.uid}
                   type="button"

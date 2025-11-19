@@ -33,16 +33,20 @@ export class SmartDashboardService {
       todos,
       recentNotes,
       workouts,
-      moods
+      moods,
+      growGoals,
+      pulseMetrics
     ] = await Promise.all([
       this.getTodoInsights(),
       this.getNoteInsights(),
       this.getFitInsights(),
-      this.getJourneyInsights()
+      this.getJourneyInsights(),
+      this.getGrowInsights(),
+      this.getPulseInsights()
     ]);
 
     // Combine and sort by priority/date
-    const allInsights = [...todos, ...recentNotes, ...workouts, ...moods].sort((a, b) => {
+    const allInsights = [...todos, ...recentNotes, ...workouts, ...moods, ...growGoals, ...pulseMetrics].sort((a, b) => {
       // High priority first
       if (a.priority === 'high' && b.priority !== 'high') return -1;
       if (a.priority !== 'high' && b.priority === 'high') return 1;
@@ -180,6 +184,72 @@ export class SmartDashboardService {
       }];
     } catch (error) {
       console.error('Error fetching journey insights:', error);
+      return [];
+    }
+  }
+
+  private async getGrowInsights(): Promise<InsightCardData[]> {
+    try {
+      // Fetch active learning goals
+      const q = query(
+        collection(db, 'learning_goals'),
+        where('ownerId', '==', this.userId),
+        orderBy('progress', 'desc'),
+        limit(1)
+      );
+
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) return [];
+
+      const data = snapshot.docs[0].data();
+      // Skip if completed (assuming 100 is done)
+      if (data.progress >= 100) return [];
+
+      return [{
+        id: snapshot.docs[0].id,
+        appSlug: 'grow',
+        type: 'status',
+        title: 'Current Goal',
+        subtitle: `${data.title} (${data.progress}% done)`,
+        priority: 'medium',
+        timestamp: data.updatedAt?.toDate() || new Date(),
+        actionUrl: '/grow'
+      }];
+    } catch (error) {
+      console.error('Error fetching grow insights:', error);
+      return [];
+    }
+  }
+
+  private async getPulseInsights(): Promise<InsightCardData[]> {
+    try {
+      // Fetch latest health metric
+      const q = query(
+        collection(db, 'health_metrics'),
+        where('ownerId', '==', this.userId),
+        orderBy('date', 'desc'),
+        limit(1)
+      );
+
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) return [];
+
+      const data = snapshot.docs[0].data();
+      
+      return [{
+        id: snapshot.docs[0].id,
+        appSlug: 'pulse',
+        type: 'status',
+        title: 'Latest Vitals',
+        subtitle: `${data.metricType}: ${data.value}`,
+        priority: 'low',
+        timestamp: new Date(data.date), // Assuming date is timestamp number or string
+        actionUrl: '/pulse'
+      }];
+    } catch (error) {
+      console.error('Error fetching pulse insights:', error);
       return [];
     }
   }

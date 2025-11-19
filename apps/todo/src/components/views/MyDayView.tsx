@@ -1,7 +1,7 @@
 'use client';
 
 import { useTodoStore } from '../../lib/store';
-import { Task } from '../../types/models';
+import { Task, TaskSpace } from '../../types/models';
 import { CheckCircle2, Circle, ArrowRight } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
 
@@ -25,7 +25,7 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
   };
 
   const getSpaceName = (spaceId: string) => {
-    return spaces.find(s => s.id === spaceId)?.name || 'Unknown Space';
+    return spaces.find((s: TaskSpace) => s.id === spaceId)?.name || 'Unknown Space';
   };
 
   const getTaskSection = (dateStr?: string) => {
@@ -63,7 +63,7 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
             </h3>
             
             <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-              {tasks.map((task) => (
+              {tasks.map((task: Task) => (
                 <div
                   key={task.id}
                   className="group flex items-center gap-4 p-4 hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 last:border-0"

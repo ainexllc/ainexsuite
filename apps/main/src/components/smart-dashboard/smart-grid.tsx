@@ -5,7 +5,7 @@ import { SmartDashboardService, InsightCardData } from '@/lib/smart-dashboard';
 import { useAuth } from '@ainexsuite/auth';
 import { 
   CheckSquare, FileText, Dumbbell, BookOpen, 
-  AlertCircle, ArrowRight
+  AlertCircle, ArrowRight, GraduationCap, Activity
 } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
@@ -17,6 +17,8 @@ const iconMap: Record<string, any> = {
   notes: FileText,
   fit: Dumbbell,
   journey: BookOpen,
+  grow: GraduationCap,
+  pulse: Activity,
 };
 
 const colorMap: Record<string, string> = {
@@ -24,6 +26,8 @@ const colorMap: Record<string, string> = {
   notes: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
   fit: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
   journey: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+  grow: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+  pulse: 'text-red-400 bg-red-500/10 border-red-500/20',
 };
 
 export function SmartGrid() {

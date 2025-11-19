@@ -1,7 +1,7 @@
 'use client';
 
 import { useTodoStore } from '../../lib/store';
-import { Task } from '../../types/models';
+import { Task, TaskList } from '../../types/models';
 import { Plus, MoreHorizontal, Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -24,7 +24,7 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
 
   return (
     <div className="flex gap-6 h-full overflow-x-auto pb-4">
-      {currentSpace.lists.map((list) => (
+      {currentSpace.lists.map((list: TaskList) => (
         <div key={list.id} className="w-80 shrink-0 flex flex-col">
           {/* Column Header */}
           <div className="flex items-center justify-between mb-3 px-1">
@@ -41,7 +41,7 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
 
           {/* Tasks Container */}
           <div className="flex-1 space-y-3 overflow-y-auto min-h-[200px]">
-            {getTasksByList(list.id).map((task) => (
+            {getTasksByList(list.id).map((task: Task) => (
               <div
                 key={task.id}
                 className="group bg-[#1a1a1a] border border-white/5 hover:border-white/10 rounded-xl p-3 shadow-sm transition-all hover:shadow-md cursor-pointer"
