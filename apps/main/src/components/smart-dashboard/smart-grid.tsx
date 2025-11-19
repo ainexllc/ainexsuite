@@ -5,13 +5,15 @@ import { SmartDashboardService, InsightCardData } from '@/lib/smart-dashboard';
 import { useAuth } from '@ainexsuite/auth';
 import { 
   CheckSquare, FileText, Dumbbell, BookOpen, 
-  AlertCircle, ArrowRight, GraduationCap, Activity, CheckCircle
+  AlertCircle, ArrowRight, GraduationCap, Activity, CheckCircle, Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import { db } from '@ainexsuite/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { ActionDispatcher } from '@/lib/action-dispatcher';
+import { useAuth } from '@ainexsuite/auth';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const iconMap: Record<string, any> = {
@@ -84,6 +86,7 @@ export function SmartGrid() {
 }
 
 function InsightCard({ data, index }: { data: InsightCardData; index: number }) {
+  const { user } = useAuth();
   const Icon = iconMap[data.appSlug] || AlertCircle;
   const themeClass = colorMap[data.appSlug] || 'text-gray-400 bg-gray-500/10 border-gray-500/20';
   const [isCompleting, setIsCompleting] = useState(false);
@@ -107,6 +110,18 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
       } finally {
         setIsCompleting(false);
       }
+    } else if (action.type === 'create_prompt' && user?.uid) {
+        // Use dispatcher to create a default task or just redirect
+        // For now, we'll dispatch a creation if type is 'task'
+        if (action.payload?.type === 'task') {
+             setIsCompleting(true);
+             const dispatcher = new ActionDispatcher(user.uid);
+             // Dispatch a default task creation
+             await dispatcher.dispatch("Create task Check out the new dashboard");
+             setIsCompleted(true); // Hide card or just show success state
+             alert("Task created! Check your Todo app.");
+             setIsCompleting(false);
+        }
     }
   };
 
@@ -141,7 +156,7 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
                   className="p-1.5 rounded-full bg-white/10 hover:bg-green-500/20 hover:text-green-400 transition-colors disabled:opacity-50"
                   title={action.label}
                 >
-                  {action.type === 'complete' ? <CheckCircle className="h-4 w-4" /> : null}
+                  {action.type === 'complete' ? <CheckCircle className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                 </button>
               ))}
             </div>

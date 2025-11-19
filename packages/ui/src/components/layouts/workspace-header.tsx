@@ -14,6 +14,7 @@ interface WorkspaceHeaderProps {
   searchPlaceholder?: string;
   onSignOut: () => void;
   appName?: string;
+  appColor?: string;
 }
 
 /**
@@ -42,6 +43,7 @@ export function WorkspaceHeader({
   searchPlaceholder = "Search...",
   onSignOut,
   appName,
+  appColor,
 }: WorkspaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -66,7 +68,7 @@ export function WorkspaceHeader({
           </button>
 
           <div className="hidden sm:block">
-            <AinexStudiosLogo size="sm" align="center" asLink={true} appName={appName} />
+            <AinexStudiosLogo size="sm" align="center" asLink={true} appName={appName} appColor={appColor} />
           </div>
         </div>
 

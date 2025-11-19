@@ -1,7 +1,7 @@
 import { db } from '@ainexsuite/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-export type ActionType = 'create_task' | 'log_workout' | 'create_note' | 'unknown';
+export type ActionType = 'create_task' | 'log_workout' | 'create_note' | 'log_mood' | 'unknown';
 
 export interface ActionCommand {
   raw: string;
@@ -40,6 +40,10 @@ export class ActionDispatcher {
         case 'log_workout':
            // TODO: Implement workout logging
            return { success: true, message: "Workout logging coming soon!" };
+
+        case 'log_mood':
+          await this.logMood(action.payload);
+          return { success: true, message: `Mood "${action.payload.mood}" recorded.` };
 
         default:
           return { success: false, message: "Action not implemented." };
@@ -93,6 +97,18 @@ export class ActionDispatcher {
       };
     }
 
+    if (lower.startsWith('log mood') || lower.startsWith('i feel') || lower.startsWith('my mood is')) {
+       const mood = command.replace(/^(log mood|i feel|my mood is)/i, '').trim();
+       return {
+         raw: command,
+         type: 'log_mood',
+         payload: {
+           mood: mood || 'Neutral',
+           date: new Date()
+         }
+       };
+    }
+
     return { raw: command, type: 'unknown', payload: {} };
   }
 
@@ -115,6 +131,22 @@ export class ActionDispatcher {
       updatedAt: serverTimestamp(),
       pinned: false,
       tags: []
+    });
+  }
+
+  private async logMood(payload: { mood: string; date: Date }) {
+    // Create a journal entry for today with this mood
+    const dateStr = payload.date.toISOString().split('T')[0];
+    
+    await addDoc(collection(db, 'journal_entries'), {
+      ownerId: this.userId,
+      date: dateStr,
+      mood: payload.mood,
+      title: `Daily Check-in`,
+      content: `I'm feeling ${payload.mood} today.`,
+      tags: ['quick-log'],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
     });
   }
 }

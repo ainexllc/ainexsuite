@@ -30,6 +30,10 @@ interface WorkspaceLayoutProps {
    */
   appName?: string;
   /**
+   * Color for the app name in the logo (e.g. '#8b5cf6')
+   */
+  appColor?: string;
+  /**
    * Whether to show the atmospheric background glows
    * @default true
    */
@@ -54,6 +58,7 @@ export function WorkspaceLayout({
   onSignOut,
   searchPlaceholder,
   appName,
+  appColor,
   showGlows = true,
 }: WorkspaceLayoutProps) {
   return (
@@ -67,6 +72,7 @@ export function WorkspaceLayout({
         onSignOut={onSignOut}
         searchPlaceholder={searchPlaceholder}
         appName={appName}
+        appColor={appColor}
       />
 
       {/* Main Content */}

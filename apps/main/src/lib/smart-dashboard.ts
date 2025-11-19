@@ -18,7 +18,7 @@ export interface InsightCardData {
   actionUrl?: string;
   actions?: Array<{
     label: string;
-    type: 'complete' | 'snooze' | 'dismiss';
+    type: 'complete' | 'snooze' | 'dismiss' | 'create_prompt';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payload?: any;
   }>;
@@ -60,8 +60,55 @@ export class SmartDashboardService {
       this.getPulseInsights()
     ]);
 
+    // Check for empty states and generate prompts
+    const quickActions = [];
+    
+    if (todos.length === 0) {
+      quickActions.push({
+        id: 'create-task-prompt',
+        appSlug: 'todo',
+        type: 'actionable' as InsightType,
+        title: 'Plan your day',
+        subtitle: 'No pending tasks. Add one?',
+        priority: 'low' as InsightPriority,
+        timestamp: new Date(),
+        actionUrl: '/todo',
+        actions: [{
+           label: 'Create Task',
+           type: 'create_prompt',
+           payload: { type: 'task' }
+        }]
+      });
+    }
+
+    if (workouts.length === 0) {
+      quickActions.push({
+        id: 'log-workout-prompt',
+        appSlug: 'fit',
+        type: 'streak' as InsightType,
+        title: 'Start moving',
+        subtitle: 'Log your first workout',
+        priority: 'low' as InsightPriority,
+        timestamp: new Date(),
+        actionUrl: '/fit'
+      });
+    }
+
+    if (moods.length === 0) {
+      quickActions.push({
+        id: 'log-mood-prompt',
+        appSlug: 'journey',
+        type: 'status' as InsightType,
+        title: 'Daily Reflection',
+        subtitle: 'How are you feeling today?',
+        priority: 'low' as InsightPriority,
+        timestamp: new Date(),
+        actionUrl: '/journey'
+      });
+    }
+
     // Combine and sort by priority/date
-    const allInsights = [...todos, ...recentNotes, ...workouts, ...moods, ...growGoals, ...pulseMetrics].sort((a, b) => {
+    const allInsights = [...todos, ...recentNotes, ...workouts, ...moods, ...growGoals, ...pulseMetrics, ...quickActions].sort((a, b) => {
       // High priority first
       if (a.priority === 'high' && b.priority !== 'high') return -1;
       if (a.priority !== 'high' && b.priority === 'high') return 1;

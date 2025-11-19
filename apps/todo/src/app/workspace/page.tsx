@@ -47,6 +47,7 @@ function TodoWorkspaceContent() {
       onSignOut={handleSignOut}
       searchPlaceholder="Search tasks..."
       appName="Tasks"
+      appColor="#8b5cf6"
     >
       <TodoFirestoreSync />
       
