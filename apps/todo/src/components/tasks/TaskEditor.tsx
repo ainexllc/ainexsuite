@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Calendar, Flag, Users, Save } from 'lucide-react';
+import { Calendar, Flag, Users, Save } from 'lucide-react';
+import { Modal, ModalHeader, ModalTitle, ModalDescription, ModalContent, ModalFooter, Button, Textarea } from '@ainexsuite/ui';
 import { useTodoStore } from '../../lib/store';
 import { Task, Priority, TaskList, Member } from '../../types/models';
 
@@ -53,25 +54,20 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
     }
   }, [isOpen, listId, currentSpace]);
 
-  if (!isOpen) return null;
-
   // Show message if no space is available
   if (!currentSpace) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div className="w-full max-w-md bg-surface-card border border-surface-hover rounded-2xl shadow-2xl p-8 text-center">
-          <h3 className="text-xl font-bold text-ink-800 mb-2">No Space Selected</h3>
-          <p className="text-ink-600 mb-6">
+      <Modal isOpen={isOpen} onClose={onClose} size="md">
+        <ModalContent className="text-center py-8">
+          <ModalTitle>No Space Selected</ModalTitle>
+          <ModalDescription className="mt-2">
             Please create or select a space before creating tasks.
-          </p>
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+          </ModalDescription>
+          <div className="mt-6">
+            <Button onClick={onClose}>Close</Button>
+          </div>
+        </ModalContent>
+      </Modal>
     );
   }
 
@@ -79,7 +75,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
     e.preventDefault();
 
     if (!title.trim()) {
-      alert('Please enter a task title');
       return;
     }
 
@@ -99,16 +94,16 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         listId,
         title,
         description,
-        status: 'todo', // Default, logic should map listId to status conceptually if strict
+        status: 'todo',
         priority,
         dueDate,
-        assigneeIds: assignees.length > 0 ? assignees : [currentSpace.createdBy], // Default to creator if empty? Or unassigned.
+        assigneeIds: assignees.length > 0 ? assignees : [currentSpace.createdBy],
         subtasks: [],
         tags: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        createdBy: currentSpace.createdBy, // Should be current user from auth
-        order: 0, // Should calculate max order + 1
+        createdBy: currentSpace.createdBy,
+        order: 0,
       };
       await addTask(newTask);
     }
@@ -116,61 +111,61 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl bg-surface-card border border-surface-hover rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="p-6 border-b border-surface-hover flex items-center justify-between">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <form onSubmit={handleSubmit}>
+        <ModalHeader onClose={onClose}>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Task Title"
-            className="bg-transparent text-xl font-bold text-ink-800 placeholder:text-ink-600 focus:outline-none w-full mr-4"
+            className="bg-transparent text-xl font-bold text-ink-900 placeholder:text-muted focus:outline-none w-full"
             autoFocus
+            required
           />
-          <button onClick={onClose} className="text-ink-600 hover:text-ink-800">
-            <X className="h-6 w-6" />
-          </button>
-        </div>
+        </ModalHeader>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
+        <ModalContent className="space-y-6">
           {/* List/Status Selector */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {currentSpace.lists.map((list: TaskList) => (
-              <button
-                key={list.id}
-                type="button"
-                onClick={() => setListId(list.id)}
-                className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
-                  listId === list.id
-                    ? 'bg-accent-500 text-white'
-                    : 'bg-surface-hover text-ink-600 hover:bg-surface-elevated'
-                }`}
-              >
-                {list.title}
-              </button>
-            ))}
+          <div>
+            <label className="block text-sm font-medium text-ink-900 mb-2">List</label>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {currentSpace.lists.map((list: TaskList) => (
+                <button
+                  key={list.id}
+                  type="button"
+                  onClick={() => setListId(list.id)}
+                  className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                    listId === list.id
+                      ? 'bg-accent-500 text-white'
+                      : 'bg-surface-card border border-outline-subtle text-ink-600 hover:bg-surface-elevated'
+                  }`}
+                >
+                  {list.title}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Properties Grid */}
           <div className="grid grid-cols-2 gap-4">
             {/* Priority */}
             <div>
-              <label className="block text-xs font-medium text-ink-600 mb-1.5 flex items-center gap-1">
-                <Flag className="h-3.5 w-3.5" /> Priority
+              <label className="block text-sm font-medium text-ink-900 mb-2 flex items-center gap-1">
+                <Flag className="h-4 w-4" /> Priority
               </label>
-              <div className="flex gap-1">
+              <div className="flex gap-2">
                 {['low', 'medium', 'high'].map((p) => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => setPriority(p as Priority)}
-                    className={`flex-1 py-1.5 rounded text-xs capitalize transition-colors ${
+                    className={`flex-1 py-2 rounded-lg text-sm capitalize transition-all ${
                       priority === p
-                        ? p === 'high' ? 'bg-red-500/20 text-red-500 border border-red-500/50' : 'bg-accent-500/20 text-accent-500 border border-accent-500/50'
-                        : 'bg-surface-hover text-ink-600 border border-transparent hover:bg-surface-elevated'
+                        ? p === 'high'
+                          ? 'bg-red-500/20 text-red-500 border-2 border-red-500/50'
+                          : 'bg-accent-500/20 text-accent-500 border-2 border-accent-500/50'
+                        : 'bg-surface-card border-2 border-outline-subtle text-ink-600 hover:bg-surface-elevated'
                     }`}
                   >
                     {p}
@@ -181,33 +176,33 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
             {/* Due Date */}
             <div>
-              <label className="block text-xs font-medium text-ink-600 mb-1.5 flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" /> Due Date
+              <label className="block text-sm font-medium text-ink-900 mb-2 flex items-center gap-1">
+                <Calendar className="h-4 w-4" /> Due Date
               </label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-surface-hover border border-surface-hover rounded-lg px-3 py-1.5 text-sm text-ink-800 focus:outline-none focus:border-accent-500"
+                className="w-full bg-surface-card border border-outline-subtle rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-medium text-ink-600 mb-1.5">Description</label>
-            <textarea
+            <label className="block text-sm font-medium text-ink-900 mb-2">Description</label>
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add details, subtasks, or notes..."
-              className="w-full bg-surface-hover border border-surface-hover rounded-xl p-4 text-sm text-ink-800 placeholder:text-ink-600 focus:outline-none focus:border-accent-500 min-h-[120px]"
+              className="min-h-[120px]"
             />
           </div>
 
           {/* Assignees */}
           <div>
-            <label className="block text-xs font-medium text-ink-600 mb-2 flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" /> Assignees
+            <label className="block text-sm font-medium text-ink-900 mb-2 flex items-center gap-1">
+              <Users className="h-4 w-4" /> Assignees
             </label>
             <div className="flex flex-wrap gap-2">
               {currentSpace.members.map((member: Member) => (
@@ -221,40 +216,32 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                         : [...prev, member.uid]
                     );
                   }}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full border-2 text-sm transition-all ${
                     assignees.includes(member.uid)
                       ? 'bg-accent-500/20 border-accent-500/50 text-accent-500'
-                      : 'bg-surface-hover border-surface-hover text-ink-600 hover:bg-surface-elevated'
+                      : 'bg-surface-card border-outline-subtle text-ink-600 hover:bg-surface-elevated'
                   }`}
                 >
-                  <div className="h-4 w-4 rounded-full bg-surface-elevated flex items-center justify-center text-[8px] text-ink-800">
-                    {member.displayName.slice(0, 1)}
+                  <div className="h-5 w-5 rounded-full bg-surface-elevated flex items-center justify-center text-xs text-ink-900 font-medium">
+                    {member.displayName.slice(0, 1).toUpperCase()}
                   </div>
                   {member.displayName}
                 </button>
               ))}
             </div>
           </div>
+        </ModalContent>
 
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-surface-hover flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg text-ink-600 hover:text-ink-800 hover:bg-surface-hover text-sm transition-colors"
-          >
+        <ModalFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg text-sm font-medium shadow-lg shadow-accent-500/20 transition-colors flex items-center gap-2"
-          >
+          </Button>
+          <Button type="submit" disabled={!title.trim()}>
             <Save className="h-4 w-4" />
             {editTaskId ? 'Save Changes' : 'Create Task'}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   );
 }

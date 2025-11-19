@@ -46,6 +46,7 @@ export type NotesSubscriptionHandler = (notes: Note[]) => void;
 export function subscribeToOwnedNotes(
   userId: string,
   handler: NotesSubscriptionHandler,
+  onError?: (error: Error) => void,
 ): Unsubscribe {
   const notesRef = query(
     clientNoteCollection(userId).withConverter(noteConverter),
@@ -53,15 +54,23 @@ export function subscribeToOwnedNotes(
     orderBy("updatedAt", "desc"),
   );
 
-  return onSnapshot(notesRef, (snapshot) => {
-    const notes = snapshot.docs.map((noteSnapshot) => noteSnapshot.data());
-    handler(notes);
-  });
+  return onSnapshot(
+    notesRef,
+    (snapshot) => {
+      const notes = snapshot.docs.map((noteSnapshot) => noteSnapshot.data());
+      handler(notes);
+    },
+    (error) => {
+      console.error("Error subscribing to owned notes:", error);
+      if (onError) onError(error);
+    },
+  );
 }
 
 export function subscribeToSharedNotes(
   userId: string,
   handler: NotesSubscriptionHandler,
+  onError?: (error: Error) => void,
 ): Unsubscribe {
   const sharedRef = query(
     collectionGroup(getFirebaseFirestore(), "notes").withConverter(noteConverter),
@@ -70,10 +79,17 @@ export function subscribeToSharedNotes(
     orderBy("updatedAt", "desc"),
   );
 
-  return onSnapshot(sharedRef, (snapshot) => {
-    const notes = snapshot.docs.map((docSnapshot) => docSnapshot.data());
-    handler(notes);
-  });
+  return onSnapshot(
+    sharedRef,
+    (snapshot) => {
+      const notes = snapshot.docs.map((docSnapshot) => docSnapshot.data());
+      handler(notes);
+    },
+    (error) => {
+      console.error("Error subscribing to shared notes:", error);
+      if (onError) onError(error);
+    },
+  );
 }
 
 export async function createNote(

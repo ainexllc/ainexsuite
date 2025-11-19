@@ -128,16 +128,24 @@ function FitWorkspaceContent() {
               </div>
               
               {workouts.filter(w => w.userId === user.uid).length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-white/10 rounded-xl bg-white/5">
-                  <p className="text-white/50 mb-4">No workouts logged yet.</p>
+                <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-white/10 rounded-2xl bg-surface-elevated/50">
+                  <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
+                    <Dumbbell className="h-8 w-8 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Start Your Fitness Journey</h3>
+                  <p className="text-white/50 mb-6 text-center max-w-md">
+                    Track your workouts, visualize progress, and crush your goals. 
+                    Log your first session to get started!
+                  </p>
                   <button
                     onClick={() => {
                       setSelectedWorkout(null);
                       setShowEditor(true);
                     }}
-                    className="text-orange-400 text-sm hover:underline"
+                    className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
                   >
-                    Log your first workout
+                    <Plus className="h-5 w-5" />
+                    Log Workout
                   </button>
                 </div>
               ) : (

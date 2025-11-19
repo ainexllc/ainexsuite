@@ -79,8 +79,14 @@ export function TaskList({ onEditTask }: TaskListProps) {
       ))}
 
       {spaceTasks.length === 0 && (
-        <div className="text-center py-12 text-white/30 text-sm">
-          No tasks in this space yet.
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+            <CheckCircle2 className="h-8 w-8 text-white/20" />
+          </div>
+          <h3 className="text-lg font-medium text-white mb-2">All caught up!</h3>
+          <p className="text-white/40 max-w-xs mb-6">
+            This space is empty. Add a task to start planning your day or organize your project.
+          </p>
         </div>
       )}
     </div>

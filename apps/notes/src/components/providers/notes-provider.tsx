@@ -105,15 +105,29 @@ export function NotesProvider({ children }: NotesProviderProps) {
     setOwnedLoaded(false);
     setSharedLoaded(false);
 
-    const unsubscribeOwned = subscribeToOwnedNotes(userId, (incoming) => {
-      setOwnedNotes(incoming);
-      setOwnedLoaded(true);
-    });
+    const unsubscribeOwned = subscribeToOwnedNotes(
+      userId,
+      (incoming) => {
+        setOwnedNotes(incoming);
+        setOwnedLoaded(true);
+      },
+      (error) => {
+        console.error("Failed to load owned notes:", error);
+        setOwnedLoaded(true); // Unblock UI
+      },
+    );
 
-    const unsubscribeShared = subscribeToSharedNotes(userId, (incoming) => {
-      setSharedNotes(incoming);
-      setSharedLoaded(true);
-    });
+    const unsubscribeShared = subscribeToSharedNotes(
+      userId,
+      (incoming) => {
+        setSharedNotes(incoming);
+        setSharedLoaded(true);
+      },
+      (error) => {
+        console.error("Failed to load shared notes:", error);
+        setSharedLoaded(true); // Unblock UI
+      },
+    );
 
     return () => {
       unsubscribeOwned();

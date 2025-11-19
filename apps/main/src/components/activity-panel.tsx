@@ -1,8 +1,8 @@
 'use client';
 
-import { X, Settings as SettingsIcon, Activity as ActivityIcon, Sparkles, Send } from 'lucide-react';
+import { X, Settings as SettingsIcon, Activity as ActivityIcon, Sparkles, Send, Mic, MicOff } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useEnhancedAssistant } from '@ainexsuite/ai/src/use-enhanced-assistant'; // Note: importing directly from source as dist might not be updated
+import { useEnhancedAssistant, useVoiceInput } from '@ainexsuite/ai';
 import { useRef, useEffect } from 'react';
 
 interface ActivityPanelProps {
@@ -18,6 +18,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
   const {
     messages,
     input,
+    setInput,
     handleInputChange,
     handleSubmit,
     isLoading,
@@ -29,6 +30,25 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
     You have access to the user's data across Notes, Tasks, Journal, Habits, Health, and Fitness apps.
     Use this context to provide personalized, actionable, and insightful responses.
     Be concise, encouraging, and proactive.`,
+  });
+
+  // Initialize Voice Input
+  const {
+    isListening,
+    transcript,
+    isSupported,
+    toggleListening
+  } = useVoiceInput({
+    onResult: (text) => {
+       // When speech is finalized, update the chat input
+       if (text) {
+         setInput((prev: string) => {
+            const separator = prev ? ' ' : '';
+            return prev + separator + text;
+         });
+       }
+    },
+    onError: (err) => console.error("Voice Error:", err)
   });
 
   // Auto-scroll to bottom of chat
@@ -192,18 +212,37 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
               </div>
 
               <form onSubmit={handleSendMessage} className="space-y-3">
-                <div className="flex gap-2">
+                <div className="flex gap-2 relative">
                   <input
                     type="text"
-                    value={input}
+                    value={isListening ? (input + (transcript ? ' ' + transcript : '')) : input}
                     onChange={handleInputChange}
-                    placeholder="Ask me anything..."
-                    className="flex-1 rounded-xl border border-outline-subtle bg-white px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none disabled:opacity-50"
+                    placeholder={isListening ? "Listening..." : "Ask me anything..."}
+                    className={clsx(
+                      "flex-1 rounded-xl border bg-white px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none disabled:opacity-50 pr-10",
+                      isListening ? "border-red-400 ring-2 ring-red-100" : "border-outline-subtle"
+                    )}
                     disabled={isLoading}
                   />
+                  
+                  {/* Voice Button */}
+                  {isSupported && (
+                    <button
+                      type="button"
+                      onClick={toggleListening}
+                      className={clsx(
+                        "absolute right-12 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors",
+                        isListening ? "text-red-500 bg-red-50 hover:bg-red-100" : "text-ink-400 hover:text-ink-600 hover:bg-surface-muted"
+                      )}
+                      title={isListening ? "Stop listening" : "Start voice input"}
+                    >
+                      {isListening ? <MicOff className="h-4 w-4 animate-pulse" /> : <Mic className="h-4 w-4" />}
+                    </button>
+                  )}
+
                   <button
                     type="submit"
-                    disabled={isLoading || !input.trim()}
+                    disabled={isLoading || (!input.trim() && !transcript)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-white shadow-sm transition hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send message"
                   >
@@ -212,12 +251,19 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                 </div>
                 <footer className="text-xs text-ink-600 flex justify-between items-center px-1">
                   <span>Powered by AINex AI</span>
-                  {appContext && (
-                    <span className="text-[10px] text-green-600 flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                      Context Active
-                    </span>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {isListening && (
+                        <span className="text-[10px] text-red-500 font-medium animate-pulse">
+                          ● Recording
+                        </span>
+                    )}
+                    {appContext && (
+                      <span className="text-[10px] text-green-600 flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                        Context Active
+                      </span>
+                    )}
+                  </div>
                 </footer>
               </form>
             </div>
