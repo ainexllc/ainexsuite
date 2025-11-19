@@ -12,7 +12,8 @@
  *   await migrateSingleUser('user-id-here');
  */
 
-import { db } from '@ainexsuite/firebase';
+import { db as adminDb } from '@ainexsuite/firebase/admin';
+import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { migrateUserData, calculateAccountType, calculateTrialEndDate } from '../user-utils';
 import type { User } from '@ainexsuite/types';
 
@@ -39,7 +40,7 @@ interface MigrationSummary {
  */
 export async function migrateSingleUser(userId: string): Promise<MigrationResult> {
   try {
-    const userRef = db.collection('users').doc(userId);
+    const userRef = adminDb.collection('users').doc(userId);
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
@@ -115,47 +116,46 @@ export async function migrateAllUsers(
   let skipped = 0;
 
   try {
-    const usersRef = db.collection('users');
-    let lastDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
-    let hasMore = true;
-
-    while (hasMore) {
-      // Build query
-      let query = usersRef.orderBy('createdAt').limit(batchSize);
-
-      if (lastDoc) {
-        query = query.startAfter(lastDoc);
-      }
-
-      // Fetch batch
-      const snapshot = await query.get();
-
-      if (snapshot.empty) {
-        hasMore = false;
-        break;
-      }
-
-      // Process batch
-      const batchPromises = snapshot.docs.map(doc =>
-        migrateSingleUser(doc.id)
-      );
-
-      const batchResults = await Promise.all(batchPromises);
-
-      batchResults.forEach(result => {
-        results.push(result);
-
-        if (result.success) {
-          if (result.changes && Object.keys(result.changes).length > 0) {
-            successful++;
-          } else {
-            skipped++;
-          }
-        } else {
-          failed++;
-        }
-      });
-
+          const usersRef = adminDb.collection('users');
+          let lastDoc: QueryDocumentSnapshot | null = null;
+          let hasMore = true;
+    
+          while (hasMore) {
+            // Build query
+            let query = usersRef.orderBy('createdAt').limit(batchSize);
+    
+            if (lastDoc) {
+              query = query.startAfter(lastDoc);
+            }
+    
+            // Fetch batch
+            const snapshot = await query.get();
+    
+            if (snapshot.empty) {
+              hasMore = false;
+              break;
+            }
+    
+            // Process batch
+            const batchPromises = snapshot.docs.map((doc: QueryDocumentSnapshot) =>
+              migrateSingleUser(doc.id)
+            );
+    
+            const batchResults = await Promise.all(batchPromises);
+    
+            batchResults.forEach((result: MigrationResult) => {
+              results.push(result);
+    
+              if (result.success) {
+                if (result.changes && Object.keys(result.changes).length > 0) {
+                  successful++;
+                } else {
+                  skipped++;
+                }
+              } else {
+                failed++;
+              }
+            });
       // Report progress
       if (onProgress) {
         onProgress({
@@ -243,7 +243,7 @@ export async function dryRunMigration(
       break;
     }
 
-    snapshot.docs.forEach(doc => {
+    snapshot.docs.forEach((doc: QueryDocumentSnapshot) => {
       totalUsers++;
       const userData = doc.data() as User;
 

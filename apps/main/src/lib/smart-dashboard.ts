@@ -1,5 +1,5 @@
 import { db } from '@ainexsuite/firebase';
-import { collection, query, where, orderBy, limit, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, onSnapshot, Unsubscribe, doc } from 'firebase/firestore';
 
 export type InsightType = 'actionable' | 'status' | 'memory' | 'streak' | 'update';
 export type InsightPriority = 'high' | 'medium' | 'low';
@@ -51,7 +51,10 @@ export class SmartDashboardService {
       fit: [],
       journey: [],
       grow: [],
-      pulse: []
+      pulse: [],
+      track: [],
+      moments: [],
+      projects: []
     };
 
     const update = () => {
@@ -124,6 +127,9 @@ export class SmartDashboardService {
     unsubscribes.push(this.subscribeJourney((data) => { insightsMap.journey = data; update(); }));
     unsubscribes.push(this.subscribeGrow((data) => { insightsMap.grow = data; update(); }));
     unsubscribes.push(this.subscribePulse((data) => { insightsMap.pulse = data; update(); }));
+    unsubscribes.push(this.subscribeHabits((data) => { insightsMap.track = data; update(); }));
+    unsubscribes.push(this.subscribeMoments((data) => { insightsMap.moments = data; update(); }));
+    unsubscribes.push(this.subscribeProjects((data) => { insightsMap.projects = data; update(); }));
 
     return () => unsubscribes.forEach(unsub => unsub());
   }
@@ -350,6 +356,93 @@ export class SmartDashboardService {
       callback(insights);
     }, (error) => {
       console.error('Error fetching pulse insights:', error);
+      callback([]);
+    });
+  }
+
+  private subscribeHabits(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'habits'),
+      where('ownerId', '==', this.userId),
+      where('archived', '==', false),
+      orderBy('createdAt', 'desc'),
+      limit(1)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const insights = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          appSlug: 'track',
+          type: 'streak' as InsightType,
+          title: 'Active Habit',
+          subtitle: data.name,
+          priority: 'medium' as InsightPriority,
+          timestamp: this.parseDate(data.createdAt),
+          actionUrl: '/track'
+        };
+      });
+      callback(insights);
+    }, (error) => {
+      console.error('Error fetching habit insights:', error);
+      callback([]);
+    });
+  }
+
+  private subscribeMoments(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'moments'),
+      where('ownerId', '==', this.userId),
+      orderBy('date', 'desc'),
+      limit(1)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const insights = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          appSlug: 'moments',
+          type: 'memory' as InsightType,
+          title: 'Recent Memory',
+          subtitle: data.title || 'Untitled Moment',
+          priority: 'low' as InsightPriority,
+          timestamp: this.parseDate(data.date),
+          actionUrl: '/moments'
+        };
+      });
+      callback(insights);
+    }, (error) => {
+      console.error('Error fetching moment insights:', error);
+      callback([]);
+    });
+  }
+
+  private subscribeProjects(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const whiteboardRef = doc(db, 'whiteboards', this.userId);
+
+    return onSnapshot(whiteboardRef, (doc) => {
+      const insights: InsightCardData[] = [];
+      if (doc.exists()) {
+        const data = doc.data();
+        const nodeCount = data.nodes?.length || 0;
+        if (nodeCount > 0) {
+            insights.push({
+                id: doc.id,
+                appSlug: 'projects',
+                type: 'status' as InsightType,
+                title: 'Project Board',
+                subtitle: `${nodeCount} active items`,
+                priority: 'low' as InsightPriority,
+                timestamp: this.parseDate(data.updatedAt || new Date()),
+                actionUrl: '/projects'
+            });
+        }
+      }
+      callback(insights);
+    }, (error) => {
+      console.error('Error fetching project insights:', error);
       callback([]);
     });
   }
