@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth as adminAuth } from 'firebase-admin/auth';
-import { db } from '@ainexsuite/firebase';
+import { getAuth } from 'firebase-admin/auth';
+import { db as adminDb } from '@ainexsuite/firebase/admin'; // Use Admin SDK Firestore
 import { migrateUserData, calculateAccountType, calculateTrialEndDate } from '../user-utils';
 import type { User } from '@ainexsuite/types';
 
@@ -70,7 +70,7 @@ function detectCookieDomain(hostname: string): string {
  * Create or update user document in Firestore
  */
 async function createOrUpdateUser(firebaseUser: any): Promise<User> {
-  const userRef = db.collection('users').doc(firebaseUser.uid);
+  const userRef = adminDb.collection('users').doc(firebaseUser.uid);
   const userDoc = await userRef.get();
 
   const now = Date.now();
@@ -219,11 +219,11 @@ export async function handleSessionCreation(req: NextRequest) {
     }
 
     // Production: Use Firebase Admin SDK
-    const decodedToken = await adminAuth().verifyIdToken(idToken);
+    const decodedToken = await getAuth().verifyIdToken(idToken);
     const expiresIn = 60 * 60 * 24 * 14 * 1000; // 14 days in ms
 
     // Create session cookie
-    const sessionCookie = await adminAuth().createSessionCookie(idToken, {
+    const sessionCookie = await getAuth().createSessionCookie(idToken, {
       expiresIn,
     });
 
@@ -277,8 +277,8 @@ export async function handleCustomTokenGeneration(req: NextRequest) {
     }
 
     // Production: Verify session cookie and create custom token
-    const decodedClaims = await adminAuth().verifySessionCookie(sessionCookie, true);
-    const customToken = await adminAuth().createCustomToken(decodedClaims.uid);
+    const decodedClaims = await getAuth().verifySessionCookie(sessionCookie, true);
+    const customToken = await getAuth().createCustomToken(decodedClaims.uid);
 
     return NextResponse.json({ customToken });
   } catch (error) {

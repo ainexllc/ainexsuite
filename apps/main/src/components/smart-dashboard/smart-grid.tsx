@@ -40,21 +40,17 @@ export function SmartGrid() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchInsights() {
-      if (!user?.uid) return;
-      
-      try {
-        const service = new SmartDashboardService(user.uid);
-        const data = await service.getAggregatedInsights();
-        setInsights(data);
-      } catch (error) {
-        console.error('Failed to load dashboard insights:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+    if (!user?.uid) return;
+    
+    setLoading(true);
+    const service = new SmartDashboardService(user.uid);
+    
+    const unsubscribe = service.subscribeToInsights((data) => {
+      setInsights(data);
+      setLoading(false);
+    });
 
-    fetchInsights();
+    return () => unsubscribe();
   }, [user]);
 
   if (loading) {

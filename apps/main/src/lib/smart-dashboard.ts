@@ -1,5 +1,5 @@
 import { db } from '@ainexsuite/firebase';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, onSnapshot, Unsubscribe } from 'firebase/firestore';
 
 export type InsightType = 'actionable' | 'status' | 'memory' | 'streak' | 'update';
 export type InsightPriority = 'high' | 'medium' | 'low';
@@ -41,105 +41,114 @@ export class SmartDashboardService {
   }
 
   /**
-   * Aggregates insights from all registered apps
+   * Subscribes to aggregated insights from all registered apps
    */
-  async getAggregatedInsights(): Promise<InsightCardData[]> {
-    const [
-      todos,
-      recentNotes,
-      workouts,
-      moods,
-      growGoals,
-      pulseMetrics
-    ] = await Promise.all([
-      this.getTodoInsights(),
-      this.getNoteInsights(),
-      this.getFitInsights(),
-      this.getJourneyInsights(),
-      this.getGrowInsights(),
-      this.getPulseInsights()
-    ]);
+  subscribeToInsights(callback: (insights: InsightCardData[]) => void): Unsubscribe {
+    const unsubscribes: Unsubscribe[] = [];
+    const insightsMap: Record<string, InsightCardData[]> = {
+      todo: [],
+      notes: [],
+      fit: [],
+      journey: [],
+      grow: [],
+      pulse: []
+    };
 
-    // Check for empty states and generate prompts
-    const quickActions = [];
-    
-    if (todos.length === 0) {
-      quickActions.push({
-        id: 'create-task-prompt',
-        appSlug: 'todo',
-        type: 'actionable' as InsightType,
-        title: 'Plan your day',
-        subtitle: 'No pending tasks. Add one?',
-        priority: 'low' as InsightPriority,
-        timestamp: new Date(),
-        actionUrl: '/todo',
-        actions: [{
-           label: 'Create Task',
-           type: 'create_prompt',
-           payload: { type: 'task' }
-        }]
+    const update = () => {
+      const allInsights = Object.values(insightsMap).flat();
+      
+      // Check for empty states and generate prompts
+      const quickActions: InsightCardData[] = [];
+      
+      if (insightsMap.todo.length === 0) {
+        quickActions.push({
+          id: 'create-task-prompt',
+          appSlug: 'todo',
+          type: 'actionable' as InsightType,
+          title: 'Plan your day',
+          subtitle: 'No pending tasks. Add one?',
+          priority: 'low' as InsightPriority,
+          timestamp: new Date(),
+          actionUrl: '/todo',
+          actions: [{
+             label: 'Create Task',
+             type: 'create_prompt',
+             payload: { type: 'task' }
+          }]
+        });
+      }
+
+      if (insightsMap.fit.length === 0) {
+        quickActions.push({
+          id: 'log-workout-prompt',
+          appSlug: 'fit',
+          type: 'streak' as InsightType,
+          title: 'Start moving',
+          subtitle: 'Log your first workout',
+          priority: 'low' as InsightPriority,
+          timestamp: new Date(),
+          actionUrl: '/fit',
+          actions: [{
+             label: 'Log Workout',
+             type: 'create_prompt',
+             payload: { type: 'workout' }
+          }]
+        });
+      }
+
+      if (insightsMap.journey.length === 0) {
+        quickActions.push({
+          id: 'log-mood-prompt',
+          appSlug: 'journey',
+          type: 'status' as InsightType,
+          title: 'Daily Reflection',
+          subtitle: 'How are you feeling today?',
+          priority: 'low' as InsightPriority,
+          timestamp: new Date(),
+          actionUrl: '/journey'
+        });
+      }
+
+      const finalInsights = [...allInsights, ...quickActions].sort((a, b) => {
+        if (a.priority === 'high' && b.priority !== 'high') return -1;
+        if (a.priority !== 'high' && b.priority === 'high') return 1;
+        return b.timestamp.getTime() - a.timestamp.getTime();
       });
-    }
 
-    if (workouts.length === 0) {
-      quickActions.push({
-        id: 'log-workout-prompt',
-        appSlug: 'fit',
-        type: 'streak' as InsightType,
-        title: 'Start moving',
-        subtitle: 'Log your first workout',
-        priority: 'low' as InsightPriority,
-        timestamp: new Date(),
-        actionUrl: '/fit',
-        actions: [{
-           label: 'Log Workout',
-           type: 'create_prompt',
-           payload: { type: 'workout' }
-        }]
-      });
-    }
+      callback(finalInsights);
+    };
 
-    if (moods.length === 0) {
-      quickActions.push({
-        id: 'log-mood-prompt',
-        appSlug: 'journey',
-        type: 'status' as InsightType,
-        title: 'Daily Reflection',
-        subtitle: 'How are you feeling today?',
-        priority: 'low' as InsightPriority,
-        timestamp: new Date(),
-        actionUrl: '/journey'
-      });
-    }
+    unsubscribes.push(this.subscribeTodo((data) => { insightsMap.todo = data; update(); }));
+    unsubscribes.push(this.subscribeNotes((data) => { insightsMap.notes = data; update(); }));
+    unsubscribes.push(this.subscribeFit((data) => { insightsMap.fit = data; update(); }));
+    unsubscribes.push(this.subscribeJourney((data) => { insightsMap.journey = data; update(); }));
+    unsubscribes.push(this.subscribeGrow((data) => { insightsMap.grow = data; update(); }));
+    unsubscribes.push(this.subscribePulse((data) => { insightsMap.pulse = data; update(); }));
 
-    // Combine and sort by priority/date
-    const allInsights = [...todos, ...recentNotes, ...workouts, ...moods, ...growGoals, ...pulseMetrics, ...quickActions].sort((a, b) => {
-      // High priority first
-      if (a.priority === 'high' && b.priority !== 'high') return -1;
-      if (a.priority !== 'high' && b.priority === 'high') return 1;
-      // Then by date (newest first)
-      return b.timestamp.getTime() - a.timestamp.getTime();
-    });
-
-    return allInsights;
+    return () => unsubscribes.forEach(unsub => unsub());
   }
 
-  private async getTodoInsights(): Promise<InsightCardData[]> {
-    try {
-      // Fetch overdue or due today tasks
-      const q = query(
-        collection(db, 'tasks'),
-        where('ownerId', '==', this.userId),
-        where('completed', '==', false),
-        orderBy('dueDate', 'asc'),
-        limit(3)
-      );
+  // Keep the old method for backward compatibility if needed, but it's better to migrate
+  async getAggregatedInsights(): Promise<InsightCardData[]> {
+    return new Promise((resolve) => {
+      const unsub = this.subscribeToInsights((data) => {
+        resolve(data);
+        unsub();
+      });
+    });
+  }
 
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) return [];
+  private subscribeTodo(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'tasks'),
+      where('ownerId', '==', this.userId),
+      where('completed', '==', false),
+      orderBy('dueDate', 'asc'),
+      limit(3)
+    );
 
-      return snapshot.docs.map(doc => {
+    return onSnapshot(q, (snapshot) => {
+      const insights = snapshot.docs.map(doc => {
         const data = doc.data();
         const dueDate = this.parseDate(data.dueDate);
         const isOverdue = dueDate < new Date();
@@ -147,10 +156,10 @@ export class SmartDashboardService {
         return {
           id: doc.id,
           appSlug: 'todo',
-          type: 'actionable',
+          type: 'actionable' as InsightType,
           title: data.title,
           subtitle: isOverdue ? 'Overdue' : 'Due Today',
-          priority: isOverdue ? 'high' : 'medium',
+          priority: (isOverdue ? 'high' : 'medium') as InsightPriority,
           timestamp: dueDate,
           actionUrl: `/todo?id=${doc.id}`,
           actions: [{
@@ -160,169 +169,194 @@ export class SmartDashboardService {
           }]
         };
       });
-    } catch (error) {
+      callback(insights);
+    }, (error) => {
       console.error('Error fetching todo insights:', error);
-      return [];
-    }
+      callback([]);
+    });
   }
 
-  private async getNoteInsights(): Promise<InsightCardData[]> {
-    try {
-      // Fetch recently pinned or updated notes
-      const q = query(
-        collection(db, 'users', this.userId, 'notes'),
-        orderBy('updatedAt', 'desc'),
-        limit(2)
-      );
+  private async getTodoInsights(): Promise<InsightCardData[]> {
+    // Legacy wrapper
+    return new Promise(resolve => {
+      const unsub = this.subscribeTodo(data => { resolve(data); unsub(); });
+    });
+  }
 
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) return [];
+  private subscribeNotes(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'users', this.userId, 'notes'),
+      orderBy('updatedAt', 'desc'),
+      limit(2)
+    );
 
-      return snapshot.docs.map(doc => {
+    return onSnapshot(q, (snapshot) => {
+      const insights = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
           appSlug: 'notes',
-          type: 'memory',
+          type: 'memory' as InsightType,
           title: data.title || 'Untitled Note',
           subtitle: 'Recently updated',
-          priority: 'low',
+          priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.updatedAt),
           actionUrl: `/notes?id=${doc.id}`
         };
       });
-    } catch (error) {
+      callback(insights);
+    }, (error) => {
       console.error('Error fetching note insights:', error);
-      return [];
-    }
+      callback([]);
+    });
+  }
+
+  private async getNoteInsights(): Promise<InsightCardData[]> {
+    return new Promise(resolve => {
+      const unsub = this.subscribeNotes(data => { resolve(data); unsub(); });
+    });
+  }
+
+  private subscribeFit(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'workouts'),
+      where('ownerId', '==', this.userId),
+      orderBy('date', 'desc'),
+      limit(1)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const insights = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          appSlug: 'fit',
+          type: 'streak' as InsightType,
+          title: 'Last Workout',
+          subtitle: `${data.name || 'Workout'} completed`,
+          priority: 'medium' as InsightPriority,
+          timestamp: this.parseDate(data.date),
+          actionUrl: '/fit'
+        };
+      });
+      callback(insights);
+    }, (error) => {
+      console.error('Error fetching fit insights:', error);
+      callback([]);
+    });
   }
 
   private async getFitInsights(): Promise<InsightCardData[]> {
-    try {
-      // Fetch last workout
-      const q = query(
-        collection(db, 'workouts'),
-        where('ownerId', '==', this.userId),
-        orderBy('date', 'desc'),
-        limit(1)
-      );
+    return new Promise(resolve => {
+      const unsub = this.subscribeFit(data => { resolve(data); unsub(); });
+    });
+  }
 
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) return [];
+  private subscribeJourney(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'journal_entries'),
+      where('ownerId', '==', this.userId),
+      orderBy('date', 'desc'),
+      limit(1)
+    );
 
-      const data = snapshot.docs[0].data();
-      return [{
-        id: snapshot.docs[0].id,
-        appSlug: 'fit',
-        type: 'streak',
-        title: 'Last Workout',
-        subtitle: `${data.name || 'Workout'} completed`,
-        priority: 'medium',
-        timestamp: this.parseDate(data.date),
-        actionUrl: '/fit'
-      }];
-    } catch (error) {
-      console.error('Error fetching fit insights:', error);
-      return [];
-    }
+    return onSnapshot(q, (snapshot) => {
+      const insights = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          appSlug: 'journey',
+          type: 'status' as InsightType,
+          title: 'Latest Check-in',
+          subtitle: `Mood: ${data.mood || 'Recorded'}`,
+          priority: 'low' as InsightPriority,
+          timestamp: this.parseDate(data.createdAt),
+          actionUrl: '/journey'
+        };
+      });
+      callback(insights);
+    }, (error) => {
+      console.error('Error fetching journey insights:', error);
+      callback([]);
+    });
   }
 
   private async getJourneyInsights(): Promise<InsightCardData[]> {
-    try {
-      // Fetch today's mood or check-in
-      const q = query(
-        collection(db, 'journal_entries'),
-        where('ownerId', '==', this.userId),
-        orderBy('date', 'desc'),
-        limit(1)
-      );
+    return new Promise(resolve => {
+      const unsub = this.subscribeJourney(data => { resolve(data); unsub(); });
+    });
+  }
 
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) return [];
+  private subscribeGrow(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'learning_goals'),
+      where('ownerId', '==', this.userId),
+      orderBy('progress', 'desc'),
+      limit(1)
+    );
 
-      const data = snapshot.docs[0].data();
-      return [{
-        id: snapshot.docs[0].id,
-        appSlug: 'journey',
-        type: 'status',
-        title: 'Latest Check-in',
-        subtitle: `Mood: ${data.mood || 'Recorded'}`,
-        priority: 'low',
-        timestamp: this.parseDate(data.createdAt),
-        actionUrl: '/journey'
-      }];
-    } catch (error) {
-      console.error('Error fetching journey insights:', error);
-      return [];
-    }
+    return onSnapshot(q, (snapshot) => {
+      const insights: InsightCardData[] = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.progress < 100) {
+          insights.push({
+            id: doc.id,
+            appSlug: 'grow',
+            type: 'status' as InsightType,
+            title: 'Current Goal',
+            subtitle: `${data.title} (${data.progress}% done)`,
+            priority: 'medium' as InsightPriority,
+            timestamp: this.parseDate(data.updatedAt),
+            actionUrl: '/grow'
+          });
+        }
+      });
+      callback(insights);
+    }, (error) => {
+      console.error('Error fetching grow insights:', error);
+      callback([]);
+    });
   }
 
   private async getGrowInsights(): Promise<InsightCardData[]> {
-    try {
-      // Fetch active learning goals
-      const q = query(
-        collection(db, 'learning_goals'),
-        where('ownerId', '==', this.userId),
-        orderBy('progress', 'desc'),
-        limit(1)
-      );
+    return new Promise(resolve => {
+      const unsub = this.subscribeGrow(data => { resolve(data); unsub(); });
+    });
+  }
 
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) return [];
+  private subscribePulse(callback: (data: InsightCardData[]) => void): Unsubscribe {
+    const q = query(
+      collection(db, 'health_metrics'),
+      where('ownerId', '==', this.userId),
+      orderBy('date', 'desc'),
+      limit(1)
+    );
 
-      const data = snapshot.docs[0].data();
-      // Skip if completed (assuming 100 is done)
-      if (data.progress >= 100) return [];
-
-      return [{
-        id: snapshot.docs[0].id,
-        appSlug: 'grow',
-        type: 'status',
-        title: 'Current Goal',
-        subtitle: `${data.title} (${data.progress}% done)`,
-        priority: 'medium',
-        timestamp: this.parseDate(data.updatedAt),
-        actionUrl: '/grow'
-      }];
-    } catch (error) {
-      console.error('Error fetching grow insights:', error);
-      return [];
-    }
+    return onSnapshot(q, (snapshot) => {
+      const insights = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          appSlug: 'pulse',
+          type: 'status' as InsightType,
+          title: 'Latest Vitals',
+          subtitle: `${data.metricType}: ${data.value}`,
+          priority: 'low' as InsightPriority,
+          timestamp: this.parseDate(data.date),
+          actionUrl: '/pulse'
+        };
+      });
+      callback(insights);
+    }, (error) => {
+      console.error('Error fetching pulse insights:', error);
+      callback([]);
+    });
   }
 
   private async getPulseInsights(): Promise<InsightCardData[]> {
-    try {
-      // Fetch latest health metric
-      const q = query(
-        collection(db, 'health_metrics'),
-        where('ownerId', '==', this.userId),
-        orderBy('date', 'desc'),
-        limit(1)
-      );
-
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) return [];
-
-      const data = snapshot.docs[0].data();
-      
-      return [{
-        id: snapshot.docs[0].id,
-        appSlug: 'pulse',
-        type: 'status',
-        title: 'Latest Vitals',
-        subtitle: `${data.metricType}: ${data.value}`,
-        priority: 'low',
-        timestamp: this.parseDate(data.date),
-        actionUrl: '/pulse'
-      }];
-    } catch (error) {
-      console.error('Error fetching pulse insights:', error);
-      return [];
-    }
+    return new Promise(resolve => {
+      const unsub = this.subscribePulse(data => { resolve(data); unsub(); });
+    });
   }
 }
