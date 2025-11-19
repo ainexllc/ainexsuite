@@ -5,11 +5,13 @@ import { SmartDashboardService, InsightCardData } from '@/lib/smart-dashboard';
 import { useAuth } from '@ainexsuite/auth';
 import { 
   CheckSquare, FileText, Dumbbell, BookOpen, 
-  AlertCircle, ArrowRight, GraduationCap, Activity
+  AlertCircle, ArrowRight, GraduationCap, Activity, CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
+import { db } from '@ainexsuite/firebase';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const iconMap: Record<string, any> = {
@@ -84,6 +86,31 @@ export function SmartGrid() {
 function InsightCard({ data, index }: { data: InsightCardData; index: number }) {
   const Icon = iconMap[data.appSlug] || AlertCircle;
   const themeClass = colorMap[data.appSlug] || 'text-gray-400 bg-gray-500/10 border-gray-500/20';
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleAction = async (e: React.MouseEvent, action: { type: string, payload?: any }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (action.type === 'complete' && action.payload?.taskId) {
+      setIsCompleting(true);
+      try {
+        await updateDoc(doc(db, 'tasks', action.payload.taskId), {
+           completed: true,
+           updatedAt: serverTimestamp()
+        });
+        setIsCompleted(true);
+      } catch (error) {
+        console.error("Failed to complete task", error);
+      } finally {
+        setIsCompleting(false);
+      }
+    }
+  };
+
+  if (isCompleted) return null;
 
   return (
     <motion.div
@@ -100,11 +127,24 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
             <div className={clsx("p-2 rounded-lg", themeClass)}>
               <Icon className="h-5 w-5" />
             </div>
-            {data.priority === 'high' && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-500/20">
-                Urgent
-              </span>
-            )}
+            <div className="flex gap-2">
+              {data.priority === 'high' && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-500/20">
+                  Urgent
+                </span>
+              )}
+              {data.actions?.map((action, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => handleAction(e, action)}
+                  disabled={isCompleting}
+                  className="p-1.5 rounded-full bg-white/10 hover:bg-green-500/20 hover:text-green-400 transition-colors disabled:opacity-50"
+                  title={action.label}
+                >
+                  {action.type === 'complete' ? <CheckCircle className="h-4 w-4" /> : null}
+                </button>
+              ))}
+            </div>
           </div>
           
           <div className="mt-auto">

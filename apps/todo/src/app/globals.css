@@ -6,11 +6,13 @@
 
 /* Light Mode Variables */
 :root.light {
-  /* Amber 500 for Primary */
-  --theme-primary: 245 158 11;
-  --theme-primary-rgb: 245, 158, 11;
-  --theme-primary-light: 251 191 36; /* Amber 400 */
-  --theme-primary-dark: 217 119 6;    /* Amber 600 */
+  /* Purple 500 for Primary - Todo App Accent */
+  --theme-primary: 139 92 246;
+  --theme-primary-rgb: 139, 92, 246;
+  --theme-primary-light: 192 132 252; /* Purple 400 */
+  --theme-primary-dark: 124 58 237;    /* Purple 600 */
+  --theme-secondary: 168 139 250; /* Purple 300 for secondary glow */
+  --theme-secondary-rgb: 168, 139, 250;
 
   /* Light mode specific colors */
   --color-surface-base: 249 250 251;
@@ -31,11 +33,13 @@
 /* Dark Mode Variables */
 :root.dark,
 :root {
-  /* Amber 500 for Primary */
-  --theme-primary: 245 158 11;
-  --theme-primary-rgb: 245, 158, 11;
-  --theme-primary-light: 251 191 36; /* Amber 400 */
-  --theme-primary-dark: 217 119 6;    /* Amber 600 */
+  /* Purple 500 for Primary - Todo App Accent */
+  --theme-primary: 139 92 246;
+  --theme-primary-rgb: 139, 92, 246;
+  --theme-primary-light: 192 132 252; /* Purple 400 */
+  --theme-primary-dark: 124 58 237;    /* Purple 600 */
+  --theme-secondary: 168 139 250; /* Purple 300 for secondary glow */
+  --theme-secondary-rgb: 168, 139, 250;
 
   /* Dark mode specific colors */
   --color-surface-base: 10 10 10;

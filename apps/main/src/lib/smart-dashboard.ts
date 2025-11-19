@@ -16,6 +16,12 @@ export interface InsightCardData {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   actionUrl?: string;
+  actions?: Array<{
+    label: string;
+    type: 'complete' | 'snooze' | 'dismiss';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload?: any;
+  }>;
 }
 
 export class SmartDashboardService {
@@ -94,7 +100,12 @@ export class SmartDashboardService {
           subtitle: isOverdue ? 'Overdue' : 'Due Today',
           priority: isOverdue ? 'high' : 'medium',
           timestamp: dueDate,
-          actionUrl: `/todo?id=${doc.id}`
+          actionUrl: `/todo?id=${doc.id}`,
+          actions: [{
+            label: 'Done',
+            type: 'complete',
+            payload: { taskId: doc.id }
+          }]
         };
       });
     } catch (error) {
