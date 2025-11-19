@@ -10,6 +10,7 @@ import UniversalSearch from '@/components/universal-search';
 import ActivityFeed from '@/components/activity-feed';
 import { AinexStudiosLogo } from '@ainexsuite/ui/components';
 import { useVisualStyle } from '@/lib/theme/visual-style';
+import { useAllAppColors } from '@ainexsuite/theme';
 import Image from 'next/image';
 import {
   FileText,
@@ -27,14 +28,11 @@ import {
   Sparkles,
   ChevronDown,
   Layers,
-  GitBranch,
-  LayoutGrid,
-  Compass
+  GitBranch
 } from 'lucide-react';
 import { Footer } from '@/components/footer';
 import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
-import { AppCard } from '@/components/workspace/app-card-v2';
-import { AppSection } from '@/components/workspace/app-section';
+import { AppsNavVision } from '@/components/workspace/apps-nav-vision';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
@@ -126,6 +124,7 @@ export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { selectedVariant } = useVisualStyle();
+  const { colors: appColors, loading: colorsLoading } = useAllAppColors();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
@@ -139,9 +138,18 @@ export default function WorkspacePage() {
     }
   }, [user, loading, router]);
 
-  // Segment apps based on usage
-  const myApps = apps.filter(app => user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]);
-  const discoveryApps = apps.filter(app => !user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]);
+  // Combine apps with installation status and dynamic colors
+  const allAppsWithStatus = apps.map(app => {
+    const dynamicColors = appColors[app.slug];
+    return {
+      ...app,
+      // Use dynamic colors if available, otherwise keep legacy gradient classes
+      primaryColor: dynamicColors?.primary,
+      secondaryColor: dynamicColors?.secondary,
+      isInstalled: !!user?.appsUsed?.[app.slug as keyof typeof user.appsUsed],
+      isLocked: false // Default to unlocked/available for now
+    };
+  }).sort((a, b) => (a.isInstalled === b.isInstalled ? 0 : a.isInstalled ? -1 : 1)); // Installed first
 
   // Cmd+K / Ctrl+K keyboard shortcut for search
   useEffect(() => {
@@ -337,9 +345,12 @@ export default function WorkspacePage() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-x-hidden pt-16">
-          <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Top Apps Navigation */}
+          <AppsNavVision apps={allAppsWithStatus} />
+
+          <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Welcome Section */}
-            <div className="mb-12">
+            <div className="mb-8">
               <h2 className="text-3xl font-bold text-white mb-2">
                 Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user.displayName?.split(' ')[0] || 'there'}!
               </h2>
@@ -350,37 +361,6 @@ export default function WorkspacePage() {
 
             {/* Smart Dashboard Grid */}
             <SmartGrid />
-
-            {/* My Toolkit Section */}
-            {myApps.length > 0 && (
-              <AppSection 
-                title="Your Toolkit" 
-                icon={LayoutGrid}
-                description="Your most used apps and tools."
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {myApps.map((app) => (
-                    <AppCard key={app.slug} app={app} />
-                  ))}
-                </div>
-              </AppSection>
-            )}
-
-            {/* Discovery Section */}
-            {discoveryApps.length > 0 && (
-              <AppSection 
-                title="Discover More" 
-                icon={Compass}
-                description="Unlock new capabilities by exploring these apps."
-                className="mt-16 pt-8 border-t border-white/5"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {discoveryApps.map((app) => (
-                    <AppCard key={app.slug} app={app} variant="discovery" />
-                  ))}
-                </div>
-              </AppSection>
-            )}
 
             {/* Activity Feed */}
             <div className="mt-16 pt-8 border-t border-white/5">

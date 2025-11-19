@@ -8,6 +8,7 @@ import { signOut as firebaseSignOut } from 'firebase/auth';
 import { Loader2, Shield, PenSquare, FolderTree, Wand2, BookOpen, Stamp } from 'lucide-react';
 import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
+import { useAppColors } from '@ainexsuite/theme';
 import type {
   DemoStep,
   NavLink,
@@ -76,6 +77,7 @@ const legalLinks: FooterLink[] = [
 function NotesHomePageContent() {
   const { user, loading } = useAuth();
   const { needsActivation, checking } = useAppActivation('notes');
+  const { primary, secondary, loading: colorsLoading } = useAppColors();
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
   const [showActivation, setShowActivation] = useState(false);
@@ -114,16 +116,16 @@ function NotesHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#3b82f6]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[rgb(var(--color-primary-rgb)/0.2)] animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#3b82f6]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[var(--color-primary)]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3b82f6] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -134,15 +136,32 @@ function NotesHomePageContent() {
     );
   }
 
+  // Don't render until colors are loaded
+  if (colorsLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-[rgb(var(--color-primary-rgb)/0.2)] animate-pulse" />
+            </div>
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[var(--color-primary)]" />
+          </div>
+          <p className="text-lg font-medium text-white">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="NOTES" appColor="#3b82f6" />}
-        backgroundComponent={<LayeredBackground primaryColor="#3b82f6" secondaryColor="#60a5fa" variant="organic" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="NOTES" appColor={primary} />}
+        backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} variant="organic" />}
         appName="notes"
-        accentColor="#3b82f6"
-        gradientFrom="#3b82f6"
-        gradientTo="#60a5fa"
+        accentColor={primary}
+        gradientFrom={primary}
+        gradientTo={secondary}
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
@@ -210,9 +229,9 @@ export default function NotesHomePage() {
           <div className="text-center space-y-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-16 w-16 rounded-full bg-[#3b82f6]/20 animate-pulse" />
+                <div className="h-16 w-16 rounded-full bg-[rgb(var(--color-primary-rgb)/0.2)] animate-pulse" />
               </div>
-              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#3b82f6]" />
+              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[var(--color-primary)]" />
             </div>
             <p className="text-lg font-medium text-white">Loading...</p>
           </div>

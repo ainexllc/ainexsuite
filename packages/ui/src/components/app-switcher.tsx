@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Grid, ChevronDown, Home } from 'lucide-react';
+import { Grid, Home } from 'lucide-react';
 import Link from 'next/link';
 import * as LucideIcons from 'lucide-react';
 import type { AppConfig, AppSlug } from '@ainexsuite/types';

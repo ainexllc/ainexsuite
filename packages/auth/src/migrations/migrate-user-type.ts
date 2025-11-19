@@ -219,7 +219,7 @@ export async function dryRunMigration(
   noApps: number;
   preview: Array<{ userId: string; currentApps: string[]; newApps: string[] }>;
 }> {
-  const usersRef = db.collection('users');
+  const usersRef = adminDb.collection('users');
   let lastDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
   let hasMore = true;
 

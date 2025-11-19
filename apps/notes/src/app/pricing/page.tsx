@@ -79,7 +79,7 @@ export default function NotesPricingPage() {
     <FooterPageLayout maxWidth="wide">
       <div className="space-y-16">
         <section className="text-center space-y-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[rgb(var(--color-primary-rgb)/0.1)] px-4 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-secondary)]">
             Pricing
           </span>
           <h1 className="text-4xl font-semibold text-white sm:text-5xl lg:text-6xl">
@@ -96,7 +96,7 @@ export default function NotesPricingPage() {
               key={plan.name}
               className={`rounded-3xl border ${
                 plan.highlighted
-                  ? 'border-blue-400 bg-gradient-to-br from-blue-500/10 to-indigo-500/10'
+                  ? 'border-[var(--color-secondary)] bg-gradient-to-br from-[rgb(var(--color-primary-rgb)/0.1)] to-[rgb(var(--color-secondary-rgb)/0.1)]'
                   : 'border-white/10 bg-zinc-800/80'
               } p-8 shadow-lg transition hover:-translate-y-1`}
             >
@@ -105,7 +105,7 @@ export default function NotesPricingPage() {
                   {plan.name}
                 </div>
                 {plan.highlighted && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[rgb(var(--color-primary-rgb)/0.15)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-secondary)]">
                     Most Popular
                   </span>
                 )}
@@ -119,7 +119,7 @@ export default function NotesPricingPage() {
               <ul className="mt-6 space-y-3 text-sm text-white/70">
                 {plan.perks.map((perk) => (
                   <li key={perk} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-blue-300 mt-0.5" />
+                    <Check className="h-5 w-5 text-[var(--color-secondary)] mt-0.5" />
                     <span>{perk}</span>
                   </li>
                 ))}
@@ -129,7 +129,7 @@ export default function NotesPricingPage() {
                 type="button"
                 className={`mt-8 w-full rounded-2xl px-6 py-3 text-sm font-semibold transition ${
                   plan.highlighted
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    ? 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-secondary)]'
                     : 'border border-white/20 text-white hover:bg-white/5'
                 }`}
               >
@@ -147,15 +147,15 @@ export default function NotesPricingPage() {
             </p>
             <ul className="space-y-4 text-white/70">
               <li className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-blue-300 mt-1" />
+                <Shield className="h-5 w-5 text-[var(--color-secondary)] mt-1" />
                 <span>End-to-end encryption and zero-knowledge optional vaults.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-blue-300 mt-1" />
+                <Sparkles className="h-5 w-5 text-[var(--color-secondary)] mt-1" />
                 <span>Role-based access, link sharing controls, and activity history.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-blue-300 mt-1" />
+                <Check className="h-5 w-5 text-[var(--color-secondary)] mt-1" />
                 <span>GDPR, SOC2, and HIPAA-friendly architecture for enterprise deployments.</span>
               </li>
             </ul>
@@ -164,19 +164,19 @@ export default function NotesPricingPage() {
             <h3 className="text-xl font-semibold text-white mb-4">Included in every plan</h3>
             <ul className="space-y-3 text-sm text-white/70">
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-blue-300 mt-0.5" />
+                <Check className="h-5 w-5 text-[var(--color-secondary)] mt-0.5" />
                 <span>Unlimited note capture and instant syncing.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-blue-300 mt-0.5" />
+                <Check className="h-5 w-5 text-[var(--color-secondary)] mt-0.5" />
                 <span>AI-powered summaries, rewrites, and action item suggestions.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-blue-300 mt-0.5" />
+                <Check className="h-5 w-5 text-[var(--color-secondary)] mt-0.5" />
                 <span>Weekly recap emails with highlights and follow-up prompts.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-blue-300 mt-0.5" />
+                <Check className="h-5 w-5 text-[var(--color-secondary)] mt-0.5" />
                 <span>30-day version history and easy exports.</span>
               </li>
             </ul>

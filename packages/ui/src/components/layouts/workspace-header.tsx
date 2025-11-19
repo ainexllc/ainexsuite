@@ -40,7 +40,6 @@ interface WorkspaceHeaderProps {
  */
 export function WorkspaceHeader({
   user,
-  searchPlaceholder = "Search...",
   onSignOut,
   appName,
   appColor,

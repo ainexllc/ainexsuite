@@ -6,6 +6,7 @@ Unified theme package for AinexSuite with support for orange/blue color schemes 
 
 - **Consistent Colors**: Orange (#f97316) and Blue (#3b82f6) across both themes
 - **Light/Dark Mode**: Inverted surfaces and text, same theme colors
+- **Dynamic App Colors**: Real-time color updates from Firestore per app
 - **CSS Variables**: Full theming system with CSS custom properties
 - **Tailwind Integration**: Preset configuration for seamless integration
 - **Theme Toggle**: Ready-to-use toggle component
@@ -96,6 +97,181 @@ export default function MyComponent() {
   );
 }
 ```
+
+## Dynamic App Colors (New!)
+
+Apps can now load custom colors from Firestore that update in real-time.
+
+### Setup AppColorProvider
+
+Wrap your app with `AppColorProvider` (in addition to `ThemeProvider`):
+
+```tsx
+import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider>
+          <AppColorProvider
+            appId="notes"
+            fallbackPrimary="#3b82f6"
+            fallbackSecondary="#60a5fa"
+          >
+            {children}
+          </AppColorProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### AppColorProvider Props
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `appId` | string | Yes | - | Firestore document ID (e.g., "notes", "journey") |
+| `fallbackPrimary` | string | No | "#3b82f6" | Fallback primary color if Firestore fails |
+| `fallbackSecondary` | string | No | "#60a5fa" | Fallback secondary color if Firestore fails |
+| `children` | ReactNode | Yes | - | Child components |
+
+### Available CSS Variables
+
+The provider sets these CSS custom properties dynamically:
+
+- `--color-primary` - Primary color as hex (e.g., #3b82f6)
+- `--color-secondary` - Secondary color as hex (e.g., #60a5fa)
+- `--color-primary-rgb` - Primary color as RGB (e.g., 59, 130, 246)
+- `--color-secondary-rgb` - Secondary color as RGB (e.g., 96, 165, 250)
+
+### Using Dynamic Colors in Components
+
+#### Tailwind with arbitrary values:
+
+```tsx
+<button className="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)]">
+  Click me
+</button>
+
+// With opacity
+<div className="bg-[rgb(var(--color-primary-rgb)/0.1)]">
+  Transparent background
+</div>
+```
+
+#### Regular CSS:
+
+```css
+.my-button {
+  background-color: var(--color-primary);
+}
+
+.my-button:hover {
+  background-color: var(--color-secondary);
+}
+
+/* With opacity */
+.my-overlay {
+  background-color: rgb(var(--color-primary-rgb) / 0.5);
+}
+```
+
+#### React inline styles:
+
+```tsx
+<div style={{ backgroundColor: 'var(--color-primary)' }}>
+  Dynamic color
+</div>
+```
+
+### Using the useAppColors Hook
+
+Access colors directly in React components:
+
+```tsx
+'use client';
+
+import { useAppColors } from '@ainexsuite/theme';
+
+export default function MyComponent() {
+  const { primary, secondary, loading } = useAppColors();
+
+  if (loading) {
+    return <div>Loading colors...</div>;
+  }
+
+  return (
+    <div style={{ backgroundColor: primary }}>
+      Primary: {primary}
+      <br />
+      Secondary: {secondary}
+    </div>
+  );
+}
+```
+
+### Examples
+
+**Button with dynamic color:**
+```tsx
+<button className="px-4 py-2 rounded bg-[var(--color-primary)] text-white hover:bg-[var(--color-secondary)]">
+  Save
+</button>
+```
+
+**Card with dynamic accent:**
+```tsx
+<div className="border-l-4 border-[var(--color-primary)] p-4">
+  <h3>Card Title</h3>
+  <p>Card content</p>
+</div>
+```
+
+**Badge with transparent background:**
+```tsx
+<span className="px-2 py-1 rounded-full bg-[rgb(var(--color-primary-rgb)/0.1)] text-[var(--color-primary)]">
+  New
+</span>
+```
+
+**Icon with dynamic color:**
+```tsx
+<CheckIcon
+  className="w-5 h-5"
+  style={{ color: 'var(--color-primary)' }}
+/>
+```
+
+### How It Works
+
+1. `AppColorProvider` listens to Firestore document: `apps/{appId}`
+2. When colors change in Admin app, Firestore triggers real-time update
+3. Provider updates CSS custom properties automatically
+4. All components using these variables update instantly (no refresh needed)
+
+### Firestore Document Structure
+
+```typescript
+// Document: apps/{appId}
+{
+  name: "Notes",
+  primary: "#3b82f6",
+  secondary: "#60a5fa",
+  // ... other app config
+}
+```
+
+### Managing Colors
+
+Colors are managed through the Admin app at `/apps`:
+
+1. Go to Admin app → Apps page
+2. Select an app
+3. Use color picker or AI generator (✨ Sparkles button)
+4. Click "Save Colors"
+5. Changes reflect in the app instantly
 
 ## Color Palette
 

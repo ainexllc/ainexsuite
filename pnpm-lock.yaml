@@ -90,6 +90,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.0(react@19.2.0)
+      simplex-noise:
+        specifier: ^4.0.1
+        version: 4.0.3
     devDependencies:
       '@types/node':
         specifier: ^20.11.17
@@ -385,6 +388,9 @@ importers:
       '@ainexsuite/firebase':
         specifier: workspace:*
         version: link:../../packages/firebase
+      '@ainexsuite/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       '@ainexsuite/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -412,6 +418,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.0(react@19.2.0)
+      simplex-noise:
+        specifier: ^4.0.1
+        version: 4.0.3
     devDependencies:
       '@ainexsuite/config':
         specifier: workspace:*
@@ -1110,6 +1119,9 @@ importers:
 
   packages/theme:
     dependencies:
+      '@ainexsuite/firebase':
+        specifier: workspace:*
+        version: link:../firebase
       lucide-react:
         specifier: ^0.344.0
         version: 0.344.0(react@19.2.0)

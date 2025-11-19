@@ -13,9 +13,10 @@
     "build:deps": "cd ../.. && npm run build:workspace"
   },
   "dependencies": {
-    "@ainexsuite/auth": "workspace:*",
     "@ainexsuite/ai": "workspace:*",
+    "@ainexsuite/auth": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
+    "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "firebase-admin": "^12.0.0",
@@ -24,7 +25,8 @@
     "lucide-react": "^0.312.0",
     "next": "^15.5.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "simplex-noise": "^4.0.1"
   },
   "devDependencies": {
     "@ainexsuite/config": "workspace:*",

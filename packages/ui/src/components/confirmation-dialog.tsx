@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Modal, ModalHeader, ModalTitle, ModalDescription, ModalContent, ModalFooter } from "./modal";
+import { Modal, ModalTitle, ModalDescription, ModalContent, ModalFooter } from "./modal";
 import { Button } from "./buttons";
 import { AlertTriangle } from "lucide-react";
 

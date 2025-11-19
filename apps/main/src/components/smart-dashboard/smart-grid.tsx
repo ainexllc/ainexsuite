@@ -14,7 +14,6 @@ import { motion } from 'framer-motion';
 import { db } from '@ainexsuite/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ActionDispatcher } from '@/lib/action-dispatcher';
-import { useAuth } from '@ainexsuite/auth';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const iconMap: Record<string, any> = {

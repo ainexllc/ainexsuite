@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { useAppColors } from '@ainexsuite/theme';
 import { Loader2 } from 'lucide-react';
 import { NoteBoard } from '@/components/notes/note-board';
 
 export default function NotesWorkspace() {
   const { user, loading } = useAuth();
+  const { primary } = useAppColors();
   const router = useRouter();
 
   // Redirect to login if not authenticated
@@ -34,7 +36,7 @@ export default function NotesWorkspace() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
       </div>
     );
   }
@@ -49,6 +51,7 @@ export default function NotesWorkspace() {
       onSignOut={handleSignOut}
       searchPlaceholder="Search notes..."
       appName="NOTES"
+      appColor={primary}
     >
       {/* Welcome and Notes Section */}
       <section className="space-y-6">

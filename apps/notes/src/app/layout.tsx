@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
-import { ThemeProvider } from "@ainexsuite/theme";
+import { ThemeProvider, AppColorProvider } from "@ainexsuite/theme";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -50,8 +50,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans bg-surface-base text-ink-900 antialiased transition-colors duration-300`}
       >
         <ThemeProvider>
-          <AppProviders>{children}</AppProviders>
-          <Toaster />
+          <AppColorProvider appId="notes" fallbackPrimary="#3b82f6" fallbackSecondary="#60a5fa">
+            <AppProviders>{children}</AppProviders>
+            <Toaster />
+          </AppColorProvider>
         </ThemeProvider>
       </body>
     </html>

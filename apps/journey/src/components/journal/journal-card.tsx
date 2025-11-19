@@ -1,5 +1,3 @@
-'use client';
-
 import { JournalEntry } from '@ainexsuite/types';
 import { formatDate, formatRelativeTime } from '@/lib/utils/date';
 import { getMoodIcon, getMoodLabel } from '@/lib/utils/mood';
@@ -8,19 +6,22 @@ import { deleteJournalEntry } from '@/lib/firebase/firestore';
 import { deleteAllEntryFiles } from '@/lib/firebase/storage';
 import { useToast } from '@/lib/toast';
 import { useRouter } from 'next/navigation';
-import { Paperclip, Trash2, Edit, Link, Lock, Unlock } from 'lucide-react';
+import { Paperclip, Trash2, Edit, Link as LinkIcon, Lock, Unlock } from 'lucide-react';
 import { useState } from 'react';
 import { usePrivacy } from '@/contexts/privacy-context';
 import { BlurredContent } from '@/components/privacy/blurred-content';
 import { PasscodeModal } from '@/components/privacy/passcode-modal';
 import { format } from 'date-fns';
+import { DashboardTheme } from '@/lib/dashboard-themes';
+import { ThemedPanel } from '@/components/dashboard/themed-panel';
 
 interface JournalCardProps {
   entry: JournalEntry;
   onUpdate: () => void;
+  theme?: DashboardTheme;
 }
 
-export function JournalCard({ entry, onUpdate }: JournalCardProps) {
+export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,11 +29,15 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
   const [pendingAction, setPendingAction] = useState<'view' | 'edit' | null>(null);
   const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode, isLoading: privacyLoading } = usePrivacy();
 
-  // Private entries should only be locked if:
-  // 1. Entry is private AND
-  // 2. User HAS set up a passcode AND
-  // 3. Session is not currently unlocked
-  // If no passcode is set, private entries are just visually marked but still accessible
+  // Fallbacks
+  const textPrimary = theme?.textPrimary || 'text-white';
+  const textSecondary = theme?.textSecondary || 'text-white/70';
+  const accentText = theme?.accent || 'text-[#f97316]';
+  const accentBg = theme?.accentBg || 'bg-[#f97316]';
+  const bgSurface = theme?.bgSurface || 'bg-zinc-800/95';
+  const borderClass = theme?.border || 'border-white/10';
+  
+  // Private entries logic...
   const isLocked = entry.isPrivate && hasPasscode && !isUnlocked;
 
   const handleDelete = async () => {
@@ -40,20 +45,15 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
 
     setIsDeleting(true);
     try {
-      // Delete attachments first
       if (entry.attachments && entry.attachments.length > 0) {
         await deleteAllEntryFiles(entry.userId, entry.id);
       }
-
-      // Then delete the entry
       await deleteJournalEntry(entry.id);
-
       toast({
         title: 'Entry deleted',
         description: 'Your journal entry has been deleted.',
         variant: 'success',
       });
-
       onUpdate();
     } catch (error) {
       toast({
@@ -86,25 +86,17 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
 
   const handlePasscodeSubmit = async (passcode: string) => {
     let success = false;
-
     try {
       if (hasPasscode) {
-        // Verify existing passcode
         success = await verifyPasscode(passcode);
       } else {
-        // Set up new passcode
         success = await setupPasscode(passcode);
-        // If setup was successful, immediately verify to unlock
         if (success) {
           success = await verifyPasscode(passcode);
         }
       }
-
       if (success) {
-        // Close modal first
         setShowPasscodeModal(false);
-
-        // Small delay to ensure modal closes
         setTimeout(() => {
           if (pendingAction === 'edit') {
             router.push(`/workspace/${entry.id}`);
@@ -122,48 +114,54 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
         variant: 'error',
       });
     }
-
     return success;
   };
 
   const truncateContent = (content: string, maxLength: number = 150) => {
-    // First, add spaces between list items and paragraphs to avoid jumbled text
     let processedContent = content
-      .replace(/<\/li>/gi, '</li> ') // Add space after list items
-      .replace(/<\/p>/gi, '</p> ') // Add space after paragraphs
-      .replace(/<br\s*\/?>/gi, ' ') // Replace line breaks with spaces
-      .replace(/<\/div>/gi, '</div> ') // Add space after divs
-      .replace(/<\/h[1-6]>/gi, ' ') // Add space after headings
-      .replace(/<li>/gi, ' • '); // Add bullet point for list items
+      .replace(/<\/li>/gi, '</li> ')
+      .replace(/<\/p>/gi, '</p> ')
+      .replace(/<br\s*\/?>/gi, ' ')
+      .replace(/<\/div>/gi, '</div> ')
+      .replace(/<\/h[1-6]>/gi, ' ')
+      .replace(/<li>/gi, ' • ');
 
-    // Strip HTML tags and decode entities
     let textContent = processedContent
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
-      .replace(/&amp;/g, '&') // Replace ampersands
-      .replace(/&lt;/g, '<') // Replace less than
-      .replace(/&gt;/g, '>') // Replace greater than
-      .replace(/&quot;/g, '"') // Replace quotes
-      .replace(/&#39;/g, "'") // Replace apostrophes
-      .replace(/&mdash;/g, '—') // Replace em dashes
-      .replace(/&ndash;/g, '–') // Replace en dashes
-      .replace(/\s+/g, ' ') // Clean up extra whitespace
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&mdash;/g, '—')
+      .replace(/&ndash;/g, '–')
+      .replace(/\s+/g, ' ')
       .trim();
 
     if (textContent.length <= maxLength) return textContent;
     return textContent.substring(0, maxLength).trim() + '...';
   };
 
+  // Use a div with classes if theme is missing (fallback behavior) or ThemedPanel if present
+  // But wait, ThemedPanel requires a valid Theme object. 
+  // We'll construct a mock theme object if undefined to keep using ThemedPanel or just use standard div
+  
+  const Wrapper = theme ? ThemedPanel : 'div';
+  const wrapperProps = theme ? { theme, hover: true, className: "p-6" } : { className: "bg-zinc-800/95 backdrop-blur-md hover:shadow-lg transition-all duration-200 rounded-xl border border-white/10 p-6 overflow-hidden relative group" };
+
   return (
-    <div className="bg-zinc-800/95 backdrop-blur-md hover:shadow-lg hover:shadow-[#f97316]/10 transition-all duration-200 relative group rounded-xl border border-white/10 p-6 overflow-hidden">
-      {/* Action buttons overlay with orange theme */}
+    <div className={cn("relative group overflow-hidden transition-all duration-300", 
+        theme ? cn(theme.panel, theme.radius, theme.border, theme.shadow, theme.bgHover) : "bg-zinc-800/95 backdrop-blur-md rounded-xl border border-white/10"
+    )}>
+      {/* Action buttons overlay */}
       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleEdit();
           }}
-          className="p-2.5 bg-[#f97316] hover:bg-[#ea580c] text-white rounded-lg shadow-lg shadow-[#f97316]/20 hover:shadow-xl hover:shadow-[#f97316]/30 transform hover:scale-110 transition-all duration-200"
+          className={cn("p-2.5 text-white rounded-lg shadow-lg transform hover:scale-110 transition-all duration-200", accentBg)}
           disabled={isDeleting}
           aria-label="Edit entry"
         >
@@ -182,85 +180,87 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
         </button>
       </div>
 
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            {entry.isPrivate && (
-              <div className="flex items-center" title={
-                !hasPasscode ? "Private entry (no passcode set)" :
-                isLocked ? "Private entry (locked)" :
-                "Private entry (unlocked)"
-              }>
-                {!hasPasscode ? (
-                  <Lock className="w-4 h-4 text-amber-500" />
-                ) : isLocked ? (
-                  <Lock className="w-4 h-4 text-red-500" />
-                ) : (
-                  <Unlock className="w-4 h-4 text-green-500" />
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+                {entry.isPrivate && (
+                <div className="flex items-center" title={
+                    !hasPasscode ? "Private entry (no passcode set)" :
+                    isLocked ? "Private entry (locked)" :
+                    "Private entry (unlocked)"
+                }>
+                    {!hasPasscode ? (
+                    <Lock className="w-4 h-4 text-amber-500" />
+                    ) : isLocked ? (
+                    <Lock className="w-4 h-4 text-red-500" />
+                    ) : (
+                    <Unlock className="w-4 h-4 text-green-500" />
+                    )}
+                </div>
                 )}
-              </div>
-            )}
-            {entry.isDraft && (
-              <span className="rounded-full border border-dashed border-[#f97316]/50 bg-[#f97316]/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#f97316]">
-                Draft
-              </span>
-            )}
-            <h3 className="font-semibold text-lg text-white line-clamp-1 pr-20">
-              {entry.title}
-            </h3>
-          </div>
-          <DateBadge createdAt={entry.createdAt} />
-        </div>
-      </div>
-
-      <BlurredContent isLocked={isLocked} onClick={handleView} className="min-h-[70px] mb-4">
-        <p className="text-white/70 line-clamp-3">
-          {truncateContent(entry.content)}
-        </p>
-      </BlurredContent>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 flex-wrap">
-          {entry.mood && (() => {
-            const Icon = getMoodIcon(entry.mood);
-            return (
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-white/10 text-white">
-                <Icon className="h-4 w-4" />
-                {getMoodLabel(entry.mood)}
-              </span>
-            );
-          })()}
-
-          {entry.tags && entry.tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="bg-white/10 text-white px-2 py-1 rounded-full text-xs"
-            >
-              {tag}
-            </span>
-          ))}
-
-          {entry.tags && entry.tags.length > 3 && (
-            <span className="text-xs text-white/60">
-              +{entry.tags.length - 3} more
-            </span>
-          )}
+                {entry.isDraft && (
+                <span className={cn("rounded-full border border-dashed px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide", borderClass, accentText)}>
+                    Draft
+                </span>
+                )}
+                <h3 className={cn("font-semibold text-lg line-clamp-1 pr-20", textPrimary)}>
+                {entry.title}
+                </h3>
+            </div>
+            <DateBadge createdAt={entry.createdAt} theme={theme} />
+            </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {entry.attachments && entry.attachments.length > 0 && (
-            <div className="flex items-center gap-1 text-white/60">
-              <Paperclip className="w-4 h-4" />
-              <span className="text-xs">{entry.attachments.length}</span>
-            </div>
-          )}
+        <BlurredContent isLocked={isLocked} onClick={handleView} className="min-h-[70px] mb-4">
+            <p className={cn("line-clamp-3", textSecondary)}>
+            {truncateContent(entry.content)}
+            </p>
+        </BlurredContent>
 
-          {entry.links && entry.links.length > 0 && (
-            <div className="flex items-center gap-1 text-[#f97316]">
-              <Link className="w-4 h-4" />
-              <span className="text-xs">{entry.links.length}</span>
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 flex-wrap">
+            {entry.mood && (() => {
+                const Icon = getMoodIcon(entry.mood);
+                return (
+                <span className={cn("inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium", bgSurface, textPrimary)}>
+                    <Icon className="h-4 w-4" />
+                    {getMoodLabel(entry.mood)}
+                </span>
+                );
+            })()}
+
+            {entry.tags && entry.tags.slice(0, 3).map((tag) => (
+                <span
+                key={tag}
+                className={cn("px-2 py-1 rounded-full text-xs", bgSurface, textPrimary)}
+                >
+                {tag}
+                </span>
+            ))}
+
+            {entry.tags && entry.tags.length > 3 && (
+                <span className={cn("text-xs", textSecondary)}>
+                +{entry.tags.length - 3} more
+                </span>
+            )}
             </div>
-          )}
+
+            <div className="flex items-center gap-3">
+            {entry.attachments && entry.attachments.length > 0 && (
+                <div className={cn("flex items-center gap-1", textSecondary)}>
+                <Paperclip className="w-4 h-4" />
+                <span className="text-xs">{entry.attachments.length}</span>
+                </div>
+            )}
+
+            {entry.links && entry.links.length > 0 && (
+                <div className={cn("flex items-center gap-1", accentText)}>
+                <LinkIcon className="w-4 h-4" />
+                <span className="text-xs">{entry.links.length}</span>
+                </div>
+            )}
+            </div>
         </div>
       </div>
 
@@ -288,7 +288,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
   );
 }
 
-function DateBadge({ createdAt }: { createdAt: Date | string | number }) {
+function DateBadge({ createdAt, theme }: { createdAt: Date | string | number, theme?: DashboardTheme }) {
   const date = typeof createdAt === 'string'
     ? new Date(createdAt)
     : typeof createdAt === 'number'
@@ -297,18 +297,24 @@ function DateBadge({ createdAt }: { createdAt: Date | string | number }) {
   const month = format(date, 'MMM');
   const day = format(date, 'dd');
   const time = format(date, 'p');
+  
+  const accentText = theme?.accent || 'text-[#f97316]';
+  const textPrimary = theme?.textPrimary || 'text-white';
+  const textSecondary = theme?.textSecondary || 'text-white/60';
+  const bgSurface = theme?.bgSurface || 'bg-zinc-900/90';
+  const borderClass = theme?.border || 'border-white/10';
 
   return (
-    <div className="flex items-center gap-3 text-sm text-white/60">
-      <div className="flex h-12 w-12 flex-col items-center justify-center rounded-xl border border-white/10 bg-zinc-900/90 shadow-sm">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#f97316]">
+    <div className={cn("flex items-center gap-3 text-sm", textSecondary)}>
+      <div className={cn("flex h-12 w-12 flex-col items-center justify-center rounded-xl border shadow-sm", borderClass, bgSurface)}>
+        <span className={cn("text-[10px] font-semibold uppercase tracking-wide", accentText)}>
           {month}
         </span>
-        <span className="text-lg font-bold text-white">{day}</span>
+        <span className={cn("text-lg font-bold", textPrimary)}>{day}</span>
       </div>
       <div className="flex flex-col leading-tight">
-        <span className="text-sm font-medium text-white">{formatDate(date)}</span>
-        <span className="text-xs text-white/60 flex items-center gap-1">
+        <span className={cn("text-sm font-medium", textPrimary)}>{formatDate(date)}</span>
+        <span className={cn("text-xs flex items-center gap-1", textSecondary)}>
           <span>{time}</span>
           <span>•</span>
           <span>{formatRelativeTime(date)}</span>

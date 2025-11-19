@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { Loader2, Save, RotateCcw, LayoutGrid, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, Save, RotateCcw, LayoutGrid, CheckCircle2, AlertCircle, Sparkles, X } from 'lucide-react';
 
 interface AppConfig {
   id: string;
@@ -31,6 +31,10 @@ export default function AppsManagement() {
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [generatingColors, setGeneratingColors] = useState<string | null>(null);
+  const [showAIModal, setShowAIModal] = useState<string | null>(null);
+  const [aiDescription, setAiDescription] = useState('');
+  const [aiMood, setAiMood] = useState('');
 
   useEffect(() => {
     fetchApps();
@@ -96,9 +100,62 @@ export default function AppsManagement() {
   };
 
   const handleColorChange = (id: string, field: 'primary' | 'secondary', value: string) => {
-    setApps(prev => prev.map(app => 
+    setApps(prev => prev.map(app =>
       app.id === id ? { ...app, [field]: value } : app
     ));
+  };
+
+  const handleGenerateColors = async (app: AppConfig) => {
+    setGeneratingColors(app.id);
+    setError(null);
+    try {
+      const response = await fetch('/api/generate-colors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appName: app.name,
+          appDescription: aiDescription || undefined,
+          mood: aiMood || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate colors');
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.colors) {
+        // Update the app colors
+        setApps(prev => prev.map(a =>
+          a.id === app.id
+            ? { ...a, primary: data.colors.primary, secondary: data.colors.secondary }
+            : a
+        ));
+        const providerName = data.provider === 'grok' ? 'Grok' : data.provider === 'claude' ? 'Claude' : 'Algorithm';
+        setSuccess(`Generated new colors for ${app.name} using ${providerName}`);
+        setShowAIModal(null);
+        setAiDescription('');
+        setAiMood('');
+      } else {
+        throw new Error('Invalid response from color generation API');
+      }
+    } catch (err) {
+      console.error('Error generating colors:', err);
+      setError(`Failed to generate colors for ${app.name}`);
+    } finally {
+      setGeneratingColors(null);
+      setTimeout(() => setSuccess(null), 3000);
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const openAIModal = (appId: string) => {
+    setShowAIModal(appId);
+    setAiDescription('');
+    setAiMood('');
   };
 
   if (loading && apps.length === 0) {
@@ -151,17 +208,31 @@ export default function AppsManagement() {
                         </div>
                         <h3 className="font-semibold text-lg text-white">{app.name}</h3>
                     </div>
-                    <button
-                        onClick={() => handleSave(app)}
-                        disabled={saving === app.id}
-                        className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                        {saving === app.id ? (
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                        ) : (
-                            <Save className="h-5 w-5" />
-                        )}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => openAIModal(app.id)}
+                            disabled={generatingColors === app.id}
+                            className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-colors disabled:opacity-50"
+                            title="Generate colors with AI"
+                        >
+                            {generatingColors === app.id ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                                <Sparkles className="h-5 w-5" />
+                            )}
+                        </button>
+                        <button
+                            onClick={() => handleSave(app)}
+                            disabled={saving === app.id}
+                            className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            {saving === app.id ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                                <Save className="h-5 w-5" />
+                            )}
+                        </button>
+                    </div>
                 </div>
                 
                 <div className="p-6 space-y-4">
@@ -238,6 +309,94 @@ export default function AppsManagement() {
             </div>
         ))}
       </div>
+
+      {/* AI Color Generation Modal */}
+      {showAIModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-500/10">
+                  <Sparkles className="h-5 w-5 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white">Generate Colors with AI</h3>
+              </div>
+              <button
+                onClick={() => setShowAIModal(null)}
+                className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-zinc-400 mb-4">
+                  Optionally provide details to help AI generate better colors for{' '}
+                  <span className="text-white font-medium">
+                    {apps.find(a => a.id === showAIModal)?.name}
+                  </span>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  App Description (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={aiDescription}
+                  onChange={(e) => setAiDescription(e.target.value)}
+                  placeholder="e.g., a health and fitness tracking app"
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-2 text-sm text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Mood/Feel (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={aiMood}
+                  onChange={(e) => setAiMood(e.target.value)}
+                  placeholder="e.g., energetic, calm, professional"
+                  className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-2 text-sm text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  onClick={() => setShowAIModal(null)}
+                  className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const app = apps.find(a => a.id === showAIModal);
+                    if (app) handleGenerateColors(app);
+                  }}
+                  disabled={generatingColors !== null}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {generatingColors ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generate
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

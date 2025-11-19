@@ -44,7 +44,7 @@ export default function NotesAboutPage() {
     <FooterPageLayout maxWidth="wide">
       <div className="space-y-16">
         <section className="text-center space-y-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[var(--color-primary)]/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-secondary)]">
             Our Story
           </span>
           <h1 className="text-4xl font-semibold text-white sm:text-5xl lg:text-6xl">
@@ -67,18 +67,18 @@ export default function NotesAboutPage() {
               Because when context flows, decisions and creativity follow.
             </p>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 p-8 shadow-lg space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[var(--color-primary)]/10 to-indigo-500/10 p-8 shadow-lg space-y-6">
             <div className="flex items-center gap-3 text-white">
-              <Sparkles className="h-6 w-6 text-blue-300" />
+              <Sparkles className="h-6 w-6 text-[var(--color-secondary)]" />
               <span className="text-sm font-semibold uppercase tracking-wide text-white/60">What guides us</span>
             </div>
             <ul className="space-y-4 text-white/70">
               <li className="flex items-start gap-3">
-                <Users className="h-5 w-5 text-blue-300 mt-1" />
+                <Users className="h-5 w-5 text-[var(--color-secondary)] mt-1" />
                 <span>Respect for the moments when ideas strike—Notes adapts to whatever device or medium you’re using.</span>
               </li>
               <li className="flex items-start gap-3">
-                <ShieldCheck className="h-5 w-5 text-blue-300 mt-1" />
+                <ShieldCheck className="h-5 w-5 text-[var(--color-secondary)] mt-1" />
                 <span>Protection for your most private thinking—security is woven into every feature.</span>
               </li>
             </ul>
@@ -114,7 +114,7 @@ export default function NotesAboutPage() {
               const Icon = value.icon;
               return (
                 <div key={value.title} className="rounded-3xl border border-white/10 bg-zinc-800/80 p-6 shadow-lg">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300 mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-secondary)] mb-4">
                     <Icon className="h-6 w-6" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">{value.title}</h3>

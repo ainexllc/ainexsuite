@@ -11,6 +11,7 @@ import { FilterModal } from '@/components/journal/filter-modal';
 import { getMoodLabel } from '@/lib/utils/mood';
 import { plainText } from '@/lib/utils/text';
 import { NotebookLiteDashboard } from '@/components/dashboard/notebook-lite-dashboard';
+import { DEFAULT_THEME_ID } from '@/lib/dashboard-themes';
 
 const POSITIVE_MOODS: Set<MoodType> = new Set([
   'happy',
@@ -48,6 +49,19 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [page, setPage] = useState(0);
+  const [currentThemeId, setCurrentThemeId] = useState(DEFAULT_THEME_ID);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('journey-dashboard-theme');
+    if (savedTheme) {
+      setCurrentThemeId(savedTheme);
+    }
+  }, []);
+
+  const handleThemeChange = (themeId: string) => {
+    setCurrentThemeId(themeId);
+    localStorage.setItem('journey-dashboard-theme', themeId);
+  };
 
   useEffect(() => {
     if (user) {
@@ -245,6 +259,8 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
         onEntryUpdated={loadEntries}
         isLoadingEntries={loading}
         onThisDayEntries={onThisDayEntries}
+        currentThemeId={currentThemeId}
+        onThemeChange={handleThemeChange}
       />
 
       <FilterModal
