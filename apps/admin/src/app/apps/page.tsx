@@ -63,7 +63,6 @@ export default function AppsManagement() {
     setLoading(true);
     setError(null);
     try {
-      const batch = [];
       for (const app of DEFAULT_APPS) {
         await setDoc(doc(db, 'apps', app.id), app);
       }

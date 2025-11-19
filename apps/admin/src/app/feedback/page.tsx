@@ -15,7 +15,6 @@ import { db } from '@ainexsuite/firebase';
 import { 
   MessageSquare, 
   Search, 
-  Filter, 
   CheckCircle2, 
   Archive, 
   Clock,

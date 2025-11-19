@@ -8,7 +8,6 @@ import {
   limit, 
   getDocs, 
   Timestamp, 
-  where, 
   doc,
   updateDoc,
   serverTimestamp
@@ -16,11 +15,8 @@ import {
 import { db } from '@ainexsuite/firebase';
 import { 
   Search, 
-  MoreVertical, 
   Shield, 
   ShieldOff, 
-  UserX, 
-  CheckCircle, 
   Loader2,
   Calendar
 } from 'lucide-react';
@@ -132,9 +128,14 @@ export function UsersTable() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredUsers.map((user) => {
-                const joinedDate = user.createdAt instanceof Timestamp 
-                  ? user.createdAt.toDate().toLocaleDateString() 
-                  : 'Unknown';
+                let joinedDate = 'Unknown';
+                const createdAt = user.createdAt as any;
+                
+                if (createdAt instanceof Timestamp) {
+                  joinedDate = createdAt.toDate().toLocaleDateString();
+                } else if (typeof createdAt === 'number') {
+                  joinedDate = new Date(createdAt).toLocaleDateString();
+                }
 
                 return (
                   <tr key={user.uid} className="hover:bg-white/5 transition-colors">
