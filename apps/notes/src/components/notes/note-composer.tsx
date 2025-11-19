@@ -332,7 +332,7 @@ export function NoteComposer() {
 
   const backgroundClass =
     color === "default"
-      ? "bg-surface-elevated"
+      ? "bg-[#1a1a1a] dark:bg-[#1a1a1a]"
       : `bg-${color} dark:bg-${color}-dark`;
 
   const canUseSms = Boolean(preferences.smsNumber?.trim());

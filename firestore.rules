@@ -199,6 +199,12 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
 
+    // --- Apps Configuration (Admin) ---
+    match /apps/{appId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     // --- Notes App Rules ---
     match /users/{userId}/notes/{noteId} {
       allow create: if isAuthenticated() && request.auth.uid == userId;
@@ -223,7 +229,8 @@ service cloud.firestore {
     
     match /feedback/{feedbackId} {
       allow create: if isAuthenticated();
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow update: if isAdmin();
     }
 
 

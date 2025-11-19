@@ -48,7 +48,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
 
   const backgroundClass =
     note.color === "default"
-      ? "bg-surface-elevated"
+      ? "bg-[#1a1a1a] dark:bg-[#1a1a1a]"
       : `bg-${note.color} dark:bg-${note.color}-dark`;
 
   const patternClass = note.pattern && note.pattern !== "none"

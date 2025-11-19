@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { db as adminDb } from '@ainexsuite/firebase/admin'; // Use Admin SDK Firestore
-import { migrateUserData, calculateAccountType, calculateTrialEndDate } from '../user-utils';
+import { migrateUserData, calculateTrialEndDate } from '../user-utils';
 import type { User } from '@ainexsuite/types';
 
 /**
