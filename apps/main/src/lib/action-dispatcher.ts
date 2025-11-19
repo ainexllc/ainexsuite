@@ -1,4 +1,4 @@
-import { db } from '@ainexsuite/firebase/lib/client';
+import { db } from '@ainexsuite/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export type ActionType = 'create_task' | 'log_workout' | 'create_note' | 'unknown';
@@ -97,7 +97,7 @@ export class ActionDispatcher {
   }
 
   private async createTask(payload: { title: string; dueDate: Date; completed: boolean }) {
-    await addDoc(collection(db, 'todos'), {
+    await addDoc(collection(db, 'tasks'), {
       ...payload,
       ownerId: this.userId,
       createdAt: serverTimestamp(),

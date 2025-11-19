@@ -1,4 +1,4 @@
-import { db } from '@ainexsuite/firebase/lib/client';
+import { db } from '@ainexsuite/firebase';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 
 export type InsightType = 'actionable' | 'status' | 'memory' | 'streak' | 'update';
@@ -23,6 +23,15 @@ export class SmartDashboardService {
 
   constructor(userId: string) {
     this.userId = userId;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private parseDate(timestamp: any): Date {
+    if (!timestamp) return new Date();
+    if (typeof timestamp.toDate === 'function') return timestamp.toDate();
+    if (timestamp instanceof Date) return timestamp;
+    if (typeof timestamp === 'string' || typeof timestamp === 'number') return new Date(timestamp);
+    return new Date(); // Fallback
   }
 
   /**
@@ -61,7 +70,7 @@ export class SmartDashboardService {
     try {
       // Fetch overdue or due today tasks
       const q = query(
-        collection(db, 'todos'),
+        collection(db, 'tasks'),
         where('ownerId', '==', this.userId),
         where('completed', '==', false),
         orderBy('dueDate', 'asc'),
@@ -74,7 +83,7 @@ export class SmartDashboardService {
 
       return snapshot.docs.map(doc => {
         const data = doc.data();
-        const dueDate = data.dueDate?.toDate ? data.dueDate.toDate() : new Date(data.dueDate);
+        const dueDate = this.parseDate(data.dueDate);
         const isOverdue = dueDate < new Date();
         
         return {
@@ -116,7 +125,7 @@ export class SmartDashboardService {
           title: data.title || 'Untitled Note',
           subtitle: 'Recently updated',
           priority: 'low',
-          timestamp: data.updatedAt?.toDate() || new Date(),
+          timestamp: this.parseDate(data.updatedAt),
           actionUrl: `/notes?id=${doc.id}`
         };
       });
@@ -148,7 +157,7 @@ export class SmartDashboardService {
         title: 'Last Workout',
         subtitle: `${data.name || 'Workout'} completed`,
         priority: 'medium',
-        timestamp: data.date?.toDate() || new Date(),
+        timestamp: this.parseDate(data.date),
         actionUrl: '/fit'
       }];
     } catch (error) {
@@ -179,7 +188,7 @@ export class SmartDashboardService {
         title: 'Latest Check-in',
         subtitle: `Mood: ${data.mood || 'Recorded'}`,
         priority: 'low',
-        timestamp: data.createdAt?.toDate() || new Date(),
+        timestamp: this.parseDate(data.createdAt),
         actionUrl: '/journey'
       }];
     } catch (error) {
@@ -213,7 +222,7 @@ export class SmartDashboardService {
         title: 'Current Goal',
         subtitle: `${data.title} (${data.progress}% done)`,
         priority: 'medium',
-        timestamp: data.updatedAt?.toDate() || new Date(),
+        timestamp: this.parseDate(data.updatedAt),
         actionUrl: '/grow'
       }];
     } catch (error) {
@@ -245,7 +254,7 @@ export class SmartDashboardService {
         title: 'Latest Vitals',
         subtitle: `${data.metricType}: ${data.value}`,
         priority: 'low',
-        timestamp: new Date(data.date), // Assuming date is timestamp number or string
+        timestamp: this.parseDate(data.date),
         actionUrl: '/pulse'
       }];
     } catch (error) {

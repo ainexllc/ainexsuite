@@ -10,7 +10,7 @@ export function TopNav() {
   return (
     <nav className="h-16 surface-elevated border-b border-surface-hover flex items-center justify-between px-6 sticky top-0 z-40">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-500 to-accent-400 flex items-center justify-center">
           <CheckSquare className="h-5 w-5 text-white" />
         </div>
         <div>

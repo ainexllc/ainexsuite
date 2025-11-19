@@ -35,7 +35,7 @@ Be concise, actionable, and focused on helping users get things done.`,
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
+          'fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-accent-500 to-accent-400 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
           isOpen && 'rotate-180'
         )}
       >
@@ -46,7 +46,7 @@ Be concise, actionable, and focused on helping users get things done.`,
         <div className="fixed bottom-24 right-8 w-96 h-[500px] surface-elevated border border-surface-hover rounded-lg shadow-2xl flex flex-col z-50">
           <div className="p-4 border-b border-surface-hover">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-500 to-accent-400 flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
               <div>

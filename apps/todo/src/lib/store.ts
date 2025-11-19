@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { TaskSpace, Task } from '../types/models';
-import { 
-  createTodoSpaceInDb, 
+import {
+  createTodoSpaceInDb,
   updateTodoSpaceInDb,
   createTaskInDb,
-  updateTaskInDb
+  updateTaskInDb,
+  deleteTaskFromDb
 } from './firebase-service';
 
 interface TodoState {
@@ -26,7 +27,8 @@ interface TodoState {
   updateSpace: (spaceId: string, updates: Partial<TaskSpace>) => Promise<void>;
   addTask: (task: Task) => Promise<void>;
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
-  
+  deleteTask: (taskId: string) => Promise<void>;
+
   // Getters
   getCurrentSpace: () => TaskSpace | undefined;
   getTasksByList: (listId: string) => Task[];
@@ -75,6 +77,13 @@ export const useTodoStore = create<TodoState>()(
           tasks: state.tasks.map((t) => t.id === taskId ? { ...t, ...updates } : t)
         }));
         await updateTaskInDb(taskId, updates);
+      },
+
+      deleteTask: async (taskId) => {
+        set((state) => ({
+          tasks: state.tasks.filter((t) => t.id !== taskId)
+        }));
+        await deleteTaskFromDb(taskId);
       },
 
       getCurrentSpace: () => {

@@ -56,8 +56,8 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
         return (
           <div key={section}>
             <h3 className={`text-sm font-bold uppercase tracking-wider mb-3 ${
-              section === 'Overdue' ? 'text-red-400' : 
-              section === 'Today' ? 'text-blue-400' : 'text-white/50'
+              section === 'Overdue' ? 'text-red-400' :
+              section === 'Today' ? 'text-accent-400' : 'text-white/50'
             }`}>
               {section} <span className="text-white/20 ml-1">{tasks.length}</span>
             </h3>

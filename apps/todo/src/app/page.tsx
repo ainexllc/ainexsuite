@@ -121,16 +121,16 @@ function TodoHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#8b5cf6]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#8b5cf6]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#8b5cf6] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -144,12 +144,12 @@ function TodoHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TASKS" appColor="#f59e0b" />}
-        backgroundComponent={<LayeredBackground primaryColor="#f59e0b" secondaryColor="#fbbf24" variant="structured" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TASKS" appColor="#8b5cf6" />}
+        backgroundComponent={<LayeredBackground primaryColor="#8b5cf6" secondaryColor="#a78bfa" variant="structured" />}
         appName="todo"
-        accentColor="#f59e0b"
-        gradientFrom="#f59e0b"
-        gradientTo="#fbbf24"
+        accentColor="#8b5cf6"
+        gradientFrom="#8b5cf6"
+        gradientTo="#a78bfa"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{

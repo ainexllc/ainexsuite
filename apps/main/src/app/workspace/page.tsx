@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { AppCard } from '@/components/app-card';
 import { ProfileDropdown } from '@/components/profile-dropdown';
 import { NavigationPanel } from '@/components/navigation-panel';
 import { ActivityPanel } from '@/components/activity-panel';
@@ -29,10 +28,13 @@ import {
   ChevronDown,
   Layers,
   GitBranch,
+  LayoutGrid,
+  Compass
 } from 'lucide-react';
-import { getAppsUsedCount } from '@ainexsuite/auth';
 import { Footer } from '@/components/footer';
 import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
+import { AppCard } from '@/components/workspace/app-card-v2';
+import { AppSection } from '@/components/workspace/app-section';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
@@ -41,7 +43,7 @@ const apps = [
   {
     name: 'Notes',
     slug: 'notes',
-    description: 'Quickly capture your thoughts, ideas, and notes. Organize with labels and AI-powered search to find anything instantly.',
+    description: 'Quickly capture thoughts, ideas, and meeting notes. AI-powered organization.',
     icon: FileText,
     color: 'from-yellow-500 to-orange-500',
     url: isDev ? 'http://localhost:3001' : 'https://notes.ainexsuite.com',
@@ -49,7 +51,7 @@ const apps = [
   {
     name: 'Journey',
     slug: 'journey',
-    description: 'Reflect on your daily experiences with guided prompts. Track your mood and emotional growth over time.',
+    description: 'Reflect on your daily experiences with guided prompts and mood tracking.',
     icon: BookOpen,
     color: 'from-purple-500 to-pink-500',
     url: isDev ? 'http://localhost:3002' : 'https://journey.ainexsuite.com',
@@ -57,7 +59,7 @@ const apps = [
   {
     name: 'Tasks',
     slug: 'todo',
-    description: 'Manage your to-dos and projects with powerful organization tools. Set priorities, due dates, and never miss a deadline.',
+    description: 'Manage to-dos and projects. Never miss a deadline with smart priorities.',
     icon: CheckSquare,
     color: 'from-blue-500 to-cyan-500',
     url: isDev ? 'http://localhost:3003' : 'https://tasks.ainexsuite.com',
@@ -65,7 +67,7 @@ const apps = [
   {
     name: 'Track',
     slug: 'track',
-    description: 'Build and maintain great habits with visual streaks and progress tracking. Watch your consistency improve over time.',
+    description: 'Build better habits with visual streaks and progress analytics.',
     icon: TrendingUp,
     color: 'from-green-500 to-emerald-500',
     url: isDev ? 'http://localhost:3004' : 'https://track.ainexsuite.com',
@@ -73,7 +75,7 @@ const apps = [
   {
     name: 'Moments',
     slug: 'moments',
-    description: 'Capture life\'s beautiful moments with photos and captions. Create a visual timeline of your most precious memories.',
+    description: 'Capture life\'s beautiful moments. Create a visual timeline of memories.',
     icon: Camera,
     color: 'from-pink-500 to-rose-500',
     url: isDev ? 'http://localhost:3005' : 'https://moments.ainexsuite.com',
@@ -81,7 +83,7 @@ const apps = [
   {
     name: 'Grow',
     slug: 'grow',
-    description: 'Track your learning journey and skill development. Set learning goals and celebrate milestones as you expand your knowledge.',
+    description: 'Track your learning journey, set goals, and master new skills.',
     icon: GraduationCap,
     color: 'from-indigo-500 to-purple-500',
     url: isDev ? 'http://localhost:3006' : 'https://grow.ainexsuite.com',
@@ -89,7 +91,7 @@ const apps = [
   {
     name: 'Pulse',
     slug: 'pulse',
-    description: 'Monitor your health metrics and wellness trends. Track symptoms, medications, and vital signs in one place.',
+    description: 'Monitor health metrics, wellness trends, and vital signs.',
     icon: ActivityIcon,
     color: 'from-red-500 to-orange-500',
     url: isDev ? 'http://localhost:3007' : 'https://pulse.ainexsuite.com',
@@ -97,7 +99,7 @@ const apps = [
   {
     name: 'Fit',
     slug: 'fit',
-    description: 'Record workouts, track fitness progress, and achieve your health goals. Visualize your strength and endurance improvements.',
+    description: 'Record workouts and track fitness progress. Visualize your gains.',
     icon: Dumbbell,
     color: 'from-orange-500 to-amber-500',
     url: isDev ? 'http://localhost:3008' : 'https://fit.ainexsuite.com',
@@ -105,7 +107,7 @@ const apps = [
   {
     name: 'Projects',
     slug: 'projects',
-    description: 'Visual project whiteboard with sticky notes and kanban boards for team collaboration.',
+    description: 'Visual whiteboard with sticky notes for creative team collaboration.',
     icon: Layers,
     color: 'from-violet-500 to-purple-500',
     url: isDev ? 'http://localhost:3009' : 'https://projects.ainexsuite.com',
@@ -113,7 +115,7 @@ const apps = [
   {
     name: 'Workflow',
     slug: 'workflow',
-    description: 'Build visual workflows with drag-and-drop simplicity. Automate processes and tasks.',
+    description: 'Build and automate visual workflows with drag-and-drop simplicity.',
     icon: GitBranch,
     color: 'from-purple-600 to-indigo-600',
     url: isDev ? 'http://localhost:3010' : 'https://workflow.ainexsuite.com',
@@ -137,14 +139,9 @@ export default function WorkspacePage() {
     }
   }, [user, loading, router]);
 
-  // Filter apps based on what user has accessed
-  const appsUsedCount = user ? getAppsUsedCount(user) : 0;
-  const displayedApps = appsUsedCount === 0
-    ? apps // Show all apps if none accessed
-    : apps.filter(app => user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]); // Show only accessed apps
-
-  // Get list of accessed apps
-  const accessedApps = apps.filter(app => user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]);
+  // Segment apps based on usage
+  const myApps = apps.filter(app => user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]);
+  const discoveryApps = apps.filter(app => !user?.appsUsed?.[app.slug as keyof typeof user.appsUsed]);
 
   // Cmd+K / Ctrl+K keyboard shortcut for search
   useEffect(() => {
@@ -250,7 +247,7 @@ export default function WorkspacePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchOpen(true)}
-                placeholder="Search apps and activities..."
+                placeholder="Search or type a command..."
                 className="w-full bg-transparent text-sm text-white placeholder:text-white/50 focus:outline-none"
               />
               {searchQuery && (
@@ -344,103 +341,51 @@ export default function WorkspacePage() {
             {/* Welcome Section */}
             <div className="mb-12">
               <h2 className="text-3xl font-bold text-white mb-2">
-                Welcome back, {user.displayName || 'there'}! 👋
+                Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user.displayName?.split(' ')[0] || 'there'}!
               </h2>
               <p className="text-lg text-white/70">
-                {appsUsedCount === 0
-                  ? 'Explore our apps to get started with your productivity journey'
-                  : appsUsedCount === 1
-                  ? 'Try another app to unlock the full Suite with a 30-day trial'
-                  : 'Choose an app to continue your productivity journey'}
+                Here is your daily briefing.
               </p>
             </div>
 
             {/* Smart Dashboard Grid */}
             <SmartGrid />
 
-            {/* Apps Summary */}
-            <div
-              className="mb-8 p-6 rounded-xl border backdrop-blur"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                borderColor: selectedVariant.id === 'ember-glow'
-                  ? 'rgba(249, 115, 22, 0.2)'
-                  : 'rgba(56, 189, 248, 0.2)',
-                boxShadow: selectedVariant.id === 'ember-glow'
-                  ? '0 12px 40px -20px rgba(249, 115, 22, 0.5)'
-                  : '0 12px 40px -20px rgba(56, 189, 248, 0.5)'
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    {appsUsedCount === 0
-                      ? 'Your Apps (0)'
-                      : `Your Apps (${appsUsedCount})`}
-                  </h3>
-                  {appsUsedCount === 0 ? (
-                    <p className="text-sm text-white/60">
-                      Start exploring our apps below to begin tracking your progress
-                    </p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {accessedApps.map((app) => (
-                        <div
-                          key={app.slug}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
-                          style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.08)'
-                          }}
-                        >
-                          <app.icon
-                            className="h-4 w-4"
-                            style={{
-                              color: selectedVariant.id === 'ember-glow'
-                                ? '#f97316'
-                                : '#7dd3fc'
-                            }}
-                          />
-                          <span className="text-sm text-white/80">{app.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+            {/* My Toolkit Section */}
+            {myApps.length > 0 && (
+              <AppSection 
+                title="Your Toolkit" 
+                icon={LayoutGrid}
+                description="Your most used apps and tools."
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {myApps.map((app) => (
+                    <AppCard key={app.slug} app={app} />
+                  ))}
                 </div>
-                {appsUsedCount === 1 && (
-                  <div className="text-right">
-                    <p className="text-sm text-white/60 mb-1">Try another app to unlock:</p>
-                    <p
-                      className="text-sm font-medium"
-                      style={{
-                        color: selectedVariant.id === 'ember-glow'
-                          ? '#f97316'
-                          : '#7dd3fc'
-                      }}
-                    >
-                      Full Suite Access
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
+              </AppSection>
+            )}
 
-            {/* Apps Grid */}
-            {displayedApps.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {displayedApps.map((app) => (
-                  <AppCard key={app.slug} app={app} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-white/70 mb-4">No apps accessed yet</p>
-                <p className="text-sm text-white/50">Click on any app to get started!</p>
-              </div>
+            {/* Discovery Section */}
+            {discoveryApps.length > 0 && (
+              <AppSection 
+                title="Discover More" 
+                icon={Compass}
+                description="Unlock new capabilities by exploring these apps."
+                className="mt-16 pt-8 border-t border-white/5"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {discoveryApps.map((app) => (
+                    <AppCard key={app.slug} app={app} variant="discovery" />
+                  ))}
+                </div>
+              </AppSection>
             )}
 
             {/* Activity Feed */}
-            <div className="mt-16">
-              <ActivityFeed limit={30} />
+            <div className="mt-16 pt-8 border-t border-white/5">
+              <h3 className="text-lg font-semibold text-white mb-6 px-1">Recent Activity</h3>
+              <ActivityFeed limit={10} />
             </div>
           </div>
         </main>
@@ -479,4 +424,3 @@ export default function WorkspacePage() {
     </div>
   );
 }
-

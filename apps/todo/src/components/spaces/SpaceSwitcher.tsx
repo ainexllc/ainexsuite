@@ -34,7 +34,7 @@ export function SpaceSwitcher() {
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors w-full"
         >
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white">
+          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-accent-500 to-accent-400 flex items-center justify-center text-white">
             {currentSpace ? getIcon(currentSpace.type) : <User className="h-4 w-4" />}
           </div>
           <div className="flex-1 text-left">
@@ -78,7 +78,7 @@ export function SpaceSwitcher() {
               <div className="border-t border-white/10 p-1">
                 <button
                   onClick={handleCreateSpace}
-                  className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-blue-400 hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-accent-400 hover:bg-white/5 transition-colors"
                 >
                   <Plus className="h-4 w-4" />
                   Create New Space

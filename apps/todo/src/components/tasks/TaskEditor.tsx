@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Flag, Users, Save } from 'lucide-react';
-import { Modal, ModalHeader, ModalTitle, ModalDescription, ModalContent, ModalFooter, Button, Textarea } from '@ainexsuite/ui';
+import { Calendar, Flag, Users, Save, Trash2 } from 'lucide-react';
+import { Modal, ModalHeader, ModalTitle, ModalDescription, ModalContent, ModalFooter, Button, Textarea, ConfirmationDialog } from '@ainexsuite/ui';
 import { useTodoStore } from '../../lib/store';
 import { Task, Priority, TaskList, Member } from '../../types/models';
 
@@ -14,7 +14,7 @@ interface TaskEditorProps {
 }
 
 export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskEditorProps) {
-  const { getCurrentSpace, addTask, updateTask, tasks } = useTodoStore();
+  const { getCurrentSpace, addTask, updateTask, deleteTask, tasks } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
   const [title, setTitle] = useState('');
@@ -23,6 +23,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
   const [dueDate, setDueDate] = useState('');
   const [assignees, setAssignees] = useState<string[]>([]);
   const [listId, setListId] = useState(defaultListId || '');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Load data if editing
   useEffect(() => {
@@ -110,22 +111,37 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
     onClose();
   };
 
+  const handleDelete = async () => {
+    if (editTaskId) {
+      await deleteTask(editTaskId);
+      onClose();
+    }
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+    <>
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <form onSubmit={handleSubmit}>
         <ModalHeader onClose={onClose}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Task Title"
-            className="bg-transparent text-xl font-bold text-ink-900 placeholder:text-muted focus:outline-none w-full"
-            autoFocus
-            required
-          />
+          <ModalTitle>
+            {editTaskId ? 'Edit Task' : 'New Task'}
+          </ModalTitle>
         </ModalHeader>
 
         <ModalContent className="space-y-6">
+          {/* Title Input */}
+          <div>
+            <label className="block text-sm font-medium text-ink-900 mb-2">Task Title *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter task title..."
+              className="w-full bg-surface-card border border-outline-subtle rounded-lg px-4 py-3 text-base text-ink-900 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent-500"
+              autoFocus
+              required
+            />
+          </div>
           {/* List/Status Selector */}
           <div>
             <label className="block text-sm font-medium text-ink-900 mb-2">List</label>
@@ -232,16 +248,41 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           </div>
         </ModalContent>
 
-        <ModalFooter>
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={!title.trim()}>
-            <Save className="h-4 w-4" />
-            {editTaskId ? 'Save Changes' : 'Create Task'}
-          </Button>
+        <ModalFooter className={editTaskId ? "justify-between" : undefined}>
+          {editTaskId && (
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Task
+            </Button>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!title.trim()} className="gap-2">
+              <Save className="h-4 w-4" />
+              {editTaskId ? 'Save Changes' : 'Create Task'}
+            </Button>
+          </div>
         </ModalFooter>
       </form>
     </Modal>
+
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+    </>
   );
 }

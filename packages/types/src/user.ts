@@ -5,11 +5,14 @@ export type SubscriptionStatus = 'trial' | 'active' | 'expired';
 export type AccountType = 'single-app' | 'multi-app' | 'suite';
 export type DomainPreference = 'subdomain' | 'standalone';
 
+export type UserRole = 'admin' | 'user';
+
 export interface User {
   uid: string;
   email: string;
   displayName: string;
   photoURL: string;
+  role?: UserRole;
   preferences: UserPreferences;
   createdAt: Timestamp;
   lastLoginAt: Timestamp;

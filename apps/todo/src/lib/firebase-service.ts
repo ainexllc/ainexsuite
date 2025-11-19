@@ -3,6 +3,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   onSnapshot
@@ -44,6 +45,11 @@ export async function createTaskInDb(task: Task) {
 export async function updateTaskInDb(taskId: string, updates: Partial<Task>) {
   const taskRef = doc(db, 'tasks', taskId);
   await updateDoc(taskRef, { ...updates, updatedAt: new Date().toISOString() });
+}
+
+export async function deleteTaskFromDb(taskId: string) {
+  const taskRef = doc(db, 'tasks', taskId);
+  await deleteDoc(taskRef);
 }
 
 export function subscribeToSpaceTasks(spaceId: string, callback: (tasks: Task[]) => void) {

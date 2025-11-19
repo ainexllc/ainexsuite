@@ -72,6 +72,11 @@ export {
 } from "./modal";
 
 export {
+  ConfirmationDialog,
+  type ConfirmationDialogProps,
+} from "./confirmation-dialog";
+
+export {
   Table,
   TableHeader,
   TableBody,
