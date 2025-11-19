@@ -12,6 +12,7 @@ const nextConfig = {
     '@ainexsuite/auth',
     '@ainexsuite/ai',
     '@ainexsuite/types',
+    '@ainexsuite/theme',
   ],
 
   // App-specific environment variables

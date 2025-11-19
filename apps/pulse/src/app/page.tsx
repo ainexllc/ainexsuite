@@ -12,7 +12,6 @@ import {
   Timer,
   Bell,
   Sun,
-  Watch,
   Maximize,
 } from 'lucide-react';
 import { Footer } from '@/components/footer';

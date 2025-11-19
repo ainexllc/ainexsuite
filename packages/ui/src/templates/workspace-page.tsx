@@ -6,7 +6,6 @@ import { Loader2, Menu, X, Search, Sparkles, ChevronDown, Settings, Activity, Re
 import Image from 'next/image';
 import { AtmosphericGlows } from '../components/layouts/atmospheric-glows';
 import { AinexStudiosLogo } from '../components/branding/ainex-studios-logo';
-import { SearchBar } from '../components/navigation/search-bar';
 import { ProfileDropdown } from '../components/layout/profile-dropdown';
 import { WelcomeHeader } from '../components/layouts/welcome-header';
 import { NavigationPanel, type NavSection } from '../components/layout/navigation-panel';
