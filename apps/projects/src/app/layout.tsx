@@ -26,7 +26,7 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: 'AINexSuite - Your Productivity Hub',
+  title: 'Projects - Your Productivity Hub',
   description: 'Access all your productivity apps in one place. Notes, Journey, Todo, Habits, and more.',
   keywords: ['productivity', 'notes', 'journey', 'todo', 'habits', 'ai assistant'],
 };

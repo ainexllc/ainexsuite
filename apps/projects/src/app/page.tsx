@@ -127,9 +127,9 @@ function ProjectsHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="PROJECTS" appColor="#6366f1" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="Projects" appColor="#6366f1" />}
         backgroundComponent={<LayeredBackground primaryColor="#6366f1" secondaryColor="#818cf8" variant="structured" />}
-        appName="projects"
+        appName="Projects"
         accentColor="#6366f1"
         gradientFrom="#6366f1"
         gradientTo="#818cf8"
@@ -138,7 +138,7 @@ function ProjectsHomePageContent() {
         hero={{
           badge: { icon: Shield, text: 'Enterprise-grade security' },
           headline: 'Plan. Execute. Deliver.',
-          subheadline: 'AINex Projects transforms planning into intelligent execution.',
+          subheadline: 'Projects transforms planning into intelligent execution.',
           description: 'From planning to delivery, track everything that matters. Coordinate teams, manage timelines, and drive results with AI-powered insights.',
           highlights: [
             {
@@ -155,7 +155,7 @@ function ProjectsHomePageContent() {
         }}
         login={{
           badgeText: 'Project Hub',
-          signUpTitle: 'Join AINex Projects',
+          signUpTitle: 'Join Projects',
           signInTitle: 'Welcome back',
           signUpDescription: 'Create your account to start managing projects with intelligence.',
           signInDescription: 'Sign in to access your project workspace.',
@@ -163,7 +163,7 @@ function ProjectsHomePageContent() {
         }}
         features={{
           videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          videoTitle: 'AINex Projects demo',
+          videoTitle: 'Projects demo',
           sectionTitle: 'Built for teams that ship',
           sectionDescription: 'Projects combines planning, execution, and analytics into one intelligent workspace.',
           cards: featureCards,
@@ -171,7 +171,7 @@ function ProjectsHomePageContent() {
         showActivation={false}
       />
       <Footer
-        appName="AINex Projects"
+        appName="Projects"
         productLinks={productLinks}
         companyLinks={companyLinks}
         resourceLinks={resourceLinks}
