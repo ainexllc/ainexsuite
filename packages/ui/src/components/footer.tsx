@@ -25,7 +25,7 @@ export function Footer({
   // Default links
   const defaultProductLinks = productLinks || [
     { label: 'Features', href: '/features' },
-    { label: 'Pricing', href: '/pricing' },
+    { label: 'Plans', href: '/pricing' },
   ];
 
   const defaultCompanyLinks = companyLinks || [

@@ -3,7 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
-import { VisualStyleProvider } from '@/components/providers/visual-style-provider';
+import { ThemeProvider } from '@ainexsuite/theme';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -37,12 +37,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} theme-dark`} data-theme="dark">
-      <body className="font-sans antialiased theme-dark">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased">
         <AuthProvider>
-          <VisualStyleProvider>
+          <ThemeProvider>
             {children}
-          </VisualStyleProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

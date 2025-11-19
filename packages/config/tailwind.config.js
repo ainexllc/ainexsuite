@@ -99,6 +99,7 @@ const sharedTheme = {
       mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       brand: ['var(--font-kanit)', 'system-ui', 'sans-serif'],
       display: ['var(--font-kanit)', 'system-ui', 'sans-serif'],
+      logo: ['var(--font-bebas-neue)', 'var(--font-kanit)', 'system-ui', 'sans-serif'],
     },
     fontSize: {
       xs: '0.75rem',

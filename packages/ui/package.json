@@ -17,6 +17,14 @@
       "types": "./dist/components/*.d.ts",
       "default": "./dist/components/*.js"
     },
+    "./templates": {
+      "types": "./dist/templates/index.d.ts",
+      "default": "./dist/templates/index.js"
+    },
+    "./templates/*": {
+      "types": "./dist/templates/*.d.ts",
+      "default": "./dist/templates/*.js"
+    },
     "./styles": "./src/styles/globals.css",
     "./styles/*": "./src/styles/*.css"
   },
@@ -34,7 +42,9 @@
     "react-dom": "^19.1.0",
     "lucide-react": "^0.312.0",
     "clsx": "^2.1.0",
-    "tailwind-merge": "^2.2.0"
+    "tailwind-merge": "^2.2.0",
+    "class-variance-authority": "^0.7.0",
+    "simplex-noise": "^4.0.1"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",

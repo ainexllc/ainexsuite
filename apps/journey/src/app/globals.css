@@ -3,3 +3,19 @@
 @tailwind utilities;
 
 /* Journal-specific overrides can live here. Shared tokens & utilities come from @ainexsuite/ui/styles. */
+
+/* Journey App Theme Overrides - Cyan/Sky */
+:root.dark,
+:root {
+  /* Cyan 500 for Primary */
+  --theme-primary: 6 182 212;
+  --theme-primary-rgb: 6, 182, 212;
+  --theme-primary-light: 34 211 238; /* Cyan 400 */
+  --theme-primary-dark: 8 145 178;    /* Cyan 600 */
+
+  /* Sky 500 for Secondary */
+  --theme-secondary: 14 165 233;
+  --theme-secondary-rgb: 14, 165, 233;
+  --theme-secondary-light: 56 189 248; /* Sky 400 */
+  --theme-secondary-dark: 2 132 199;   /* Sky 600 */
+}

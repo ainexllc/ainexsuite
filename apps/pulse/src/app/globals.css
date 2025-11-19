@@ -7,6 +7,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Pulse App Theme Overrides - Red/Blue */
+:root.dark,
+:root {
+  /* Red 500 for Primary */
+  --theme-primary: 239 68 68;
+  --theme-primary-rgb: 239, 68, 68;
+  --theme-primary-light: 248 113 113; /* Red 400 */
+  --theme-primary-dark: 220 38 38;    /* Red 600 */
+}
+
 .metric-input {
   @apply px-3 py-2 bg-surface-elevated shadow-sm rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none;
 }

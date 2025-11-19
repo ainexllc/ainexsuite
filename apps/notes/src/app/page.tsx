@@ -6,14 +6,12 @@ import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
 import { Loader2, Shield, PenSquare, FolderTree, Wand2, BookOpen, Stamp } from 'lucide-react';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
@@ -26,8 +24,6 @@ const demoSteps: DemoStep[] = [
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'Team' },
 ];
 
 const featureCards: FeatureCard[] = [
@@ -48,27 +44,6 @@ const featureCards: FeatureCard[] = [
     description:
       'Summaries, action items, and follow-up questions appear the moment you finish writing.',
     icon: Wand2,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🧠',
-    title: 'Context Keeper',
-    description:
-      'AINex Notes remembers decisions and references across projects so every entry starts with shared context.',
-  },
-  {
-    emoji: '🗣️',
-    title: 'Voice-to-Insight',
-    description:
-      'Record a thought and receive structured summaries, tags, and next steps in seconds.',
-  },
-  {
-    emoji: '🪄',
-    title: 'Prompted Flow',
-    description:
-      'Smart prompts nudge deeper thinking when your note feels unfinished.',
   },
 ];
 
@@ -139,16 +114,16 @@ function NotesHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#3b82f6]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#3b82f6]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3b82f6] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -162,8 +137,12 @@ function NotesHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<LogoWordmark iconSize={88} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="NOTES" appColor="#3b82f6" />}
+        backgroundComponent={<LayeredBackground primaryColor="#3b82f6" secondaryColor="#60a5fa" variant="organic" />}
         appName="notes"
+        accentColor="#3b82f6"
+        gradientFrom="#3b82f6"
+        gradientTo="#60a5fa"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
@@ -199,29 +178,6 @@ function NotesHomePageContent() {
           sectionDescription: 'Whether you\'re drafting a product spec or personal journal, Notes keeps every insight discoverable.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'A thinking partner inside every note',
-          description: 'AI reads along, surfaces patterns, and keeps your knowledge base alive with context-rich insights.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Daily Brief',
-            subtitle: 'Morning reflection ready for review',
-            items: [
-              'Research Vaults',
-              'Meeting Journals',
-              'Product Specs',
-              'Creative Briefs',
-              'Personal Diaries',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Notes',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
@@ -235,7 +191,13 @@ function NotesHomePageContent() {
           />
         }
       />
-      <Footer />
+      <Footer
+        appName="AINex Notes"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }
@@ -248,9 +210,9 @@ export default function NotesHomePage() {
           <div className="text-center space-y-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+                <div className="h-16 w-16 rounded-full bg-[#3b82f6]/20 animate-pulse" />
               </div>
-              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#3b82f6]" />
             </div>
             <p className="text-lg font-medium text-white">Loading...</p>
           </div>

@@ -13,16 +13,14 @@ type AppProvidersProps = {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <LabelsProvider>
-          <PreferencesProvider>
-            <RemindersProvider>
-              <NotesProvider>{children}</NotesProvider>
-            </RemindersProvider>
-          </PreferencesProvider>
-        </LabelsProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <LabelsProvider>
+        <PreferencesProvider>
+          <RemindersProvider>
+            <NotesProvider>{children}</NotesProvider>
+          </RemindersProvider>
+        </PreferencesProvider>
+      </LabelsProvider>
+    </AuthProvider>
   );
 }

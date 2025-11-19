@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '@ainexsuite/auth';
 import { useToast } from '@/lib/toast';
-import { getUserJournalEntries } from '@/lib/firebase/firestore';
+import { getUserJournalEntries, getOnThisDayEntries } from '@/lib/firebase/firestore';
 import type { JournalEntry, MoodType } from '@ainexsuite/types';
 import { FilterModal } from '@/components/journal/filter-modal';
 import { getMoodLabel } from '@/lib/utils/mood';
@@ -35,11 +35,12 @@ const NEGATIVE_MOODS: Set<MoodType> = new Set([
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-export function DashboardView() {
+export function DashboardView({ dateFilter }: { dateFilter?: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [onThisDayEntries, setOnThisDayEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('Loading your journal...');
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +64,7 @@ export function DashboardView() {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, dateFilter]); // Add dateFilter to dependencies
 
   const loadEntries = async () => {
     if (!user) return;
@@ -80,15 +81,19 @@ export function DashboardView() {
       }, 3000);
 
       console.log('[DashboardView] Calling getUserJournalEntries...');
-      const { entries: fetchedEntries } = await getUserJournalEntries(user.uid, {
-        limit: 100,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-      });
+      const [ { entries: fetchedEntries }, onThisDay ] = await Promise.all([
+        getUserJournalEntries(user.uid, {
+          limit: 100,
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+        }),
+        getOnThisDayEntries(user.uid)
+      ]);
       console.log('[DashboardView] Received entries:', fetchedEntries.length);
 
       clearTimeout(timeoutId);
       setEntries(fetchedEntries);
+      setOnThisDayEntries(onThisDay);
       setLoadingMessage('Loaded successfully!');
     } catch (error) {
       console.error('[DashboardView] Error fetching journal entries:', error);
@@ -106,8 +111,19 @@ export function DashboardView() {
 
   const filteredEntries = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
+    
+    let currentEntries = entries;
 
-    return entries.filter((entry) => {
+    if (dateFilter) {
+      currentEntries = currentEntries.filter(entry => {
+        const entryDate = typeof entry.date === 'number'
+          ? new Date(entry.date).toISOString().split('T')[0]
+          : entry.date;
+        return entryDate === dateFilter;
+      });
+    }
+
+    return currentEntries.filter((entry) => {
       const matchesSearch =
         !search ||
         entry.title.toLowerCase().includes(search) ||
@@ -228,6 +244,7 @@ export function DashboardView() {
         onPageChange={setPage}
         onEntryUpdated={loadEntries}
         isLoadingEntries={loading}
+        onThisDayEntries={onThisDayEntries}
       />
 
       <FilterModal

@@ -14,14 +14,12 @@ import {
   MapPin,
   Share2,
 } from 'lucide-react';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
@@ -34,8 +32,6 @@ const demoSteps: DemoStep[] = [
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'Gallery' },
 ];
 
 const featureCards: FeatureCard[] = [
@@ -56,27 +52,6 @@ const featureCards: FeatureCard[] = [
     description:
       'Turn captured moments into reels, letters, or highlight decks with one click.',
     icon: Clapperboard,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '✨',
-    title: 'Story Magic',
-    description:
-      'Narrate an event and watch AINex Moments build a cinematic recap complete with captions and soundtrack ideas.',
-  },
-  {
-    emoji: '📍',
-    title: 'Location Memory',
-    description:
-      'Rediscover experiences linked to places and see patterns in where you feel most alive.',
-  },
-  {
-    emoji: '🧑‍🤝‍🧑',
-    title: 'Relationship Highlights',
-    description:
-      'Celebrate people who shape your life with AI-curated reels and gratitude prompts.',
   },
 ];
 
@@ -170,8 +145,12 @@ function MomentsHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<LogoWordmark iconSize={88} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="MOMENTS" appColor="#ec4899" />}
+        backgroundComponent={<LayeredBackground primaryColor="#ec4899" secondaryColor="#f472b6" variant="organic" />}
         appName="moments"
+        accentColor="#ec4899"
+        gradientFrom="#ec4899"
+        gradientTo="#f472b6"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
@@ -207,29 +186,6 @@ function MomentsHomePageContent() {
           sectionDescription: 'Moments transforms scattered media into searchable, shareable stories that honor your experiences.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'An AI curator for your life story',
-          description: 'Moments surfaces forgotten gems, creates highlight reels, and keeps your timeline alive with context.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Recent Collections',
-            subtitle: 'Ready to explore',
-            items: [
-              'Travel Diaries',
-              'Family Capsules',
-              'Creative Moodboards',
-              'Milestone Moments',
-              'Event Recaps',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Moments',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
@@ -243,7 +199,13 @@ function MomentsHomePageContent() {
           />
         }
       />
-      <Footer />
+      <Footer
+        appName="AINex Moments"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }

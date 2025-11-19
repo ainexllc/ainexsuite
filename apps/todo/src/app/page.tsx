@@ -14,14 +14,11 @@ import {
   Kanban,
   ClipboardList,
 } from 'lucide-react';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
-import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
@@ -34,8 +31,6 @@ const demoSteps: DemoStep[] = [
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'Teams' },
 ];
 
 const featureCards: FeatureCard[] = [
@@ -56,27 +51,6 @@ const featureCards: FeatureCard[] = [
     description:
       'Turn recurring workflows into templates with automations that trigger when you enter focus mode.',
     icon: Target,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🤖',
-    title: 'Adaptive Daily Briefs',
-    description:
-      'Wake up to an AI-generated agenda that rebalances tasks, meetings, and energy levels.',
-  },
-  {
-    emoji: '🧩',
-    title: 'Context-Aware Subtasks',
-    description:
-      'Drop a fuzzy task and get smart subtasks, estimates, and blockers tailored to your project history.',
-  },
-  {
-    emoji: '🎯',
-    title: 'Accountability Insights',
-    description:
-      'Weekly recaps highlight streaks, bottlenecks, and commitments at risk so you can reset before it hurts.',
   },
 ];
 
@@ -170,8 +144,12 @@ function TodoHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<LogoWordmark iconSize={88} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TASKS" appColor="#f59e0b" />}
+        backgroundComponent={<LayeredBackground primaryColor="#f59e0b" secondaryColor="#fbbf24" variant="structured" />}
         appName="todo"
+        accentColor="#f59e0b"
+        gradientFrom="#f59e0b"
+        gradientTo="#fbbf24"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
@@ -207,29 +185,6 @@ function TodoHomePageContent() {
           sectionDescription: 'From solo founders to cross-functional teams, AINex Tasks keeps everyone locked on outcomes—not checklists.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'An AI operations partner in your pocket',
-          description: 'Tasks learns how you work, surfaces hidden blockers, and keeps everyone aligned without micro-managing.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Today\'s Agenda',
-            subtitle: 'Morning focus window locked in',
-            items: [
-              'Product Launch Playbook',
-              'Client Onboarding Flow',
-              'Daily Planning Ritual',
-              'Content Production Sprint',
-              'Team Standup Checklist',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Tasks',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
@@ -242,8 +197,14 @@ function TodoHomePageContent() {
             }}
           />
         }
+        footer={{
+          appDisplayName: 'AINex Tasks',
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
-      <Footer />
     </>
   );
 }

@@ -13,7 +13,7 @@ import { RichTextEditorEnhanced } from '@/components/ui/rich-text-editor-enhance
 // TODO: Port InlinePrompt component from journalnex-app
 // import { InlinePrompt } from '@/components/prompts/inline-prompt';
 import { ModernTagInput } from '@/components/ui/modern-tag-input';
-import { useToast } from '@/contexts/toast-context';
+import { useToast } from '@/lib/toast';
 import { auth } from '@ainexsuite/firebase';
 import { plainText } from '@/lib/utils/text';
 import type { Editor } from '@tiptap/react';

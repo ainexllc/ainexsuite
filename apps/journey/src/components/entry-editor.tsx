@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@ainexsuite/auth';
 import type { JournalEntry, Mood } from '@ainexsuite/types';
-import { createJournalEntry, updateJournalEntry } from '@/lib/journal';
+import { createJournalEntry, updateJournalEntry } from '@/lib/firebase/firestore';
 import { X, Smile, Meh, Frown, Heart, Zap, type LucideIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -29,6 +30,7 @@ const MOODS: MoodOption[] = [
 ];
 
 export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditorProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState(entry?.title || '');
   const [content, setContent] = useState(entry?.content || '');
   const [mood, setMood] = useState<Mood>(entry?.mood || 'okay');
@@ -36,6 +38,7 @@ export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditor
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
+    if (!user) return;
     if (!content.trim()) {
       alert('Please write something');
       return;
@@ -46,7 +49,7 @@ export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditor
       if (entry) {
         await updateJournalEntry(entry.id, { title, content, mood, date });
       } else {
-        await createJournalEntry({ title, content, mood, date, tags: [] });
+        await createJournalEntry(user.uid, { title, content, mood, date, tags: [] });
       }
       onSave();
     } catch (error) {

@@ -104,9 +104,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [stickyNoteColor, setStickyNoteColor] = useState('#fef08a');
-  const [stickyNoteSize] = useState<'small' | 'medium' | 'large'>('small');
-  const [stickyNoteFontSize, setStickyNoteFontSize] = useState<'xs' | 'sm' | 'base' | 'lg' | 'xl'>('sm');
-  const [stickyNoteFontFamily, setStickyNoteFontFamily] = useState<'sans' | 'serif' | 'mono' | 'cursive'>('sans');
+  const [stickyNoteFontSize] = useState<'xs' | 'sm' | 'base' | 'lg' | 'xl'>('sm');
+  const [stickyNoteFontFamily] = useState<'sans' | 'serif' | 'mono' | 'cursive'>('sans');
   const [edgeType, setEdgeType] = useState<'smoothstep' | 'straight' | 'default' | 'step'>('smoothstep');
   const [arrowType, setArrowType] = useState<'none' | 'end' | 'start' | 'both'>('end');
   const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted'>('solid');
@@ -203,6 +202,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 onDelete: () => deleteNode(node.id),
                 onTextChange: (text: string) => updateNodeText(node.id, text),
                 onTitleChange: (title: string) => updateNodeTitle(node.id, title),
+                onResize: (width: number, height: number) => updateNodeSize(node.id, width, height),
               },
             }));
             setNodes(nodesWithCallbacks);
@@ -288,12 +288,19 @@ function WhiteboardInner(_props: WhiteboardProps) {
         const data: Record<string, unknown> = {
           text: node.data.text || '',
           color: node.data.color || '#fef08a',
-          size: node.data.size || 'medium',
         };
 
         // Include title if it exists
         if (node.data.title) {
           data.title = node.data.title;
+        }
+
+        // Include dimensions if custom
+        if (node.data.width) {
+          data.width = node.data.width;
+        }
+        if (node.data.height) {
+          data.height = node.data.height;
         }
 
         // Only include defined values
@@ -465,6 +472,21 @@ function WhiteboardInner(_props: WhiteboardProps) {
     [setNodesState]
   );
 
+  const updateNodeSize = useCallback(
+    (nodeId: string, width: number, height: number) => {
+      setNodesState((nds) =>
+        nds.map((n) =>
+          n.id === nodeId ? {
+            ...n,
+            data: { ...n.data, width, height },
+            style: { ...n.style, width: `${width}px`, height: `${height}px` }
+          } : n
+        )
+      );
+    },
+    [setNodesState]
+  );
+
   // Note: Sticky notes are added via drag and drop from the toolbar
 
   // Update all node handlers when they change - ONLY when isDarkMode changes
@@ -586,20 +608,20 @@ function WhiteboardInner(_props: WhiteboardProps) {
             text: '',
             title: '',
             color: color || stickyNoteColor,
-            size: stickyNoteSize,
             fontSize: stickyNoteFontSize,
             fontFamily: stickyNoteFontFamily,
             isDarkMode,
             onDelete: () => deleteNode(nodeId),
             onTextChange: (text: string) => updateNodeText(nodeId, text),
             onTitleChange: (title: string) => updateNodeTitle(nodeId, title),
+            onResize: (width: number, height: number) => updateNodeSize(nodeId, width, height),
           },
         };
 
         setNodesState((nds) => [...nds, newNode]);
       }
     },
-    [screenToFlowPosition, stickyNoteColor, stickyNoteSize, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, takeSnapshot]
+    [screenToFlowPosition, stickyNoteColor, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, takeSnapshot]
   );
 
   // Export whiteboard to JSON
@@ -612,7 +634,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
         data: {
           text: n.data.text || '',
           color: n.data.color || '#fef08a',
-          size: n.data.size || 'medium',
+          width: n.data.width,
+          height: n.data.height,
         },
       })),
       edges: edges.map((e) => ({
@@ -669,6 +692,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
             onDelete: () => deleteNode(node.id),
             onTextChange: (text: string) => updateNodeText(node.id, text),
             onTitleChange: (title: string) => updateNodeTitle(node.id, title),
+            onResize: (width: number, height: number) => updateNodeSize(node.id, width, height),
           },
         }));
 
@@ -717,6 +741,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         fitView
+        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
         elevateEdgesOnSelect
         connectionLineType={ConnectionLineType.SmoothStep}
         connectionLineStyle={edgeStyles}
@@ -731,7 +756,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
           size={1}
           color={isDarkMode ? '#ffffff20' : '#00000020'}
         />
-        <Controls className={isDarkMode ? 'bg-gray-800 border-gray-700' : ''} />
+        <Controls position="top-right" className={isDarkMode ? 'bg-gray-800 border-gray-700' : ''} />
         <MiniMap
           className={isDarkMode ? 'bg-gray-700' : ''}
           nodeColor={isDarkMode ? '#60a5fa' : '#3b82f6'}

@@ -8,80 +8,55 @@ import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   Loader2,
   Shield,
-  Target,
-  BarChart3,
-  CalendarDays,
-  ListChecks,
-  PenLine,
+  Scale,
+  Activity,
+  TrendingUp,
+  Ruler,
+  LineChart,
 } from 'lucide-react';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Scanning streaks and energy logs to shape today\'s focus…', emoji: '🔥' },
-  { text: 'Highlighting habit conflicts and suggesting better timing…', emoji: '⏱️' },
-  { text: 'Drafting a weekly rhythm tuned to your goals and season…', emoji: '🗓️' },
+  { text: 'Logging your morning weigh-in…', emoji: '⚖️' },
+  { text: 'Calculating weekly average and trend lines…', emoji: '📊' },
+  { text: 'Projecting progress toward your goal weight…', emoji: '📉' },
 ];
 
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'Coaching' },
 ];
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Adaptive Habit Builder',
+    title: 'Smart Weight Log',
     description:
-      'Design micro-habits with AI that respect your schedule, energy, and existing commitments.',
-    icon: Target,
+      'Log daily with one tap. AI smooths out fluctuations to show your true trend.',
+    icon: Scale,
   },
   {
-    title: 'Streak Intelligence',
+    title: 'Body Metrics',
     description:
-      'Real-time dashboards reveal momentum, burnout risk, and habit stacking opportunities.',
-    icon: BarChart3,
+      'Track measurements, body fat %, and muscle mass alongside your weight.',
+    icon: Ruler,
   },
   {
-    title: 'Rhythm Planning',
+    title: 'Goal Forecasting',
     description:
-      'Weekly and seasonal planners help you stay consistent across focus blocks, rituals, and rest days.',
-    icon: CalendarDays,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🧠',
-    title: 'Behavioral Insights',
-    description:
-      'AINex Track translates your completion patterns into actionable feedback and celebration moments.',
-  },
-  {
-    emoji: '⏳',
-    title: 'Time-Aware Suggestions',
-    description:
-      'Receive personalized nudges when streaks slip or when a new habit fits your calendar perfectly.',
-  },
-  {
-    emoji: '🏆',
-    title: 'Goal Alignment',
-    description:
-      'Link habits to outcomes so every daily action pushes your long-term goals forward.',
+      'See when you\'ll hit your target based on your current rate of progress.',
+    icon: TrendingUp,
   },
 ];
 
 const productLinks: FooterLink[] = [
-  { label: 'Habit Features', href: '/features' },
+  { label: 'Tracking Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Templates', href: '/templates', external: true },
 ];
@@ -120,7 +95,7 @@ function TrackHomePageContent() {
     }
 
     if (user && !needsActivation) {
-      setLoadingMessage('Welcome back! Redirecting you to your habit studio…');
+      setLoadingMessage('Welcome back! Redirecting you to your tracking dashboard…');
     } else if (user && needsActivation) {
       setLoadingMessage('');
       setShowActivation(true);
@@ -147,16 +122,16 @@ function TrackHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#14b8a6]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#14b8a6]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#14b8a6] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -170,65 +145,46 @@ function TrackHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<LogoWordmark iconSize={88} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TRACK" appColor="#14b8a6" />}
+        backgroundComponent={<LayeredBackground primaryColor="#14b8a6" secondaryColor="#2dd4bf" variant="structured" />}
         appName="track"
+        accentColor="#14b8a6"
+        gradientFrom="#14b8a6"
+        gradientTo="#2dd4bf"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Behavior-first planning' },
-          headline: 'Small wins. Compounding results.',
-          subheadline: 'AINex Track keeps every habit aligned with your next milestone.',
-          description: 'Build rituals that last, understand your streaks, and let AI coach you through setbacks before they stick.',
+          badge: { icon: Shield, text: 'Privacy-first tracking' },
+          headline: 'Track your progress. Visualize change.',
+          subheadline: 'AINex Track turns daily data points into a clear picture of your health journey.',
+          description: 'Simple, intelligent logging for weight, measurements, and body composition. See the trends that matter.',
           highlights: [
             {
-              icon: ListChecks,
-              title: 'Routine Templates',
-              description: 'Start with proven templates or import your own ritual playbooks.',
+              icon: LineChart,
+              title: 'Smart Charts',
+              description: 'Visualize your trajectory with smoothing that hides noise and reveals progress.',
             },
             {
-              icon: PenLine,
-              title: 'Daily Reflections',
-              description: 'Capture quick notes after each habit and watch AI surface patterns.',
+              icon: Activity,
+              title: 'Body Comp',
+              description: 'Track more than just scale weight—monitor muscle, fat, and measurements.',
             },
           ],
         }}
         login={{
-          badgeText: 'Habit Studio',
+          badgeText: 'Health Tracker',
           signUpTitle: 'Join AINex Track',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to craft consistent habits with AI support.',
-          signInDescription: 'Sign in to access your habit intelligence hub.',
-          footerText: 'Your data stays encrypted and portable. Export streaks anytime.',
+          signUpDescription: 'Create your account to start tracking your body metrics.',
+          signInDescription: 'Sign in to access your tracking dashboard.',
+          footerText: 'Your health data is encrypted and yours alone. Export anytime.',
         }}
         features={{
           videoUrl: 'https://www.youtube.com/embed/mgxI8W5fzl0',
           videoTitle: 'AINex Track walkthrough',
-          sectionTitle: 'Built for ambitious creators and teams',
-          sectionDescription: 'Track keeps every habit connected to the bigger picture, so momentum never slips through the cracks.',
+          sectionTitle: 'Built for clarity',
+          sectionDescription: 'Track cuts through the noise of daily fluctuations to show you the real story of your progress.',
           cards: featureCards,
-        }}
-        aiPower={{
-          title: 'An AI accountability partner on call',
-          description: 'Track analyzes your routines, surfaces powerful insights, and keeps you accountable with kindness.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Daily Reflection',
-            subtitle: 'Evening sync complete',
-            items: [
-              'Morning Momentum',
-              'Deep Work Blocks',
-              'Recharge Ritual',
-              'Creative Sprint',
-              'Evening Shutdown',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Track',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
         }}
         showActivation={showActivation}
         activationComponent={
@@ -243,7 +199,13 @@ function TrackHomePageContent() {
           />
         }
       />
-      <Footer />
+      <Footer
+        appName="AINex Track"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }

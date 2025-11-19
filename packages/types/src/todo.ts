@@ -15,6 +15,7 @@ export interface Todo extends BaseDocument {
   projectId: string | null;
   subtasks: Subtask[];
   completedAt: Timestamp | null;
+  order: number; // For drag-and-drop ordering
 }
 
 export type CreateTodoInput = Omit<Todo, 'id' | 'createdAt' | 'updatedAt' | 'completedAt'>;

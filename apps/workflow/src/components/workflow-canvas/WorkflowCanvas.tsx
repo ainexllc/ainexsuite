@@ -92,10 +92,6 @@ const validateEdges = (edges: Edge[], nodes: Node[]) => {
  */
 const sanitizeForFirestore = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 
-type EdgeValidationMode = 'strict' | 'relaxed';
-type BranchTemplate = 'ifElse' | 'loop';
-type NodeCategory = 'start' | 'action' | 'decision' | 'data' | 'note' | 'container';
-
 const paletteNodeTypes = [
   'rectangle',
   'diamond',
@@ -120,51 +116,6 @@ const defaultNodeData: Record<string, Record<string, unknown>> = {
   icon: { label: 'Service', emoji: '🧩' },
   database: { label: 'Database' },
   documents: { label: 'Documents' },
-};
-
-const nodeCategoryMap: Record<string, NodeCategory> = {
-  rectangle: 'action',
-  parallelogram: 'action',
-  diamond: 'decision',
-  oval: 'start',
-  swimlane: 'container',
-  subprocess: 'container',
-  'sticky-note': 'note',
-  icon: 'action',
-  database: 'data',
-  documents: 'data',
-};
-
-const allowedTargetsByCategory: Record<NodeCategory, NodeCategory[]> = {
-  start: ['action', 'decision', 'data', 'container'],
-  action: ['action', 'decision', 'data', 'note', 'container'],
-  decision: ['action', 'data', 'note', 'container'],
-  data: ['action', 'decision', 'container', 'note'],
-  container: ['action', 'decision', 'data', 'note'],
-  note: [],
-};
-
-const isConnectionAllowed = (
-  sourceType?: string,
-  targetType?: string,
-  mode: EdgeValidationMode = 'strict'
-) => {
-  if (mode === 'relaxed' || !sourceType || !targetType) {
-    return true;
-  }
-
-  if (targetType === 'oval') {
-    return false;
-  }
-
-  const sourceCategory = nodeCategoryMap[sourceType];
-  const targetCategory = nodeCategoryMap[targetType];
-
-  if (!sourceCategory || !targetCategory) {
-    return true;
-  }
-
-  return allowedTargetsByCategory[sourceCategory]?.includes(targetCategory) ?? true;
 };
 
 const formatNodeTypeLabel = (type?: string) => {
@@ -210,9 +161,6 @@ function WorkflowCanvasInner() {
   const [edgeType, setEdgeType] = useState<'default' | 'straight' | 'step' | 'smoothstep'>('smoothstep');
   const [arrowType, setArrowType] = useState<'none' | 'end' | 'start' | 'both'>('end');
   const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted'>('solid');
-  const [autoRouteEdges, setAutoRouteEdges] = useState(true);
-  const [edgeValidationMode, setEdgeValidationMode] = useState<EdgeValidationMode>('strict');
-  const [connectionWarning, setConnectionWarning] = useState<string | null>(null);
   const [snapToGrid, setSnapToGrid] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [editingEdge, setEditingEdge] = useState<string | null>(null);
@@ -288,12 +236,6 @@ function WorkflowCanvasInner() {
     }
   }, [nodes, edges]);
 
-  useEffect(() => {
-    if (!connectionWarning) return;
-    const timeout = setTimeout(() => setConnectionWarning(null), 4000);
-    return () => clearTimeout(timeout);
-  }, [connectionWarning]);
-
   // Helper to get marker config based on arrow direction
   const getMarkerConfig = useCallback((direction: 'end' | 'start' | 'both' | 'none') => {
     const markerConfig = {
@@ -342,7 +284,7 @@ function WorkflowCanvasInner() {
   // Stable default edge options with proper marker configuration
   const defaultEdgeOptions = useMemo(
     () => ({
-      type: (autoRouteEdges ? 'smart' : edgeType) as Edge['type'],
+      type: edgeType as Edge['type'],
       animated: isAnimatedStyle(lineStyle), // Animate based on style prefix
       style: {
         stroke: theme.primary,
@@ -351,7 +293,7 @@ function WorkflowCanvasInner() {
       },
       ...getMarkerConfig(arrowType),
     }),
-    [theme.primary, edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle, autoRouteEdges]
+    [theme.primary, edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]
   );
 
   // Load workflow from Firestore (only on mount/user change)
@@ -464,7 +406,7 @@ function WorkflowCanvasInner() {
 
         return {
           ...edge,
-          type: (autoRouteEdges ? 'smart' : edgeType) as Edge['type'],
+          type: edgeType as Edge['type'],
           animated: isAnimatedStyle(lineStyle),
           style: {
             stroke: theme.primary,
@@ -475,7 +417,7 @@ function WorkflowCanvasInner() {
         };
       })
     );
-  }, [theme.id, theme.primary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle, autoRouteEdges]); // Run when any edge style changes
+  }, [theme.id, theme.primary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]); // Run when any edge style changes
 
   // Periodic edge validation - clean up orphaned edges when nodes change
   // Only trigger on nodes changes, not edges changes, to avoid interfering with edge creation
@@ -784,14 +726,6 @@ function WorkflowCanvasInner() {
     onDelete: handleDelete,
   });
 
-  const handleAutoRouteToggle = useCallback(() => {
-    setAutoRouteEdges((prev) => !prev);
-  }, []);
-
-  const handleEdgeValidationModeChange = useCallback((mode: EdgeValidationMode) => {
-    setEdgeValidationMode(mode);
-  }, []);
-
   const onConnect = useCallback(
     (params: Connection) => {
       // eslint-disable-next-line no-console
@@ -814,15 +748,6 @@ function WorkflowCanvasInner() {
         return;
       }
 
-      if (!isConnectionAllowed(sourceNode.type, targetNode.type, edgeValidationMode)) {
-        const warning = `Cannot connect ${formatNodeTypeLabel(sourceNode.type)} to ${formatNodeTypeLabel(targetNode.type)} in strict mode.`;
-        setConnectionWarning(warning);
-        // eslint-disable-next-line no-console
-        console.warn('❌ CONNECTION BLOCKED - Violates strict validation rules');
-        return;
-      }
-
-      const nextType = (autoRouteEdges ? 'smart' : edgeType) as Edge['type'];
       const strokeDasharray = getStrokeDashArray(lineStyle);
       const markerConfig = getMarkerConfig(arrowType);
       const animated = isAnimatedStyle(lineStyle);
@@ -844,7 +769,7 @@ function WorkflowCanvasInner() {
 
         const newEdges = addEdge(params, eds).map((edge) => ({
           ...edge,
-          type: nextType,
+          type: edgeType as Edge['type'],
           animated,
           style: {
             stroke: theme.primary,
@@ -864,14 +789,12 @@ function WorkflowCanvasInner() {
       nodes,
       setEdgesState,
       takeSnapshot,
-      autoRouteEdges,
       edgeType,
       lineStyle,
       theme.primary,
       getMarkerConfig,
       getStrokeDashArray,
       isAnimatedStyle,
-      edgeValidationMode,
       arrowType,
     ]
   );
@@ -942,112 +865,6 @@ function WorkflowCanvasInner() {
     [reactFlowInstance, setNodesState, takeSnapshot, getId]
   );
 
-  const handleAddBranchTemplate = useCallback(
-    (template: BranchTemplate) => {
-      if (!reactFlowInstance) return;
-
-      const bounds = reactFlowWrapper.current?.getBoundingClientRect();
-      const fallbackWidth =
-        reactFlowWrapper.current?.clientWidth ?? (typeof window !== 'undefined' ? window.innerWidth : 0);
-      const fallbackHeight =
-        reactFlowWrapper.current?.clientHeight ?? (typeof window !== 'undefined' ? window.innerHeight : 0);
-      const centerPoint = reactFlowInstance.screenToFlowPosition({
-        x: bounds ? bounds.left + bounds.width / 2 : fallbackWidth / 2,
-        y: bounds ? bounds.top + bounds.height / 2 : fallbackHeight / 2,
-      });
-
-      const newNodes: Node[] = [];
-      const newEdges: Edge[] = [];
-      const baseEdgeType = (autoRouteEdges ? 'smart' : edgeType) as Edge['type'];
-      const strokeDasharray = getStrokeDashArray(lineStyle);
-      const markerConfig = getMarkerConfig(arrowType);
-      const animated = isAnimatedStyle(lineStyle);
-
-      const createNode = (
-        type: string,
-        offsetX: number,
-        offsetY: number,
-        overrides: Record<string, unknown> = {}
-      ) => {
-        const node: Node = {
-          id: getId(),
-          type,
-          position: {
-            x: centerPoint.x + offsetX,
-            y: centerPoint.y + offsetY,
-          },
-          data: {
-            ...(defaultNodeData[type] || { label: 'Node' }),
-            ...overrides,
-          },
-          style: getNodeDimensions(type),
-        };
-        newNodes.push(node);
-        return node;
-      };
-
-      const connectNodes = (source: Node, target: Node, label?: string) => {
-        const edge: Edge = {
-          id: getEdgeId(),
-          source: source.id,
-          target: target.id,
-          type: baseEdgeType,
-          animated,
-          style: {
-            stroke: theme.primary,
-            strokeWidth: 2,
-            strokeDasharray,
-          },
-          label,
-          ...markerConfig,
-        };
-        newEdges.push(edge);
-      };
-
-      if (template === 'ifElse') {
-        const decision = createNode('diamond', 0, -40, { label: 'Decision?' });
-        const yesNode = createNode('rectangle', -220, 120, { label: 'Yes branch' });
-        const noNode = createNode('rectangle', 220, 120, { label: 'No branch' });
-        const mergeNode = createNode('rectangle', 0, 260, { label: 'Merge' });
-
-        connectNodes(decision, yesNode, 'Yes');
-        connectNodes(decision, noNode, 'No');
-        connectNodes(yesNode, mergeNode);
-        connectNodes(noNode, mergeNode);
-      } else {
-        const entry = createNode('rectangle', -200, 0, { label: 'Entry' });
-        const action = createNode('rectangle', 0, 0, { label: 'Loop Action' });
-        const decision = createNode('diamond', 200, 0, { label: 'Continue?' });
-        const exitNode = createNode('rectangle', 0, 200, { label: 'Exit' });
-
-        connectNodes(entry, action);
-        connectNodes(action, decision);
-        connectNodes(decision, action, 'Repeat');
-        connectNodes(decision, exitNode, 'Done');
-      }
-
-      takeSnapshot();
-      setNodesState((nds) => [...nds, ...newNodes]);
-      setEdgesState((eds) => [...eds, ...newEdges]);
-    },
-    [
-      reactFlowInstance,
-      autoRouteEdges,
-      edgeType,
-      lineStyle,
-      getStrokeDashArray,
-      getMarkerConfig,
-      isAnimatedStyle,
-      theme.primary,
-      takeSnapshot,
-      setNodesState,
-      setEdgesState,
-      arrowType,
-      getId,
-      getEdgeId,
-    ]
-  );
-
   const onDragStart = useCallback((event: React.DragEvent, nodeType: string) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
     event.dataTransfer.effectAllowed = 'copy';
@@ -1094,12 +911,6 @@ function WorkflowCanvasInner() {
         onSnapToGridToggle={() => setSnapToGrid(!snapToGrid)}
         onAlignNodes={handleAlignNodes}
         onDistributeNodes={handleDistributeNodes}
-        autoRouteEdges={autoRouteEdges}
-        onAutoRouteToggle={handleAutoRouteToggle}
-        edgeValidationMode={edgeValidationMode}
-        onEdgeValidationModeChange={handleEdgeValidationModeChange}
-        connectionWarning={connectionWarning}
-        onAddBranchTemplate={handleAddBranchTemplate}
       />
 
       <div className="flex-1 react-flow-dark relative" ref={reactFlowWrapper}>
@@ -1121,6 +932,9 @@ function WorkflowCanvasInner() {
           fitView
           deleteKeyCode="Delete"
           multiSelectionKeyCode="Shift"
+          selectionOnDrag={true}
+          panOnDrag={[1, 2]}
+          selectionMode="partial"
           attributionPosition="bottom-left"
           connectOnClick={true}
           elevateEdgesOnSelect={true}

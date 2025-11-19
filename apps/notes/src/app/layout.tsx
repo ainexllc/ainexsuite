@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Kanit } from "next/font/google";
+import { Geist, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
+import { ThemeProvider } from "@ainexsuite/theme";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -20,6 +21,18 @@ const kanit = Kanit({
   variable: "--font-kanit",
 });
 
+const bebasNeue = Bebas_Neue({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-bebas-neue",
+});
+
+const leagueSpartan = League_Spartan({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-league-spartan",
+});
+
 export const metadata: Metadata = {
   title: "NoteNex • Capture and organize ideas effortlessly",
   description:
@@ -32,12 +45,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} bg-surface-base text-ink-900 antialiased transition-colors duration-300`}
+        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans bg-surface-base text-ink-900 antialiased transition-colors duration-300`}
       >
-        <AppProviders>{children}</AppProviders>
-        <Toaster />
+        <ThemeProvider>
+          <AppProviders>{children}</AppProviders>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

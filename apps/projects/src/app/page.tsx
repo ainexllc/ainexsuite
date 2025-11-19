@@ -4,14 +4,12 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { Loader2, Workflow, BarChart3, Shield, Users, Target, Zap } from 'lucide-react';
-import { AinexStudiosLogo } from '@/components/branding/ainex-studios-logo';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
@@ -23,9 +21,7 @@ const demoSteps: DemoStep[] = [
 
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'About' },
+  { href: '/pricing', label: 'Plans' },
 ];
 
 const featureCards: FeatureCard[] = [
@@ -43,24 +39,6 @@ const featureCards: FeatureCard[] = [
     title: 'Progress Analytics',
     description: 'Visualize project health, track KPIs, and identify bottlenecks before they impact delivery.',
     icon: BarChart3,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🎯',
-    title: 'Smart Planning',
-    description: 'AI-powered project planning that adapts to your team\'s velocity and dependencies.',
-  },
-  {
-    emoji: '⚡',
-    title: 'Auto-Prioritization',
-    description: 'Intelligently prioritize tasks based on deadlines, dependencies, and team capacity.',
-  },
-  {
-    emoji: '📈',
-    title: 'Predictive Insights',
-    description: 'Forecast project completion dates and identify risks before they become blockers.',
   },
 ];
 
@@ -149,14 +127,18 @@ function ProjectsHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="PROJECTS" appColor="#6366f1" />}
+        backgroundComponent={<LayeredBackground primaryColor="#6366f1" secondaryColor="#818cf8" variant="structured" />}
         appName="projects"
+        accentColor="#6366f1"
+        gradientFrom="#6366f1"
+        gradientTo="#818cf8"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
           badge: { icon: Shield, text: 'Enterprise-grade security' },
-          headline: 'Manage Projects.',
-          subheadline: 'AINexSuite Projects brings intelligent project management to your workflow.',
+          headline: 'Plan. Execute. Deliver.',
+          subheadline: 'AINex Projects transforms planning into intelligent execution.',
           description: 'From planning to delivery, track everything that matters. Coordinate teams, manage timelines, and drive results with AI-powered insights.',
           highlights: [
             {
@@ -186,39 +168,36 @@ function ProjectsHomePageContent() {
           sectionDescription: 'Projects combines planning, execution, and analytics into one intelligent workspace.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'AI that understands your projects',
-          description: 'Projects uses AI to surface risks, optimize schedules, and keep teams aligned on what matters most.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Active Projects',
-            subtitle: 'In progress',
-            items: [
-              'Q1 Product Launch',
-              'Website Redesign',
-              'API Integration',
-              'Mobile App Beta',
-              'Customer Onboarding',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Projects',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
         showActivation={false}
       />
-      <Footer />
+      <Footer
+        appName="AINex Projects"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }
 
 export default function ProjectsHomePage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]"><Loader2 className="h-12 w-12 animate-spin text-blue-500" /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+          <div className="text-center space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-16 w-16 rounded-full bg-[#6366f1]/20 animate-pulse" />
+              </div>
+              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#6366f1]" />
+            </div>
+            <p className="text-lg font-medium text-white">Loading...</p>
+          </div>
+        </div>
+      }
+    >
       <ProjectsHomePageContent />
     </Suspense>
   );

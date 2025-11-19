@@ -2,14 +2,14 @@
  * @ainexsuite/ui
  * Shared UI components and design system for AINexSuite
  *
- * NOTE: Full component library will be implemented as apps are developed.
- * This package currently provides:
+ * This package provides:
  * - Design system CSS (globals.css)
  * - Utility functions (cn)
  * - Tailwind configuration
+ * - Standardized components with theme system integration
  */
 
 export * from './lib/utils';
 export * from './utils/reactFlowEdgeUtils';
-export * from './components/paywall';
-export * from './components/footer';
+export * from './components';
+export * from './templates';

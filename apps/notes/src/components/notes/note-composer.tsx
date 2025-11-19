@@ -379,7 +379,7 @@ export function NoteComposer() {
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-3xl border-2 border-transparent bg-surface-muted/80 px-5 py-3 text-left text-sm text-muted shadow-lg transition hover:border-orange-500 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:shadow-none"
+          className="flex w-full items-center justify-between rounded-3xl border-2 border-outline-subtle bg-surface-elevated px-5 py-3 text-left text-sm text-muted shadow-lg transition hover:border-orange-500 hover:bg-surface-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:shadow-none"
           onClick={() => setExpanded(true)}
         >
           <span>Take a note…</span>

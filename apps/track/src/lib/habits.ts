@@ -16,7 +16,7 @@ import { auth } from '@ainexsuite/firebase';
 import type { Habit, HabitCompletion, CreateHabitInput } from '@ainexsuite/types';
 
 const HABITS_COLLECTION = 'habits';
-const COMPLETIONS_COLLECTION = 'habitCompletions';
+const COMPLETIONS_COLLECTION = 'habit_completions';
 
 function getCurrentUserId(): string {
   const user = auth.currentUser;

@@ -4,14 +4,12 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { Loader2, Workflow, Cog, Play, Target, Zap, GitBranch } from 'lucide-react';
-import { AinexStudiosLogo } from '@/components/branding/ainex-studios-logo';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
@@ -23,9 +21,7 @@ const demoSteps: DemoStep[] = [
 
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'About' },
+  { href: '/pricing', label: 'Plans' },
 ];
 
 const featureCards: FeatureCard[] = [
@@ -43,24 +39,6 @@ const featureCards: FeatureCard[] = [
     title: 'Real-time Execution',
     description: 'Monitor workflow execution in real-time and identify bottlenecks instantly.',
     icon: Play,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🎯',
-    title: 'Smart Templates',
-    description: 'AI-powered workflow templates that adapt to your specific use cases and patterns.',
-  },
-  {
-    emoji: '⚡',
-    title: 'Auto-Optimization',
-    description: 'Intelligently optimize workflow paths based on execution history and performance.',
-  },
-  {
-    emoji: '📈',
-    title: 'Intelligent Routing',
-    description: 'Automatically route tasks to the right nodes based on conditions and data.',
   },
 ];
 
@@ -149,8 +127,12 @@ function WorkflowHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="WORKFLOW" appColor="#10b981" />}
+        backgroundComponent={<LayeredBackground primaryColor="#10b981" secondaryColor="#34d399" variant="structured" />}
         appName="workflow"
+        accentColor="#10b981"
+        gradientFrom="#10b981"
+        gradientTo="#34d399"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
@@ -186,39 +168,36 @@ function WorkflowHomePageContent() {
           sectionDescription: 'Workflow combines visual design, automation, and execution into one intelligent platform.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'AI that understands your workflows',
-          description: 'Workflow uses AI to optimize paths, suggest improvements, and automate routine decision-making.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Active Workflows',
-            subtitle: 'Running now',
-            items: [
-              'Customer Onboarding',
-              'Order Processing',
-              'Data Sync Pipeline',
-              'Notification System',
-              'Approval Workflow',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Workflow',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
         showActivation={false}
       />
-      <Footer />
+      <Footer
+        appName="AINex Workflow"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }
 
 export default function WorkflowHomePage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]"><Loader2 className="h-12 w-12 animate-spin text-purple-500" /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+          <div className="text-center space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-16 w-16 rounded-full bg-[#10b981]/20 animate-pulse" />
+              </div>
+              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#10b981]" />
+            </div>
+            <p className="text-lg font-medium text-white">Loading...</p>
+          </div>
+        </div>
+      }
+    >
       <WorkflowHomePageContent />
     </Suspense>
   );

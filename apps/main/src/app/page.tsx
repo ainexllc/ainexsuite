@@ -3,16 +3,35 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { Loader2, Brain, BarChart3, Shield, Palette, Sparkles } from 'lucide-react';
-import { AinexStudiosLogo } from '@/components/branding/ainex-studios-logo';
+import {
+  Loader2,
+  Brain,
+  BarChart3,
+  Shield,
+  Palette,
+  Sparkles,
+  BookOpen,
+  StickyNote,
+  Dumbbell,
+  TrendingUp,
+  Camera,
+  Heart,
+  CheckSquare,
+  Activity,
+  FolderKanban,
+  Workflow as WorkflowIcon,
+  Link as LinkIcon,
+  Database,
+  Users
+} from 'lucide-react';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
+  AppCard,
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
@@ -23,50 +42,118 @@ const demoSteps: DemoStep[] = [
 
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'About' },
+  { href: '/pricing', label: 'Plans' },
+];
+
+const appCards: AppCard[] = [
+  {
+    name: 'Journey',
+    description: 'AI-powered journaling with mood tracking, insights, and thoughtful prompts.',
+    icon: BookOpen,
+    color: '#f97316',
+    href: 'https://journey.ainexsuite.com',
+  },
+  {
+    name: 'Notes',
+    description: 'Smart note-taking with AI organization, tags, and powerful search.',
+    icon: StickyNote,
+    color: '#3b82f6',
+    href: 'https://notes.ainexsuite.com',
+  },
+  {
+    name: 'Fit',
+    description: 'Fitness tracking with workout plans, progress analytics, and AI coaching.',
+    icon: Dumbbell,
+    color: '#22c55e',
+    href: 'https://fit.ainexsuite.com',
+  },
+  {
+    name: 'Grow',
+    description: 'Personal development tracker for goals, habits, and continuous improvement.',
+    icon: TrendingUp,
+    color: '#8b5cf6',
+    href: 'https://grow.ainexsuite.com',
+  },
+  {
+    name: 'Moments',
+    description: 'Photo memories organized automatically with AI-powered tagging and stories.',
+    icon: Camera,
+    color: '#ec4899',
+    href: 'https://moments.ainexsuite.com',
+  },
+  {
+    name: 'Pulse',
+    description: 'Health metrics dashboard tracking vitals, sleep, and wellness trends.',
+    icon: Heart,
+    color: '#ef4444',
+    href: 'https://pulse.ainexsuite.com',
+  },
+  {
+    name: 'Todo',
+    description: 'Intelligent task management with AI prioritization and time blocking.',
+    icon: CheckSquare,
+    color: '#f59e0b',
+    href: 'https://todo.ainexsuite.com',
+  },
+  {
+    name: 'Track',
+    description: 'Universal tracking for anything—habits, metrics, streaks, and more.',
+    icon: Activity,
+    color: '#14b8a6',
+    href: 'https://track.ainexsuite.com',
+  },
+  {
+    name: 'Projects',
+    description: 'Project management with timelines, milestones, and team collaboration.',
+    icon: FolderKanban,
+    color: '#6366f1',
+    href: 'https://projects.ainexsuite.com',
+  },
+  {
+    name: 'Workflow',
+    description: 'Automation workflows connecting your apps and data seamlessly.',
+    icon: WorkflowIcon,
+    color: '#10b981',
+    href: 'https://workflow.ainexsuite.com',
+  },
 ];
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Adaptive Insight Engine',
-    description: 'Surface mood paths, recurring themes, and creative streaks that travel to the day you write.',
+    title: 'Unified Data Layer',
+    description: 'All your apps share data seamlessly—tasks reference journal entries, fitness affects mood tracking, and insights flow everywhere.',
+    icon: Database,
+  },
+  {
+    title: 'Cross-App Intelligence',
+    description: 'AI learns from your entire life—journal insights inform goal tracking, health metrics guide energy planning, and patterns emerge across everything.',
     icon: Brain,
   },
   {
-    title: 'Momentum Dashboards',
-    description: 'Watch trends evolve mood, insight frequency, and forward momentum—not guilt.',
+    title: 'Single Sign-On Access',
+    description: 'One account unlocks everything. Switch between apps instantly without logging in again. Your workspace follows you.',
+    icon: Users,
+  },
+  {
+    title: 'Connected Workflows',
+    description: 'Actions in one app trigger updates in others—complete a workout, update your journal mood. Hit a goal, celebrate in Moments.',
+    icon: LinkIcon,
+  },
+  {
+    title: 'Universal Search',
+    description: 'Search across all apps at once—find journal entries, notes, tasks, and memories from a single search bar.',
     icon: BarChart3,
   },
   {
-    title: 'Locked-Down Privacy',
-    description: 'Zero-knowledge encryption, local-first drafts, and granular control keeps every entry private.',
+    title: 'Privacy First',
+    description: 'Enterprise-grade encryption across all apps. Your data never leaves your control. Delete everything with one click.',
     icon: Shield,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🧠',
-    title: 'Context Coach',
-    description: 'Understands tone, topics, and energy before shaping your next prompt.',
-  },
-  {
-    emoji: '🗂️',
-    title: 'Auto-Organized Memory',
-    description: 'Tags every entry with themes, projects, and moods so you can surface anything fast.',
-  },
-  {
-    emoji: '📊',
-    title: 'Progress Signals',
-    description: 'Highlights habits and inflection points before they harden into patterns.',
   },
 ];
 
 const productLinks: FooterLink[] = [
   { label: 'Features', href: '/features' },
-  { label: 'Pricing', href: '/pricing' },
+  { label: 'Plans', href: '/pricing' },
   { label: 'Templates', href: '/templates', external: true },
 ];
 
@@ -153,26 +240,32 @@ function MainHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} />}
+        backgroundComponent={<LayeredBackground />}
         appName="journaling"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Encrypted by default' },
-          headline: 'You write. AI finds insights.',
-          subheadline: 'Mood tracking and prompts, automatically.',
-          description: 'Every time you open your workspace, AI reflects on your recent entries, delivers fresh summaries, and asks thoughtful questions to guide your next session.',
+          badge: { icon: Shield, text: 'Privacy-first & Encrypted' },
+          headline: 'Ten apps. One workspace. Zero friction.',
+          subheadline: 'Your complete life operating system.',
+          description: 'Stop juggling disconnected apps. AINexSuite brings journaling, notes, fitness, projects, and more into one intelligent workspace where everything works together seamlessly.',
           highlights: [
             {
-              icon: Sparkles,
-              title: 'AI Coached Prompts',
-              description: 'Dynamic suggestions tuned to your current tone, goals, and streak.',
+              icon: Brain,
+              title: 'AI That Knows You',
+              description: 'Cross-app intelligence that learns from your entire life—not just one slice of it.',
             },
             {
-              icon: Palette,
-              title: 'Multimedia Journaling',
-              description: 'Drop in photos, voice notes, and links without breaking your writing flow.',
+              icon: LinkIcon,
+              title: 'Everything Connected',
+              description: 'Tasks reference journal entries. Fitness affects mood tracking. Insights flow everywhere.',
             },
           ],
+        }}
+        apps={{
+          sectionTitle: 'All Your Apps, One Unified Workspace',
+          sectionDescription: 'Ten specialized apps working together seamlessly. From journaling to fitness, notes to projects—everything connected, everything intelligent.',
+          cards: appCards,
         }}
         login={{
           badgeText: 'Early Access',
@@ -185,35 +278,18 @@ function MainHomePageContent() {
         features={{
           videoUrl: 'https://www.youtube.com/embed/ccw3-B2nKaQ',
           videoTitle: 'AINexAgent demo video',
-          sectionTitle: 'Built for writers who demand more than a blank page',
-          sectionDescription: 'From onboarding to analytics, every workflow keeps you consistent, curious, and moving forward.',
+          sectionTitle: 'Why Unified Matters',
+          sectionDescription: 'Individual apps are powerful. Together, they become a complete operating system for your life.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'An AI collaborator that actually knows you',
-          description: 'AINexAgent learns from your own words to surface inflection points, ask sharper questions, and keep you tethered to what matters most.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'AINexAgent Copilot',
-            subtitle: 'Daily Brief',
-            items: [
-              'Research Notes',
-              'Meeting Summaries',
-              'Product Ideas',
-              'Creative Briefs',
-              'Personal Growth',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINexAgent',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
       />
-      <Footer />
+      <Footer
+        appName="AINexAgent"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }

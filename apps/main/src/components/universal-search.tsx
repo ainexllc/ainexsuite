@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, X, FileText, CheckSquare, Target, Image as ImageIcon, BookOpen, Activity, Dumbbell } from 'lucide-react';
+import { Search, X, FileText, CheckSquare, Target, Image as ImageIcon, BookOpen, Activity, Dumbbell, Sparkles } from 'lucide-react';
 import { SearchResult, SearchableApp } from '@ainexsuite/types';
+// import { useRouter } from 'next/navigation'; // Removed unused import
 
 interface UniversalSearchProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const APP_ICONS: Record<SearchableApp, React.ReactNode> = {
+const APP_ICONS: Record<string, React.ReactNode> = {
   notes: <FileText className="h-4 w-4" />,
   journey: <BookOpen className="h-4 w-4" />,
   todo: <CheckSquare className="h-4 w-4" />,
@@ -20,7 +21,7 @@ const APP_ICONS: Record<SearchableApp, React.ReactNode> = {
   fit: <Dumbbell className="h-4 w-4" />,
 };
 
-const APP_NAMES: Record<SearchableApp, string> = {
+const APP_NAMES: Record<string, string> = {
   notes: 'Notes',
   journey: 'Journey',
   todo: 'Todo',
@@ -31,7 +32,7 @@ const APP_NAMES: Record<SearchableApp, string> = {
   fit: 'Fit',
 };
 
-const APP_COLORS: Record<SearchableApp, string> = {
+const APP_COLORS: Record<string, string> = {
   notes: 'bg-yellow-500/10 text-yellow-500',
   journey: 'bg-blue-500/10 text-blue-500',
   todo: 'bg-green-500/10 text-green-500',
@@ -47,16 +48,9 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [appCounts, setAppCounts] = useState<Record<SearchableApp, number>>({
-    notes: 0,
-    journey: 0,
-    todo: 0,
-    track: 0,
-    moments: 0,
-    grow: 0,
-    pulse: 0,
-    fit: 0,
-  });
+  const [appCounts, setAppCounts] = useState<Record<string, number>>({});
+  const [isAiMode, setIsAiMode] = useState(false);
+  // const router = useRouter(); // Removed unused hook
 
   // Search function with debouncing
   const performSearch = useCallback(async (searchQuery: string) => {
@@ -65,15 +59,51 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       return;
     }
 
+    // Check for AI command triggers
+    const aiTriggers = ['create', 'remind', 'add', 'log', 'track', 'start', 'schedule'];
+    const firstWord = searchQuery.split(' ')[0].toLowerCase();
+    
+    if (aiTriggers.includes(firstWord)) {
+      setIsAiMode(true);
+      // In a real implementation, we wouldn't fetch search results here,
+      // but rather show AI command suggestions. For now, we'll just mock it.
+      setResults([
+        {
+          id: 'ai-command',
+          app: 'ai' as any,
+          title: `AI Command: ${firstWord}...`,
+          content: `I can help you ${searchQuery}. Press Enter to execute.`,
+          url: '#',
+          updatedAt: new Date().toISOString(),
+          metadata: { type: 'command' }
+        }
+      ]);
+      return;
+    } else {
+      setIsAiMode(false);
+    }
+
     setLoading(true);
     try {
-      const response = await fetch(
-        `/api/search?q=${encodeURIComponent(searchQuery)}&limit=20`
-      );
-      const data = await response.json();
-
-      setResults(data.results || []);
-      setAppCounts(data.appCounts || {});
+      // TODO: Replace with real cross-app search API
+      // For now, we'll simulate empty results or basic mock results
+      // In a real app, this would hit an endpoint that aggregates Algolia/Elasticsearch results
+      
+      // Mock results for demonstration
+      if (searchQuery.toLowerCase().includes('note')) {
+        setResults([
+          { id: '1', app: 'notes', title: 'Meeting Notes', content: 'Discussed Q4 roadmap...', url: 'https://notes.ainexsuite.com/1', updatedAt: new Date().toISOString() },
+          { id: '2', app: 'notes', title: 'Ideas', content: 'App ideas: Smart workspace...', url: 'https://notes.ainexsuite.com/2', updatedAt: new Date().toISOString() }
+        ]);
+      } else if (searchQuery.toLowerCase().includes('task')) {
+         setResults([
+          { id: '3', app: 'todo', title: 'Finish design', content: 'Due tomorrow', url: 'https://tasks.ainexsuite.com/3', updatedAt: new Date().toISOString() }
+        ]);
+      } else {
+        setResults([]);
+      }
+      
+      setAppCounts({ notes: 2, todo: 1 });
       setSelectedIndex(0);
     } catch (error) {
       console.error('Search error:', error);
@@ -94,9 +124,17 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
 
   // Handle result click
   const handleResultClick = useCallback((result: SearchResult) => {
-    window.open(result.url, '_blank');
+    if (result.id === 'ai-command') {
+      // Handle AI Command Execution
+      console.log('Executing AI command:', query);
+      // In a real app, this would send the command to an AI service
+      // and then redirect or show a success toast.
+      alert(`AI Command Received: ${query}\n(This is a prototype)`);
+    } else {
+      window.open(result.url, '_blank');
+    }
     onClose();
-  }, [onClose]);
+  }, [onClose, query]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -109,9 +147,9 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      } else if (e.key === 'Enter' && results[selectedIndex]) {
+      } else if (e.key === 'Enter' && (results[selectedIndex] || isAiMode)) {
         e.preventDefault();
-        handleResultClick(results[selectedIndex]);
+        handleResultClick(results[selectedIndex] || { id: 'ai-command', app: 'ai' as any, title: 'Command', url: '#', updatedAt: '' });
       } else if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
@@ -120,7 +158,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, results, selectedIndex, onClose, handleResultClick]);
+  }, [isOpen, results, selectedIndex, onClose, handleResultClick, isAiMode]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -128,6 +166,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       setQuery('');
       setResults([]);
       setSelectedIndex(0);
+      setIsAiMode(false);
     }
   }, [isOpen]);
 
@@ -143,35 +182,46 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl surface-card rounded-xl shadow-2xl overflow-hidden"
+        className={`w-full max-w-2xl surface-card rounded-xl shadow-2xl overflow-hidden transition-colors duration-300 ${isAiMode ? 'ring-2 ring-purple-500 bg-purple-900/20' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-outline-base">
-          <Search className="h-5 w-5 text-ink-500" />
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-outline-base relative overflow-hidden">
+          {isAiMode ? (
+             <Sparkles className="h-5 w-5 text-purple-400 animate-pulse" />
+          ) : (
+            <Search className="h-5 w-5 text-ink-500" />
+          )}
+          
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search across all apps..."
-            className="flex-1 bg-transparent text-ink-900 text-lg placeholder-ink-500 outline-none"
+            placeholder={isAiMode ? "Ask AI to do something..." : "Search across all apps..."}
+            className="flex-1 bg-transparent text-ink-900 text-lg placeholder-ink-500 outline-none relative z-10"
             autoFocus
           />
+          
+          {/* AI Mode Indicator Background */}
+          {isAiMode && (
+             <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 pointer-events-none" />
+          )}
+
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="p-1 hover:bg-surface-hover rounded transition-colors"
+              className="p-1 hover:bg-surface-hover rounded transition-colors z-10"
             >
               <X className="h-4 w-4 text-ink-500" />
             </button>
           )}
-          <kbd className="px-2 py-1 text-xs text-ink-600 bg-surface-muted rounded">
+          <kbd className="px-2 py-1 text-xs text-ink-600 bg-surface-muted rounded z-10">
             ESC
           </kbd>
         </div>
 
         {/* Results Count */}
-        {query && (
+        {query && !isAiMode && (
           <div className="px-4 py-2 bg-surface-elevated border-b border-outline-base">
             <p className="text-sm text-ink-600">
               {loading ? (
@@ -184,7 +234,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
                       across{' '}
                       {Object.entries(appCounts)
                         .filter(([, count]) => count > 0)
-                        .map(([app, count]) => `${APP_NAMES[app as SearchableApp]} (${count})`)
+                        .map(([app, count]) => `${APP_NAMES[app as SearchableApp] || app} (${count})`)
                         .join(', ')}
                     </span>
                   )}
@@ -198,23 +248,24 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
         <div className="max-h-[60vh] overflow-y-auto">
           {!query && (
             <div className="p-8 text-center">
-              <Search className="h-12 w-12 text-ink-500 mx-auto mb-3" />
-              <p className="text-ink-600">
-                Search across Notes, Journal, Todo, Track, Moments, Grow, Pulse, and Fit
-              </p>
-              <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
-                {Object.entries(APP_NAMES).map(([app, name]) => (
-                  <div
-                    key={app}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${
-                      APP_COLORS[app as SearchableApp]
-                    }`}
-                  >
-                    {APP_ICONS[app as SearchableApp]}
-                    <span className="text-sm font-medium">{name}</span>
-                  </div>
-                ))}
+              <div className="flex justify-center mb-4 space-x-4">
+                 <div className="flex flex-col items-center">
+                   <Search className="h-8 w-8 text-ink-500 mb-2" />
+                   <span className="text-xs text-ink-500">Find</span>
+                 </div>
+                 <div className="h-12 w-px bg-white/10" />
+                 <div className="flex flex-col items-center">
+                   <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
+                   <span className="text-xs text-purple-400">Create</span>
+                 </div>
               </div>
+              
+              <p className="text-ink-600 mb-2">
+                Search for content OR type a command
+              </p>
+              <p className="text-sm text-ink-500 italic">
+                &quot;Create a task to buy milk&quot; • &quot;Log a 30 min run&quot;
+              </p>
             </div>
           )}
 
@@ -222,9 +273,6 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
             <div className="p-8 text-center">
               <p className="text-ink-600">
                 No results found for &ldquo;{query}&rdquo;
-              </p>
-              <p className="text-sm text-ink-500 mt-2">
-                Try searching for notes, tasks, journal entries, habits, and more
               </p>
             </div>
           )}
@@ -235,73 +283,35 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
                 <button
                   key={`${result.app}-${result.id}`}
                   onClick={() => handleResultClick(result)}
-                  className={`w-full p-4 text-left hover:bg-surface-hover transition-colors ${
-                    index === selectedIndex ? 'bg-surface-hover' : ''
-                  }`}
+                  className={`w-full p-4 text-left hover:bg-surface-hover transition-colors ${index === selectedIndex ? 'bg-surface-hover' : ''} ${result.id === 'ai-command' ? 'bg-purple-500/5 hover:bg-purple-500/10' : ''}`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${APP_COLORS[result.app]}`}>
-                      {APP_ICONS[result.app]}
+                    <div className={`p-2 rounded-lg ${result.id === 'ai-command' ? 'bg-purple-500/20 text-purple-400' : APP_COLORS[result.app]}
+                    `}>
+                      {result.id === 'ai-command' ? <Sparkles className="h-4 w-4" /> : APP_ICONS[result.app]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-ink-900 font-medium truncate">
                           {result.title}
                         </h3>
-                        <span className="text-xs text-ink-500 shrink-0">
-                          {APP_NAMES[result.app]}
-                        </span>
+                        {result.id !== 'ai-command' && (
+                            <span className="text-xs text-ink-500 shrink-0">
+                            {APP_NAMES[result.app]}
+                            </span>
+                        )}
                       </div>
                       {result.content && (
                         <p className="text-sm text-ink-600 line-clamp-2">
                           {result.content}
                         </p>
                       )}
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-ink-500">
-                          {new Date(result.updatedAt).toLocaleDateString()}
-                        </span>
-                        {result.metadata && Object.keys(result.metadata).length > 0 && (
-                          <span className="text-xs text-ink-500">
-                            •{' '}
-                            {Object.entries(result.metadata)
-                              .slice(0, 2)
-                              .map(([key, value]) =>
-                                typeof value === 'boolean'
-                                  ? value
-                                    ? key
-                                    : null
-                                  : `${key}: ${value}`
-                              )
-                              .filter(Boolean)
-                              .join(', ')}
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </button>
               ))}
             </div>
           )}
-        </div>
-
-        {/* Footer Help */}
-        <div className="px-4 py-3 bg-surface-elevated border-t border-outline-base">
-          <div className="flex items-center gap-4 text-xs text-ink-600">
-            <div className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-surface-muted rounded">↑↓</kbd>
-              <span>Navigate</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-surface-muted rounded">↵</kbd>
-              <span>Open</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-surface-muted rounded">ESC</kbd>
-              <span>Close</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

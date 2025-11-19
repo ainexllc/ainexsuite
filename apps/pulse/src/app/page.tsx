@@ -8,82 +8,58 @@ import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   Loader2,
   Shield,
-  HeartPulse,
-  Droplets,
-  ClipboardPulse,
-  Activity,
-  Stethoscope,
+  Clock,
+  Timer,
+  Bell,
+  Sun,
+  Watch,
+  Maximize,
 } from 'lucide-react';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Syncing heart rate, sleep, and recovery from all your devices…', emoji: '📲' },
-  { text: 'Flagging anomalies and suggesting action plans instantly…', emoji: '🚨' },
-  { text: 'Preparing a wellness brief to keep your coach and doctor aligned…', emoji: '📈' },
+  { text: 'Syncing with your calendar for smart alerts…', emoji: '📅' },
+  { text: 'Setting up a 25-minute deep work block…', emoji: '⏲️' },
+  { text: 'Adjusting display warmth for evening wind-down…', emoji: '🌙' },
 ];
 
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'Clinicians' },
 ];
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Unified Health Timeline',
+    title: 'Smart Clock Face',
     description:
-      'Bring wearable, lab, and manual entries into one view with automatic unit conversions and trend detection.',
-    icon: HeartPulse,
+      'Beautiful, fullscreen time displays that adapt to your environment and schedule.',
+    icon: Clock,
   },
   {
-    title: 'Precision Biomarker Tracking',
+    title: 'Focus Timer',
     description:
-      'Spot shifts in inflammation, glucose, HRV, and more with adaptive baselines and alert thresholds.',
-    icon: Droplets,
+      'Integrated Pomodoro and flow timers that block distractions and track deep work.',
+    icon: Timer,
   },
   {
-    title: 'Personal Health Briefs',
+    title: 'Intelligent Alarms',
     description:
-      'Share AI-generated digests with your doctor or coach, complete with context and next-step recommendations.',
-    icon: ClipboardPulse,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🤖',
-    title: 'Intelligent Monitoring',
-    description:
-      'AINex Pulse watches for compounding signals and surfaces insights before they become issues.',
-  },
-  {
-    emoji: '🍎',
-    title: 'Habit Guidance',
-    description:
-      'Receive tailored nutrition, movement, and recovery nudges based on your current biomarker trends.',
-  },
-  {
-    emoji: '🩺',
-    title: 'Care Team Sync',
-    description:
-      'Export concise updates with annotated charts so your care team can respond faster and stay aligned.',
+      'Wake up naturally with circadian lighting and sounds that respect your sleep cycle.',
+    icon: Bell,
   },
 ];
 
 const productLinks: FooterLink[] = [
-  { label: 'Health Features', href: '/features' },
-  { label: 'Membership Plans', href: '/pricing' },
-  { label: 'Programs', href: '/programs', external: true },
+  { label: 'Time Features', href: '/features' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'Integrations', href: '/integrations', external: true },
 ];
 
 const companyLinks: FooterLink[] = [
@@ -120,7 +96,7 @@ function PulseHomePageContent() {
     }
 
     if (user && !needsActivation) {
-      setLoadingMessage('Welcome back! Redirecting you to your health dashboard…');
+      setLoadingMessage('Welcome back! Redirecting you to your time dashboard…');
     } else if (user && needsActivation) {
       setLoadingMessage('');
       setShowActivation(true);
@@ -147,16 +123,16 @@ function PulseHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#ef4444]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#ef4444]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ef4444] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -170,65 +146,46 @@ function PulseHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<LogoWordmark iconSize={88} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="PULSE" appColor="#ef4444" />}
+        backgroundComponent={<LayeredBackground primaryColor="#ef4444" secondaryColor="#f87171" variant="energetic" />}
         appName="pulse"
+        accentColor="#ef4444"
+        gradientFrom="#ef4444"
+        gradientTo="#f87171"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Clinical-grade privacy' },
-          headline: 'Know your body. Act with confidence.',
-          subheadline: 'AINex Pulse connects every data point so you can optimize health with precision.',
-          description: 'Track biomarkers, sync wearables, and receive expert AI analysis that keeps you and your care team on the same page.',
+          badge: { icon: Shield, text: 'Time Mastery' },
+          headline: 'Master your time.',
+          subheadline: 'AINex Pulse transforms your screen into an intelligent focus companion.',
+          description: 'More than a clock. Pulse combines beautiful time displays with smart tools to help you focus, rest, and stay on schedule.',
           highlights: [
             {
-              icon: Activity,
-              title: 'Live Monitoring',
-              description: 'Real-time sync from wearables and lab uploads with automated alerts.',
+              icon: Maximize,
+              title: 'Fullscreen Mode',
+              description: 'Turn any device into a dedicated time and focus station.',
             },
             {
-              icon: Stethoscope,
-              title: 'Care Team Access',
-              description: 'Share digests with clinicians who can annotate and respond directly.',
+              icon: Sun,
+              title: 'Wake & Sleep',
+              description: 'Rhythms that guide you into deep work and deep rest.',
             },
           ],
         }}
         login={{
-          badgeText: 'Health Suite',
+          badgeText: 'Time Studio',
           signUpTitle: 'Join AINex Pulse',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to track health metrics with AI insights.',
-          signInDescription: 'Sign in to access your personalized health dashboard.',
-          footerText: 'Your health data stays encrypted and HIPAA-compliant. Export anytime.',
+          signUpDescription: 'Create your account to sync your focus timers and settings.',
+          signInDescription: 'Sign in to access your smart clock dashboard.',
+          footerText: 'Your time data is private. We never sell your schedule.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/e9Yn9g4RJas',
+          videoUrl: 'https://www.youtube.com/embed/e9Yn9g4RJas', // Keep existing or update
           videoTitle: 'AINex Pulse walkthrough',
-          sectionTitle: 'Built for health-conscious individuals and clinical teams',
-          sectionDescription: 'Pulse transforms scattered health data into actionable intelligence for longevity and performance.',
+          sectionTitle: 'Reclaim your attention',
+          sectionDescription: 'Pulse is designed to be seen but not distracting, keeping you grounded in the present moment.',
           cards: featureCards,
-        }}
-        aiPower={{
-          title: 'An AI health co-pilot that never sleeps',
-          description: 'Pulse monitors trends, surfaces early warnings, and recommends interventions before issues compound.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Today\'s Health Brief',
-            subtitle: 'Morning analysis complete',
-            items: [
-              'Longevity Dashboard',
-              'Metabolic Reset',
-              'Cardio Recovery Plan',
-              'Autoimmune Insights',
-              'Sleep Optimization',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Pulse',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
         }}
         showActivation={showActivation}
         activationComponent={
@@ -243,7 +200,13 @@ function PulseHomePageContent() {
           />
         }
       />
-      <Footer />
+      <Footer
+        appName="AINex Pulse"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }

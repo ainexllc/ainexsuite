@@ -15,6 +15,7 @@
   "dependencies": {
     "@ainexsuite/auth": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
+    "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "@xyflow/react": "^12.9.2",

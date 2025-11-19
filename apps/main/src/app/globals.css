@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Main App Theme Overrides - Sky/Cyan Primary */
+:root.dark,
+:root {
+  /* Sky 500 for Primary */
+  --theme-primary: 14 165 233;
+  --theme-primary-rgb: 14, 165, 233;
+  --theme-primary-light: 56 189 248; /* Sky 400 */
+  --theme-primary-dark: 2 132 199;    /* Sky 600 */
+
+  /* Indigo 500 for Secondary */
+  --theme-secondary: 99 102 241;
+  --theme-secondary-rgb: 99, 102, 241;
+}
+
 /* Animations */
 @keyframes fade-in {
   from {

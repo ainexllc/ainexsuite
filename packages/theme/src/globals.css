@@ -1,0 +1,57 @@
+/* Dark Mode - Orange/Blue (Default) */
+:root.dark,
+:root {
+  /* Primary: Orange */
+  --theme-primary: 249 115 22;
+  --theme-primary-light: 251 146 60;
+  --theme-primary-dark: 234 88 12;
+  --theme-primary-rgb: 249, 115, 22;
+
+  /* Secondary: Blue */
+  --theme-secondary: 59 130 246;
+  --theme-secondary-light: 96 165 250;
+  --theme-secondary-dark: 37 99 235;
+  --theme-secondary-rgb: 59, 130, 246;
+
+  /* Surfaces */
+  --surface-base: 5 5 5;
+  --surface-elevated: 10 10 10;
+  --surface-overlay: 20 20 20;
+
+  /* Text */
+  --text-primary: 255 255 255;
+  --text-secondary: 255 255 255 / 0.7;
+  --text-muted: 255 255 255 / 0.5;
+
+  /* Borders */
+  --border-primary: 249 115 22 / 0.2;
+  --border-secondary: 255 255 255 / 0.1;
+}
+
+/* Light Mode - Same Orange/Blue, Inverted Surfaces */
+:root.light {
+  /* Primary/Secondary: SAME as dark */
+  --theme-primary: 249 115 22;
+  --theme-primary-light: 251 146 60;
+  --theme-primary-dark: 234 88 12;
+  --theme-primary-rgb: 249, 115, 22;
+
+  --theme-secondary: 59 130 246;
+  --theme-secondary-light: 96 165 250;
+  --theme-secondary-dark: 37 99 235;
+  --theme-secondary-rgb: 59, 130, 246;
+
+  /* Surfaces: INVERTED */
+  --surface-base: 255 255 255;
+  --surface-elevated: 249 250 251;
+  --surface-overlay: 243 244 246;
+
+  /* Text: INVERTED */
+  --text-primary: 17 24 39;
+  --text-secondary: 55 65 81;
+  --text-muted: 107 114 128;
+
+  /* Borders */
+  --border-primary: 249 115 22 / 0.3;
+  --border-secondary: 229 231 235;
+}

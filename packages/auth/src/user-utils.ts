@@ -87,17 +87,19 @@ export function calculateTrialEndDate(trialStartDate: number | Date): number {
 
 /**
  * Check if user's trial is still active
+ * NOTE: This function is exported from suite-utils.ts to avoid duplicate exports
  */
-export function isTrialActive(user: User): boolean {
-  if (!user.trialStartDate) {
-    return false;
-  }
-
-  const now = Date.now();
-  const trialEnd = user.trialEndDate || calculateTrialEndDate(user.trialStartDate);
-
-  return now < trialEnd;
-}
+// Commented out to avoid conflict with suite-utils export
+// export function isTrialActive(user: User): boolean {
+//   if (!user.trialStartDate) {
+//     return false;
+//   }
+//
+//   const now = Date.now();
+//   const trialEnd = user.trialEndDate || calculateTrialEndDate(user.trialStartDate);
+//
+//   return now < trialEnd;
+// }
 
 /**
  * Migrate legacy user data to new format

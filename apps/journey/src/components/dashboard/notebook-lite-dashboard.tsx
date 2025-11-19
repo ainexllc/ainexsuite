@@ -18,6 +18,7 @@ import {
 import type { JournalEntry } from '@ainexsuite/types';
 import { EntriesSection } from '@/components/dashboard/entries-section';
 import { IdeaSparkCard } from '@/components/journal/idea-spark-card';
+import { OnThisDayCard } from '@/components/dashboard/on-this-day-card';
 import { usePersonalizedWelcome } from '@/hooks/usePersonalizedWelcome';
 import { getUserSettings, updatePrivacySettings, UserSettings } from '@/lib/firebase/settings';
 import { Card } from '@/components/ui/card';
@@ -38,6 +39,7 @@ interface OverviewProps {
   wroteToday: boolean;
   latestEntry?: JournalEntry | null;
   latestDraft?: JournalEntry | null;
+  onThisDayEntries: JournalEntry[];
   recentTags: string[];
   selectedTags: string[];
   onTagToggle: (tag: string) => void;
@@ -49,6 +51,7 @@ function LargeScreenOverview({
   wroteToday,
   latestEntry,
   latestDraft,
+  onThisDayEntries,
   recentTags,
   selectedTags,
   onTagToggle,
@@ -58,6 +61,7 @@ function LargeScreenOverview({
     <div className="sticky top-28 hidden h-fit flex-col gap-6 xl:flex">
       <DashboardStatsCard stats={stats} wroteToday={wroteToday} />
       <LatestEntryCardLarge latestEntry={latestEntry} latestDraft={latestDraft} />
+      {onThisDayEntries.length > 0 && <OnThisDayCard entries={onThisDayEntries} />}
       <TagQuickActionsCard
         recentTags={recentTags}
         selectedTags={selectedTags}
@@ -73,6 +77,7 @@ function MobileOverview({
   wroteToday,
   latestEntry,
   latestDraft,
+  onThisDayEntries,
   recentTags,
   selectedTags,
   onTagToggle,
@@ -82,6 +87,7 @@ function MobileOverview({
     <div className="space-y-4 xl:hidden">
       <MobileStatsCard stats={stats} wroteToday={wroteToday} />
       <MobileLatestEntryCard latestEntry={latestEntry} latestDraft={latestDraft} />
+      {onThisDayEntries.length > 0 && <OnThisDayCard entries={onThisDayEntries} />}
       <MobileTagsCard
         recentTags={recentTags}
         selectedTags={selectedTags}
@@ -565,6 +571,7 @@ interface NotebookLiteDashboardProps {
   latestDraft?: JournalEntry | null;
   stats: DashboardStats;
   isLoadingEntries: boolean;
+  onThisDayEntries: JournalEntry[];
 }
 
 export function NotebookLiteDashboard({
@@ -588,6 +595,7 @@ export function NotebookLiteDashboard({
   latestDraft,
   stats,
   isLoadingEntries,
+  onThisDayEntries,
 }: NotebookLiteDashboardProps) {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [showWelcomeOptIn, setShowWelcomeOptIn] = useState(false);
@@ -784,6 +792,7 @@ export function NotebookLiteDashboard({
             wroteToday={wroteToday}
             latestEntry={latestEntry}
             latestDraft={latestDraft}
+            onThisDayEntries={onThisDayEntries}
             recentTags={recentTags}
             selectedTags={selectedTags}
             onTagToggle={onTagToggle}
@@ -810,6 +819,7 @@ export function NotebookLiteDashboard({
           wroteToday={wroteToday}
           latestEntry={latestEntry}
           latestDraft={latestDraft}
+          onThisDayEntries={onThisDayEntries}
           recentTags={recentTags}
           selectedTags={selectedTags}
           onTagToggle={onTagToggle}

@@ -1,16 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import type { TodoTask, TodoProject, Priority, Subtask } from '@ainexsuite/types';
+import type { TodoTask, Priority, Subtask } from '@ainexsuite/types';
 import { createTask, updateTask, deleteTask } from '@/lib/todo';
-import { X, Flag, Calendar, Folder, Trash2, Plus } from 'lucide-react';
+import { X, Flag, Calendar, Trash2, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 interface TaskEditorProps {
   task: TodoTask | null;
-  projects: TodoProject[];
-  defaultProjectId?: string | null;
   onClose: () => void;
   onSave: () => void;
 }
@@ -23,13 +21,10 @@ const PRIORITIES: { value: Priority; label: string; color: string }[] = [
   { value: 'none', label: 'None', color: 'text-priority-none' },
 ];
 
-export function TaskEditor({ task, projects, defaultProjectId, onClose, onSave }: TaskEditorProps) {
+export function TaskEditor({ task, onClose, onSave }: TaskEditorProps) {
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
   const [priority, setPriority] = useState<Priority>(task?.priority || 'none');
-  const [projectId, setProjectId] = useState<string | undefined>(
-    task?.projectId || defaultProjectId || undefined
-  );
   const [dueDate, setDueDate] = useState<number | undefined>(task?.dueDate ?? undefined);
   const [subtasks, setSubtasks] = useState<Subtask[]>(task?.subtasks || []);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
@@ -58,9 +53,9 @@ export function TaskEditor({ task, projects, defaultProjectId, onClose, onSave }
     setSaving(true);
     try {
       if (task) {
-        await updateTask(task.id, { title, description, priority, projectId, dueDate, subtasks });
+        await updateTask(task.id, { title, description, priority, dueDate, subtasks });
       } else {
-        await createTask({ title, description, priority, projectId, dueDate, subtasks });
+        await createTask({ title, description, priority, dueDate, subtasks });
       }
       onSave();
     } catch (error) {
@@ -130,7 +125,7 @@ export function TaskEditor({ task, projects, defaultProjectId, onClose, onSave }
             className="w-full bg-transparent border-none focus:outline-none placeholder-ink-600 resize-none"
           />
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2 flex items-center gap-2">
                 <Flag className="h-4 w-4" />
@@ -160,25 +155,6 @@ export function TaskEditor({ task, projects, defaultProjectId, onClose, onSave }
                 onChange={(e) => setDueDate(e.target.value ? new Date(e.target.value).getTime() : undefined)}
                 className="w-full px-3 py-2 surface-elevated rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                <Folder className="h-4 w-4" />
-                Project
-              </label>
-              <select
-                value={projectId || ''}
-                onChange={(e) => setProjectId(e.target.value || undefined)}
-                className="w-full px-3 py-2 surface-elevated rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none"
-              >
-                <option value="">No project</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 

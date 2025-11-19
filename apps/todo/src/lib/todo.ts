@@ -15,8 +15,8 @@ import {
 import { auth } from '@ainexsuite/firebase';
 import type { TodoTask, TodoProject, CreateTodoTaskInput, CreateTodoProjectInput } from '@ainexsuite/types';
 
-const TASKS_COLLECTION = 'todoTasks';
-const PROJECTS_COLLECTION = 'todoProjects';
+const TASKS_COLLECTION = 'todos';
+const PROJECTS_COLLECTION = 'projects';
 
 function getCurrentUserId(): string {
   const user = auth.currentUser;
@@ -27,11 +27,22 @@ function getCurrentUserId(): string {
 // Tasks
 export async function createTask(input: Omit<CreateTodoTaskInput, 'ownerId'>): Promise<string> {
   const userId = getCurrentUserId();
+
+  // Get the highest order number for new tasks
+  const tasksSnapshot = await getDocs(
+    query(collection(db, TASKS_COLLECTION), where('ownerId', '==', userId))
+  );
+  const maxOrder = tasksSnapshot.docs.reduce(
+    (max, doc) => Math.max(max, (doc.data().order as number) || 0),
+    0
+  );
+
   const taskData = {
     ...input,
     ownerId: userId,
     completed: false,
     subtasks: input.subtasks || [],
+    order: input.order !== undefined ? input.order : maxOrder + 1,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -65,13 +76,16 @@ export async function updateTask(
   // Log activity
   try {
     const action = updates.completed !== undefined ? 'completed' : 'updated';
+    const metadata: Record<string, unknown> = {};
+    if (updates.priority !== undefined) metadata.priority = updates.priority;
+    if (updates.completed !== undefined) metadata.completed = updates.completed;
     await createActivity({
       app: 'todo',
       action,
       itemType: 'task',
       itemId: taskId,
       itemTitle: updates.title || 'Task',
-      metadata: { priority: updates.priority, completed: updates.completed },
+      metadata,
     });
   } catch (error) {
     console.error('Failed to log activity:', error);
@@ -108,16 +122,38 @@ export async function getTasks(): Promise<TodoTask[]> {
   const q = query(
     collection(db, TASKS_COLLECTION),
     where('ownerId', '==', userId),
-    orderBy('createdAt', 'desc')
+    orderBy('order', 'asc')
   );
 
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
+  const tasks = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
     createdAt: doc.data().createdAt?.toMillis() || Date.now(),
     updatedAt: doc.data().updatedAt?.toMillis() || Date.now(),
+    order: doc.data().order || 0, // Ensure order field exists
   })) as TodoTask[];
+
+  // Sort by order for tasks that have the same order value (fallback to createdAt)
+  return tasks.sort((a, b) => {
+    if (a.order === b.order) {
+      return b.createdAt - a.createdAt;
+    }
+    return a.order - b.order;
+  });
+}
+
+export async function reorderTasks(taskIds: string[], newOrders: number[]): Promise<void> {
+  // Update all tasks with their new order values
+  const updatePromises = taskIds.map((taskId, index) => {
+    const taskRef = doc(db, TASKS_COLLECTION, taskId);
+    return updateDoc(taskRef, {
+      order: newOrders[index],
+      updatedAt: serverTimestamp(),
+    });
+  });
+
+  await Promise.all(updatePromises);
 }
 
 // Projects

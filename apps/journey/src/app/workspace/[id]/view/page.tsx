@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@ainexsuite/auth';
 import { getJournalEntry } from '@/lib/firebase/firestore';
 import { JournalView } from '@/components/journal/journal-view';
 import { useToast } from '@/lib/toast';

@@ -100,3 +100,41 @@ path.react-flow__edge-path {
   stroke: #06b6d4 !important;
   stroke-width: 3px !important;
 }
+
+/* Dark Mode Controls Overrides */
+.react-flow__controls.bg-gray-800 {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.react-flow__controls.bg-gray-800 .react-flow__controls-button {
+  background: #1f2937; /* gray-800 */
+  border-bottom: 1px solid #374151; /* gray-700 */
+  color: #e5e7eb; /* gray-200 */
+}
+
+.react-flow__controls.bg-gray-800 .react-flow__controls-button:hover {
+  background: #374151; /* gray-700 */
+}
+
+.react-flow__controls.bg-gray-800 .react-flow__controls-button svg {
+  fill: currentColor;
+  max-width: 14px;
+  max-height: 14px;
+}
+
+.react-flow__controls.bg-gray-800 .react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+/* Minimap Dark Mode */
+.react-flow__minimap.bg-gray-700 {
+  background: #1f2937 !important; /* gray-800 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+}
+
+.react-flow__minimap.bg-gray-700 .react-flow__minimap-mask {
+  fill: #374151; /* gray-700 */
+  opacity: 0.6;
+}

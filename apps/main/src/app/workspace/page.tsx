@@ -9,7 +9,7 @@ import { NavigationPanel } from '@/components/navigation-panel';
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
 import ActivityFeed from '@/components/activity-feed';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
+import { AinexStudiosLogo } from '@ainexsuite/ui/components';
 import { useVisualStyle } from '@/lib/theme/visual-style';
 import Image from 'next/image';
 import {
@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { getAppsUsedCount } from '@ainexsuite/auth';
 import { Footer } from '@/components/footer';
+import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
@@ -224,78 +225,60 @@ export default function WorkspacePage() {
               : '0 8px 30px -12px rgba(56, 189, 248, 0.3)'
           }}
         >
-          <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6 cq-nav">
+          <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6">
             {/* Left: Hamburger + Logo */}
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setIsNavOpen(!isNavOpen)}
-                className="icon-button h-10 w-10 bg-surface-muted/80 shadow-sm hover:bg-surface-muted"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 shadow-sm transition hover:bg-white/10"
                 aria-label="Toggle navigation"
               >
                 <Menu className="h-5 w-5" />
               </button>
 
               <div className="hidden sm:block">
-                <LogoWordmark href="/workspace" iconSize={48} variant="dark" />
+                <AinexStudiosLogo size="sm" align="center" asLink={true} />
               </div>
             </div>
 
             {/* Center: Search bar */}
-            <div className="top-nav-search mx-4 flex flex-1 items-center gap-2 rounded-full bg-surface-muted/80 px-3 py-1 shadow-sm transition hover:bg-surface-muted max-w-2xl h-9">
-              <Search className="top-nav-search-icon h-4 w-4 text-ink-500 shrink-0" aria-hidden />
+            <div className="mx-4 flex flex-1 items-center gap-2 rounded-full bg-white/5 px-3 py-1 shadow-sm transition hover:bg-white/10 max-w-2xl h-9">
+              <Search className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchOpen(true)}
-                placeholder="Search conversations..."
-                className="top-nav-search-input w-full bg-transparent text-sm text-ink-800 placeholder:text-ink-500 focus:outline-none"
+                placeholder="Search apps and activities..."
+                className="w-full bg-transparent text-sm text-white placeholder:text-white/50 focus:outline-none"
               />
               {searchQuery && (
                 <button
                   type="button"
-                  className="icon-button h-6 w-6 rounded-full text-ink-500 hover:bg-surface-muted hover:text-ink-700 shrink-0"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white/70 shrink-0"
                   aria-label="Clear search"
                   onClick={() => setSearchQuery('')}
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
-              <button
-                type="button"
-                className="top-nav-search-button icon-button h-8 w-8 rounded-full bg-surface-muted/70 text-ink-600 hover:bg-surface-muted shrink-0"
-                aria-label="Open search"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search className="h-4 w-4" aria-hidden />
-              </button>
             </div>
 
             {/* Right: Actions */}
-            <div className="ml-auto flex items-center gap-2 top-nav-actions">
+            <div className="ml-auto flex items-center gap-2">
               {/* AI Assistant Button */}
               <button
                 type="button"
                 onClick={() => setActivePanel(activePanel === 'ai-assistant' ? null : 'ai-assistant')}
-                className="icon-button h-9 w-9 shadow-sm transition-all"
+                className="flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-all"
                 style={{
                   backgroundColor: selectedVariant.id === 'ember-glow'
                     ? 'rgba(249, 115, 22, 0.15)'
                     : 'rgba(56, 189, 248, 0.15)',
                   color: selectedVariant.id === 'ember-glow'
-                    ? '#f97316'
-                    : '#7dd3fc'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = selectedVariant.id === 'ember-glow'
-                    ? 'rgba(249, 115, 22, 0.25)'
-                    : 'rgba(56, 189, 248, 0.25)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = selectedVariant.id === 'ember-glow'
-                    ? 'rgba(249, 115, 22, 0.15)'
-                    : 'rgba(56, 189, 248, 0.15)';
+                    ? '#fb923c'
+                    : '#38bdf8'
                 }}
                 aria-label="AI Assistant"
               >
@@ -306,7 +289,7 @@ export default function WorkspacePage() {
               <div className="relative">
                 <button
                   type="button"
-                  className="flex items-center gap-2 h-9 rounded-full bg-surface-muted/80 text-ink-700 shadow-sm transition hover:bg-surface-muted px-2"
+                  className="flex items-center gap-2 h-9 rounded-full bg-white/5 text-white/70 shadow-sm transition hover:bg-white/10 px-2"
                   aria-label="Profile menu"
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                 >
@@ -320,7 +303,7 @@ export default function WorkspacePage() {
                       sizes="28px"
                     />
                   ) : (
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-500 text-xs font-semibold text-white">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white">
                       {user.displayName
                         ? user.displayName
                             .split(' ')
@@ -331,7 +314,7 @@ export default function WorkspacePage() {
                         : (user.email?.charAt(0).toUpperCase() ?? 'U')}
                     </span>
                   )}
-                  <ChevronDown className="h-3.5 w-3.5 text-ink-500" />
+                  <ChevronDown className="h-3.5 w-3.5 text-white/50" />
                 </button>
                 <ProfileDropdown
                   isOpen={isProfileOpen}
@@ -371,6 +354,9 @@ export default function WorkspacePage() {
                   : 'Choose an app to continue your productivity journey'}
               </p>
             </div>
+
+            {/* Smart Dashboard Grid */}
+            <SmartGrid />
 
             {/* Apps Summary */}
             <div

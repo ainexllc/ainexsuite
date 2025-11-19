@@ -1,37 +1,69 @@
 'use client';
 
-import { AppShell } from "@/components/layout/app-shell";
-import { ProtectedRoute } from "@/components/auth/protected-route";
-import { NoteBoard } from "@/components/notes/note-board";
-import { AppActivationModal, useAppActivation, useAuth } from "@ainexsuite/auth";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@ainexsuite/auth';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { Loader2 } from 'lucide-react';
+import { NoteBoard } from '@/components/notes/note-board';
 
-export default function WorkspacePage() {
-  const { needsActivation, checking } = useAppActivation('notes');
-  const { signOut } = useAuth();
+export default function NotesWorkspace() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  // Show activation modal if user needs to activate Notes
-  if (needsActivation && !checking) {
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      const { auth } = await import('@ainexsuite/firebase');
+      const firebaseAuth = await import('firebase/auth');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (firebaseAuth as any).signOut(auth);
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  if (loading) {
     return (
-      <AppShell>
-        <AppActivationModal
-          appName="notes"
-          appDisplayName="Notes"
-          onActivated={() => window.location.reload()}
-          onDifferentEmail={async () => {
-            // Sign out current user and redirect to Notes homepage with login box
-            await signOut();
-            window.location.href = '/#login';
-          }}
-        />
-      </AppShell>
+      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
     );
   }
 
+  if (!user) {
+    return null;
+  }
+
   return (
-    <AppShell>
-      <ProtectedRoute>
+    <WorkspaceLayout
+      user={user}
+      onSignOut={handleSignOut}
+      searchPlaceholder="Search notes..."
+      appName="NOTES"
+    >
+      {/* Welcome and Notes Section */}
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold text-white mb-2">
+            Welcome to Notes, {user.displayName ? user.displayName.split(' ')[0] : 'there'}!
+          </h2>
+          <p className="text-lg text-white/70">
+            Your personal note-taking workspace
+          </p>
+        </div>
+
+        {/* Notes Content */}
         <NoteBoard />
-      </ProtectedRoute>
-    </AppShell>
+      </section>
+    </WorkspaceLayout>
   );
 }

@@ -3,3 +3,17 @@
 @tailwind utilities;
 
 /* Track-specific overrides can live here. Shared tokens & utilities come from @ainexsuite/ui/styles. */
+
+/* Track App Theme Overrides - Teal/Orange */
+:root.dark,
+:root {
+  /* Teal 500 for Primary */
+  --theme-primary: 20 184 166;
+  --theme-primary-rgb: 20, 184, 166;
+  --theme-primary-light: 45 212 191; /* Teal 400 */
+  --theme-primary-dark: 13 148 136;  /* Teal 600 */
+
+  /* Orange 500 for Secondary */
+  --theme-secondary: 249 115 22;
+  --theme-secondary-rgb: 249, 115, 22;
+}

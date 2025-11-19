@@ -25,8 +25,29 @@ export {
   type NavSection,
 } from "./layout/navigation-panel";
 
+export {
+  ActivityPanel,
+  // type ActivityPanelProps, // Export types if needed, currently not exported in component
+} from "./layout/activity-panel";
+
+export {
+  SearchBar,
+  type SearchBarProps,
+} from "./navigation/search-bar";
+
+export { AtmosphericGlows } from "./layouts/atmospheric-glows";
+export { WorkspaceHeader } from "./layouts/workspace-header";
+export { WorkspaceLayout } from "./layouts/workspace-layout";
+
+// Background Components
+export { LayeredBackground } from "./backgrounds/layered-background";
+export { CanvasWaveBackground } from "./backgrounds/canvas-wave-background";
+
+// Branding Components
+export { AinexStudiosLogo, type AinexStudiosLogoProps } from "./branding/ainex-studios-logo";
+
 // Core UI Components
-export { Button, type ButtonProps } from "./button";
+export { Button, type ButtonProps } from "./buttons";
 
 export {
   Card,
@@ -36,9 +57,9 @@ export {
   CardContent,
   CardFooter,
   type CardProps,
-} from "./card";
+} from "./cards";
 
-export { Input, Textarea, type InputProps, type TextareaProps } from "./input";
+export { Input, Textarea, FormField, type InputProps, type TextareaProps, type FormFieldProps } from "./forms";
 
 export {
   Modal,
@@ -70,6 +91,7 @@ export {
   type FeatureCard,
   type AIHighlight,
   type FooterLink,
+  type AppCard,
 } from "./marketing/homepage-template";
 
 // Suite Components

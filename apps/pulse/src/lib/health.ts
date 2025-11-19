@@ -19,7 +19,7 @@ import type {
 } from '@ainexsuite/types';
 import { getCurrentUserId } from './utils';
 
-const METRICS_COLLECTION = 'healthMetrics';
+const METRICS_COLLECTION = 'health_metrics';
 
 export async function getHealthMetrics(days: number = 30): Promise<HealthMetric[]> {
   const userId = getCurrentUserId();

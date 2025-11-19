@@ -15,12 +15,13 @@ import {
   DocumentSnapshot,
   QueryConstraint
 } from 'firebase/firestore';
-import { db } from '@ainexsuite/firebase';
+import { db, createActivity } from '@ainexsuite/firebase';
 import type { JournalEntry, JournalEntryFormData } from '@ainexsuite/types';
 
 export const JOURNALS_COLLECTION = 'journal_entries';
 
 // Convert Firestore timestamp to Date
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertTimestampToDate(data: any): any {
   if (data?.createdAt?.toDate) {
     data.createdAt = data.createdAt.toDate();
@@ -29,6 +30,7 @@ function convertTimestampToDate(data: any): any {
     data.updatedAt = data.updatedAt.toDate();
   }
   if (data?.attachments) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data.attachments = data.attachments.map((att: any) => ({
       ...att,
       uploadedAt: att.uploadedAt?.toDate ? att.uploadedAt.toDate() : att.uploadedAt
@@ -55,7 +57,7 @@ export async function createJournalEntry(
       ...data,
       mood: data.mood || 'neutral', // Ensure mood has a default value
       userId,
-      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      date: data.date ? (typeof data.date === 'string' ? data.date : new Date(data.date).toISOString().split('T')[0]) : now.toISOString().split('T')[0], // YYYY-MM-DD
       attachments: [],
       links: data.links || [],
       isDraft: data.isDraft ?? true,
@@ -66,6 +68,22 @@ export async function createJournalEntry(
     };
 
     const docRef = await addDoc(collection(db, JOURNALS_COLLECTION), journalData);
+
+    // Log activity
+    try {
+      const dateStr = new Date(journalData.date).toLocaleDateString();
+      await createActivity({
+        app: 'journey',
+        action: 'created',
+        itemType: 'entry',
+        itemId: docRef.id,
+        itemTitle: journalData.title || `Journal Entry - ${dateStr}`,
+        metadata: { mood: journalData.mood },
+      });
+    } catch (error) {
+      console.error('Failed to log activity:', error);
+    }
+
     return docRef.id;
   } catch (error) {
     console.error('Error creating journal entry:', error);
@@ -88,6 +106,23 @@ export async function updateJournalEntry(
       ...sanitizedData,
       updatedAt: Date.now()
     });
+
+    // Log activity
+    try {
+      const dateStr = data.date
+        ? new Date(data.date).toLocaleDateString()
+        : 'Journal Entry';
+      await createActivity({
+        app: 'journey',
+        action: 'updated',
+        itemType: 'entry',
+        itemId: entryId,
+        itemTitle: data.title || `Journal Entry - ${dateStr}`,
+        metadata: { mood: data.mood },
+      });
+    } catch (error) {
+      console.error('Failed to log activity:', error);
+    }
   } catch (error) {
     console.error('Error updating journal entry:', error);
     throw error;
@@ -98,7 +133,33 @@ export async function updateJournalEntry(
 export async function deleteJournalEntry(entryId: string): Promise<void> {
   try {
     const docRef = doc(db, JOURNALS_COLLECTION, entryId);
+    
+    // Get entry details before deleting for activity log
+    let entryTitle = 'Journal Entry';
+    try {
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        entryTitle = data.title || `Journal Entry - ${data.date}`;
+      }
+    } catch (e) {
+      // Ignore read error during delete
+    }
+
     await deleteDoc(docRef);
+
+    // Log activity
+    try {
+      await createActivity({
+        app: 'journey',
+        action: 'deleted',
+        itemType: 'entry',
+        itemId: entryId,
+        itemTitle: entryTitle,
+      });
+    } catch (error) {
+      console.error('Failed to log activity:', error);
+    }
   } catch (error) {
     console.error('Error deleting journal entry:', error);
     throw error;
@@ -211,6 +272,33 @@ export async function searchJournalEntries(
   } catch (error) {
     console.error('Error searching journal entries:', error);
     throw error;
+  }
+}
+
+// Get "On This Day" entries
+export async function getOnThisDayEntries(userId: string): Promise<JournalEntry[]> {
+  try {
+    // Since Firestore doesn't support filtering by just month/day across years easily without a specific field,
+    // we'll fetch all entries and filter in memory.
+    // Optimization: If user has many entries, we might want to add 'monthDay' field (MM-DD) to documents.
+    // For now, we assume reasonable number of entries or fetch latest 500.
+    
+    const { entries } = await getUserJournalEntries(userId, { limit: 500 });
+    
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentDay = today.getDate();
+    
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      // Filter out entries from today (current year)
+      if (entryDate.getFullYear() === today.getFullYear()) return false;
+      
+      return entryDate.getMonth() === currentMonth && entryDate.getDate() === currentDay;
+    });
+  } catch (error) {
+    console.error('Error fetching On This Day entries:', error);
+    return [];
   }
 }
 

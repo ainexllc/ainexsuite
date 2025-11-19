@@ -6,3 +6,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Fit App Theme Overrides - Green/Blue */
+:root.dark,
+:root {
+  /* Green 500 for Primary */
+  --theme-primary: 34 197 94;
+  --theme-primary-rgb: 34, 197, 94;
+  --theme-primary-light: 74 222 128; /* Green 400 */
+  --theme-primary-dark: 22 163 74;   /* Green 600 */
+}

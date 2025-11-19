@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ainexsuite/ui": "workspace:*",
+    "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
     "@ainexsuite/auth": "workspace:*",
     "@ainexsuite/ai": "workspace:*",

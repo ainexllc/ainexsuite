@@ -37,6 +37,8 @@ import {
   GitBranch,
   Repeat2,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeSwitcher } from '../ThemeSwitcher';
@@ -138,6 +140,7 @@ interface PaletteSectionProps {
   highlight?: boolean;
   children: ReactNode;
   storageId: string;
+  isCollapsed?: boolean;
 }
 
 function PaletteSection({
@@ -147,6 +150,7 @@ function PaletteSection({
   highlight = false,
   children,
   storageId,
+  isCollapsed = false,
 }: PaletteSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -164,6 +168,20 @@ function PaletteSection({
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(storageId, String(isOpen));
   }, [isOpen, storageId]);
+
+  if (isCollapsed) {
+    return (
+      <div
+        className={`
+          flex justify-center rounded-lg border px-2 py-3 transition-all
+          ${highlight ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}
+        `}
+        title={title}
+      >
+        {icon}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -218,12 +236,6 @@ interface ShapePaletteProps {
   onSnapToGridToggle: () => void;
   onAlignNodes: (alignment: 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v') => void;
   onDistributeNodes: (direction: 'horizontal' | 'vertical') => void;
-  autoRouteEdges: boolean;
-  onAutoRouteToggle: () => void;
-  edgeValidationMode: EdgeValidationMode;
-  onEdgeValidationModeChange: (mode: EdgeValidationMode) => void;
-  connectionWarning: string | null;
-  onAddBranchTemplate: (template: BranchTemplate) => void;
 }
 
 export function ShapePalette({
@@ -251,14 +263,10 @@ export function ShapePalette({
   onSnapToGridToggle,
   onAlignNodes,
   onDistributeNodes,
-  autoRouteEdges,
-  onAutoRouteToggle,
-  edgeValidationMode,
-  onEdgeValidationModeChange,
-  connectionWarning,
-  onAddBranchTemplate,
 }: ShapePaletteProps) {
   const { theme } = useTheme();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const shapes = [
     { type: 'rectangle', label: 'Process', icon: Square },
     { type: 'diamond', label: 'Decision', icon: Diamond },
@@ -287,12 +295,27 @@ export function ShapePalette({
   ];
 
   return (
-    <div className="workflow-tool-menu flex h-full w-64 flex-col gap-3 overflow-y-auto border-r border-white/10 bg-[#050505] p-3">
+    <div
+      className={`workflow-tool-menu flex h-full flex-col gap-3 overflow-y-auto border-r border-white/10 bg-[#050505] p-3 transition-all duration-300 ease-in-out ${
+        isCollapsed ? 'w-16' : 'w-64'
+      }`}
+    >
+      <div className="flex justify-end">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="rounded p-1 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+          title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
+        >
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
+      </div>
+
       <PaletteSection
         title="Tools"
         icon={<Wrench className="h-3.5 w-3.5 text-white/50" />}
         defaultOpen
         storageId="workflow-section-tools"
+        isCollapsed={isCollapsed}
       >
         <div className="grid grid-cols-3 gap-1.5">
           <ToolButton
@@ -339,22 +362,40 @@ export function ShapePalette({
       </PaletteSection>
 
       <PaletteSection
+        title="Shapes"
+        icon={<Shapes className="h-3.5 w-3.5 text-white/50" />}
+        defaultOpen
+        storageId="workflow-section-shapes"
+        isCollapsed={isCollapsed}
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {shapes.map((shape) => (
+            <ShapeTemplate
+              key={shape.type}
+              type={shape.type}
+              label={shape.label}
+              icon={shape.icon}
+              onDragStart={onDragStart}
+            />
+          ))}
+        </div>
+      </PaletteSection>
+
+      <PaletteSection
         title="Connectors"
         icon={<Workflow className="h-3.5 w-3.5 text-white/50" />}
         storageId="workflow-section-connectors"
         defaultOpen
+        isCollapsed={isCollapsed}
       >
-        <p className="text-[10px] uppercase text-white/40">Edge Type</p>
         <div className="grid grid-cols-2 gap-1.5">
           {(['smoothstep', 'straight', 'step', 'default'] as const).map((type) => (
             <button
               key={type}
               onClick={() => onEdgeTypeChange(type)}
-              disabled={autoRouteEdges}
               className={`
                 rounded px-2 py-1.5 text-[10px] capitalize transition-all
                 ${edgeType === type ? 'font-medium' : 'hover:bg-white/10'}
-                ${autoRouteEdges ? 'cursor-not-allowed opacity-30' : ''}
               `}
               style={{
                 backgroundColor: edgeType === type ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
@@ -367,7 +408,6 @@ export function ShapePalette({
           ))}
         </div>
 
-        <p className="text-[10px] uppercase text-white/40">Arrow Direction</p>
         <div className="grid grid-cols-4 gap-1.5">
           {([
             { type: 'end' as const, symbol: '-->' },
@@ -394,7 +434,6 @@ export function ShapePalette({
           ))}
         </div>
 
-        <p className="text-[10px] uppercase text-white/40">Line Style</p>
         <div className="grid grid-cols-3 gap-1.5">
           {([
             { style: 'solid' as const, preview: '──' },
@@ -422,86 +461,13 @@ export function ShapePalette({
             </button>
           ))}
         </div>
-
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] uppercase text-white/40">Routing Mode</p>
-          <button
-            type="button"
-            onClick={onAutoRouteToggle}
-            className={`
-              flex items-center justify-between rounded px-3 py-1.5 text-xs transition-all
-              ${autoRouteEdges ? 'bg-white/10 text-white' : 'bg-black/30 text-white/60 hover:text-white'}
-            `}
-            style={{
-              border: autoRouteEdges
-                ? `1px solid rgba(${theme.primaryRgb}, 0.5)`
-                : '1px solid rgba(255, 255, 255, 0.1)',
-            }}
-          >
-            <span>{autoRouteEdges ? 'Smart routing' : 'Manual routing'}</span>
-            <ShieldCheck className={`h-3.5 w-3.5 ${autoRouteEdges ? 'text-white' : 'text-white/50'}`} />
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] uppercase text-white/40">Validation Mode</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {(['strict', 'relaxed'] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => onEdgeValidationModeChange(mode)}
-                className={`
-                  rounded px-2 py-1.5 text-[10px] uppercase transition-all
-                  ${edgeValidationMode === mode ? 'font-semibold' : 'hover:bg-white/10'}
-                `}
-                style={{
-                  backgroundColor:
-                    edgeValidationMode === mode ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
-                  border:
-                    edgeValidationMode === mode ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(255, 255, 255, 0.1)',
-                  color: edgeValidationMode === mode ? theme.primary : 'rgba(255, 255, 255, 0.7)',
-                }}
-              >
-                {mode}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {connectionWarning && (
-          <div className="flex items-center gap-1.5 rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[10px] text-yellow-200">
-            <AlertTriangle className="h-3 w-3" />
-            <span>{connectionWarning}</span>
-          </div>
-        )}
-
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] uppercase text-white/40">Branch Templates</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            <button
-              type="button"
-              onClick={() => onAddBranchTemplate('ifElse')}
-              className="flex items-center justify-center gap-1 rounded border border-white/10 px-2 py-1.5 text-[10px] text-white/70 transition-all hover:bg-white/10"
-            >
-              <GitBranch className="h-3.5 w-3.5" />
-              If / Else
-            </button>
-            <button
-              type="button"
-              onClick={() => onAddBranchTemplate('loop')}
-              className="flex items-center justify-center gap-1 rounded border border-white/10 px-2 py-1.5 text-[10px] text-white/70 transition-all hover:bg-white/10"
-            >
-              <Repeat2 className="h-3.5 w-3.5" />
-              Loop
-            </button>
-          </div>
-        </div>
       </PaletteSection>
 
       <PaletteSection
         title="Theme"
         icon={<SunMedium className="h-3.5 w-3.5 text-white/50" />}
         storageId="workflow-section-theme"
+        isCollapsed={isCollapsed}
       >
         <ThemeSwitcher />
       </PaletteSection>
@@ -512,6 +478,7 @@ export function ShapePalette({
         highlight={selectedCount > 0}
         defaultOpen
         storageId="workflow-section-node-style"
+        isCollapsed={isCollapsed}
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
@@ -591,6 +558,7 @@ export function ShapePalette({
         icon={<Grid3x3 className="h-3.5 w-3.5 text-white/50" />}
         highlight={selectedCount >= 2}
         storageId="workflow-section-alignment"
+        isCollapsed={isCollapsed}
       >
         <button
           type="button"
@@ -699,28 +667,10 @@ export function ShapePalette({
       </PaletteSection>
 
       <PaletteSection
-        title="Shapes"
-        icon={<Shapes className="h-3.5 w-3.5 text-white/50" />}
-        defaultOpen
-        storageId="workflow-section-shapes"
-      >
-        <div className="grid grid-cols-2 gap-2">
-          {shapes.map((shape) => (
-            <ShapeTemplate
-              key={shape.type}
-              type={shape.type}
-              label={shape.label}
-              icon={shape.icon}
-              onDragStart={onDragStart}
-            />
-          ))}
-        </div>
-      </PaletteSection>
-
-      <PaletteSection
         title="Shortcuts"
         icon={<Keyboard className="h-3.5 w-3.5 text-white/50" />}
         storageId="workflow-section-shortcuts"
+        isCollapsed={isCollapsed}
       >
         <div className="flex flex-col gap-1 text-[10px] text-white/50">
           <div>

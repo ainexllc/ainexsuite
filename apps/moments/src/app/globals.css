@@ -7,6 +7,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Moments App Theme Overrides - Pink/Yellow */
+:root.dark,
+:root {
+  /* Pink 500 for Primary */
+  --theme-primary: 236 72 153;
+  --theme-primary-rgb: 236, 72, 153;
+  --theme-primary-light: 244 114 182; /* Pink 400 */
+  --theme-primary-dark: 219 39 119;   /* Pink 600 */
+
+  /* Yellow 500 for Secondary (Complementary) */
+  --theme-secondary: 234 179 8;
+  --theme-secondary-rgb: 234, 179, 8;
+}
+
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

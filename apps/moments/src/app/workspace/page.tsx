@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { useRouter } from 'next/navigation';
 import type { Moment } from '@ainexsuite/types';
-import { TopNav } from '@/components/top-nav';
 import { PhotoGrid } from '@/components/photo-grid';
 import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
 import { AIAssistant } from '@/components/ai-assistant';
 import { getMoments } from '@/lib/moments';
-import { Plus, Image as ImageIcon } from 'lucide-react';
+import { Plus, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 function MomentsWorkspaceContent() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [moments, setMoments] = useState<Moment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
@@ -35,8 +37,21 @@ function MomentsWorkspaceContent() {
       }
     };
 
-    void loadMoments();
+    loadMoments();
   }, [user]);
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      const { auth } = await import('@ainexsuite/firebase');
+      const firebaseAuth = await import('firebase/auth');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (firebaseAuth as any).signOut(auth);
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!user) return;
@@ -51,32 +66,57 @@ function MomentsWorkspaceContent() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-ink-600">Loading moments...</div>
+      <div className="min-h-screen flex items-center justify-center bg-surface-base">
+        <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
       </div>
     );
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <ImageIcon className="h-16 w-16 text-ink-600 mx-auto" />
-          <p className="text-ink-600">Please sign in to view your moments</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="min-h-screen">
-      <TopNav selectedTag={selectedTag} onSelectTag={setSelectedTag} tags={allTags} />
+    <WorkspaceLayout
+      user={user}
+      onSignOut={handleSignOut}
+      searchPlaceholder="Search moments..."
+      appName="Moments"
+    >
+      <div className="max-w-7xl mx-auto">
+        {/* Filter Bar */}
+        {allTags.length > 0 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedTag(null)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                !selectedTag
+                  ? 'bg-accent-500 text-white'
+                  : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
+              }`}
+            >
+              All
+            </button>
+            {allTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedTag === tag
+                    ? 'bg-accent-500 text-white'
+                    : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
+                }`}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        )}
 
-      <main className="max-w-7xl mx-auto pb-20">
         {filteredMoments.length === 0 ? (
-          <div className="text-center py-20 space-y-4">
-            <ImageIcon className="h-16 w-16 text-ink-600 mx-auto" />
-            <p className="text-ink-600">
+          <div className="text-center py-20 space-y-4 rounded-2xl bg-surface-elevated border border-outline-subtle">
+            <ImageIcon className="h-16 w-16 text-text-muted mx-auto" />
+            <p className="text-text-muted">
               {selectedTag
                 ? `No moments with tag "${selectedTag}"`
                 : 'No moments yet. Start capturing your memories!'}
@@ -92,7 +132,7 @@ function MomentsWorkspaceContent() {
             onDetail={(moment) => setDetailMoment(moment)}
           />
         )}
-      </main>
+      </div>
 
       <button
         onClick={() => {
@@ -101,6 +141,7 @@ function MomentsWorkspaceContent() {
         }}
         className="fixed bottom-8 left-8 w-14 h-14 rounded-full bg-accent-500 hover:bg-accent-600 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-40"
         type="button"
+        aria-label="Add moment"
       >
         <Plus className="h-6 w-6 text-white" />
       </button>
@@ -129,7 +170,7 @@ function MomentsWorkspaceContent() {
       )}
 
       <AIAssistant />
-    </div>
+    </WorkspaceLayout>
   );
 }
 
@@ -140,4 +181,3 @@ export default function MomentsWorkspacePage() {
     </SuiteGuard>
   );
 }
-

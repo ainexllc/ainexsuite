@@ -30,7 +30,7 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
     border: '2px solid #fff',
     borderRadius: '50%',
     zIndex: 10,
-    opacity: isHovered || selected ? 1 : 0,
+    opacity: isHovered || selected ? 1 : 0.4,
     transition: 'opacity 0.2s',
   } as const;
 

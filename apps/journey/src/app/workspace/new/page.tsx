@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@ainexsuite/auth';
 import { createJournalEntry, getJournalEntry, getUserJournalEntries } from '@/lib/firebase/firestore';
 import { uploadMultipleFiles } from '@/lib/firebase/storage';
 import { JournalForm, JournalFormHandle } from '@/components/journal/journal-form';

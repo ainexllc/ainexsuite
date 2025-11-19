@@ -2,6 +2,8 @@
 
 import { X, Settings as SettingsIcon, Activity as ActivityIcon, Sparkles, Send } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useEnhancedAssistant } from '@ainexsuite/ai/src/use-enhanced-assistant'; // Note: importing directly from source as dist might not be updated
+import { useRef, useEffect } from 'react';
 
 interface ActivityPanelProps {
   isOpen: boolean;
@@ -10,6 +12,38 @@ interface ActivityPanelProps {
 }
 
 export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize enhanced AI assistant
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    appContext,
+    contextLoading
+  } = useEnhancedAssistant({
+    includeFullContext: true, // Enable smart cross-app context
+    systemPrompt: `You are the intelligent assistant for AINexSuite. 
+    You have access to the user's data across Notes, Tasks, Journal, Habits, Health, and Fitness apps.
+    Use this context to provide personalized, actionable, and insightful responses.
+    Be concise, encouraging, and proactive.`,
+  });
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    handleSubmit(e);
+  };
+
   return (
     <div
       className={clsx(
@@ -88,56 +122,104 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
           ) : activeView === 'ai-assistant' ? (
             <div className="flex h-full flex-col space-y-4">
               <header className="space-y-1">
-                <div className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  AI Assistant
+                <div className="flex items-center justify-between">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    AI Assistant
+                  </div>
+                  {contextLoading && (
+                    <span className="text-xs text-ink-400 animate-pulse">Loading context...</span>
+                  )}
                 </div>
                 <h2 className="text-lg font-semibold text-ink-800">
                   How can I help?
                 </h2>
                 <p className="text-sm text-ink-600">
-                  Ask me anything about your apps, get summaries, or find what you need.
+                  I have access to your notes, tasks, and activity. Ask me anything!
                 </p>
               </header>
 
-              <div className="flex-1 space-y-3 overflow-y-auto rounded-2xl bg-surface-muted/40 p-4">
-                <div className="rounded-xl bg-white/60 px-4 py-3 shadow-sm">
-                  <p className="text-sm font-medium text-ink-700">
-                    💡 Suggested prompts
-                  </p>
-                  <ul className="mt-2 space-y-2 text-sm text-ink-600">
-                    <li className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted">
-                      Summarize my recent activity
-                    </li>
-                    <li className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted">
-                      Find notes about work projects
-                    </li>
-                    <li className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted">
-                      What tasks do I have today?
-                    </li>
-                  </ul>
-                </div>
+              <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl bg-surface-muted/40 p-4 min-h-[300px]">
+                {messages.length === 0 ? (
+                  <div className="rounded-xl bg-white/60 px-4 py-3 shadow-sm">
+                    <p className="text-sm font-medium text-ink-700">
+                      💡 Suggested prompts
+                    </p>
+                    <ul className="mt-2 space-y-2 text-sm text-ink-600">
+                      <li 
+                        className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted"
+                        onClick={() => handleInputChange({ target: { value: 'Summarize my tasks due today' } } as any)}
+                      >
+                        Summarize my tasks due today
+                      </li>
+                      <li 
+                        className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted"
+                        onClick={() => handleInputChange({ target: { value: 'How has my workout consistency been this week?' } } as any)}
+                      >
+                        How has my workout consistency been?
+                      </li>
+                      <li 
+                        className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted"
+                        onClick={() => handleInputChange({ target: { value: 'Find notes about project planning' } } as any)}
+                      >
+                        Find notes about project planning
+                      </li>
+                    </ul>
+                  </div>
+                ) : (
+                  messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={clsx(
+                        "flex w-full flex-col gap-1 rounded-xl px-4 py-3 text-sm shadow-sm",
+                        msg.role === 'user'
+                          ? "ml-auto max-w-[85%] bg-accent-500 text-white"
+                          : "mr-auto max-w-[90%] bg-white text-ink-800"
+                      )}
+                    >
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  ))
+                )}
+                {isLoading && (
+                  <div className="flex items-center gap-2 text-xs text-ink-400 px-2">
+                    <div className="h-2 w-2 animate-bounce rounded-full bg-ink-400 [animation-delay:-0.3s]" />
+                    <div className="h-2 w-2 animate-bounce rounded-full bg-ink-400 [animation-delay:-0.15s]" />
+                    <div className="h-2 w-2 animate-bounce rounded-full bg-ink-400" />
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
 
-              <div className="space-y-3">
+              <form onSubmit={handleSendMessage} className="space-y-3">
                 <div className="flex gap-2">
                   <input
                     type="text"
+                    value={input}
+                    onChange={handleInputChange}
                     placeholder="Ask me anything..."
-                    className="flex-1 rounded-xl border border-outline-subtle bg-white px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none"
+                    className="flex-1 rounded-xl border border-outline-subtle bg-white px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none disabled:opacity-50"
+                    disabled={isLoading}
                   />
                   <button
-                    type="button"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-white shadow-sm transition hover:bg-accent-400"
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-white shadow-sm transition hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send message"
                   >
                     <Send className="h-4 w-4" />
                   </button>
                 </div>
-                <footer className="text-xs text-ink-600">
-                  <span>Powered by AI</span>
+                <footer className="text-xs text-ink-600 flex justify-between items-center px-1">
+                  <span>Powered by AINex AI</span>
+                  {appContext && (
+                    <span className="text-[10px] text-green-600 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      Context Active
+                    </span>
+                  )}
                 </footer>
-              </div>
+              </form>
             </div>
           ) : null}
         </div>

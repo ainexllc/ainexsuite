@@ -14,14 +14,12 @@ import {
   Dumbbell,
   Timer,
 } from 'lucide-react';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
@@ -34,8 +32,6 @@ const demoSteps: DemoStep[] = [
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'Coaching' },
 ];
 
 const featureCards: FeatureCard[] = [
@@ -56,27 +52,6 @@ const featureCards: FeatureCard[] = [
     description:
       'Automatic deload prompts, sleep sync, and mobility reminders keep you progressing without burnout.',
     icon: HeartPulse,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🧠',
-    title: 'Coach-on-Call',
-    description:
-      'Ask anything from technique tweaks to macro adjustments—AINex Fit replies with context from your history.',
-  },
-  {
-    emoji: '⏱️',
-    title: 'Session Auto-Build',
-    description:
-      'Drop in your available time and equipment; the planner creates interval, strength, or mobility sessions instantly.',
-  },
-  {
-    emoji: '📊',
-    title: 'Progress Signals',
-    description:
-      'Weekly recaps highlight new PRs, weak spots, and recovery gaps so you can focus your next block.',
   },
 ];
 
@@ -147,9 +122,9 @@ function FitHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#22c55e]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#22c55e]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
@@ -170,8 +145,12 @@ function FitHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<LogoWordmark iconSize={88} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="FIT" appColor="#22c55e" />}
+        backgroundComponent={<LayeredBackground primaryColor="#22c55e" secondaryColor="#4ade80" variant="energetic" />}
         appName="fit"
+        accentColor="#22c55e"
+        gradientFrom="#22c55e"
+        gradientTo="#4ade80"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
@@ -207,29 +186,6 @@ function FitHomePageContent() {
           sectionDescription: 'Fit meets you where you are and guides you to where you want to go—one intelligent session at a time.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'An AI coach that trains with you',
-          description: "Fit adapts in real time, surfaces recovery needs, and celebrates wins you didn't even notice.",
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Today\'s Training',
-            subtitle: 'Session ready to start',
-            items: [
-              'Strength Foundations',
-              'Hybrid Endurance',
-              'Functional Fitness',
-              'Mobility Reset',
-              'Sprint Conditioning',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Fit',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
@@ -243,7 +199,13 @@ function FitHomePageContent() {
           />
         }
       />
-      <Footer />
+      <Footer
+        appName="AINex Fit"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }

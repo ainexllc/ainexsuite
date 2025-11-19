@@ -14,14 +14,12 @@ import {
   BookOpen,
   Heart,
 } from 'lucide-react';
-import { LogoWordmark } from '@/components/branding/logo-wordmark';
 import { Footer } from '@/components/footer';
-import { HomepageTemplate } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
-  AIHighlight,
   FooterLink,
 } from '@ainexsuite/ui/components';
 
@@ -34,8 +32,6 @@ const demoSteps: DemoStep[] = [
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Plans' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/about', label: 'Stories' },
 ];
 
 const featureCards: FeatureCard[] = [
@@ -56,27 +52,6 @@ const featureCards: FeatureCard[] = [
     description:
       'Link reflections to goals, people, and places for instant recall when you need them most.',
     icon: Compass,
-  },
-];
-
-const aiHighlights: AIHighlight[] = [
-  {
-    emoji: '🪄',
-    title: 'Prompt Studio',
-    description:
-      'Receive tailored prompts that respond to your current season, intentions, and emotions.',
-  },
-  {
-    emoji: '💬',
-    title: 'Story Weaver',
-    description:
-      'Turn raw thoughts into shareable letters, recaps, or gratitude notes with a single click.',
-  },
-  {
-    emoji: '🌙',
-    title: 'Nightly Closure',
-    description:
-      'AI wraps each day with a compassionate summary and gentle next-step suggestions.',
   },
 ];
 
@@ -173,8 +148,12 @@ function JourneyHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<LogoWordmark iconSize={88} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="JOURNEY" appColor="#06b6d4" />}
+        backgroundComponent={<LayeredBackground primaryColor="#06b6d4" secondaryColor="#22d3ee" variant="organic" />}
         appName="journey"
+        accentColor="#06b6d4"
+        gradientFrom="#06b6d4"
+        gradientTo="#22d3ee"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
@@ -210,29 +189,6 @@ function JourneyHomePageContent() {
           sectionDescription: 'Journey keeps your inner work organized, insightful, and ready to inspire your next move.',
           cards: featureCards,
         }}
-        aiPower={{
-          title: 'An AI confidant that honors your voice',
-          description: 'Journey reads between the lines to reflect what you may have missed—and celebrates the growth you almost overlooked.',
-          highlights: aiHighlights,
-          demoCard: {
-            title: 'Tonight\'s Insight',
-            subtitle: 'Reflection processed with compassion',
-            items: [
-              'Morning Pages',
-              'Gratitude Pulse',
-              'Weekly Review',
-              'Relationship Journal',
-              'Founder Log',
-            ],
-          },
-        }}
-        footer={{
-          appDisplayName: 'AINex Journey',
-          productLinks,
-          companyLinks,
-          resourceLinks,
-          legalLinks,
-        }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
@@ -246,7 +202,13 @@ function JourneyHomePageContent() {
           />
         }
       />
-      <Footer />
+      <Footer
+        appName="AINex Journey"
+        productLinks={productLinks}
+        companyLinks={companyLinks}
+        resourceLinks={resourceLinks}
+        legalLinks={legalLinks}
+      />
     </>
   );
 }

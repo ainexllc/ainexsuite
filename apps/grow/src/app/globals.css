@@ -7,6 +7,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Grow App Theme Overrides - Purple/Teal */
+:root.dark,
+:root {
+  /* Purple 500 for Primary */
+  --theme-primary: 139 92 246;
+  --theme-primary-rgb: 139, 92, 246;
+  --theme-primary-light: 167 139 250; /* Purple 400 */
+  --theme-primary-dark: 124 58 237;   /* Purple 600 */
+
+  /* Teal 500 for Secondary */
+  --theme-secondary: 20 184 166;
+  --theme-secondary-rgb: 20, 184, 166;
+}
+
 .progress-bar {
   transition: width 0.3s ease;
 }

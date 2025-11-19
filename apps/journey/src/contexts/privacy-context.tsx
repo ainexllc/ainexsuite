@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { getUserSettings, updateUserSettings } from '@/lib/firebase/settings';
-import { useToast } from './toast-context';
+import { useToast } from '@/lib/toast';
 import bcryptjs from 'bcryptjs';
 
 interface PrivacyContextType {

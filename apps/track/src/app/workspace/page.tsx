@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { useRouter } from 'next/navigation';
 import type { Habit, HabitCompletion } from '@ainexsuite/types';
 import { getHabits, getCompletions } from '@/lib/habits';
-import { TopNav } from '@/components/top-nav';
 import { HabitList } from '@/components/habit-list';
 import { HabitEditor } from '@/components/habit-editor';
 import { HabitCalendar } from '@/components/habit-calendar';
 import { Stats } from '@/components/stats';
 import { AIAssistant } from '@/components/ai-assistant';
-import { Plus, TrendingUp } from 'lucide-react';
+import { Plus, TrendingUp, Loader2 } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
 function TrackWorkspaceContent() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [completions, setCompletions] = useState<HabitCompletion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,19 @@ function TrackWorkspaceContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, selectedDate]);
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      const { auth } = await import('@ainexsuite/firebase');
+      const firebaseAuth = await import('firebase/auth');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (firebaseAuth as any).signOut(auth);
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -52,38 +67,37 @@ function TrackWorkspaceContent() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-ink-600">Loading habits...</div>
+      <div className="min-h-screen flex items-center justify-center bg-surface-base">
+        <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
       </div>
     );
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-ink-600">Please sign in to view your habits.</div>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="min-h-screen surface-base">
-      <TopNav />
-
-      <main className="max-w-7xl mx-auto p-6">
+    <WorkspaceLayout
+      user={user}
+      onSignOut={handleSignOut}
+      searchPlaceholder="Search habits..."
+      appName="Track"
+    >
+      <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Habits</h1>
-                <p className="text-ink-600">
+                <h1 className="text-3xl font-bold text-text-primary mb-2">Habits</h1>
+                <p className="text-text-muted">
                   {activeHabits.length} active {activeHabits.length === 1 ? 'habit' : 'habits'}
                 </p>
               </div>
 
               <button
                 onClick={() => setIsCreatingHabit(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-accent-500 hover:bg-accent-600 rounded-lg font-medium transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition-colors"
                 type="button"
               >
                 <Plus className="h-5 w-5" />
@@ -92,9 +106,9 @@ function TrackWorkspaceContent() {
             </div>
 
             {activeHabits.length === 0 ? (
-              <div className="text-center py-12">
-                <TrendingUp className="h-16 w-16 mx-auto mb-4 text-ink-600" />
-                <p className="text-ink-600 mb-4">No habits yet</p>
+              <div className="text-center py-12 rounded-2xl bg-surface-elevated border border-outline-subtle">
+                <TrendingUp className="h-16 w-16 mx-auto mb-4 text-text-muted" />
+                <p className="text-text-muted mb-4">No habits yet</p>
                 <button
                   onClick={() => setIsCreatingHabit(true)}
                   className="text-accent-500 hover:text-accent-600 font-medium"
@@ -128,7 +142,7 @@ function TrackWorkspaceContent() {
             )}
           </div>
         </div>
-      </main>
+      </div>
 
       {(isCreatingHabit || editingHabit) && (
         <HabitEditor
@@ -146,7 +160,7 @@ function TrackWorkspaceContent() {
       )}
 
       <AIAssistant />
-    </div>
+    </WorkspaceLayout>
   );
 }
 
@@ -157,4 +171,3 @@ export default function TrackWorkspacePage() {
     </SuiteGuard>
   );
 }
-

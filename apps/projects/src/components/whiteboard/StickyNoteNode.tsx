@@ -1,21 +1,23 @@
 'use client';
 
 import { memo, useState, useEffect } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react';
 import { X, FolderPlus } from 'lucide-react';
 
 export type StickyNoteData = {
   text: string;
   title?: string;
   color: string;
-  size?: 'small' | 'medium' | 'large';
   fontSize?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
   fontFamily?: 'sans' | 'serif' | 'mono' | 'cursive';
   locked?: boolean;
   isDarkMode?: boolean;
+  width?: number;
+  height?: number;
   onDelete?: () => void;
   onTextChange?: (text: string) => void;
   onTitleChange?: (title: string) => void;
+  onResize?: (width: number, height: number) => void;
 };
 
 function StickyNoteNode({ data }: NodeProps) {
@@ -23,13 +25,12 @@ function StickyNoteNode({ data }: NodeProps) {
   const [text, setText] = useState(nodeData.text);
   const [title, setTitle] = useState(nodeData.title || '');
   const [isHovered, setIsHovered] = useState(false);
-  const noteSize = nodeData.size || 'medium';
 
-  const sizeStyles = {
-    small: { width: '200px', minHeight: '140px', maxHeight: '450px' },
-    medium: { width: '260px', minHeight: '200px', maxHeight: '450px' },
-    large: { width: '320px', minHeight: '260px', maxHeight: '450px' },
-  };
+  const defaultWidth = 240;
+  const defaultHeight = 180;
+
+  const width = nodeData.width || defaultWidth;
+  const height = nodeData.height || defaultHeight;
 
   // isDarkMode available in nodeData but not currently used for styling
 
@@ -84,18 +85,31 @@ function StickyNoteNode({ data }: NodeProps) {
   };
 
   return (
-    <div
-      className={`rounded-3xl select-none transition-shadow border-2 border-transparent hover:border-cyan-500 shadow-lg flex flex-col ${
-        nodeData.locked ? 'cursor-not-allowed' : 'cursor-move'
-      }`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        backgroundColor: nodeData.color,
-        ...sizeStyles[noteSize],
-        color: 'rgb(17 24 39)',
-      }}
-    >
+    <>
+      {!nodeData.locked && (
+        <NodeResizer
+          color="#3b82f6"
+          isVisible={isHovered}
+          minWidth={150}
+          minHeight={100}
+          onResizeEnd={(event, params) => {
+            nodeData.onResize?.(params.width, params.height);
+          }}
+        />
+      )}
+      <div
+        className={`rounded-3xl select-none transition-shadow border-2 border-transparent hover:border-cyan-500 shadow-lg flex flex-col ${
+          nodeData.locked ? 'cursor-not-allowed' : 'cursor-move'
+        }`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          backgroundColor: nodeData.color,
+          width: `${width}px`,
+          height: `${height}px`,
+          color: 'rgb(17 24 39)',
+        }}
+      >
       {/* Connection Handles - Only visible on hover */}
       <Handle
         type="target"
@@ -174,6 +188,7 @@ function StickyNoteNode({ data }: NodeProps) {
         </div>
       </footer>
     </div>
+    </>
   );
 }
 

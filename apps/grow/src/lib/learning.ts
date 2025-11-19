@@ -21,8 +21,8 @@ import type {
 } from '@ainexsuite/types';
 import { getCurrentUserId } from './utils';
 
-const GOALS_COLLECTION = 'learningGoals';
-const SESSIONS_COLLECTION = 'learningSessions';
+const GOALS_COLLECTION = 'learning_goals';
+const SESSIONS_COLLECTION = 'learning_sessions';
 
 export async function getLearningGoals(): Promise<LearningGoal[]> {
   const userId = getCurrentUserId();

@@ -63,6 +63,9 @@ export function PreferencesProvider({ children }: PreferencesProviderProps) {
 
   const handleUpdate = useCallback(
     async (updates: Partial<Omit<UserPreference, "id" | "createdAt" | "updatedAt">>) => {
+      // Optimistic update
+      setPreferences((prev) => ({ ...prev, ...updates }));
+
       if (!userId) {
         return;
       }

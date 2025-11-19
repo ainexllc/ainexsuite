@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { NoteComposer } from "@/components/notes/note-composer";
 import { NoteCard } from "@/components/notes/note-card";
 import { ViewToggle } from "@/components/notes/view-toggle";
@@ -10,7 +10,7 @@ import { Container } from "@/components/layout/container";
 
 function NotesSkeleton() {
   return (
-    <div className="note-board-columns">
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
       {Array.from({ length: 6 }).map((_, index) => (
         <div
           key={index}
@@ -39,11 +39,20 @@ export function NoteBoard() {
   const { pinned, others, loading, notes, searchQuery } = useNotes();
   const { preferences, updatePreferences } = usePreferences();
 
+  const [viewMode, setViewMode] = useState<"masonry" | "list">(preferences.viewMode);
+
+  useEffect(() => {
+    setViewMode(preferences.viewMode);
+  }, [preferences.viewMode]);
+
   const hasNotes = useMemo(() => pinned.length + others.length > 0, [pinned, others]);
 
   const handleViewModeChange = async (mode: "masonry" | "list") => {
+    setViewMode(mode);
     await updatePreferences({ viewMode: mode });
   };
+
+  const masonryClasses = "columns-1 sm:columns-2 lg:columns-3 gap-4";
 
   return (
     <Container className="space-y-8 lg:px-0 cq-board" variant="narrow">
@@ -51,7 +60,7 @@ export function NoteBoard() {
         <div className="flex-1">
           <NoteComposer />
         </div>
-        <ViewToggle viewMode={preferences.viewMode} onViewModeChange={handleViewModeChange} />
+        <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
       </div>
 
       {loading ? (
@@ -64,10 +73,10 @@ export function NoteBoard() {
                 <span>Pinned</span>
                 <span>{pinned.length}</span>
               </header>
-              <div className={preferences.viewMode === "list" ? "space-y-2" : "note-board-columns"}>
+              <div className={viewMode === "list" ? "space-y-2" : masonryClasses}>
                 {pinned.map((note) => (
-                  <div key={note.id} className={preferences.viewMode === "list" ? "" : "mb-4"}>
-                    <NoteCard note={note} viewMode={preferences.viewMode} />
+                  <div key={note.id} className={viewMode === "list" ? "" : "mb-4 break-inside-avoid"}>
+                    <NoteCard note={note} viewMode={viewMode} />
                   </div>
                 ))}
               </div>
@@ -82,10 +91,10 @@ export function NoteBoard() {
                   <span>{others.length}</span>
                 </header>
               ) : null}
-              <div className={preferences.viewMode === "list" ? "space-y-2" : "note-board-columns"}>
+              <div className={viewMode === "list" ? "space-y-2" : masonryClasses}>
                 {others.map((note) => (
-                  <div key={note.id} className={preferences.viewMode === "list" ? "" : "mb-4"}>
-                    <NoteCard note={note} viewMode={preferences.viewMode} />
+                  <div key={note.id} className={viewMode === "list" ? "" : "mb-4 break-inside-avoid"}>
+                    <NoteCard note={note} viewMode={viewMode} />
                   </div>
                 ))}
               </div>
