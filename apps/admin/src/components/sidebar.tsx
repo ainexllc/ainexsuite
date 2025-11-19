@@ -8,7 +8,8 @@ import {
   Settings, 
   LogOut, 
   Shield,
-  Menu
+  Menu,
+  LayoutGrid
 } from 'lucide-react';
 import { AinexStudiosLogo } from '@ainexsuite/ui/components';
 import { clsx } from 'clsx';
@@ -22,6 +23,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Overview', href: '/', icon: LayoutDashboard },
+  { label: 'Apps', href: '/apps', icon: LayoutGrid },
   { label: 'Users', href: '/users', icon: Users },
   { label: 'Feedback', href: '/feedback', icon: MessageSquare },
   { label: 'Settings', href: '/settings', icon: Settings },
