@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { WorkspaceHeader } from './workspace-header';
 import { AtmosphericGlows } from './atmospheric-glows';
+import { FeedbackWidget } from '../feedback/feedback-widget';
 
 interface WorkspaceLayoutProps {
   /**
@@ -13,6 +14,7 @@ interface WorkspaceLayoutProps {
    * User object for the profile dropdown
    */
   user: {
+    uid?: string;
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
@@ -48,6 +50,7 @@ interface WorkspaceLayoutProps {
  * - Fixed WorkspaceHeader (TopNav)
  * - AtmosphericGlows (Background)
  * - Standardized content container
+ * - FeedbackWidget (Floating)
  *
  * The theme colors are controlled by the app's CSS variables
  * (--theme-primary, --theme-secondary).
@@ -81,6 +84,14 @@ export function WorkspaceLayout({
           {children}
         </div>
       </main>
+
+      {/* Global Feedback Widget */}
+      <FeedbackWidget
+        userId={user.uid}
+        userEmail={user.email || undefined}
+        userName={user.displayName || undefined}
+        appName={appName || 'Unknown App'}
+      />
     </div>
   );
 }

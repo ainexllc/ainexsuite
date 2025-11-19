@@ -47,17 +47,9 @@ export { CanvasWaveBackground } from "./backgrounds/canvas-wave-background";
 export { AinexStudiosLogo, type AinexStudiosLogoProps } from "./branding/ainex-studios-logo";
 
 // Core UI Components
-export { Button, type ButtonProps } from "./buttons";
-
-export {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  type CardProps,
-} from "./cards";
+export * from './feedback/feedback-widget';
+export * from './buttons/button';
+export * from './cards/card';
 
 export { Input, Textarea, FormField, type InputProps, type TextareaProps, type FormFieldProps } from "./forms";
 
