@@ -1,20 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Menu, Search, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";
 
 export type TopNavProps = {
   /** Custom branding/logo component (e.g., LogoWordmark) */
   logo?: ReactNode;
-  /** Search functionality */
-  search?: {
-    value: string;
-    onChange: (value: string) => void;
-    placeholder?: string;
-    onFocus?: () => void;
-  };
   /** Menu button click handler */
   onMenuClick?: () => void;
   /** Right-side action buttons */
@@ -29,7 +22,6 @@ export type TopNavProps = {
 
 export function TopNav({
   logo,
-  search,
   onMenuClick,
   actions,
   className,
@@ -68,42 +60,6 @@ export function TopNav({
 
           {logo && <div className="hidden sm:block">{logo}</div>}
         </div>
-
-        {/* Center: Search bar (if provided) */}
-        {search && (
-          <div className="top-nav-search mx-4 flex flex-1 items-center gap-2 rounded-full bg-surface-muted/80 px-3 py-1 shadow-sm transition hover:bg-surface-muted max-w-2xl h-9">
-            <Search
-              className="top-nav-search-icon h-4 w-4 text-ink-500 shrink-0"
-              aria-hidden
-            />
-            <input
-              type="text"
-              value={search.value}
-              onChange={(e) => search.onChange(e.target.value)}
-              placeholder={search.placeholder || "Search..."}
-              className="top-nav-search-input w-full bg-transparent text-sm text-ink-800 placeholder:text-ink-500 focus:outline-none"
-              onFocus={search.onFocus}
-            />
-            {search.value && (
-              <button
-                type="button"
-                className="icon-button h-6 w-6 rounded-full text-ink-500 hover:bg-surface-muted hover:text-ink-700 shrink-0"
-                aria-label="Clear search"
-                onClick={() => search.onChange("")}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-            <button
-              type="button"
-              className="top-nav-search-button icon-button h-8 w-8 rounded-full bg-surface-muted/70 text-ink-600 hover:bg-surface-muted shrink-0"
-              aria-label="Open search"
-              onClick={search.onFocus}
-            >
-              <Search className="h-4 w-4" aria-hidden />
-            </button>
-          </div>
-        )}
 
         {/* Right: Actions */}
         {actions && (
