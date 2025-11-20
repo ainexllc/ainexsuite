@@ -26,14 +26,56 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
+  setIsBootstrapping: (value: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper function to create fallback user object
+function createFallbackUser(firebaseUser: FirebaseUser): User {
+  const now = Date.now();
+  const isDev = process.env.NODE_ENV === 'development';
+  return {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email || '',
+    displayName: firebaseUser.displayName || firebaseUser.email || 'User',
+    photoURL: firebaseUser.photoURL || '',
+    preferences: {
+      theme: 'dark',
+      language: 'en',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      notifications: {
+        email: true,
+        push: false,
+        inApp: true,
+      },
+    },
+    createdAt: now,
+    lastLoginAt: now,
+    apps: {
+      notes: isDev,
+      journey: isDev,
+      todo: isDev,
+      track: isDev,
+      moments: isDev,
+      grow: isDev,
+      pulse: isDev,
+      fit: isDev,
+    },
+    appPermissions: {},
+    appsUsed: {},
+    appsEligible: isDev ? ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit'] : [],
+    trialStartDate: now,
+    subscriptionStatus: 'trial',
+    suiteAccess: false,
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBootstrapping, setIsBootstrapping] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -44,7 +86,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Get ID token and create session cookie
           const idToken = await firebaseUser.getIdToken();
 
-          // Call Cloud Function to generate session cookie
+          // Skip session creation if we're bootstrapping from an existing session cookie
+          // This prevents double authentication when refreshing the page
+          if (isBootstrapping) {
+            // Session cookie already exists, just hydrate user from Firebase
+            // No need to call /api/auth/session again
+            setUser(createFallbackUser(firebaseUser));
+            setIsBootstrapping(false);
+            setLoading(false);
+            return;
+          }
+
+          // Call Cloud Function to generate session cookie (only on fresh login)
           const response = await fetch('/api/auth/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -57,85 +110,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(userData);
           } else {
             // Fallback: Create minimal user object from Firebase user
-            // In dev mode, pre-activate all apps to avoid repeated activation modals
-            const now = Date.now();
-            const isDev = process.env.NODE_ENV === 'development';
-            const userData: User = {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              displayName: firebaseUser.displayName || firebaseUser.email || 'User',
-              photoURL: firebaseUser.photoURL || '',
-              preferences: {
-                theme: 'dark',
-                language: 'en',
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                notifications: {
-                  email: true,
-                  push: false,
-                  inApp: true,
-                },
-              },
-              createdAt: now,
-              lastLoginAt: now,
-              apps: {
-                notes: isDev,
-                journey: isDev,
-                todo: isDev,
-                track: isDev,
-                moments: isDev,
-                grow: isDev,
-                pulse: isDev,
-                fit: isDev,
-              },
-              appPermissions: {},
-              appsUsed: {},
-              appsEligible: isDev ? ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit'] : [],
-              trialStartDate: now,
-              subscriptionStatus: 'trial',
-              suiteAccess: false,
-            };
-            setUser(userData);
+            setUser(createFallbackUser(firebaseUser));
           }
         } catch (error) {
           // Fallback: Create minimal user object from Firebase user
-          // In dev mode, pre-activate all apps to avoid repeated activation modals
-          const now = Date.now();
-          const isDev = process.env.NODE_ENV === 'development';
-          const userData: User = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            displayName: firebaseUser.displayName || firebaseUser.email || 'User',
-            photoURL: firebaseUser.photoURL || '',
-            preferences: {
-              theme: 'dark',
-              language: 'en',
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-              notifications: {
-                email: true,
-                push: false,
-                inApp: true,
-              },
-            },
-            createdAt: now,
-            lastLoginAt: now,
-            apps: {
-              notes: isDev,
-              journey: isDev,
-              todo: isDev,
-              track: isDev,
-              moments: isDev,
-              grow: isDev,
-              pulse: isDev,
-              fit: isDev,
-            },
-            appPermissions: {},
-            appsUsed: {},
-            appsEligible: isDev ? ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit'] : [],
-            trialStartDate: now,
-            subscriptionStatus: 'trial',
-            suiteAccess: false,
-          };
-          setUser(userData);
+          setUser(createFallbackUser(firebaseUser));
         }
       } else {
         removeSessionCookie();
@@ -207,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         signOut: signOutUser,
         logout: signOutUser,
+        setIsBootstrapping,
       }}
     >
       <AuthBootstrap />
