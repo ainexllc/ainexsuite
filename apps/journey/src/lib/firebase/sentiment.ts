@@ -20,6 +20,7 @@ const INSIGHTS_COLLECTION = 'sentiment_insights';
 const METRICS_COLLECTION = 'sentiment_metrics';
 
 // Convert Date to Timestamp for Firestore
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const toFirestoreData = (data: any) => {
   const converted = { ...data };
   if (data.analyzedAt instanceof Date) {
@@ -35,6 +36,7 @@ const toFirestoreData = (data: any) => {
 };
 
 // Convert Timestamp to Date from Firestore
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fromFirestoreData = (data: any) => {
   const converted = { ...data };
   if (data.analyzedAt?.toDate) {

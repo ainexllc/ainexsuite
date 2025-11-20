@@ -53,6 +53,7 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
           }
         }
       } catch (error) {
+        // Ignore theme loading error
       }
     }
 
@@ -84,6 +85,7 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
             { merge: true }
           );
         } catch (error) {
+          // Ignore theme saving error
         }
       })();
     }

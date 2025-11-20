@@ -78,6 +78,7 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
         setHasPasscode(false);
       }
     } catch (error) {
+      // Ignore setting loading error
     } finally {
       setIsLoading(false);
     }

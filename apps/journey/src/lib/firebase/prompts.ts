@@ -2,7 +2,6 @@ import {
   collection,
   doc,
   setDoc,
-  getDoc,
   getDocs,
   query,
   where,
@@ -98,7 +97,7 @@ export async function getUserPromptResponses(userId: string, limit_count: number
 }
 
 // Get prompt responses by category
-export async function getPromptResponsesByCategory(userId: string, category: string): Promise<PromptResponse[]> {
+export async function getPromptResponsesByCategory(_userId: string, _category: string): Promise<PromptResponse[]> {
   // This requires joining with prompts data, so we'll need to fetch prompts first
   // For now, return empty array - this would be implemented with proper indexing
   return [];

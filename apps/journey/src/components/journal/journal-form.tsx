@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { JournalEntryFormData, MoodType, ContentEnhancementStyle } from '@ainexsuite/types';
 import { moodConfig } from '@/lib/utils/mood';
 import { cn } from '@/lib/utils';
-import { Loader2, Upload, X, Hash, Link, Sparkles, Scissors, Compass, Copy } from 'lucide-react';
+import { Loader2, Upload, X, Link, Sparkles, Scissors, Compass, Copy } from 'lucide-react';
 import { RichTextEditorEnhanced } from '@/components/ui/rich-text-editor-enhanced';
 // TODO: Port InlinePrompt component from journalnex-app
 // import { InlinePrompt } from '@/components/prompts/inline-prompt';
@@ -17,7 +17,7 @@ import { useToast } from '@/lib/toast';
 import { auth } from '@ainexsuite/firebase';
 import { plainText } from '@/lib/utils/text';
 import type { Editor } from '@tiptap/react';
-import { DOMSerializer } from 'prosemirror-model';
+import { DOMSerializer } from '@tiptap/pm/model';
 
 const journalSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
@@ -31,6 +31,8 @@ const journalSchema = z.object({
   ]).optional(),
   links: z.array(z.string().url('Please enter a valid URL')),
   isPrivate: z.boolean(),
+  isDraft: z.boolean().optional(),
+  date: z.union([z.string(), z.number(), z.date()]).optional(),
 });
 
 interface JournalFormProps {
@@ -127,8 +129,8 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
     watch,
     getValues,
     formState: { errors },
-  } = useForm<JournalEntryFormData>({
-    resolver: zodResolver(journalSchema),
+  } = useForm({
+    resolver: zodResolver(journalSchema as any),
     defaultValues: {
       title: initialData?.title || '',
       content: initialData?.content || '',
@@ -496,7 +498,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
           onKeyDown={handleTitleKeyDown}
         />
         {errors.title && (
-          <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+          <p className="text-red-500 text-sm mt-1">{String(errors.title.message)}</p>
         )}
       </div>
 
@@ -535,7 +537,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
           }}
         /> */}
         {errors.content && (
-          <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
+          <p className="text-red-500 text-sm mt-1">{String(errors.content.message)}</p>
         )}
       </div>
 
@@ -656,7 +658,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
 
               {boostPreview.status === 'error' && (
                 <div className="space-y-3">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">We couldn't preview this boost.</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">We couldn&apos;t preview this boost.</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{boostPreview.error}</p>
                   <div className="flex justify-end gap-2">
                     <button
@@ -769,7 +771,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
         </div>
         {selectedMood && (
           <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-            Selected: <span className="font-semibold text-orange-500 dark:text-orange-400">{moodConfig[selectedMood].label}</span>
+            Selected: <span className="font-semibold text-orange-500 dark:text-orange-400">{moodConfig[selectedMood as MoodType].label}</span>
           </p>
         )}
       </div>

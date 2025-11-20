@@ -13,7 +13,6 @@ import { BlurredContent } from '@/components/privacy/blurred-content';
 import { PasscodeModal } from '@/components/privacy/passcode-modal';
 import { format } from 'date-fns';
 import { DashboardTheme } from '@/lib/dashboard-themes';
-import { ThemedPanel } from '@/components/dashboard/themed-panel';
 
 interface JournalCardProps {
   entry: JournalEntry;
@@ -27,7 +26,7 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<'view' | 'edit' | null>(null);
-  const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode, isLoading: privacyLoading } = usePrivacy();
+  const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode } = usePrivacy();
 
   // Fallbacks
   const textPrimary = theme?.textPrimary || 'text-white';
@@ -46,7 +45,7 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
     setIsDeleting(true);
     try {
       if (entry.attachments && entry.attachments.length > 0) {
-        await deleteAllEntryFiles(entry.userId, entry.id);
+        await deleteAllEntryFiles(entry.ownerId, entry.id);
       }
       await deleteJournalEntry(entry.id);
       toast({
@@ -117,7 +116,7 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
   };
 
   const truncateContent = (content: string, maxLength: number = 150) => {
-    let processedContent = content
+    const processedContent = content
       .replace(/<\/li>/gi, '</li> ')
       .replace(/<\/p>/gi, '</p> ')
       .replace(/<br\s*\/?>/gi, ' ')
@@ -125,7 +124,7 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
       .replace(/<\/h[1-6]>/gi, ' ')
       .replace(/<li>/gi, ' • ');
 
-    let textContent = processedContent
+    const textContent = processedContent
       .replace(/<[^>]*>/g, '')
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
@@ -141,13 +140,6 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
     if (textContent.length <= maxLength) return textContent;
     return textContent.substring(0, maxLength).trim() + '...';
   };
-
-  // Use a div with classes if theme is missing (fallback behavior) or ThemedPanel if present
-  // But wait, ThemedPanel requires a valid Theme object. 
-  // We'll construct a mock theme object if undefined to keep using ThemedPanel or just use standard div
-  
-  const Wrapper = theme ? ThemedPanel : 'div';
-  const wrapperProps = theme ? { theme, hover: true, className: "p-6" } : { className: "bg-zinc-800/95 backdrop-blur-md hover:shadow-lg transition-all duration-200 rounded-xl border border-white/10 p-6 overflow-hidden relative group" };
 
   return (
     <div className={cn("relative group overflow-hidden transition-all duration-300", 

@@ -45,35 +45,31 @@ export async function uploadFile(
   entryId: string,
   file: File
 ): Promise<UploadResult> {
-  try {
-    // Validate file
-    validateFile(file);
+  // Validate file
+  validateFile(file);
 
-    // Generate unique file ID
-    const fileId = uuidv4();
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${fileId}.${fileExtension}`;
-    const filePath = `users/${userId}/attachments/${entryId}/${fileName}`;
+  // Generate unique file ID
+  const fileId = uuidv4();
+  const fileExtension = file.name.split('.').pop();
+  const fileName = `${fileId}.${fileExtension}`;
+  const filePath = `users/${userId}/attachments/${entryId}/${fileName}`;
 
-    // Create storage reference
-    const storageRef = ref(storage, filePath);
+  // Create storage reference
+  const storageRef = ref(storage, filePath);
 
-    // Upload file
-    const snapshot = await uploadBytes(storageRef, file);
+  // Upload file
+  const snapshot = await uploadBytes(storageRef, file);
 
-    // Get download URL
-    const downloadURL = await getDownloadURL(snapshot.ref);
+  // Get download URL
+  const downloadURL = await getDownloadURL(snapshot.ref);
 
-    return {
-      id: fileId,
-      name: file.name,
-      url: downloadURL,
-      type: file.type,
-      size: file.size
-    };
-  } catch (error) {
-    throw error;
-  }
+  return {
+    id: fileId,
+    name: file.name,
+    url: downloadURL,
+    type: file.type,
+    size: file.size
+  };
 }
 
 // Upload multiple files
@@ -82,12 +78,8 @@ export async function uploadMultipleFiles(
   entryId: string,
   files: File[]
 ): Promise<UploadResult[]> {
-  try {
-    const uploadPromises = files.map(file => uploadFile(userId, entryId, file));
-    return await Promise.all(uploadPromises);
-  } catch (error) {
-    throw error;
-  }
+  const uploadPromises = files.map(file => uploadFile(userId, entryId, file));
+  return await Promise.all(uploadPromises);
 }
 
 // Delete a file from Firebase Storage
@@ -96,13 +88,9 @@ export async function deleteFile(
   entryId: string,
   fileName: string
 ): Promise<void> {
-  try {
-    const filePath = `users/${userId}/attachments/${entryId}/${fileName}`;
-    const storageRef = ref(storage, filePath);
-    await deleteObject(storageRef);
-  } catch (error) {
-    throw error;
-  }
+  const filePath = `users/${userId}/attachments/${entryId}/${fileName}`;
+  const storageRef = ref(storage, filePath);
+  await deleteObject(storageRef);
 }
 
 // Delete all files for a journal entry
@@ -110,19 +98,15 @@ export async function deleteAllEntryFiles(
   userId: string,
   entryId: string
 ): Promise<void> {
-  try {
-    const directoryPath = `users/${userId}/attachments/${entryId}`;
-    const directoryRef = ref(storage, directoryPath);
+  const directoryPath = `users/${userId}/attachments/${entryId}`;
+  const directoryRef = ref(storage, directoryPath);
 
-    // List all files in the directory
-    const result = await listAll(directoryRef);
+  // List all files in the directory
+  const result = await listAll(directoryRef);
 
-    // Delete each file
-    const deletePromises = result.items.map(item => deleteObject(item));
-    await Promise.all(deletePromises);
-  } catch (error) {
-    throw error;
-  }
+  // Delete each file
+  const deletePromises = result.items.map(item => deleteObject(item));
+  await Promise.all(deletePromises);
 }
 
 // Get the storage path for a user's attachments

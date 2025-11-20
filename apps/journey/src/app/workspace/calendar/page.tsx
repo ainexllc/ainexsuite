@@ -15,11 +15,10 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (user) {
-      void loadEntries();
-    } else if (!loading) {
-      setIsLoadingEntries(false);
+      loadEntries();
     }
-  }, [user, loading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const loadEntries = async () => {
     if (!user) return;
@@ -29,7 +28,7 @@ export default function CalendarPage() {
     try {
       const { entries: fetchedEntries } = await getUserJournalEntries(user.uid, {
         limit: 500, // Fetch a reasonable number of entries for calendar view
-        sortBy: 'date', // Sort by date for calendar display
+        sortBy: 'createdAt', // Sort by date for calendar display
         sortOrder: 'asc',
       });
       setEntries(fetchedEntries);

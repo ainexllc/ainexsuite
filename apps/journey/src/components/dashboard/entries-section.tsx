@@ -32,6 +32,7 @@ export function EntriesSection({
   searchTerm,
   selectedTags,
   onClearFilters,
+  onEntryUpdated,
   layoutVariant = 'grid',
   id,
   isLoading = false,
@@ -168,7 +169,7 @@ export function EntriesSection({
                     </div>
                   </div>
                   <div className={cn("mt-4 flex items-center justify-between text-xs", textSecondary)}>
-                    <span>{entry.createdAt instanceof Date ? entry.createdAt.toLocaleDateString() : new Date(entry.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(entry.createdAt).toLocaleDateString()}</span>
                     <span>
                       {entry.mood
                         ? `Mood: ${entry.mood}`

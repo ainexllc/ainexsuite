@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { TopNav } from "./top-nav";
 
 type AppShellProps = {
@@ -10,17 +9,12 @@ type AppShellProps = {
 };
 
 export function AppShell({ children, onSearchChange, searchQuery }: AppShellProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAiOpen, setIsAiOpen] = useState(false);
-
   return (
     <div className="relative min-h-screen overflow-hidden bg-white dark:bg-gray-950">
       <div className="relative z-10 flex min-h-screen flex-col text-gray-900 dark:text-gray-100">
         <TopNav
-          onMenuClick={() => setIsMenuOpen((prev) => !prev)}
           onSearchChange={onSearchChange}
           searchQuery={searchQuery}
-          onOpenAiAssistant={() => setIsAiOpen((prev) => !prev)}
         />
 
         {/* Purple gradient glow effect below nav (matching Notes app's orange) */}

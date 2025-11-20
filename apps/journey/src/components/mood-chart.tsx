@@ -1,17 +1,32 @@
 'use client';
 
-import type { JournalEntry, Mood } from '@ainexsuite/types';
+import type { JournalEntry, MoodType } from '@ainexsuite/types';
 
 interface MoodChartProps {
   entries: JournalEntry[];
 }
 
-const MOOD_VALUES: Record<Mood, number> = {
-  amazing: 5,
-  good: 4,
-  okay: 3,
-  bad: 2,
-  terrible: 1,
+const MOOD_VALUES: Record<MoodType, number> = {
+  happy: 5,
+  excited: 5,
+  grateful: 5,
+  peaceful: 4,
+  hopeful: 4,
+  energetic: 4,
+  confident: 4,
+  loved: 5,
+  inspired: 5,
+  content: 4,
+  neutral: 3,
+  tired: 2,
+  confused: 2,
+  lonely: 1,
+  bored: 2,
+  sad: 1,
+  anxious: 1,
+  angry: 1,
+  stressed: 1,
+  frustrated: 1,
 };
 
 export function MoodChart({ entries }: MoodChartProps) {
@@ -19,13 +34,16 @@ export function MoodChart({ entries }: MoodChartProps) {
     return <div className="text-center text-ink-600 py-8">No entries yet</div>;
   }
 
+  const entriesWithMood = entries.filter((e) => e.mood);
   const averageMood =
-    entries.reduce((sum, e) => sum + MOOD_VALUES[e.mood], 0) / entries.length;
+    entriesWithMood.reduce((sum, e) => sum + MOOD_VALUES[e.mood!], 0) / entriesWithMood.length;
 
   const moodCounts = entries.reduce((acc, e) => {
-    acc[e.mood] = (acc[e.mood] || 0) + 1;
+    if (e.mood) {
+      acc[e.mood] = (acc[e.mood] || 0) + 1;
+    }
     return acc;
-  }, {} as Record<Mood, number>);
+  }, {} as Record<MoodType, number>);
 
   return (
     <div className="space-y-4">
@@ -35,7 +53,7 @@ export function MoodChart({ entries }: MoodChartProps) {
       </div>
 
       <div className="space-y-2">
-        {(Object.entries(moodCounts) as [Mood, number][]).map(([mood, count]) => (
+        {(Object.entries(moodCounts) as [MoodType, number][]).map(([mood, count]) => (
           <div key={mood} className="flex items-center gap-2">
             <div className="w-16 text-sm capitalize">{mood}</div>
             <div className="flex-1 h-2 bg-surface-elevated rounded-full overflow-hidden">

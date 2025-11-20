@@ -56,8 +56,6 @@ const validateEdges = (edges: Edge[], nodes: Node[]) => {
         `${!sourceExists ? `source node "${edge.source}" missing` : ''} ` +
         `${!targetExists ? `target node "${edge.target}" missing` : ''}`
       );
-        `Removing orphaned edge: ${edge.id} (${edge.source} → ${edge.target})`
-      );
       return false;
     }
 
@@ -221,6 +219,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     updatedAt: new Date().toISOString(),
                   });
                 } catch (updateError) {
+                  // Ignore cleanup error
                 }
               }
 
@@ -349,6 +348,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
         updatedAt: new Date().toISOString(),
       });
     } catch (error) {
+      // Ignore save error
     }
   }, [user, nodes, edges, isDarkMode, edgeType, arrowType, lineStyle, isLoaded]);
 

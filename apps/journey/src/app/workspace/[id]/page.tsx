@@ -39,7 +39,7 @@ export default function EditJournalPage({ params }: { params: Promise<{ id: stri
       setLoading(true);
       const data = await getJournalEntry(resolvedParams.id);
 
-      if (!data || data.userId !== user?.uid) {
+      if (!data || data.ownerId !== user?.uid) {
         toast({
           title: 'Error',
           description: 'Journal entry not found',
@@ -242,7 +242,7 @@ export default function EditJournalPage({ params }: { params: Promise<{ id: stri
           Edit Journal Entry
         </h1>
         <p className="text-white/60">
-          Last updated: {formatDateTime(entry.updatedAt)}
+          Last updated: {formatDateTime(new Date(entry.updatedAt))}
         </p>
       </div>
 

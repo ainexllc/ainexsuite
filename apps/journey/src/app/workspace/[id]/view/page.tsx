@@ -35,7 +35,7 @@ export default function ViewJournalPage({ params }: { params: Promise<{ id: stri
       setLoading(true);
       const data = await getJournalEntry(resolvedParams.id);
 
-      if (!data || data.userId !== user?.uid) {
+      if (!data || data.ownerId !== user?.uid) {
         toast({
           title: 'Error',
           description: 'Journal entry not found',

@@ -3,20 +3,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { createJournalEntry, getJournalEntry, getUserJournalEntries } from '@/lib/firebase/firestore';
+import { createJournalEntry, getJournalEntry } from '@/lib/firebase/firestore';
 import { uploadMultipleFiles } from '@/lib/firebase/storage';
 import { JournalForm, JournalFormHandle } from '@/components/journal/journal-form';
 import { useToast } from '@/lib/toast';
-import type { JournalEntry, JournalEntryFormData } from '@ainexsuite/types';
+import type { JournalEntryFormData } from '@ainexsuite/types';
 import { sentimentService } from '@/lib/ai/sentiment-service';
 import { saveSentimentAnalysis } from '@/lib/firebase/sentiment';
-import { getPromptLibrary, markPromptAsCompleted } from '@/lib/firebase/prompts';
+import { markPromptAsCompleted } from '@/lib/firebase/prompts';
 import { ArrowLeft, Sparkles, Lightbulb, Feather, Paperclip, Target } from 'lucide-react';
 import Link from 'next/link';
 import { plainText } from '@/lib/utils/text';
 import { cn } from '@/lib/utils';
-import { sampleArray } from '@/lib/utils/random';
-import { getMoodLabel } from '@/lib/utils/mood';
 
 const FOCUS_PROMPTS = [
   {
@@ -76,99 +74,6 @@ What I learned:
   },
 ];
 
-const GUIDED_PROMPT_FALLBACKS = [
-  'What energized you most today?',
-  'Describe a moment you felt truly present.',
-  'What small worry can you release right now?',
-  'Who supported you recently and how?',
-  'Capture a sensory detail from today (a sound, scent, or texture).',
-  'What is one intention you want to set for tomorrow?',
-  'When did you surprise yourself this week?',
-  'List three things you are grateful for in this moment.',
-];
-
-function toDate(value: unknown): Date {
-  if (value instanceof Date) {
-    return value;
-  }
-  if (value && typeof (value as any).toDate === 'function') {
-    return (value as any).toDate();
-  }
-  if (typeof value === 'number' || typeof value === 'string') {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  }
-  return new Date();
-}
-
-function buildStarterIdeasFromEntries(entries: JournalEntry[]): string[] {
-  if (entries.length === 0) {
-    return [];
-  }
-
-  const prompts: string[] = [];
-  const seenTags = new Set<string>();
-  const dateFormatter = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' });
-
-  entries.forEach((entry) => {
-    const referenceDate = dateFormatter.format(toDate(entry.updatedAt ?? entry.createdAt));
-    const title = entry.title?.trim();
-
-    if (title) {
-      prompts.push(`Revisit "${title}" and note what's shifted since ${referenceDate}.`);
-    } else {
-      prompts.push(`Return to your ${referenceDate} entry and capture what has evolved since then.`);
-    }
-
-    const tags = Array.isArray(entry.tags) ? entry.tags : [];
-    let selectedTag: string | null = null;
-    for (const rawTag of tags) {
-      const normalized = rawTag.trim().toLowerCase();
-      if (!normalized) continue;
-      if (seenTags.has(normalized)) continue;
-      seenTags.add(normalized);
-      selectedTag = rawTag;
-      break;
-    }
-
-    if (!selectedTag && tags.length > 0) {
-      selectedTag = tags[0];
-    }
-
-    if (selectedTag) {
-      prompts.push(
-        `Follow up on ${selectedTag} from ${referenceDate}—what new detail can you add today?`,
-      );
-    }
-
-    if (entry.mood) {
-      const moodLabel = getMoodLabel(entry.mood);
-      prompts.push(
-        `You noted feeling ${moodLabel.toLowerCase()} on ${referenceDate}. How does that emotion show up now?`,
-      );
-    }
-  });
-
-  return prompts;
-}
-
-function normalizePrompts(prompts: string[]): string[] {
-  const seen = new Set<string>();
-  const result: string[] = [];
-  for (const prompt of prompts) {
-    const text = plainText(prompt);
-    if (!text) continue;
-    const key = text.toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      result.push(text.trim());
-    }
-  }
-  return result;
-}
-
 export default function NewJournalPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -183,11 +88,6 @@ export default function NewJournalPage() {
     charCount: 0,
     readingMinutes: 0,
   });
-  const [guidedPrompts, setGuidedPrompts] = useState<string[]>(() =>
-    sampleArray(GUIDED_PROMPT_FALLBACKS, 3),
-  );
-  const [guidedLoading, setGuidedLoading] = useState(false);
-  const [guidedError, setGuidedError] = useState(false);
   const formRef = useRef<JournalFormHandle>(null);
   const isMountedRef = useRef(true);
 
@@ -207,84 +107,6 @@ export default function NewJournalPage() {
       setPromptText(decodeURIComponent(urlPromptText));
     }
   }, [searchParams]);
-
-  const fetchGuidedPrompts = useCallback(async () => {
-    if (!user) return;
-
-    setGuidedLoading(true);
-    setGuidedError(false);
-
-    try {
-      const { entries } = await getUserJournalEntries(user.uid, {
-        limit: 12,
-        sortBy: 'updatedAt',
-        sortOrder: 'desc',
-      });
-      if (!isMountedRef.current) return;
-
-      let prompts = normalizePrompts(buildStarterIdeasFromEntries(entries));
-      const lower = new Set(prompts.map((prompt) => prompt.toLowerCase()));
-
-      const addFromPool = (pool: string[]): number => {
-        if (prompts.length >= 3) return 0;
-        const available = pool.filter((prompt) => {
-          const normalized = prompt.trim().toLowerCase();
-          return normalized && !lower.has(normalized);
-        });
-        if (!available.length) return 0;
-        const needed = Math.min(3 - prompts.length, available.length);
-        const selection = sampleArray(available, needed);
-        selection.forEach((prompt) => {
-          prompts.push(prompt);
-          lower.add(prompt.trim().toLowerCase());
-        });
-        return selection.length;
-      };
-
-      let usedFallbackPool = false;
-
-      if (prompts.length < 3) {
-        const library = await getPromptLibrary();
-        if (!isMountedRef.current) return;
-        const normalizedLibrary = normalizePrompts(library.map((entry) => entry.text ?? ''));
-        addFromPool(normalizedLibrary);
-      }
-
-      if (prompts.length < 3) {
-        const fallbackNormalized = normalizePrompts(GUIDED_PROMPT_FALLBACKS);
-        const added = addFromPool(fallbackNormalized);
-        if (added > 0) {
-          usedFallbackPool = true;
-        }
-      }
-
-      if (prompts.length === 0) {
-        prompts = sampleArray(normalizePrompts(GUIDED_PROMPT_FALLBACKS), 3);
-        usedFallbackPool = true;
-      }
-
-      setGuidedPrompts(prompts.slice(0, 3));
-      setGuidedError(usedFallbackPool);
-    } catch (error) {
-      if (!isMountedRef.current) return;
-      setGuidedPrompts(sampleArray(normalizePrompts(GUIDED_PROMPT_FALLBACKS), 3));
-      setGuidedError(true);
-    } finally {
-      if (isMountedRef.current) {
-        setGuidedLoading(false);
-      }
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) {
-      setGuidedPrompts(sampleArray(GUIDED_PROMPT_FALLBACKS, 3));
-      setGuidedLoading(false);
-      setGuidedError(false);
-      return;
-    }
-    void fetchGuidedPrompts();
-  }, [user, fetchGuidedPrompts]);
 
   const handleContentChange = useCallback((content: string) => {
     const text = plainText(content);
@@ -345,7 +167,7 @@ export default function NewJournalPage() {
       });
 
       if (!isDraft && promptId && user) {
-        void markPromptAsCompleted(user.uid, promptId).catch((error) => {
+        void markPromptAsCompleted(user.uid, promptId).catch(() => {
         });
       }
 

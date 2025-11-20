@@ -25,7 +25,7 @@ export default function WorkspacePage() {
       </div>
 
       {/* Dashboard Content */}
-      <DashboardView dateFilter={dateFilter} />
+      <DashboardView dateFilter={dateFilter || undefined} />
     </section>
   );
 }

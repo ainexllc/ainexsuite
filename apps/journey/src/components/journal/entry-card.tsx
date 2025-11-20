@@ -30,7 +30,7 @@ export function EntryCard({ entry, onClick }: EntryCardProps) {
             {entry.title}
           </h3>
           <time className="text-sm text-gray-600 dark:text-gray-400">
-            {formatDate(entry.createdAt)}
+            {formatDate(new Date(entry.createdAt))}
           </time>
         </div>
 

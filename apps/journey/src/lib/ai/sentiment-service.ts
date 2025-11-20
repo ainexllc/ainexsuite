@@ -35,7 +35,14 @@ export class MockSentimentService implements ISentimentService {
     };
 
     // Calculate emotion scores
-    const emotions: any = {};
+    const emotions: SentimentAnalysis['emotions'] = {
+      joy: 0,
+      sadness: 0,
+      anger: 0,
+      fear: 0,
+      surprise: 0,
+      love: 0
+    };
     let totalEmotionScore = 0;
 
     for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
@@ -43,19 +50,19 @@ export class MockSentimentService implements ISentimentService {
         const matches = (fullText.match(new RegExp(keyword, 'gi')) || []).length;
         return sum + matches;
       }, 0);
-      emotions[emotion] = score;
+      emotions[emotion as keyof typeof emotions] = score;
       totalEmotionScore += score;
     }
 
     // Normalize emotion scores to 0-1 range
     if (totalEmotionScore > 0) {
       for (const emotion in emotions) {
-        emotions[emotion] = emotions[emotion] / totalEmotionScore;
+        emotions[emotion as keyof typeof emotions] = emotions[emotion as keyof typeof emotions] / totalEmotionScore;
       }
     } else {
       // Default neutral emotions
       for (const emotion in emotions) {
-        emotions[emotion] = 1 / Object.keys(emotions).length;
+        emotions[emotion as keyof typeof emotions] = 1 / Object.keys(emotions).length;
       }
     }
 

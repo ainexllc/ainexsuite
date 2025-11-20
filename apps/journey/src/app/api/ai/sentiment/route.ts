@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sentimentService } from '@/lib/ai/sentiment-service';
+import type { MoodType } from '@ainexsuite/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,9 +18,10 @@ export async function POST(request: NextRequest) {
       userId: userId || 'temp-user',
       ownerId: userId || 'temp-user',
       tags: [],
-      mood: 'neutral',
+      mood: 'neutral' as MoodType,
       date: new Date().toISOString().split('T')[0],
       isDraft: false,
+      isPrivate: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       attachments: [],

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
-import type { JournalEntry, Mood } from '@ainexsuite/types';
+import type { JournalEntry, MoodType } from '@ainexsuite/types';
 import { createJournalEntry, updateJournalEntry } from '@/lib/firebase/firestore';
 import { X, Smile, Meh, Frown, Heart, Zap, type LucideIcon } from 'lucide-react';
 import { format } from 'date-fns';
@@ -15,25 +15,25 @@ interface EntryEditorProps {
 }
 
 type MoodOption = {
-  value: Mood;
+  value: MoodType;
   icon: LucideIcon;
   label: string;
   color: string;
 };
 
 const MOODS: MoodOption[] = [
-  { value: 'amazing', icon: Heart, label: 'Amazing', color: 'bg-mood-amazing' },
-  { value: 'good', icon: Smile, label: 'Good', color: 'bg-mood-good' },
-  { value: 'okay', icon: Meh, label: 'Okay', color: 'bg-mood-okay' },
-  { value: 'bad', icon: Frown, label: 'Bad', color: 'bg-mood-bad' },
-  { value: 'terrible', icon: Zap, label: 'Terrible', color: 'bg-mood-terrible' },
+  { value: 'excited', icon: Heart, label: 'Amazing', color: 'bg-mood-amazing' },
+  { value: 'happy', icon: Smile, label: 'Good', color: 'bg-mood-good' },
+  { value: 'neutral', icon: Meh, label: 'Okay', color: 'bg-mood-okay' },
+  { value: 'sad', icon: Frown, label: 'Bad', color: 'bg-mood-bad' },
+  { value: 'frustrated', icon: Zap, label: 'Terrible', color: 'bg-mood-terrible' },
 ];
 
 export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditorProps) {
   const { user } = useAuth();
   const [title, setTitle] = useState(entry?.title || '');
   const [content, setContent] = useState(entry?.content || '');
-  const [mood, setMood] = useState<Mood>(entry?.mood || 'okay');
+  const [mood, setMood] = useState<MoodType>(entry?.mood || 'neutral');
   const [date, setDate] = useState(entry?.date || (initialDate?.getTime() ?? Date.now()));
   const [saving, setSaving] = useState(false);
 
@@ -49,7 +49,15 @@ export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditor
       if (entry) {
         await updateJournalEntry(entry.id, { title, content, mood, date });
       } else {
-        await createJournalEntry(user.uid, { title, content, mood, date, tags: [] });
+        await createJournalEntry(user.uid, {
+          title,
+          content,
+          mood,
+          date,
+          tags: [],
+          links: [],
+          isPrivate: false
+        });
       }
       onSave();
     } catch (error) {

@@ -143,7 +143,7 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
 
       return matchesSearch && matchesTags;
     });
-  }, [entries, searchTerm, selectedTags]);
+  }, [entries, searchTerm, selectedTags, dateFilter]);
 
   const recentTags = useMemo(() => {
     const tagSet = new Set<string>();
@@ -157,7 +157,7 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
     return {
       streak: computeStreak(entries),
       weekCount: entries.filter((entry) => {
-        const createdAt = entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt);
+        const createdAt = new Date(entry.createdAt);
         return Date.now() - createdAt.getTime() <= WEEK_MS;
       }).length,
       cadence: computeCadence(entries),
@@ -288,10 +288,7 @@ function computeCadence(entries: JournalEntry[]): number {
   const horizonMs = 28 * 24 * 60 * 60 * 1000;
   const cutoff = Date.now() - horizonMs;
   const recent = entries.filter((entry) => {
-    const createdAt =
-      entry.createdAt instanceof Date
-        ? entry.createdAt
-        : new Date(entry.createdAt);
+    const createdAt = new Date(entry.createdAt);
     return createdAt.getTime() >= cutoff;
   }).length;
   return recent / 4;
@@ -343,7 +340,7 @@ function computeMostCommonMood(entries: JournalEntry[]) {
   };
 }
 
-function formatDateKey(date: Date | string): string {
+function formatDateKey(date: Date | string | number): string {
   const d = date instanceof Date ? date : new Date(date);
   return d.toISOString().slice(0, 10);
 }

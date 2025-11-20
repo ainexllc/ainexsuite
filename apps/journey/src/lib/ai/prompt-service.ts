@@ -5,8 +5,21 @@ import {
   JournalEntry
 } from '@ainexsuite/types';
 
+export interface PromptContext {
+  mood?: string;
+  timeOfDay?: string;
+  dayOfWeek?: number;
+  keywords?: string[];
+  recentTopics?: string[];
+  writingPattern?: string;
+  previousEntries?: number;
+  streakDays?: number;
+  recentKeywords?: string[];
+  [key: string]: unknown;
+}
+
 export interface IPromptService {
-  getPersonalizedPrompt(userId: string, context: any): Promise<PersonalizedPrompt>;
+  getPersonalizedPrompt(userId: string, context: PromptContext): Promise<PersonalizedPrompt>;
   generateFollowUp(prompt: ReflectivePrompt, response: string): Promise<string>;
   analyzePromptEffectiveness(userId: string): Promise<PromptInsight[]>;
   suggestNextPrompt(userId: string, recentEntries: JournalEntry[]): Promise<ReflectivePrompt>;
@@ -142,7 +155,7 @@ function getPromptsByContext(context: {
 
 // Mock implementation for development
 export class MockPromptService implements IPromptService {
-  async getPersonalizedPrompt(userId: string, context: any): Promise<PersonalizedPrompt> {
+  async getPersonalizedPrompt(userId: string, context: PromptContext): Promise<PersonalizedPrompt> {
     // Get current context
     const now = new Date();
     const hour = now.getHours();
@@ -170,7 +183,7 @@ export class MockPromptService implements IPromptService {
     // Personalize the prompt text based on context
     let personalizedText = selectedPrompt.text;
 
-    if (context.streakDays > 7) {
+    if (context.streakDays && context.streakDays > 7) {
       personalizedText = `Great job on your ${context.streakDays}-day streak! ${personalizedText}`;
     } else if (context.previousEntries === 0) {
       personalizedText = `Welcome to your journaling journey! ${personalizedText}`;

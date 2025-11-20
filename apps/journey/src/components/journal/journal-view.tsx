@@ -22,12 +22,12 @@ export function JournalView({ entry }: JournalViewProps) {
         <div className="flex flex-wrap items-center gap-4 text-sm text-white/60">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            <span>{formatDate(entry.createdAt)}</span>
+            <span>{formatDate(new Date(entry.createdAt))}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            <span>{formatDateTime(entry.createdAt)}</span>
+            <span>{formatDateTime(new Date(entry.createdAt))}</span>
           </div>
 
           {entry.mood && (() => {
@@ -130,7 +130,7 @@ export function JournalView({ entry }: JournalViewProps) {
       {/* Metadata */}
       <footer className="pt-6 border-t border-white/10">
         <p className="text-sm text-white/60">
-          Last updated: {formatDateTime(entry.updatedAt)}
+          Last updated: {formatDateTime(new Date(entry.updatedAt))}
         </p>
       </footer>
     </article>

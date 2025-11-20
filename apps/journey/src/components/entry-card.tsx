@@ -1,6 +1,6 @@
 'use client';
 
-import type { JournalEntry, Mood } from '@ainexsuite/types';
+import type { JournalEntry, MoodType } from '@ainexsuite/types';
 import { format } from 'date-fns';
 import { Smile, Meh, Frown, Heart, Zap, type LucideIcon } from 'lucide-react';
 
@@ -15,17 +15,19 @@ type MoodConfig = {
   label: string;
 };
 
-const MOOD_CONFIG: Record<Mood, MoodConfig> = {
-  amazing: { icon: Heart, color: 'text-mood-amazing', label: 'Amazing' },
-  good: { icon: Smile, color: 'text-mood-good', label: 'Good' },
-  okay: { icon: Meh, color: 'text-mood-okay', label: 'Okay' },
-  bad: { icon: Frown, color: 'text-mood-bad', label: 'Bad' },
-  terrible: { icon: Zap, color: 'text-mood-terrible', label: 'Terrible' },
+const MOOD_CONFIG: Partial<Record<MoodType, MoodConfig>> = {
+  excited: { icon: Heart, color: 'text-mood-amazing', label: 'Amazing' },
+  happy: { icon: Smile, color: 'text-mood-good', label: 'Good' },
+  neutral: { icon: Meh, color: 'text-mood-okay', label: 'Okay' },
+  sad: { icon: Frown, color: 'text-mood-bad', label: 'Bad' },
+  frustrated: { icon: Zap, color: 'text-mood-terrible', label: 'Terrible' },
 };
 
 export function EntryCard({ entry, onClick }: EntryCardProps) {
-  const moodConfig = MOOD_CONFIG[entry.mood];
+  const moodConfig = entry.mood && MOOD_CONFIG[entry.mood] ? MOOD_CONFIG[entry.mood]! : MOOD_CONFIG.neutral!;
   const Icon = moodConfig.icon;
+
+  if (!entry.mood) return null;
 
   return (
     <div

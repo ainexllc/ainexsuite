@@ -8,7 +8,7 @@ interface UsePersonalizedWelcomeOptions {
 }
 
 export function usePersonalizedWelcome({
-  enabled = true,
+  enabled: _enabled = true,
 }: UsePersonalizedWelcomeOptions) {
   // Simplified stub - returns null message and loading false
   // TODO: Implement full AI-powered personalized welcome

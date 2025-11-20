@@ -35,6 +35,7 @@ export interface JournalEntryFormData {
   links: string[];
   isPrivate: boolean;
   isDraft?: boolean;
+  date?: string | number | Date;
 }
 
 export interface MoodPattern {

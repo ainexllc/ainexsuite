@@ -1,5 +1,5 @@
 import type { MoodType } from '@ainexsuite/types';
-import { LucideIcon, Smile, Frown, Minus, PartyPopper, HeartHandshake, Flame, CloudRain, Sparkles, Zap, Moon, Coffee, HelpCircle, Trophy, CloudOff, Heart, Wind, Lightbulb, Meh, Check } from 'lucide-react';
+import { LucideIcon, Smile, Frown, Minus, PartyPopper, HeartHandshake, Flame, CloudRain, Sparkles, Zap, Moon, HelpCircle, Trophy, CloudOff, Heart, Wind, Lightbulb, Meh, Check } from 'lucide-react';
 
 export const moodConfig: Record<MoodType, {
   label: string;

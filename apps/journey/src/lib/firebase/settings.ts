@@ -79,23 +79,20 @@ export async function updateUserSettings(
   userId: string,
   updates: Partial<Omit<UserSettings, 'userId' | 'lastUpdated'>>
 ): Promise<void> {
-  try {
-    const docRef = doc(db, SETTINGS_COLLECTION, userId);
+  const docRef = doc(db, SETTINGS_COLLECTION, userId);
 
-    const updateData: any = {
-      ...updates,
-      lastUpdated: Timestamp.now(),
-    };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updateData: any = {
+    ...updates,
+    lastUpdated: Timestamp.now(),
+  };
 
-    // Convert Date to Timestamp for Firestore
-    if (updates.privacyPasscodeCreatedAt instanceof Date) {
-      updateData.privacyPasscodeCreatedAt = Timestamp.fromDate(updates.privacyPasscodeCreatedAt);
-    }
-
-    await updateDoc(docRef, updateData);
-  } catch (error) {
-    throw error;
+  // Convert Date to Timestamp for Firestore
+  if (updates.privacyPasscodeCreatedAt instanceof Date) {
+    updateData.privacyPasscodeCreatedAt = Timestamp.fromDate(updates.privacyPasscodeCreatedAt);
   }
+
+  await updateDoc(docRef, updateData);
 }
 
 // Update privacy settings

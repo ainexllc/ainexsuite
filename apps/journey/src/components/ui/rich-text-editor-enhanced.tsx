@@ -19,7 +19,7 @@ import {
   Type,
   Heading2
 } from 'lucide-react';
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import imageCompression from 'browser-image-compression';
 import { uploadFile } from '@/lib/firebase/storage';
@@ -50,7 +50,6 @@ export function RichTextEditorEnhanced({
   const { user } = useAuth();
   const [showImageModal, setShowImageModal] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
-  const editorRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const editor = useEditor({

@@ -7,7 +7,6 @@ import {
   CalendarCheck2,
   Clock3,
   Flame,
-  Loader2,
   PenLine,
   Plus,
   Sparkles,
@@ -112,7 +111,7 @@ function MobileOverview({
 
 function DashboardStatsCard({
   stats,
-  wroteToday,
+  wroteToday: _wroteToday,
   theme,
 }: {
   stats: DashboardStats;
@@ -124,7 +123,7 @@ function DashboardStatsCard({
       id: 'streak',
       label: 'Active streak',
       value: stats.streak > 0 ? `${stats.streak} day${stats.streak === 1 ? '' : 's'}` : 'Start today',
-      description: wroteToday
+      description: _wroteToday
         ? 'You already wrote today.'
         : 'Log something today.',
       icon: Flame,
@@ -206,7 +205,7 @@ function DashboardStatsCard({
 
 function LatestEntryCardLarge({
   latestEntry,
-  latestDraft,
+  latestDraft: _latestDraft,
   theme,
 }: {
   latestEntry?: JournalEntry | null;
@@ -214,7 +213,7 @@ function LatestEntryCardLarge({
   theme: DashboardTheme;
 }) {
   const showDraft =
-    latestDraft && (!latestEntry || latestEntry.id !== latestDraft.id);
+    _latestDraft && (!latestEntry || latestEntry.id !== _latestDraft.id);
 
   return (
     <ThemedPanel theme={theme} hover={true} className="p-6">
@@ -232,7 +231,7 @@ function LatestEntryCardLarge({
         <div className="mt-5 space-y-4">
           <div>
             <p className={cn("text-xs uppercase tracking-wide", theme.textSecondary)}>
-              {formatDate(latestEntry.createdAt)}
+              {formatDate(new Date(latestEntry.createdAt))}
             </p>
             <p className={cn("mt-1 text-base font-semibold line-clamp-1", theme.textPrimary)}>
               {latestEntry.title || 'Untitled entry'}
@@ -280,10 +279,10 @@ function LatestEntryCardLarge({
             In progress
           </p>
           <p className={cn("mt-1 text-sm font-semibold line-clamp-1", theme.textPrimary)}>
-            {latestDraft?.title || 'Untitled draft'}
+            {_latestDraft?.title || 'Untitled draft'}
           </p>
           <Link
-            href={`/workspace/${latestDraft?.id}`}
+            href={`/workspace/${_latestDraft?.id}`}
             className={cn("mt-3 inline-flex items-center gap-2 text-xs font-semibold transition hover:underline", theme.accent)}
           >
             Resume draft
@@ -355,7 +354,7 @@ function TagQuickActionsCard({
 
 function MobileStatsCard({
   stats,
-  wroteToday,
+  wroteToday: _wroteToday,
   theme,
 }: {
   stats: DashboardStats;
@@ -397,7 +396,7 @@ function MobileStatsCard({
 
 function MobileLatestEntryCard({
   latestEntry,
-  latestDraft,
+  latestDraft: _latestDraft,
   theme,
 }: {
   latestEntry?: JournalEntry | null;
@@ -413,7 +412,7 @@ function MobileLatestEntryCard({
       {latestEntry ? (
         <>
           <p className={cn("mt-1 text-xs uppercase tracking-wide", theme.textSecondary)}>
-            {formatRelativeTime(latestEntry.createdAt)}
+            {formatRelativeTime(new Date(latestEntry.createdAt))}
           </p>
           <p className={cn("mt-1 text-sm font-semibold", theme.textPrimary)}>
             {latestEntry.title || 'Untitled entry'}
@@ -535,13 +534,19 @@ interface NotebookLiteDashboardProps {
   onThemeChange?: (themeId: string) => void;
 }
 
+const LOADING_MESSAGES = [
+  { title: 'Reading your journal entries...', subtitle: 'Analyzing your recent thoughts and reflections' },
+  { title: 'Identifying patterns and themes...', subtitle: 'Looking for connections across your entries' },
+  { title: 'Crafting your personalized message...', subtitle: 'Writing something meaningful just for you' },
+];
+
 export function NotebookLiteDashboard({
   userDisplayName,
   userId,
   searchTerm,
   selectedTags,
   recentTags,
-  onSearchTermChange,
+  onSearchTermChange: _onSearchTermChange,
   onTagToggle,
   onClearFilters,
   onOpenFilters,
@@ -561,7 +566,6 @@ export function NotebookLiteDashboard({
   onThemeChange
 }: NotebookLiteDashboardProps) {
   const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [showWelcomeOptIn, setShowWelcomeOptIn] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(0);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
@@ -576,7 +580,7 @@ export function NotebookLiteDashboard({
 
   const wroteToday = useMemo(() => {
     if (!latestEntry) return false;
-    const created = latestEntry.createdAt instanceof Date ? latestEntry.createdAt : new Date(latestEntry.createdAt);
+    const created = new Date(latestEntry.createdAt);
     const today = new Date();
     return created.getFullYear() === today.getFullYear()
       && created.getMonth() === today.getMonth()
@@ -591,11 +595,7 @@ export function NotebookLiteDashboard({
   });
 
   // Progressive loading messages
-  const loadingMessages = [
-    { title: 'Reading your journal entries...', subtitle: 'Analyzing your recent thoughts and reflections' },
-    { title: 'Identifying patterns and themes...', subtitle: 'Looking for connections across your entries' },
-    { title: 'Crafting your personalized message...', subtitle: 'Writing something meaningful just for you' },
-  ];
+  // const loadingMessages = ... (removed)
 
   // Cycle through loading messages
   useEffect(() => {
@@ -605,7 +605,7 @@ export function NotebookLiteDashboard({
     }
 
     const interval = setInterval(() => {
-      setLoadingMessage((prev) => (prev + 1) % loadingMessages.length);
+      setLoadingMessage((prev) => (prev + 1) % LOADING_MESSAGES.length);
     }, 2500);
 
     return () => clearInterval(interval);
@@ -627,8 +627,8 @@ export function NotebookLiteDashboard({
           personalizedWelcome: true,
         },
       });
-      setShowWelcomeOptIn(false);
     } catch (error) {
+      // Ignore update error
     }
   };
 
@@ -690,10 +690,10 @@ export function NotebookLiteDashboard({
                   <div className="flex-1 space-y-2">
                     <div className="transition-all duration-500">
                       <p className={cn("text-base font-semibold", theme.textPrimary)}>
-                        {loadingMessages[loadingMessage].title}
+                        {LOADING_MESSAGES[loadingMessage].title}
                       </p>
                       <p className={cn("mt-1.5 text-sm", theme.textSecondary)}>
-                        {loadingMessages[loadingMessage].subtitle}
+                        {LOADING_MESSAGES[loadingMessage].subtitle}
                       </p>
                     </div>
                   </div>

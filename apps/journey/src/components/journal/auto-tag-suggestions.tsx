@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { JournalEntry } from '@ainexsuite/types';
 import { Sparkles, Plus, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -31,15 +31,7 @@ export function AutoTagSuggestions({
   const [showAll, setShowAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (entry.content && entry.content.length > 50) {
-      generateSuggestions();
-    } else {
-      setSuggestions([]);
-    }
-  }, [entry.content, entry.title]);
-
-  const generateSuggestions = async () => {
+  const generateSuggestions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -72,7 +64,15 @@ export function AutoTagSuggestions({
     } finally {
       setLoading(false);
     }
-  };
+  }, [entry.content, entry.title, entry.mood, currentTags]);
+
+  useEffect(() => {
+    if (entry.content && entry.content.length > 50) {
+      generateSuggestions();
+    } else {
+      setSuggestions([]);
+    }
+  }, [entry.content, entry.title, generateSuggestions]);
 
   // Filter out tags that have been added since we generated suggestions
   const availableSuggestions = suggestions.filter(
