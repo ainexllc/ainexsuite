@@ -1,22 +1,16 @@
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import { Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
-// Note: Google Fonts temporarily disabled due to network restrictions
-// const kanit = Kanit({
-//   subsets: ['latin'],
-//   weight: ['500', '600', '700'],
-//   variable: '--font-kanit',
-// });
-
-// const bebasNeue = Bebas_Neue({
-//   subsets: ['latin'],
-//   weight: ['400'],
-//   variable: '--font-bebas-neue',
-// });
+const bebasNeue = Bebas_Neue({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-bebas-neue',
+});
 
 export const metadata: Metadata = {
   title: 'Fit - Fitness Tracking',
@@ -29,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} theme-dark`} data-theme="dark">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${bebasNeue.variable} theme-dark`} data-theme="dark">
       <body className="bg-surface-base text-ink-900 font-sans theme-dark">
         <AuthProvider>{children}</AuthProvider>
       </body>

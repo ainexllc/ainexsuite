@@ -13,14 +13,17 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { 
-  Search, 
-  Shield, 
-  ShieldOff, 
+import {
+  Search,
+  Shield,
+  ShieldOff,
   Loader2,
-  Calendar
+  Calendar,
+  CreditCard,
+  AlertCircle
 } from 'lucide-react';
 import type { User } from '@ainexsuite/types';
+import type { SubscriptionStatus, SubscriptionTier } from '@ainexsuite/types';
 import { clsx } from 'clsx';
 import Image from 'next/image';
 
@@ -120,7 +123,9 @@ export function UsersTable() {
             <thead>
               <tr className="border-b border-white/10 bg-white/5">
                 <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">User</th>
+                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Subscription</th>
                 <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Apps</th>
                 <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Role</th>
                 <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Joined</th>
                 <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider text-right">Actions</th>
@@ -158,9 +163,40 @@ export function UsersTable() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                        Active
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-zinc-500" />
+                        <span className="text-sm font-medium text-white capitalize">
+                          {user.subscriptionTier || 'Free Trial'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={clsx(
+                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                        user.subscriptionStatus === 'active'
+                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                          : user.subscriptionStatus === 'trial'
+                          ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                          : user.subscriptionStatus === 'expired'
+                          ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                          : 'bg-red-500/10 text-red-500 border-red-500/20'
+                      )}>
+                        {user.subscriptionStatus === 'trial' && <AlertCircle className="h-3 w-3 mr-1" />}
+                        {user.subscriptionStatus || 'inactive'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {user.subscribedApps && user.subscribedApps.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {user.subscribedApps.map((app) => (
+                            <span key={app} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                              {app}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-zinc-500">All apps</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.role === 'admin' ? (

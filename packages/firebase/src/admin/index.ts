@@ -38,3 +38,6 @@ export const auth: admin.auth.Auth = adminFirebase.auth;
 export const db: admin.firestore.Firestore = adminFirebase.db;
 export const storage: admin.storage.Storage = adminFirebase.storage;
 export default admin;
+
+// Export Stripe utilities
+export * from './stripe';

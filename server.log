@@ -1,0 +1,32 @@
+::1 - - [20/Nov/2025 11:17:32] "GET / HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:17:32] code 404, message File not found
+::1 - - [20/Nov/2025 11:17:32] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:17:32] code 404, message File not found
+::1 - - [20/Nov/2025 11:17:32] "GET /favicon.ico HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:17:37] "GET /generate_mockups.js HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:17:42] "GET /mockup-01_clean_standard.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:17:49] "GET /mockup-02_soft_gray.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:17:59] "GET /mockup-03_high_contrast.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:18:03] "GET /mockup-04_gradient_mesh.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:18:16] "GET /mockup-05_boxed_ui.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:18:22] "GET /mockup-15_compact_dashboard.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:21:57] "GET / HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:21:57] code 404, message File not found
+::1 - - [20/Nov/2025 11:21:57] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:22:00] "GET /mockup-01_standard_white.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:22:05] "GET /mockup-02_cool_gray.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:22:10] "GET /mockup-13_cyan_tech.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:23:48] "GET /mockup-14_subtle_glass.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:23:48] code 404, message File not found
+::1 - - [20/Nov/2025 11:23:48] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:23:51] code 404, message File not found
+::1 - - [20/Nov/2025 11:23:51] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:23:51] code 404, message File not found
+::1 - - [20/Nov/2025 11:23:51] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:23:53] "GET /mockup-15_classic_corporate.html HTTP/1.1" 200 -
+::1 - - [20/Nov/2025 11:23:53] code 404, message File not found
+::1 - - [20/Nov/2025 11:23:53] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:23:54] code 404, message File not found
+::1 - - [20/Nov/2025 11:23:54] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+::1 - - [20/Nov/2025 11:23:54] code 404, message File not found
+::1 - - [20/Nov/2025 11:23:54] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -

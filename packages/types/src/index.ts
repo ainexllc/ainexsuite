@@ -31,3 +31,6 @@ export * from './ai';
 
 // App Registry
 export * from './app-registry';
+
+// Subscription types
+export * from './subscription';

@@ -1,7 +1,8 @@
 import type { Timestamp, UserPreferences } from './common';
 import type { SearchableApp } from './search';
 
-export type SubscriptionStatus = 'trial' | 'active' | 'expired';
+export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'past_due' | 'canceled';
+export type SubscriptionTier = 'trial' | 'single-app' | 'three-apps' | 'pro' | 'premium';
 export type AccountType = 'single-app' | 'multi-app' | 'suite';
 export type DomainPreference = 'subdomain' | 'standalone';
 
@@ -69,11 +70,29 @@ export interface User {
     fit?: Timestamp;
   };
 
+  // Subscription & Trial
   trialStartDate?: Timestamp;
   trialEndDate?: Timestamp; // Auto-calculated (trialStartDate + 30 days)
   subscriptionStatus: SubscriptionStatus;
+  subscriptionTier?: SubscriptionTier; // 'trial' | 'single-app' | 'three-apps' | 'pro' | 'premium'
   subscriptionExpiresAt?: Timestamp;
   suiteAccess: boolean; // true = has suite access, false = needs suite subscription
+
+  // Per-app subscription tracking
+  subscribedApps?: string[]; // Array of app slugs user is subscribed to (e.g., ['notes', 'journal'])
+
+  // Stripe Integration
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+
+  // Usage Tracking
+  currentMonthUsage?: {
+    queries: number;        // Number of AI queries used
+    tokens: number;         // Total tokens consumed
+    cost: number;           // Total cost in USD
+    lastReset: Timestamp;   // Last time usage was reset
+  };
+  monthlyQueryLimit?: number; // Based on subscription tier
 }
 
 export type CreateUserInput = Omit<User, 'uid' | 'createdAt' | 'lastLoginAt'>;

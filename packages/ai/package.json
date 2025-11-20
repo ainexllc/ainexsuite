@@ -1,7 +1,7 @@
 {
   "name": "@ainexsuite/ai",
   "version": "1.0.0",
-  "description": "Grok AI integration for AINexSuite",
+  "description": "AI integration for AINexSuite (Gemini, GPT, Grok)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,6 +20,9 @@
     "@ainexsuite/firebase": "workspace:*",
     "@ainexsuite/auth": "workspace:*",
     "@ainexsuite/types": "workspace:*",
+    "@google/generative-ai": "^0.21.0",
+    "gpt-tokenizer": "^2.6.1",
+    "openai": "^4.77.0",
     "react": "^19.1.0"
   },
   "devDependencies": {

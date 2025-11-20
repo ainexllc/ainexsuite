@@ -13,6 +13,10 @@
       "types": "./dist/admin/index.d.ts",
       "default": "./dist/admin/index.js"
     },
+    "./admin/stripe": {
+      "types": "./dist/admin/stripe.d.ts",
+      "default": "./dist/admin/stripe.js"
+    },
     "./config": {
       "types": "./dist/config.d.ts",
       "default": "./dist/config.js"
@@ -27,7 +31,8 @@
   "dependencies": {
     "@ainexsuite/types": "workspace:*",
     "firebase": "^10.7.2",
-    "firebase-admin": "^12.0.0"
+    "firebase-admin": "^12.0.0",
+    "stripe": "^17.5.0"
   },
   "devDependencies": {
     "@ainexsuite/config": "workspace:*",
