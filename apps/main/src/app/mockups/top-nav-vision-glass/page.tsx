@@ -119,8 +119,8 @@ export default function VisionGlassPage() {
             <div className="bg-white/5 border border-white/5 rounded-2xl p-8 max-w-2xl mx-auto text-center">
                <h2 className="text-2xl font-bold mb-2">Dashboard Content</h2>
                <p className="text-gray-400">
-                 The navigation bar above persists across the app, allowing 1-click switching between contexts. 
-                 The "Glass" aesthetic makes it feel premium and raised above the content.
+                 The navigation bar above persists across the app, allowing 1-click switching between contexts.
+                 The &quot;Glass&quot; aesthetic makes it feel premium and raised above the content.
                </p>
             </div>
          </div>

@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  LayoutGrid, Book, PenTool, CheckSquare, 
-  Target, Image as ImageIcon, TrendingUp, Activity, 
-  Dumbbell, GitBranch, Home, Settings
+import {
+  LayoutGrid, Book, PenTool, CheckSquare,
+  Target, Image as ImageIcon, TrendingUp, Activity,
+  Dumbbell, GitBranch, Home
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';

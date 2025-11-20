@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  LayoutGrid, Book, PenTool, CheckSquare, 
-  Target, Image, TrendingUp, Activity, 
-  Dumbbell, GitBranch, Search, Plus, 
-  MoreVertical, ExternalLink, Lock, 
-  Download, Play, Settings
+import {
+  LayoutGrid, Book, PenTool, CheckSquare,
+  Target, Image, TrendingUp, Activity,
+  Dumbbell, GitBranch, Search, Plus,
+  MoreVertical, ExternalLink, Lock,
+  Download
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -270,7 +270,7 @@ const Mockup4 = () => {
         <div className="bg-gradient-to-r from-blue-900/50 to-cyan-900/50 rounded-xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer">
            <div className="relative z-10">
              <h3 className="text-white font-bold text-lg mb-1">Quick Task</h3>
-             <p className="text-gray-300 text-sm mb-4">Capture a thought before it's gone.</p>
+             <p className="text-gray-300 text-sm mb-4">Capture a thought before it&apos;s gone.</p>
              <div className="flex items-center gap-2 text-xs font-medium bg-white/10 w-fit px-3 py-1 rounded-full text-white group-hover:bg-white group-hover:text-black transition-colors">
                Add Todo <Plus className="w-3 h-3" />
              </div>
@@ -368,7 +368,7 @@ export default function AppSelectorPage() {
             App Selector Concepts
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Exploring different ways to present the "My Apps" vs. "Available Apps" hierarchy for the main dashboard.
+            Exploring different ways to present the &quot;My Apps&quot; vs. &quot;Available Apps&quot; hierarchy for the main dashboard.
           </p>
         </div>
 
