@@ -3,10 +3,8 @@
 import { useState } from "react";
 import {
   Menu,
-  Search,
   ChevronDown,
   Sparkles,
-  X,
 } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";
@@ -15,15 +13,11 @@ import { LogoWordmark } from "@/components/branding/logo-wordmark";
 
 type TopNavProps = {
   onMenuClick?: () => void;
-  onSearchChange?: (query: string) => void;
-  searchQuery?: string;
   onOpenAiAssistant?: () => void;
 };
 
 export function TopNav({
   onMenuClick,
-  onSearchChange,
-  searchQuery = "",
   onOpenAiAssistant,
 }: TopNavProps) {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -63,30 +57,6 @@ export function TopNav({
             <LogoWordmark href="/" iconSize={48} />
           </div>
         </div>
-
-        {/* Center: Search bar */}
-        {onSearchChange && (
-          <div className="mx-4 flex flex-1 items-center gap-2 rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 shadow-sm transition hover:bg-gray-200 dark:hover:bg-gray-700 max-w-2xl h-9">
-            <Search className="h-4 w-4 text-gray-500 dark:text-gray-400 shrink-0" aria-hidden />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search entries..."
-              className="w-full bg-transparent text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-400 shrink-0"
-                aria-label="Clear search"
-                onClick={() => onSearchChange("")}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        )}
 
         {/* Right: Actions */}
         <div className="ml-auto flex items-center gap-2">

@@ -3,16 +3,13 @@
 import { useState } from "react";
 import {
   Menu,
-  Search,
   ChevronDown,
   Sparkles,
-  X,
 } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";
 import { useAuth } from "@ainexsuite/auth";
 import { useTheme } from "@/components/providers/theme-provider";
-import { useNotes } from "@/components/providers/notes-provider";
 import { LogoWordmark } from "@/components/branding/logo-wordmark";
 import { ProfileDropdown } from "./profile-dropdown";
 
@@ -22,7 +19,6 @@ type TopNavProps = {
   onOpenSettings?: () => void;
   onOpenActivity?: () => void;
   onOpenAiAssistant?: () => void;
-  onSearchFocus?: () => void;
 };
 
 export function TopNav({
@@ -31,11 +27,9 @@ export function TopNav({
   onOpenSettings,
   onOpenActivity,
   onOpenAiAssistant,
-  onSearchFocus,
 }: TopNavProps) {
   const { user, loading: authLoading } = useAuth();
   const { theme } = useTheme();
-  const { searchQuery, setSearchQuery } = useNotes();
   const [isProfileOpen, setProfileOpen] = useState(false);
 
 
@@ -75,37 +69,6 @@ export function TopNav({
           <div className="hidden sm:block">
             <LogoWordmark href="/" iconSize={48} />
           </div>
-        </div>
-
-        {/* Center: Search bar */}
-        <div className="top-nav-search mx-4 flex flex-1 items-center gap-2 rounded-full bg-surface-muted/80 px-3 py-1 shadow-sm transition hover:bg-surface-muted max-w-2xl h-9">
-          <Search className="top-nav-search-icon h-4 w-4 text-ink-500 shrink-0" aria-hidden />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search notes..."
-            className="top-nav-search-input w-full bg-transparent text-sm text-ink-800 placeholder:text-ink-500 focus:outline-none"
-            onFocus={() => onSearchFocus?.()}
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              className="icon-button h-6 w-6 rounded-full text-ink-500 hover:bg-surface-muted hover:text-ink-700 shrink-0"
-              aria-label="Clear search"
-              onClick={() => setSearchQuery("")}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-          <button
-            type="button"
-            className="top-nav-search-button icon-button h-8 w-8 rounded-full bg-surface-muted/70 text-ink-600 hover:bg-surface-muted shrink-0"
-            aria-label="Open search"
-            onClick={() => onSearchFocus?.()}
-          >
-            <Search className="h-4 w-4" aria-hidden />
-          </button>
         </div>
 
         {/* Right: Actions (right-justified) */}
