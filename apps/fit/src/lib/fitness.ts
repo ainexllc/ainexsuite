@@ -51,6 +51,7 @@ export async function createWorkout(input: CreateWorkoutInput): Promise<string> 
       metadata: { duration: input.duration, exerciseCount: input.exercises.length },
     });
   } catch (error) {
+    console.error('Failed to log activity:', error);
   }
 
   return docRef.id;
@@ -74,6 +75,7 @@ export async function updateWorkout(
       metadata: { duration: updates.duration },
     });
   } catch (error) {
+    console.error('Failed to log activity:', error);
   }
 }
 
@@ -97,6 +99,7 @@ export async function deleteWorkout(id: string): Promise<void> {
         itemTitle: workout.name,
       });
     } catch (error) {
+      console.error('Failed to log activity:', error);
     }
   }
 }

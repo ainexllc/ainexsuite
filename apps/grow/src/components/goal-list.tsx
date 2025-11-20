@@ -17,6 +17,7 @@ export function GoalList({ goals, onEdit, onUpdate }: GoalListProps) {
       await updateLearningGoal(goal.id, { active: !goal.active });
       onUpdate();
     } catch (error) {
+      console.error('Failed to toggle goal:', error);
     }
   };
 

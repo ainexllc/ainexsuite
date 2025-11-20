@@ -40,6 +40,7 @@ function FitWorkspaceContent() {
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
     } catch (error) {
+      console.error('Sign out failed:', error);
     }
   };
 

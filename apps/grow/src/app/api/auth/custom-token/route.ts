@@ -41,7 +41,7 @@ export async function POST(_request: NextRequest) {
 
     return NextResponse.json({ customToken });
   } catch (error) {
-
+    console.error('Custom token generation error:', error);
     return NextResponse.json(
       {
         error: 'Failed to generate custom token',
