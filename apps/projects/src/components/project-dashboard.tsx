@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Presentation, LayoutGrid, MoreVertical, Clock, Folder } from 'lucide-react';
+import { Plus, Presentation, MoreVertical, Clock, Folder } from 'lucide-react';
 
 interface ProjectDashboardProps {
   onOpenWhiteboard: () => void;
