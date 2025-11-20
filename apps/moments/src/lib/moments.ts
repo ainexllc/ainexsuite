@@ -18,7 +18,7 @@ export async function getMoments(): Promise<Moment[]> {
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Moment));
 }
 
-export async function createMoment(input: CreateMomentInput): Promise<string> {
+export async function createMoment(input: Omit<CreateMomentInput, 'ownerId'>): Promise<string> {
   const userId = getCurrentUserId();
   const momentData = {
     ...input,
@@ -41,6 +41,7 @@ export async function createMoment(input: CreateMomentInput): Promise<string> {
       metadata: { location: input.location, tags: input.tags },
     });
   } catch (error) {
+    console.error('Failed to log activity:', error);
   }
 
   return docRef.id;
@@ -67,6 +68,7 @@ export async function updateMoment(
       metadata: { location: updates.location, tags: updates.tags },
     });
   } catch (error) {
+    console.error('Failed to log activity:', error);
   }
 }
 
@@ -90,6 +92,7 @@ export async function deleteMoment(id: string): Promise<void> {
         itemTitle: moment.title,
       });
     } catch (error) {
+      console.error('Failed to log activity:', error);
     }
   }
 }

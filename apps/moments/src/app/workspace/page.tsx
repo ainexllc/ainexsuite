@@ -31,6 +31,7 @@ function MomentsWorkspaceContent() {
         const data = await getMoments();
         setMoments(data);
       } catch (error) {
+        console.error('Failed to load moments:', error);
       } finally {
         setLoading(false);
       }
@@ -48,6 +49,7 @@ function MomentsWorkspaceContent() {
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
     } catch (error) {
+      console.error('Failed to sign out:', error);
     }
   };
 
