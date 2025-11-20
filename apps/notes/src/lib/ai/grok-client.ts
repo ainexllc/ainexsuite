@@ -154,6 +154,7 @@ export class GrokClient {
                 yield content;
               }
             } catch (e) {
+              // Ignore JSON parsing errors for partial chunks
             }
           }
         }

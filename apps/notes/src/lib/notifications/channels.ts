@@ -32,7 +32,6 @@ export async function sendEmail(payload: EmailPayload) {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
     return false;
   }
 
@@ -68,7 +67,6 @@ export async function sendSms(payload: SmsPayload) {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
     return false;
   }
 

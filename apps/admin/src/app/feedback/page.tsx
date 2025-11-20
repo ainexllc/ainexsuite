@@ -66,6 +66,7 @@ export default function FeedbackPage() {
         status: newStatus
       });
     } catch (error) {
+      // Ignore update error
     }
   };
 

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import type { User } from '@ainexsuite/types';
 import { clsx } from 'clsx';
+import Image from 'next/image';
 
 // Admin-specific user type with potential role field
 interface AdminUser extends User {
@@ -50,6 +51,7 @@ export function UsersTable() {
       } as AdminUser));
       setUsers(fetchedUsers);
     } catch (error) {
+      // Ignore fetch error
     } finally {
       setLoading(false);
     }
@@ -127,7 +129,7 @@ export function UsersTable() {
             <tbody className="divide-y divide-white/5">
               {filteredUsers.map((user) => {
                 let joinedDate = 'Unknown';
-                const createdAt = user.createdAt as any;
+                const createdAt = user.createdAt as unknown;
                 
                 if (createdAt instanceof Timestamp) {
                   joinedDate = createdAt.toDate().toLocaleDateString();
@@ -141,7 +143,7 @@ export function UsersTable() {
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0 rounded-full bg-zinc-800 overflow-hidden border border-white/10">
                           {user.photoURL ? (
-                            <img className="h-10 w-10 object-cover" src={user.photoURL} alt="" />
+                            <Image className="h-10 w-10 object-cover" src={user.photoURL} alt={user.displayName || 'User avatar'} width={40} height={40} unoptimized />
                           ) : (
                             <div className="h-full w-full flex items-center justify-center text-zinc-500">
                               {user.displayName?.[0] || user.email?.[0]}

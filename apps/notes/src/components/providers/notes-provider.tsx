@@ -111,7 +111,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
         setOwnedNotes(incoming);
         setOwnedLoaded(true);
       },
-      (error) => {
+      (_error) => {
         setOwnedLoaded(true); // Unblock UI
       },
     );
@@ -122,7 +122,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
         setSharedNotes(incoming);
         setSharedLoaded(true);
       },
-      (error) => {
+      (_error) => {
         setSharedLoaded(true); // Unblock UI
       },
     );

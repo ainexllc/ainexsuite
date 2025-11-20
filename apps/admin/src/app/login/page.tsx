@@ -65,9 +65,10 @@ function AdminLoginPageContent() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       // Auth state change will be handled by useEffect above
-    } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setError(err.message || 'Google sign-in failed');
+    } catch (err: unknown) {
+      const error = err as { code?: string; message?: string };
+      if (error.code !== 'auth/popup-closed-by-user') {
+        setError(error.message || 'Google sign-in failed');
       }
     } finally {
       setSignInLoading(false);

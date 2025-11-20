@@ -98,6 +98,7 @@ export function AdminShell({
       await (firebaseAuth as any).signOut(auth);
       router.push('/login');
     } catch (error) {
+      // Ignore sign out error
     }
   };
 
