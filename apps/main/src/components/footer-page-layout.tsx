@@ -31,7 +31,7 @@ export function FooterPageLayout({ children, maxWidth = 'narrow' }: FooterPageLa
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center">
              {/* Using the same Logo component as HomepageTemplate */}
-            <AinexStudiosLogo size="md" align="center" appNameOffset={2} />
+            <AinexStudiosLogo size="md" align="center" appNameOffset={-3} />
           </div>
           
           {/* Desktop Nav */}
