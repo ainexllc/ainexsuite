@@ -1,11 +1,12 @@
 'use client';
 
 import { FooterPageLayout } from '@/components/footer-page-layout';
-import { Check, Sparkles, Zap, Package, ArrowRight, Shield, Zap as ZapIcon, Clock, CreditCard } from 'lucide-react';
+import { Check, Sparkles, Zap, Package, ArrowRight, Shield, Zap as ZapIcon, Clock, CreditCard, LayoutGrid, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
+import React from 'react';
 
 const APPS = [
   { name: 'journey', label: 'Journal' },
@@ -32,6 +33,7 @@ interface PricingTier {
   icon?: React.ReactNode;
 }
 
+// Original tiers data for logic and table
 const pricingTiers: PricingTier[] = [
   {
     tier: 'trial',
@@ -196,6 +198,7 @@ export default function PlansPage() {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [selectedApps, setSelectedApps] = useState<string[]>([]);
+  const [customTierMode, setCustomTierMode] = useState<'single-app' | 'three-apps'>('three-apps');
 
   const handleCheckout = async (tier: PricingTier) => {
     // Free Trial tier doesn't need Stripe checkout
@@ -261,178 +264,293 @@ export default function PlansPage() {
   };
 
   const toggleApp = (appName: string) => {
+    const maxApps = customTierMode === 'single-app' ? 1 : 3;
+
     setSelectedApps((prev) => {
+      // If switching modes, we might need to truncate, but usually we just clear or adjust
+      // Here we'll just strictly enforce the current limit
+      
       if (prev.includes(appName)) {
         return prev.filter((a) => a !== appName);
       }
-      // For single-app tier, only allow 1 selection
-      // For three-apps tier, allow up to 3 selections
-      const maxApps = 3; // Default to 3-app bundle limit
+      
       if (prev.length < maxApps) {
         return [...prev, appName];
       }
+      
+      // If limit reached and we click a new one:
+      // For single app: replace
+      if (maxApps === 1) {
+         return [appName];
+      }
+      
       return prev;
     });
   };
 
+  // Reset selected apps when switching custom tier modes
+  const setCustomMode = (mode: 'single-app' | 'three-apps') => {
+    setCustomTierMode(mode);
+    setSelectedApps([]);
+  };
+
+  const customTier = pricingTiers.find(t => t.tier === customTierMode)!;
+  const proTier = pricingTiers.find(t => t.tier === 'pro')!;
+  const premiumTier = pricingTiers.find(t => t.tier === 'premium')!;
+
   return (
     <FooterPageLayout maxWidth="wide">
-      <div className="space-y-20">
-        {/* Header */}
+      <div className="space-y-24 pb-20">
+        {/* Hero Section */}
         <div className="text-center space-y-8 pt-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f97316]/10 border border-[#f97316]/20 text-[#f97316] text-sm font-medium mb-4">
             <Sparkles className="h-4 w-4" />
             Transparent Plans for Everyone
           </div>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <h1 className="text-5xl font-bold text-white sm:text-6xl lg:text-7xl bg-gradient-to-r from-white via-white to-white/80 bg-clip-text">
               Simple, Transparent Plans
             </h1>
             <p className="text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">
-              Start free for 30 days with access to all features. No credit card required. Choose the plan that fits your lifestyle.
+              Choose the plan that fits your lifestyle. All plans include a 30-day free trial.
             </p>
           </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid gap-8 lg:gap-6 md:grid-cols-2 lg:grid-cols-5 auto-rows-max">
-          {pricingTiers.map((tier) => (
-            <div
-              key={tier.tier}
-              className={`relative rounded-2xl border overflow-hidden transition duration-300 flex flex-col ${
-                tier.popular
-                  ? 'border-[#f97316] bg-gradient-to-b from-[#f97316]/5 via-zinc-800/40 to-zinc-900/60 lg:col-span-1 shadow-2xl shadow-[#f97316]/20 hover:shadow-[#f97316]/40 hover:-translate-y-2 md:col-span-2 lg:col-span-1'
-                  : 'border-white/10 bg-gradient-to-b from-zinc-800/30 to-zinc-900/60 hover:border-white/20 hover:shadow-lg shadow-md hover:shadow-white/10 hover:-translate-y-1'
-              }`}
-            >
-              {/* Glow effect for popular tier */}
-              {tier.popular && (
-                <div className="absolute inset-0 bg-gradient-to-b from-[#f97316]/10 to-transparent pointer-events-none" />
-              )}
-
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                  <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea6a0f] px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-[#f97316]/40 uppercase tracking-wide">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Most Popular
-                  </div>
+        {/* Main Pricing Grid - 3 Columns */}
+        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
+          {/* Column 1: Build Your Bundle */}
+          <div className="flex flex-col rounded-3xl border border-white/10 bg-zinc-900/50 overflow-hidden hover:border-white/20 transition-all duration-300">
+            <div className="p-8 flex-1 flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-12 w-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                  <LayoutGrid className="h-6 w-6" />
                 </div>
-              )}
+                <div>
+                  <h3 className="text-xl font-bold text-white">Build Your Bundle</h3>
+                  <p className="text-sm text-white/60">Perfect for focused growth</p>
+                </div>
+              </div>
 
-              <div className="p-10 space-y-8 flex-1 relative z-10 flex flex-col">
-                <div className="space-y-5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      {tier.icon && <div className="flex-shrink-0">{tier.icon}</div>}
-                      <h3 className="text-2xl font-bold text-white">{tier.name}</h3>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-6xl font-black text-white">{tier.price}</span>
-                      <span className="text-white/50 text-lg font-medium">/ {tier.period}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-white/70 leading-relaxed">{tier.description}</p>
-
-                  {tier.appCount && (
-                    <div className="pt-3 border-t border-white/5">
-                      <p className="text-xs font-semibold text-[#f97316] uppercase tracking-wide">
-                        {tier.appCount === 8 ? '🎯 All 8 apps' : `🎯 ${tier.appCount} app${tier.appCount === 1 ? '' : 's'} available`}
-                      </p>
-                    </div>
-                  )}
+              <div className="space-y-6 flex-1">
+                {/* Toggle Switch */}
+                <div className="bg-black/40 p-1 rounded-xl flex text-sm font-medium relative">
+                  <button
+                    onClick={() => setCustomMode('single-app')}
+                    className={`flex-1 py-2.5 rounded-lg transition-all duration-200 ${customTierMode === 'single-app' ? 'bg-zinc-700 text-white shadow-lg' : 'text-white/50 hover:text-white'}`}
+                  >
+                    1 App
+                  </button>
+                  <button
+                    onClick={() => setCustomMode('three-apps')}
+                    className={`flex-1 py-2.5 rounded-lg transition-all duration-200 ${customTierMode === 'three-apps' ? 'bg-zinc-700 text-white shadow-lg' : 'text-white/50 hover:text-white'}`}
+                  >
+                    3 Apps
+                  </button>
                 </div>
 
-                {/* App Selection for single-app and three-apps tiers */}
-                {(tier.tier === 'single-app' || tier.tier === 'three-apps') && (
-                  <div className="space-y-4 pt-6 border-t border-white/5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-white/70 uppercase tracking-widest">Select your apps</p>
-                      <p className="text-sm font-bold text-[#f97316]">
-                        {selectedApps.length}/{tier.appCount}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-white">{customTier.price}</span>
+                  <span className="text-white/50 text-sm font-medium">/ month</span>
+                </div>
+                
+                <p className="text-sm text-white/70">{customTier.description}</p>
+
+                {/* App Selection */}
+                <div className="space-y-3 pt-4 border-t border-white/5">
+                   <div className="flex items-center justify-between text-xs uppercase tracking-wider font-semibold">
+                      <span className="text-white/50">Select {customTier.appCount} {customTier.appCount === 1 ? 'App' : 'Apps'}</span>
+                      <span className="text-[#f97316]">{selectedApps.length}/{customTier.appCount}</span>
+                   </div>
+                   <div className="grid grid-cols-2 gap-2">
                       {APPS.map((app) => (
                         <button
                           key={app.name}
                           onClick={() => toggleApp(app.name)}
-                          className={`px-3 py-2.5 rounded-lg text-xs font-semibold transition duration-200 border ${
+                          className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border text-left flex items-center gap-2 ${
                             selectedApps.includes(app.name)
-                              ? 'bg-[#f97316]/20 text-[#f97316] border-[#f97316]/40 ring-1 ring-[#f97316]/20'
-                              : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white/80'
+                              ? 'bg-[#f97316]/10 text-[#f97316] border-[#f97316]/40'
+                              : 'bg-white/5 text-white/60 border-transparent hover:bg-white/10 hover:text-white'
                           }`}
                         >
+                          <div className={`w-2 h-2 rounded-full ${selectedApps.includes(app.name) ? 'bg-[#f97316]' : 'bg-white/20'}`} />
                           {app.label}
                         </button>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => handleCheckout(tier)}
-                  disabled={loading === tier.tier}
-                  className={`w-full mt-8 rounded-xl px-6 py-4 font-bold text-sm uppercase tracking-widest transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group ${
-                    tier.popular
-                      ? 'bg-gradient-to-r from-[#f97316] to-[#ea6a0f] text-white hover:shadow-lg hover:shadow-[#f97316]/30 hover:gap-3'
-                      : 'border border-white/20 text-white hover:bg-white/5 hover:border-white/40'
-                  }`}
-                >
-                  {loading === tier.tier ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      {tier.cta}
-                      {tier.popular && <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition" />}
-                    </>
-                  )}
-                </button>
-
-                <div className="space-y-4 pt-6 border-t border-white/5">
-                  {tier.features.slice(0, 5).map((feature) => (
-                    <div key={feature} className="flex items-start gap-3 group">
-                      <Check className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-white/70 group-hover:text-white/80 transition leading-snug">{feature}</span>
-                    </div>
-                  ))}
+                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Full Feature Comparison */}
-        <div className="space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
-              Compare All Features
-            </h2>
-            <p className="text-white/60 max-w-2xl mx-auto">
-              Detailed breakdown of what&apos;s included in each plan. See exactly what features you get at every tier.
-            </p>
+                <ul className="space-y-3 pt-4">
+                  <li className="flex items-center gap-3 text-sm text-white/70">
+                    <CheckCircle2 className="h-4 w-4 text-blue-400" />
+                    <span>{customTierMode === 'single-app' ? '200' : '500'} AI queries/mo</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-white/70">
+                    <CheckCircle2 className="h-4 w-4 text-blue-400" />
+                    <span>Basic AI insights</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-white/70">
+                    <CheckCircle2 className="h-4 w-4 text-blue-400" />
+                    <span>Community support</span>
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => handleCheckout(customTier)}
+                disabled={loading === customTier.tier || selectedApps.length === 0}
+                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-white/10 hover:bg-white/20 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                 {loading === customTier.tier ? 'Loading...' : customTier.cta}
+              </button>
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-800/40 to-zinc-900/60 p-8 shadow-lg overflow-x-auto">
-            <table className="w-full">
+          {/* Column 2: Pro (Highlighted) */}
+          <div className="flex flex-col rounded-3xl border-2 border-[#f97316] bg-gradient-to-b from-[#f97316]/10 to-zinc-900/90 overflow-hidden shadow-2xl shadow-[#f97316]/20 transform lg:-translate-y-4 z-10 relative">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#f97316] to-[#ea6a0f]" />
+            <div className="absolute top-4 right-4">
+               <span className="px-3 py-1 rounded-full bg-[#f97316] text-white text-xs font-bold uppercase tracking-wide shadow-lg">
+                 Most Popular
+               </span>
+            </div>
+
+            <div className="p-8 flex-1 flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-12 w-12 rounded-xl bg-[#f97316]/20 text-[#f97316] flex items-center justify-center">
+                  <Zap className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Pro Suite</h3>
+                  <p className="text-sm text-white/60">Total personal growth</p>
+                </div>
+              </div>
+
+              <div className="space-y-6 flex-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-white">{proTier.price}</span>
+                  <span className="text-white/50 text-sm font-medium">/ month</span>
+                </div>
+                
+                <p className="text-sm text-white/80 font-medium leading-relaxed">
+                   Access to all 8 apps. The complete operating system for your life.
+                </p>
+
+                <div className="p-4 rounded-xl bg-[#f97316]/10 border border-[#f97316]/20">
+                   <p className="text-xs font-bold text-[#f97316] uppercase tracking-wide mb-2">Everything in Bundle, plus:</p>
+                   <ul className="space-y-3">
+                      <li className="flex items-center gap-3 text-sm text-white">
+                        <Check className="h-4 w-4 text-[#f97316]" />
+                        <span>All 8 Apps Included</span>
+                      </li>
+                      <li className="flex items-center gap-3 text-sm text-white">
+                        <Check className="h-4 w-4 text-[#f97316]" />
+                        <span>2,000 AI queries/mo</span>
+                      </li>
+                      <li className="flex items-center gap-3 text-sm text-white">
+                        <Check className="h-4 w-4 text-[#f97316]" />
+                        <span>Advanced AI Insights</span>
+                      </li>
+                      <li className="flex items-center gap-3 text-sm text-white">
+                        <Check className="h-4 w-4 text-[#f97316]" />
+                        <span>Unlimited Data Retention</span>
+                      </li>
+                   </ul>
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleCheckout(proTier)}
+                disabled={loading === proTier.tier}
+                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-[#f97316] to-[#ea6a0f] hover:shadow-lg hover:shadow-[#f97316]/40 text-white transition-all flex items-center justify-center gap-2 group"
+              >
+                 {loading === proTier.tier ? 'Loading...' : (
+                    <>
+                       Start Free Trial
+                       <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition" />
+                    </>
+                 )}
+              </button>
+              <p className="text-center text-xs text-white/40 mt-3">30-day free trial, cancel anytime</p>
+            </div>
+          </div>
+
+          {/* Column 3: Premium */}
+          <div className="flex flex-col rounded-3xl border border-white/10 bg-zinc-900/50 overflow-hidden hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300">
+            <div className="p-8 flex-1 flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-12 w-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Premium</h3>
+                  <p className="text-sm text-white/60">Power user performance</p>
+                </div>
+              </div>
+
+              <div className="space-y-6 flex-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-white">{premiumTier.price}</span>
+                  <span className="text-white/50 text-sm font-medium">/ month</span>
+                </div>
+                
+                <p className="text-sm text-white/70">{premiumTier.description}</p>
+
+                <div className="pt-4 border-t border-white/5">
+                   <p className="text-xs font-bold text-purple-400 uppercase tracking-wide mb-4">Ultimate Power</p>
+                   <ul className="space-y-3">
+                      <li className="flex items-center gap-3 text-sm text-white/70">
+                        <CheckCircle2 className="h-4 w-4 text-purple-400" />
+                        <span>10,000+ AI queries/mo</span>
+                      </li>
+                      <li className="flex items-center gap-3 text-sm text-white/70">
+                        <CheckCircle2 className="h-4 w-4 text-purple-400" />
+                        <span>Priority Feature Access</span>
+                      </li>
+                      <li className="flex items-center gap-3 text-sm text-white/70">
+                        <CheckCircle2 className="h-4 w-4 text-purple-400" />
+                        <span>Dedicated Support</span>
+                      </li>
+                      <li className="flex items-center gap-3 text-sm text-white/70">
+                        <CheckCircle2 className="h-4 w-4 text-purple-400" />
+                        <span>Personalized Recommendations</span>
+                      </li>
+                   </ul>
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleCheckout(premiumTier)}
+                disabled={loading === premiumTier.tier}
+                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-white transition-all"
+              >
+                 {loading === premiumTier.tier ? 'Loading...' : 'Upgrade to Premium'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature Table */}
+        <div className="space-y-8 pt-12 border-t border-white/5">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+              Compare Features
+            </h2>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-2 overflow-x-auto">
+             {/* 
+                Simplified Table: We map columns manually to match our new 3-col layout + Trial 
+                But using the existing pricingTiers array is fine if we just hide the "Trial" column or show it differently.
+                Let's keep it simple and just render the existing table but maybe cleaner style.
+             */}
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="text-left pb-6 pr-4">
-                    <span className="text-xs font-bold uppercase tracking-widest text-white/60">
-                      Features
-                    </span>
-                  </th>
+                  <th className="text-left py-4 pl-6 pr-4 text-white/40 font-medium text-sm uppercase tracking-wider w-1/4">Features</th>
                   {pricingTiers.map((tier) => (
-                    <th key={tier.tier} className="text-center pb-6 px-4">
-                      <span className="text-xs font-bold uppercase tracking-widest text-white">
-                        {tier.name}
-                      </span>
+                    <th key={tier.tier} className="py-4 px-4 text-center text-white font-bold text-sm uppercase tracking-wider">
+                      {tier.name}
                     </th>
                   ))}
                 </tr>
@@ -440,19 +558,19 @@ export default function PlansPage() {
               <tbody>
                 {allFeatures.map((category) => (
                   <React.Fragment key={category.category}>
-                    <tr className="bg-white/2">
-                      <td colSpan={pricingTiers.length + 1} className="pt-8 pb-4 px-4">
-                        <h3 className="text-sm font-bold text-white/80 uppercase tracking-wide">{category.category}</h3>
+                    <tr>
+                      <td colSpan={pricingTiers.length + 1} className="py-6 px-6">
+                        <span className="text-xs font-bold text-[#f97316] uppercase tracking-widest">{category.category}</span>
                       </td>
                     </tr>
-                    {category.features.map((feature, idx) => (
+                    {category.features.map((feature) => (
                       <tr
                         key={feature.name}
-                        className={`hover:bg-white/3 transition ${idx !== category.features.length - 1 ? 'border-b border-white/5' : ''}`}
+                        className="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
                       >
-                        <td className="py-5 pr-4 text-sm font-medium text-white/80">{feature.name}</td>
+                        <td className="py-4 pl-6 pr-4 text-sm text-white/80 font-medium">{feature.name}</td>
                         {pricingTiers.map((tier) => (
-                          <td key={tier.tier} className="py-5 px-4 text-center">
+                          <td key={tier.tier} className="py-4 px-4 text-center">
                             <div className="flex justify-center items-center">
                               <FeatureCheck included={((feature as Record<string, unknown>)[tier.tier] as boolean) ?? false} />
                             </div>
@@ -560,15 +678,14 @@ export default function PlansPage() {
           </div>
         </div>
 
-        {/* CTA */}
+        {/* Final CTA */}
         <div className="text-center space-y-8 py-12 px-6">
           <div className="space-y-4">
             <h2 className="text-4xl sm:text-5xl font-bold text-white">
-              Ready to transform your personal growth?
+              Start Your Journey
             </h2>
             <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-              Start your 30-day free trial today. All features included. No credit card required.
-              Cancel anytime, no questions asked.
+              Join thousands of users transforming their lives with AINexSuite.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -580,9 +697,9 @@ export default function PlansPage() {
                   router.push('/?signup=true');
                 }
               }}
-              className="inline-flex items-center justify-center px-10 py-4 rounded-xl bg-gradient-to-r from-[#f97316] to-[#ea6a0f] text-white font-bold text-lg uppercase tracking-wide hover:shadow-lg hover:shadow-[#f97316]/40 transition-all duration-300 group gap-2"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-xl bg-white text-black font-bold text-lg uppercase tracking-wide hover:bg-white/90 transition-all duration-300 group gap-2 shadow-xl shadow-white/10"
             >
-              Start Free Trial
+              Get Started Free
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition" />
             </button>
           </div>
@@ -591,6 +708,3 @@ export default function PlansPage() {
     </FooterPageLayout>
   );
 }
-
-// Required for fragment syntax
-import React from 'react';
