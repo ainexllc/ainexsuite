@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Medal } from 'lucide-react';
+import { Medal } from 'lucide-react';
 import { MemberContribution } from '../../lib/analytics-utils';
 
 interface TeamLeaderboardProps {

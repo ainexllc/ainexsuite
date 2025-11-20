@@ -1,7 +1,7 @@
 'use client';
 
 import { FooterPageLayout } from '@/components/footer-page-layout';
-import { Check, Sparkles, Shield } from 'lucide-react';
+import { Check, Shield } from 'lucide-react';
 
 const plans = [
   {
@@ -152,7 +152,6 @@ export default function GrowPricingPage() {
                 <span>Data encrypted in transit and at rest, with flexible retention policies.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-purple-300 mt-1" />
                 <span>Role-based permissions for learners, mentors, admins, and observers.</span>
               </li>
               <li className="flex items-start gap-3">

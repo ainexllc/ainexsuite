@@ -10,7 +10,7 @@ export function NotificationBell() {
   const { notifications, markNotificationRead } = useGrowStore();
   const [isOpen, setIsOpen] = useState(false);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
 
   const handleMarkRead = async (id: string) => {
     await markNotificationRead(id);
@@ -50,7 +50,7 @@ export function NotificationBell() {
                 </div>
               ) : (
                 <div className="divide-y divide-white/5">
-                  {notifications.map((notif) => (
+                  {notifications.map((notif: Notification) => (
                     <div 
                       key={notif.id} 
                       className={`p-3 flex gap-3 transition-colors hover:bg-white/5 ${notif.isRead ? 'opacity-60' : 'bg-indigo-500/5'}`}

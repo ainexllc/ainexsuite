@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Mail, Shield, Crown, UserMinus, UserPlus } from 'lucide-react';
+import { Mail, Crown, UserMinus, UserPlus, X } from 'lucide-react';
 import { useGrowStore } from '../../lib/store';
 import { Member } from '../../types/models';
 
@@ -36,14 +36,14 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
   const handleRemoveMember = (uid: string) => {
     if (confirm('Remove this member?')) {
       updateSpace(currentSpace.id, {
-        members: currentSpace.members.filter(m => m.uid !== uid)
+        members: currentSpace.members.filter((m: Member) => m.uid !== uid)
       });
     }
   };
 
   const handleRoleChange = (uid: string, newRole: Member['role']) => {
     updateSpace(currentSpace.id, {
-      members: currentSpace.members.map(m => 
+      members: currentSpace.members.map((m: Member) =>
         m.uid === uid ? { ...m, role: newRole } : m
       )
     });
@@ -93,7 +93,7 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
               Current Members ({currentSpace.members.length})
             </h4>
             <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-              {currentSpace.members.map((member) => (
+              {currentSpace.members.map((member: Member) => (
                 <div 
                   key={member.uid} 
                   className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5"

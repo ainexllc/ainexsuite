@@ -1,7 +1,7 @@
 'use client';
 
-import { Flame, Trophy, AlertCircle } from 'lucide-react';
-import { Habit, Wager } from '../../types/models';
+import { Flame } from 'lucide-react';
+import { Habit } from '../../types/models';
 
 interface WagerCardProps {
   habit: Habit;
@@ -10,7 +10,7 @@ interface WagerCardProps {
 export function WagerCard({ habit }: WagerCardProps) {
   if (!habit.wager || !habit.wager.isActive) return null;
 
-  const { description, targetStreak, startDate } = habit.wager;
+  const { description, targetStreak } = habit.wager;
   const progress = Math.min((habit.currentStreak / targetStreak) * 100, 100);
 
   return (
@@ -30,7 +30,7 @@ export function WagerCard({ habit }: WagerCardProps) {
         </div>
       </div>
 
-      <h4 className="text-lg font-bold text-white mb-1 relative z-10">"{description}"</h4>
+      <h4 className="text-lg font-bold text-white mb-1 relative z-10">&quot;{description}&quot;</h4>
       
       {/* Progress Bar */}
       <div className="mt-4 relative z-10">

@@ -8,7 +8,6 @@ import {
   Users,
   Target,
   CalendarCheck,
-  Sparkles,
   FileText,
   Workflow,
 } from 'lucide-react';
@@ -198,7 +197,6 @@ export default function GrowFeaturesPage() {
                 <span>Goals stay front and center with weekly scorecards that highlight momentum and blind spots.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-indigo-300 mt-1" />
                 <span>Mentors and peers get just the right context to give meaningful feedback fast.</span>
               </li>
             </ul>

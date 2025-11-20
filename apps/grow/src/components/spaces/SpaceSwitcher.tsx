@@ -9,7 +9,7 @@ export function SpaceSwitcher() {
   const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useGrowStore();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentSpace = spaces.find(s => s.id === currentSpaceId);
+  const currentSpace = spaces.find((s: Space) => s.id === currentSpaceId);
 
   const getIcon = (type: Space['type']) => {
     switch (type) {
@@ -32,7 +32,8 @@ export function SpaceSwitcher() {
       id: `space_${Date.now()}`,
       name,
       type,
-      members: [], // In real app, add current user
+      members: [],
+      memberUids: [],
       createdAt: new Date().toISOString(),
       createdBy: 'current_user',
     });
@@ -67,7 +68,7 @@ export function SpaceSwitcher() {
               <div className="px-2 py-1.5 text-xs font-medium text-white/40 uppercase">
                 My Spaces
               </div>
-              {spaces.map((space) => (
+              {spaces.map((space: Space) => (
                 <button
                   key={space.id}
                   onClick={() => {

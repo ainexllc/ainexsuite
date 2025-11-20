@@ -1,8 +1,8 @@
 'use client';
 
-import { Package, Plus, Check } from 'lucide-react';
+import { Package, Check, Plus } from 'lucide-react';
 import { useGrowStore } from '../../lib/store';
-import { Habit } from '../../types/models';
+import { Habit, Schedule } from '../../types/models';
 
 const HABIT_PACKS = [
   {
@@ -54,7 +54,7 @@ export function HabitPacks({ onClose }: HabitPacksProps) {
         spaceId: currentSpace.id,
         title: h.title,
         description: `Imported from ${pack.title}`,
-        schedule: h.schedule as any,
+        schedule: h.schedule as Schedule,
         assigneeIds: [currentSpace.members[0].uid], // Default to self
         currentStreak: 0,
         bestStreak: 0,

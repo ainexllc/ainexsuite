@@ -1,15 +1,11 @@
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
+import {
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  query,
+  where,
   onSnapshot,
-  serverTimestamp,
-  arrayUnion,
-  arrayRemove,
   orderBy,
   limit
 } from 'firebase/firestore';

@@ -21,7 +21,7 @@ import { getAdminAuth } from '@/lib/firebase/admin-app';
  */
 export async function POST(_request: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('__session')?.value;
 
     if (!sessionCookie) {

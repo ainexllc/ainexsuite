@@ -1,5 +1,5 @@
 // apps/grow/src/lib/date-utils.ts
-import { format, isSameDay, subDays, startOfWeek, endOfWeek, isWithinInterval, getDay } from 'date-fns';
+import { format, getDay } from 'date-fns';
 import { Habit, Completion } from '../types/models';
 
 export function getTodayDateString(): string {
@@ -42,8 +42,7 @@ export function calculateStreak(habit: Habit, completions: Completion[]): number
   if (habitCompletions.length === 0) return 0;
 
   let streak = 0;
-  let checkDate = new Date();
-  
+
   // Check if completed today
   const todayStr = getTodayDateString();
   const doneToday = habitCompletions.some(c => c.date === todayStr);
@@ -53,7 +52,7 @@ export function calculateStreak(habit: Habit, completions: Completion[]): number
   } else {
     // If not done today, check yesterday. If not done yesterday, streak is broken (unless frozen)
     // For simplicity, we start checking from yesterday
-    checkDate = subDays(checkDate, 1);
+    // checkDate = subDays(new Date(), 1);
   }
 
   // Iterate backwards

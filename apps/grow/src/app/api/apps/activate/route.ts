@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get session cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('__session')?.value;
 
     if (!sessionCookie) {

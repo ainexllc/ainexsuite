@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useGrokAssistant } from '@ainexsuite/ai';
-import { Sparkles, X, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function AIAssistant() {
@@ -41,7 +41,6 @@ Be encouraging, practical, and focused on evidence-based learning science.`,
           isOpen && 'rotate-180'
         )}
       >
-        {isOpen ? <X className="h-6 w-6 text-white" /> : <Sparkles className="h-6 w-6 text-white" />}
       </button>
 
       {isOpen && (
@@ -49,7 +48,6 @@ Be encouraging, practical, and focused on evidence-based learning science.`,
           <div className="p-4 border-b border-surface-hover">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
               </div>
               <div>
                 <h3 className="font-semibold">Learning Coach</h3>

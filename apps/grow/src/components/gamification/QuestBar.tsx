@@ -1,6 +1,6 @@
 'use client';
 
-import { Crown, Zap, Gift } from 'lucide-react';
+import { Crown, Gift } from 'lucide-react';
 import { Quest } from '../../types/models';
 
 interface QuestBarProps {

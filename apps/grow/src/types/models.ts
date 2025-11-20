@@ -78,7 +78,7 @@ export interface Completion {
   completedAt: string;
 }
 
-export type NotificationType = 'nudge' | 'wager_update' | 'quest_update' | 'system';
+export type NotificationType = 'nudge' | 'wager_update' | 'wager_won' | 'wager_lost' | 'quest_update' | 'system';
 
 export interface Notification {
   id: string;
@@ -90,5 +90,5 @@ export interface Notification {
   message: string;
   isRead: boolean;
   createdAt: string;
-  data?: any; // Flexible payload for deep links
+  data?: Record<string, unknown>; // Flexible payload for deep links
 }

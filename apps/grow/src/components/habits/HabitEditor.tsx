@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Calendar, Users, Snowflake, Save, Trash2, Plus, Check, Flame } from 'lucide-react';
+import { Calendar, Users, Snowflake, Save, Trash2, Check, Flame, X } from 'lucide-react';
 import { useGrowStore } from '../../lib/store';
-import { Habit, FrequencyType, Schedule, Wager } from '../../types/models';
+import { Habit, FrequencyType, Schedule, Wager, Member } from '../../types/models';
 
 interface HabitEditorProps {
   isOpen: boolean;
@@ -34,7 +34,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
   // Load data if editing
   useEffect(() => {
     if (editHabitId && isOpen) {
-      const habit = habits.find(h => h.id === editHabitId);
+      const habit = habits.find((h: Habit) => h.id === editHabitId);
       if (habit) {
         setTitle(habit.title);
         setDescription(habit.description || '');
@@ -151,7 +151,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
             </label>
             
             <div className="flex gap-2 mb-4">
-              {['daily', 'specific_days', 'interval', 'weekly'].map((type) => (
+              {['daily', 'specific_days', 'interval', 'weekly'].map((type: string) => (
                 <button
                   key={type}
                   type="button"
@@ -170,7 +170,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
             {/* Specific Days UI */}
             {schedule.type === 'specific_days' && (
               <div className="flex justify-between gap-2 bg-white/5 p-4 rounded-xl">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day: string, idx: number) => (
                   <button
                     key={idx}
                     type="button"
@@ -194,7 +194,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
               <Users className="h-4 w-4" /> Who
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {currentSpace.members.map((member) => (
+              {currentSpace.members.map((member: Member) => (
                 <button
                   key={member.uid}
                   type="button"

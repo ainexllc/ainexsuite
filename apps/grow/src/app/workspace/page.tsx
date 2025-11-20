@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
@@ -27,11 +27,12 @@ import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
 // Store & Types
 import { useGrowStore } from '@/lib/store';
 import { isHabitDueToday } from '@/lib/date-utils';
-import { 
-  calculateWeeklyConsistency, 
-  getBestDayOfWeek, 
-  calculateCompletionRate, 
-  getTeamContribution 
+import { Habit, Member, Quest } from '@/types/models';
+import {
+  calculateWeeklyConsistency,
+  getBestDayOfWeek,
+  calculateCompletionRate,
+  getTeamContribution
 } from '@/lib/analytics-utils';
 
 function GrowWorkspaceContent() {
@@ -55,8 +56,8 @@ function GrowWorkspaceContent() {
   const weeklyStats = calculateWeeklyConsistency(habits, completions);
   const bestDay = getBestDayOfWeek(completions);
   const totalCompletions = completions.length;
-  const completionRate = habits.length > 0 
-    ? Math.round(habits.reduce((acc, h) => acc + calculateCompletionRate(h, completions), 0) / habits.length)
+  const completionRate = habits.length > 0
+    ? Math.round(habits.reduce((acc: number, h: Habit) => acc + calculateCompletionRate(h, completions), 0) / habits.length)
     : 0;
   const teamStats = currentSpace ? getTeamContribution(currentSpace.members, completions) : [];
 
@@ -94,7 +95,7 @@ function GrowWorkspaceContent() {
 
   const getPartnerId = () => {
     if (!currentSpace || !user) return '';
-    const partner = currentSpace.members.find(m => m.uid !== user.uid);
+    const partner = currentSpace.members.find((m: Member) => m.uid !== user.uid);
     return partner?.uid || '';
   };
 
@@ -173,7 +174,7 @@ function GrowWorkspaceContent() {
           
           {quests.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {quests.map(quest => (
+              {quests.map((quest: Quest) => (
                 <QuestBar key={quest.id} quest={quest} />
               ))}
             </div>
@@ -196,13 +197,13 @@ function GrowWorkspaceContent() {
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <Layout className="h-5 w-5 text-indigo-400" />
-            Today's Focus
+            Today&apos;s Focus
           </h2>
 
           {habits.length === 0 ? (
             <div className="text-center py-12 border border-dashed border-white/10 rounded-xl bg-white/5">
               <p className="text-white/50 mb-4">No habits yet. Start small!</p>
-              <button 
+              <button
                 onClick={() => setShowHabitPacks(true)}
                 className="text-indigo-400 text-sm hover:underline"
               >
@@ -211,7 +212,7 @@ function GrowWorkspaceContent() {
             </div>
           ) : (
             <div className="space-y-3">
-              {habits.map(habit => {
+              {habits.map((habit: Habit) => {
                 // Simple MVP: Check if active. In real app, check completion status for today.
                 const isDue = isHabitDueToday(habit);
                 if (!isDue) return null;
@@ -305,10 +306,10 @@ function GrowWorkspaceContent() {
           {currentSpace?.type === 'couple' && (
             <div className="space-y-4">
               <h3 className="text-sm font-bold text-white/70 uppercase tracking-wider">Active Wagers</h3>
-              {habits.filter(h => h.wager?.isActive).map(habit => (
+              {habits.filter((h: Habit) => h.wager?.isActive).map((habit: Habit) => (
                 <WagerCard key={habit.id} habit={habit} />
               ))}
-              {habits.filter(h => h.wager?.isActive).length === 0 && (
+              {habits.filter((h: Habit) => h.wager?.isActive).length === 0 && (
                 <div className="p-4 rounded-xl bg-white/5 border border-dashed border-white/10 text-center">
                   <p className="text-xs text-white/40">No active bets. Spice things up!</p>
                 </div>

@@ -1,13 +1,6 @@
 'use client';
 
-import { LucideIcon, Calendar, TrendingUp, Award } from 'lucide-react';
-
-interface Insight {
-  label: string;
-  value: string;
-  icon: LucideIcon;
-  color: string;
-}
+import { Calendar, TrendingUp, Award } from 'lucide-react';
 
 interface InsightsGridProps {
   bestDay: string;

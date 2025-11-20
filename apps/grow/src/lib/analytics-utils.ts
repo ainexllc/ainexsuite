@@ -1,4 +1,4 @@
-import { format, subDays, isSameDay, getDay, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { format, subDays, getDay, eachDayOfInterval, startOfWeek } from 'date-fns';
 import { Habit, Completion, Member } from '../types/models';
 
 export interface DayStats {
