@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
-import { Plus, LayoutGrid, List, Calendar } from 'lucide-react';
+import { Plus, LayoutGrid, List, Calendar, Loader2 } from 'lucide-react';
 
 // New Components
 import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
@@ -17,13 +17,20 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 type ViewType = 'list' | 'board' | 'my-day';
 
-function TodoWorkspaceContent() {
-  const { user, loading: authLoading } = useAuth();
+export default function TodoWorkspacePage() {
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   const [view, setView] = useState<ViewType>('list');
   const [showEditor, setShowEditor] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -38,8 +45,17 @@ function TodoWorkspaceContent() {
     }
   };
 
-  if (authLoading) return null;
-  if (!user) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#8b5cf6]" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <WorkspaceLayout
@@ -129,13 +145,5 @@ function TodoWorkspaceContent() {
       />
 
     </WorkspaceLayout>
-  );
-}
-
-export default function TodoWorkspacePage() {
-  return (
-    <SuiteGuard appName="todo">
-      <TodoWorkspaceContent />
-    </SuiteGuard>
   );
 }
