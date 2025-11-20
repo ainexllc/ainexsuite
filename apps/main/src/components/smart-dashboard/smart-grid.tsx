@@ -107,7 +107,8 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
            updatedAt: serverTimestamp()
         });
         setIsCompleted(true);
-      } catch (error) {
+      } catch {
+        // Silently fail if we can't complete the task
       } finally {
         setIsCompleting(false);
       }

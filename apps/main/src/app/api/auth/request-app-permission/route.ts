@@ -65,9 +65,7 @@ export async function POST(
         { success: true, message: 'App permission granted' },
         { status: 200 }
       );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-
+    } catch {
       // For development, still return success
       if (isDevelopment) {
         return NextResponse.json(
@@ -81,10 +79,9 @@ export async function POST(
         { status: 500 }
       );
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+  } catch {
     return NextResponse.json(
-      { success: false, message },
+      { success: false, message: 'An error occurred' },
       { status: 500 }
     );
   }

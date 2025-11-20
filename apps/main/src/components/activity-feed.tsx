@@ -77,7 +77,7 @@ export default function ActivityFeed({ limit = 20 }: ActivityFeedProps) {
         setActivities(response.activities);
         setLoading(false);
       },
-      (error) => {
+      () => {
         setLoading(false);
       }
     );

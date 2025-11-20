@@ -176,7 +176,7 @@ export class SmartDashboardService {
         };
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -210,7 +210,7 @@ export class SmartDashboardService {
         };
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -244,7 +244,7 @@ export class SmartDashboardService {
         };
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -278,7 +278,7 @@ export class SmartDashboardService {
         };
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -315,7 +315,7 @@ export class SmartDashboardService {
         }
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -349,7 +349,7 @@ export class SmartDashboardService {
         };
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -378,7 +378,7 @@ export class SmartDashboardService {
         };
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -406,7 +406,7 @@ export class SmartDashboardService {
         };
       });
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }
@@ -433,7 +433,7 @@ export class SmartDashboardService {
         }
       }
       callback(insights);
-    }, (error) => {
+    }, () => {
       callback([]);
     });
   }

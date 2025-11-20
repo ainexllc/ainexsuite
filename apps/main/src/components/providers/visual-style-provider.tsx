@@ -52,7 +52,8 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
             }
           }
         }
-      } catch (error) {
+      } catch {
+        // Silently fail if we can't load user theme
       }
     }
 
@@ -83,7 +84,8 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
             },
             { merge: true }
           );
-        } catch (error) {
+        } catch {
+          // Silently fail if we can't save user theme
         }
       })();
     }

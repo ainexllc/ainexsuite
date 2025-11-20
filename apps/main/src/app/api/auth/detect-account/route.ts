@@ -61,8 +61,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<DetectAcc
         { status: 200 }
       );
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+  } catch {
     return NextResponse.json(
       { account: null },
       { status: 500 }
