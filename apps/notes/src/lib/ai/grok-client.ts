@@ -154,7 +154,7 @@ export class GrokClient {
                 yield content;
               }
             } catch (e) {
-              // Ignore JSON parsing errors for partial chunks
+              console.warn(e); // eslint-disable-line no-console
             }
           }
         }
