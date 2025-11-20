@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { 
-  LayoutGrid, Book, PenTool, CheckSquare, 
-  Target, Image as ImageIcon, TrendingUp, Activity, 
-  Dumbbell, GitBranch, Lock, Search, Menu, Bell,
-  ChevronRight
+import React from 'react';
+import {
+  LayoutGrid, Book, PenTool, CheckSquare,
+  Target, Image as ImageIcon, TrendingUp, Activity,
+  Dumbbell, GitBranch, Search, Menu, Bell
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
 
 // --- Data ---
 
@@ -235,7 +233,7 @@ export default function TopBarNavigationPage() {
             Top Navigation Concepts
           </h1>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Exploring ways to place the app "launcher" at the top of the interface for immediate access.
+            Exploring ways to place the app &quot;launcher&quot; at the top of the interface for immediate access.
           </p>
         </div>
 
@@ -249,7 +247,7 @@ export default function TopBarNavigationPage() {
         <div className="bg-blue-900/20 border border-blue-500/20 p-6 rounded-xl">
            <h3 className="text-blue-400 font-bold mb-2">UX Note</h3>
            <p className="text-blue-200/70 text-sm">
-             Placing apps at the top (Concept 1 or 3) is excellent for "Hub" style dashboards where switching context is the primary action. 
+             Placing apps at the top (Concept 1 or 3) is excellent for &quot;Hub&quot; style dashboards where switching context is the primary action.
              It mimics OS-level docks (macOS/iPadOS), making it intuitive.
            </p>
         </div>

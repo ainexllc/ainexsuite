@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  LayoutGrid, Book, PenTool, CheckSquare, 
-  Target, Image as ImageIcon, TrendingUp, Activity, 
-  Dumbbell, GitBranch, Plus, Lock, 
-  Download, ExternalLink, MoreHorizontal, 
-  Star, Clock, AlertCircle, Play
+import {
+  LayoutGrid, Book, PenTool, CheckSquare,
+  Target, Image as ImageIcon, TrendingUp, Activity,
+  Dumbbell, GitBranch, Plus, Lock,
+  Download, MoreHorizontal,
+  Clock, Play
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 // --- Data & Types ---
 
@@ -414,7 +414,7 @@ export default function AppSelectorVariationsPage() {
             Concept 5: Variations
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Refining the "Minimalist Cards" concept with 5 distinct visual and functional directions.
+            Refining the &quot;Minimalist Cards&quot; concept with 5 distinct visual and functional directions.
           </p>
         </div>
 
@@ -427,9 +427,9 @@ export default function AppSelectorVariationsPage() {
         <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-2xl text-center">
            <h3 className="text-white font-bold text-xl mb-2">Recommendation</h3>
            <p className="text-gray-400 max-w-2xl mx-auto">
-             For a main dashboard, <strong>Variation B (Midnight OLED)</strong> offers the cleanest aesthetic that scales well. 
-             <strong>Variation C (Quick Actions)</strong> is best if we want to reduce clicks. 
-             <strong>Variation A (Vision)</strong> is best for a "wow" factor but might clash with standard web UI.
+             For a main dashboard, <strong>Variation B (Midnight OLED)</strong> offers the cleanest aesthetic that scales well.
+             <strong>Variation C (Quick Actions)</strong> is best if we want to reduce clicks.
+             <strong>Variation A (Vision)</strong> is best for a &quot;wow&quot; factor but might clash with standard web UI.
            </p>
         </div>
       </div>
