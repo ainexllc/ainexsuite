@@ -1,7 +1,7 @@
 'use client';
 
 import { FooterPageLayout } from '@/components/footer-page-layout';
-import { Check, Sparkles, Zap, Package } from 'lucide-react';
+import { Check, Sparkles, Zap, Package, ArrowRight, Shield, Zap as ZapIcon, Clock, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { useRouter } from 'next/navigation';
@@ -277,98 +277,129 @@ export default function PricingPage() {
 
   return (
     <FooterPageLayout maxWidth="wide">
-      <div className="space-y-16">
+      <div className="space-y-20">
         {/* Header */}
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl font-semibold text-white sm:text-5xl lg:text-6xl">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            Choose the plan that fits your needs. Start with a 30-day free trial, no credit card required.
-          </p>
+        <div className="text-center space-y-8 pt-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f97316]/10 border border-[#f97316]/20 text-[#f97316] text-sm font-medium mb-4">
+            <Sparkles className="h-4 w-4" />
+            Transparent Pricing for Everyone
+          </div>
+          <div className="space-y-4">
+            <h1 className="text-5xl font-bold text-white sm:text-6xl lg:text-7xl bg-gradient-to-r from-white via-white to-white/80 bg-clip-text">
+              Simple, Transparent Pricing
+            </h1>
+            <p className="text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">
+              Start free for 30 days with access to all features. No credit card required. Choose the plan that fits your lifestyle.
+            </p>
+          </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid gap-8 lg:grid-cols-5">
+        <div className="grid gap-6 lg:grid-cols-5 auto-rows-max">
           {pricingTiers.map((tier) => (
             <div
               key={tier.tier}
-              className={`relative rounded-3xl border p-8 shadow-lg transition hover:-translate-y-1 ${
+              className={`relative rounded-2xl border overflow-hidden transition duration-300 flex flex-col ${
                 tier.popular
-                  ? 'border-[#f97316] bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 lg:col-span-1 lg:row-span-2 flex flex-col justify-between'
-                  : 'border-white/10 bg-zinc-800/80'
+                  ? 'border-[#f97316] bg-gradient-to-b from-[#f97316]/5 via-zinc-800/40 to-zinc-900/60 lg:col-span-1 shadow-2xl shadow-[#f97316]/20 hover:shadow-[#f97316]/40 hover:-translate-y-2'
+                  : 'border-white/10 bg-gradient-to-b from-zinc-800/30 to-zinc-900/60 hover:border-white/20 hover:shadow-lg shadow-md hover:shadow-white/10 hover:-translate-y-1'
               }`}
             >
+              {/* Glow effect for popular tier */}
               {tier.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div className="flex items-center gap-2 rounded-full bg-[#f97316] px-4 py-1 text-sm font-semibold text-white">
-                    <Sparkles className="h-4 w-4" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#f97316]/10 to-transparent pointer-events-none" />
+              )}
+
+              {tier.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                  <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f97316] to-[#ea6a0f] px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-[#f97316]/40 uppercase tracking-wide">
+                    <Sparkles className="h-3.5 w-3.5" />
                     Most Popular
                   </div>
                 </div>
               )}
-              <div className="space-y-6 flex-1">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    {tier.icon}
-                    <h3 className="text-2xl font-semibold text-white">{tier.name}</h3>
+
+              <div className="p-8 space-y-6 flex-1 relative z-10 flex flex-col">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      {tier.icon && <div className="flex-shrink-0">{tier.icon}</div>}
+                      <h3 className="text-xl font-bold text-white">{tier.name}</h3>
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-white">{tier.price}</span>
-                    <span className="text-white/60">/ {tier.period}</span>
+
+                  <div className="space-y-1">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-5xl font-black text-white">{tier.price}</span>
+                      <span className="text-white/50 text-lg font-medium">/ {tier.period}</span>
+                    </div>
                   </div>
-                  <p className="text-sm text-white/70 mt-4">{tier.description}</p>
+
+                  <p className="text-sm text-white/70 leading-relaxed">{tier.description}</p>
+
                   {tier.appCount && (
-                    <p className="text-xs text-white/50 mt-2">
-                      {tier.appCount === 8 ? '8 apps' : `${tier.appCount} app${tier.appCount === 1 ? '' : 's'}`}
-                    </p>
+                    <div className="pt-2 border-t border-white/5">
+                      <p className="text-xs font-semibold text-[#f97316] uppercase tracking-wide">
+                        {tier.appCount === 8 ? '🎯 All 8 apps' : `🎯 ${tier.appCount} app${tier.appCount === 1 ? '' : 's'} available`}
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 {/* App Selection for single-app and three-apps tiers */}
                 {(tier.tier === 'single-app' || tier.tier === 'three-apps') && (
-                  <div className="space-y-3">
-                    <p className="text-sm font-medium text-white">Select apps:</p>
+                  <div className="space-y-3 pt-2 border-t border-white/5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-white/70 uppercase tracking-wide">Select your apps</p>
+                      <p className="text-xs font-semibold text-[#f97316]">
+                        {selectedApps.length}/{tier.appCount}
+                      </p>
+                    </div>
                     <div className="grid grid-cols-2 gap-2">
                       {APPS.map((app) => (
                         <button
                           key={app.name}
                           onClick={() => toggleApp(app.name)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                          className={`px-3 py-2 rounded-lg text-xs font-semibold transition duration-200 border ${
                             selectedApps.includes(app.name)
-                              ? 'bg-[#f97316] text-white border border-[#f97316]'
-                              : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
+                              ? 'bg-[#f97316]/20 text-[#f97316] border-[#f97316]/40 ring-1 ring-[#f97316]/20'
+                              : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white/80'
                           }`}
                         >
                           {app.label}
                         </button>
                       ))}
                     </div>
-                    {selectedApps.length > 0 && (
-                      <p className="text-xs text-white/50 text-center">
-                        {selectedApps.length} of {tier.appCount} selected
-                      </p>
-                    )}
                   </div>
                 )}
 
                 <button
                   onClick={() => handleCheckout(tier)}
                   disabled={loading === tier.tier}
-                  className={`w-full rounded-2xl px-6 py-4 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`w-full mt-6 rounded-xl px-6 py-3.5 font-bold text-sm uppercase tracking-wide transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group ${
                     tier.popular
-                      ? 'bg-[#f97316] text-white hover:bg-[#ea6a0f]'
-                      : 'border border-white/20 text-white hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-[#f97316] to-[#ea6a0f] text-white hover:shadow-lg hover:shadow-[#f97316]/30 hover:gap-3'
+                      : 'border border-white/20 text-white hover:bg-white/5 hover:border-white/40'
                   }`}
                 >
-                  {loading === tier.tier ? 'Loading...' : tier.cta}
+                  {loading === tier.tier ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      {tier.cta}
+                      {tier.popular && <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition" />}
+                    </>
+                  )}
                 </button>
 
-                <div className="space-y-3">
+                <div className="space-y-3 pt-4">
                   {tier.features.map((feature) => (
-                    <div key={feature} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-white/70">{feature}</span>
+                    <div key={feature} className="flex items-start gap-3 group">
+                      <Check className="h-4 w-4 text-[#f97316] flex-shrink-0 mt-1" />
+                      <span className="text-sm text-white/70 group-hover:text-white/80 transition">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -379,27 +410,27 @@ export default function PricingPage() {
 
         {/* Full Feature Comparison */}
         <div className="space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-semibold text-white sm:text-4xl mb-4">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">
               Compare All Features
             </h2>
-            <p className="text-white/70 max-w-2xl mx-auto">
-              Detailed breakdown of what&apos;s included in each plan.
+            <p className="text-white/60 max-w-2xl mx-auto">
+              Detailed breakdown of what&apos;s included in each plan. See exactly what features you get at every tier.
             </p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-zinc-800/80 p-8 shadow-lg overflow-x-auto">
+          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-800/40 to-zinc-900/60 p-8 shadow-lg overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="text-left pb-4 pr-4">
-                    <span className="text-sm font-semibold uppercase tracking-wide text-white/60">
+                  <th className="text-left pb-6 pr-4">
+                    <span className="text-xs font-bold uppercase tracking-widest text-white/60">
                       Features
                     </span>
                   </th>
                   {pricingTiers.map((tier) => (
-                    <th key={tier.tier} className="text-center pb-4 px-4">
-                      <span className="text-sm font-semibold uppercase tracking-wide text-white">
+                    <th key={tier.tier} className="text-center pb-6 px-4">
+                      <span className="text-xs font-bold uppercase tracking-widest text-white">
                         {tier.name}
                       </span>
                     </th>
@@ -409,20 +440,20 @@ export default function PricingPage() {
               <tbody>
                 {allFeatures.map((category) => (
                   <React.Fragment key={category.category}>
-                    <tr>
-                      <td colSpan={pricingTiers.length + 1} className="pt-8 pb-4">
-                        <h3 className="text-lg font-semibold text-white">{category.category}</h3>
+                    <tr className="bg-white/2">
+                      <td colSpan={pricingTiers.length + 1} className="pt-8 pb-4 px-4">
+                        <h3 className="text-sm font-bold text-white/80 uppercase tracking-wide">{category.category}</h3>
                       </td>
                     </tr>
                     {category.features.map((feature, idx) => (
                       <tr
                         key={feature.name}
-                        className={idx !== category.features.length - 1 ? 'border-b border-white/5' : ''}
+                        className={`hover:bg-white/3 transition ${idx !== category.features.length - 1 ? 'border-b border-white/5' : ''}`}
                       >
-                        <td className="py-4 pr-4 text-sm text-white/70">{feature.name}</td>
+                        <td className="py-5 pr-4 text-sm font-medium text-white/80">{feature.name}</td>
                         {pricingTiers.map((tier) => (
-                          <td key={tier.tier} className="py-4 px-4 text-center">
-                            <div className="flex justify-center">
+                          <td key={tier.tier} className="py-5 px-4 text-center">
+                            <div className="flex justify-center items-center">
                               <FeatureCheck included={((feature as Record<string, unknown>)[tier.tier] as boolean) ?? false} />
                             </div>
                           </td>
@@ -437,66 +468,110 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 p-8 lg:p-12">
-          <h2 className="text-3xl font-semibold text-white mb-8 text-center">
-            Frequently Asked Questions
-          </h2>
-          <div className="grid gap-8 md:grid-cols-2 max-w-5xl mx-auto">
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">Do I need a credit card for the free trial?</h3>
-              <p className="text-sm text-white/70">
-                No! Sign up for your 30-day free trial with just an email. No credit card required.
-                Upgrade anytime if you want to continue after the trial ends.
-              </p>
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-800/40 to-zinc-900/60 p-8 lg:p-12">
+          <div className="text-center space-y-3 mb-12">
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-white/60 max-w-2xl mx-auto">
+              Everything you need to know about our pricing and subscriptions.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 max-w-5xl mx-auto">
+            <div className="group">
+              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+                <div className="flex items-start gap-3 mb-3">
+                  <Shield className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                  <h3 className="text-base font-semibold text-white">Do I need a credit card for the free trial?</h3>
+                </div>
+                <p className="text-sm text-white/70">
+                  No! Sign up for your 30-day free trial with just an email. No credit card required.
+                  Upgrade anytime if you want to continue after the trial ends.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">What happens after my free trial ends?</h3>
-              <p className="text-sm text-white/70">
-                Your data is preserved for 30 days. You can upgrade to any paid plan to keep your
-                account active, or cancel anytime. Your data won&apos;t be deleted immediately.
-              </p>
+
+            <div className="group">
+              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+                <div className="flex items-start gap-3 mb-3">
+                  <Clock className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                  <h3 className="text-base font-semibold text-white">What happens after my free trial ends?</h3>
+                </div>
+                <p className="text-sm text-white/70">
+                  Your data is preserved for 30 days. You can upgrade to any paid plan to keep your
+                  account active, or cancel anytime. Your data won&apos;t be deleted immediately.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">Can I change my apps later?</h3>
-              <p className="text-sm text-white/70">
-                Yes! For Single App and 3-App Bundle plans, you can change your selected apps anytime
-                from your account settings. Upgrade to Pro or Premium for access to all 8 apps.
-              </p>
+
+            <div className="group">
+              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+                <div className="flex items-start gap-3 mb-3">
+                  <Package className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                  <h3 className="text-base font-semibold text-white">Can I change my apps later?</h3>
+                </div>
+                <p className="text-sm text-white/70">
+                  Yes! For Single App and 3-App Bundle plans, you can change your selected apps anytime
+                  from your account settings. Upgrade to Pro or Premium for access to all 8 apps.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">What payment methods do you accept?</h3>
-              <p className="text-sm text-white/70">
-                We accept all major credit cards (Visa, Mastercard, Amex, Discover).
-                All payments are processed securely through Stripe.
-              </p>
+
+            <div className="group">
+              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+                <div className="flex items-start gap-3 mb-3">
+                  <CreditCard className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                  <h3 className="text-base font-semibold text-white">What payment methods do you accept?</h3>
+                </div>
+                <p className="text-sm text-white/70">
+                  We accept all major credit cards (Visa, Mastercard, Amex, Discover).
+                  All payments are processed securely through Stripe.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">Can I cancel anytime?</h3>
-              <p className="text-sm text-white/70">
-                Absolutely. Cancel anytime from your account settings, no questions asked.
-                You&apos;ll keep access until the end of your current billing cycle.
-              </p>
+
+            <div className="group">
+              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+                <div className="flex items-start gap-3 mb-3">
+                  <Check className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                  <h3 className="text-base font-semibold text-white">Can I cancel anytime?</h3>
+                </div>
+                <p className="text-sm text-white/70">
+                  Absolutely. Cancel anytime from your account settings, no questions asked.
+                  You&apos;ll keep access until the end of your current billing cycle.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">What&apos;s included in each subscription tier?</h3>
-              <p className="text-sm text-white/70">
-                Free Trial: All 8 apps, 200 queries/month. Single App: 1 app, 200 queries/month.
-                3-App Bundle: 3 apps, 500 queries/month. Pro: All 8 apps, 2,000 queries/month.
-                Premium: All 8 apps, 10,000+ queries/month.
-              </p>
+
+            <div className="group">
+              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+                <div className="flex items-start gap-3 mb-3">
+                  <ZapIcon className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                  <h3 className="text-base font-semibold text-white">What&apos;s included in each subscription tier?</h3>
+                </div>
+                <p className="text-sm text-white/70">
+                  Free Trial: All 8 apps, 200 queries/month. Single App: 1 app, 200 queries/month.
+                  3-App Bundle: 3 apps, 500 queries/month. Pro: All 8 apps, 2,000 queries/month.
+                  Premium: All 8 apps, 10,000+ queries/month.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* CTA */}
-        <div className="text-center space-y-6 py-8">
-          <h2 className="text-3xl font-semibold text-white sm:text-4xl">
-            Ready to transform your personal growth?
-          </h2>
-          <p className="text-white/70 max-w-2xl mx-auto">
-            Start your 30-day free trial today. All features included. No credit card required.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="text-center space-y-8 py-12 px-6">
+          <div className="space-y-4">
+            <h2 className="text-4xl sm:text-5xl font-bold text-white">
+              Ready to transform your personal growth?
+            </h2>
+            <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
+              Start your 30-day free trial today. All features included. No credit card required.
+              Cancel anytime, no questions asked.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <button
               onClick={() => {
                 if (user) {
@@ -505,9 +580,10 @@ export default function PricingPage() {
                   router.push('/?signup=true');
                 }
               }}
-              className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-[#f97316] text-white font-semibold hover:bg-[#ea6a0f] transition-colors"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-xl bg-gradient-to-r from-[#f97316] to-[#ea6a0f] text-white font-bold text-lg uppercase tracking-wide hover:shadow-lg hover:shadow-[#f97316]/40 transition-all duration-300 group gap-2"
             >
-              Start 30-Day Free Trial
+              Start Free Trial
+              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition" />
             </button>
           </div>
         </div>
