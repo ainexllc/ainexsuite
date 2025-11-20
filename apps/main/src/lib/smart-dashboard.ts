@@ -170,7 +170,7 @@ export class SmartDashboardService {
           actionUrl: `/todo?id=${doc.id}`,
           actions: [{
             label: 'Done',
-            type: 'complete',
+            type: 'complete' as const,
             payload: { taskId: doc.id }
           }]
         };
