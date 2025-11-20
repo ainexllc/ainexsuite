@@ -169,18 +169,6 @@ function FitWorkspaceContent() {
         </div>
       </div>
 
-      <button
-        onClick={() => {
-          setSelectedWorkout(null);
-          setShowEditor(true);
-        }}
-        className="fixed bottom-8 left-8 w-14 h-14 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-40"
-        type="button"
-        aria-label="Log workout"
-      >
-        <Plus className="h-6 w-6 text-white" />
-      </button>
-
       {showEditor && (
         <WorkoutEditor
           workout={selectedWorkout}
