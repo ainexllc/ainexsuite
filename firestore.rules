@@ -193,6 +193,11 @@ service cloud.firestore {
       allow read, create, update, delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
 
+    // --- Workflow App Rules ---
+    match /workflows/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // --- Activity Rules ---
     match /activities/{activityId} {
       allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
