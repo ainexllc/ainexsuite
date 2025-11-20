@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get session cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('__session')?.value;
 
     if (!sessionCookie) {
@@ -102,6 +102,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('App activation error:', error);
+
     return NextResponse.json(
       {
         error: 'Failed to activate app',

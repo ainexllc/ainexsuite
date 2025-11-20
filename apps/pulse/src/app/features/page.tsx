@@ -9,7 +9,7 @@ import {
   Sparkles,
   BellRing,
   FileHeart,
-  Hospital,
+  Building,
   Gauge,
   Droplets,
   BrainCircuit,
@@ -202,7 +202,7 @@ export default function PulseFeaturesPage() {
           </div>
           <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 p-8 shadow-lg space-y-6">
             <div className="flex items-center gap-3">
-              <Hospital className="h-6 w-6 text-rose-300" />
+              <Building className="h-6 w-6 text-rose-300" />
               <span className="text-sm font-semibold uppercase tracking-wide text-white/60">Integrations</span>
             </div>
             <h2 className="text-2xl font-semibold text-white">Connect every signal</h2>

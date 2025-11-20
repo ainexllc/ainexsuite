@@ -56,9 +56,10 @@ export async function createHealthMetric(
       itemType: 'metric',
       itemId: docRef.id,
       itemTitle: `Health Metric - ${dateStr}`,
-      metadata: { metricType: input.metricType },
+      metadata: {},
     });
   } catch (error) {
+    console.error('Failed to log activity:', error);
   }
 
   return docRef.id;
@@ -76,16 +77,17 @@ export async function updateHealthMetric(
 
   // Log activity
   try {
-    const dateStr = updates.date ? new Date(updates.date).toLocaleDateString() : 'Health Metric';
     await createActivity({
       app: 'pulse',
       action: 'updated',
       itemType: 'metric',
       itemId: id,
-      itemTitle: `Health Metric - ${dateStr}`,
-      metadata: { metricType: updates.metricType },
+      itemTitle: 'Health Metric',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      metadata: updates as Record<string, any>,
     });
   } catch (error) {
+    console.error('Failed to log activity:', error);
   }
 }
 
@@ -110,6 +112,7 @@ export async function deleteHealthMetric(id: string): Promise<void> {
         itemTitle: `Health Metric - ${dateStr}`,
       });
     } catch (error) {
+      console.error('Failed to log activity:', error);
     }
   }
 }
