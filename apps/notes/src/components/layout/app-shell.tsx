@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { clsx } from "clsx";
@@ -12,12 +11,12 @@ import { formatRelativeTime } from "@/lib/utils/datetime";
 import {
   CheckCircle2,
   ListChecks,
-  MessageSquarePlus,
   Sparkles,
   Send,
   X,
 } from "lucide-react";
 import { SettingsPanel } from "./settings-panel";
+import { FeedbackWidget } from "@ainexsuite/ui/components";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -92,14 +91,8 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </main>
 
-        <Link
-          href="/workspace/feedback"
-          className="fixed bottom-6 left-6 z-30 inline-flex items-center gap-2 rounded-full bg-accent-500 px-4 py-2 text-sm font-semibold text-ink-50 shadow-floating transition hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500"
-          aria-label="Share feedback"
-        >
-          <MessageSquarePlus className="h-4 w-4" />
-          Feedback
-        </Link>
+        {/* Feedback Widget */}
+        <FeedbackWidget appName="notes" />
 
         {/* Navigation overlay panel */}
         {isNavOpen && (

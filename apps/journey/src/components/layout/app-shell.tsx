@@ -1,6 +1,7 @@
 "use client";
 
 import { TopNav } from "./top-nav";
+import { FeedbackWidget } from "@ainexsuite/ui/components";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -18,6 +19,9 @@ export function AppShell({ children }: AppShellProps) {
         <main className="flex-1 overflow-x-hidden pt-16">
           {children}
         </main>
+
+        {/* Feedback Widget */}
+        <FeedbackWidget appName="journey" />
       </div>
     </div>
   );
