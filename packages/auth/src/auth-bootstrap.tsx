@@ -15,8 +15,8 @@ import { getSessionCookie } from './session';
  * 1. Check if user is already authenticated
  * 2. Check if __session cookie exists
  * 3. Call /api/auth/custom-token to generate Firebase custom token
- * 4. Sign in with custom token
- * 5. AuthContext hydrates with user data
+ * 4. Sign in with custom token (which triggers onAuthStateChanged)
+ * 5. AuthContext hydrates with user data from existing session (skips creating new session)
  *
  * Usage:
  * Add to AuthProvider children:
@@ -26,7 +26,7 @@ import { getSessionCookie } from './session';
  * </AuthProvider>
  */
 export function AuthBootstrap() {
-  const { firebaseUser } = useAuth();
+  const { firebaseUser, setIsBootstrapping } = useAuth();
   const [bootstrapping, setBootstrapping] = useState(false);
   const [bootstrapped, setBootstrapped] = useState(false);
 
@@ -44,17 +44,22 @@ export function AuthBootstrap() {
 
     // Bootstrap from cookie
     setBootstrapping(true);
+    // Signal to AuthProvider that we're bootstrapping from existing session
+    setIsBootstrapping(true);
+
     bootstrapFromCookie(sessionCookie)
       .then(() => {
         setBootstrapped(true);
       })
       .catch((error) => {
+        // Reset bootstrapping flag on error
+        setIsBootstrapping(false);
         setBootstrapped(true);
       })
       .finally(() => {
         setBootstrapping(false);
       });
-  }, [firebaseUser, bootstrapping, bootstrapped]);
+  }, [firebaseUser, bootstrapping, bootstrapped, setIsBootstrapping]);
 
   // Render nothing - this is a passive component
   return null;
