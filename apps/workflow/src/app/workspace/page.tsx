@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
@@ -27,6 +27,7 @@ export default function WorkspacePage() {
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
     } catch (error) {
+      console.error('Sign out failed:', error);
     }
   };
 

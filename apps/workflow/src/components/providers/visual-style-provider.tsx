@@ -53,6 +53,7 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
           }
         }
       } catch (error) {
+        console.error('Failed to load user theme:', error);
       }
     }
 
@@ -84,6 +85,7 @@ export function VisualStyleProvider({ children }: VisualStyleProviderProps) {
             { merge: true }
           );
         } catch (error) {
+          console.error('Failed to save user theme:', error);
         }
       })();
     }

@@ -33,10 +33,6 @@ import {
   Image,
   Database,
   Files,
-  ShieldCheck,
-  GitBranch,
-  Repeat2,
-  AlertTriangle,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -208,8 +204,8 @@ function PaletteSection({
 
 type ArrowType = 'none' | 'end' | 'start' | 'both';
 type LineStyle = 'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted';
-type EdgeValidationMode = 'strict' | 'relaxed';
-type BranchTemplate = 'ifElse' | 'loop';
+// type EdgeValidationMode = 'strict' | 'relaxed';
+// type BranchTemplate = 'ifElse' | 'loop';
 
 interface ShapePaletteProps {
   onDragStart: (event: React.DragEvent, nodeType: string) => void;

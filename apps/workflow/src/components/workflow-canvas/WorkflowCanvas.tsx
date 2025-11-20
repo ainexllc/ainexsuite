@@ -17,6 +17,7 @@ import {
   type ReactFlowInstance,
   MarkerType,
   EdgeLabelRenderer,
+  SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import '@xyflow/react/dist/base.css';
@@ -74,6 +75,7 @@ const validateEdges = (edges: Edge[], nodes: Node[]) => {
         `${!sourceExists ? `source node "${edge.source}" missing` : ''} ` +
         `${!targetExists ? `target node "${edge.target}" missing` : ''}`
       );
+      console.warn(
         `Removing orphaned edge: ${edge.id} (${edge.source} → ${edge.target})`
       );
       return false;
@@ -117,14 +119,6 @@ const defaultNodeData: Record<string, Record<string, unknown>> = {
   documents: { label: 'Documents' },
 };
 
-const formatNodeTypeLabel = (type?: string) => {
-  if (!type) return 'Unknown';
-  return type
-    .split('-')
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(' ');
-};
-
 const getNodeDimensions = (nodeType: string) => {
   switch (nodeType) {
     case 'diamond':
@@ -152,8 +146,8 @@ function WorkflowCanvasInner() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const nodeIdCounter = useRef(0);
   const getId = useCallback(() => `node_${nodeIdCounter.current++}`, []);
-  const edgeIdCounter = useRef(0);
-  const getEdgeId = useCallback(() => `edge_${edgeIdCounter.current++}`, []);
+  // const edgeIdCounter = useRef(0);
+  // const getEdgeId = useCallback(() => `edge_${edgeIdCounter.current++}`, []);
   const [nodes, setNodesState, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdgesState, onEdgesChange] = useEdgesState<Edge>([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
@@ -215,6 +209,7 @@ function WorkflowCanvasInner() {
       if (!sourceExists || !targetExists) {
         orphanedCount++;
         // eslint-disable-next-line no-console
+        console.warn(
           `❌ Edge ${edge.id} references non-existent node(s): ` +
           `${!sourceExists ? `source "${edge.source}"` : ''} ` +
           `${!targetExists ? `target "${edge.target}"` : ''}`
@@ -368,6 +363,7 @@ function WorkflowCanvasInner() {
           }
         }
       } catch (error) {
+        console.error('Failed to load workflow:', error);
       }
     };
 
@@ -444,6 +440,7 @@ function WorkflowCanvasInner() {
 
         await setDoc(workflowRef, payload, { merge: true });
       } catch (error) {
+        console.error('Failed to auto-save workflow:', error);
       }
     }, 1000);
 
@@ -914,7 +911,7 @@ function WorkflowCanvasInner() {
           multiSelectionKeyCode="Shift"
           selectionOnDrag={true}
           panOnDrag={[1, 2]}
-          selectionMode="partial"
+          selectionMode={SelectionMode.Partial}
           attributionPosition="bottom-left"
           connectOnClick={true}
           elevateEdgesOnSelect={true}
