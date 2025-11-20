@@ -120,7 +120,7 @@ export default function ContactPage() {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-zinc-700/50 px-4 py-3 text-white placeholder:text-white/40 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50 transition-all"
                   placeholder="John Doe"
                 />
               </div>
@@ -137,7 +137,7 @@ export default function ContactPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-zinc-700/50 px-4 py-3 text-white placeholder:text-white/40 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50 transition-all"
                   placeholder="john@example.com"
                 />
               </div>
@@ -153,7 +153,7 @@ export default function ContactPage() {
                   required
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-white/10 bg-zinc-700/50 px-4 py-3 text-white focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50 transition-all [&>option]:bg-zinc-900 [&>option]:text-white"
                 >
                   <option value="">Select a category...</option>
                   <option value="general">General Inquiry</option>
@@ -178,7 +178,7 @@ export default function ContactPage() {
                   value={formData.message}
                   onChange={handleChange}
                   rows={6}
-                  className="w-full rounded-xl border border-white/10 bg-zinc-700/50 px-4 py-3 text-white placeholder:text-white/40 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50 resize-none"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50 resize-none transition-all"
                   placeholder="Tell us how we can help..."
                 />
               </div>
