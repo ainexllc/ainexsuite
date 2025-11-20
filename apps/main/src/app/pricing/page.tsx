@@ -295,13 +295,13 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid gap-6 lg:grid-cols-5 auto-rows-max">
+        <div className="grid gap-8 lg:gap-6 md:grid-cols-2 lg:grid-cols-5 auto-rows-max">
           {pricingTiers.map((tier) => (
             <div
               key={tier.tier}
               className={`relative rounded-2xl border overflow-hidden transition duration-300 flex flex-col ${
                 tier.popular
-                  ? 'border-[#f97316] bg-gradient-to-b from-[#f97316]/5 via-zinc-800/40 to-zinc-900/60 lg:col-span-1 shadow-2xl shadow-[#f97316]/20 hover:shadow-[#f97316]/40 hover:-translate-y-2'
+                  ? 'border-[#f97316] bg-gradient-to-b from-[#f97316]/5 via-zinc-800/40 to-zinc-900/60 lg:col-span-1 shadow-2xl shadow-[#f97316]/20 hover:shadow-[#f97316]/40 hover:-translate-y-2 md:col-span-2 lg:col-span-1'
                   : 'border-white/10 bg-gradient-to-b from-zinc-800/30 to-zinc-900/60 hover:border-white/20 hover:shadow-lg shadow-md hover:shadow-white/10 hover:-translate-y-1'
               }`}
             >
@@ -319,18 +319,18 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <div className="p-8 space-y-6 flex-1 relative z-10 flex flex-col">
-                <div className="space-y-4">
+              <div className="p-10 space-y-8 flex-1 relative z-10 flex flex-col">
+                <div className="space-y-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       {tier.icon && <div className="flex-shrink-0">{tier.icon}</div>}
-                      <h3 className="text-xl font-bold text-white">{tier.name}</h3>
+                      <h3 className="text-2xl font-bold text-white">{tier.name}</h3>
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-black text-white">{tier.price}</span>
+                  <div className="space-y-2">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-6xl font-black text-white">{tier.price}</span>
                       <span className="text-white/50 text-lg font-medium">/ {tier.period}</span>
                     </div>
                   </div>
@@ -338,7 +338,7 @@ export default function PricingPage() {
                   <p className="text-sm text-white/70 leading-relaxed">{tier.description}</p>
 
                   {tier.appCount && (
-                    <div className="pt-2 border-t border-white/5">
+                    <div className="pt-3 border-t border-white/5">
                       <p className="text-xs font-semibold text-[#f97316] uppercase tracking-wide">
                         {tier.appCount === 8 ? '🎯 All 8 apps' : `🎯 ${tier.appCount} app${tier.appCount === 1 ? '' : 's'} available`}
                       </p>
@@ -348,19 +348,19 @@ export default function PricingPage() {
 
                 {/* App Selection for single-app and three-apps tiers */}
                 {(tier.tier === 'single-app' || tier.tier === 'three-apps') && (
-                  <div className="space-y-3 pt-2 border-t border-white/5">
+                  <div className="space-y-4 pt-6 border-t border-white/5">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-white/70 uppercase tracking-wide">Select your apps</p>
-                      <p className="text-xs font-semibold text-[#f97316]">
+                      <p className="text-xs font-semibold text-white/70 uppercase tracking-widest">Select your apps</p>
+                      <p className="text-sm font-bold text-[#f97316]">
                         {selectedApps.length}/{tier.appCount}
                       </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       {APPS.map((app) => (
                         <button
                           key={app.name}
                           onClick={() => toggleApp(app.name)}
-                          className={`px-3 py-2 rounded-lg text-xs font-semibold transition duration-200 border ${
+                          className={`px-3 py-2.5 rounded-lg text-xs font-semibold transition duration-200 border ${
                             selectedApps.includes(app.name)
                               ? 'bg-[#f97316]/20 text-[#f97316] border-[#f97316]/40 ring-1 ring-[#f97316]/20'
                               : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white/80'
@@ -376,7 +376,7 @@ export default function PricingPage() {
                 <button
                   onClick={() => handleCheckout(tier)}
                   disabled={loading === tier.tier}
-                  className={`w-full mt-6 rounded-xl px-6 py-3.5 font-bold text-sm uppercase tracking-wide transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group ${
+                  className={`w-full mt-8 rounded-xl px-6 py-4 font-bold text-sm uppercase tracking-widest transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group ${
                     tier.popular
                       ? 'bg-gradient-to-r from-[#f97316] to-[#ea6a0f] text-white hover:shadow-lg hover:shadow-[#f97316]/30 hover:gap-3'
                       : 'border border-white/20 text-white hover:bg-white/5 hover:border-white/40'
@@ -395,11 +395,11 @@ export default function PricingPage() {
                   )}
                 </button>
 
-                <div className="space-y-3 pt-4">
-                  {tier.features.map((feature) => (
+                <div className="space-y-4 pt-6 border-t border-white/5">
+                  {tier.features.slice(0, 5).map((feature) => (
                     <div key={feature} className="flex items-start gap-3 group">
-                      <Check className="h-4 w-4 text-[#f97316] flex-shrink-0 mt-1" />
-                      <span className="text-sm text-white/70 group-hover:text-white/80 transition">{feature}</span>
+                      <Check className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-white/70 group-hover:text-white/80 transition leading-snug">{feature}</span>
                     </div>
                   ))}
                 </div>
