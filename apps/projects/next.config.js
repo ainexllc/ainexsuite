@@ -16,7 +16,7 @@ const nextConfig = {
 
   // App-specific environment variables
   env: {
-    NEXT_PUBLIC_APP_NAME: 'main',
+    NEXT_PUBLIC_APP_NAME: 'projects',
     NEXT_PUBLIC_MAIN_DOMAIN: 'www.ainexsuite.com',
   },
 
