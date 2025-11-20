@@ -3,7 +3,7 @@
 import { X, Settings as SettingsIcon, Activity as ActivityIcon, Send, Mic, MicOff } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useEnhancedAssistant, useVoiceInput } from '@ainexsuite/ai';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 interface ActivityPanelProps {
   isOpen: boolean;
@@ -13,24 +13,38 @@ interface ActivityPanelProps {
 
 export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState('');
 
   // Initialize enhanced AI assistant
   const {
     messages,
-    input,
-    setInput,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
+    loading,
+    sendMessage,
     appContext,
     contextLoading
   } = useEnhancedAssistant({
+    appName: 'main',
     includeFullContext: true, // Enable smart cross-app context
-    systemPrompt: `You are the intelligent assistant for AINexSuite. 
+    systemPrompt: `You are the intelligent assistant for AINexSuite.
     You have access to the user's data across Notes, Tasks, Journal, Habits, Health, and Fitness apps.
     Use this context to provide personalized, actionable, and insightful responses.
     Be concise, encouraging, and proactive.`,
   });
+
+  // Create input change handler
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  // Create submit handler
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const message = input.trim();
+    setInput(''); // Clear input immediately
+    await sendMessage(message);
+  };
 
   // Initialize Voice Input
   const {
@@ -57,12 +71,6 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    handleSubmit(e);
-  };
 
   return (
     <div
@@ -200,7 +208,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                     </div>
                   ))
                 )}
-                {isLoading && (
+                {loading && (
                   <div className="flex items-center gap-2 text-xs text-ink-400 px-2">
                     <div className="h-2 w-2 animate-bounce rounded-full bg-ink-400 [animation-delay:-0.3s]" />
                     <div className="h-2 w-2 animate-bounce rounded-full bg-ink-400 [animation-delay:-0.15s]" />
@@ -210,7 +218,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                 <div ref={messagesEndRef} />
               </div>
 
-              <form onSubmit={handleSendMessage} className="space-y-3">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="flex gap-2 relative">
                   <input
                     type="text"
@@ -221,9 +229,9 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                       "flex-1 rounded-xl border bg-white px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none disabled:opacity-50 pr-10",
                       isListening ? "border-red-400 ring-2 ring-red-100" : "border-outline-subtle"
                     )}
-                    disabled={isLoading}
+                    disabled={loading}
                   />
-                  
+
                   {/* Voice Button */}
                   {isSupported && (
                     <button
@@ -241,7 +249,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
 
                   <button
                     type="submit"
-                    disabled={isLoading || (!input.trim() && !transcript)}
+                    disabled={loading || (!input.trim() && !transcript)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-white shadow-sm transition hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send message"
                   >
