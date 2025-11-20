@@ -31,7 +31,6 @@ export const storage = getStorage(app);
 
 // Connect to emulators in development
 if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true") {
-  console.log("🔧 Using Firebase Emulators");
 
   // Auth emulator
   if (process.env.NEXT_PUBLIC_AUTH_EMULATOR_URL) {

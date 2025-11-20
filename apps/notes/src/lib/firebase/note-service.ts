@@ -61,7 +61,6 @@ export function subscribeToOwnedNotes(
       handler(notes);
     },
     (error) => {
-      console.error("Error subscribing to owned notes:", error);
       if (onError) onError(error);
     },
   );
@@ -86,7 +85,6 @@ export function subscribeToSharedNotes(
       handler(notes);
     },
     (error) => {
-      console.error("Error subscribing to shared notes:", error);
       if (onError) onError(error);
     },
   );

@@ -31,7 +31,6 @@ export function useEnhancedAssistant(options: UseEnhancedAssistantOptions) {
       const context = await getAggregatedContext();
       setAppContext(context);
     } catch (error) {
-      console.error('Failed to fetch app context:', error);
       onError?.(error as Error);
     } finally {
       setContextLoading(false);

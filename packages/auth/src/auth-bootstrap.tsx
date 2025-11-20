@@ -46,11 +46,9 @@ export function AuthBootstrap() {
     setBootstrapping(true);
     bootstrapFromCookie(sessionCookie)
       .then(() => {
-        console.log('✓ Auth bootstrapped from session cookie');
         setBootstrapped(true);
       })
       .catch((error) => {
-        console.error('Auth bootstrap failed:', error);
         setBootstrapped(true);
       })
       .finally(() => {
@@ -80,7 +78,6 @@ async function bootstrapFromCookie(sessionCookie: string): Promise<void> {
     await signInWithCustomToken(auth, customToken);
   } catch (error) {
     // Silent fail - user will need to login manually
-    console.error('Bootstrap error:', error);
     throw error;
   }
 }

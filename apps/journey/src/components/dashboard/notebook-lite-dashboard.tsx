@@ -629,7 +629,6 @@ export function NotebookLiteDashboard({
       });
       setShowWelcomeOptIn(false);
     } catch (error) {
-      console.error('Failed to enable personalized welcome:', error);
     }
   };
 

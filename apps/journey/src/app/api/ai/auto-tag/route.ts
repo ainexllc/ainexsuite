@@ -51,7 +51,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(topSuggestions);
   } catch (error) {
-    console.error('Auto-tagging error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

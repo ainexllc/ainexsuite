@@ -109,7 +109,6 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       setAppCounts({ notes: 2, todo: 1 });
       setSelectedIndex(0);
     } catch (error) {
-      console.error('Search error:', error);
       setResults([]);
     } finally {
       setLoading(false);

@@ -34,7 +34,6 @@ export default function CalendarPage() {
       });
       setEntries(fetchedEntries);
     } catch (err) {
-      console.error('Error loading calendar entries:', err);
       setError('Failed to load journal entries for the calendar. Please try again.');
     } finally {
       setIsLoadingEntries(false);

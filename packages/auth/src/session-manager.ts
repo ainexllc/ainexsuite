@@ -53,7 +53,6 @@ export class SessionManager {
       // Store user info in localStorage for quick access
       this.storeUserInfo(user);
     } catch (error) {
-      console.error('Session creation error:', error);
       throw error;
     }
   }

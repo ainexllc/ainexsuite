@@ -96,7 +96,6 @@ export default function EditJournalPage({ params }: { params: Promise<{ id: stri
             const analysis = await sentimentService.analyzeEntry(updatedEntry);
             await saveSentimentAnalysis(analysis);
           } catch (error) {
-            console.error('Sentiment analysis failed:', error);
             // Don't show error to user, analysis is optional
           }
         }

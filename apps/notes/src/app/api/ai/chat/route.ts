@@ -60,7 +60,6 @@ export async function POST(request: NextRequest) {
       usage: response.usage,
     });
   } catch (error) {
-    console.error("AI Chat API error:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "An error occurred",

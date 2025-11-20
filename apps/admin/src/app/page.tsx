@@ -48,7 +48,6 @@ export default function AdminDashboard() {
           activeNow: 12 // Mock value until we have real-time presence
         }));
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
       }
     };
 

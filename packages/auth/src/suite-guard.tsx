@@ -55,7 +55,6 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
         setAccessAllowed(false);
       }
     } catch (error) {
-      console.error('Error checking access:', error);
       // On error, allow access (fail open)
       setAccessAllowed(true);
     } finally {
@@ -82,9 +81,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
         [`apps.${app}`]: true,
       });
 
-      console.log(`Tracked app usage: ${app}`);
     } catch (error) {
-      console.error('Error tracking app usage:', error);
       // Non-blocking error - don't fail the access check
     }
   };

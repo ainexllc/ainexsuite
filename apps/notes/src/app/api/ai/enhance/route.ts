@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ enhanced });
   } catch (error) {
-    console.error("AI Enhancement API error:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "An error occurred",

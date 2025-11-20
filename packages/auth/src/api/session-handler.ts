@@ -163,8 +163,6 @@ export async function handleSessionCreation(req: NextRequest) {
 
     // In development, create mock user
     if (process.env.NODE_ENV === 'development') {
-      console.log('[DEV] Creating session cookie for development');
-      console.log('[DEV] Cookie domain:', cookieDomain);
 
       const mockUser: User = {
         uid: 'dev-user-123',
@@ -243,7 +241,6 @@ export async function handleSessionCreation(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('[Session Handler] Error:', error);
 
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Session creation failed' },
@@ -269,7 +266,6 @@ export async function handleCustomTokenGeneration(req: NextRequest) {
 
     // In development, return mock custom token
     if (process.env.NODE_ENV === 'development') {
-      console.log('[DEV] Generating custom token for development');
 
       const mockCustomToken = `dev-custom-token-${Date.now()}`;
 
@@ -282,7 +278,6 @@ export async function handleCustomTokenGeneration(req: NextRequest) {
 
     return NextResponse.json({ customToken });
   } catch (error) {
-    console.error('[Custom Token Handler] Error:', error);
 
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Custom token generation failed' },

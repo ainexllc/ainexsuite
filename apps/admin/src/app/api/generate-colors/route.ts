@@ -221,8 +221,6 @@ export async function POST(request: NextRequest) {
       method = 'ai';
       provider = result.provider;
     } catch (grokError) {
-      console.warn('Grok generation failed, trying Claude:', grokError);
-
       // Try Claude as fallback
       try {
         const result = await generateColorsWithClaude(appName, appDescription, mood);
@@ -230,7 +228,6 @@ export async function POST(request: NextRequest) {
         method = 'ai';
         provider = result.provider;
       } catch (claudeError) {
-        console.warn('Claude generation failed, using algorithmic fallback:', claudeError);
         // Use algorithmic fallback
         colors = generateColorsFallback(appName);
         method = 'fallback';
@@ -245,7 +242,6 @@ export async function POST(request: NextRequest) {
       provider,
     });
   } catch (error) {
-    console.error('Color generation error:', error);
     return NextResponse.json(
       {
         error: 'Failed to generate colors',

@@ -70,7 +70,6 @@ ${textOnly}`;
 
     return responseContent;
   } catch (error) {
-    console.error('AI request failed, applying fallback enhancement:', error);
     return fallbackEnhancement(content, style);
   }
 }

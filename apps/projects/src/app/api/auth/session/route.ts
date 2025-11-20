@@ -50,10 +50,6 @@ export async function POST(request: NextRequest) {
       cookieDomain = '.ainexfit.com';
     }
 
-    // Log session cookie domain for debugging
-    // eslint-disable-next-line no-console
-    console.log(`[Session] Request hostname: ${hostname}, Cookie domain: ${cookieDomain}`);
-
     // For local development, skip Cloud Function and create session from token
     if (process.env.NODE_ENV === 'development') {
       try {
@@ -140,12 +136,8 @@ export async function POST(request: NextRequest) {
     const { getAdminAuth, getAdminFirestore } = await import('@/lib/firebase/admin-app');
     const { FieldValue } = await import('firebase-admin/firestore');
 
-    // eslint-disable-next-line no-console
-    console.log('[Session] Initializing Firebase Admin...');
     const adminAuth = getAdminAuth();
     const adminDb = getAdminFirestore();
-    // eslint-disable-next-line no-console
-    console.log('[Session] Firebase Admin initialized successfully');
 
     // Verify ID token
     const decodedToken = await adminAuth.verifyIdToken(idToken);
@@ -205,7 +197,6 @@ export async function POST(request: NextRequest) {
 
     return res;
   } catch (error) {
-    console.error('[Session] Error creating session:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     const stack = error instanceof Error ? error.stack : undefined;
     return NextResponse.json(

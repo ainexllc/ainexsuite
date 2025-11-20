@@ -314,7 +314,6 @@ export function logAuthError(
 ): void {
   const errorInfo = parseAuthError(error);
 
-  console.error('[Auth Error]', {
     context,
     code: errorInfo.code,
     category: errorInfo.category,

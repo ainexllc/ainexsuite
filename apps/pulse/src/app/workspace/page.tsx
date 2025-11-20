@@ -26,7 +26,6 @@ function PulseWorkspaceContent() {
         const data = await getHealthMetrics(30);
         setMetrics(data);
       } catch (error) {
-        console.error('Failed to load metrics:', error);
       } finally {
         setLoading(false);
       }
@@ -44,7 +43,6 @@ function PulseWorkspaceContent() {
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
     } catch (error) {
-      console.error('Error signing out:', error);
     }
   };
 

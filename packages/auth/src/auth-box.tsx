@@ -59,7 +59,6 @@ export function AuthBox({
       }
       return null;
     } catch (error) {
-      console.error('Account detection error:', error);
       return null;
     }
   };

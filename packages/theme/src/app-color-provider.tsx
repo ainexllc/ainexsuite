@@ -53,7 +53,6 @@ export function AppColorProvider({
           });
         } else {
           // Document doesn't exist, use fallbacks (no error)
-          console.log(`App document 'apps/${appId}' not found, using fallback colors`);
           setColors({
             primary: fallbackPrimary,
             secondary: fallbackSecondary,
@@ -63,7 +62,6 @@ export function AppColorProvider({
       },
       (error) => {
         // Permission errors or other issues - use fallbacks silently
-        console.warn(`Could not load colors for app '${appId}':`, error.message);
         setColors({
           primary: fallbackPrimary,
           secondary: fallbackSecondary,

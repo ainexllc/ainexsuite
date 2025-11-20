@@ -41,9 +41,6 @@ function computeNextOccurrence(reminder: ReminderDoc, reference: Date): Date | n
       return next;
     }
     case "custom":
-      console.warn(
-        `Custom cron '${reminder.customCron ?? ""}' is not yet supported for auto-rescheduling.`,
-      );
       return null;
     default:
       return null;
@@ -103,7 +100,6 @@ export async function POST(request: NextRequest) {
     const userId = data.ownerId;
 
     if (!userId) {
-      console.warn(`Reminder ${reminderId} missing ownerId, skipping.`);
       continue;
     }
 
@@ -119,7 +115,6 @@ export async function POST(request: NextRequest) {
             : null;
           preferenceCache.set(userId, prefs);
         } catch (error) {
-          console.error(`Failed to read preferences for ${userId}`, error);
           prefs = null;
           preferenceCache.set(userId, null);
         }
@@ -140,7 +135,6 @@ export async function POST(request: NextRequest) {
           displayName: userRecord.displayName,
         });
       } catch (error) {
-        console.error(`Failed to load user ${userId} for reminder ${reminderId}`, error);
         userCache.set(userId, { email: null, phoneNumber: null, displayName: null });
       }
     }
@@ -181,7 +175,6 @@ export async function POST(request: NextRequest) {
             : null;
           preferenceCache.set(userId, prefs);
         } catch (error) {
-          console.error(`Failed to read preferences for ${userId}`, error);
           prefs = null;
           preferenceCache.set(userId, null);
         }
@@ -227,10 +220,7 @@ export async function POST(request: NextRequest) {
           updatedAt: FieldValue.serverTimestamp(),
         });
       } catch (error) {
-        console.error(
-          `Failed to update recurring reminder linkage for note ${data.noteId}`,
-          error,
-        );
+        // Failed to update recurring reminder linkage
       }
     }
 

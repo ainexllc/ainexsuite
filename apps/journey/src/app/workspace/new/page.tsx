@@ -331,7 +331,6 @@ export default function NewJournalPage() {
             const analysis = await sentimentService.analyzeEntry(entry);
             await saveSentimentAnalysis(analysis);
           } catch (error) {
-            console.error('Sentiment analysis failed:', error);
             // Don't show error to user, analysis is optional
           }
         }
@@ -347,7 +346,6 @@ export default function NewJournalPage() {
 
       if (!isDraft && promptId && user) {
         void markPromptAsCompleted(user.uid, promptId).catch((error) => {
-          console.error('Failed to mark prompt as completed:', error);
         });
       }
 

@@ -56,7 +56,6 @@ export default function AppsManagement() {
         setApps(loadedApps);
       }
     } catch (err) {
-      console.error('Error fetching apps:', err);
       setError('Failed to load app configurations.');
     } finally {
       setLoading(false);
@@ -73,7 +72,6 @@ export default function AppsManagement() {
       await fetchApps();
       setSuccess('Apps seeded successfully!');
     } catch (err) {
-        console.error('Error seeding apps:', err);
         setError('Failed to seed database.');
     } finally {
         setLoading(false);
@@ -90,7 +88,6 @@ export default function AppsManagement() {
       });
       setSuccess(`Updated ${app.name} colors`);
     } catch (err) {
-      console.error('Error saving app:', err);
       setError(`Failed to save ${app.name}`);
     } finally {
       setSaving(null);
@@ -143,7 +140,6 @@ export default function AppsManagement() {
         throw new Error('Invalid response from color generation API');
       }
     } catch (err) {
-      console.error('Error generating colors:', err);
       setError(`Failed to generate colors for ${app.name}`);
     } finally {
       setGeneratingColors(null);

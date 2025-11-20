@@ -45,7 +45,6 @@ function AdminLoginPageContent() {
             void auth.signOut(); // Force sign out non-admin users
           }
         } catch (err) {
-          console.error('Failed to verify admin role:', err);
           setError('Error verifying role. Please try again.');
           setLoadingMessage('');
           void auth.signOut();

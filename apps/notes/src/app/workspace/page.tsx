@@ -29,7 +29,6 @@ export default function NotesWorkspace() {
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
     } catch (error) {
-      console.error('Error signing out:', error);
     }
   };
 

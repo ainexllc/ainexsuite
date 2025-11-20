@@ -78,7 +78,6 @@ export default function ActivityFeed({ limit = 20 }: ActivityFeedProps) {
         setLoading(false);
       },
       (error) => {
-        console.error('Activity feed error:', error);
         setLoading(false);
       }
     );

@@ -65,7 +65,6 @@ export async function getUserSettings(userId: string): Promise<UserSettings> {
 
     return newSettings;
   } catch (error) {
-    console.error('Error fetching user settings:', error);
     // Return defaults on error
     return {
       userId,
@@ -95,7 +94,6 @@ export async function updateUserSettings(
 
     await updateDoc(docRef, updateData);
   } catch (error) {
-    console.error('Error updating settings:', error);
     throw error;
   }
 }

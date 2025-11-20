@@ -163,7 +163,6 @@ export function subscribeToActivityFeed(
       if (onError) {
         onError(error);
       } else {
-        console.error('Activity feed subscription error:', error);
       }
     }
   );

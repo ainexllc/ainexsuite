@@ -112,7 +112,6 @@ export function NotesProvider({ children }: NotesProviderProps) {
         setOwnedLoaded(true);
       },
       (error) => {
-        console.error("Failed to load owned notes:", error);
         setOwnedLoaded(true); // Unblock UI
       },
     );
@@ -124,7 +123,6 @@ export function NotesProvider({ children }: NotesProviderProps) {
         setSharedLoaded(true);
       },
       (error) => {
-        console.error("Failed to load shared notes:", error);
         setSharedLoaded(true); // Unblock UI
       },
     );

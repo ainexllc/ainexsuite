@@ -41,7 +41,6 @@ function TrackWorkspaceContent() {
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
     } catch (error) {
-      console.error('Error signing out:', error);
     }
   };
 
@@ -57,7 +56,6 @@ function TrackWorkspaceContent() {
       setHabits(fetchedHabits);
       setCompletions(fetchedCompletions);
     } catch (error) {
-      console.error('Failed to load data:', error);
     } finally {
       setLoading(false);
     }

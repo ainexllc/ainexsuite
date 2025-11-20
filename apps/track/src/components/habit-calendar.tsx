@@ -40,7 +40,6 @@ export function HabitCalendar({ habit, completions, selectedDate, onSelectDate, 
 
       onUpdate();
     } catch (error) {
-      console.error('Failed to toggle completion:', error);
     } finally {
       setLoading(false);
     }

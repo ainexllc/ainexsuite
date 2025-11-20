@@ -57,7 +57,6 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
         setStatus('idle');
       }, 2000);
     } catch (error) {
-      console.error('Failed to submit feedback:', error);
       setStatus('error');
     } finally {
       setIsSubmitting(false);

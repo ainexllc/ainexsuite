@@ -100,7 +100,6 @@ export function PhotoEditor({ moment, onClose, onSave }: PhotoEditorProps) {
 
       onSave();
     } catch (error) {
-      console.error('Failed to save moment:', error);
       alert('Failed to save moment');
     } finally {
       setSaving(false);
@@ -116,7 +115,6 @@ export function PhotoEditor({ moment, onClose, onSave }: PhotoEditorProps) {
       await deleteMoment(moment.id);
       onSave();
     } catch (error) {
-      console.error('Failed to delete moment:', error);
       alert('Failed to delete moment');
     }
   };

@@ -108,7 +108,6 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
         });
         setIsCompleted(true);
       } catch (error) {
-        console.error("Failed to complete task", error);
       } finally {
         setIsCompleting(false);
       }

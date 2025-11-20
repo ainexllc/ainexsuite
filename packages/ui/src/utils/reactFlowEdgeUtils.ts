@@ -69,7 +69,6 @@ export interface DuplicateEdgeResult {
  * @example
  * ```typescript
  * const result = validateEdges(edges, nodes);
- * console.log(`Removed ${result.orphanedEdges.length} orphaned edges`);
  * setEdges(result.validEdges);
  * ```
  */
@@ -91,7 +90,6 @@ export function validateEdges(edges: GenericEdge[], nodes: GenericNode[]): EdgeV
 
       const message = `Removing orphaned edge: ${edge.id} (${edge.source} → ${edge.target}): ${missingParts.join(', ')}`;
       messages.push(message);
-      console.warn(message);
     } else {
       validEdges.push(edge);
     }
@@ -113,7 +111,6 @@ export function validateEdges(edges: GenericEdge[], nodes: GenericNode[]): EdgeV
  * @example
  * ```typescript
  * const orphaned = findOrphanedEdges(edges, nodes);
- * console.log(`Found ${orphaned.length} orphaned edges`);
  * ```
  */
 export function findOrphanedEdges(edges: GenericEdge[], nodes: GenericNode[]): GenericEdge[] {
@@ -150,7 +147,6 @@ export function removeDuplicateEdges(edges: GenericEdge[]): GenericEdge[] {
       seen.add(key);
       uniqueEdges.push(edge);
     } else {
-      console.warn(
         `Duplicate edge removed: ${edge.id} (${edge.source} → ${edge.target})`
       );
     }
@@ -246,7 +242,6 @@ export interface EdgeDebugInfo {
  * @example
  * ```typescript
  * const debugInfo = debugEdges(edges, nodes);
- * console.log(debugInfo.summary);
  * ```
  */
 export function debugEdges(edges: GenericEdge[], nodes: GenericNode[]): EdgeDebugInfo {
@@ -333,21 +328,13 @@ export function debugEdges(edges: GenericEdge[], nodes: GenericNode[]): EdgeDebu
   };
 
   // Log detailed debug information
-  console.group('React Flow Edge Debug Info');
-  console.log(debugInfo);
-  console.log(`Total Nodes: ${nodes.length}, Total Edges: ${edges.length}`);
 
   if (orphanedEdges.length > 0) {
-    console.warn('Orphaned Edges:', orphanedEdges);
   }
 
   if (duplicates.length > 0) {
-    console.warn('Duplicate Edges:', duplicates);
   }
 
-  console.log('Edge Type Distribution:', edgeTypeDistribution);
-  console.log('Summary:', summary);
-  console.groupEnd();
 
   return debugInfo;
 }
@@ -369,7 +356,6 @@ export function debugEdges(edges: GenericEdge[], nodes: GenericNode[]): EdgeDebu
  * const result = cleanupEdges(edges, nodes);
  * setEdges(result.cleanedEdges);
  * if (result.hasIssues) {
- *   console.log('Issues found and cleaned:', result.issueCount);
  * }
  * ```
  */
@@ -440,7 +426,6 @@ export function cleanupEdges(
  * @example
  * ```typescript
  * const stats = getEdgeStats(edges, nodes);
- * console.log(`Connected nodes: ${stats.connectedNodeCount}`);
  * ```
  */
 export function getEdgeStats(

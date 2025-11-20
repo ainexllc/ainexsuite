@@ -68,7 +68,6 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
       setLoadingMessage('Loading your journal entries...');
       // Add timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
-        console.warn('[DashboardView] Load timeout - assuming empty database');
         setLoading(false);
         setEntries([]);
       }, 10000); // 10 second timeout
@@ -84,17 +83,14 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
     if (!user) return;
 
     try {
-      console.log('[DashboardView] Starting to load entries for user:', user.uid);
       setLoading(true);
       setError(null);
 
       // Set a timeout to show a helpful message if loading takes too long
       const timeoutId = setTimeout(() => {
-        console.log('[DashboardView] Loading is taking longer than 3 seconds...');
         setLoadingMessage('Still loading... This is taking longer than expected');
       }, 3000);
 
-      console.log('[DashboardView] Calling getUserJournalEntries...');
       const [ { entries: fetchedEntries }, onThisDay ] = await Promise.all([
         getUserJournalEntries(user.uid, {
           limit: 100,
@@ -103,14 +99,12 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
         }),
         getOnThisDayEntries(user.uid)
       ]);
-      console.log('[DashboardView] Received entries:', fetchedEntries.length);
 
       clearTimeout(timeoutId);
       setEntries(fetchedEntries);
       setOnThisDayEntries(onThisDay);
       setLoadingMessage('Loaded successfully!');
     } catch (error) {
-      console.error('[DashboardView] Error fetching journal entries:', error);
       setError('Failed to load journal entries. Please try refreshing the page.');
       toast({
         title: 'Error',
@@ -118,7 +112,6 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
         variant: 'error',
       });
     } finally {
-      console.log('[DashboardView] Loading complete, setting loading to false');
       setLoading(false);
     }
   };

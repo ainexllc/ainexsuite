@@ -15,7 +15,6 @@ admin.initializeApp();
 
 const GROK_API_KEY = process.env.GROK_API_KEY;
 if (!GROK_API_KEY) {
-  console.warn('GROK_API_KEY environment variable is not set. AI features will not be available.');
 }
 
 const GROK_MODEL = 'grok-beta';
@@ -127,7 +126,6 @@ export const generateSessionCookie = functions
         user: userData,
       };
     } catch (error) {
-      console.error('Error generating session cookie:', error);
       throw new functions.https.HttpsError('internal', 'Failed to generate session cookie');
     }
   });
@@ -161,7 +159,6 @@ export const checkAuthStatus = functions
         user: userDoc.data(),
       };
     } catch (error) {
-      console.error('Error checking auth status:', error);
       return {
         authenticated: false,
         user: null,
@@ -233,7 +230,6 @@ export const chatWithGrok = functions
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Grok API error:', errorText);
         throw new functions.https.HttpsError('internal', 'AI service error');
       }
 
@@ -245,7 +241,6 @@ export const chatWithGrok = functions
         usage: result.usage,
       };
     } catch (error) {
-      console.error('Error calling Grok:', error);
       throw new functions.https.HttpsError('internal', 'Failed to get AI response');
     }
   });
