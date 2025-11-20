@@ -328,10 +328,10 @@ export default function FeaturesPage() {
               Start Free Trial
             </a>
             <a
-              href="/pricing"
+              href="/plans"
               className="inline-flex items-center justify-center px-8 py-4 rounded-2xl border border-white/20 text-white font-semibold hover:bg-white/5 transition-colors"
             >
-              View Pricing
+              View Plans
             </a>
           </div>
         </div>

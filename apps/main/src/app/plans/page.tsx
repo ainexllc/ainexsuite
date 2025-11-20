@@ -191,7 +191,7 @@ function FeatureCheck({ included }: { included: boolean | string }) {
   );
 }
 
-export default function PricingPage() {
+export default function PlansPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
@@ -282,11 +282,11 @@ export default function PricingPage() {
         <div className="text-center space-y-8 pt-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f97316]/10 border border-[#f97316]/20 text-[#f97316] text-sm font-medium mb-4">
             <Sparkles className="h-4 w-4" />
-            Transparent Pricing for Everyone
+            Transparent Plans for Everyone
           </div>
           <div className="space-y-4">
             <h1 className="text-5xl font-bold text-white sm:text-6xl lg:text-7xl bg-gradient-to-r from-white via-white to-white/80 bg-clip-text">
-              Simple, Transparent Pricing
+              Simple, Transparent Plans
             </h1>
             <p className="text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">
               Start free for 30 days with access to all features. No credit card required. Choose the plan that fits your lifestyle.
@@ -474,7 +474,7 @@ export default function PricingPage() {
               Frequently Asked Questions
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto">
-              Everything you need to know about our pricing and subscriptions.
+              Everything you need to know about our plans and subscriptions.
             </p>
           </div>
 

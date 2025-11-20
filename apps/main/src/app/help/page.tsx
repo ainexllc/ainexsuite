@@ -284,7 +284,7 @@ export default function HelpPage() {
                   assistance.
                 </p>
                 <Link
-                  href="/pricing"
+                  href="/plans"
                   className="inline-flex items-center gap-2 text-sm text-[#f97316] font-semibold hover:underline"
                 >
                   View Plans

@@ -38,7 +38,12 @@ export function FooterPageLayout({ children, maxWidth = 'narrow' }: FooterPageLa
         {children}
       </main>
 
-      <Footer />
+      <Footer
+        productLinks={[
+          { label: 'Features', href: '/features' },
+          { label: 'Plans', href: '/plans' },
+        ]}
+      />
     </div>
   );
 }

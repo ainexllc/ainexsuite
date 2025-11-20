@@ -40,7 +40,7 @@ const demoSteps: DemoStep[] = [
 
 const navLinks: NavLink[] = [
   { href: '/features', label: 'Features' },
-  { href: '/pricing', label: 'Plans' },
+  { href: '/plans', label: 'Plans' },
 ];
 
 const appCards: AppCard[] = [
@@ -151,7 +151,7 @@ const featureCards: FeatureCard[] = [
 
 const productLinks: FooterLink[] = [
   { label: 'Features', href: '/features' },
-  { label: 'Plans', href: '/pricing' },
+  { label: 'Plans', href: '/plans' },
   { label: 'Templates', href: '/templates', external: true },
 ];
 

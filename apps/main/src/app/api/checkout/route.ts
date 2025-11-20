@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         selectedApps: selectedAppsStr,
       },
       success_url: `${DOMAIN}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${DOMAIN}/pricing`,
+      cancel_url: `${DOMAIN}/plans`,
       allow_promotion_codes: true,
     });
 
