@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isBootstrapping]);
 
   // Automatic session refresh
   useEffect(() => {
