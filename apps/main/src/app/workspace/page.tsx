@@ -30,6 +30,7 @@ import {
 import { Footer } from '@/components/footer';
 import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
 import { AppsNavVision } from '@/components/workspace/apps-nav-vision';
+import { FeedbackWidget } from '@ainexsuite/ui/components';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
@@ -372,6 +373,9 @@ export default function WorkspacePage() {
           isOpen={isSearchOpen}
           onClose={() => setIsSearchOpen(false)}
         />
+
+        {/* Feedback Widget */}
+        <FeedbackWidget appName="main" />
       </div>
     </div>
   );
