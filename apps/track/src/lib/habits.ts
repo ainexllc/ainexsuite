@@ -25,12 +25,17 @@ function getCurrentUserId(): string {
 }
 
 // Habits
-export async function createHabit(input: Omit<CreateHabitInput, 'ownerId'>): Promise<string> {
+export async function createHabit(
+  input: Omit<CreateHabitInput, 'ownerId' | 'active' | 'type' | 'icon'> & 
+  Partial<Pick<CreateHabitInput, 'type' | 'icon'>>
+): Promise<string> {
   const userId = getCurrentUserId();
   const habitData = {
+    type: 'boolean' as const,
+    icon: 'circle',
     ...input,
     ownerId: userId,
-    archived: false,
+    active: true,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -48,6 +53,7 @@ export async function createHabit(input: Omit<CreateHabitInput, 'ownerId'>): Pro
       metadata: { frequency: input.frequency, color: input.color },
     });
   } catch (error) {
+    // Ignore activity logging errors
   }
 
   return docRef.id;
@@ -62,16 +68,17 @@ export async function updateHabit(
 
   // Log activity
   try {
-    const action = updates.archived !== undefined ? 'archived' : 'updated';
+    const action = updates.active !== undefined ? (updates.active ? 'updated' : 'archived') : 'updated';
     await createActivity({
       app: 'track',
       action,
       itemType: 'habit',
       itemId: habitId,
       itemTitle: updates.name || 'Habit',
-      metadata: { archived: updates.archived },
+      metadata: { active: updates.active },
     });
   } catch (error) {
+    // Ignore activity logging errors
   }
 }
 
@@ -95,6 +102,7 @@ export async function deleteHabit(habitId: string): Promise<void> {
         itemTitle: habit.name,
       });
     } catch (error) {
+      // Ignore activity logging errors
     }
   }
 }

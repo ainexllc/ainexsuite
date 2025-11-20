@@ -41,6 +41,7 @@ function TrackWorkspaceContent() {
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
     } catch (error) {
+      // Ignore sign out error
     }
   };
 
@@ -56,12 +57,13 @@ function TrackWorkspaceContent() {
       setHabits(fetchedHabits);
       setCompletions(fetchedCompletions);
     } catch (error) {
+      // Ignore load error
     } finally {
       setLoading(false);
     }
   };
 
-  const activeHabits = habits.filter((h) => !h.archived);
+  const activeHabits = habits.filter((h) => h.active);
 
   if (authLoading || loading) {
     return (

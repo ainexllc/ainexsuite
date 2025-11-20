@@ -33,6 +33,7 @@ export function HabitList({ habits, completions, onHabitClick, onHabitEdit, onUp
 
       onUpdate();
     } catch (error) {
+      // Ignore toggle error
     } finally {
       setLoading(null);
     }

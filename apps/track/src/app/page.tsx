@@ -14,7 +14,7 @@ import {
   Ruler,
   LineChart,
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
+
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -198,13 +198,13 @@ function TrackHomePageContent() {
             }}
           />
         }
-      />
-      <Footer
-        appName="AINex Track"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINex Track",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

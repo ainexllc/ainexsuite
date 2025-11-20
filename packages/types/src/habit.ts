@@ -19,7 +19,7 @@ export interface HabitCompletion {
   id: string;
   ownerId: string;
   habitId: string;
-  date: string; // YYYY-MM-DD
+  date: number; // Timestamp
   value: boolean | number;
   note: string;
   createdAt: Timestamp;

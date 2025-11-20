@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Habit, Frequency } from '@ainexsuite/types';
+import type { Habit, HabitFrequency } from '@ainexsuite/types';
 import { createHabit, updateHabit, deleteHabit } from '@/lib/habits';
 import { X, Trash2 } from 'lucide-react';
 
@@ -11,7 +11,7 @@ interface HabitEditorProps {
   onSave: () => void;
 }
 
-const FREQUENCIES: { value: Frequency; label: string }[] = [
+const FREQUENCIES: { value: HabitFrequency; label: string }[] = [
   { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
   { value: 'custom', label: 'Custom' },
@@ -25,7 +25,7 @@ const COLORS = [
 export function HabitEditor({ habit, onClose, onSave }: HabitEditorProps) {
   const [name, setName] = useState(habit?.name || '');
   const [description, setDescription] = useState(habit?.description || '');
-  const [frequency, setFrequency] = useState<Frequency>(habit?.frequency || 'daily');
+  const [frequency, setFrequency] = useState<HabitFrequency>(habit?.frequency || 'daily');
   const [color, setColor] = useState(habit?.color || COLORS[0]);
   const [goal, setGoal] = useState(habit?.goal || 1);
   const [saving, setSaving] = useState(false);
@@ -120,7 +120,7 @@ export function HabitEditor({ habit, onClose, onSave }: HabitEditorProps) {
               <label className="block text-sm font-medium mb-2">Frequency</label>
               <select
                 value={frequency}
-                onChange={(e) => setFrequency(e.target.value as Frequency)}
+                onChange={(e) => setFrequency(e.target.value as HabitFrequency)}
                 className="w-full px-3 py-2 surface-elevated rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none"
               >
                 {FREQUENCIES.map((f) => (
