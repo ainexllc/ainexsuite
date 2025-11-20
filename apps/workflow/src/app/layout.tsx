@@ -6,6 +6,7 @@ import { AuthProvider } from '@ainexsuite/auth';
 import { VisualStyleProvider } from '@/components/providers/visual-style-provider';
 import '@ainexsuite/ui/styles';
 import './globals.css';
+import '@/lib/passive-event-fix';
 
 const kanit = Kanit({
   subsets: ['latin'],
