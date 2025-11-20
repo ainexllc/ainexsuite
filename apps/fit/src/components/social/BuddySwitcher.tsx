@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Plus, User, Dumbbell, Users, Settings } from 'lucide-react';
+import { ChevronDown, Plus, User, Dumbbell, Users } from 'lucide-react';
 import { useFitStore } from '../../lib/store';
 import { FitSpace } from '../../types/models';
 import { useAuth } from '@ainexsuite/auth';
@@ -11,7 +11,7 @@ export function BuddySwitcher() {
   const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useFitStore();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentSpace = spaces.find(s => s.id === currentSpaceId);
+  const currentSpace = spaces.find((s: FitSpace) => s.id === currentSpaceId);
 
   const getIcon = (type: FitSpace['type']) => {
     switch (type) {
@@ -75,7 +75,7 @@ export function BuddySwitcher() {
               <div className="px-2 py-1.5 text-xs font-medium text-white/40 uppercase">
                 Workout Spaces
               </div>
-              {spaces.map((space) => (
+              {spaces.map((space: FitSpace) => (
                 <button
                   key={space.id}
                   onClick={() => {

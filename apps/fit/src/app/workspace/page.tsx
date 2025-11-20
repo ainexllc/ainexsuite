@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
@@ -127,7 +127,7 @@ function FitWorkspaceContent() {
                 </h2>
               </div>
               
-              {workouts.filter(w => w.userId === user.uid).length === 0 ? (
+              {workouts.filter((w: Workout) => w.userId === user.uid).length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-white/10 rounded-2xl bg-surface-elevated/50">
                   <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
                     <Dumbbell className="h-8 w-8 text-orange-500" />
@@ -150,7 +150,7 @@ function FitWorkspaceContent() {
                 </div>
               ) : (
                 <WorkoutList
-                  workouts={workouts.filter(w => w.userId === user.uid)}
+                  workouts={workouts.filter((w: Workout) => w.userId === user.uid)}
                   onEdit={(workout) => {
                     setSelectedWorkout(workout);
                     setShowEditor(true);

@@ -1,10 +1,9 @@
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  updateDoc, 
-  query, 
-  where, 
+import {
+  collection,
+  doc,
+  setDoc,
+  query,
+  where,
   onSnapshot,
   orderBy,
   limit
