@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import type { Moment } from '@ainexsuite/types';
 import { PhotoGrid } from '@/components/photo-grid';
 import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
 import { AIAssistant } from '@/components/ai-assistant';
+import { TopNav } from '@/components/top-nav';
 import { getMoments } from '@/lib/moments';
-import { Plus, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Loader2 } from 'lucide-react';
 
 function MomentsWorkspaceContent() {
   const { user, loading: authLoading } = useAuth();
@@ -77,74 +77,40 @@ function MomentsWorkspaceContent() {
   }
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      searchPlaceholder="Search moments..."
-      appName="Moments"
-    >
-      <div className="max-w-7xl mx-auto">
-        {/* Filter Bar */}
-        {allTags.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedTag(null)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                !selectedTag
-                  ? 'bg-accent-500 text-white'
-                  : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
-              }`}
-            >
-              All
-            </button>
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setSelectedTag(tag)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedTag === tag
-                    ? 'bg-accent-500 text-white'
-                    : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
-                }`}
-              >
-                #{tag}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {filteredMoments.length === 0 ? (
-          <div className="text-center py-20 space-y-4 rounded-2xl bg-surface-elevated border border-outline-subtle">
-            <ImageIcon className="h-16 w-16 text-text-muted mx-auto" />
-            <p className="text-text-muted">
-              {selectedTag
-                ? `No moments with tag "${selectedTag}"`
-                : 'No moments yet. Start capturing your memories!'}
-            </p>
-          </div>
-        ) : (
-          <PhotoGrid
-            moments={filteredMoments}
-            onEdit={(moment) => {
-              setSelectedMoment(moment);
-              setShowEditor(true);
-            }}
-            onDetail={(moment) => setDetailMoment(moment)}
-          />
-        )}
-      </div>
-
-      <button
-        onClick={() => {
+    <div className="min-h-screen surface-base">
+      <TopNav
+        selectedTag={selectedTag}
+        onSelectTag={setSelectedTag}
+        tags={allTags}
+        onAddMoment={() => {
           setSelectedMoment(null);
           setShowEditor(true);
         }}
-        className="fixed bottom-8 left-8 w-14 h-14 rounded-full bg-accent-500 hover:bg-accent-600 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-40"
-        type="button"
-        aria-label="Add moment"
-      >
-        <Plus className="h-6 w-6 text-white" />
-      </button>
+      />
+
+      <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {filteredMoments.length === 0 ? (
+            <div className="text-center py-20 space-y-4 rounded-2xl bg-surface-elevated border border-outline-subtle">
+              <ImageIcon className="h-16 w-16 text-text-muted mx-auto" />
+              <p className="text-text-muted">
+                {selectedTag
+                  ? `No moments with tag "${selectedTag}"`
+                  : 'No moments yet. Start capturing your memories!'}
+              </p>
+            </div>
+          ) : (
+            <PhotoGrid
+              moments={filteredMoments}
+              onEdit={(moment) => {
+                setSelectedMoment(moment);
+                setShowEditor(true);
+              }}
+              onDetail={(moment) => setDetailMoment(moment)}
+            />
+          )}
+        </div>
+      </main>
 
       {showEditor && (
         <PhotoEditor
@@ -170,7 +136,7 @@ function MomentsWorkspaceContent() {
       )}
 
       <AIAssistant />
-    </WorkspaceLayout>
+    </div>
   );
 }
 

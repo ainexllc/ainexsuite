@@ -1,15 +1,16 @@
 'use client';
 
 import { useAuth } from '@ainexsuite/auth';
-import { Camera, LogOut, Tag, X } from 'lucide-react';
+import { Camera, LogOut, Tag, X, Plus } from 'lucide-react';
 
 interface TopNavProps {
   selectedTag: string | null;
   onSelectTag: (tag: string | null) => void;
   tags: string[];
+  onAddMoment?: () => void;
 }
 
-export function TopNav({ selectedTag, onSelectTag, tags }: TopNavProps) {
+export function TopNav({ selectedTag, onSelectTag, tags, onAddMoment }: TopNavProps) {
   const { user, logout } = useAuth();
 
   return (
@@ -48,6 +49,17 @@ export function TopNav({ selectedTag, onSelectTag, tags }: TopNavProps) {
                   </button>
                 )}
               </div>
+            )}
+
+            {onAddMoment && (
+              <button
+                onClick={onAddMoment}
+                className="flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors font-medium"
+                type="button"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Moment</span>
+              </button>
             )}
 
             {user && (
