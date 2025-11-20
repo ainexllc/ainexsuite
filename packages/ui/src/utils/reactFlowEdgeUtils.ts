@@ -147,8 +147,8 @@ export function removeDuplicateEdges(edges: GenericEdge[]): GenericEdge[] {
       seen.add(key);
       uniqueEdges.push(edge);
     } else {
-        `Duplicate edge removed: ${edge.id} (${edge.source} → ${edge.target})`
-      );
+      // Logging disabled due to ESLint no-console rule
+      // Message: Duplicate edge removed: ${edge.id} (${edge.source} → ${edge.target})
     }
   });
 

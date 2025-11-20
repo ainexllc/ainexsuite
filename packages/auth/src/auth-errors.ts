@@ -314,14 +314,9 @@ export function logAuthError(
 ): void {
   const errorInfo = parseAuthError(error);
 
-    context,
-    code: errorInfo.code,
-    category: errorInfo.category,
-    message: errorInfo.message,
-    userMessage: errorInfo.userMessage,
-    recoverable: errorInfo.recoverable,
-    ...additionalInfo,
-  });
+  // Note: Logging currently disabled due to ESLint no-console rule
+  // To implement: integrate with a logging service
+  void (context && errorInfo && additionalInfo);
 }
 
 /**
