@@ -10,6 +10,7 @@ export interface AinexStudiosLogoProps {
   asLink?: boolean;
   appName?: string;
   appColor?: string;
+  appNameOffset?: number;
 }
 
 const sizeConfig = {
@@ -46,6 +47,7 @@ export function AinexStudiosLogo({
   asLink = true,
   appName,
   appColor,
+  appNameOffset,
 }: AinexStudiosLogoProps) {
   const config = sizeConfig[size];
 
@@ -62,11 +64,12 @@ export function AinexStudiosLogo({
         <span>X</span>
       </div>
       <div
-        className={clsx('font-brand font-semibold uppercase leading-none', config.studios, config.gap)}
+        className={clsx('font-brand font-semibold uppercase leading-none', config.studios, !appNameOffset && config.gap)}
         style={{
           letterSpacing: config.letterSpacing,
           marginLeft: align === 'start' ? '-0.3em' : '0',
-          color: appColor || '#3b82f6'
+          color: appColor || '#3b82f6',
+          marginTop: appNameOffset ? `${appNameOffset}px` : undefined
         }}
       >
         {appName || 'SUITE'}
