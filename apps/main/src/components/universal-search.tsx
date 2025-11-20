@@ -72,10 +72,12 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
         {
           id: 'ai-command',
           app: 'ai' as unknown as SearchableApp,
+          type: 'command',
           title: `AI Command: ${firstWord}...`,
           content: `I can help you ${searchQuery}. Press Enter to execute.`,
           url: '#',
-          updatedAt: new Date().toISOString(),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
           metadata: { type: 'command' }
         }
       ]);
@@ -93,12 +95,12 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       // Mock results for demonstration
       if (searchQuery.toLowerCase().includes('note')) {
         setResults([
-          { id: '1', app: 'notes', title: 'Meeting Notes', content: 'Discussed Q4 roadmap...', url: 'https://notes.ainexsuite.com/1', updatedAt: new Date().toISOString() },
-          { id: '2', app: 'notes', title: 'Ideas', content: 'App ideas: Smart workspace...', url: 'https://notes.ainexsuite.com/2', updatedAt: new Date().toISOString() }
+          { id: '1', app: 'notes', type: 'note', title: 'Meeting Notes', content: 'Discussed Q4 roadmap...', url: 'https://notes.ainexsuite.com/1', createdAt: Date.now(), updatedAt: Date.now() },
+          { id: '2', app: 'notes', type: 'note', title: 'Ideas', content: 'App ideas: Smart workspace...', url: 'https://notes.ainexsuite.com/2', createdAt: Date.now(), updatedAt: Date.now() }
         ]);
       } else if (searchQuery.toLowerCase().includes('task')) {
          setResults([
-          { id: '3', app: 'todo', title: 'Finish design', content: 'Due tomorrow', url: 'https://tasks.ainexsuite.com/3', updatedAt: new Date().toISOString() }
+          { id: '3', app: 'todo', type: 'task', title: 'Finish design', content: 'Due tomorrow', url: 'https://tasks.ainexsuite.com/3', createdAt: Date.now(), updatedAt: Date.now() }
         ]);
       } else {
         setResults([]);
@@ -150,7 +152,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
       } else if (e.key === 'Enter' && (results[selectedIndex] || isAiMode)) {
         e.preventDefault();
-        handleResultClick(results[selectedIndex] || { id: 'ai-command', app: 'ai' as unknown as SearchableApp, title: 'Command', url: '#', updatedAt: '' });
+        handleResultClick(results[selectedIndex] || { id: 'ai-command', app: 'ai' as unknown as SearchableApp, type: 'command', title: 'Command', content: '', url: '#', createdAt: Date.now(), updatedAt: Date.now() });
       } else if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
