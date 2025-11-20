@@ -22,9 +22,7 @@ import {
   Activity as ActivityIcon,
   Dumbbell,
   Loader2,
-  Search,
   Menu,
-  X,
   ChevronDown,
   Layers,
   GitBranch
@@ -127,7 +125,6 @@ export default function WorkspacePage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Redirect to login if not authenticated
@@ -244,29 +241,6 @@ export default function WorkspacePage() {
               <div className="hidden sm:block">
                 <AinexStudiosLogo size="sm" align="center" asLink={true} />
               </div>
-            </div>
-
-            {/* Center: Search bar */}
-            <div className="mx-4 flex flex-1 items-center gap-2 rounded-full bg-white/5 px-3 py-1 shadow-sm transition hover:bg-white/10 max-w-2xl h-9">
-              <Search className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchOpen(true)}
-                placeholder="Search or type a command..."
-                className="w-full bg-transparent text-sm text-white placeholder:text-white/50 focus:outline-none"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white/70 shrink-0"
-                  aria-label="Clear search"
-                  onClick={() => setSearchQuery('')}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
             </div>
 
             {/* Right: Actions */}
