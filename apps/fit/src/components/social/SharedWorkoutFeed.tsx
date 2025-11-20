@@ -3,6 +3,7 @@
 import { Clock, Dumbbell, User } from 'lucide-react';
 import { useFitStore } from '../../lib/store';
 import { formatDistanceToNow } from 'date-fns';
+import { Workout, Member } from '../../types/models';
 
 export function SharedWorkoutFeed() {
   const { workouts, getCurrentSpace } = useFitStore();
@@ -15,10 +16,10 @@ export function SharedWorkoutFeed() {
       <h3 className="text-sm font-bold text-white/70 uppercase tracking-wider">
         Recent Activity
       </h3>
-      
+
       <div className="space-y-3">
-        {workouts.map((workout) => {
-          const user = currentSpace.members.find(m => m.uid === workout.userId);
+        {workouts.map((workout: Workout) => {
+          const user = currentSpace.members.find((m: Member) => m.uid === workout.userId);
           
           return (
             <div key={workout.id} className="bg-[#1a1a1a] border border-white/5 rounded-xl p-4 hover:border-white/10 transition-colors">

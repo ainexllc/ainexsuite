@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Trophy, Target, Calendar, Save } from 'lucide-react';
+import { X, Trophy, Save } from 'lucide-react';
 import { useFitStore } from '../../lib/store';
 import { Challenge } from '../../types/models';
 import { addDays, format } from 'date-fns';

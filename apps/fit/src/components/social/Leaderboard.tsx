@@ -1,7 +1,8 @@
 'use client';
 
-import { Trophy, Medal, TrendingUp } from 'lucide-react';
+import { Trophy, Medal } from 'lucide-react';
 import { useFitStore } from '../../lib/store';
+import { Member, Workout } from '../../types/models';
 
 export function Leaderboard() {
   const { workouts, getCurrentSpace } = useFitStore();
@@ -10,17 +11,17 @@ export function Leaderboard() {
   if (!currentSpace || currentSpace.type === 'personal') return null;
 
   // Aggregate stats by user
-  const stats = currentSpace.members.map(member => {
-    const userWorkouts = workouts.filter(w => w.userId === member.uid);
+  const stats = currentSpace.members.map((member: Member) => {
+    const userWorkouts = workouts.filter((w: Workout) => w.userId === member.uid);
     const totalWorkouts = userWorkouts.length;
-    const totalDuration = userWorkouts.reduce((acc, w) => acc + w.duration, 0);
+    const totalDuration = userWorkouts.reduce((acc: number, w: Workout) => acc + w.duration, 0);
     
     return {
       ...member,
       totalWorkouts,
       totalDuration
     };
-  }).sort((a, b) => b.totalWorkouts - a.totalWorkouts);
+  }).sort((a: { totalWorkouts: number }, b: { totalWorkouts: number }) => b.totalWorkouts - a.totalWorkouts);
 
   return (
     <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 space-y-4">
@@ -30,7 +31,7 @@ export function Leaderboard() {
       </div>
 
       <div className="space-y-3">
-        {stats.map((stat, index) => (
+        {stats.map((stat: Member & { totalWorkouts: number; totalDuration: number }, index: number) => (
           <div key={stat.uid} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
