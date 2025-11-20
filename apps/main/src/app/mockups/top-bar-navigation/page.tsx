@@ -5,7 +5,7 @@ import {
   LayoutGrid, Book, PenTool, CheckSquare, 
   Target, Image as ImageIcon, TrendingUp, Activity, 
   Dumbbell, GitBranch, Lock, Search, Menu, Bell,
-  ChevronRight, Sparkles
+  ChevronRight
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';

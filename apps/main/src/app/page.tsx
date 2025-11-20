@@ -8,8 +8,6 @@ import {
   Brain,
   BarChart3,
   Shield,
-  Palette,
-  Sparkles,
   BookOpen,
   StickyNote,
   Dumbbell,

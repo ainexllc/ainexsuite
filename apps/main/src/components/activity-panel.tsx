@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Settings as SettingsIcon, Activity as ActivityIcon, Sparkles, Send, Mic, MicOff } from 'lucide-react';
+import { X, Settings as SettingsIcon, Activity as ActivityIcon, Send, Mic, MicOff } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useEnhancedAssistant, useVoiceInput } from '@ainexsuite/ai';
 import { useRef, useEffect } from 'react';
@@ -144,7 +144,6 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
               <header className="space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">
-                    <Sparkles className="h-3.5 w-3.5" />
                     AI Assistant
                   </div>
                   {contextLoading && (
@@ -166,21 +165,21 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                       💡 Suggested prompts
                     </p>
                     <ul className="mt-2 space-y-2 text-sm text-ink-600">
-                      <li 
+                      <li
                         className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted"
-                        onClick={() => handleInputChange({ target: { value: 'Summarize my tasks due today' } } as any)}
+                        onClick={() => handleInputChange({ target: { value: 'Summarize my tasks due today' } } as React.ChangeEvent<HTMLInputElement>)}
                       >
                         Summarize my tasks due today
                       </li>
-                      <li 
+                      <li
                         className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted"
-                        onClick={() => handleInputChange({ target: { value: 'How has my workout consistency been this week?' } } as any)}
+                        onClick={() => handleInputChange({ target: { value: 'How has my workout consistency been this week?' } } as React.ChangeEvent<HTMLInputElement>)}
                       >
                         How has my workout consistency been?
                       </li>
-                      <li 
+                      <li
                         className="cursor-pointer rounded-lg bg-surface-muted/60 px-3 py-2 transition hover:bg-surface-muted"
-                        onClick={() => handleInputChange({ target: { value: 'Find notes about project planning' } } as any)}
+                        onClick={() => handleInputChange({ target: { value: 'Find notes about project planning' } } as React.ChangeEvent<HTMLInputElement>)}
                       >
                         Find notes about project planning
                       </li>

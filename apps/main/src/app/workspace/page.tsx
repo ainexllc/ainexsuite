@@ -25,7 +25,6 @@ import {
   Search,
   Menu,
   X,
-  Sparkles,
   ChevronDown,
   Layers,
   GitBranch
@@ -124,7 +123,7 @@ export default function WorkspacePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { selectedVariant } = useVisualStyle();
-  const { colors: appColors, loading: colorsLoading } = useAllAppColors();
+  const { colors: appColors } = useAllAppColors();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
@@ -287,7 +286,6 @@ export default function WorkspacePage() {
                 }}
                 aria-label="AI Assistant"
               >
-                <Sparkles className="h-4 w-4" />
               </button>
 
               {/* Profile Dropdown Button */}

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   LayoutGrid, Book, PenTool, CheckSquare, 
   Target, Image as ImageIcon, TrendingUp, Activity, 
-  Dumbbell, GitBranch, Home, Sparkles
+  Dumbbell, GitBranch, Home
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
@@ -117,7 +117,6 @@ export default function VisionGlassPage() {
          {/* Page Content Placeholder */}
          <div className="p-8 min-h-[400px] bg-grid-white/[0.02]">
             <div className="bg-white/5 border border-white/5 rounded-2xl p-8 max-w-2xl mx-auto text-center">
-               <Sparkles className="w-12 h-12 text-blue-400 mx-auto mb-4" />
                <h2 className="text-2xl font-bold mb-2">Dashboard Content</h2>
                <p className="text-gray-400">
                  The navigation bar above persists across the app, allowing 1-click switching between contexts. 

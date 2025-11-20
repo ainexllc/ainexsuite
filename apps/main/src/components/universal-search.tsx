@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, X, FileText, CheckSquare, Target, Image as ImageIcon, BookOpen, Activity, Dumbbell, Sparkles } from 'lucide-react';
+import { Search, X, FileText, CheckSquare, Target, Image as ImageIcon, BookOpen, Activity, Dumbbell } from 'lucide-react';
 import { SearchResult, SearchableApp } from '@ainexsuite/types';
 import { useAuth } from '@ainexsuite/auth';
 import { ActionDispatcher } from '@/lib/action-dispatcher';
@@ -71,7 +71,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       setResults([
         {
           id: 'ai-command',
-          app: 'ai' as any,
+          app: 'ai' as unknown as SearchableApp,
           title: `AI Command: ${firstWord}...`,
           content: `I can help you ${searchQuery}. Press Enter to execute.`,
           url: '#',
@@ -127,11 +127,9 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
   const handleResultClick = useCallback(async (result: SearchResult) => {
     if (result.id === 'ai-command' && user?.uid) {
       // Handle AI Command Execution
-      console.log('Executing AI command:', query);
-      
       const dispatcher = new ActionDispatcher(user.uid);
       const response = await dispatcher.dispatch(query);
-      
+
       alert(response.message);
     } else {
       window.open(result.url, '_blank');
@@ -152,7 +150,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
       } else if (e.key === 'Enter' && (results[selectedIndex] || isAiMode)) {
         e.preventDefault();
-        handleResultClick(results[selectedIndex] || { id: 'ai-command', app: 'ai' as any, title: 'Command', url: '#', updatedAt: '' });
+        handleResultClick(results[selectedIndex] || { id: 'ai-command', app: 'ai' as unknown as SearchableApp, title: 'Command', url: '#', updatedAt: '' });
       } else if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
@@ -190,9 +188,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
       >
         {/* Search Input */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-outline-base relative overflow-hidden">
-          {isAiMode ? (
-             <Sparkles className="h-5 w-5 text-purple-400 animate-pulse" />
-          ) : (
+          {!isAiMode && (
             <Search className="h-5 w-5 text-ink-500" />
           )}
           
@@ -258,7 +254,6 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
                  </div>
                  <div className="h-12 w-px bg-white/10" />
                  <div className="flex flex-col items-center">
-                   <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
                    <span className="text-xs text-purple-400">Create</span>
                  </div>
               </div>
@@ -289,9 +284,8 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
                   className={`w-full p-4 text-left hover:bg-surface-hover transition-colors ${index === selectedIndex ? 'bg-surface-hover' : ''} ${result.id === 'ai-command' ? 'bg-purple-500/5 hover:bg-purple-500/10' : ''}`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${result.id === 'ai-command' ? 'bg-purple-500/20 text-purple-400' : APP_COLORS[result.app]}
-                    `}>
-                      {result.id === 'ai-command' ? <Sparkles className="h-4 w-4" /> : APP_ICONS[result.app]}
+                    <div className={`p-2 rounded-lg ${result.id === 'ai-command' ? 'bg-purple-500/20 text-purple-400' : APP_COLORS[result.app]}`}>
+                      {result.id === 'ai-command' ? '✨' : APP_ICONS[result.app]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
