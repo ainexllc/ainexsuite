@@ -56,7 +56,6 @@ export function useVoiceInput({ onResult, onError }: UseVoiceInputOptions = {}) 
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
-        console.error('Speech recognition error', event.error);
         setIsListening(false);
         onError?.(event.error);
       };
@@ -65,7 +64,6 @@ export function useVoiceInput({ onResult, onError }: UseVoiceInputOptions = {}) 
         setIsListening(false);
       };
     } catch (error) {
-      console.error('Failed to start recording', error);
       setIsListening(false);
     }
   }, [recognition, onResult, onError]);

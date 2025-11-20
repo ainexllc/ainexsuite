@@ -197,7 +197,6 @@ export async function POST(request: NextRequest) {
 
     return res;
   } catch (error) {
-    console.error('[Session] Error creating session:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     const stack = error instanceof Error ? error.stack : undefined;
     return NextResponse.json(

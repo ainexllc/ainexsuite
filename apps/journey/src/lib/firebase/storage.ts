@@ -72,7 +72,6 @@ export async function uploadFile(
       size: file.size
     };
   } catch (error) {
-    console.error('Error uploading file:', error);
     throw error;
   }
 }
@@ -87,7 +86,6 @@ export async function uploadMultipleFiles(
     const uploadPromises = files.map(file => uploadFile(userId, entryId, file));
     return await Promise.all(uploadPromises);
   } catch (error) {
-    console.error('Error uploading multiple files:', error);
     throw error;
   }
 }
@@ -103,7 +101,6 @@ export async function deleteFile(
     const storageRef = ref(storage, filePath);
     await deleteObject(storageRef);
   } catch (error) {
-    console.error('Error deleting file:', error);
     throw error;
   }
 }
@@ -124,7 +121,6 @@ export async function deleteAllEntryFiles(
     const deletePromises = result.items.map(item => deleteObject(item));
     await Promise.all(deletePromises);
   } catch (error) {
-    console.error('Error deleting entry files:', error);
     throw error;
   }
 }

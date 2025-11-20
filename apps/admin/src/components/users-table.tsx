@@ -50,7 +50,6 @@ export function UsersTable() {
       } as AdminUser));
       setUsers(fetchedUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +72,6 @@ export function UsersTable() {
       // Update local state
       setUsers(prev => prev.map(u => u.uid === uid ? { ...u, role: newRole } : u));
     } catch (error) {
-      console.error('Error updating user role:', error);
       alert('Failed to update user role');
     } finally {
       setActionLoading(null);

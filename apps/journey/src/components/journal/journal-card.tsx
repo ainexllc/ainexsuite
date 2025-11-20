@@ -107,7 +107,6 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
         }, 100);
       }
     } catch (error) {
-      console.error('Error handling passcode:', error);
       toast({
         title: 'Error',
         description: 'Failed to process passcode. Please try again.',

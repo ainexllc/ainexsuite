@@ -45,7 +45,6 @@ export async function checkEmailExists(email: string): Promise<EmailStatus> {
       hasGoogle: methods.includes('google.com'),
     };
   } catch (error) {
-    console.error('Error checking email:', error);
     return {
       exists: false,
       methods: [],

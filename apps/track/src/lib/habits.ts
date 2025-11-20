@@ -48,7 +48,6 @@ export async function createHabit(input: Omit<CreateHabitInput, 'ownerId'>): Pro
       metadata: { frequency: input.frequency, color: input.color },
     });
   } catch (error) {
-    console.error('Failed to log activity:', error);
   }
 
   return docRef.id;
@@ -73,7 +72,6 @@ export async function updateHabit(
       metadata: { archived: updates.archived },
     });
   } catch (error) {
-    console.error('Failed to log activity:', error);
   }
 }
 
@@ -97,7 +95,6 @@ export async function deleteHabit(habitId: string): Promise<void> {
         itemTitle: habit.name,
       });
     } catch (error) {
-      console.error('Failed to log activity:', error);
     }
   }
 }

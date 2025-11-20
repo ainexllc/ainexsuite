@@ -301,7 +301,6 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
         variant: 'success',
       });
     } catch (error) {
-      console.error('Copy failed:', error);
       toast({
         title: 'Copy failed',
         description: 'Unable to copy to clipboard on this device.',
@@ -432,7 +431,6 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
           : prev,
       );
     } catch (error) {
-      console.error('Enhance content error:', error);
       const message = error instanceof Error ? error.message : 'Please try again later.';
       setBoostPreview((prev) =>
         prev && prev.style === style

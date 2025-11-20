@@ -78,7 +78,6 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
         setHasPasscode(false);
       }
     } catch (error) {
-      console.error('Error loading passcode settings:', error);
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +108,6 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
 
       return true;
     } catch (error) {
-      console.error('Error setting passcode:', error);
       toast({
         title: 'Error',
         description: 'Failed to set passcode. Please try again.',
@@ -147,7 +145,6 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
         return false;
       }
     } catch (error) {
-      console.error('Error verifying passcode:', error);
       return false;
     }
   };
@@ -193,7 +190,6 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
 
       return true;
     } catch (error) {
-      console.error('Error removing passcode:', error);
       toast({
         title: 'Error',
         description: 'Failed to remove passcode. Please try again.',

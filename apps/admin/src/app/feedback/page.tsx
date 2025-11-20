@@ -66,7 +66,6 @@ export default function FeedbackPage() {
         status: newStatus
       });
     } catch (error) {
-      console.error('Error updating status:', error);
     }
   };
 

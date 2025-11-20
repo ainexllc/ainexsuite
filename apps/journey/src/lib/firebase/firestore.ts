@@ -81,12 +81,10 @@ export async function createJournalEntry(
         metadata: { mood: journalData.mood },
       });
     } catch (error) {
-      console.error('Failed to log activity:', error);
     }
 
     return docRef.id;
   } catch (error) {
-    console.error('Error creating journal entry:', error);
     throw error;
   }
 }
@@ -121,10 +119,8 @@ export async function updateJournalEntry(
         metadata: { mood: data.mood },
       });
     } catch (error) {
-      console.error('Failed to log activity:', error);
     }
   } catch (error) {
-    console.error('Error updating journal entry:', error);
     throw error;
   }
 }
@@ -158,10 +154,8 @@ export async function deleteJournalEntry(entryId: string): Promise<void> {
         itemTitle: entryTitle,
       });
     } catch (error) {
-      console.error('Failed to log activity:', error);
     }
   } catch (error) {
-    console.error('Error deleting journal entry:', error);
     throw error;
   }
 }
@@ -182,7 +176,6 @@ export async function getJournalEntry(entryId: string): Promise<JournalEntry | n
 
     return null;
   } catch (error) {
-    console.error('Error fetching journal entry:', error);
     throw error;
   }
 }
@@ -247,7 +240,6 @@ export async function getUserJournalEntries(
 
     return { entries, lastDoc };
   } catch (error) {
-    console.error('Error fetching journal entries:', error);
     throw error;
   }
 }
@@ -270,7 +262,6 @@ export async function searchJournalEntries(
       (entry.links && entry.links.some(link => link.toLowerCase().includes(searchLower)))
     );
   } catch (error) {
-    console.error('Error searching journal entries:', error);
     throw error;
   }
 }
@@ -297,7 +288,6 @@ export async function getOnThisDayEntries(userId: string): Promise<JournalEntry[
       return entryDate.getMonth() === currentMonth && entryDate.getDate() === currentDay;
     });
   } catch (error) {
-    console.error('Error fetching On This Day entries:', error);
     return [];
   }
 }
@@ -350,7 +340,6 @@ export async function getJournalStats(userId: string) {
       entriesByMonth
     };
   } catch (error) {
-    console.error('Error fetching journal statistics:', error);
     throw error;
   }
 }

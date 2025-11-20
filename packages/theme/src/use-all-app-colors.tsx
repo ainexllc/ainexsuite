@@ -41,14 +41,12 @@ export function useAllAppColors() {
         },
         (error) => {
           // Silently handle permission errors - use empty colors
-          console.warn('Could not load app colors, using defaults:', error.message);
           setColors({});
           setLoading(false);
         }
       );
     } catch (error) {
       // Handle any initialization errors gracefully
-      console.warn('Failed to initialize app colors listener, using defaults:', error);
       setColors({});
       setLoading(false);
     }

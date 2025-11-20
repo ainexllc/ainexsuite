@@ -122,7 +122,6 @@ export function canAccessApp(user: User, appName: AppName): { allowed: boolean; 
 export function markAppAsUsed(appName: AppName): void {
   // This function will be called by each app to track usage
   // Implementation will be done via Cloud Function call
-  console.log(`Marking app ${appName} as used`);
 }
 
 /**

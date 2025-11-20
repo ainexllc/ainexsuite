@@ -68,7 +68,6 @@ export function AutoTagSuggestions({
 
       setSuggestions(filteredSuggestions);
     } catch (err) {
-      console.error('Error generating tag suggestions:', err);
       setError('Failed to generate suggestions');
     } finally {
       setLoading(false);

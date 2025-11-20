@@ -45,7 +45,6 @@ export function HabitEditor({ habit, onClose, onSave }: HabitEditorProps) {
       }
       onSave();
     } catch (error) {
-      console.error('Failed to save habit:', error);
       alert('Failed to save habit');
     } finally {
       setSaving(false);
@@ -60,7 +59,6 @@ export function HabitEditor({ habit, onClose, onSave }: HabitEditorProps) {
       await deleteHabit(habit.id);
       onSave();
     } catch (error) {
-      console.error('Failed to delete habit:', error);
       alert('Failed to delete habit');
     }
   };

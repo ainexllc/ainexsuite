@@ -72,7 +72,6 @@ export function AppActivationModal({
         window.location.reload();
       }
     } catch (err) {
-      console.error('Activation error:', err);
       setError(err instanceof Error ? err.message : 'Failed to activate app');
       setActivating(false);
     }

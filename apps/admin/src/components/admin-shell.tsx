@@ -43,7 +43,6 @@ export function AdminShell({
           setIsAdmin(false);
         }
       } catch (error) {
-        console.error('Failed to verify admin role:', error);
         setIsAdmin(false);
       } finally {
         setCheckingRole(false);
@@ -99,7 +98,6 @@ export function AdminShell({
       await (firebaseAuth as any).signOut(auth);
       router.push('/login');
     } catch (error) {
-      console.error('Error signing out:', error);
     }
   };
 

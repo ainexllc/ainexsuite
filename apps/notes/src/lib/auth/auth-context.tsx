@@ -88,7 +88,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         void initAnalytics();
       } catch (error) {
-        console.error("Failed to initialize Firebase auth", error);
         if (isMounted) {
           setUser(null);
           setStatus("unauthenticated");

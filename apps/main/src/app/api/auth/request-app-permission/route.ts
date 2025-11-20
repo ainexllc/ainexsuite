@@ -67,7 +67,6 @@ export async function POST(
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Cloud Function error:', message);
 
       // For development, still return success
       if (isDevelopment) {

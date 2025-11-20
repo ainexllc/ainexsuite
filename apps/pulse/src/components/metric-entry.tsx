@@ -52,7 +52,6 @@ export function MetricEntry({ onUpdate, existingMetrics }: MetricEntryProps) {
 
       onUpdate();
     } catch (error) {
-      console.error('Failed to save metrics:', error);
     } finally {
       setSaving(false);
     }

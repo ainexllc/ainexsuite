@@ -83,7 +83,6 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
 
       onSave();
     } catch (error) {
-      console.error('Failed to save goal:', error);
       alert('Failed to save goal');
     } finally {
       setSaving(false);
@@ -98,7 +97,6 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
       await deleteLearningGoal(goal.id);
       onSave();
     } catch (error) {
-      console.error('Failed to delete goal:', error);
       alert('Failed to delete goal');
     }
   };

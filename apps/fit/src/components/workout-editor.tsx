@@ -70,7 +70,6 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
 
       onSave(data);
     } catch (error) {
-      console.error('Failed to save workout:', error);
     } finally {
       setSaving(false);
     }

@@ -13,7 +13,6 @@ type SmsPayload = {
 
 export async function sendEmail(payload: EmailPayload) {
   if (!serverEnv.RESEND_API_KEY || !serverEnv.RESEND_FROM_EMAIL) {
-    console.warn("Resend credentials missing; skipping email notification");
     return false;
   }
 
@@ -34,7 +33,6 @@ export async function sendEmail(payload: EmailPayload) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Failed to send email reminder", errorText);
     return false;
   }
 
@@ -43,7 +41,6 @@ export async function sendEmail(payload: EmailPayload) {
 
 export async function sendSms(payload: SmsPayload) {
   if (!serverEnv.TWILIO_ACCOUNT_SID || !serverEnv.TWILIO_AUTH_TOKEN) {
-    console.warn("Twilio credentials missing; skipping SMS notification");
     return false;
   }
 
@@ -72,7 +69,6 @@ export async function sendSms(payload: SmsPayload) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Failed to send SMS reminder", errorText);
     return false;
   }
 

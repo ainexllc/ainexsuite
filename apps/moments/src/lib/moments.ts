@@ -41,7 +41,6 @@ export async function createMoment(input: CreateMomentInput): Promise<string> {
       metadata: { location: input.location, tags: input.tags },
     });
   } catch (error) {
-    console.error('Failed to log activity:', error);
   }
 
   return docRef.id;
@@ -68,7 +67,6 @@ export async function updateMoment(
       metadata: { location: updates.location, tags: updates.tags },
     });
   } catch (error) {
-    console.error('Failed to log activity:', error);
   }
 }
 
@@ -92,7 +90,6 @@ export async function deleteMoment(id: string): Promise<void> {
         itemTitle: moment.title,
       });
     } catch (error) {
-      console.error('Failed to log activity:', error);
     }
   }
 }

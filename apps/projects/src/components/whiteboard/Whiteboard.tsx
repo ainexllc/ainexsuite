@@ -56,7 +56,6 @@ const validateEdges = (edges: Edge[], nodes: Node[]) => {
         `${!sourceExists ? `source node "${edge.source}" missing` : ''} ` +
         `${!targetExists ? `target node "${edge.target}" missing` : ''}`
       );
-      console.warn(
         `Removing orphaned edge: ${edge.id} (${edge.source} → ${edge.target})`
       );
       return false;
@@ -222,7 +221,6 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     updatedAt: new Date().toISOString(),
                   });
                 } catch (updateError) {
-                  console.error('Error cleaning up orphaned edges in Firestore:', updateError);
                 }
               }
 
@@ -267,7 +265,6 @@ function WhiteboardInner(_props: WhiteboardProps) {
         }
         setIsLoaded(true);
       } catch (error) {
-        console.error('Error loading whiteboard:', error);
         setIsLoaded(true);
       }
     };
@@ -352,7 +349,6 @@ function WhiteboardInner(_props: WhiteboardProps) {
         updatedAt: new Date().toISOString(),
       });
     } catch (error) {
-      console.error('Error saving whiteboard:', error);
     }
   }, [user, nodes, edges, isDarkMode, edgeType, arrowType, lineStyle, isLoaded]);
 
@@ -699,7 +695,6 @@ function WhiteboardInner(_props: WhiteboardProps) {
         setNodesState(restoredNodes);
         setEdgesState(importData.edges);
       } catch (error) {
-        console.error('Error importing whiteboard:', error);
         alert('Failed to import whiteboard. Please check the file format.');
       }
     };

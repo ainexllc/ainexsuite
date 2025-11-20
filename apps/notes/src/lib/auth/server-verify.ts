@@ -7,7 +7,6 @@ export async function verifyIdToken(
   try {
     return await getAdminAuth().verifyIdToken(idToken, true);
   } catch (error) {
-    console.error("Failed to verify Firebase ID token", error);
     return null;
   }
 }

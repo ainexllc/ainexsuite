@@ -154,7 +154,6 @@ export class GrokClient {
                 yield content;
               }
             } catch (e) {
-              console.error("Error parsing streaming response:", e);
             }
           }
         }

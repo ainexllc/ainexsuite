@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(prompt);
   } catch (error) {
-    console.error('Prompt suggestion error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

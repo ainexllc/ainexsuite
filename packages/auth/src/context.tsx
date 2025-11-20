@@ -58,7 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             // Fallback: Create minimal user object from Firebase user
             // In dev mode, pre-activate all apps to avoid repeated activation modals
-            console.warn('Session endpoint failed, using Firebase user data');
             const now = Date.now();
             const isDev = process.env.NODE_ENV === 'development';
             const userData: User = {
@@ -100,7 +99,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           // Fallback: Create minimal user object from Firebase user
           // In dev mode, pre-activate all apps to avoid repeated activation modals
-          console.error('Session creation error:', error);
           const now = Date.now();
           const isDev = process.env.NODE_ENV === 'development';
           const userData: User = {
@@ -159,7 +157,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         // Check if session has expired
         if (isSessionExpired()) {
-          console.warn('Session expired, signing out');
           await firebaseSignOut(auth);
           clearSessionData();
           setUser(null);
@@ -169,7 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Check if session needs refresh (75% of max age elapsed)
         if (shouldRefreshSession()) {
-          console.log('Refreshing session token');
 
           // Force token refresh
           const newToken = await firebaseUser.getIdToken(true);
@@ -184,14 +180,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (response.ok) {
             const { sessionCookie } = await response.json();
             initializeSession(sessionCookie);
-            console.log('Session refreshed successfully');
           }
         }
 
         // Update last activity
         updateLastActivity();
       } catch (error) {
-        console.error('Session refresh error:', error);
       }
     }, 60000); // Check every minute
 

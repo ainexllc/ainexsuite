@@ -33,7 +33,6 @@ export function HabitList({ habits, completions, onHabitClick, onHabitEdit, onUp
 
       onUpdate();
     } catch (error) {
-      console.error('Failed to toggle habit:', error);
     } finally {
       setLoading(null);
     }

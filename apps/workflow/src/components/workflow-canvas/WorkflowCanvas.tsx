@@ -74,7 +74,6 @@ const validateEdges = (edges: Edge[], nodes: Node[]) => {
         `${!sourceExists ? `source node "${edge.source}" missing` : ''} ` +
         `${!targetExists ? `target node "${edge.target}" missing` : ''}`
       );
-      console.warn(
         `Removing orphaned edge: ${edge.id} (${edge.source} → ${edge.target})`
       );
       return false;
@@ -202,11 +201,8 @@ function WorkflowCanvasInner() {
   // Debug effect to log edge and node state
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log('🔍 Edge/Node State Update:');
     // eslint-disable-next-line no-console
-    console.log('Nodes:', nodes.map(n => ({ id: n.id, type: n.type, position: n.position })));
     // eslint-disable-next-line no-console
-    console.log('Edges:', edges.map(e => ({ id: e.id, source: e.source, target: e.target, sourceHandle: e.sourceHandle, targetHandle: e.targetHandle })));
 
     // Check if edges reference valid nodes
     let orphanedCount = 0;
@@ -219,20 +215,17 @@ function WorkflowCanvasInner() {
       if (!sourceExists || !targetExists) {
         orphanedCount++;
         // eslint-disable-next-line no-console
-        console.error(
           `❌ Edge ${edge.id} references non-existent node(s): ` +
           `${!sourceExists ? `source "${edge.source}"` : ''} ` +
           `${!targetExists ? `target "${edge.target}"` : ''}`
         );
       } else {
         // eslint-disable-next-line no-console
-        console.log(`✅ Edge ${edge.id} has valid nodes: ${edge.source} → ${edge.target}`);
       }
     });
 
     if (orphanedCount > 0) {
       // eslint-disable-next-line no-console
-      console.warn(`⚠️ Found ${orphanedCount} orphaned edge(s) currently in state`);
     }
   }, [nodes, edges]);
 
@@ -340,7 +333,6 @@ function WorkflowCanvasInner() {
 
             if (orphanedEdges.length > 0) {
               // eslint-disable-next-line no-console
-              console.warn(`Found ${orphanedEdges.length} orphaned edge(s):`, orphanedEdges);
 
               // Clean up orphaned edges from Firestore
               try {
@@ -348,10 +340,8 @@ function WorkflowCanvasInner() {
                   edges: validEdges,
                 });
                 // eslint-disable-next-line no-console
-                console.log(`Cleaned up ${orphanedEdges.length} orphaned edge(s) from Firestore`);
               } catch (updateError) {
                 // eslint-disable-next-line no-console
-                console.error('Error cleaning up orphaned edges in Firestore:', updateError);
               }
             }
 
@@ -378,7 +368,6 @@ function WorkflowCanvasInner() {
           }
         }
       } catch (error) {
-        console.error('Error loading workflow:', error);
       }
     };
 
@@ -428,7 +417,6 @@ function WorkflowCanvasInner() {
 
     if (orphanedEdges.length > 0) {
       // eslint-disable-next-line no-console
-      console.warn(`Cleaning up ${orphanedEdges.length} orphaned edge(s):`, orphanedEdges);
       setEdgesState(validEdges);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -456,7 +444,6 @@ function WorkflowCanvasInner() {
 
         await setDoc(workflowRef, payload, { merge: true });
       } catch (error) {
-        console.error('Error saving workflow:', error);
       }
     }, 1000);
 
@@ -486,7 +473,6 @@ function WorkflowCanvasInner() {
       // Remove if edge connects to a deleted node
       if (deletedNodeIds.has(e.source) || deletedNodeIds.has(e.target)) {
         // eslint-disable-next-line no-console
-        console.log(`Removing edge ${e.id} connected to deleted node`);
         return false;
       }
 
@@ -729,13 +715,10 @@ function WorkflowCanvasInner() {
   const onConnect = useCallback(
     (params: Connection) => {
       // eslint-disable-next-line no-console
-      console.log('=== CONNECTION ATTEMPT ===');
       // eslint-disable-next-line no-console
-      console.log('Connection params:', params);
 
       if (!params.source || !params.target) {
         // eslint-disable-next-line no-console
-        console.error('❌ CONNECTION BLOCKED - Missing source or target');
         return;
       }
 
@@ -744,7 +727,6 @@ function WorkflowCanvasInner() {
 
       if (!sourceNode || !targetNode) {
         // eslint-disable-next-line no-console
-        console.error('❌ CONNECTION BLOCKED - Source or target node missing in state');
         return;
       }
 
@@ -763,7 +745,6 @@ function WorkflowCanvasInner() {
 
         if (isDuplicate) {
           // eslint-disable-next-line no-console
-          console.warn('⚠️ DUPLICATE EDGE BLOCKED - Edge already exists between these nodes');
           return eds;
         }
 
@@ -780,7 +761,6 @@ function WorkflowCanvasInner() {
         }));
 
         // eslint-disable-next-line no-console
-        console.log('✅ NEW EDGE CREATED');
         takeSnapshot();
         return newEdges;
       });

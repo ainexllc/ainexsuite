@@ -56,7 +56,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<DetectAcc
         { status: 200 }
       );
     } catch (error) {
-      console.error('Firestore query error:', error);
       return NextResponse.json(
         { account: null },
         { status: 200 }
@@ -64,7 +63,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<DetectAcc
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Detect account error:', message);
     return NextResponse.json(
       { account: null },
       { status: 500 }

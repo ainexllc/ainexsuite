@@ -116,7 +116,6 @@ export function RichTextEditorEnhanced({
       const compressedFile = await imageCompression(file, options);
       return compressedFile;
     } catch (error) {
-      console.error('Error compressing image:', error);
       return file;
     }
   };

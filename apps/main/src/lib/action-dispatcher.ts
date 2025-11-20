@@ -49,7 +49,6 @@ export class ActionDispatcher {
           return { success: false, message: "Action not implemented." };
       }
     } catch (error) {
-      console.error('Action dispatch failed:', error);
       return { success: false, message: "Something went wrong while performing that action." };
     }
   }

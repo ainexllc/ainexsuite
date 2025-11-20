@@ -53,7 +53,6 @@ export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditor
       }
       onSave();
     } catch (error) {
-      console.error('Failed to save entry:', error);
       alert('Failed to save entry');
     } finally {
       setSaving(false);

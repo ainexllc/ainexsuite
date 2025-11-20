@@ -177,7 +177,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching todo insights:', error);
       callback([]);
     });
   }
@@ -212,7 +211,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching note insights:', error);
       callback([]);
     });
   }
@@ -247,7 +245,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching fit insights:', error);
       callback([]);
     });
   }
@@ -282,7 +279,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching journey insights:', error);
       callback([]);
     });
   }
@@ -320,7 +316,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching grow insights:', error);
       callback([]);
     });
   }
@@ -355,7 +350,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching pulse insights:', error);
       callback([]);
     });
   }
@@ -385,7 +379,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching habit insights:', error);
       callback([]);
     });
   }
@@ -414,7 +407,6 @@ export class SmartDashboardService {
       });
       callback(insights);
     }, (error) => {
-      console.error('Error fetching moment insights:', error);
       callback([]);
     });
   }
@@ -442,7 +434,6 @@ export class SmartDashboardService {
       }
       callback(insights);
     }, (error) => {
-      console.error('Error fetching project insights:', error);
       callback([]);
     });
   }

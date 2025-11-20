@@ -62,7 +62,6 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
          });
        }
     },
-    onError: (err) => console.error("Voice Error:", err)
   });
 
   // Auto-scroll to bottom of chat
