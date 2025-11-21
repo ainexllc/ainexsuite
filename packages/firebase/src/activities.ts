@@ -162,7 +162,6 @@ export function subscribeToActivityFeed(
     (error) => {
       if (onError) {
         onError(error);
-      } else {
       }
     }
   );

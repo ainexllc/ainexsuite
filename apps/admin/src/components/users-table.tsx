@@ -23,7 +23,6 @@ import {
   AlertCircle
 } from 'lucide-react';
 import type { User } from '@ainexsuite/types';
-import type { SubscriptionStatus, SubscriptionTier } from '@ainexsuite/types';
 import { clsx } from 'clsx';
 import Image from 'next/image';
 

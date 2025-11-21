@@ -75,7 +75,7 @@ export interface StripeWebhookPayload {
   type: StripeWebhookEvent;
   created: number;
   data: {
-    object: Record<string, any>;
+    object: Record<string, unknown>;
   };
 }
 
