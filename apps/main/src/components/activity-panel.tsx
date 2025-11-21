@@ -1,9 +1,10 @@
 'use client';
 
-import { X, Settings as SettingsIcon, Activity as ActivityIcon, Send, Mic, MicOff } from 'lucide-react';
+import { X, Settings as SettingsIcon, Send, Mic, MicOff } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useEnhancedAssistant, useVoiceInput } from '@ainexsuite/ai';
 import { useRef, useEffect, useState } from 'react';
+import ActivityFeed from '@/components/activity-feed';
 
 interface ActivityPanelProps {
   isOpen: boolean;
@@ -96,19 +97,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
         <div className="flex-1 overflow-y-auto p-6">
           {activeView === 'activity' ? (
             <div className="space-y-4">
-              <div className="rounded-2xl bg-surface-muted/40 px-5 py-6 text-center">
-                <ActivityIcon className="h-8 w-8 mx-auto mb-3 text-ink-500" />
-                <p className="font-semibold text-ink-700">
-                  You&apos;re all caught up
-                </p>
-                <p className="mt-1 text-sm text-ink-600">
-                  Your recent activity will appear here
-                </p>
-              </div>
-
-              <footer className="rounded-2xl bg-surface-muted px-4 py-3 text-xs text-ink-600">
-                <span>Activity feed coming soon</span>
-              </footer>
+              <ActivityFeed limit={20} />
             </div>
           ) : activeView === 'settings' ? (
             <div className="space-y-6">
