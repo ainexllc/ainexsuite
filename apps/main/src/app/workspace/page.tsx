@@ -23,100 +23,35 @@ import { PulseIcon } from '@/components/icons/pulse-icon';
 import { FitIcon } from '@/components/icons/fit-icon';
 import { ProjectsIcon } from '@/components/icons/projects-icon';
 import { WorkflowIcon } from '@/components/icons/workflow-icon';
+import { SUITE_APPS, getAppUrl } from '@ainexsuite/ui';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
 
-const apps = [
-  {
-    name: 'Notes',
-    slug: 'notes',
-    description: 'Quickly capture thoughts, ideas, and meeting notes. AI-powered organization.',
-    icon: NotesIcon,
-    color: 'from-blue-500 to-blue-600',
-    url: isDev ? 'http://localhost:3001' : 'https://notes.ainexsuite.com',
-  },
-  {
-    name: 'Journey',
-    slug: 'journey',
-    description: 'Reflect on your daily experiences with guided prompts and mood tracking.',
-    icon: JourneyIcon,
-    color: 'from-purple-500 to-purple-600',
-    url: isDev ? 'http://localhost:3002' : 'https://journey.ainexsuite.com',
-  },
-  {
-    name: 'Tasks',
-    slug: 'todo',
-    description: 'Manage to-dos and projects. Never miss a deadline with smart priorities.',
-    icon: TasksIcon,
-    color: 'from-green-500 to-green-600',
-    url: isDev ? 'http://localhost:3003' : 'https://tasks.ainexsuite.com',
-  },
-  {
-    name: 'Track',
-    slug: 'track',
-    description: 'Build better habits with visual streaks and progress analytics.',
-    icon: TrackIcon,
-    color: 'from-orange-500 to-orange-600',
-    url: isDev ? 'http://localhost:3004' : 'https://track.ainexsuite.com',
-  },
-  {
-    name: 'Moments',
-    slug: 'moments',
-    description: 'Capture life\'s beautiful moments. Create a visual timeline of memories.',
-    icon: MomentsIcon,
-    color: 'from-yellow-500 to-yellow-600',
-    url: isDev ? 'http://localhost:3005' : 'https://moments.ainexsuite.com',
-  },
-  {
-    name: 'Grow',
-    slug: 'grow',
-    description: 'Track your learning journey, set goals, and master new skills.',
-    icon: GrowIcon,
-    color: 'from-teal-500 to-teal-600',
-    url: isDev ? 'http://localhost:3006' : 'https://grow.ainexsuite.com',
-  },
-  {
-    name: 'Pulse',
-    slug: 'pulse',
-    description: 'Monitor health metrics, wellness trends, and vital signs.',
-    icon: PulseIcon,
-    color: 'from-red-500 to-red-600',
-    url: isDev ? 'http://localhost:3007' : 'https://pulse.ainexsuite.com',
-  },
-  {
-    name: 'Fit',
-    slug: 'fit',
-    description: 'Record workouts and track fitness progress. Visualize your gains.',
-    icon: FitIcon,
-    color: 'from-blue-500 to-blue-600',
-    url: isDev ? 'http://localhost:3008' : 'https://fit.ainexsuite.com',
-  },
-  {
-    name: 'Projects',
-    slug: 'projects',
-    description: 'Visual whiteboard with sticky notes for creative team collaboration.',
-    icon: ProjectsIcon,
-    color: 'from-pink-500 to-pink-600',
-    url: isDev ? 'http://localhost:3009' : 'https://projects.ainexsuite.com',
-  },
-  {
-    name: 'Workflow',
-    slug: 'workflow',
-    description: 'Build and automate visual workflows with drag-and-drop simplicity.',
-    icon: WorkflowIcon,
-    color: 'from-cyan-500 to-cyan-600',
-    url: isDev ? 'http://localhost:3010' : 'https://workflow.ainexsuite.com',
-  },
-  {
-    name: 'Admin',
-    slug: 'admin',
-    description: 'Administrative dashboard for system management.',
-    icon: AdminIcon,
-    color: 'from-slate-500 to-slate-600',
-    url: isDev ? 'http://localhost:3011' : 'https://admin.ainexsuite.com',
-  },
-];
+// Map custom icons to shared app configuration
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  notes: NotesIcon,
+  journey: JourneyIcon,
+  todo: TasksIcon,
+  track: TrackIcon,
+  moments: MomentsIcon,
+  grow: GrowIcon,
+  pulse: PulseIcon,
+  fit: FitIcon,
+  projects: ProjectsIcon,
+  workflow: WorkflowIcon,
+  admin: AdminIcon,
+};
+
+// Build apps array from shared configuration with icons
+const apps = Object.entries(SUITE_APPS).map(([slug, config]) => ({
+  name: config.name,
+  slug: config.slug,
+  description: config.description,
+  icon: iconMap[slug] || AdminIcon,
+  color: config.color,
+  url: getAppUrl(slug, isDev),
+}));
 
 export default function WorkspacePage() {
   const { user, loading, signOut } = useAuth();

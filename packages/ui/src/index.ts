@@ -13,3 +13,5 @@ export * from './lib/utils';
 export * from './utils/reactFlowEdgeUtils';
 export * from './components';
 export * from './templates';
+export * from './hooks';
+export * from './config/apps';
