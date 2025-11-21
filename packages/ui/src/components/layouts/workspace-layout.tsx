@@ -5,6 +5,7 @@ import { WorkspaceHeader } from './workspace-header';
 import { AtmosphericGlows } from './atmospheric-glows';
 import { FeedbackWidget } from '../feedback/feedback-widget';
 import { SubscriptionSidebar } from '../layout/subscription-sidebar';
+import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
 
 interface WorkspaceLayoutProps {
   /**
@@ -44,6 +45,16 @@ interface WorkspaceLayoutProps {
    * @default true
    */
   showGlows?: boolean;
+  /**
+   * Apps to show in the left navigation sidebar
+   */
+  apps?: Array<{
+    name: string;
+    slug: string;
+    url: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color?: string;
+  }>;
 }
 
 /**
@@ -67,6 +78,7 @@ export function WorkspaceLayout({
   appName,
   appColor,
   showGlows = true,
+  apps = [],
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
 
@@ -85,12 +97,22 @@ export function WorkspaceLayout({
         onNavigationToggle={() => setIsNavOpen(!isNavOpen)}
       />
 
-      {/* Subscription Sidebar */}
-      <SubscriptionSidebar
-        isOpen={isNavOpen}
-        onClose={() => setIsNavOpen(false)}
-        user={user}
-      />
+      {/* App Navigation Sidebar */}
+      {apps.length > 0 ? (
+        <AppNavigationSidebar
+          isOpen={isNavOpen}
+          onClose={() => setIsNavOpen(false)}
+          apps={apps}
+          user={user}
+        />
+      ) : (
+        /* Fallback to subscription sidebar if no apps provided */
+        <SubscriptionSidebar
+          isOpen={isNavOpen}
+          onClose={() => setIsNavOpen(false)}
+          user={user}
+        />
+      )}
 
       {/* Main Content */}
       <main className="flex-1 pt-16">

@@ -36,6 +36,11 @@ export {
 } from "./layout/subscription-sidebar";
 
 export {
+  AppNavigationSidebar,
+  type AppNavigationSidebarProps,
+} from "./layout/app-navigation-sidebar";
+
+export {
   SearchBar,
   type SearchBarProps,
 } from "./navigation/search-bar";

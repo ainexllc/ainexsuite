@@ -210,6 +210,7 @@ export default function WorkspacePage() {
         appName="Suite"
         appColor={selectedVariant.id === 'ember-glow' ? '#f97316' : '#38bdf8'}
         showGlows={false} // We handle our own atmospheric glows
+        apps={apps}
       >
         {/* Top Apps Navigation */}
         <AppsNavVision apps={allAppsWithStatus} />
