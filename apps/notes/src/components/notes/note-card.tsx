@@ -260,17 +260,17 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             <button
               type="button"
               onClick={handleArchive}
-              className="icon-button h-9 w-9"
+              className="icon-button h-9 w-9 flex items-center justify-center"
               aria-label={note.archived ? "Unarchive note" : "Archive note"}
             >
               <Archive className="h-4 w-4" />
             </button>
-            <div className="relative">
+            <div className="relative flex items-center">
               <button
                 type="button"
                 onClick={handleOpenPalette}
                 className={clsx(
-                  "icon-button h-9 w-9",
+                  "icon-button h-9 w-9 flex items-center justify-center",
                   showPalette && "bg-accent-100 text-accent-600",
                 )}
                 aria-label="Change color"
@@ -298,12 +298,12 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                 </div>
               ) : null}
             </div>
-            <div className="relative">
+            <div className="relative flex items-center">
               <button
                 type="button"
                 onClick={handleOpenPatternPicker}
                 className={clsx(
-                  "icon-button h-9 w-9",
+                  "icon-button h-9 w-9 flex items-center justify-center",
                   showPatternPicker && "bg-accent-100 text-accent-600",
                 )}
                 aria-label="Change pattern"
@@ -336,7 +336,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             <button
               type="button"
               onClick={handleDeleteClick}
-              className="icon-button h-9 w-9 text-danger"
+              className="icon-button h-9 w-9 flex items-center justify-center text-danger"
               aria-label="Delete note"
             >
               <Trash2 className="h-4 w-4" />
