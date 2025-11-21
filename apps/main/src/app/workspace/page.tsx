@@ -10,7 +10,7 @@ import UniversalSearch from '@/components/universal-search';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useVisualStyle } from '@/lib/theme/visual-style';
 import { useAllAppColors } from '@ainexsuite/theme';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Settings as AdminIcon } from 'lucide-react';
 import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
 import { AppsNavVision } from '@/components/workspace/apps-nav-vision';
 import { NotesIcon } from '@/components/icons/notes-icon';
@@ -74,7 +74,7 @@ const apps = [
     description: 'Track your learning journey, set goals, and master new skills.',
     icon: GrowIcon,
     color: 'from-teal-500 to-teal-600',
-    url: isDev ? 'http://localhost:3007' : 'https://grow.ainexsuite.com',
+    url: isDev ? 'http://localhost:3006' : 'https://grow.ainexsuite.com',
   },
   {
     name: 'Pulse',
@@ -82,7 +82,7 @@ const apps = [
     description: 'Monitor health metrics, wellness trends, and vital signs.',
     icon: PulseIcon,
     color: 'from-red-500 to-red-600',
-    url: isDev ? 'http://localhost:3010' : 'https://pulse.ainexsuite.com',
+    url: isDev ? 'http://localhost:3007' : 'https://pulse.ainexsuite.com',
   },
   {
     name: 'Fit',
@@ -90,7 +90,7 @@ const apps = [
     description: 'Record workouts and track fitness progress. Visualize your gains.',
     icon: FitIcon,
     color: 'from-blue-500 to-blue-600',
-    url: isDev ? 'http://localhost:3006' : 'https://fit.ainexsuite.com',
+    url: isDev ? 'http://localhost:3008' : 'https://fit.ainexsuite.com',
   },
   {
     name: 'Projects',
@@ -106,7 +106,15 @@ const apps = [
     description: 'Build and automate visual workflows with drag-and-drop simplicity.',
     icon: WorkflowIcon,
     color: 'from-cyan-500 to-cyan-600',
-    url: isDev ? 'http://localhost:3011' : 'https://workflow.ainexsuite.com',
+    url: isDev ? 'http://localhost:3010' : 'https://workflow.ainexsuite.com',
+  },
+  {
+    name: 'Admin',
+    slug: 'admin',
+    description: 'Administrative dashboard for system management.',
+    icon: AdminIcon,
+    color: 'from-slate-500 to-slate-600',
+    url: isDev ? 'http://localhost:3011' : 'https://admin.ainexsuite.com',
   },
 ];
 
