@@ -73,6 +73,8 @@ export type NoteDoc = {
   attachments: NoteAttachment[];
   sharedWith: NoteCollaboratorDoc[];
   sharedWithUserIds: string[];
+  width?: number;
+  height?: number;
 };
 
 export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "sharedWith" | "deletedAt"> & {
@@ -98,6 +100,8 @@ export type NoteDraft = {
   sharedWith?: NoteCollaborator[];
   sharedWithUserIds?: string[];
   deletedAt?: Date | null;
+  width?: number;
+  height?: number;
 };
 
 export type LabelDoc = {

@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { NoteComposer } from "@/components/notes/note-composer";
 import { NoteCard } from "@/components/notes/note-card";
+import { ResizableNote } from "@/components/notes/resizable-note";
 import { ViewToggle } from "@/components/notes/view-toggle";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
@@ -76,7 +77,9 @@ export function NoteBoard() {
               <div className={viewMode === "list" ? "space-y-2" : masonryClasses}>
                 {pinned.map((note) => (
                   <div key={note.id} className={viewMode === "list" ? "" : "mb-4 break-inside-avoid"}>
-                    <NoteCard note={note} viewMode={viewMode} />
+                    <ResizableNote note={note} viewMode={viewMode}>
+                      <NoteCard note={note} viewMode={viewMode} />
+                    </ResizableNote>
                   </div>
                 ))}
               </div>
@@ -94,7 +97,9 @@ export function NoteBoard() {
               <div className={viewMode === "list" ? "space-y-2" : masonryClasses}>
                 {others.map((note) => (
                   <div key={note.id} className={viewMode === "list" ? "" : "mb-4 break-inside-avoid"}>
-                    <NoteCard note={note} viewMode={viewMode} />
+                    <ResizableNote note={note} viewMode={viewMode}>
+                      <NoteCard note={note} viewMode={viewMode} />
+                    </ResizableNote>
                   </div>
                 ))}
               </div>

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { NoteCard } from "@/components/notes/note-card";
+import { ResizableNote } from "@/components/notes/resizable-note";
 import { useNotes } from "@/components/providers/notes-provider";
 import { Container } from "@/components/layout/container";
 import { Archive } from "lucide-react";
@@ -80,7 +81,9 @@ export function ArchiveBoard() {
               <div className="note-board-columns">
                 {archivedNotes.pinned.map((note) => (
                   <div key={note.id} className="mb-4">
-                    <NoteCard note={note} />
+                    <ResizableNote note={note}>
+                      <NoteCard note={note} />
+                    </ResizableNote>
                   </div>
                 ))}
               </div>
@@ -98,7 +101,9 @@ export function ArchiveBoard() {
               <div className="note-board-columns">
                 {archivedNotes.others.map((note) => (
                   <div key={note.id} className="mb-4">
-                    <NoteCard note={note} />
+                    <ResizableNote note={note}>
+                      <NoteCard note={note} />
+                    </ResizableNote>
                   </div>
                 ))}
               </div>
