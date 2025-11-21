@@ -86,7 +86,7 @@ export function AinexStudiosLogo({
 
   if (asLink) {
     return (
-      <Link href="/" className={containerClassName} style={{ transform: 'scale(1.15)' }}>
+      <Link href="/workspace" className={containerClassName} style={{ transform: 'scale(1.15)' }}>
         {content}
       </Link>
     );
