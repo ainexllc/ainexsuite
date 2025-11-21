@@ -92,6 +92,8 @@ function StickyNoteNode({ data }: NodeProps) {
           isVisible={isHovered}
           minWidth={150}
           minHeight={100}
+          maxWidth={500}
+          maxHeight={1000}
           onResizeEnd={(event, params) => {
             nodeData.onResize?.(params.width, params.height);
           }}
