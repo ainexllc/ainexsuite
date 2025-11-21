@@ -31,6 +31,11 @@ export {
 } from "./layout/activity-panel";
 
 export {
+  SubscriptionSidebar,
+  type SubscriptionSidebarProps,
+} from "./layout/subscription-sidebar";
+
+export {
   SearchBar,
   type SearchBarProps,
 } from "./navigation/search-bar";

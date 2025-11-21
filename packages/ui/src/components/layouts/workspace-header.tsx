@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, Sparkles, ChevronDown } from 'lucide-react';
+import { Menu, Sparkles, ChevronDown, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 
@@ -10,11 +10,15 @@ interface WorkspaceHeaderProps {
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
+    subscriptionStatus?: string;
+    subscriptionTier?: string;
+    trialStartDate?: number;
   };
   searchPlaceholder?: string;
   onSignOut: () => void;
   appName?: string;
   appColor?: string;
+  onNavigationToggle?: () => void;
 }
 
 /**
@@ -43,8 +47,22 @@ export function WorkspaceHeader({
   onSignOut,
   appName,
   appColor,
+  onNavigationToggle,
 }: WorkspaceHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Calculate trial days remaining
+  const getRemainingTrialDays = () => {
+    if (!user.trialStartDate || user.subscriptionStatus !== 'trial') return null;
+    const trialEndDate = new Date(user.trialStartDate);
+    trialEndDate.setDate(trialEndDate.getDate() + 30);
+    const now = new Date();
+    const daysRemaining = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, daysRemaining);
+  };
+
+  const trialDaysRemaining = getRemainingTrialDays();
+  const isTrialActive = user.subscriptionStatus === 'trial' && trialDaysRemaining !== null && trialDaysRemaining > 0;
 
   return (
     <header
@@ -60,6 +78,7 @@ export function WorkspaceHeader({
         <div className="flex items-center gap-3">
           <button
             type="button"
+            onClick={onNavigationToggle}
             className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 shadow-sm transition hover:bg-white/10"
             aria-label="Toggle navigation"
           >
@@ -128,10 +147,35 @@ export function WorkspaceHeader({
                   className="fixed inset-0 z-10"
                   onClick={() => setIsProfileOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-white/10 bg-[#0a0a0a] shadow-xl z-20">
+                <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-white/10 bg-[#0a0a0a] shadow-xl z-20">
                   <div className="p-3 border-b border-white/10">
                     <p className="text-sm font-medium text-white">{user.displayName || 'User'}</p>
                     <p className="text-xs text-white/50">{user.email}</p>
+
+                    {/* Trial Status */}
+                    {isTrialActive && (
+                      <div className="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 px-2 py-1.5 border border-amber-500/20">
+                        <Clock className="h-3.5 w-3.5 text-amber-400" />
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-amber-300">
+                            {trialDaysRemaining === 1 ? 'Last day of trial' : `${trialDaysRemaining} days left`}
+                          </p>
+                          <p className="text-xs text-amber-200/70">Free trial</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subscription Status */}
+                    {user.subscriptionStatus && user.subscriptionStatus !== 'trial' && (
+                      <div className="mt-2 flex items-center gap-2 rounded-md bg-emerald-500/10 px-2 py-1.5 border border-emerald-500/20">
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-emerald-300 capitalize">
+                            {user.subscriptionTier || 'Active'} Plan
+                          </p>
+                          <p className="text-xs text-emerald-200/70 capitalize">{user.subscriptionStatus}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="p-1">
                     <button

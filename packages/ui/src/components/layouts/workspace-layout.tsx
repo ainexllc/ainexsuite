@@ -1,9 +1,10 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { WorkspaceHeader } from './workspace-header';
 import { AtmosphericGlows } from './atmospheric-glows';
 import { FeedbackWidget } from '../feedback/feedback-widget';
+import { SubscriptionSidebar } from '../layout/subscription-sidebar';
 
 interface WorkspaceLayoutProps {
   /**
@@ -18,6 +19,9 @@ interface WorkspaceLayoutProps {
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
+    subscriptionStatus?: string;
+    subscriptionTier?: string;
+    trialStartDate?: number;
   };
   /**
    * Function to handle sign out
@@ -64,6 +68,8 @@ export function WorkspaceLayout({
   appColor,
   showGlows = true,
 }: WorkspaceLayoutProps) {
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-surface-base text-text-primary">
       {/* Background Effects */}
@@ -76,6 +82,14 @@ export function WorkspaceLayout({
         searchPlaceholder={searchPlaceholder}
         appName={appName}
         appColor={appColor}
+        onNavigationToggle={() => setIsNavOpen(!isNavOpen)}
+      />
+
+      {/* Subscription Sidebar */}
+      <SubscriptionSidebar
+        isOpen={isNavOpen}
+        onClose={() => setIsNavOpen(false)}
+        user={user}
       />
 
       {/* Main Content */}
