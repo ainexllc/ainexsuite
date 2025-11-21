@@ -7,15 +7,10 @@ import { useAuth } from '@ainexsuite/auth';
 
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
-import { WorkspaceLayout, NavigationPanel } from '@ainexsuite/ui/components';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useVisualStyle } from '@/lib/theme/visual-style';
 import { useAllAppColors } from '@ainexsuite/theme';
-import {
-  Settings,
-  Activity as ActivityIcon,
-  RefreshCw,
-  Loader2
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
 import { AppsNavVision } from '@/components/workspace/apps-nav-vision';
 import { NotesIcon } from '@/components/icons/notes-icon';
@@ -121,7 +116,6 @@ export default function WorkspacePage() {
   const { selectedVariant } = useVisualStyle();
   const { colors: appColors } = useAllAppColors();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isNavOpen, setIsNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
 
   // Redirect to login if not authenticated
@@ -159,51 +153,23 @@ export default function WorkspacePage() {
 
   // Escape key handler for panels
   useEffect(() => {
-    if (!isNavOpen && !activePanel) {
+    if (!activePanel) {
       return;
     }
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        if (activePanel) {
-          setActivePanel(null);
-        } else if (isNavOpen) {
-          setIsNavOpen(false);
-        }
+        setActivePanel(null);
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isNavOpen, activePanel]);
+  }, [activePanel]);
 
   const handleSignOut = async () => {
     await signOut();
     router.push('/');
   };
-
-  const profileMenuItems = [
-    {
-      icon: <Settings className="h-4 w-4" />,
-      label: "Settings",
-      onClick: () => {
-        setActivePanel('settings');
-      },
-    },
-    {
-      icon: <ActivityIcon className="h-4 w-4" />,
-      label: "Activity",
-      onClick: () => {
-        setActivePanel('activity');
-      },
-    },
-    {
-      icon: <RefreshCw className="h-4 w-4" />,
-      label: "Refresh",
-      onClick: () => {
-        router.refresh();
-      },
-    },
-  ];
 
   if (loading) {
     return (
@@ -243,9 +209,6 @@ export default function WorkspacePage() {
         onSignOut={handleSignOut}
         appName="Suite"
         appColor={selectedVariant.id === 'ember-glow' ? '#f97316' : '#38bdf8'}
-        showNavigationButton={true}
-        onNavigationToggle={() => setIsNavOpen(!isNavOpen)}
-        profileMenuItems={profileMenuItems}
         showGlows={false} // We handle our own atmospheric glows
       >
         {/* Top Apps Navigation */}
@@ -266,15 +229,6 @@ export default function WorkspacePage() {
           <SmartGrid />
         </div>
       </WorkspaceLayout>
-
-      {/* Navigation overlay panel */}
-      {isNavOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-overlay/60 backdrop-blur-sm"
-          onClick={() => setIsNavOpen(false)}
-        />
-      )}
-      <NavigationPanel isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} />
 
       {/* Right panel overlay */}
       {activePanel && (
