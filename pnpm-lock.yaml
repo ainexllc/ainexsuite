@@ -1183,6 +1183,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@ainexsuite/auth':
+        specifier: workspace:*
+        version: link:../auth
       '@ainexsuite/config':
         specifier: workspace:*
         version: link:../config
