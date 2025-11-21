@@ -14,7 +14,6 @@ import {
   BookOpen,
   Heart,
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -183,8 +182,6 @@ function JourneyHomePageContent() {
           footerText: 'Your reflections stay encrypted and private. Export or delete anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/9s9P-bSWRkU',
-          videoTitle: 'AINex Journey demo',
           sectionTitle: 'Built for thoughtful founders, writers, and seekers',
           sectionDescription: 'Journey keeps your inner work organized, insightful, and ready to inspire your next move.',
           cards: featureCards,
@@ -201,13 +198,13 @@ function JourneyHomePageContent() {
             }}
           />
         }
-      />
-      <Footer
-        appName="AINex Journey"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINex Journey",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

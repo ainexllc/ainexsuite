@@ -1,3 +1,5 @@
-export { Input, type InputProps } from './input';
-export { Textarea, type TextareaProps } from './textarea';
-export { FormField, type FormFieldProps } from './form-field';
+export * from './input';
+export * from './textarea';
+export * from './select';
+export * from './checkbox';
+export * from './form-field';

@@ -180,8 +180,6 @@ function TrackHomePageContent() {
           footerText: 'Your health data is encrypted and yours alone. Export anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/mgxI8W5fzl0',
-          videoTitle: 'AINex Track walkthrough',
           sectionTitle: 'Built for clarity',
           sectionDescription: 'Track cuts through the noise of daily fluctuations to show you the real story of your progress.',
           cards: featureCards,

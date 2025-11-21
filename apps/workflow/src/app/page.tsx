@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { Loader2, Workflow, Cog, Play, Target, Zap, GitBranch } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -162,20 +161,18 @@ function WorkflowHomePageContent() {
           footerText: 'Your workflow data stays secure and private. Export anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          videoTitle: 'AINex Workflow demo',
           sectionTitle: 'Built for teams that automate',
           sectionDescription: 'Workflow combines visual design, automation, and execution into one intelligent platform.',
           cards: featureCards,
         }}
         showActivation={false}
-      />
-      <Footer
-        appName="AINex Workflow"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINex Workflow",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

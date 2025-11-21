@@ -6,13 +6,13 @@ import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
 import { Loader2, Shield, PenSquare, FolderTree, Wand2, BookOpen, Stamp } from 'lucide-react';
-// import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import { useAppColors } from '@ainexsuite/theme';
 import type {
   DemoStep,
   NavLink,
   FeatureCard,
+  FooterLink,
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
@@ -45,6 +45,32 @@ const featureCards: FeatureCard[] = [
       'Summaries, action items, and follow-up questions appear the moment you finish writing.',
     icon: Wand2,
   },
+];
+
+const productLinks: FooterLink[] = [
+  { label: 'Features', href: '/features' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'Templates', href: '/templates', external: true },
+];
+
+const companyLinks: FooterLink[] = [
+  { label: 'About', href: '/about' },
+  { label: 'Blog', href: '/blog', external: true },
+  { label: 'Community', href: '/community', external: true },
+];
+
+const resourceLinks: FooterLink[] = [
+  { label: 'Help Center', href: '/help', external: true },
+  { label: 'Contact Us', href: 'mailto:notes@ainexsuite.com' },
+  { label: 'Documentation', href: '/docs', external: true },
+];
+
+const legalLinks: FooterLink[] = [
+  { label: 'Privacy Policy', href: '/privacy', external: true },
+  { label: 'Terms of Service', href: '/terms', external: true },
+  { label: 'Cookie Policy', href: '/cookies', external: true },
+  { label: 'Acceptable Use Policy', href: '/acceptable-use', external: true },
+  { label: 'GDPR', href: '/gdpr', external: true },
 ];
 
 
@@ -165,11 +191,16 @@ function NotesHomePageContent() {
           footerText: 'Your ideas stay encrypted and private. Export anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/2QznyN9l0SI',
-          videoTitle: 'AINex Notes walkthrough',
           sectionTitle: 'Built for thinkers, strategists, and storytellers',
           sectionDescription: 'Whether you\'re drafting a product spec or personal journal, Notes keeps every insight discoverable.',
           cards: featureCards,
+        }}
+        footer={{
+          appDisplayName: "AINex Notes",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
         }}
         showActivation={showActivation}
         activationComponent={

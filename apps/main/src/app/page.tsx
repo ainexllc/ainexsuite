@@ -22,7 +22,6 @@ import {
   Database,
   Users
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -274,19 +273,17 @@ function MainHomePageContent() {
           footerText: 'We never post or access your data without permission. 30-day trial included.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/ccw3-B2nKaQ',
-          videoTitle: 'AINexAgent demo video',
           sectionTitle: 'Why Unified Matters',
           sectionDescription: 'Individual apps are powerful. Together, they become a complete operating system for your life.',
           cards: featureCards,
         }}
-      />
-      <Footer
-        appName="AINexAgent"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINexAgent",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

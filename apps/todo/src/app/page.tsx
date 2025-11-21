@@ -179,8 +179,6 @@ function TodoHomePageContent() {
           footerText: 'Your tasks stay encrypted, exportable, and synced across every Ainex app.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/Gdsc5B6UE9M',
-          videoTitle: 'AINex Tasks demo',
           sectionTitle: 'Built for operators who refuse busywork',
           sectionDescription: 'From solo founders to cross-functional teams, AINex Tasks keeps everyone locked on outcomes—not checklists.',
           cards: featureCards,
@@ -198,7 +196,7 @@ function TodoHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: 'AINex Tasks',
+          appDisplayName: "AINex Tasks",
           productLinks,
           companyLinks,
           resourceLinks,

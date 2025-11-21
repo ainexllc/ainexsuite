@@ -14,7 +14,6 @@ import {
   Dumbbell,
   Timer,
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -180,8 +179,6 @@ function FitHomePageContent() {
           footerText: 'Your training data stays private and exportable. Cancel anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/fDcY55DhP0g',
-          videoTitle: 'AINex Fit demo',
           sectionTitle: 'Built for athletes who value progress over perfection',
           sectionDescription: 'Fit meets you where you are and guides you to where you want to go—one intelligent session at a time.',
           cards: featureCards,
@@ -198,13 +195,13 @@ function FitHomePageContent() {
             }}
           />
         }
-      />
-      <Footer
-        appName="AINex Fit"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINex Fit",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

@@ -14,7 +14,6 @@ import {
   MapPin,
   Share2,
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -180,8 +179,6 @@ function MomentsHomePageContent() {
           footerText: 'Your memories stay encrypted and private. Export or download anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/3yKsw9RVqFw',
-          videoTitle: 'AINex Moments demo',
           sectionTitle: 'Built for storytellers, travelers, and memory keepers',
           sectionDescription: 'Moments transforms scattered media into searchable, shareable stories that honor your experiences.',
           cards: featureCards,
@@ -198,13 +195,13 @@ function MomentsHomePageContent() {
             }}
           />
         }
-      />
-      <Footer
-        appName="AINex Moments"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINex Moments",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

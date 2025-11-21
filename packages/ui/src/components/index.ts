@@ -38,6 +38,10 @@ export {
 export { AtmosphericGlows } from "./layouts/atmospheric-glows";
 export { WorkspaceHeader } from "./layouts/workspace-header";
 export { WorkspaceLayout } from "./layouts/workspace-layout";
+export {
+  FooterPageLayout,
+  type FooterPageLayoutProps,
+} from "./layouts/footer-page-layout";
 
 // Background Components
 export { LayeredBackground } from "./backgrounds/layered-background";

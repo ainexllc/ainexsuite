@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { Loader2, Workflow, BarChart3, Shield, Users, Target, Zap } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -162,20 +161,18 @@ function ProjectsHomePageContent() {
           footerText: 'Your project data stays secure and private. Export anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          videoTitle: 'Projects demo',
           sectionTitle: 'Built for teams that ship',
           sectionDescription: 'Projects combines planning, execution, and analytics into one intelligent workspace.',
           cards: featureCards,
         }}
         showActivation={false}
-      />
-      <Footer
-        appName="Projects"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "Projects",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

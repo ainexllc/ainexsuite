@@ -49,7 +49,7 @@ export function Footer({
   ];
 
   return (
-    <footer className="bg-background-base border-t border-outline-base dark:bg-zinc-900/80 dark:border-white/10">
+    <footer className="bg-surface-base border-t border-outline-base dark:bg-zinc-900/80 dark:border-white/10">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Columns */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -58,7 +58,7 @@ export function Footer({
             <ul className="space-y-1">
               {defaultProductLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
+                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-primary transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -70,7 +70,7 @@ export function Footer({
             <ul className="space-y-1">
               {defaultCompanyLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
+                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-primary transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -82,7 +82,7 @@ export function Footer({
             <ul className="space-y-1">
               {defaultResourceLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
+                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-primary transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -94,7 +94,7 @@ export function Footer({
             <ul className="space-y-1">
               {defaultLegalLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors">
+                  <a href={link.href} className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-primary transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -113,7 +113,7 @@ export function Footer({
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-white dark:hover:text-[#f97316] transition-colors"
+                  className="text-sm text-ink-600 dark:text-white/60 hover:text-ink-900 dark:hover:text-primary transition-colors"
                   aria-label={link.label}
                 >
                   {link.label}
@@ -129,7 +129,7 @@ export function Footer({
               Built with ❤️ for productivity and growth
             </p>
             <p className="text-xs text-ink-400 dark:text-white/50">
-              Questions? Contact us at <a href="mailto:support@ainexsuite.com" className="hover:text-ink-700 dark:hover:text-[#f97316] underline transition-colors">support@ainexsuite.com</a>
+              Questions? Contact us at <a href="mailto:support@ainexsuite.com" className="hover:text-ink-700 dark:hover:text-primary underline transition-colors">support@ainexsuite.com</a>
             </p>
           </div>
         </div>

@@ -14,6 +14,7 @@ import {
   Mail,
   type LucideIcon,
 } from 'lucide-react';
+import { Footer } from '../footer';
 import { auth } from '@ainexsuite/firebase';
 import {
   signInWithPopup,
@@ -96,8 +97,8 @@ export type HomepageTemplateProps = {
   };
   /** Features section */
   features: {
-    videoUrl: string;
-    videoTitle: string;
+    videoUrl?: string;
+    videoTitle?: string;
     sectionTitle: string;
     sectionDescription: string;
     cards: FeatureCard[];
@@ -531,18 +532,20 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
         {/* Features Section */}
         <section id="features" className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl -mt-8">
-            <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-zinc-800/80 shadow-lg">
-              <iframe
-                className="absolute inset-0 h-full w-full"
-                src={props.features.videoUrl}
-                title={props.features.videoTitle}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
+          {props.features.videoUrl && (
+            <div className="mx-auto max-w-5xl -mt-8">
+              <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-zinc-800/80 shadow-lg">
+                <iframe
+                  className="absolute inset-0 h-full w-full"
+                  src={props.features.videoUrl}
+                  title={props.features.videoTitle}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mx-auto mt-16 max-w-3xl text-center">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl">{props.features.sectionTitle}</h2>
@@ -643,6 +646,17 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
           </section>
         )}
       </main>
+
+      {/* Footer */}
+      {props.footer && (
+        <Footer
+          appName={props.footer.appDisplayName}
+          productLinks={props.footer.productLinks}
+          companyLinks={props.footer.companyLinks}
+          resourceLinks={props.footer.resourceLinks}
+          legalLinks={props.footer.legalLinks}
+        />
+      )}
     </div>
   );
 }

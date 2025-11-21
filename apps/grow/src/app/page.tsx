@@ -14,7 +14,6 @@ import {
   TrendingUp,
   CheckCircle,
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -178,8 +177,6 @@ function GrowHomePageContent() {
           footerText: 'Your habit data is private and yours. Export anytime.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/bYz9vOQHN4M', // Keep existing video for now
-          videoTitle: 'AINex Grow walkthrough',
           sectionTitle: 'Built for consistency',
           sectionDescription: 'Grow combines behavioral science with smart tracking to help you show up every day.',
           cards: featureCards,
@@ -196,13 +193,13 @@ function GrowHomePageContent() {
             }}
           />
         }
-      />
-      <Footer
-        appName="AINex Grow"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINex Grow",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

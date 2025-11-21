@@ -209,6 +209,14 @@
     max-width: 100%;
   }
 
+  /* Apply accent color to native form controls */
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'],
+  progress {
+    accent-color: rgb(var(--color-accent-500));
+  }
+
   ::selection {
     background: rgba(var(--color-accent-500) / 0.25);
     color: rgb(var(--color-ink-900));

@@ -14,7 +14,6 @@ import {
   Sun,
   Maximize,
 } from 'lucide-react';
-import { Footer } from '@/components/footer';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
   DemoStep,
@@ -180,8 +179,6 @@ function PulseHomePageContent() {
           footerText: 'Your time data is private. We never sell your schedule.',
         }}
         features={{
-          videoUrl: 'https://www.youtube.com/embed/e9Yn9g4RJas', // Keep existing or update
-          videoTitle: 'AINex Pulse walkthrough',
           sectionTitle: 'Reclaim your attention',
           sectionDescription: 'Pulse is designed to be seen but not distracting, keeping you grounded in the present moment.',
           cards: featureCards,
@@ -198,13 +195,13 @@ function PulseHomePageContent() {
             }}
           />
         }
-      />
-      <Footer
-        appName="AINex Pulse"
-        productLinks={productLinks}
-        companyLinks={companyLinks}
-        resourceLinks={resourceLinks}
-        legalLinks={legalLinks}
+        footer={{
+          appDisplayName: "AINex Pulse",
+          productLinks,
+          companyLinks,
+          resourceLinks,
+          legalLinks,
+        }}
       />
     </>
   );

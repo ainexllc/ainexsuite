@@ -4,7 +4,7 @@
   "private": true,
   "description": "AINexSuite - Multi-app productivity suite with 8 apps + main dashboard",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --concurrency=20",
     "dev:main": "turbo run dev --filter @ainexsuite/main",
     "dev:notes": "turbo run dev --filter @ainexsuite/notes",
     "dev:journey": "turbo run dev --filter @ainexsuite/journey",
