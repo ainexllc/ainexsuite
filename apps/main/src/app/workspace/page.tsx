@@ -1,5 +1,6 @@
 'use client';
 
+// Custom SVG app icons for workspace navigation
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
