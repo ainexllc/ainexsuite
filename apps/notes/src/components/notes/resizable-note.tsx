@@ -18,7 +18,19 @@ const MAX_HEIGHT = 1000;
 const MIN_WIDTH = 200;
 const MIN_HEIGHT = 150;
 
+// Main wrapper component that handles the conditional rendering
 export function ResizableNote({ note, children, viewMode = "masonry" }: ResizableNoteProps) {
+  // Disable resizing in list view mode
+  if (viewMode === "list") {
+    return <>{children}</>;
+  }
+
+  // Use the actual resizable component in masonry mode
+  return <ResizableNoteContent note={note}>{children}</ResizableNoteContent>;
+}
+
+// Internal component that contains all the hooks and resizing logic
+function ResizableNoteContent({ note, children }: { note: Note; children: React.ReactNode }) {
   const { updateNote } = useNotes();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
@@ -30,11 +42,6 @@ export function ResizableNote({ note, children, viewMode = "masonry" }: Resizabl
 
   const startPosRef = useRef({ x: 0, y: 0 });
   const startDimensionsRef = useRef({ width: 0, height: 0 });
-
-  // Disable resizing in list view mode
-  if (viewMode === "list") {
-    return <>{children}</>;
-  }
 
   const handleMouseDown = useCallback((direction: ResizeDirection, e: React.MouseEvent) => {
     e.preventDefault();
