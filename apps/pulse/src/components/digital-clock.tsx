@@ -113,6 +113,21 @@ export function DigitalClock() {
     setShowFormatMenu(false);
   };
 
+  // Format time string for display
+  const getFormattedTime = (): string => {
+    if (!time) return '';
+
+    const baseFormat = { hour12: timeFormat === '12h', hour: '2-digit' as const, minute: '2-digit' as const, second: '2-digit' as const };
+    let timeStr = time.toLocaleTimeString([], baseFormat);
+
+    // For 12h format, remove leading 0 from single-digit hours (e.g., "09:30 AM" -> "9:30 AM")
+    if (timeFormat === '12h') {
+      timeStr = timeStr.replace(/^0(\d)/, '$1');
+    }
+
+    return timeStr;
+  };
+
   useEffect(() => {
     setTime(new Date());
     const interval = setInterval(() => {
@@ -286,7 +301,7 @@ export function DigitalClock() {
             <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
           </div>
           <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg">
-            {time.toLocaleTimeString([], { hour12: timeFormat === '12h', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            {getFormattedTime()}
           </div>
           <div className="text-gray-400 mt-2 font-medium drop-shadow-md">
             {time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
