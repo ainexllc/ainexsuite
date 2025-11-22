@@ -24,6 +24,11 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
   const [showSettings, setShowSettings] = useState(false);
   const [inputZipcode, setInputZipcode] = useState(weatherZipcode || '66221');
 
+  // Keep input zipcode in sync with prop
+  useEffect(() => {
+    setInputZipcode(weatherZipcode || '66221');
+  }, [weatherZipcode]);
+
   useEffect(() => {
     const fetchWeather = async () => {
       try {

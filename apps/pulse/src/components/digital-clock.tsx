@@ -49,7 +49,7 @@ export function DigitalClock() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
   const [weatherZipcode, setWeatherZipcode] = useState<string>('66221');
-
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const trayContainerRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
@@ -154,7 +154,7 @@ export function DigitalClock() {
   };
 
   const handleDragStart = (_e: React.DragEvent) => {
-    // We can use this to track drag start for tiles if needed,
+    // We can use this to track drag start for tiles if needed, 
     // but primarily we rely on the tile component's event.
     // However, for the tray closing logic, we need to know a drag is active.
     // Since drag events bubble, we can catch it here if the tile is within our scope.
@@ -174,22 +174,48 @@ export function DigitalClock() {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, slot: SlotPosition) => {
+  const handleDrop = (e: React.DragEvent, targetSlot: SlotPosition) => {
     e.preventDefault();
     isDraggingTile.current = false;
-    const tileId = e.dataTransfer.getData('text/plain');
+    const droppedTileId = e.dataTransfer.getData('text/plain');
     
-    // Clear tile from other slots if it exists there
     const newTiles = { ...tiles };
+    let sourceSlot: SlotPosition | null = null;
+
+    // Find if the dropped tile was already in a slot (dragged from one slot to another)
     Object.keys(newTiles).forEach(key => {
-      if (newTiles[key as SlotPosition] === tileId) {
-        newTiles[key as SlotPosition] = null;
+      if (newTiles[key as SlotPosition] === droppedTileId) {
+        sourceSlot = key as SlotPosition;
       }
     });
+
+    // Check if there's an existing tile in the target slot
+    const existingTileInTarget = newTiles[targetSlot];
+
+    if (existingTileInTarget) {
+      // SWAP LOGIC
+      if (sourceSlot !== null) {
+        // If dragging from another slot, swap them
+        newTiles[sourceSlot as SlotPosition] = existingTileInTarget;
+        newTiles[targetSlot] = droppedTileId;
+      } else {
+        // If dragging from tray, replace the existing one (or we could push existing to empty slot?)
+        // Current behavior: Replace.
+        // But to be "nice", maybe we just overwrite for now as "swap with tray" isn't really a thing.
+        newTiles[targetSlot] = droppedTileId;
+      }
+    } else {
+      // MOVE LOGIC (Target is empty)
+      if (sourceSlot !== null) {
+        newTiles[sourceSlot as SlotPosition] = null; // Clear source
+      }
+      newTiles[targetSlot] = droppedTileId;
+    }
     
-    newTiles[slot] = tileId;
+    // Clean up duplicates if any (sanity check, though swap logic handles it)
+    // If we just did a swap, we are good.
+    
     updateSettings(newTiles, backgroundImage);
-    // Don't close tray automatically
   };
 
   const removeTile = (slot: SlotPosition) => {
@@ -203,7 +229,7 @@ export function DigitalClock() {
 
   const renderTile = (tileId: string | null, slot: SlotPosition) => {
     if (!tileId) return null;
-
+    
     const props = {
       id: tileId,
       onRemove: () => removeTile(slot),
