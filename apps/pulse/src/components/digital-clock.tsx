@@ -14,16 +14,6 @@ import { ClockService } from '@/lib/clock-settings';
 type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
 type TimeFormat = '12h' | '24h';
 
-// WebKit fullscreen API types for TypeScript
-interface WebKitDocument extends Document {
-  webkitFullscreenElement: Element | null;
-  webkitExitFullscreen(): Promise<void>;
-}
-
-interface WebKitElement extends HTMLElement {
-  webkitRequestFullscreen(): Promise<void>;
-}
-
 const DEFAULT_TILES = {
   'bottom-left': null,
   'bottom-center': null,
@@ -49,7 +39,7 @@ const getSystemTimeFormat = (): TimeFormat => {
 export function DigitalClock() {
   const { user } = useAuth();
   const [time, setTime] = useState<Date | null>(null);
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
   const [showFormatMenu, setShowFormatMenu] = useState(false);
 
@@ -137,53 +127,8 @@ export function DigitalClock() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const handleFullScreenChange = () => {
-      setIsFullScreen(!!document.fullscreenElement);
-    };
-
-    // Handle both standard and webkit-prefixed fullscreen events
-    document.addEventListener('fullscreenchange', handleFullScreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullScreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
-    };
-  }, []);
-
-  const toggleFullScreen = async () => {
-    try {
-      const docWithWebkit = document as unknown as WebKitDocument;
-      const isCurrentlyFullscreen =
-        document.fullscreenElement || docWithWebkit.webkitFullscreenElement;
-
-      if (!isCurrentlyFullscreen && containerRef.current) {
-        // Try standard API first
-        if (containerRef.current.requestFullscreen) {
-          await containerRef.current.requestFullscreen();
-        }
-        // Fallback to webkit for iOS/older browsers
-        else if ((containerRef.current as unknown as WebKitElement).webkitRequestFullscreen) {
-          await (containerRef.current as unknown as WebKitElement).webkitRequestFullscreen();
-        }
-        // Try webkit on document for broader compatibility
-        else if (document.documentElement && (document.documentElement as unknown as WebKitElement).webkitRequestFullscreen) {
-          await (document.documentElement as unknown as WebKitElement).webkitRequestFullscreen();
-        }
-      } else if (isCurrentlyFullscreen) {
-        // Try standard API first
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        }
-        // Fallback to webkit
-        else if (docWithWebkit.webkitExitFullscreen) {
-          await docWithWebkit.webkitExitFullscreen();
-        }
-      }
-    } catch (err) {
-      console.error('Error toggling full screen:', err);
-    }
+  const toggleMaximize = () => {
+    setIsMaximized(!isMaximized);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -242,11 +187,11 @@ export function DigitalClock() {
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 bg-cover bg-center bg-no-repeat ${
-        isFullScreen 
-          ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none justify-center' 
+        isMaximized
+          ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none justify-center overflow-hidden'
           : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px]'
       }`}
       style={{
@@ -270,11 +215,11 @@ export function DigitalClock() {
             <Plus className="w-5 h-5" />
           </button>
           <button
-            onClick={toggleFullScreen}
+            onClick={toggleMaximize}
             className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
-            aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}
+            aria-label={isMaximized ? "Exit maximize" : "Maximize"}
           >
-            {isFullScreen ? (
+            {isMaximized ? (
               <Minimize2 className="w-5 h-5" />
             ) : (
               <Maximize2 className="w-5 h-5" />
@@ -295,7 +240,7 @@ export function DigitalClock() {
         </div>
         
         {/* Clock Content */}
-        <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300 relative`}>
+        <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isMaximized ? 'scale-150' : ''} transition-transform duration-300 relative`}>
           <div className="flex items-center gap-2 text-gray-400 mb-2">
             <Clock className="w-4 h-4" />
             <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
