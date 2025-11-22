@@ -26,8 +26,8 @@ export async function POST(request: Request) {
     // eslint-disable-next-line no-console
     console.log('Sending image generation request to OpenRouter with prompt:', prompt);
 
-    // Use OpenRouter's Stable Diffusion 3 for image generation
-    // This is more reliable than DALL-E 3 on OpenRouter's chat API
+    // Use Google Gemini 3 Pro with image generation capability
+    // This model supports image generation natively
     const response = await fetch(`${apiUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         'X-Title': 'Pulse Workspace',
       },
       body: JSON.stringify({
-        model: 'stabilityai/stable-diffusion-3',
+        model: 'google/gemini-3-pro-image-preview',
         messages: [
           {
             role: 'user',

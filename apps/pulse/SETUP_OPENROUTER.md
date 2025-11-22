@@ -55,7 +55,7 @@ Test the image generation feature:
 
 ## Available Models
 
-The API uses `stabilityai/stable-diffusion-3` for image generation, which supports:
+The API uses `google/gemini-3-pro-image-preview` for image generation, which supports:
 - Style descriptions (cyberpunk, watercolor, oil painting, etc.)
 - Subject specifications (landscape, portrait, product, etc.)
 - Detailed prompts for precise image generation
@@ -108,8 +108,7 @@ OpenRouter models are typically cheaper than using APIs directly:
 }
 ```
 
-**Models Supported**:
-- `stabilityai/stable-diffusion-3` (default)
-- `openai/dall-e-3` (may require different parameters)
+**Models Used**:
+- `google/gemini-3-pro-image-preview` (current)
 
 For more info on available models, visit: https://openrouter.ai/models?supported_parameters=vision
