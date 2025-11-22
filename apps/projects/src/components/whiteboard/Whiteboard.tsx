@@ -617,7 +617,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
         setNodesState((nds) => [...nds, newNode]);
       }
     },
-    [screenToFlowPosition, stickyNoteColor, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, takeSnapshot]
+    [screenToFlowPosition, stickyNoteColor, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, updateNodeSize, takeSnapshot]
   );
 
   // Export whiteboard to JSON
@@ -699,7 +699,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
       }
     };
     input.click();
-  }, [isDarkMode, deleteNode, updateNodeText, updateNodeTitle, setNodesState, setEdgesState, takeSnapshot]);
+  }, [isDarkMode, deleteNode, updateNodeText, updateNodeTitle, updateNodeSize, setNodesState, setEdgesState, takeSnapshot]);
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
