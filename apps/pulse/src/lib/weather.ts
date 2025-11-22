@@ -34,7 +34,7 @@ export interface WeatherData {
   windSpeed?: number;
 }
 
-// Get location coordinates from zipcode - checks cache first, then uses geocoding API
+// Get location coordinates from zipcode - checks cache first, then uses Nominatim API
 export async function getLocationFromZipcode(zipcode: string) {
   const normalized = zipcode.trim();
 
@@ -43,10 +43,15 @@ export async function getLocationFromZipcode(zipcode: string) {
     return ZIPCODE_COORDS[normalized];
   }
 
-  // Try to geocode using Open-Meteo's geocoding API
+  // Try to geocode using Nominatim (OpenStreetMap) API - works with US zipcodes
   try {
     const response = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?query=${encodeURIComponent(normalized)}&count=1&language=en`
+      `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'AinexSuite-Weather-App'
+        }
+      }
     );
 
     if (!response.ok) {
@@ -55,12 +60,12 @@ export async function getLocationFromZipcode(zipcode: string) {
 
     const data = await response.json();
 
-    if (data.results && data.results.length > 0) {
-      const result = data.results[0];
+    if (data && data.length > 0) {
+      const result = data[0];
       return {
-        name: `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`,
-        latitude: result.latitude,
-        longitude: result.longitude,
+        name: result.address?.city || result.name || normalized,
+        latitude: parseFloat(result.lat),
+        longitude: parseFloat(result.lon),
       };
     }
   } catch (err) {
