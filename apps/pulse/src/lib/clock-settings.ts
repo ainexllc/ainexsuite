@@ -7,6 +7,7 @@ const CLOCK_SETTINGS_DOC = 'pulse_clock';
 export interface ClockSettings {
   tiles: Record<string, string | null>;
   backgroundImage: string | null;
+  timeFormat?: '12h' | '24h'; // Time format preference
 }
 
 export const ClockService = {

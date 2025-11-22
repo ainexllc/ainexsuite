@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Clock, Maximize2, Minimize2, Plus } from 'lucide-react';
+import { Clock, Maximize2, Minimize2, Plus, Settings } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileTray } from './tiles/tile-tray';
 import { CalendarTile } from './tiles/calendar-tile';
@@ -12,6 +12,7 @@ import { MarketTile } from './tiles/market-tile';
 import { ClockService } from '@/lib/clock-settings';
 
 type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
+type TimeFormat = '12h' | '24h';
 
 const DEFAULT_TILES = {
   'bottom-left': null,
@@ -19,15 +20,33 @@ const DEFAULT_TILES = {
   'bottom-right': null,
 };
 
+// Detect system clock format preference
+const getSystemTimeFormat = (): TimeFormat => {
+  // Check if browser has Intl API support
+  if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+    const formatter = new Intl.DateTimeFormat(undefined, {
+      hour: 'numeric',
+      minute: 'numeric',
+    });
+    const formatted = formatter.format(new Date());
+    // If format includes 'AM' or 'PM', system uses 12h format
+    return formatted.includes('AM') || formatted.includes('PM') ? '12h' : '24h';
+  }
+  // Default to 12h if we can't detect
+  return '12h';
+};
+
 export function DigitalClock() {
   const { user } = useAuth();
   const [time, setTime] = useState<Date | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
 
   // Initialize state with defaults
   const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>(DEFAULT_TILES);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
   
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +61,9 @@ export function DigitalClock() {
         // In a real app we'd validate this runtime data with zod/io-ts
         setTiles(settings.tiles as Record<SlotPosition, string | null>);
         setBackgroundImage(settings.backgroundImage);
+        if (settings.timeFormat) {
+          setTimeFormat(settings.timeFormat);
+        }
       }
     });
 
@@ -53,23 +75,32 @@ export function DigitalClock() {
   // Ideally, we separate "optimistic update" from "remote sync", but for this simple case:
   // We will trigger the save explicitly in the handlers (drop/select) instead of a useEffect to avoid loops.
 
-  const updateSettings = async (newTiles: Record<SlotPosition, string | null>, newBg: string | null) => {
+  const updateSettings = async (newTiles: Record<SlotPosition, string | null>, newBg: string | null, newFormat?: TimeFormat) => {
     if (!user) return;
-    
+
     // Optimistic update
     setTiles(newTiles);
     setBackgroundImage(newBg);
+    if (newFormat) {
+      setTimeFormat(newFormat);
+    }
 
     // Persist
     try {
       await ClockService.saveSettings(user.uid, {
         tiles: newTiles,
-        backgroundImage: newBg
+        backgroundImage: newBg,
+        timeFormat: newFormat || timeFormat
       });
     } catch (error) {
       console.error('Failed to save clock settings:', error);
       // Optionally revert state here
     }
+  };
+
+  const handleTimeFormatChange = (format: TimeFormat) => {
+    updateSettings(tiles, backgroundImage, format);
+    setShowFormatMenu(false);
   };
 
   useEffect(() => {
@@ -217,16 +248,44 @@ export function DigitalClock() {
         </div>
         
         {/* Clock Content */}
-        <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300`}>
+        <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300 relative`}>
           <div className="flex items-center gap-2 text-gray-400 mb-2">
             <Clock className="w-4 h-4" />
             <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
           </div>
           <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg">
-            {time.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            {time.toLocaleTimeString([], { hour12: timeFormat === '12h', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </div>
           <div className="text-gray-400 mt-2 font-medium drop-shadow-md">
             {time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+
+          {/* Time Format Menu */}
+          <div className="mt-4 relative">
+            <button
+              onClick={() => setShowFormatMenu(!showFormatMenu)}
+              className="px-3 py-1 text-xs uppercase tracking-wider text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+              aria-label="Change time format"
+            >
+              {timeFormat.toUpperCase()}
+            </button>
+
+            {showFormatMenu && (
+              <div className="absolute top-full mt-2 bg-black/80 border border-white/20 rounded-lg overflow-hidden z-40">
+                <button
+                  onClick={() => handleTimeFormatChange('12h')}
+                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '12h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
+                >
+                  12-Hour Format
+                </button>
+                <button
+                  onClick={() => handleTimeFormatChange('24h')}
+                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '24h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
+                >
+                  24-Hour Format
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
