@@ -3,6 +3,53 @@
 **Project**: AinexSuite - Multi-App Monorepo
 **Architecture**: Turborepo with shared packages
 **Date**: November 6, 2025
+**Vercel Monitoring**: ✅ Active (ainexsuite-main, ainexsuite-pulse, ainexsuite-journey, etc.)
+
+## 🚀 Vercel Build Monitoring & Auto-Fix
+
+**Status**: Automated monitoring and auto-fix system is active for main branch deployments.
+
+### Vercel Projects
+- **Primary**: ainexsuite-main (prj_qWQuZ68lqYmfGA0hJJwygUtRW0s4)
+- **Other apps**: ainexsuite-pulse, ainexsuite-journey, ainexsuite-notes, ainexsuite-todo, etc.
+
+### How It Works
+1. **Pre-commit checks**: Build verification before commits reach main
+2. **Deployment monitoring**: Tracks Vercel deployment status in real-time
+3. **Auto-fix triggers**: Common build errors are automatically fixed:
+   - TypeScript errors → Run type checking and fixes
+   - Dependency errors → Clean install and rebuild
+   - Firebase errors → Deploy Firestore rules/indexes
+   - ESLint errors → Run lint fixes
+
+### Monitoring Commands
+```bash
+# Check all Vercel projects status
+.claude/scripts/check-vercel-status.sh
+
+# View live Vercel logs
+vercel logs --scope=ainexllc
+
+# Check specific deployment
+vercel inspect <url> --logs
+
+# Manually redeploy
+vercel --scope=ainexllc --prod
+```
+
+### Build Failure Response
+If a Vercel build fails:
+1. Claude will automatically fetch deployment logs
+2. Diagnose the error type
+3. Apply appropriate fix
+4. Rebuild and test locally
+5. Commit fix and push to main
+6. Monitor new deployment
+
+### Key Skills & Hooks
+- **Skill**: `vercel-build-fixer` - Auto-diagnose and fix build failures
+- **Hook**: `post-commit-vercel-check.sh` - Prevents broken commits to main
+- **Hook**: `vercel-build-monitor.sh` - Continuous deployment monitoring
 
 ## ⚠️ CRITICAL: Git Safety Policy
 **See global ~/.claude/CLAUDE.md for full git safety guidelines**
