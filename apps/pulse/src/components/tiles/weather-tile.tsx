@@ -5,7 +5,7 @@ import { Settings } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileBase } from './tile-base';
 import { ClockService } from '@/lib/clock-settings';
-import { getWeather, type WeatherData } from '@/lib/weather';
+import { getWeather, getLocationSuggestions, type WeatherData } from '@/lib/weather';
 
 interface WeatherTileProps {
   id?: string;
@@ -23,6 +23,9 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
   const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [inputZipcode, setInputZipcode] = useState(weatherZipcode || '66221');
+  const [suggestions, setSuggestions] = useState<Array<{ name: string; latitude: number; longitude: number }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   // Keep input zipcode in sync with prop
   useEffect(() => {
@@ -51,6 +54,33 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
     return () => clearInterval(interval);
   }, [weatherZipcode]);
 
+  const handleInputChange = async (value: string) => {
+    setInputZipcode(value);
+    setSuggestions([]);
+
+    if (value.length < 2) {
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+    try {
+      const results = await getLocationSuggestions(value);
+      setSuggestions(results);
+      setShowSuggestions(true);
+    } catch (err) {
+      console.error('Failed to get suggestions:', err);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion: { name: string }) => {
+    setInputZipcode(suggestion.name);
+    setShowSuggestions(false);
+    setSuggestions([]);
+  };
+
   const handleSaveZipcode = async () => {
     if (!user || inputZipcode.trim() === weatherZipcode) {
       setShowSettings(false);
@@ -61,9 +91,11 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
       onZipcodeChange?.(inputZipcode);
       await ClockService.saveSettings(user.uid, { weatherZipcode: inputZipcode });
       setShowSettings(false);
+      setSuggestions([]);
+      setShowSuggestions(false);
     } catch (err) {
-      console.error('Failed to save zipcode:', err);
-      setError('Failed to save zipcode');
+      console.error('Failed to save location:', err);
+      setError('Failed to save location');
     }
   };
 
@@ -109,15 +141,37 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
         {/* Settings Panel */}
         {showSettings && (
           <div className="border-t border-white/10 pt-3 space-y-2">
-            <div className="text-xs text-white/50 font-medium">Zipcode</div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={inputZipcode}
-                onChange={(e) => setInputZipcode(e.target.value)}
-                placeholder="Enter zipcode"
-                className="flex-1 px-2 py-1 text-sm bg-white/10 border border-white/20 rounded text-white placeholder-white/30 focus:outline-none focus:border-white/40"
-              />
+            <div className="text-xs text-white/50 font-medium">Location (Zipcode or City)</div>
+            <div className="flex gap-2 relative">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={inputZipcode}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  placeholder="Enter zipcode or city, state"
+                  className="w-full px-2 py-1 text-sm bg-white/10 border border-white/20 rounded text-white placeholder-white/30 focus:outline-none focus:border-white/40"
+                  autoComplete="off"
+                />
+                {/* Autocomplete Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-black/90 border border-white/20 rounded max-h-40 overflow-y-auto z-50">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSelectSuggestion(suggestion)}
+                        className="w-full text-left px-2 py-1 text-xs text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                      >
+                        {suggestion.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {isLoadingSuggestions && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-black/90 border border-white/20 rounded px-2 py-1 text-xs text-white/50">
+                    Searching...
+                  </div>
+                )}
+              </div>
               <button
                 onClick={handleSaveZipcode}
                 className="px-2 py-1 text-xs bg-blue-500/30 hover:bg-blue-500/50 border border-blue-500/50 rounded text-white transition-colors"

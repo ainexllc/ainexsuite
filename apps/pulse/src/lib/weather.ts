@@ -34,19 +34,19 @@ export interface WeatherData {
   windSpeed?: number;
 }
 
-// Get location coordinates from zipcode - checks cache first, then uses Nominatim API
-export async function getLocationFromZipcode(zipcode: string) {
-  const normalized = zipcode.trim();
+// Get location coordinates from zipcode or city/state - checks cache first, then uses Nominatim API
+export async function getLocationFromSearch(query: string) {
+  const normalized = query.trim();
 
-  // Check cache first
+  // Check cache first (for zipcodes)
   if (ZIPCODE_COORDS[normalized]) {
     return ZIPCODE_COORDS[normalized];
   }
 
-  // Try to geocode using Nominatim (OpenStreetMap) API - works with US zipcodes
+  // Use Nominatim to geocode both zipcodes and city names
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
       {
         headers: {
           'User-Agent': 'AinexSuite-Weather-App'
@@ -62,8 +62,12 @@ export async function getLocationFromZipcode(zipcode: string) {
 
     if (data && data.length > 0) {
       const result = data[0];
+      const city = result.address?.city || result.address?.town || result.name || normalized;
+      const state = result.address?.state || '';
+      const displayName = state ? `${city}, ${state}` : city;
+
       return {
-        name: result.address?.city || result.name || normalized,
+        name: displayName,
         latitude: parseFloat(result.lat),
         longitude: parseFloat(result.lon),
       };
@@ -73,6 +77,51 @@ export async function getLocationFromZipcode(zipcode: string) {
   }
 
   return null;
+}
+
+// Get autocomplete suggestions for cities/states
+export async function getLocationSuggestions(query: string): Promise<Array<{ name: string; latitude: number; longitude: number }>> {
+  const normalized = query.trim();
+
+  if (normalized.length < 2) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=5`,
+      {
+        headers: {
+          'User-Agent': 'AinexSuite-Weather-App'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = await response.json();
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    return data.map((result: any) => {
+      const city = result.address?.city || result.address?.town || result.name;
+      const state = result.address?.state || '';
+      const displayName = state ? `${city}, ${state}` : city;
+
+      return {
+        name: displayName,
+        latitude: parseFloat(result.lat),
+        longitude: parseFloat(result.lon),
+      };
+    });
+  } catch (err) {
+    console.error('Autocomplete error:', err);
+    return [];
+  }
 }
 
 // Map WMO codes to weather conditions and icons
@@ -90,17 +139,17 @@ const getWeatherInfo = (code: number): { condition: string; icon: string } => {
   return { condition: 'Unknown', icon: '🌡️' };
 };
 
-export async function getWeather(zipcode?: string, isCelsius = false): Promise<WeatherData> {
+export async function getWeather(location?: string, isCelsius = false): Promise<WeatherData> {
   let latitude = DEFAULT_LOCATION.latitude;
   let longitude = DEFAULT_LOCATION.longitude;
-  let location = DEFAULT_LOCATION.name;
+  let locationName = DEFAULT_LOCATION.name;
 
-  if (zipcode) {
-    const coords = await getLocationFromZipcode(zipcode);
+  if (location) {
+    const coords = await getLocationFromSearch(location);
     if (coords) {
       latitude = coords.latitude;
       longitude = coords.longitude;
-      location = coords.name;
+      locationName = coords.name;
     }
   }
   try {
@@ -125,7 +174,7 @@ export async function getWeather(zipcode?: string, isCelsius = false): Promise<W
       temperature: Math.round(current.temperature_2m),
       condition,
       icon,
-      location,
+      location: locationName,
       humidity: current.relative_humidity_2m,
       windSpeed: Math.round(current.wind_speed_10m),
     };
