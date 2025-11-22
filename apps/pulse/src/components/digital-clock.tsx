@@ -95,9 +95,15 @@ export function DigitalClock() {
   const toggleFullScreen = async () => {
     try {
       if (!document.fullscreenElement) {
-        await containerRef.current?.requestFullscreen();
+        // On mobile, we need to request fullscreen on the container ref specifically
+        // and ensure we handle the promise catch for user interaction requirements
+        if (containerRef.current) {
+          await containerRef.current.requestFullscreen();
+        }
       } else {
-        await document.exitFullscreen();
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
       }
     } catch (err) {
       console.error('Error toggling full screen:', err);
