@@ -46,6 +46,7 @@ export function Footer({
     { label: 'Cookie Policy', href: '/cookies' },
     { label: 'Acceptable Use Policy', href: '/acceptable-use' },
     { label: 'GDPR', href: '/gdpr' },
+    { label: 'Contact Us', href: '/contact' },
   ];
 
   return (
