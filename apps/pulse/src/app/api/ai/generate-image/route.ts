@@ -26,7 +26,9 @@ export async function POST(request: Request) {
     // eslint-disable-next-line no-console
     console.log('Sending image generation request to OpenRouter with prompt:', prompt);
 
-    const response = await fetch(`${apiUrl}/images/generations`, {
+    // Use OpenRouter's chat completions API with a model that supports image output
+    // Stable Diffusion 3 and DALL-E 3 are available as text-to-image models via OpenRouter
+    const response = await fetch(`${apiUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -36,9 +38,12 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         model: 'openai/dall-e-3',
-        prompt: prompt,
-        n: 1,
-        size: '1024x1024',
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          }
+        ],
       }),
     });
 
@@ -55,13 +60,37 @@ export async function POST(request: Request) {
     // eslint-disable-next-line no-console
     console.log('OpenRouter Response:', JSON.stringify(data, null, 2));
 
-    // Handle image generation response format
-    const imageUrl = data.data?.[0]?.url;
+    // Extract image URL from response
+    const choice = data.choices?.[0];
+    if (!choice) {
+      return NextResponse.json({
+        error: 'No response from OpenRouter',
+        details: data,
+      }, { status: 422 });
+    }
+
+    const messageContent = choice.message?.content;
+    let imageUrl = null;
+
+    if (typeof messageContent === 'string') {
+      // Try various URL patterns
+      // 1. Direct URL (http/https)
+      if (messageContent.trim().startsWith('http')) {
+        imageUrl = messageContent.trim();
+      }
+      // 2. Markdown image format: ![alt](url)
+      else {
+        const markdownMatch = messageContent.match(/!\[.*?\]\((.*?)\)/);
+        if (markdownMatch && markdownMatch[1]) {
+          imageUrl = markdownMatch[1];
+        }
+      }
+    }
 
     if (!imageUrl) {
       return NextResponse.json({
         error: 'No image URL found in response',
-        details: data,
+        details: { content: messageContent, fullResponse: data },
       }, { status: 422 });
     }
 
