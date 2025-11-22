@@ -8,10 +8,11 @@ export interface ClockSettings {
   tiles: Record<string, string | null>;
   backgroundImage: string | null;
   timeFormat?: '12h' | '24h'; // Time format preference
+  weatherZipcode?: string; // User's preferred zipcode for weather tile
 }
 
 export const ClockService = {
-  async saveSettings(userId: string, settings: ClockSettings) {
+  async saveSettings(userId: string, settings: Partial<ClockSettings>) {
     const docRef = doc(db, 'users', userId, SETTINGS_COLLECTION, CLOCK_SETTINGS_DOC);
     await setDoc(docRef, settings, { merge: true });
   },

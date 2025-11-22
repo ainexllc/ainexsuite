@@ -42,13 +42,37 @@ export function DigitalClock() {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
   const [showFormatMenu, setShowFormatMenu] = useState(false);
+  const isDraggingTile = useRef(false);
 
   // Initialize state with defaults
   const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>(DEFAULT_TILES);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
-  
+  const [weatherZipcode, setWeatherZipcode] = useState<string>('66221');
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const trayContainerRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Click outside listener for tray
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!isTrayOpen || isDraggingTile.current) return;
+
+      // Check if click is inside tray or toggle button
+      if (
+        trayContainerRef.current && 
+        !trayContainerRef.current.contains(event.target as Node) &&
+        toggleButtonRef.current &&
+        !toggleButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsTrayOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isTrayOpen]);
 
   // Sync with Firestore on load and changes
   useEffect(() => {
@@ -62,18 +86,16 @@ export function DigitalClock() {
         setTiles(settings.tiles as Record<SlotPosition, string | null>);
         setBackgroundImage(settings.backgroundImage);
         if (settings.timeFormat) {
-          setTimeFormat(settings.timeFormat);
+          setTimeFormat(settings.timeFormat as TimeFormat);
+        }
+        if (settings.weatherZipcode) {
+          setWeatherZipcode(settings.weatherZipcode);
         }
       }
     });
 
     return () => unsubscribe();
   }, [user]);
-
-  // Save state to Firestore whenever it changes (debounced could be better, but direct for now)
-  // We only save if the change was initiated LOCALLY, not from a remote update.
-  // Ideally, we separate "optimistic update" from "remote sync", but for this simple case:
-  // We will trigger the save explicitly in the handlers (drop/select) instead of a useEffect to avoid loops.
 
   const updateSettings = async (newTiles: Record<SlotPosition, string | null>, newBg: string | null, newFormat?: TimeFormat) => {
     if (!user) return;
@@ -131,6 +153,22 @@ export function DigitalClock() {
     setIsMaximized(!isMaximized);
   };
 
+  const handleDragStart = (_e: React.DragEvent) => {
+    // We can use this to track drag start for tiles if needed,
+    // but primarily we rely on the tile component's event.
+    // However, for the tray closing logic, we need to know a drag is active.
+    // Since drag events bubble, we can catch it here if the tile is within our scope.
+    // But the tile initiates it.
+    isDraggingTile.current = true;
+  };
+
+  const handleDragEnd = (_e: React.DragEvent) => {
+    isDraggingTile.current = false;
+  };
+
+  // Also need global drag listeners to catch tile drag start/end since they are rendered inside
+  // actually, the onDragStart on the tile will bubble up to this container.
+  
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
@@ -138,6 +176,7 @@ export function DigitalClock() {
 
   const handleDrop = (e: React.DragEvent, slot: SlotPosition) => {
     e.preventDefault();
+    isDraggingTile.current = false;
     const tileId = e.dataTransfer.getData('text/plain');
     
     // Clear tile from other slots if it exists there
@@ -164,20 +203,25 @@ export function DigitalClock() {
 
   const renderTile = (tileId: string | null, slot: SlotPosition) => {
     if (!tileId) return null;
-    
+
     const props = {
       id: tileId,
       onRemove: () => removeTile(slot),
       isDraggable: true,
       onDragStart: (e: React.DragEvent) => {
+         isDraggingTile.current = true;
          e.dataTransfer.setData('text/plain', tileId);
+      },
+      // Add drag end to reset flag if drop happens outside or is cancelled
+      onDragEnd: () => {
+        isDraggingTile.current = false;
       }
     };
 
     if (tileId.includes('calendar')) return <CalendarTile {...props} />;
     if (tileId.includes('focus')) return <FocusTile {...props} />;
     if (tileId.includes('spark')) return <SparkTile {...props} />;
-    if (tileId.includes('weather')) return <WeatherTile {...props} />;
+    if (tileId.includes('weather')) return <WeatherTile {...props} weatherZipcode={weatherZipcode} onZipcodeChange={setWeatherZipcode} />;
     if (tileId.includes('market')) return <MarketTile {...props} />;
     return null;
   };
@@ -187,16 +231,19 @@ export function DigitalClock() {
   }
 
   return (
-    <div
+    <div 
       ref={containerRef}
       className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 bg-cover bg-center bg-no-repeat ${
         isMaximized
-          ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none justify-center overflow-hidden'
+          ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none justify-center overflow-hidden' 
           : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px]'
       }`}
       style={{
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined
       }}
+      // Catch drag events bubbling up from tiles
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       {/* Background Overlay for Readability */}
       {backgroundImage && (
@@ -208,6 +255,7 @@ export function DigitalClock() {
         {/* Controls */}
         <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
           <button
+            ref={toggleButtonRef}
             onClick={() => setIsTrayOpen(!isTrayOpen)}
             className={`p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 ${isTrayOpen ? 'bg-white/10 text-white' : ''}`}
             aria-label="Customize"
@@ -228,16 +276,18 @@ export function DigitalClock() {
         </div>
 
         {/* Tile Tray */}
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-30">
-          <div className="pointer-events-auto inline-block">
-            <TileTray 
-              isOpen={isTrayOpen} 
-              onClose={() => setIsTrayOpen(false)} 
-              currentBackground={backgroundImage}
-              onSelectBackground={handleBackgroundSelect}
-            />
+        {isTrayOpen && (
+          <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-30">
+            <div className="pointer-events-auto inline-block" ref={trayContainerRef}>
+              <TileTray 
+                isOpen={isTrayOpen} 
+                onClose={() => setIsTrayOpen(false)} 
+                currentBackground={backgroundImage}
+                onSelectBackground={handleBackgroundSelect}
+              />
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Clock Content */}
         <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isMaximized ? 'scale-150' : ''} transition-transform duration-300 relative`}>
