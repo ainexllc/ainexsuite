@@ -36,7 +36,8 @@ export interface WeatherData {
 
 // Get location coordinates from zipcode or city/state - checks cache first, then uses Nominatim API
 export async function getLocationFromSearch(query: string) {
-  const normalized = query.trim();
+  // Normalize: trim, remove trailing commas, and clean up whitespace
+  const normalized = query.trim().replace(/,\s*$/, '').trim();
 
   // Check cache first (for zipcodes)
   if (ZIPCODE_COORDS[normalized]) {
@@ -47,6 +48,9 @@ export async function getLocationFromSearch(query: string) {
   try {
     // Add delay to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Check for empty query after trim
+    if (!normalized) return null;
 
     // First try postal code search for zipcodes
     const isZipcode = /^\d{5}$/.test(normalized);
@@ -62,6 +66,8 @@ export async function getLocationFromSearch(query: string) {
         }
       );
     } else {
+      // Avoid trailing commas which might cause bad requests in some query parsers, though URL encoding handles it
+      // Nominatim search 'q' parameter is flexible
       response = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
         {
@@ -99,7 +105,8 @@ export async function getLocationFromSearch(query: string) {
 
 // Get autocomplete suggestions for cities/states
 export async function getLocationSuggestions(query: string): Promise<Array<{ name: string; latitude: number; longitude: number }>> {
-  const normalized = query.trim();
+  // Normalize: trim, remove trailing commas, and clean up whitespace
+  const normalized = query.trim().replace(/,\s*$/, '').trim();
 
   if (normalized.length < 2) {
     return [];

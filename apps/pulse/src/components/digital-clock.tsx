@@ -11,6 +11,7 @@ import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
 import { ClockService } from '@/lib/clock-settings';
 import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
+import { BackgroundEffects, EffectType } from './background-effects';
 
 type TimeFormat = '12h' | '24h';
 
@@ -47,6 +48,7 @@ export function DigitalClock() {
   // Initialize state with defaults
   const [tiles, setTiles] = useState<Record<string, string | null>>(DEFAULT_TILES);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [backgroundEffect, setBackgroundEffect] = useState<EffectType>('none');
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
   const [weatherZipcode, setWeatherZipcode] = useState<string>('66221');
   const [activeLayoutId, setActiveLayoutId] = useState<string>(DEFAULT_LAYOUT.id);
@@ -106,12 +108,6 @@ export function DigitalClock() {
     // Subscribe to real-time updates
     const unsubscribe = ClockService.subscribeToSettings(user.uid, (settings) => {
       if (settings) {
-        // Handle legacy slots (bottom-left, etc) by mapping them to new slots if needed
-        // Or just rely on the fact that we are starting fresh with new layout IDs mostly
-        // Ideally migration logic would happen here if we cared about preserving old slot names
-        // but since we are changing IDs, old tiles might get "lost" if we don't map them.
-        // For now, let's assume direct mapping.
-        
         setTiles(settings.tiles || DEFAULT_TILES);
         setBackgroundImage(settings.backgroundImage);
         if (settings.timeFormat) {
@@ -123,6 +119,9 @@ export function DigitalClock() {
         if (settings.layoutId && LAYOUTS[settings.layoutId]) {
             setActiveLayoutId(settings.layoutId);
         }
+        if (settings.backgroundEffect) {
+            setBackgroundEffect(settings.backgroundEffect as EffectType);
+        }
       }
     });
 
@@ -133,7 +132,8 @@ export function DigitalClock() {
     newTiles: Record<string, string | null>, 
     newBg: string | null, 
     newFormat?: TimeFormat,
-    newLayoutId?: string
+    newLayoutId?: string,
+    newEffect?: EffectType
   ) => {
     if (!user) return;
 
@@ -146,6 +146,9 @@ export function DigitalClock() {
     if (newLayoutId) {
         setActiveLayoutId(newLayoutId);
     }
+    if (newEffect) {
+        setBackgroundEffect(newEffect);
+    }
 
     // Persist
     try {
@@ -154,11 +157,11 @@ export function DigitalClock() {
         backgroundImage: newBg,
         timeFormat: newFormat || timeFormat,
         weatherZipcode: weatherZipcode,
-        layoutId: newLayoutId || activeLayoutId
+        layoutId: newLayoutId || activeLayoutId,
+        backgroundEffect: newEffect || backgroundEffect
       });
     } catch (error) {
       console.error('Failed to save clock settings:', error);
-      // Optionally revert state here
     }
   };
 
@@ -170,7 +173,8 @@ export function DigitalClock() {
         backgroundImage,
         timeFormat,
         weatherZipcode: zip,
-        layoutId: activeLayoutId
+        layoutId: activeLayoutId,
+        backgroundEffect
       }).catch(e => console.error(e));
     }
   };
@@ -181,14 +185,35 @@ export function DigitalClock() {
   };
 
   const handleLayoutSelect = (layoutId: string) => {
-      // When switching layouts, we try to preserve tiles where possible
-      // Simple approach: keep tiles in slots that share the same ID.
-      // Or we could try to fill sequentially.
-      // For now, let's keep it simple: just switch layout ID, and the tiles map remains.
-      // If the new layout has fewer slots, extra tiles in the map just won't be rendered.
-      // If it has different slot IDs, they will appear empty.
-      // To be better, we should probably map old 'bottom-left' etc to 'slot-1' etc if we haven't already.
-      updateSettings(tiles, backgroundImage, undefined, layoutId);
+      if (layoutId === activeLayoutId) return;
+
+      // Smart Migration Logic:
+      // 1. Collect all current tile IDs that are placed
+      const activeTileIds = Object.values(tiles).filter(Boolean) as string[];
+      
+      // 2. Get the new layout configuration
+      const targetLayout = LAYOUTS[layoutId];
+      if (!targetLayout) return;
+
+      // 3. Map existing tiles to new slots sequentially
+      //    (This preserves as many as possible, dropping extras if new layout is smaller)
+      const nextTiles: Record<string, string | null> = {};
+      const targetSlots = targetLayout.slots.map(s => s.id);
+
+      // Fill target slots with available tiles
+      targetSlots.forEach((slotId, index) => {
+          if (index < activeTileIds.length) {
+              nextTiles[slotId] = activeTileIds[index];
+          } else {
+              nextTiles[slotId] = null;
+          }
+      });
+
+      updateSettings(nextTiles, backgroundImage, undefined, layoutId);
+  };
+
+  const handleEffectSelect = (effect: EffectType) => {
+      updateSettings(tiles, backgroundImage, undefined, undefined, effect);
   };
 
   // Format time string for display
@@ -329,8 +354,6 @@ export function DigitalClock() {
   const renderTile = (tileId: string | null, slot: string, size: SlotSize) => {
     if (!tileId) return null;
     
-    // We can pass the 'size' prop to the tiles if they support it
-    // For now, they are agnostic, but we can prepare them.
     const props = {
       id: tileId,
       onRemove: () => removeTile(slot),
@@ -342,7 +365,6 @@ export function DigitalClock() {
       onDragEnd: () => {
         isDraggingTile.current = false;
       },
-      // Pass size variant to tile
       variant: size
     };
 
@@ -352,6 +374,128 @@ export function DigitalClock() {
     if (tileId.includes('weather')) return <WeatherTile {...props} weatherZipcode={weatherZipcode} onZipcodeChange={handleZipcodeChange} />;
     if (tileId.includes('market')) return <MarketTile {...props} />;
     return null;
+  };
+
+  const renderClock = () => (
+      <div className={`flex flex-col items-center justify-center transition-transform duration-300 relative ${activeLayoutId.includes('studio') ? 'h-full' : 'mt-12 mb-12'}`}>
+          <div className="flex items-center gap-2 text-gray-400 mb-2">
+            <Clock className="w-4 h-4" />
+            <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
+          </div>
+          <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg">
+            {getFormattedTime()}
+          </div>
+          <div className="text-gray-400 mt-2 font-medium drop-shadow-md">
+            {time && time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+
+          {/* Time Format Menu */}
+          <div className="mt-4 relative">
+            <button
+              onClick={() => setShowFormatMenu(!showFormatMenu)}
+              className="px-3 py-1 text-xs uppercase tracking-wider text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+              aria-label="Change time format"
+            >
+              {timeFormat.toUpperCase()}
+            </button>
+
+            {showFormatMenu && (
+              <div className="absolute top-full mt-2 bg-black/80 border border-white/20 rounded-lg overflow-hidden z-40">
+                <button
+                  onClick={() => handleTimeFormatChange('12h')}
+                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '12h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
+                >
+                  12-Hour Format
+                </button>
+                <button
+                  onClick={() => handleTimeFormatChange('24h')}
+                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '24h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
+                >
+                  24-Hour Format
+                </button>
+              </div>
+            )}
+          </div>
+      </div>
+  );
+
+  // Render Logic for Studio Layouts (Left/Right)
+  const renderStudioLayout = (isRight: boolean) => {
+    // isRight = true means Studio Right (Clock Left, Grid Right)
+    // isRight = false means Studio Left (Grid Left, Clock Right)
+    
+    const clockColumn = (
+        <div className="flex flex-col gap-6 h-full justify-center">
+            <div className="flex-1 flex items-center justify-center">
+                {renderClock()}
+            </div>
+            <div 
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, isRight ? 'left-1' : 'right-1')}
+                className={`
+                    min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
+                    ${tiles[isRight ? 'left-1' : 'right-1'] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
+                    ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                `}
+            >
+                 {tiles[isRight ? 'left-1' : 'right-1'] ? (
+                    <div className="w-full h-full">
+                        {renderTile(tiles[isRight ? 'left-1' : 'right-1'], isRight ? 'left-1' : 'right-1', 'medium')}
+                    </div>
+                ) : (
+                    <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
+                        Drop Tile
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    const gridColumn = (
+        <div className="grid grid-cols-2 gap-6 auto-rows-fr">
+            {['1', '2', '3', '4'].map((num) => {
+                const slotId = isRight ? `right-${num}` : `left-${num}`;
+                return (
+                    <div
+                    key={slotId}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, slotId)}
+                    className={`
+                        min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
+                        ${tiles[slotId] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
+                        ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                    `}
+                >
+                    {tiles[slotId] ? (
+                        <div className="w-full h-full">
+                            {renderTile(tiles[slotId], slotId, 'small')}
+                        </div>
+                    ) : (
+                        <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
+                            Drop Tile
+                        </div>
+                    )}
+                </div>
+                );
+            })}
+        </div>
+    );
+
+    return (
+        <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+            {isRight ? (
+                <>
+                    {clockColumn}
+                    {gridColumn}
+                </>
+            ) : (
+                <>
+                    {gridColumn}
+                    {clockColumn}
+                </>
+            )}
+        </div>
+    );
   };
 
   if (!time) {
@@ -377,6 +521,9 @@ export function DigitalClock() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
+      {/* Render Atmospheric Effects */}
+      <BackgroundEffects effect={backgroundEffect} />
+
       {/* Background Overlay for Readability */}
       {backgroundImage && (
         <div className="absolute inset-0 bg-black/50 z-0 transition-opacity" />
@@ -385,7 +532,7 @@ export function DigitalClock() {
       {/* Content Container (z-10 to sit above overlay) */}
       <div className="z-10 w-full h-full flex flex-col items-center">
         {/* Controls */}
-        <div className="absolute top-4 left-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
           <button
             onClick={toggleMaximize}
             className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
@@ -418,80 +565,49 @@ export function DigitalClock() {
                 onSelectBackground={handleBackgroundSelect}
                 activeLayoutId={activeLayoutId}
                 onSelectLayout={handleLayoutSelect}
+                activeEffect={backgroundEffect}
+                onSelectEffect={handleEffectSelect}
               />
             </div>
           </div>
         )}
         
-        {/* Clock Content - Render differently if needed based on layout, but standard is top centered */}
-        {/* We might want to control clock visibility or position via layout config in future */}
-        <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isMaximized ? 'scale-150' : ''} transition-transform duration-300 relative`}>
-          <div className="flex items-center gap-2 text-gray-400 mb-2">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
-          </div>
-          <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg">
-            {getFormattedTime()}
-          </div>
-          <div className="text-gray-400 mt-2 font-medium drop-shadow-md">
-            {time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </div>
-
-          {/* Time Format Menu */}
-          <div className="mt-4 relative">
-            <button
-              onClick={() => setShowFormatMenu(!showFormatMenu)}
-              className="px-3 py-1 text-xs uppercase tracking-wider text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
-              aria-label="Change time format"
-            >
-              {timeFormat.toUpperCase()}
-            </button>
-
-            {showFormatMenu && (
-              <div className="absolute top-full mt-2 bg-black/80 border border-white/20 rounded-lg overflow-hidden z-40">
-                <button
-                  onClick={() => handleTimeFormatChange('12h')}
-                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '12h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
-                >
-                  12-Hour Format
-                </button>
-                <button
-                  onClick={() => handleTimeFormatChange('24h')}
-                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '24h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
-                >
-                  24-Hour Format
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Dynamic Tile Slots Grid */}
-        <div className={`w-full max-w-6xl grid ${activeLayout.gridClassName} mt-auto px-4 pb-4 transition-all duration-300`}>
-          {activeLayout.slots.map((slot) => (
-            <div
-              key={slot.id}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, slot.id)}
-              className={`
-                min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
-                ${slot.className} 
-                ${tiles[slot.id] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
-                ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
-              `}
-            >
-              {tiles[slot.id] ? (
-                <div className="w-full h-full">
-                  {renderTile(tiles[slot.id], slot.id, slot.size)}
+        {/* Dynamic Layout Rendering */}
+        {activeLayoutId === 'studio-right' ? (
+            renderStudioLayout(true)
+        ) : activeLayoutId === 'studio-left' ? (
+            renderStudioLayout(false)
+        ) : (
+            /* Standard Layouts (Classic, Dashboard, Focus) */
+            <>
+                {renderClock()}
+                <div className={`w-full max-w-6xl grid ${activeLayout.gridClassName} mt-auto px-4 pb-4 transition-all duration-300`}>
+                {activeLayout.slots.map((slot) => (
+                    <div
+                    key={slot.id}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, slot.id)}
+                    className={`
+                        min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
+                        ${slot.className} 
+                        ${tiles[slot.id] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
+                        ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                    `}
+                    >
+                    {tiles[slot.id] ? (
+                        <div className="w-full h-full">
+                        {renderTile(tiles[slot.id], slot.id, slot.size)}
+                        </div>
+                    ) : (
+                        <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
+                        Drop Tile
+                        </div>
+                    )}
+                    </div>
+                ))}
                 </div>
-              ) : (
-                <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
-                  Drop Tile
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            </>
+        )}
       </div>
     </div>
   );
