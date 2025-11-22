@@ -336,8 +336,13 @@ function WhiteboardInner(_props: WhiteboardProps) {
         if (edge.targetHandle !== undefined) cleanEdge.targetHandle = edge.targetHandle;
         if (edge.animated !== undefined) cleanEdge.animated = edge.animated;
         if (edge.style !== undefined) cleanEdge.style = edge.style;
-        if (edge.markerEnd !== undefined) cleanEdge.markerEnd = edge.markerEnd;
-        if (edge.markerStart !== undefined) cleanEdge.markerStart = edge.markerStart;
+        // Safely handle marker properties - convert objects to strings to avoid undefined issues
+        if (edge.markerEnd !== undefined && edge.markerEnd !== null) {
+          cleanEdge.markerEnd = typeof edge.markerEnd === 'object' ? JSON.stringify(edge.markerEnd) : edge.markerEnd;
+        }
+        if (edge.markerStart !== undefined && edge.markerStart !== null) {
+          cleanEdge.markerStart = typeof edge.markerStart === 'object' ? JSON.stringify(edge.markerStart) : edge.markerStart;
+        }
 
         return cleanEdge;
       });
