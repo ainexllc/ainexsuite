@@ -11,6 +11,7 @@ export interface ClockSettings {
   weatherZipcode?: string; // User's preferred zipcode for weather tile
   layoutId?: string; // ID of the selected layout configuration
   backgroundEffect?: string; // Selected background effect
+  backgroundDim?: number; // Overlay opacity 0-100
 }
 
 export const ClockService = {

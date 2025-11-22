@@ -61,6 +61,7 @@ export function DigitalClock() {
   const [tiles, setTiles] = useState<Record<string, string | null>>(DEFAULT_TILES);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [backgroundEffect, setBackgroundEffect] = useState<EffectType>('none');
+  const [backgroundDim, setBackgroundDim] = useState<number>(50); // Default 50% for image readability
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
   const [weatherZipcode, setWeatherZipcode] = useState<string>('66221');
   const [activeLayoutId, setActiveLayoutId] = useState<string>(DEFAULT_LAYOUT.id);
@@ -135,6 +136,9 @@ export function DigitalClock() {
         if (settings.backgroundEffect) {
             setBackgroundEffect(settings.backgroundEffect as EffectType);
         }
+        if (typeof settings.backgroundDim === 'number') {
+            setBackgroundDim(settings.backgroundDim);
+        }
       }
     });
 
@@ -146,7 +150,8 @@ export function DigitalClock() {
     newBg: string | null, 
     newFormat?: TimeFormat,
     newLayoutId?: string,
-    newEffect?: EffectType
+    newEffect?: EffectType,
+    newDim?: number
   ) => {
     if (!user) return;
 
@@ -162,6 +167,9 @@ export function DigitalClock() {
     if (newEffect) {
         setBackgroundEffect(newEffect);
     }
+    if (typeof newDim === 'number') {
+        setBackgroundDim(newDim);
+    }
 
     // Persist
     try {
@@ -171,7 +179,8 @@ export function DigitalClock() {
         timeFormat: newFormat || timeFormat,
         weatherZipcode: weatherZipcode,
         layoutId: newLayoutId || activeLayoutId,
-        backgroundEffect: newEffect || backgroundEffect
+        backgroundEffect: newEffect || backgroundEffect,
+        backgroundDim: typeof newDim === 'number' ? newDim : backgroundDim
       });
     } catch (error) {
       console.error('Failed to save clock settings:', error);
@@ -187,7 +196,8 @@ export function DigitalClock() {
         timeFormat,
         weatherZipcode: zip,
         layoutId: activeLayoutId,
-        backgroundEffect
+        backgroundEffect,
+        backgroundDim
       }).catch(e => console.error(e));
     }
   };
@@ -227,6 +237,10 @@ export function DigitalClock() {
 
   const handleEffectSelect = (effect: EffectType) => {
       updateSettings(tiles, backgroundImage, undefined, undefined, effect);
+  };
+
+  const handleDimSelect = (dim: number) => {
+      updateSettings(tiles, backgroundImage, undefined, undefined, undefined, dim);
   };
 
   // Format time string for display
@@ -539,9 +553,12 @@ export function DigitalClock() {
       <BackgroundEffects effect={backgroundEffect} />
 
       {/* Background Overlay for Readability */}
-      {backgroundImage && (
-        <div className="absolute inset-0 bg-black/50 z-0 transition-opacity" />
-      )}
+      {/* We apply the dimming level as opacity. 0 dim = 0 opacity, 100 dim = 1 opacity (blackout) */}
+      {/* Default was 50% (bg-black/50) which corresponds to 0.5 */}
+      <div 
+        className="absolute inset-0 bg-black z-0 transition-opacity duration-300" 
+        style={{ opacity: backgroundDim / 100 }}
+      />
 
       {/* Content Container (z-10 to sit above overlay) */}
       <div className="relative z-10 w-full h-full flex flex-col items-center">
@@ -619,6 +636,8 @@ export function DigitalClock() {
               onSelectLayout={handleLayoutSelect}
               activeEffect={backgroundEffect}
               onSelectEffect={handleEffectSelect}
+              backgroundDim={backgroundDim}
+              onSelectDim={handleDimSelect}
             />
           </div>
         </div>

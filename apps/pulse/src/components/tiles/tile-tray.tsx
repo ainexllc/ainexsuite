@@ -109,6 +109,8 @@ interface TileTrayProps {
   onSelectLayout: (layoutId: string) => void;
   activeEffect: EffectType;
   onSelectEffect: (effect: EffectType) => void;
+  backgroundDim?: number;
+  onSelectDim?: (dim: number) => void;
 }
 
 export function TileTray({ 
@@ -119,7 +121,9 @@ export function TileTray({
   activeLayoutId,
   onSelectLayout,
   activeEffect,
-  onSelectEffect
+  onSelectEffect,
+  backgroundDim = 50,
+  onSelectDim
 }: TileTrayProps) {
   const [activeTab, setActiveTab] = useState<'tiles' | 'backgrounds' | 'layouts' | 'effects'>('tiles');
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
@@ -499,6 +503,30 @@ export function TileTray({
                 </div>
               </div>
             </div>
+
+            {/* Dimming Controls */}
+            {onSelectDim && (
+              <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-white/80">Background Dimming</label>
+                  <span className="text-xs font-mono text-white/40">{backgroundDim}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="90"
+                  step="10"
+                  value={backgroundDim}
+                  onChange={(e) => onSelectDim(Number(e.target.value))}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                />
+                <div className="flex justify-between text-[10px] text-white/30 px-1">
+                  <span>Bright</span>
+                  <span>Dim</span>
+                  <span>Dark</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
