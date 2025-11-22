@@ -19,23 +19,17 @@ interface TileTrayProps {
 
 export function TileTray({ isOpen, onClose, currentBackground, onSelectBackground }: TileTrayProps) {
   const [activeTab, setActiveTab] = useState<'tiles' | 'backgrounds'>('tiles');
-  // Start with null so we know it's uninitialized
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const trayRef = useRef<HTMLDivElement>(null);
 
-  // Reset position when tray opens or switch to saving strictly relative to the *clock* container
+  // Reset position when tray opens
   useEffect(() => {
     if (isOpen && position === null) {
-       // Default initial position (top-right relative to the clock container)
-       // Since it's absolute positioned, we can just start at {0, 0} or specific coordinates if we want
-       // We'll rely on the initial render position defined by CSS (top-16 right-4) 
-       // and use transform for the *delta* movement.
        setPosition({ x: 0, y: 0 });
     }
   }, [isOpen, position]);
 
-  // Optimization: Use refs for mutable drag state to avoid re-renders during move
   const dragRef = useRef({ 
     startX: 0, 
     startY: 0, 
@@ -45,56 +39,79 @@ export function TileTray({ isOpen, onClose, currentBackground, onSelectBackgroun
   });
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMove = (clientX: number, clientY: number) => {
       if (!dragRef.current.isDragging) return;
       
-      e.preventDefault(); // Prevent selection/scrolling while dragging
+      const dx = clientX - dragRef.current.startX;
+      const dy = clientY - dragRef.current.startY;
       
-      const dx = e.clientX - dragRef.current.startX;
-      const dy = e.clientY - dragRef.current.startY;
-      
-      // Update state via requestAnimationFrame only if needed, but direct update is usually fine for simple xy
-      // Using functional update to avoid dependency issues
       setPosition({
         x: dragRef.current.initialX + dx,
         y: dragRef.current.initialY + dy
       });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      handleMove(e.clientX, e.clientY);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        e.preventDefault(); // Prevent scrolling
+        handleMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+
+    const handleEnd = () => {
       dragRef.current.isDragging = false;
       setIsDragging(false);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleEnd);
     };
 
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mouseup', handleEnd);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleEnd);
     }
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleEnd);
     };
   }, [isDragging]);
 
-  const onHeaderMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('button')) return;
-    
+  const startDrag = (clientX: number, clientY: number) => {
     setIsDragging(true);
     dragRef.current = {
       isDragging: true,
-      startX: e.clientX,
-      startY: e.clientY,
+      startX: clientX,
+      startY: clientY,
       initialX: position?.x || 0,
       initialY: position?.y || 0
     };
   };
 
+  const onHeaderMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    startDrag(e.clientX, e.clientY);
+  };
+
+  const onHeaderTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    if (e.touches.length > 0) {
+      startDrag(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
   if (!isOpen) return null;
 
-  // If position is null, we haven't initialized, but we can render at 0,0 delta
   const currentPos = position || { x: 0, y: 0 };
 
   return (
@@ -108,8 +125,9 @@ export function TileTray({ isOpen, onClose, currentBackground, onSelectBackgroun
     >
       {/* Header - Draggable Handle */}
       <div 
-        className={`flex items-center justify-between p-4 border-b border-white/5 bg-white/5 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`flex items-center justify-between p-4 border-b border-white/5 bg-white/5 select-none touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         onMouseDown={onHeaderMouseDown}
+        onTouchStart={onHeaderTouchStart}
       >
         <div className="flex items-center gap-2">
           <GripHorizontal className="w-4 h-4 text-white/40" />
@@ -119,6 +137,7 @@ export function TileTray({ isOpen, onClose, currentBackground, onSelectBackgroun
           onClick={onClose}
           className="p-1 text-white/40 hover:text-white transition-colors cursor-pointer"
           onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
         >
           <X className="w-4 h-4" />
         </button>

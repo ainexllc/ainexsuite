@@ -2,19 +2,16 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Clock, Maximize2, Minimize2, Plus } from 'lucide-react';
+import { useAuth } from '@ainexsuite/auth';
 import { TileTray } from './tiles/tile-tray';
 import { CalendarTile } from './tiles/calendar-tile';
 import { FocusTile } from './tiles/focus-tile';
 import { SparkTile } from './tiles/spark-tile';
 import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
+import { ClockService, ClockSettings } from '@/lib/clock-settings';
 
 type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
-
-interface ClockState {
-  tiles: Record<SlotPosition, string | null>;
-  backgroundImage: string | null;
-}
 
 const DEFAULT_TILES = {
   'bottom-left': null,
@@ -23,59 +20,59 @@ const DEFAULT_TILES = {
 };
 
 export function DigitalClock() {
+  const { user } = useAuth();
   const [time, setTime] = useState<Date | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   
-  // Lazy initialization for persistent state
-  const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pulse-clock-state');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          return parsed.tiles || DEFAULT_TILES;
-        } catch (e) {
-          console.error('Error parsing saved tiles:', e);
-        }
-      }
-    }
-    return DEFAULT_TILES;
-  });
-
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pulse-clock-state');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          return parsed.backgroundImage || null;
-        } catch (e) {
-          console.error('Error parsing saved background:', e);
-        }
-      }
-    }
-    return null;
-  });
-
+  // Initialize state with defaults
+  const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>(DEFAULT_TILES);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Mark as loaded after mount to ensure client-side hydration matches
+  // Sync with Firestore on load and changes
   useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+    if (!user) return;
 
-  // Save state to localStorage whenever it changes, but ONLY after initial load
-  useEffect(() => {
-    if (isLoaded) {
-      const state: ClockState = {
-        tiles,
-        backgroundImage
-      };
-      localStorage.setItem('pulse-clock-state', JSON.stringify(state));
+    // Subscribe to real-time updates
+    const unsubscribe = ClockService.subscribeToSettings(user.uid, (settings) => {
+      if (settings) {
+        // Cast the generic string record to our specific SlotPosition type safely
+        // In a real app we'd validate this runtime data with zod/io-ts
+        setTiles(settings.tiles as Record<SlotPosition, string | null>);
+        setBackgroundImage(settings.backgroundImage);
+      }
+      setIsLoaded(true);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Save state to Firestore whenever it changes (debounced could be better, but direct for now)
+  // We only save if the change was initiated LOCALLY, not from a remote update.
+  // Ideally, we separate "optimistic update" from "remote sync", but for this simple case:
+  // We will trigger the save explicitly in the handlers (drop/select) instead of a useEffect to avoid loops.
+
+  const updateSettings = async (newTiles: Record<SlotPosition, string | null>, newBg: string | null) => {
+    if (!user) return;
+    
+    // Optimistic update
+    setTiles(newTiles);
+    setBackgroundImage(newBg);
+
+    // Persist
+    try {
+      await ClockService.saveSettings(user.uid, {
+        tiles: newTiles,
+        backgroundImage: newBg
+      });
+    } catch (error) {
+      console.error('Failed to save clock settings:', error);
+      // Optionally revert state here
     }
-  }, [tiles, backgroundImage, isLoaded]);
+  };
 
   useEffect(() => {
     setTime(new Date());
@@ -125,12 +122,17 @@ export function DigitalClock() {
     });
     
     newTiles[slot] = tileId;
-    setTiles(newTiles);
+    updateSettings(newTiles, backgroundImage);
     // Don't close tray automatically
   };
 
   const removeTile = (slot: SlotPosition) => {
-    setTiles(prev => ({ ...prev, [slot]: null }));
+    const newTiles = { ...tiles, [slot]: null };
+    updateSettings(newTiles, backgroundImage);
+  };
+
+  const handleBackgroundSelect = (url: string | null) => {
+    updateSettings(tiles, url);
   };
 
   const renderTile = (tileId: string | null, slot: SlotPosition) => {
@@ -205,7 +207,7 @@ export function DigitalClock() {
               isOpen={isTrayOpen} 
               onClose={() => setIsTrayOpen(false)} 
               currentBackground={backgroundImage}
-              onSelectBackground={setBackgroundImage}
+              onSelectBackground={handleBackgroundSelect}
             />
           </div>
         </div>

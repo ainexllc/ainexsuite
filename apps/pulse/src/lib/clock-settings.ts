@@ -1,0 +1,35 @@
+import { db } from '@ainexsuite/firebase';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+
+const SETTINGS_COLLECTION = 'user_settings';
+const CLOCK_SETTINGS_DOC = 'pulse_clock';
+
+export interface ClockSettings {
+  tiles: Record<string, string | null>;
+  backgroundImage: string | null;
+}
+
+export const ClockService = {
+  async saveSettings(userId: string, settings: ClockSettings) {
+    const docRef = doc(db, 'users', userId, SETTINGS_COLLECTION, CLOCK_SETTINGS_DOC);
+    await setDoc(docRef, settings, { merge: true });
+  },
+
+  async getSettings(userId: string): Promise<ClockSettings | null> {
+    const docRef = doc(db, 'users', userId, SETTINGS_COLLECTION, CLOCK_SETTINGS_DOC);
+    const snapshot = await getDoc(docRef);
+    return snapshot.exists() ? (snapshot.data() as ClockSettings) : null;
+  },
+
+  subscribeToSettings(userId: string, callback: (settings: ClockSettings | null) => void) {
+    const docRef = doc(db, 'users', userId, SETTINGS_COLLECTION, CLOCK_SETTINGS_DOC);
+    return onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        callback(snapshot.data() as ClockSettings);
+      } else {
+        callback(null);
+      }
+    });
+  }
+};
+
