@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useAuth } from "@/lib/auth/auth-context";
 import { NoteCard } from "@/components/notes/note-card";
-import { ResizableNote } from "@/components/notes/resizable-note";
 
 function NotesSkeleton() {
   return (
@@ -74,9 +73,7 @@ export function SharedNotesBoard() {
           <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
             {sharedWithMe.map((note) => (
               <div key={note.id} className="mb-4">
-                <ResizableNote note={note}>
-                  <NoteCard note={note} />
-                </ResizableNote>
+                <NoteCard note={note} />
               </div>
             ))}
           </div>
@@ -92,9 +89,7 @@ export function SharedNotesBoard() {
           <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
             {sharedByMe.map((note) => (
               <div key={note.id} className="mb-4">
-                <ResizableNote note={note}>
-                  <NoteCard note={note} />
-                </ResizableNote>
+                <NoteCard note={note} />
               </div>
             ))}
           </div>
