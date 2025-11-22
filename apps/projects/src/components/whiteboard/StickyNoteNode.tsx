@@ -161,13 +161,13 @@ function StickyNoteNode({ data, selected }: NodeProps) {
       </button>
 
       {/* Content container with padding matching notes app (px-5 py-4) - Scrollable */}
-      <div className="px-5 pt-4 pb-4 flex-1 overflow-y-auto min-h-0">
+      <div className="px-5 pt-4 pb-4 flex-1 overflow-y-auto min-h-0 flex flex-col">
         {/* Title - always visible */}
         <input
           type="text"
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
-          className="w-full bg-transparent border-none outline-none text-base font-semibold placeholder:text-gray-500/60 text-gray-900 nodrag pr-6"
+          className="w-full bg-transparent border-none outline-none text-base font-semibold placeholder:text-gray-500/60 text-gray-900 nodrag pr-6 flex-shrink-0"
           placeholder="Title"
         />
 
@@ -175,11 +175,8 @@ function StickyNoteNode({ data, selected }: NodeProps) {
         <textarea
           value={text}
           onChange={(e) => handleTextChange(e.target.value)}
-          className={`w-full bg-transparent border-none outline-none resize-none placeholder:text-gray-500/60 text-gray-800 nodrag whitespace-pre-wrap mt-3 ${fontSize} ${fontFamily}`}
+          className={`w-full bg-transparent border-none outline-none resize-none placeholder:text-gray-500/60 text-gray-800 nodrag whitespace-pre-wrap mt-3 flex-1 ${fontSize} ${fontFamily}`}
           placeholder="Take a note..."
-          style={{
-            minHeight: '60px',
-          }}
         />
       </div>
 
