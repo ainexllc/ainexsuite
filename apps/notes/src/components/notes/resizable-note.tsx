@@ -31,6 +31,11 @@ export function ResizableNote({ note, children, viewMode = "masonry" }: Resizabl
   const startPosRef = useRef({ x: 0, y: 0 });
   const startDimensionsRef = useRef({ width: 0, height: 0 });
 
+  // Disable resizing in list view mode
+  if (viewMode === "list") {
+    return <>{children}</>;
+  }
+
   const handleMouseDown = useCallback((direction: ResizeDirection, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -117,11 +122,6 @@ export function ResizableNote({ note, children, viewMode = "masonry" }: Resizabl
       default: return "";
     }
   };
-
-  // Disable resizing in list view mode
-  if (viewMode === "list") {
-    return <>{children}</>;
-  }
 
   return (
     <div
