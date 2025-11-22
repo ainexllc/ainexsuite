@@ -45,14 +45,14 @@ function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
 
   if (id === 'studio-right') {
      return (
-      <div className={`${containerClass} grid-cols-2`}>
+      <div className={containerClass}>
         {/* Left Col: Clock + Tile */}
-        <div className="flex flex-col gap-0.5">
+        <div className="flex-1 h-full flex flex-col gap-0.5">
            <div className={`h-3 rounded-[1px] ${baseColor} opacity-90`} /> {/* Clock */}
            <div className={`flex-1 rounded-[1px] ${baseColor} opacity-50`} /> {/* Tile */}
         </div>
         {/* Right Col: 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-0.5">
+        <div className="flex-1 h-full grid grid-cols-2 gap-0.5">
            {[...Array(4)].map((_, i) => (
              <div key={i} className={`rounded-[1px] ${baseColor} opacity-50`} />
            ))}
@@ -63,15 +63,15 @@ function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
 
   if (id === 'studio-left') {
      return (
-      <div className={`${containerClass} grid-cols-2`}>
+      <div className={containerClass}>
         {/* Left Col: 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-0.5">
+        <div className="flex-1 h-full grid grid-cols-2 gap-0.5">
            {[...Array(4)].map((_, i) => (
              <div key={i} className={`rounded-[1px] ${baseColor} opacity-50`} />
            ))}
         </div>
         {/* Right Col: Clock + Tile */}
-        <div className="flex flex-col gap-0.5">
+        <div className="flex-1 h-full flex flex-col gap-0.5">
            <div className={`h-3 rounded-[1px] ${baseColor} opacity-90`} /> {/* Clock */}
            <div className={`flex-1 rounded-[1px] ${baseColor} opacity-50`} /> {/* Tile */}
         </div>
