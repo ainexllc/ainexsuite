@@ -20,7 +20,7 @@ export type StickyNoteData = {
   onResize?: (width: number, height: number) => void;
 };
 
-function StickyNoteNode({ data }: NodeProps) {
+function StickyNoteNode({ data, selected }: NodeProps) {
   const nodeData = data as StickyNoteData;
   const [text, setText] = useState(nodeData.text);
   const [title, setTitle] = useState(nodeData.title || '');
@@ -88,13 +88,24 @@ function StickyNoteNode({ data }: NodeProps) {
     <>
       {!nodeData.locked && (
         <NodeResizer
-          color="#3b82f6"
-          isVisible={isHovered}
+          color="#06b6d4"
+          isVisible={isHovered || selected}
           minWidth={150}
           minHeight={100}
           maxWidth={500}
           maxHeight={1000}
-          onResizeEnd={(event, params) => {
+          handleStyle={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            backgroundColor: '#06b6d4',
+            border: '3px solid #0a0a0a',
+          }}
+          lineStyle={{
+            borderColor: '#06b6d4',
+            borderWidth: 2,
+          }}
+          onResize={(event, params) => {
             nodeData.onResize?.(params.width, params.height);
           }}
         />
