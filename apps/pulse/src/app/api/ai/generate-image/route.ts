@@ -21,24 +21,30 @@ export async function POST(request: Request) {
       );
     }
 
+    // OpenRouter / Google Gemini specific request
+    // Sometimes 'modalities' field isn't enough, and for image generation specifically 
+    // providers might expect 'image' in the prompt text or a specific tool call structure.
+    // However, sticking to the standard chat completion with prompt is the first step.
+    
+    // Let's log the response for debugging if it fails again to see the structure.
+    console.log('Sending request to OpenRouter with prompt:', prompt);
+
     const response = await fetch(`${apiUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://ainexsuite.com', // Required by OpenRouter
-        'X-Title': 'Pulse Workspace', // Required by OpenRouter
+        'HTTP-Referer': 'https://ainexsuite.com', 
+        'X-Title': 'Pulse Workspace', 
       },
       body: JSON.stringify({
         model: 'google/gemini-3-pro-image-preview',
         messages: [
           {
             role: 'user',
-            content: prompt
+            content: `Generate an image of: ${prompt}`
           }
         ],
-        // Explicitly request image generation
-        modalities: ["image"]
       }),
     });
 
@@ -52,13 +58,8 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
+    console.log('OpenRouter Response:', JSON.stringify(data, null, 2));
 
-    // The structure of the response for image generation models can vary, 
-    // but typically for chat completion endpoints returning images, 
-    // the image url/base64 is often inside the content or a specific attachment field.
-    // For Gemini via OpenRouter, it usually follows the standard OpenAI image generation or chat content structure.
-    // Let's inspect the choice content.
-    
     const choice = data.choices?.[0];
     
     if (!choice) {
@@ -68,32 +69,29 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check for standard content (markdown with image) or message content
     let imageUrl = null;
     const messageContent = choice.message?.content;
 
-    // Heuristic to find markdown image syntax ![alt](url) or just a raw URL
     if (typeof messageContent === 'string') {
-        // Try to match markdown image
+        // 1. Markdown image: ![alt](url)
         const markdownMatch = messageContent.match(/!\[.*?\]\((.*?)\)/);
         if (markdownMatch && markdownMatch[1]) {
             imageUrl = markdownMatch[1];
-        } else {
-            // Sometimes it might just return the URL or Base64 directly
-            // Check if content looks like a URL
-            if (messageContent.startsWith('http') || messageContent.startsWith('data:image')) {
-                imageUrl = messageContent;
+        } 
+        // 2. Direct URL (starts with http)
+        else if (messageContent.trim().startsWith('http')) {
+            imageUrl = messageContent.trim();
+        }
+        // 3. Check for HTML <img> tag
+        else {
+            const htmlMatch = messageContent.match(/<img\s+src=["'](.*?)["']/);
+            if (htmlMatch && htmlMatch[1]) {
+                imageUrl = htmlMatch[1];
             }
         }
     }
 
-    // If still no image found, check if there's a specific 'image' field in the response (custom provider format)
-    // But standard OpenRouter chat usually returns it in content.
-
     if (!imageUrl) {
-         // Fallback: Return the raw content to let the frontend debug or display it
-         // Ideally, for an image model, we want the image. 
-         // If the model refused or generated text, we send that back as an error or info.
          return NextResponse.json({ 
              error: 'No image URL found in response',
              details: messageContent 
@@ -110,4 +108,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
