@@ -52,7 +52,7 @@ function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
            <div className={`flex-1 rounded-[1px] ${baseColor} opacity-50`} /> {/* Tile */}
         </div>
         {/* Right Col: 2x2 Grid */}
-        <div className="grid grid-cols-2 grid-rows-2 gap-0.5">
+        <div className="grid grid-cols-2 gap-0.5">
            {[...Array(4)].map((_, i) => (
              <div key={i} className={`rounded-[1px] ${baseColor} opacity-50`} />
            ))}
@@ -65,7 +65,7 @@ function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
      return (
       <div className={`${containerClass} grid-cols-2`}>
         {/* Left Col: 2x2 Grid */}
-        <div className="grid grid-cols-2 grid-rows-2 gap-0.5">
+        <div className="grid grid-cols-2 gap-0.5">
            {[...Array(4)].map((_, i) => (
              <div key={i} className={`rounded-[1px] ${baseColor} opacity-50`} />
            ))}
