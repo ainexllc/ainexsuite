@@ -549,16 +549,17 @@ export function DigitalClock() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      {/* Render Atmospheric Effects */}
-      <BackgroundEffects effect={backgroundEffect} />
-
       {/* Background Overlay for Readability */}
       {/* We apply the dimming level as opacity. 0 dim = 0 opacity, 100 dim = 1 opacity (blackout) */}
-      {/* Default was 50% (bg-black/50) which corresponds to 0.5 */}
       <div 
         className="absolute inset-0 bg-black z-0 transition-opacity duration-300" 
         style={{ opacity: backgroundDim / 100 }}
       />
+
+      {/* Render Atmospheric Effects - Placed ABOVE the dimmer layer so they remain bright */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <BackgroundEffects effect={backgroundEffect} />
+      </div>
 
       {/* Content Container (z-10 to sit above overlay) */}
       <div className="relative z-10 w-full h-full flex flex-col items-center">
