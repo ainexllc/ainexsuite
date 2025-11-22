@@ -161,7 +161,7 @@ function StickyNoteNode({ data, selected }: NodeProps) {
       </button>
 
       {/* Content container with padding matching notes app (px-5 py-4) - Scrollable */}
-      <div className="px-5 pt-4 pb-0 flex-1 overflow-y-auto min-h-0">
+      <div className="px-5 pt-4 pb-4 flex-1 overflow-y-auto min-h-0">
         {/* Title - always visible */}
         <input
           type="text"
