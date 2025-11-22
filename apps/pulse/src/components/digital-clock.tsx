@@ -1,12 +1,27 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Clock, Maximize2, Minimize2 } from 'lucide-react';
+import { Clock, Maximize2, Minimize2, Plus } from 'lucide-react';
+import { TileTray } from './tiles/tile-tray';
+import { CalendarTile } from './tiles/calendar-tile';
+import { FocusTile } from './tiles/focus-tile';
+import { SparkTile } from './tiles/spark-tile';
+import { WeatherTile } from './tiles/weather-tile';
+import { MarketTile } from './tiles/market-tile';
+
+type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
 
 export function DigitalClock() {
   const [time, setTime] = useState<Date | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isTrayOpen, setIsTrayOpen] = useState(false);
+  const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>({
+    'bottom-left': null,
+    'bottom-center': null,
+    'bottom-right': null,
+  });
   const containerRef = useRef<HTMLDivElement>(null);
+  const [draggedTileId, setDraggedTileId] = useState<string | null>(null);
 
   useEffect(() => {
     setTime(new Date());
@@ -38,6 +53,52 @@ export function DigitalClock() {
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, slot: SlotPosition) => {
+    e.preventDefault();
+    const tileId = e.dataTransfer.getData('text/plain');
+    
+    // Clear tile from other slots if it exists there
+    const newTiles = { ...tiles };
+    Object.keys(newTiles).forEach(key => {
+      if (newTiles[key as SlotPosition] === tileId) {
+        newTiles[key as SlotPosition] = null;
+      }
+    });
+    
+    newTiles[slot] = tileId;
+    setTiles(newTiles);
+    setIsTrayOpen(false);
+  };
+
+  const removeTile = (slot: SlotPosition) => {
+    setTiles(prev => ({ ...prev, [slot]: null }));
+  };
+
+  const renderTile = (tileId: string | null, slot: SlotPosition) => {
+    if (!tileId) return null;
+    
+    const props = {
+      id: tileId,
+      onRemove: () => removeTile(slot),
+      isDraggable: true,
+      onDragStart: (e: React.DragEvent) => {
+         e.dataTransfer.setData('text/plain', tileId);
+      }
+    };
+
+    if (tileId.includes('calendar')) return <CalendarTile {...props} />;
+    if (tileId.includes('focus')) return <FocusTile {...props} />;
+    if (tileId.includes('spark')) return <SparkTile {...props} />;
+    if (tileId.includes('weather')) return <WeatherTile {...props} />;
+    if (tileId.includes('market')) return <MarketTile {...props} />;
+    return null;
+  };
+
   if (!time) {
     return null; // Avoid hydration mismatch
   }
@@ -45,25 +106,41 @@ export function DigitalClock() {
   return (
     <div 
       ref={containerRef}
-      className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center justify-center relative group transition-all duration-300 ${
+      className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 ${
         isFullScreen 
-          ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none' 
-          : 'p-8 rounded-2xl mb-8'
+          ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none justify-center' 
+          : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px]'
       }`}
     >
-      <button
-        onClick={toggleFullScreen}
-        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100 z-10"
-        aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}
-      >
-        {isFullScreen ? (
-          <Minimize2 className="w-5 h-5" />
-        ) : (
-          <Maximize2 className="w-5 h-5" />
-        )}
-      </button>
+      {/* Controls */}
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => setIsTrayOpen(!isTrayOpen)}
+          className={`p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 ${isTrayOpen ? 'bg-white/10 text-white' : ''}`}
+          aria-label="Add tiles"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+        <button
+          onClick={toggleFullScreen}
+          className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
+          aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}
+        >
+          {isFullScreen ? (
+            <Minimize2 className="w-5 h-5" />
+          ) : (
+            <Maximize2 className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+
+      {/* Tile Tray */}
+      <div className="absolute top-16 right-4 w-[320px] md:w-[360px] z-30">
+        <TileTray isOpen={isTrayOpen} onClose={() => setIsTrayOpen(false)} />
+      </div>
       
-      <div className={`flex flex-col items-center justify-center ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300`}>
+      {/* Clock Content */}
+      <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300`}>
         <div className="flex items-center gap-2 text-gray-400 mb-2">
           <Clock className="w-4 h-4" />
           <span className="text-sm uppercase tracking-wider font-medium">Current Time</span>
@@ -74,6 +151,32 @@ export function DigitalClock() {
         <div className="text-gray-400 mt-2 font-medium">
           {time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
+      </div>
+
+      {/* Tile Slots */}
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 mt-auto px-4 pb-4">
+        {(['bottom-left', 'bottom-center', 'bottom-right'] as SlotPosition[]).map((slot) => (
+          <div
+            key={slot}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, slot)}
+            className={`min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative ${
+              tiles[slot] 
+                ? 'border-transparent' 
+                : 'border-white/5 hover:border-white/20 bg-white/5'
+            } ${isTrayOpen ? 'animate-pulse border-white/20' : ''}`}
+          >
+            {tiles[slot] ? (
+              <div className="w-full h-full">
+                {renderTile(tiles[slot], slot)}
+              </div>
+            ) : (
+              <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
+                Drop Tile Here
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
