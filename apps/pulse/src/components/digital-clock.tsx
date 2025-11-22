@@ -11,17 +11,71 @@ import { MarketTile } from './tiles/market-tile';
 
 type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
 
+interface ClockState {
+  tiles: Record<SlotPosition, string | null>;
+  backgroundImage: string | null;
+}
+
+const DEFAULT_TILES = {
+  'bottom-left': null,
+  'bottom-center': null,
+  'bottom-right': null,
+};
+
 export function DigitalClock() {
   const [time, setTime] = useState<Date | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
-  const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>({
-    'bottom-left': null,
-    'bottom-center': null,
-    'bottom-right': null,
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Lazy initialization for persistent state
+  const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pulse-clock-state');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          return parsed.tiles || DEFAULT_TILES;
+        } catch (e) {
+          console.error('Error parsing saved tiles:', e);
+        }
+      }
+    }
+    return DEFAULT_TILES;
   });
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pulse-clock-state');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          return parsed.backgroundImage || null;
+        } catch (e) {
+          console.error('Error parsing saved background:', e);
+        }
+      }
+    }
+    return null;
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Mark as loaded after mount to ensure client-side hydration matches
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  // Save state to localStorage whenever it changes, but ONLY after initial load
+  useEffect(() => {
+    if (isLoaded) {
+      const state: ClockState = {
+        tiles,
+        backgroundImage
+      };
+      localStorage.setItem('pulse-clock-state', JSON.stringify(state));
+    }
+  }, [tiles, backgroundImage, isLoaded]);
 
   useEffect(() => {
     setTime(new Date());
@@ -145,18 +199,16 @@ export function DigitalClock() {
         </div>
 
         {/* Tile Tray */}
-        {isTrayOpen && (
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-30">
-            <div className="pointer-events-auto inline-block">
-              <TileTray 
-                isOpen={isTrayOpen} 
-                onClose={() => setIsTrayOpen(false)} 
-                currentBackground={backgroundImage}
-                onSelectBackground={setBackgroundImage}
-              />
-            </div>
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-30">
+          <div className="pointer-events-auto inline-block">
+            <TileTray 
+              isOpen={isTrayOpen} 
+              onClose={() => setIsTrayOpen(false)} 
+              currentBackground={backgroundImage}
+              onSelectBackground={setBackgroundImage}
+            />
           </div>
-        )}
+        </div>
         
         {/* Clock Content */}
         <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300`}>

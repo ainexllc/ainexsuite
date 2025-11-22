@@ -22,7 +22,6 @@ export function TileTray({ isOpen, onClose, currentBackground, onSelectBackgroun
   // Start with null so we know it's uninitialized
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const trayRef = useRef<HTMLDivElement>(null);
 
   // Reset position when tray opens or switch to saving strictly relative to the *clock* container
