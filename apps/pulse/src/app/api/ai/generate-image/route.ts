@@ -26,8 +26,8 @@ export async function POST(request: Request) {
     // eslint-disable-next-line no-console
     console.log('Sending image generation request to OpenRouter with prompt:', prompt);
 
-    // Use OpenRouter's chat completions API with a model that supports image output
-    // Stable Diffusion 3 and DALL-E 3 are available as text-to-image models via OpenRouter
+    // Use OpenRouter's Stable Diffusion 3 for image generation
+    // This is more reliable than DALL-E 3 on OpenRouter's chat API
     const response = await fetch(`${apiUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         'X-Title': 'Pulse Workspace',
       },
       body: JSON.stringify({
-        model: 'openai/dall-e-3',
+        model: 'stabilityai/stable-diffusion-3',
         messages: [
           {
             role: 'user',
