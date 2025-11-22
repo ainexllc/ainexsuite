@@ -45,14 +45,32 @@ export async function getLocationFromSearch(query: string) {
 
   // Use Nominatim to geocode both zipcodes and city names
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
-      {
-        headers: {
-          'User-Agent': 'AinexSuite-Weather-App'
+    // Add delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // First try postal code search for zipcodes
+    const isZipcode = /^\d{5}$/.test(normalized);
+    let response: Response;
+
+    if (isZipcode) {
+      response = await fetch(
+        `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'AinexSuite-Weather-App'
+          }
         }
-      }
-    );
+      );
+    } else {
+      response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'AinexSuite-Weather-App'
+          }
+        }
+      );
+    }
 
     if (!response.ok) {
       return null;
@@ -88,14 +106,24 @@ export async function getLocationSuggestions(query: string): Promise<Array<{ nam
   }
 
   try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=5`,
-      {
-        headers: {
-          'User-Agent': 'AinexSuite-Weather-App'
-        }
+    // Add delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Detect if input is a zipcode
+    const isZipcode = /^\d+$/.test(normalized);
+    let url: string;
+
+    if (isZipcode) {
+      url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=5`;
+    } else {
+      url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=5`;
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'AinexSuite-Weather-App'
       }
-    );
+    });
 
     if (!response.ok) {
       return [];
