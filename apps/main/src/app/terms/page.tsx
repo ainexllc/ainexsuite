@@ -1,4 +1,4 @@
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 
 export default function TermsPage() {
   return (

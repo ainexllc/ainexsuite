@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Mail, MessageSquare, Clock, HelpCircle, Send, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';

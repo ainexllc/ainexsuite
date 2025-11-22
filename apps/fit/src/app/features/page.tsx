@@ -10,7 +10,7 @@ import {
   Flame,
   HeartPulse,
 } from "lucide-react";
-import { FooterPageLayout } from "@/components/footer-page-layout";
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 
 const featureHighlights = [
   {

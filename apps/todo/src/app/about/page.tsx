@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Target, Workflow, Users, Sparkles, ShieldCheck, Hourglass } from 'lucide-react';
 
 const history = [

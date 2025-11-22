@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Flame, ListChecks, BrainCircuit, Users, Sparkles, ShieldCheck, Compass } from 'lucide-react';
 
 const chapters = [

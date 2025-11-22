@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { PenSquare, Heart, Sparkles, ShieldCheck, Users, Globe, Camera } from 'lucide-react';
 
 const chapters = [

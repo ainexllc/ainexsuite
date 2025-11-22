@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 

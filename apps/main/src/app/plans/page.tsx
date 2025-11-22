@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Check, Sparkles, Zap, Package, ArrowRight, Shield, Zap as ZapIcon, Clock, CreditCard, LayoutGrid, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';

@@ -1,4 +1,4 @@
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 
 export default function AcceptableUsePage() {

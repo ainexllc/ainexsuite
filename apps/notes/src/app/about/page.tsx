@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { BookOpenCheck, Share2, Lightbulb, ShieldCheck, Users, Sparkles } from 'lucide-react';
 
 const chapters = [

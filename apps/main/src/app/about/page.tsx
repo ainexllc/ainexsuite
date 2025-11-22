@@ -1,4 +1,4 @@
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Target, Users, Sparkles, Shield, TrendingUp, Heart } from 'lucide-react';
 
 const values = [

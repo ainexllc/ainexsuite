@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Camera, Sparkles, Share2, ShieldCheck, Users, Music2, Globe } from 'lucide-react';
 
 const chapters = [

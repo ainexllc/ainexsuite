@@ -1,6 +1,6 @@
 "use client";
 
-import { FooterPageLayout } from "@/components/footer-page-layout";
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Trophy, Users, Activity, Target, HeartPulse, ShieldCheck } from "lucide-react";
 
 const milestones = [

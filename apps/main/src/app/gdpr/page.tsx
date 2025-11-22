@@ -1,4 +1,4 @@
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Shield, Lock, Download, Trash2, Edit3, Eye, CheckCircle, Mail } from 'lucide-react';
 
 const userRights = [

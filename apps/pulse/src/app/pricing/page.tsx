@@ -1,6 +1,6 @@
 'use client';
 
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Check, Shield, Sparkles, Stethoscope } from 'lucide-react';
 
 const plans = [

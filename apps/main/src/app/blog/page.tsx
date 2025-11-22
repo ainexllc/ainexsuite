@@ -1,4 +1,4 @@
-import { FooterPageLayout } from '@/components/footer-page-layout';
+import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Calendar, Clock, ArrowRight, TrendingUp, Search } from 'lucide-react';
 import Link from 'next/link';
 
