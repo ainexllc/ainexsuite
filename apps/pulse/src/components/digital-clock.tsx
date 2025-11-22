@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Clock, Maximize2, Minimize2, Plus, Settings } from 'lucide-react';
+import { Clock, Maximize2, Minimize2, Plus } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileTray } from './tiles/tile-tray';
 import { CalendarTile } from './tiles/calendar-tile';
@@ -13,6 +13,16 @@ import { ClockService } from '@/lib/clock-settings';
 
 type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
 type TimeFormat = '12h' | '24h';
+
+// WebKit fullscreen API types for TypeScript
+interface WebKitDocument extends Document {
+  webkitFullscreenElement: Element | null;
+  webkitExitFullscreen(): Promise<void>;
+}
+
+interface WebKitElement extends HTMLElement {
+  webkitRequestFullscreen(): Promise<void>;
+}
 
 const DEFAULT_TILES = {
   'bottom-left': null,
@@ -129,9 +139,9 @@ export function DigitalClock() {
 
   const toggleFullScreen = async () => {
     try {
+      const docWithWebkit = document as unknown as WebKitDocument;
       const isCurrentlyFullscreen =
-        document.fullscreenElement ||
-        (document as any).webkitFullscreenElement;
+        document.fullscreenElement || docWithWebkit.webkitFullscreenElement;
 
       if (!isCurrentlyFullscreen && containerRef.current) {
         // Try standard API first
@@ -139,12 +149,12 @@ export function DigitalClock() {
           await containerRef.current.requestFullscreen();
         }
         // Fallback to webkit for iOS/older browsers
-        else if ((containerRef.current as any).webkitRequestFullscreen) {
-          (containerRef.current as any).webkitRequestFullscreen();
+        else if ((containerRef.current as unknown as WebKitElement).webkitRequestFullscreen) {
+          await (containerRef.current as unknown as WebKitElement).webkitRequestFullscreen();
         }
         // Try webkit on document for broader compatibility
-        else if ((document as any).documentElement?.webkitRequestFullscreen) {
-          (document as any).documentElement.webkitRequestFullscreen();
+        else if (document.documentElement && (document.documentElement as unknown as WebKitElement).webkitRequestFullscreen) {
+          await (document.documentElement as unknown as WebKitElement).webkitRequestFullscreen();
         }
       } else if (isCurrentlyFullscreen) {
         // Try standard API first
@@ -152,8 +162,8 @@ export function DigitalClock() {
           await document.exitFullscreen();
         }
         // Fallback to webkit
-        else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen();
+        else if (docWithWebkit.webkitExitFullscreen) {
+          await docWithWebkit.webkitExitFullscreen();
         }
       }
     } catch (err) {
