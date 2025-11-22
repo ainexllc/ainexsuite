@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain } from 'lucide-react';
+import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { CalendarTile } from './calendar-tile';
@@ -107,6 +107,45 @@ export function TileTray({
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const trayRef = useRef<HTMLDivElement>(null);
+  const [customColor, setCustomColor] = useState<string>('#000000');
+
+  // AI Generation State
+  const [prompt, setPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+
+  // Update custom color if currentBackground is a color
+  useEffect(() => {
+    if (currentBackground && (currentBackground.startsWith('#') || currentBackground.startsWith('rgb'))) {
+      setCustomColor(currentBackground);
+    }
+  }, [currentBackground]);
+
+  const handleGenerateImage = async () => {
+    if (!prompt.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      const response = await fetch('/api/ai/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.imageUrl) {
+        setGeneratedImage(data.imageUrl);
+      } else {
+        console.error('Generation failed:', data.error);
+        // Could add toast notification here
+      }
+    } catch (error) {
+      console.error('Generation error:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Reset position when tray opens
   useEffect(() => {
@@ -330,6 +369,67 @@ export function TileTray({
 
         {activeTab === 'backgrounds' && (
           <div className="flex flex-col gap-4">
+            {/* AI Generator */}
+            <div className="p-4 bg-gradient-to-b from-indigo-500/10 to-purple-500/10 rounded-xl border border-white/10 space-y-3">
+              <div className="flex items-center gap-2 text-indigo-400 mb-1">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">AI Generator</span>
+              </div>
+              
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Describe your dream background... (e.g., 'Cyberpunk city at night', 'Peaceful zen garden')"
+                className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50 resize-none h-20"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleGenerateImage();
+                  }
+                }}
+              />
+              
+              <button
+                onClick={handleGenerateImage}
+                disabled={isGenerating || !prompt.trim()}
+                className={`w-full py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                  isGenerating || !prompt.trim()
+                    ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                    : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                }`}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  'Generate Background'
+                )}
+              </button>
+
+              {generatedImage && (
+                <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                  <div className="relative aspect-video rounded-lg overflow-hidden border border-white/20 group">
+                    <Image 
+                      src={generatedImage} 
+                      alt="Generated background" 
+                      fill 
+                      className="object-cover" 
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                       <button
+                        onClick={() => onSelectBackground(generatedImage)}
+                        className="px-3 py-1.5 bg-white text-black text-xs font-bold rounded-full hover:scale-105 transition-transform"
+                      >
+                        Use Background
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Presets Grid */}
             <div className="grid grid-cols-2 gap-3">
               {BACKGROUND_OPTIONS.map((bg) => (
@@ -343,20 +443,17 @@ export function TileTray({
                   }`}
                   style={{ position: 'relative' }}
                 >
-                  {bg.type === 'image' && bg.url ? (
+                  {bg.type === 'image' ? (
                     <Image 
-                      src={bg.url} 
+                      src={bg.value} 
                       alt={bg.name} 
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 50vw, 160px"
                     />
                   ) : (
-                    <div 
-                      className="w-full h-full flex items-center justify-center"
-                      style={{ backgroundColor: bg.value || '#000000' }}
-                    >
-                      <span className="text-xs text-white/50 font-medium mix-blend-difference">{bg.name}</span>
+                    <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: bg.value || '#000000' }}>
+                      <span className="text-xs text-white/50 font-medium">{bg.name}</span>
                     </div>
                   )}
                   
