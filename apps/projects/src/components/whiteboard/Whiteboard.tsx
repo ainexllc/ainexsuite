@@ -191,7 +191,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
           const data = whiteboardSnap.data();
 
           // Load nodes (sticky notes) and add callbacks
-          if (data.nodes) {
+          if (data.nodes && Array.isArray(data.nodes)) {
             const nodesWithCallbacks = data.nodes.map((node: Node) => ({
               ...node,
               data: {
@@ -205,21 +205,24 @@ function WhiteboardInner(_props: WhiteboardProps) {
             setNodes(nodesWithCallbacks);
 
             // Load edges (connections) with validation
-            if (data.edges) {
+            if (data.edges && Array.isArray(data.edges)) {
               // Validate edges before loading - filter out orphaned edges
               const { validEdges, orphanedEdges } = validateEdges(data.edges, nodesWithCallbacks);
 
               if (orphanedEdges.length > 0) {
                 // Clean up orphaned edges from Firestore
                 try {
-                  void setDoc(whiteboardRef, {
+                  await setDoc(whiteboardRef, {
                     nodes: data.nodes,
                     edges: validEdges,
                     isDarkMode: data.isDarkMode,
+                    edgeType: data.edgeType,
+                    arrowType: data.arrowType,
+                    lineStyle: data.lineStyle,
                     updatedAt: new Date().toISOString(),
                   });
                 } catch (updateError) {
-                  // Ignore cleanup error
+                  console.error('Error cleaning up orphaned edges:', updateError);
                 }
               }
 
@@ -264,6 +267,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
         }
         setIsLoaded(true);
       } catch (error) {
+        console.error('Error loading whiteboard:', error);
         setIsLoaded(true);
       }
     };
@@ -348,7 +352,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
         updatedAt: new Date().toISOString(),
       });
     } catch (error) {
-      // Ignore save error
+      console.error('Error saving whiteboard:', error);
     }
   }, [user, nodes, edges, isDarkMode, edgeType, arrowType, lineStyle, isLoaded]);
 
