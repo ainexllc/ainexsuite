@@ -80,7 +80,7 @@ function StickyNoteNode({ data, selected }: NodeProps) {
     borderRadius: '50%',
     boxShadow: '0 0 0 2px #3b82f6, 0 0 8px #3b82f6',
     zIndex: 10,
-    opacity: isHovered ? 1 : 0,
+    opacity: isHovered ? 1 : 0.2,
     transition: 'opacity 0.2s',
   };
 
