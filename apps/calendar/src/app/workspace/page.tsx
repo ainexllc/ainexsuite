@@ -6,6 +6,7 @@ import { useAuth } from '@ainexsuite/auth';
 import { Timestamp } from 'firebase/firestore';
 import { WorkspaceLayout, SUITE_APPS, getAppUrl } from '@ainexsuite/ui';
 import { useVisualStyle } from '@/lib/theme/visual-style';
+import { useToast } from '@/lib/toast';
 import {
   Loader2,
   Calendar as CalendarIcon,
@@ -17,15 +18,20 @@ import {
   Zap,
   TrendingUp,
   Settings,
-  Image as ImageIcon
+  Image as ImageIcon,
+  GitBranch
 } from 'lucide-react';
-import { addMonths, subMonths } from 'date-fns';
+import { addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
 
-import { CalendarHeader } from '@/components/calendar/calendar-header';
+import { CalendarHeader, CalendarViewType } from '@/components/calendar/calendar-header';
 import { MonthView } from '@/components/calendar/month-view';
+import { WeekView } from '@/components/calendar/week-view';
+import { DayView } from '@/components/calendar/day-view';
+import { AgendaView } from '@/components/calendar/agenda-view';
 import { EventModal } from '@/components/calendar/event-modal';
 import { EventsService } from '@/lib/events';
 import { CalendarEvent, CreateEventInput } from '@/types/event';
+import { useReminders } from '@/hooks/use-reminders';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
@@ -41,7 +47,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   pulse: Zap,
   fit: Heart,
   projects: LayoutGrid,
-  workflow: Settings,
+  workflow: GitBranch,
   calendar: CalendarIcon,
   admin: Settings,
 };
@@ -60,8 +66,10 @@ export default function WorkspacePage() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const { selectedVariant } = useVisualStyle();
+  const { toast } = useToast();
 
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState<CalendarViewType>('month');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
 
@@ -69,6 +77,9 @@ export default function WorkspacePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | undefined>(undefined);
+
+  // Enable reminders
+  useReminders(events);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -93,13 +104,18 @@ export default function WorkspacePage() {
         setEvents(fetchedEvents);
       } catch (error) {
         console.error("Failed to fetch events:", error);
+        toast({
+          title: "Failed to load events",
+          description: "Unable to fetch your calendar events. Please refresh the page.",
+          variant: 'error'
+        });
       } finally {
         setIsLoadingEvents(false);
       }
     }
 
     fetchEvents();
-  }, [user]);
+  }, [user, toast]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -111,8 +127,18 @@ export default function WorkspacePage() {
       : mainDomain ? `https://${mainDomain}` : '/';
   };
 
-  const handlePrevMonth = () => setCurrentDate(prev => subMonths(prev, 1));
-  const handleNextMonth = () => setCurrentDate(prev => addMonths(prev, 1));
+  const handlePrev = () => {
+    if (view === 'month') setCurrentDate(prev => subMonths(prev, 1));
+    else if (view === 'week') setCurrentDate(prev => subWeeks(prev, 1));
+    else if (view === 'day') setCurrentDate(prev => subDays(prev, 1));
+  };
+
+  const handleNext = () => {
+    if (view === 'month') setCurrentDate(prev => addMonths(prev, 1));
+    else if (view === 'week') setCurrentDate(prev => addWeeks(prev, 1));
+    else if (view === 'day') setCurrentDate(prev => addDays(prev, 1));
+  };
+
   const handleToday = () => setCurrentDate(new Date());
 
   const handleDayClick = (date: Date) => {
@@ -135,16 +161,31 @@ export default function WorkspacePage() {
           id: editingEvent.id,
           ...eventData
         });
+        toast({
+          title: "Event updated",
+          description: "Your event has been updated successfully.",
+          variant: 'success'
+        });
       } else {
         await EventsService.addEvent(user.uid, eventData);
+        toast({
+          title: "Event created",
+          description: "Your event has been added to the calendar.",
+          variant: 'success'
+        });
       }
-      
+
       // Refresh events
       const fetchedEvents = await EventsService.getEvents(user.uid);
       setEvents(fetchedEvents);
+      setIsModalOpen(false);
     } catch (e) {
       console.error("Error saving event", e);
-      alert("Failed to save event");
+      toast({
+        title: "Failed to save event",
+        description: "There was an error saving your event. Please try again.",
+        variant: 'error'
+      });
     }
   };
 
@@ -152,12 +193,22 @@ export default function WorkspacePage() {
     if (!user) return;
     try {
       await EventsService.deleteEvent(user.uid, eventId);
+      toast({
+        title: "Event deleted",
+        description: "Your event has been removed from the calendar.",
+        variant: 'success'
+      });
       // Refresh events
       const fetchedEvents = await EventsService.getEvents(user.uid);
       setEvents(fetchedEvents);
+      setIsModalOpen(false);
     } catch (e) {
       console.error("Error deleting event", e);
-      alert("Failed to delete event");
+      toast({
+        title: "Failed to delete event",
+        description: "There was an error deleting your event. Please try again.",
+        variant: 'error'
+      });
     }
   };
 
@@ -192,21 +243,36 @@ export default function WorkspacePage() {
         startTime: newStartTime,
         endTime: newEndTime
       });
-      
+
       // Refresh to get real timestamps
       const fetchedEvents = await EventsService.getEvents(user.uid);
       setEvents(fetchedEvents);
+      toast({
+        title: "Event moved",
+        description: "Your event has been moved successfully.",
+        variant: 'success'
+      });
     } catch (e) {
       console.error("Error dropping event", e);
       // Revert on error
       const fetchedEvents = await EventsService.getEvents(user.uid);
       setEvents(fetchedEvents);
-      alert("Failed to move event");
+      toast({
+        title: "Failed to move event",
+        description: "There was an error moving your event. Please try again.",
+        variant: 'error'
+      });
     }
   };
 
   const handleNewEventClick = () => {
     setSelectedDate(new Date());
+    setEditingEvent(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleTimeSlotClick = (date: Date) => {
+    setSelectedDate(date);
     setEditingEvent(undefined);
     setIsModalOpen(true);
   };
@@ -239,8 +305,10 @@ export default function WorkspacePage() {
           <div className="flex items-center justify-between mb-6">
              <CalendarHeader 
                 currentDate={currentDate}
-                onPrevMonth={handlePrevMonth}
-                onNextMonth={handleNextMonth}
+                view={view}
+                onViewChange={setView}
+                onPrevMonth={handlePrev}
+                onNextMonth={handleNext}
                 onToday={handleToday}
              />
              <button 
@@ -258,13 +326,40 @@ export default function WorkspacePage() {
                  <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
               </div>
             ) : (
-              <MonthView 
-                currentDate={currentDate}
-                events={events}
-                onDayClick={handleDayClick}
-                onEventClick={handleEventClick}
-                onEventDrop={handleEventDrop}
-              />
+              <>
+                {view === 'month' && (
+                  <MonthView 
+                    currentDate={currentDate}
+                    events={events}
+                    onDayClick={handleDayClick}
+                    onEventClick={handleEventClick}
+                    onEventDrop={handleEventDrop}
+                  />
+                )}
+                {view === 'week' && (
+                  <WeekView 
+                    currentDate={currentDate}
+                    events={events}
+                    onEventClick={handleEventClick}
+                    onTimeSlotClick={handleTimeSlotClick}
+                  />
+                )}
+                {view === 'day' && (
+                  <DayView 
+                    currentDate={currentDate}
+                    events={events}
+                    onEventClick={handleEventClick}
+                    onTimeSlotClick={handleTimeSlotClick}
+                  />
+                )}
+                {view === 'agenda' && (
+                  <AgendaView 
+                    currentDate={currentDate}
+                    events={events}
+                    onEventClick={handleEventClick}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>

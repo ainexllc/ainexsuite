@@ -93,6 +93,14 @@ export const SUITE_APPS: Record<string, AppConfig> = {
     devPort: 3010,
     prodUrl: 'https://workflow.ainexsuite.com',
   },
+  calendar: {
+    name: 'Calendar',
+    slug: 'calendar',
+    description: 'Unified calendar for all your events and schedules.',
+    color: 'from-violet-500 to-violet-600',
+    devPort: 3012,
+    prodUrl: 'https://calendar.ainexsuite.com',
+  },
   admin: {
     name: 'Admin',
     slug: 'admin',

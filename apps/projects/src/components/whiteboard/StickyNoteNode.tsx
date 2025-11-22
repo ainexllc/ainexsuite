@@ -100,7 +100,7 @@ function StickyNoteNode({ data }: NodeProps) {
         />
       )}
       <div
-        className={`rounded-3xl select-none transition-shadow border-2 border-transparent hover:border-cyan-500 shadow-lg flex flex-col ${
+        className={`rounded-3xl select-none transition-shadow border-2 border-transparent hover:border-cyan-500 shadow-lg flex flex-col overflow-hidden ${
           nodeData.locked ? 'cursor-not-allowed' : 'cursor-move'
         }`}
         onMouseEnter={() => setIsHovered(true)}

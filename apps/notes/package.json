@@ -4,7 +4,7 @@
   "private": true,
   "description": "Notes app - Capture your thoughts and ideas at notes.ainexsuite.com",
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "next dev -p ${PORT:-3001}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
