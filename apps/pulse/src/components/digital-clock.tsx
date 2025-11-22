@@ -216,30 +216,46 @@ export function DigitalClock() {
   }, []);
 
   const toggleMaximize = async () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
     try {
       if (!isMaximized) {
-        // Request fullscreen
-        if (containerRef.current?.requestFullscreen) {
-          await containerRef.current.requestFullscreen();
-        } else if ((containerRef.current as any)?.webkitRequestFullscreen) {
-          // Safari
-          await (containerRef.current as any).webkitRequestFullscreen();
-        } else if ((containerRef.current as any)?.mozRequestFullScreen) {
+        // Try Fullscreen API first (works on most devices except iOS Chrome)
+        const elem = containerRef.current as any;
+
+        if (elem?.requestFullscreen) {
+          await elem.requestFullscreen();
+        } else if (elem?.webkitRequestFullscreen) {
+          // Safari (limited support on iOS)
+          await elem.webkitRequestFullscreen();
+        } else if (elem?.mozRequestFullScreen) {
           // Firefox
-          await (containerRef.current as any).mozRequestFullScreen();
+          await elem.mozRequestFullScreen();
         }
+
+        // For iOS, hide browser UI by scrolling (helps with Chrome and Safari)
+        if (isIOS) {
+          window.scrollTo(0, 1);
+          // Trigger viewport-height fix for iOS Safari address bar
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+          }, 100);
+        }
+
         setIsMaximized(true);
       } else {
         // Exit fullscreen
-        if (document.fullscreenElement) {
+        const doc = document as any;
+        if (doc.fullscreenElement) {
           await document.exitFullscreen();
-        } else if ((document as any).webkitFullscreenElement) {
+        } else if (doc.webkitFullscreenElement) {
           // Safari
-          await (document as any).webkitExitFullscreen();
-        } else if ((document as any).mozFullScreenElement) {
+          await doc.webkitExitFullscreen();
+        } else if (doc.mozFullScreenElement) {
           // Firefox
-          await (document as any).mozCancelFullScreen();
+          await doc.mozCancelFullScreen();
         }
+
         setIsMaximized(false);
       }
     } catch (error) {
@@ -347,11 +363,15 @@ export function DigitalClock() {
       ref={containerRef}
       className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 bg-cover bg-center bg-no-repeat ${
         isMaximized
-          ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none justify-center overflow-hidden' 
+          ? 'fixed inset-0 z-50 rounded-none border-none justify-center overflow-hidden'
           : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px]'
       }`}
       style={{
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+        ...(isMaximized && {
+          height: '100dvh',
+          width: '100vw',
+        })
       }}
       // Catch drag events bubbling up from tiles
       onDragStart={handleDragStart}
