@@ -117,21 +117,43 @@ export function DigitalClock() {
       setIsFullScreen(!!document.fullscreenElement);
     };
 
+    // Handle both standard and webkit-prefixed fullscreen events
     document.addEventListener('fullscreenchange', handleFullScreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
+    };
   }, []);
 
   const toggleFullScreen = async () => {
     try {
-      if (!document.fullscreenElement) {
-        // On mobile, we need to request fullscreen on the container ref specifically
-        // and ensure we handle the promise catch for user interaction requirements
-        if (containerRef.current) {
+      const isCurrentlyFullscreen =
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement;
+
+      if (!isCurrentlyFullscreen && containerRef.current) {
+        // Try standard API first
+        if (containerRef.current.requestFullscreen) {
           await containerRef.current.requestFullscreen();
         }
-      } else {
+        // Fallback to webkit for iOS/older browsers
+        else if ((containerRef.current as any).webkitRequestFullscreen) {
+          (containerRef.current as any).webkitRequestFullscreen();
+        }
+        // Try webkit on document for broader compatibility
+        else if ((document as any).documentElement?.webkitRequestFullscreen) {
+          (document as any).documentElement.webkitRequestFullscreen();
+        }
+      } else if (isCurrentlyFullscreen) {
+        // Try standard API first
         if (document.exitFullscreen) {
           await document.exitFullscreen();
+        }
+        // Fallback to webkit
+        else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
         }
       }
     } catch (err) {

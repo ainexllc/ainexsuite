@@ -21,6 +21,13 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Pulse - Health Metrics',
   description: 'Track your health and wellness metrics',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
 };
 
 export default function RootLayout({
