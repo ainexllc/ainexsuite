@@ -23,7 +23,7 @@ export function SparkTile({ id = 'spark', onRemove, isDraggable = true }: SparkT
           <Lightbulb className="w-4 h-4" />
         </div>
         <div className="text-sm italic text-white/80 leading-snug">
-          "What is one thing you learned today?"
+          &quot;What is one thing you learned today?&quot;
         </div>
       </div>
     </TileBase>

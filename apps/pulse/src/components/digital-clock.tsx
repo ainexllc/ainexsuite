@@ -21,7 +21,6 @@ export function DigitalClock() {
     'bottom-right': null,
   });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [draggedTileId, setDraggedTileId] = useState<string | null>(null);
 
   useEffect(() => {
     setTime(new Date());
