@@ -20,6 +20,7 @@ export function DigitalClock() {
     'bottom-center': null,
     'bottom-right': null,
   });
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [draggedTileId, setDraggedTileId] = useState<string | null>(null);
 
@@ -72,7 +73,7 @@ export function DigitalClock() {
     
     newTiles[slot] = tileId;
     setTiles(newTiles);
-    setIsTrayOpen(false);
+    // Don't close tray automatically
   };
 
   const removeTile = (slot: SlotPosition) => {
@@ -106,77 +107,95 @@ export function DigitalClock() {
   return (
     <div 
       ref={containerRef}
-      className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 ${
+      className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 bg-cover bg-center bg-no-repeat ${
         isFullScreen 
           ? 'fixed inset-0 z-50 h-screen w-screen rounded-none border-none justify-center' 
           : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px]'
       }`}
+      style={{
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined
+      }}
     >
-      {/* Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={() => setIsTrayOpen(!isTrayOpen)}
-          className={`p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 ${isTrayOpen ? 'bg-white/10 text-white' : ''}`}
-          aria-label="Add tiles"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
-        <button
-          onClick={toggleFullScreen}
-          className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
-          aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}
-        >
-          {isFullScreen ? (
-            <Minimize2 className="w-5 h-5" />
-          ) : (
-            <Maximize2 className="w-5 h-5" />
-          )}
-        </button>
-      </div>
+      {/* Background Overlay for Readability */}
+      {backgroundImage && (
+        <div className="absolute inset-0 bg-black/50 z-0 transition-opacity" />
+      )}
 
-      {/* Tile Tray */}
-      <div className="absolute top-16 right-4 w-[320px] md:w-[360px] z-30">
-        <TileTray isOpen={isTrayOpen} onClose={() => setIsTrayOpen(false)} />
-      </div>
-      
-      {/* Clock Content */}
-      <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300`}>
-        <div className="flex items-center gap-2 text-gray-400 mb-2">
-          <Clock className="w-4 h-4" />
-          <span className="text-sm uppercase tracking-wider font-medium">Current Time</span>
-        </div>
-        <div className="text-6xl font-mono font-bold tracking-tight">
-          {time.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-        </div>
-        <div className="text-gray-400 mt-2 font-medium">
-          {time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </div>
-      </div>
-
-      {/* Tile Slots */}
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 mt-auto px-4 pb-4">
-        {(['bottom-left', 'bottom-center', 'bottom-right'] as SlotPosition[]).map((slot) => (
-          <div
-            key={slot}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, slot)}
-            className={`min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative ${
-              tiles[slot] 
-                ? 'border-transparent' 
-                : 'border-white/5 hover:border-white/20 bg-white/5'
-            } ${isTrayOpen ? 'animate-pulse border-white/20' : ''}`}
+      {/* Content Container (z-10 to sit above overlay) */}
+      <div className="z-10 w-full h-full flex flex-col items-center">
+        {/* Controls */}
+        <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => setIsTrayOpen(!isTrayOpen)}
+            className={`p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 ${isTrayOpen ? 'bg-white/10 text-white' : ''}`}
+            aria-label="Customize"
           >
-            {tiles[slot] ? (
-              <div className="w-full h-full">
-                {renderTile(tiles[slot], slot)}
-              </div>
+            <Plus className="w-5 h-5" />
+          </button>
+          <button
+            onClick={toggleFullScreen}
+            className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
+            aria-label={isFullScreen ? "Exit full screen" : "Enter full screen"}
+          >
+            {isFullScreen ? (
+              <Minimize2 className="w-5 h-5" />
             ) : (
-              <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
-                Drop Tile Here
-              </div>
+              <Maximize2 className="w-5 h-5" />
             )}
+          </button>
+        </div>
+
+        {/* Tile Tray */}
+        {isTrayOpen && (
+          <div className="absolute top-16 right-4 w-[320px] md:w-[360px] z-30">
+            <TileTray 
+              isOpen={isTrayOpen} 
+              onClose={() => setIsTrayOpen(false)} 
+              currentBackground={backgroundImage}
+              onSelectBackground={setBackgroundImage}
+            />
           </div>
-        ))}
+        )}
+        
+        {/* Clock Content */}
+        <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isFullScreen ? 'scale-150' : ''} transition-transform duration-300`}>
+          <div className="flex items-center gap-2 text-gray-400 mb-2">
+            <Clock className="w-4 h-4" />
+            <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
+          </div>
+          <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg">
+            {time.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </div>
+          <div className="text-gray-400 mt-2 font-medium drop-shadow-md">
+            {time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+        </div>
+
+        {/* Tile Slots */}
+        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 mt-auto px-4 pb-4">
+          {(['bottom-left', 'bottom-center', 'bottom-right'] as SlotPosition[]).map((slot) => (
+            <div
+              key={slot}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, slot)}
+              className={`min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative ${
+                tiles[slot] 
+                  ? 'border-transparent' 
+                  : 'border-white/5 hover:border-white/20 bg-white/5'
+              } ${isTrayOpen ? 'animate-pulse border-white/20' : ''}`}
+            >
+              {tiles[slot] ? (
+                <div className="w-full h-full">
+                  {renderTile(tiles[slot], slot)}
+                </div>
+              ) : (
+                <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
+                  Drop Tile Here
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

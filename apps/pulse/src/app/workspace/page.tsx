@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
-import { AIAssistant } from '@/components/ai-assistant';
 import { DigitalClock } from '@/components/digital-clock';
 import { Loader2 } from 'lucide-react';
 
@@ -63,8 +62,6 @@ function PulseWorkspaceContent() {
 
         <DigitalClock />
       </div>
-
-      <AIAssistant />
     </WorkspaceLayout>
   );
 }
