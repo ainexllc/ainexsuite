@@ -44,46 +44,32 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
       { id: 'slot-6', className: 'col-span-1', size: 'small' },
     ]
   },
-  focus: {
-    id: 'focus',
-    name: 'Focus',
-    description: 'One main task area with supporting tools.',
-    icon: 'Maximize',
-    gridClassName: 'grid-cols-1 md:grid-cols-3 gap-6 grid-rows-[200px_auto] md:grid-rows-[auto]', // Added specific row handling
+  'studio-right': {
+    id: 'studio-right',
+    name: 'Studio Right',
+    description: 'Clock & main widget on left, 2x2 grid on right.',
+    icon: 'PanelRight',
+    gridClassName: 'grid-cols-1 md:grid-cols-2 gap-6', 
     slots: [
-      { id: 'main-slot', className: 'col-span-1 md:col-span-2 row-span-2 h-full min-h-[300px]', size: 'large' },
-      { id: 'side-1', className: 'col-span-1 h-full', size: 'medium' },
-      { id: 'side-2', className: 'col-span-1 h-full', size: 'medium' },
+      { id: 'left-1', className: 'col-span-1', size: 'medium' }, // Under clock (Left)
+      { id: 'right-1', className: 'col-span-1', size: 'small' }, // Grid (Right)
+      { id: 'right-2', className: 'col-span-1', size: 'small' },
+      { id: 'right-3', className: 'col-span-1', size: 'small' },
+      { id: 'right-4', className: 'col-span-1', size: 'small' },
     ]
   },
-  sidecar: {
-    id: 'sidecar',
-    name: 'Sidecar',
-    description: 'Right-aligned utility belt.',
-    icon: 'Columns',
-    gridClassName: 'grid-cols-1 md:grid-cols-4 gap-6',
+  'studio-left': {
+    id: 'studio-left',
+    name: 'Studio Left',
+    description: '2x2 grid on left, Clock & main widget on right.',
+    icon: 'PanelLeft',
+    gridClassName: 'grid-cols-1 md:grid-cols-2 gap-6', 
     slots: [
-        // We want the clock to be on the left (2/4 cols) and tiles on the right (2/4 cols)
-        // Since the clock is rendered *outside* this grid in the current implementation,
-        // we have to be clever. 
-        // Actually, to truly support "Sidecar" where the clock moves, we'd need to change DigitalClock.tsx
-        // to render the clock INSIDE the grid or change the parent layout.
-        // For now, let's make "Sidecar" just a 4-column grid where we encourage putting things on the right?
-        // No, let's make it a 2x2 grid that naturally sits below, but maybe we can style it to look like a sidecar
-        // if we had the clock in the grid.
-        
-        // REVISED STRATEGY for Sidecar within current constraints:
-        // We can't easily move the clock *into* the grid without bigger refactor.
-        // But we can make the grid itself interesting.
-        // Let's make it a 4-column row where the left 2 are empty (spacer) and right 2 have tiles?
-        // That would simulate it if the clock was above. 
-        
-        // Better: Just a 4-column layout for now, user requested "unique views".
-        // Let's try a 2-column layout where the left column is wide and right is narrow stack.
-      { id: 'slot-1', className: 'col-span-1 md:col-span-3', size: 'wide' },
-      { id: 'slot-2', className: 'col-span-1', size: 'small' },
-      { id: 'slot-3', className: 'col-span-1 md:col-span-3', size: 'wide' },
-      { id: 'slot-4', className: 'col-span-1', size: 'small' },
+      { id: 'left-1', className: 'col-span-1', size: 'small' }, // Grid (Left)
+      { id: 'left-2', className: 'col-span-1', size: 'small' },
+      { id: 'left-3', className: 'col-span-1', size: 'small' },
+      { id: 'left-4', className: 'col-span-1', size: 'small' },
+      { id: 'right-1', className: 'col-span-1', size: 'medium' }, // Under clock (Right)
     ]
   }
 };
