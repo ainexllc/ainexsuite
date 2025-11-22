@@ -313,15 +313,7 @@ export function DigitalClock() {
       {/* Content Container (z-10 to sit above overlay) */}
       <div className="z-10 w-full h-full flex flex-col items-center">
         {/* Controls */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
-          <button
-            ref={toggleButtonRef}
-            onClick={() => setIsTrayOpen(!isTrayOpen)}
-            className={`p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 ${isTrayOpen ? 'bg-white/10 text-white' : ''}`}
-            aria-label="Customize"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
+        <div className="absolute top-4 left-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
           <button
             onClick={toggleMaximize}
             className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
@@ -332,6 +324,14 @@ export function DigitalClock() {
             ) : (
               <Maximize2 className="w-5 h-5" />
             )}
+          </button>
+          <button
+            ref={toggleButtonRef}
+            onClick={() => setIsTrayOpen(!isTrayOpen)}
+            className={`p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 ${isTrayOpen ? 'bg-white/10 text-white' : ''}`}
+            aria-label="Customize"
+          >
+            <Plus className="w-5 h-5" />
           </button>
         </div>
 
