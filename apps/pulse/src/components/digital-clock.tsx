@@ -64,7 +64,7 @@ export function DigitalClock() {
 
       // Check if click is inside tray or toggle button
       if (
-        trayContainerRef.current && 
+        trayContainerRef.current &&
         !trayContainerRef.current.contains(event.target as Node) &&
         toggleButtonRef.current &&
         !toggleButtonRef.current.contains(event.target as Node)
@@ -76,6 +76,28 @@ export function DigitalClock() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isTrayOpen]);
+
+  // Listen for fullscreen changes (e.g., user presses Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement
+      );
+      setIsMaximized(isCurrentlyFullscreen);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // Sync with Firestore on load and changes
   useEffect(() => {
@@ -193,8 +215,38 @@ export function DigitalClock() {
     return () => clearInterval(interval);
   }, []);
 
-  const toggleMaximize = () => {
-    setIsMaximized(!isMaximized);
+  const toggleMaximize = async () => {
+    try {
+      if (!isMaximized) {
+        // Request fullscreen
+        if (containerRef.current?.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        } else if ((containerRef.current as any)?.webkitRequestFullscreen) {
+          // Safari
+          await (containerRef.current as any).webkitRequestFullscreen();
+        } else if ((containerRef.current as any)?.mozRequestFullScreen) {
+          // Firefox
+          await (containerRef.current as any).mozRequestFullScreen();
+        }
+        setIsMaximized(true);
+      } else {
+        // Exit fullscreen
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitFullscreenElement) {
+          // Safari
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozFullScreenElement) {
+          // Firefox
+          await (document as any).mozCancelFullScreen();
+        }
+        setIsMaximized(false);
+      }
+    } catch (error) {
+      console.error('Fullscreen toggle failed:', error);
+      // Fallback to CSS-based fullscreen
+      setIsMaximized(!isMaximized);
+    }
   };
 
   const handleDragStart = (_e: React.DragEvent) => {
