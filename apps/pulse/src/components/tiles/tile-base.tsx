@@ -29,7 +29,7 @@ export function TileBase({
   };
 
   // Touch support for mobile DnD
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     if (!isDraggable) return;
     // We can't use dataTransfer with touch events easily without a polyfill or custom logic
     // For now, we'll rely on the pointer events or assume a library might be needed for full mobile DnD

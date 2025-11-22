@@ -9,7 +9,7 @@ import { FocusTile } from './tiles/focus-tile';
 import { SparkTile } from './tiles/spark-tile';
 import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
-import { ClockService, ClockSettings } from '@/lib/clock-settings';
+import { ClockService } from '@/lib/clock-settings';
 
 type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
 
@@ -24,8 +24,7 @@ export function DigitalClock() {
   const [time, setTime] = useState<Date | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  
+
   // Initialize state with defaults
   const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>(DEFAULT_TILES);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -44,7 +43,6 @@ export function DigitalClock() {
         setTiles(settings.tiles as Record<SlotPosition, string | null>);
         setBackgroundImage(settings.backgroundImage);
       }
-      setIsLoaded(true);
     });
 
     return () => unsubscribe();
