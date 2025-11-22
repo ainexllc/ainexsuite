@@ -245,6 +245,11 @@ service cloud.firestore {
     }
 
 
+    // --- Calendar App Rules ---
+    match /users/{userId}/calendar_events/{eventId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // --- General / Legacy ---
     match /users/{userId} {
       allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
