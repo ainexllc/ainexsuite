@@ -178,3 +178,30 @@ path.react-flow__edge-path {
 .react-flow__resize-control.line:hover {
   opacity: 0.7 !important;
 }
+
+/* Scrollbar Styling - Match theme */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #06b6d4;
+  border-radius: 5px;
+  border: 2px solid #050505;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #22c55e;
+}
+
+/* Firefox */
+* {
+  scrollbar-color: #06b6d4 transparent;
+  scrollbar-width: thin;
+}

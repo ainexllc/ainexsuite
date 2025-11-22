@@ -26,8 +26,8 @@ function StickyNoteNode({ data, selected }: NodeProps) {
   const [title, setTitle] = useState(nodeData.title || '');
   const [isHovered, setIsHovered] = useState(false);
 
-  const defaultWidth = 240;
-  const defaultHeight = 180;
+  const defaultWidth = 320;
+  const defaultHeight = 280;
 
   const width = nodeData.width || defaultWidth;
   const height = nodeData.height || defaultHeight;
