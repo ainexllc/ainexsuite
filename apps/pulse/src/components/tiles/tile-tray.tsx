@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2 } from 'lucide-react';
+import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2, Monitor } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { CalendarTile } from './calendar-tile';
@@ -38,6 +38,24 @@ function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
            {[...Array(6)].map((_, i) => (
              <div key={i} className={`rounded-[1px] ${baseColor} opacity-50`} />
            ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'desktop') {
+    return (
+      <div className={`${containerClass} flex-col`}>
+        <div className={`w-full h-2 rounded-[1px] ${baseColor} opacity-90`} /> {/* Clock Header */}
+        <div className="flex-1 grid grid-cols-4 gap-0.5">
+           <div className={`col-span-2 rounded-[1px] ${baseColor} opacity-50`} />
+           <div className={`col-span-2 rounded-[1px] ${baseColor} opacity-50`} />
+           <div className={`col-span-1 rounded-[1px] ${baseColor} opacity-50`} />
+           <div className={`col-span-1 rounded-[1px] ${baseColor} opacity-50`} />
+           <div className={`col-span-1 rounded-[1px] ${baseColor} opacity-50`} />
+           <div className={`col-span-1 rounded-[1px] ${baseColor} opacity-50`} />
+           <div className={`col-span-2 rounded-[1px] ${baseColor} opacity-50`} />
+           <div className={`col-span-2 rounded-[1px] ${baseColor} opacity-50`} />
         </div>
       </div>
     );

@@ -44,6 +44,23 @@ export const LAYOUTS: Record<string, LayoutConfig> = {
       { id: 'slot-6', className: 'col-span-1', size: 'small' },
     ]
   },
+  desktop: {
+    id: 'desktop',
+    name: 'Desktop',
+    description: 'Optimized for large screens. Expanded workspace.',
+    icon: 'Monitor',
+    gridClassName: 'grid-cols-2 md:grid-cols-4 gap-4',
+    slots: [
+      { id: 'slot-1', className: 'col-span-2', size: 'wide' },
+      { id: 'slot-2', className: 'col-span-2', size: 'wide' },
+      { id: 'slot-3', className: 'col-span-1', size: 'small' },
+      { id: 'slot-4', className: 'col-span-1', size: 'small' },
+      { id: 'slot-5', className: 'col-span-1', size: 'small' },
+      { id: 'slot-6', className: 'col-span-1', size: 'small' },
+      { id: 'slot-7', className: 'col-span-2', size: 'wide' },
+      { id: 'slot-8', className: 'col-span-2', size: 'wide' },
+    ]
+  },
   'studio-right': {
     id: 'studio-right',
     name: 'Studio Right',
