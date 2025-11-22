@@ -1,6 +1,6 @@
 'use client';
 
-import { Cloud, CloudRain, Sun } from 'lucide-react';
+import { CloudRain } from 'lucide-react';
 import { TileBase } from './tile-base';
 
 interface WeatherTileProps {

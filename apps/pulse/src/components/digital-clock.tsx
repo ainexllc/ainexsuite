@@ -22,7 +22,6 @@ export function DigitalClock() {
   });
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [draggedTileId, setDraggedTileId] = useState<string | null>(null);
 
   useEffect(() => {
     setTime(new Date());
@@ -147,13 +146,15 @@ export function DigitalClock() {
 
         {/* Tile Tray */}
         {isTrayOpen && (
-          <div className="absolute top-16 right-4 w-[320px] md:w-[360px] z-30">
-            <TileTray 
-              isOpen={isTrayOpen} 
-              onClose={() => setIsTrayOpen(false)} 
-              currentBackground={backgroundImage}
-              onSelectBackground={setBackgroundImage}
-            />
+          <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-30">
+            <div className="pointer-events-auto inline-block">
+              <TileTray 
+                isOpen={isTrayOpen} 
+                onClose={() => setIsTrayOpen(false)} 
+                currentBackground={backgroundImage}
+                onSelectBackground={setBackgroundImage}
+              />
+            </div>
           </div>
         )}
         
