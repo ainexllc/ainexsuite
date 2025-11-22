@@ -21,6 +21,18 @@ const DEFAULT_TILES: Record<string, string | null> = {
   'slot-3': null,
 };
 
+interface FullscreenElement extends HTMLElement {
+  webkitRequestFullscreen?: () => Promise<void>;
+  mozRequestFullScreen?: () => Promise<void>;
+}
+
+interface FullscreenDocument extends Document {
+  webkitFullscreenElement?: Element;
+  mozFullScreenElement?: Element;
+  webkitExitFullscreen?: () => Promise<void>;
+  mozCancelFullScreen?: () => Promise<void>;
+}
+
 // Detect system clock format preference
 const getSystemTimeFormat = (): TimeFormat => {
   // Check if browser has Intl API support
@@ -82,10 +94,11 @@ export function DigitalClock() {
   // Listen for fullscreen changes (e.g., user presses Escape)
   useEffect(() => {
     const handleFullscreenChange = () => {
+      const doc = document as FullscreenDocument;
       const isCurrentlyFullscreen = !!(
-        document.fullscreenElement ||
-        (document as any).webkitFullscreenElement ||
-        (document as any).mozFullScreenElement
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement
       );
       setIsMaximized(isCurrentlyFullscreen);
     };
@@ -246,7 +259,7 @@ export function DigitalClock() {
     try {
       if (!isMaximized) {
         // Try Fullscreen API first (works on most devices except iOS Chrome)
-        const elem = containerRef.current as any;
+        const elem = containerRef.current as FullscreenElement;
 
         if (elem?.requestFullscreen) {
           await elem.requestFullscreen();
@@ -270,7 +283,7 @@ export function DigitalClock() {
         setIsMaximized(true);
       } else {
         // Exit fullscreen
-        const doc = document as any;
+        const doc = document as FullscreenDocument;
         if (doc.fullscreenElement) {
           await document.exitFullscreen();
         } else if (doc.webkitFullscreenElement) {

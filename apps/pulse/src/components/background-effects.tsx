@@ -2,10 +2,33 @@
 
 import { useEffect, useRef } from 'react';
 
-export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'fireworks';
+export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'fog' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'fireworks';
 
 interface BackgroundEffectsProps {
   effect: EffectType;
+}
+
+interface Particle {
+  x: number;
+  y: number;
+  vx?: number;
+  vy?: number;
+  speed?: number;
+  speedX?: number;
+  speedY?: number;
+  radius?: number;
+  length?: number;
+  opacity?: number;
+  color?: string;
+  rotation?: number;
+  rotationSpeed?: number;
+  life?: number;
+  decay?: number;
+  dx?: number;
+  dy?: number;
+  pulseSpeed?: number;
+  type?: 'rocket' | 'spark';
+  explodeY?: number;
 }
 
 export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
@@ -17,6 +40,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     'heavy-rain', 
     'snow', 
     'heavy-snow', 
+    'fog', 
     'confetti',
     'christmas-lights-snow',
     'fireflies',
@@ -28,7 +52,6 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
   const needsLights = ['christmas-lights', 'christmas-lights-snow'].includes(effect);
 
   // Canvas Animation Loop
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (!needsCanvas) return;
 
@@ -39,7 +62,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let particles: Array<any> = [];
+    let particles: Particle[] = [];
     let time = 0;
     
     const resize = () => {
@@ -89,6 +112,17 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             speedX: (Math.random() - 0.5) * 2,
             rotation: Math.random() * 360,
             rotationSpeed: (Math.random() - 0.5) * 5
+          });
+        }
+      } else if (effect === 'fog') {
+        for (let i = 0; i < 40; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 300 + 150,
+            dx: (Math.random() - 0.5) * 0.3,
+            dy: (Math.random() - 0.5) * 0.1,
+            opacity: Math.random() * 0.3 + 0.1
           });
         }
       } else if (effect === 'fireflies') {
@@ -142,11 +176,11 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
         particles.forEach(p => {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x, p.y + p.length);
+          ctx.lineTo(p.x, p.y + (p.length || 10));
           ctx.stroke();
-          p.y += p.speed;
+          p.y += p.speed || 5;
           if (p.y > canvas.height) {
-            p.y = -p.length;
+            p.y = -(p.length || 10);
             p.x = Math.random() * canvas.width;
           }
         });
@@ -155,13 +189,13 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         particles.forEach(p => {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.radius || 2, 0, Math.PI * 2);
           ctx.fill();
-          p.y += p.speed;
-          p.x += Math.sin(time + p.radius) * 0.5; // Add some horizontal drift
+          p.y += p.speed || 1;
+          p.x += Math.sin(time + (p.radius || 2)) * 0.5; // Add some horizontal drift
           
           if (p.y > canvas.height) {
-            p.y = -p.radius;
+            p.y = -(p.radius || 2);
             p.x = Math.random() * canvas.width;
           }
           if (p.x > canvas.width) p.x = 0;
@@ -172,14 +206,14 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
         particles.forEach(p => {
           ctx.save();
           ctx.translate(p.x, p.y);
-          ctx.rotate((p.rotation * Math.PI) / 180);
-          ctx.fillStyle = p.color;
-          ctx.fillRect(-p.radius, -p.radius, p.radius * 2, p.radius * 2); // Square confetti
+          ctx.rotate(((p.rotation || 0) * Math.PI) / 180);
+          ctx.fillStyle = p.color || 'white';
+          ctx.fillRect(-(p.radius || 4), -(p.radius || 4), (p.radius || 4) * 2, (p.radius || 4) * 2); // Square confetti
           ctx.restore();
 
-          p.y += p.speedY;
-          p.x += p.speedX + Math.sin(time * 2) * 0.5; // Sway
-          p.rotation += p.rotationSpeed;
+          p.y += p.speedY || 2;
+          p.x += (p.speedX || 0) + Math.sin(time * 2) * 0.5; // Sway
+          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 2);
 
           if (p.y > canvas.height) {
             p.y = -10;
@@ -189,19 +223,40 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           if (p.x < 0) p.x = canvas.width;
         });
       }
+      else if (effect === 'fog') {
+        particles.forEach(p => {
+            const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius || 150);
+            gradient.addColorStop(0, `rgba(200, 210, 230, ${p.opacity || 0.1})`);
+            gradient.addColorStop(1, 'rgba(200, 210, 230, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius || 150, 0, Math.PI * 2);
+            ctx.fill();
+
+            p.x += p.dx || 0;
+            p.y += p.dy || 0;
+
+            // Wrap around screen
+            if (p.x < -(p.radius || 150)) p.x = canvas.width + (p.radius || 150);
+            if (p.x > canvas.width + (p.radius || 150)) p.x = -(p.radius || 150);
+            if (p.y < -(p.radius || 150)) p.y = canvas.height + (p.radius || 150);
+            if (p.y > canvas.height + (p.radius || 150)) p.y = -(p.radius || 150);
+        });
+      }
       else if (effect === 'fireflies') {
         particles.forEach(p => {
           // Pulsing opacity
-          const alpha = 0.5 + Math.sin(time * 3 + p.opacity * 10) * 0.5;
+          const alpha = 0.5 + Math.sin(time * 3 + (p.opacity || 0) * 10) * 0.5;
           
           ctx.fillStyle = `rgba(255, 255, 150, ${alpha})`;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.radius || 2, 0, Math.PI * 2);
           ctx.fill();
           
           // Gentle wandering
-          p.x += p.speedX + Math.sin(time + p.opacity) * 0.2;
-          p.y += p.speedY + Math.cos(time + p.opacity) * 0.2;
+          p.x += (p.speedX || 0) + Math.sin(time + (p.opacity || 0)) * 0.2;
+          p.y += (p.speedY || 0) + Math.cos(time + (p.opacity || 0)) * 0.2;
           
           // Wrap
           if (p.x < 0) p.x = canvas.width;
@@ -214,20 +269,20 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
         particles.forEach(p => {
           ctx.save();
           ctx.translate(p.x, p.y);
-          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.rotate(((p.rotation || 0) * Math.PI) / 180);
           // Pink petal color
-          ctx.fillStyle = `rgba(255, 183, 178, ${p.opacity})`;
+          ctx.fillStyle = `rgba(255, 183, 178, ${p.opacity || 0.5})`;
           
           // Draw petal shape (simple oval for now)
           ctx.beginPath();
-          ctx.ellipse(0, 0, p.radius, p.radius * 0.6, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, p.radius || 3, (p.radius || 3) * 0.6, 0, 0, Math.PI * 2);
           ctx.fill();
           
           ctx.restore();
 
-          p.y += p.speedY;
-          p.x += p.speedX + Math.sin(time + p.rotation) * 0.5; // Sway
-          p.rotation += p.rotationSpeed;
+          p.y += p.speedY || 1;
+          p.x += (p.speedX || 0) + Math.sin(time + (p.rotation || 0)) * 0.5; // Sway
+          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 1);
 
           if (p.y > canvas.height) {
             p.y = -10;
@@ -257,15 +312,15 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
 
           if (p.type === 'rocket') {
             // Rocket logic
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.1; // Gravity
+            p.x += p.vx || 0;
+            p.y += p.vy || 0;
+            if (p.vy !== undefined) p.vy += 0.1; // Gravity
 
-            ctx.fillStyle = p.color;
+            ctx.fillStyle = p.color || 'white';
             ctx.fillRect(p.x, p.y, 2, 6);
 
             // Explode if reached target height or starts falling
-            if (p.vy >= 0 || p.y <= p.explodeY) {
+            if ((p.vy || 0) >= 0 || p.y <= (p.explodeY || 0)) {
               // Create explosion particles
               for (let j = 0; j < 50; j++) {
                 const angle = (Math.PI * 2 * j) / 50;
@@ -285,21 +340,21 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             }
           } else if (p.type === 'spark') {
             // Spark logic
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.05; // Gravity
-            p.vx *= 0.95; // Air resistance
-            p.vy *= 0.95;
-            p.life -= 1;
+            p.x += p.vx || 0;
+            p.y += p.vy || 0;
+            if (p.vy !== undefined) p.vy += 0.05; // Gravity
+            if (p.vx !== undefined) p.vx *= 0.95; // Air resistance
+            if (p.vy !== undefined) p.vy *= 0.95;
+            if (p.life !== undefined) p.life -= 1;
 
-            ctx.globalAlpha = Math.max(0, p.life / 100);
-            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, (p.life || 0) / 100);
+            ctx.fillStyle = p.color || 'white';
             ctx.beginPath();
             ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.globalAlpha = 1;
 
-            if (p.life <= 0) {
+            if ((p.life || 0) <= 0) {
               particles.splice(i, 1);
             }
           }

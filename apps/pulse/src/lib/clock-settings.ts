@@ -10,6 +10,7 @@ export interface ClockSettings {
   timeFormat?: '12h' | '24h'; // Time format preference
   weatherZipcode?: string; // User's preferred zipcode for weather tile
   layoutId?: string; // ID of the selected layout configuration
+  backgroundEffect?: string; // Selected background effect
 }
 
 export const ClockService = {
