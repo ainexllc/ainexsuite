@@ -155,18 +155,32 @@ export default function WorkspacePage() {
         showGlows={false} // We handle our own atmospheric glows
         apps={apps}
       >
-        {/* Top Apps Navigation */}
-        <AppsNavVision apps={allAppsWithStatus} />
+        <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Apps Placeholder Section */}
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">Apps</h3>
+            <AppsNavVision apps={allAppsWithStatus} />
+          </section>
 
-        <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* AI Insights Section */}
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">AI Insights</h3>
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-6 min-h-[200px] flex items-center justify-center">
+              <p className="text-white/50">AI insights coming soon...</p>
+            </div>
+          </section>
+
           {/* Welcome Section */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user.displayName?.split(' ')[0] || 'there'}!
-            </h2>
-            <p className="text-lg text-white/70">
-              Here is your daily briefing.
-            </p>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">Dashboard</h3>
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-2">
+                Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user.displayName?.split(' ')[0] || 'there'}!
+              </h2>
+              <p className="text-lg text-white/70">
+                Here is your daily briefing.
+              </p>
+            </div>
           </div>
 
           {/* Smart Dashboard Grid */}
