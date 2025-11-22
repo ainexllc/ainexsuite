@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2, Monitor } from 'lucide-react';
+import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { CalendarTile } from './calendar-tile';
