@@ -34,10 +34,40 @@ export interface WeatherData {
   windSpeed?: number;
 }
 
-// Get location coordinates from zipcode
-export function getLocationFromZipcode(zipcode: string) {
+// Get location coordinates from zipcode - checks cache first, then uses geocoding API
+export async function getLocationFromZipcode(zipcode: string) {
   const normalized = zipcode.trim();
-  return ZIPCODE_COORDS[normalized] || null;
+
+  // Check cache first
+  if (ZIPCODE_COORDS[normalized]) {
+    return ZIPCODE_COORDS[normalized];
+  }
+
+  // Try to geocode using Open-Meteo's geocoding API
+  try {
+    const response = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?query=${encodeURIComponent(normalized)}&count=1&language=en`
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (data.results && data.results.length > 0) {
+      const result = data.results[0];
+      return {
+        name: `${result.name}${result.admin1 ? ', ' + result.admin1 : ''}`,
+        latitude: result.latitude,
+        longitude: result.longitude,
+      };
+    }
+  } catch (err) {
+    console.error('Geocoding error:', err);
+  }
+
+  return null;
 }
 
 // Map WMO codes to weather conditions and icons
@@ -61,7 +91,7 @@ export async function getWeather(zipcode?: string, isCelsius = false): Promise<W
   let location = DEFAULT_LOCATION.name;
 
   if (zipcode) {
-    const coords = getLocationFromZipcode(zipcode);
+    const coords = await getLocationFromZipcode(zipcode);
     if (coords) {
       latitude = coords.latitude;
       longitude = coords.longitude;
