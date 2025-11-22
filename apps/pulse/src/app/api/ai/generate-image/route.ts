@@ -49,9 +49,13 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      // eslint-disable-next-line no-console
       console.error('OpenRouter API error:', response.status, errorText);
       return NextResponse.json(
-        { error: `OpenRouter API error: ${response.statusText}` },
+        {
+          error: `OpenRouter API error: ${response.statusText}`,
+          details: errorText
+        },
         { status: response.status }
       );
     }
@@ -97,9 +101,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ imageUrl });
 
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Image generation error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: String(error) },
       { status: 500 }
     );
   }
