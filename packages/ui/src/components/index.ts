@@ -109,6 +109,16 @@ export {
 export { SuiteNavigation, type SuiteNavigationProps } from "./suite-navigation";
 export { AppSwitcher, type AppSwitcherProps } from "./app-switcher";
 
+// Legal Components
+export {
+  PrivacyPolicy,
+  TermsOfService,
+  CookiePolicy,
+  AcceptableUsePolicy,
+  GDPRHelp,
+  ContactUs,
+} from "./legal";
+
 // Existing Components
 export { Footer } from "./footer";
 export { Paywall } from "./paywall";
