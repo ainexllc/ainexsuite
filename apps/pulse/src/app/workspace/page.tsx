@@ -8,6 +8,7 @@ import type { HealthMetric } from '@ainexsuite/types';
 import { MetricEntry } from '@/components/metric-entry';
 import { HealthChart } from '@/components/health-chart';
 import { AIAssistant } from '@/components/ai-assistant';
+import { DigitalClock } from '@/components/digital-clock';
 import { getHealthMetrics } from '@/lib/health';
 import { Activity, Loader2 } from 'lucide-react';
 
@@ -75,29 +76,10 @@ function PulseWorkspaceContent() {
     >
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-text-primary mb-8">
-          Health Overview
+          My Pulse
         </h1>
 
-        {metrics.length === 0 ? (
-          <div className="grid gap-6 lg:grid-cols-3">
-             <div className="lg:col-span-2 flex flex-col items-center justify-center p-12 bg-surface-elevated rounded-2xl border border-outline-subtle">
-                <Activity className="h-16 w-16 text-text-muted mb-4" />
-                <p className="text-text-muted">No health metrics recorded yet.</p>
-             </div>
-             <div>
-                <MetricEntry onUpdate={handleUpdate} existingMetrics={metrics} />
-             </div>
-          </div>
-        ) : (
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <HealthChart metrics={metrics} />
-            </div>
-            <div>
-              <MetricEntry onUpdate={handleUpdate} existingMetrics={metrics} />
-            </div>
-          </div>
-        )}
+        <DigitalClock />
       </div>
 
       <AIAssistant />
