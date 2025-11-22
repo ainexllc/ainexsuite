@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export type EffectType = 'none' | 'rain' | 'snow' | 'liquid' | 'dim';
+export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'fireworks';
 
 interface BackgroundEffectsProps {
   effect: EffectType;
@@ -11,9 +11,26 @@ interface BackgroundEffectsProps {
 export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Rain & Snow Animation Loop
+  // Helper to determine if we need canvas
+  const needsCanvas = [
+    'rain', 
+    'heavy-rain', 
+    'snow', 
+    'heavy-snow', 
+    'confetti',
+    'christmas-lights-snow',
+    'fireflies',
+    'sakura',
+    'fireworks'
+  ].includes(effect);
+
+  // Helper to determine if we need lights
+  const needsLights = ['christmas-lights', 'christmas-lights-snow'].includes(effect);
+
+  // Canvas Animation Loop
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
-    if (effect !== 'rain' && effect !== 'snow') return;
+    if (!needsCanvas) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -22,7 +39,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     if (!ctx) return;
 
     let animationFrameId: number;
-    const particles: Array<{ x: number; y: number; speed: number; length: number; opacity: number }> = [];
+    let particles: Array<any> = [];
+    let time = 0;
     
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -32,44 +50,261 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     window.addEventListener('resize', resize);
     resize();
 
-    // Init particles
-    const particleCount = effect === 'rain' ? 100 : 50;
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        speed: effect === 'rain' ? Math.random() * 15 + 10 : Math.random() * 2 + 1,
-        length: effect === 'rain' ? Math.random() * 20 + 10 : Math.random() * 2 + 2,
-        opacity: Math.random() * 0.5 + 0.1
-      });
-    }
+    // Initialize effect-specific particles/state
+    const init = () => {
+      particles = [];
+      time = 0;
+
+      if (effect === 'rain' || effect === 'heavy-rain') {
+        const particleCount = effect === 'heavy-rain' ? 400 : 100;
+        for (let i = 0; i < particleCount; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            speed: Math.random() * 15 + (effect === 'heavy-rain' ? 20 : 10),
+            length: Math.random() * 20 + (effect === 'heavy-rain' ? 20 : 10),
+            opacity: Math.random() * 0.5 + (effect === 'heavy-rain' ? 0.3 : 0.1)
+          });
+        }
+      } else if (effect === 'snow' || effect === 'heavy-snow' || effect === 'christmas-lights-snow') {
+        const particleCount = effect === 'heavy-snow' ? 250 : 50;
+        for (let i = 0; i < particleCount; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            speed: Math.random() * 2 + (effect === 'heavy-snow' ? 3 : 1),
+            radius: Math.random() * 2 + (effect === 'heavy-snow' ? 2 : 2),
+            opacity: Math.random() * 0.5 + (effect === 'heavy-snow' ? 0.4 : 0.1)
+          });
+        }
+      } else if (effect === 'confetti') {
+        const colors = ['#FFC107', '#4CAF50', '#2196F3', '#E91E63', '#9C27B0', '#00BCD4'];
+        for (let i = 0; i < 150; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 4 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            speedY: Math.random() * 3 + 1,
+            speedX: (Math.random() - 0.5) * 2,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 5
+          });
+        }
+      } else if (effect === 'fireflies') {
+        for (let i = 0; i < 50; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 2 + 1,
+            opacity: Math.random(),
+            speedX: (Math.random() - 0.5) * 0.5,
+            speedY: (Math.random() - 0.5) * 0.5,
+            pulseSpeed: Math.random() * 0.05 + 0.01
+          });
+        }
+      } else if (effect === 'sakura') {
+        for (let i = 0; i < 80; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 3 + 2,
+            speedY: Math.random() * 1 + 0.5,
+            speedX: Math.random() * 1 - 0.5,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 2,
+            opacity: Math.random() * 0.4 + 0.6
+          });
+        }
+      } else if (effect === 'fireworks') {
+        // Fireworks don't need initial particles, they spawn dynamically
+        particles = [];
+      }
+    };
+
+    init();
 
     const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Fade out effect for trails
+      if (effect === 'fireworks') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
       
-      ctx.fillStyle = effect === 'rain' ? 'rgba(174, 194, 224, 0.5)' : 'rgba(255, 255, 255, 0.8)';
-      ctx.strokeStyle = 'rgba(174, 194, 224, 0.5)';
-      ctx.lineWidth = 1;
-      ctx.lineCap = 'round';
+      time += 0.01;
 
-      particles.forEach(p => {
-        if (effect === 'rain') {
+      if (effect === 'rain' || effect === 'heavy-rain') {
+        ctx.strokeStyle = 'rgba(174, 194, 224, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.lineCap = 'round';
+        particles.forEach(p => {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(p.x, p.y + p.length);
           ctx.stroke();
-        } else {
+          p.y += p.speed;
+          if (p.y > canvas.height) {
+            p.y = -p.length;
+            p.x = Math.random() * canvas.width;
+          }
+        });
+      } 
+      else if (effect === 'snow' || effect === 'heavy-snow' || effect === 'christmas-lights-snow') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        particles.forEach(p => {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.length / 2, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
           ctx.fill();
+          p.y += p.speed;
+          p.x += Math.sin(time + p.radius) * 0.5; // Add some horizontal drift
+          
+          if (p.y > canvas.height) {
+            p.y = -p.radius;
+            p.x = Math.random() * canvas.width;
+          }
+          if (p.x > canvas.width) p.x = 0;
+          if (p.x < 0) p.x = canvas.width;
+        });
+      }
+      else if (effect === 'confetti') {
+        particles.forEach(p => {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.radius, -p.radius, p.radius * 2, p.radius * 2); // Square confetti
+          ctx.restore();
+
+          p.y += p.speedY;
+          p.x += p.speedX + Math.sin(time * 2) * 0.5; // Sway
+          p.rotation += p.rotationSpeed;
+
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+          if (p.x > canvas.width) p.x = 0;
+          if (p.x < 0) p.x = canvas.width;
+        });
+      }
+      else if (effect === 'fireflies') {
+        particles.forEach(p => {
+          // Pulsing opacity
+          const alpha = 0.5 + Math.sin(time * 3 + p.opacity * 10) * 0.5;
+          
+          ctx.fillStyle = `rgba(255, 255, 150, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Gentle wandering
+          p.x += p.speedX + Math.sin(time + p.opacity) * 0.2;
+          p.y += p.speedY + Math.cos(time + p.opacity) * 0.2;
+          
+          // Wrap
+          if (p.x < 0) p.x = canvas.width;
+          if (p.x > canvas.width) p.x = 0;
+          if (p.y < 0) p.y = canvas.height;
+          if (p.y > canvas.height) p.y = 0;
+        });
+      }
+      else if (effect === 'sakura') {
+        particles.forEach(p => {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          // Pink petal color
+          ctx.fillStyle = `rgba(255, 183, 178, ${p.opacity})`;
+          
+          // Draw petal shape (simple oval for now)
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.radius, p.radius * 0.6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.restore();
+
+          p.y += p.speedY;
+          p.x += p.speedX + Math.sin(time + p.rotation) * 0.5; // Sway
+          p.rotation += p.rotationSpeed;
+
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+          if (p.x > canvas.width) p.x = 0;
+          if (p.x < 0) p.x = canvas.width;
+        });
+      }
+      else if (effect === 'fireworks') {
+        // Randomly launch new fireworks
+        if (Math.random() < 0.03) {
+          particles.push({
+            type: 'rocket',
+            x: Math.random() * canvas.width,
+            y: canvas.height,
+            vx: (Math.random() - 0.5) * 2,
+            vy: -(Math.random() * 10 + 10),
+            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+            explodeY: Math.random() * (canvas.height * 0.6) // Target height to explode
+          });
         }
 
-        p.y += p.speed;
-        if (p.y > canvas.height) {
-          p.y = -p.length;
-          p.x = Math.random() * canvas.width;
+        // Update and draw particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+
+          if (p.type === 'rocket') {
+            // Rocket logic
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.1; // Gravity
+
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, 2, 6);
+
+            // Explode if reached target height or starts falling
+            if (p.vy >= 0 || p.y <= p.explodeY) {
+              // Create explosion particles
+              for (let j = 0; j < 50; j++) {
+                const angle = (Math.PI * 2 * j) / 50;
+                const speed = Math.random() * 3 + 2;
+                particles.push({
+                  type: 'spark',
+                  x: p.x,
+                  y: p.y,
+                  vx: Math.cos(angle) * speed,
+                  vy: Math.sin(angle) * speed,
+                  color: p.color,
+                  life: 100,
+                  decay: Math.random() * 0.02 + 0.01
+                });
+              }
+              particles.splice(i, 1); // Remove rocket
+            }
+          } else if (p.type === 'spark') {
+            // Spark logic
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.05; // Gravity
+            p.vx *= 0.95; // Air resistance
+            p.vy *= 0.95;
+            p.life -= 1;
+
+            ctx.globalAlpha = Math.max(0, p.life / 100);
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            if (p.life <= 0) {
+              particles.splice(i, 1);
+            }
+          }
         }
-      });
+      }
 
       animationFrameId = requestAnimationFrame(draw);
     };
@@ -80,28 +315,84 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [effect]);
+  }, [effect, needsCanvas]);
+
+  // Render Christmas Lights logic
+  const renderLights = () => {
+    const colors = ['bg-red-500', 'bg-green-500', 'bg-yellow-400', 'bg-blue-500'];
+    const bulbs = [];
+    const bulbCountX = 20;
+    const bulbCountY = 10;
+
+    // Top Edge
+    for (let i = 0; i < bulbCountX; i++) {
+        bulbs.push({
+            top: '-6px',
+            left: `${(i / bulbCountX) * 100}%`,
+            color: colors[i % colors.length],
+            delay: `${Math.random() * 2}s`
+        });
+    }
+    // Bottom Edge
+    for (let i = 0; i < bulbCountX; i++) {
+        bulbs.push({
+            bottom: '-6px',
+            left: `${(i / bulbCountX) * 100}%`,
+            color: colors[(i + 1) % colors.length],
+            delay: `${Math.random() * 2}s`
+        });
+    }
+    // Left Edge
+    for (let i = 0; i < bulbCountY; i++) {
+        bulbs.push({
+            left: '-6px',
+            top: `${(i / bulbCountY) * 100}%`,
+            color: colors[(i + 2) % colors.length],
+            delay: `${Math.random() * 2}s`
+        });
+    }
+    // Right Edge
+    for (let i = 0; i < bulbCountY; i++) {
+        bulbs.push({
+            right: '-6px',
+            top: `${(i / bulbCountY) * 100}%`,
+            color: colors[(i + 3) % colors.length],
+            delay: `${Math.random() * 2}s`
+        });
+    }
+
+    return (
+        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden rounded-2xl">
+            {bulbs.map((bulb, index) => (
+                <div
+                    key={index}
+                    className={`absolute w-3 h-3 rounded-full shadow-md animate-pulse ${bulb.color}`}
+                    style={{
+                        top: bulb.top,
+                        left: bulb.left,
+                        right: bulb.right,
+                        bottom: bulb.bottom,
+                        animationDuration: '2s',
+                        animationDelay: bulb.delay,
+                        boxShadow: `0 0 8px currentColor`
+                    }}
+                />
+            ))}
+        </div>
+    );
+  };
 
   if (effect === 'none') return null;
 
-  if (effect === 'liquid') {
-    return (
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-900/30 via-transparent to-purple-900/30 animate-pulse" />
-        <div className="absolute -inset-[100%] top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.03),transparent_50%)] animate-[spin_20s_linear_infinite]" />
-      </div>
-    );
-  }
-
-  if (effect === 'dim') {
-    return <div className="absolute inset-0 bg-black/40 pointer-events-none z-0 transition-opacity duration-1000" />;
-  }
-
   return (
-    <canvas 
-      ref={canvasRef} 
-      className="absolute inset-0 w-full h-full pointer-events-none z-0"
-    />
+    <>
+      {needsCanvas && (
+        <canvas 
+          ref={canvasRef} 
+          className="absolute inset-0 w-full h-full pointer-events-none z-0 mix-blend-screen"
+        />
+      )}
+      {needsLights && renderLights()}
+    </>
   );
 }
-

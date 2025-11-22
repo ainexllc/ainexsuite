@@ -511,7 +511,8 @@ export function DigitalClock() {
           : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px]'
       }`}
       style={{
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+        backgroundImage: backgroundImage && backgroundImage.startsWith('http') ? `url(${backgroundImage})` : undefined,
+        backgroundColor: backgroundImage && !backgroundImage.startsWith('http') ? backgroundImage : '#000000',
         ...(isMaximized && {
           height: '100dvh',
           width: '100vw',
@@ -530,7 +531,7 @@ export function DigitalClock() {
       )}
 
       {/* Content Container (z-10 to sit above overlay) */}
-      <div className="z-10 w-full h-full flex flex-col items-center">
+      <div className="relative z-10 w-full h-full flex flex-col items-center">
         {/* Controls */}
         <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
           <button
@@ -553,24 +554,6 @@ export function DigitalClock() {
             <Plus className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Tile Tray */}
-        {isTrayOpen && (
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-30">
-            <div className="pointer-events-auto inline-block" ref={trayContainerRef}>
-              <TileTray 
-                isOpen={isTrayOpen} 
-                onClose={() => setIsTrayOpen(false)} 
-                currentBackground={backgroundImage}
-                onSelectBackground={handleBackgroundSelect}
-                activeLayoutId={activeLayoutId}
-                onSelectLayout={handleLayoutSelect}
-                activeEffect={backgroundEffect}
-                onSelectEffect={handleEffectSelect}
-              />
-            </div>
-          </div>
-        )}
         
         {/* Dynamic Layout Rendering */}
         {activeLayoutId === 'studio-right' ? (
@@ -609,6 +592,24 @@ export function DigitalClock() {
             </>
         )}
       </div>
+
+      {/* Tile Tray - Moved to root level for proper z-index stacking over effects */}
+      {isTrayOpen && (
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-50">
+          <div className="pointer-events-auto inline-block" ref={trayContainerRef}>
+            <TileTray 
+              isOpen={isTrayOpen} 
+              onClose={() => setIsTrayOpen(false)} 
+              currentBackground={backgroundImage}
+              onSelectBackground={handleBackgroundSelect}
+              activeLayoutId={activeLayoutId}
+              onSelectLayout={handleLayoutSelect}
+              activeEffect={backgroundEffect}
+              onSelectEffect={handleEffectSelect}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
