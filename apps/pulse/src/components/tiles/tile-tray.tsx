@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Layout, Image as ImageIcon, GripHorizontal } from 'lucide-react';
+import { X, Layout, Image as ImageIcon, GripHorizontal, Grid } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { CalendarTile } from './calendar-tile';
@@ -9,16 +9,27 @@ import { SparkTile } from './spark-tile';
 import { WeatherTile } from './weather-tile';
 import { MarketTile } from './market-tile';
 import { BACKGROUND_OPTIONS } from '@/lib/backgrounds';
+import { LAYOUTS } from '@/lib/layouts';
+import * as Icons from 'lucide-react';
 
 interface TileTrayProps {
   isOpen: boolean;
   onClose: () => void;
   currentBackground: string | null;
   onSelectBackground: (url: string | null) => void;
+  activeLayoutId: string;
+  onSelectLayout: (layoutId: string) => void;
 }
 
-export function TileTray({ isOpen, onClose, currentBackground, onSelectBackground }: TileTrayProps) {
-  const [activeTab, setActiveTab] = useState<'tiles' | 'backgrounds'>('tiles');
+export function TileTray({ 
+  isOpen, 
+  onClose, 
+  currentBackground, 
+  onSelectBackground,
+  activeLayoutId,
+  onSelectLayout
+}: TileTrayProps) {
+  const [activeTab, setActiveTab] = useState<'tiles' | 'backgrounds' | 'layouts'>('tiles');
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const trayRef = useRef<HTMLDivElement>(null);
@@ -153,8 +164,19 @@ export function TileTray({ isOpen, onClose, currentBackground, onSelectBackgroun
               : 'text-white/40 hover:text-white hover:bg-white/5'
           }`}
         >
-          <Layout className="w-4 h-4" />
+          <Grid className="w-4 h-4" />
           Tiles
+        </button>
+        <button
+          onClick={() => setActiveTab('layouts')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'layouts' 
+              ? 'bg-white/10 text-white' 
+              : 'text-white/40 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Layout className="w-4 h-4" />
+          Layouts
         </button>
         <button
           onClick={() => setActiveTab('backgrounds')}
@@ -165,13 +187,13 @@ export function TileTray({ isOpen, onClose, currentBackground, onSelectBackgroun
           }`}
         >
           <ImageIcon className="w-4 h-4" />
-          Backgrounds
+          BG
         </button>
       </div>
       
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-        {activeTab === 'tiles' ? (
+        {activeTab === 'tiles' && (
           <div className="flex flex-col gap-4">
             <div>
               <CalendarTile id="calendar-tray" isDraggable={true} />
@@ -192,7 +214,41 @@ export function TileTray({ isOpen, onClose, currentBackground, onSelectBackgroun
               Drag tiles to the slots around the clock
             </p>
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'layouts' && (
+            <div className="grid grid-cols-1 gap-3">
+                {Object.values(LAYOUTS).map((layout) => {
+                    // @ts-expect-error - Dynamic icon lookup
+                    const Icon = Icons[layout.icon] || Layout;
+                    return (
+                        <button
+                            key={layout.id}
+                            onClick={() => onSelectLayout(layout.id)}
+                            className={`flex items-start gap-4 p-3 rounded-xl border transition-all text-left ${
+                                activeLayoutId === layout.id 
+                                    ? 'bg-white/10 border-accent-500' 
+                                    : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                            }`}
+                        >
+                            <div className={`p-2 rounded-lg ${activeLayoutId === layout.id ? 'bg-accent-500 text-white' : 'bg-white/5 text-white/40'}`}>
+                                <Icon className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className={`text-sm font-medium ${activeLayoutId === layout.id ? 'text-white' : 'text-white/80'}`}>
+                                    {layout.name}
+                                </h4>
+                                <p className="text-xs text-white/40 mt-1 leading-relaxed">
+                                    {layout.description}
+                                </p>
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+        )}
+
+        {activeTab === 'backgrounds' && (
           <div className="grid grid-cols-2 gap-3">
             {BACKGROUND_OPTIONS.map((bg) => (
               <button

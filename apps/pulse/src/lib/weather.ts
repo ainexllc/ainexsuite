@@ -135,15 +135,19 @@ export async function getLocationSuggestions(query: string): Promise<Array<{ nam
       return [];
     }
 
-    return data.map((result: any) => {
-      const city = result.address?.city || result.address?.town || result.name;
-      const state = result.address?.state || '';
+    return data.map((result: Record<string, unknown>) => {
+      const city = result.address && typeof result.address === 'object'
+        ? (result.address as Record<string, string>).city || (result.address as Record<string, string>).town || (result.name as string)
+        : (result.name as string);
+      const state = result.address && typeof result.address === 'object'
+        ? (result.address as Record<string, string>).state || ''
+        : '';
       const displayName = state ? `${city}, ${state}` : city;
 
       return {
         name: displayName,
-        latitude: parseFloat(result.lat),
-        longitude: parseFloat(result.lon),
+        latitude: parseFloat(result.lat as string),
+        longitude: parseFloat(result.lon as string),
       };
     });
   } catch (err) {

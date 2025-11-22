@@ -10,14 +10,14 @@ import { SparkTile } from './tiles/spark-tile';
 import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
 import { ClockService } from '@/lib/clock-settings';
+import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
 
-type SlotPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
 type TimeFormat = '12h' | '24h';
 
-const DEFAULT_TILES = {
-  'bottom-left': null,
-  'bottom-center': null,
-  'bottom-right': null,
+const DEFAULT_TILES: Record<string, string | null> = {
+  'slot-1': null,
+  'slot-2': null,
+  'slot-3': null,
 };
 
 // Detect system clock format preference
@@ -45,14 +45,17 @@ export function DigitalClock() {
   const isDraggingTile = useRef(false);
 
   // Initialize state with defaults
-  const [tiles, setTiles] = useState<Record<SlotPosition, string | null>>(DEFAULT_TILES);
+  const [tiles, setTiles] = useState<Record<string, string | null>>(DEFAULT_TILES);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
   const [weatherZipcode, setWeatherZipcode] = useState<string>('66221');
+  const [activeLayoutId, setActiveLayoutId] = useState<string>(DEFAULT_LAYOUT.id);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const trayContainerRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+
+  const activeLayout = LAYOUTS[activeLayoutId] || DEFAULT_LAYOUT;
 
   // Click outside listener for tray
   useEffect(() => {
@@ -81,9 +84,13 @@ export function DigitalClock() {
     // Subscribe to real-time updates
     const unsubscribe = ClockService.subscribeToSettings(user.uid, (settings) => {
       if (settings) {
-        // Cast the generic string record to our specific SlotPosition type safely
-        // In a real app we'd validate this runtime data with zod/io-ts
-        setTiles(settings.tiles as Record<SlotPosition, string | null>);
+        // Handle legacy slots (bottom-left, etc) by mapping them to new slots if needed
+        // Or just rely on the fact that we are starting fresh with new layout IDs mostly
+        // Ideally migration logic would happen here if we cared about preserving old slot names
+        // but since we are changing IDs, old tiles might get "lost" if we don't map them.
+        // For now, let's assume direct mapping.
+        
+        setTiles(settings.tiles || DEFAULT_TILES);
         setBackgroundImage(settings.backgroundImage);
         if (settings.timeFormat) {
           setTimeFormat(settings.timeFormat as TimeFormat);
@@ -91,13 +98,21 @@ export function DigitalClock() {
         if (settings.weatherZipcode) {
           setWeatherZipcode(settings.weatherZipcode);
         }
+        if (settings.layoutId && LAYOUTS[settings.layoutId]) {
+            setActiveLayoutId(settings.layoutId);
+        }
       }
     });
 
     return () => unsubscribe();
   }, [user]);
 
-  const updateSettings = async (newTiles: Record<SlotPosition, string | null>, newBg: string | null, newFormat?: TimeFormat) => {
+  const updateSettings = async (
+    newTiles: Record<string, string | null>, 
+    newBg: string | null, 
+    newFormat?: TimeFormat,
+    newLayoutId?: string
+  ) => {
     if (!user) return;
 
     // Optimistic update
@@ -106,13 +121,18 @@ export function DigitalClock() {
     if (newFormat) {
       setTimeFormat(newFormat);
     }
+    if (newLayoutId) {
+        setActiveLayoutId(newLayoutId);
+    }
 
     // Persist
     try {
       await ClockService.saveSettings(user.uid, {
         tiles: newTiles,
         backgroundImage: newBg,
-        timeFormat: newFormat || timeFormat
+        timeFormat: newFormat || timeFormat,
+        weatherZipcode: weatherZipcode,
+        layoutId: newLayoutId || activeLayoutId
       });
     } catch (error) {
       console.error('Failed to save clock settings:', error);
@@ -120,9 +140,33 @@ export function DigitalClock() {
     }
   };
 
+  const handleZipcodeChange = (zip: string) => {
+    setWeatherZipcode(zip);
+    if (user) {
+      ClockService.saveSettings(user.uid, {
+        tiles,
+        backgroundImage,
+        timeFormat,
+        weatherZipcode: zip,
+        layoutId: activeLayoutId
+      }).catch(e => console.error(e));
+    }
+  };
+
   const handleTimeFormatChange = (format: TimeFormat) => {
     updateSettings(tiles, backgroundImage, format);
     setShowFormatMenu(false);
+  };
+
+  const handleLayoutSelect = (layoutId: string) => {
+      // When switching layouts, we try to preserve tiles where possible
+      // Simple approach: keep tiles in slots that share the same ID.
+      // Or we could try to fill sequentially.
+      // For now, let's keep it simple: just switch layout ID, and the tiles map remains.
+      // If the new layout has fewer slots, extra tiles in the map just won't be rendered.
+      // If it has different slot IDs, they will appear empty.
+      // To be better, we should probably map old 'bottom-left' etc to 'slot-1' etc if we haven't already.
+      updateSettings(tiles, backgroundImage, undefined, layoutId);
   };
 
   // Format time string for display
@@ -154,71 +198,58 @@ export function DigitalClock() {
   };
 
   const handleDragStart = (_e: React.DragEvent) => {
-    // We can use this to track drag start for tiles if needed, 
-    // but primarily we rely on the tile component's event.
-    // However, for the tray closing logic, we need to know a drag is active.
-    // Since drag events bubble, we can catch it here if the tile is within our scope.
-    // But the tile initiates it.
     isDraggingTile.current = true;
   };
 
   const handleDragEnd = (_e: React.DragEvent) => {
     isDraggingTile.current = false;
   };
-
-  // Also need global drag listeners to catch tile drag start/end since they are rendered inside
-  // actually, the onDragStart on the tile will bubble up to this container.
   
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, targetSlot: SlotPosition) => {
+  const handleDrop = (e: React.DragEvent, targetSlot: string) => {
     e.preventDefault();
     isDraggingTile.current = false;
     const droppedTileId = e.dataTransfer.getData('text/plain');
     
-    const newTiles = { ...tiles };
-    let sourceSlot: SlotPosition | null = null;
+    if (!droppedTileId) return;
 
+    const newTiles = { ...tiles };
+    
     // Find if the dropped tile was already in a slot (dragged from one slot to another)
-    Object.keys(newTiles).forEach(key => {
-      if (newTiles[key as SlotPosition] === droppedTileId) {
-        sourceSlot = key as SlotPosition;
-      }
-    });
+    const sourceEntry = Object.entries(tiles).find(([_, value]) => value === droppedTileId);
+    const sourceSlot = sourceEntry ? sourceEntry[0] : null;
+
+    if (sourceSlot === targetSlot) return;
 
     // Check if there's an existing tile in the target slot
     const existingTileInTarget = newTiles[targetSlot];
 
     if (existingTileInTarget) {
       // SWAP LOGIC
-      if (sourceSlot !== null) {
+      if (sourceSlot) {
         // If dragging from another slot, swap them
-        newTiles[sourceSlot as SlotPosition] = existingTileInTarget;
+        newTiles[sourceSlot] = existingTileInTarget;
         newTiles[targetSlot] = droppedTileId;
       } else {
-        // If dragging from tray, replace the existing one (or we could push existing to empty slot?)
-        // Current behavior: Replace.
-        // But to be "nice", maybe we just overwrite for now as "swap with tray" isn't really a thing.
+        // If dragging from tray, replace the existing one
         newTiles[targetSlot] = droppedTileId;
       }
     } else {
       // MOVE LOGIC (Target is empty)
-      if (sourceSlot !== null) {
-        newTiles[sourceSlot as SlotPosition] = null; // Clear source
+      if (sourceSlot) {
+        newTiles[sourceSlot] = null; // Clear source
       }
       newTiles[targetSlot] = droppedTileId;
     }
     
-    // Clean up duplicates if any (sanity check, though swap logic handles it)
-    // If we just did a swap, we are good.
-    
     updateSettings(newTiles, backgroundImage);
   };
 
-  const removeTile = (slot: SlotPosition) => {
+  const removeTile = (slot: string) => {
     const newTiles = { ...tiles, [slot]: null };
     updateSettings(newTiles, backgroundImage);
   };
@@ -227,9 +258,11 @@ export function DigitalClock() {
     updateSettings(tiles, url);
   };
 
-  const renderTile = (tileId: string | null, slot: SlotPosition) => {
+  const renderTile = (tileId: string | null, slot: string, size: SlotSize) => {
     if (!tileId) return null;
     
+    // We can pass the 'size' prop to the tiles if they support it
+    // For now, they are agnostic, but we can prepare them.
     const props = {
       id: tileId,
       onRemove: () => removeTile(slot),
@@ -238,16 +271,17 @@ export function DigitalClock() {
          isDraggingTile.current = true;
          e.dataTransfer.setData('text/plain', tileId);
       },
-      // Add drag end to reset flag if drop happens outside or is cancelled
       onDragEnd: () => {
         isDraggingTile.current = false;
-      }
+      },
+      // Pass size variant to tile
+      variant: size
     };
 
     if (tileId.includes('calendar')) return <CalendarTile {...props} />;
     if (tileId.includes('focus')) return <FocusTile {...props} />;
     if (tileId.includes('spark')) return <SparkTile {...props} />;
-    if (tileId.includes('weather')) return <WeatherTile {...props} weatherZipcode={weatherZipcode} onZipcodeChange={setWeatherZipcode} />;
+    if (tileId.includes('weather')) return <WeatherTile {...props} weatherZipcode={weatherZipcode} onZipcodeChange={handleZipcodeChange} />;
     if (tileId.includes('market')) return <MarketTile {...props} />;
     return null;
   };
@@ -310,12 +344,15 @@ export function DigitalClock() {
                 onClose={() => setIsTrayOpen(false)} 
                 currentBackground={backgroundImage}
                 onSelectBackground={handleBackgroundSelect}
+                activeLayoutId={activeLayoutId}
+                onSelectLayout={handleLayoutSelect}
               />
             </div>
           </div>
         )}
         
-        {/* Clock Content */}
+        {/* Clock Content - Render differently if needed based on layout, but standard is top centered */}
+        {/* We might want to control clock visibility or position via layout config in future */}
         <div className={`flex flex-col items-center justify-center mt-12 mb-12 ${isMaximized ? 'scale-150' : ''} transition-transform duration-300 relative`}>
           <div className="flex items-center gap-2 text-gray-400 mb-2">
             <Clock className="w-4 h-4" />
@@ -357,26 +394,27 @@ export function DigitalClock() {
           </div>
         </div>
 
-        {/* Tile Slots */}
-        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 mt-auto px-4 pb-4">
-          {(['bottom-left', 'bottom-center', 'bottom-right'] as SlotPosition[]).map((slot) => (
+        {/* Dynamic Tile Slots Grid */}
+        <div className={`w-full max-w-6xl grid ${activeLayout.gridClassName} mt-auto px-4 pb-4 transition-all duration-300`}>
+          {activeLayout.slots.map((slot) => (
             <div
-              key={slot}
+              key={slot.id}
               onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, slot)}
-              className={`min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative ${
-                tiles[slot] 
-                  ? 'border-transparent' 
-                  : 'border-white/5 hover:border-white/20 bg-white/5'
-              } ${isTrayOpen ? 'animate-pulse border-white/20' : ''}`}
+              onDrop={(e) => handleDrop(e, slot.id)}
+              className={`
+                min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
+                ${slot.className} 
+                ${tiles[slot.id] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
+                ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+              `}
             >
-              {tiles[slot] ? (
+              {tiles[slot.id] ? (
                 <div className="w-full h-full">
-                  {renderTile(tiles[slot], slot)}
+                  {renderTile(tiles[slot.id], slot.id, slot.size)}
                 </div>
               ) : (
                 <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
-                  Drop Tile Here
+                  Drop Tile
                 </div>
               )}
             </div>

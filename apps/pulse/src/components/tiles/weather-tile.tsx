@@ -32,6 +32,15 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
     setInputZipcode(weatherZipcode || '66221');
   }, [weatherZipcode]);
 
+  // Clear input field when settings panel opens
+  useEffect(() => {
+    if (showSettings) {
+      setInputZipcode('');
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [showSettings]);
+
   useEffect(() => {
     const fetchWeather = async () => {
       try {
@@ -56,9 +65,9 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
 
   const handleInputChange = async (value: string) => {
     setInputZipcode(value);
-    setSuggestions([]);
 
     if (value.length < 2) {
+      setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
@@ -70,6 +79,7 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
       setShowSuggestions(true);
     } catch (err) {
       console.error('Failed to get suggestions:', err);
+      setSuggestions([]);
     } finally {
       setIsLoadingSuggestions(false);
     }
@@ -82,7 +92,7 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
   };
 
   const handleSaveZipcode = async () => {
-    if (!user || inputZipcode.trim() === weatherZipcode) {
+    if (!user || !inputZipcode.trim()) {
       setShowSettings(false);
       return;
     }
@@ -112,11 +122,18 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
         {/* Weather Display */}
         <div className="flex items-center gap-4">
           <div className="p-2 rounded-lg bg-blue-500/20">
-            <span className="text-3xl">{weather?.icon || '🌡️'}</span>
+            {loading ? (
+              <div className="text-3xl animate-pulse">🌡️</div>
+            ) : (
+              <span className="text-3xl">{weather?.icon || '🌡️'}</span>
+            )}
           </div>
           <div className="flex-1">
             {loading ? (
-              <div className="text-sm text-white/50">Loading...</div>
+              <div className="space-y-2">
+                <div className="h-6 bg-white/10 rounded animate-pulse w-20"></div>
+                <div className="h-4 bg-white/10 rounded animate-pulse w-32"></div>
+              </div>
             ) : error ? (
               <div className="text-sm text-red-400">{error}</div>
             ) : weather ? (
@@ -185,4 +202,3 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
     </TileBase>
   );
 }
-

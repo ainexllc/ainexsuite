@@ -2,6 +2,7 @@
 
 import { GripVertical, X } from 'lucide-react';
 import { ReactNode } from 'react';
+import { SlotSize } from '@/lib/layouts';
 
 export interface TileProps {
   id: string;
@@ -11,16 +12,17 @@ export interface TileProps {
   isDraggable?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
   className?: string;
+  variant?: SlotSize;
 }
 
-export function TileBase({ 
-  id, 
-  title, 
-  children, 
-  onRemove, 
-  isDraggable = true, 
+export function TileBase({
+  id,
+  title,
+  children,
+  onRemove,
+  isDraggable = true,
   onDragStart,
-  className = '' 
+  className = ''
 }: TileProps) {
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('text/plain', id);
@@ -43,7 +45,7 @@ export function TileBase({
       draggable={isDraggable}
       onDragStart={handleDragStart}
       onTouchStart={handleTouchStart}
-      className={`group relative bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm select-none touch-none ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
+      className={`group relative bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm select-none touch-none flex flex-col h-full ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
     >
       <div className="flex items-center justify-between mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-2">
@@ -62,7 +64,7 @@ export function TileBase({
           </button>
         )}
       </div>
-      <div className="text-sm text-white/90">
+      <div className="text-sm text-white/90 flex-1 overflow-hidden">
         {children}
       </div>
     </div>
