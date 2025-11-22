@@ -286,10 +286,10 @@ export function DigitalClock() {
         const doc = document as FullscreenDocument;
         if (doc.fullscreenElement) {
           await document.exitFullscreen();
-        } else if (doc.webkitFullscreenElement) {
+        } else if (doc.webkitFullscreenElement && doc.webkitExitFullscreen) {
           // Safari
           await doc.webkitExitFullscreen();
-        } else if (doc.mozFullScreenElement) {
+        } else if (doc.mozFullScreenElement && doc.mozCancelFullScreen) {
           // Firefox
           await doc.mozCancelFullScreen();
         }

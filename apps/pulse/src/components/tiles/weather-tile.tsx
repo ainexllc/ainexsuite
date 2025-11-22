@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, RefreshCw } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileBase } from './tile-base';
 import { ClockService } from '@/lib/clock-settings';
@@ -26,6 +26,7 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
   const [suggestions, setSuggestions] = useState<Array<{ name: string; latitude: number; longitude: number }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Keep input zipcode in sync with prop
   useEffect(() => {
@@ -109,6 +110,20 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
     }
   };
 
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      const data = await getWeather(weatherZipcode);
+      setWeather(data);
+      setError(null);
+    } catch (err) {
+      setError('Unable to refresh weather');
+      console.error('Weather refresh error:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <TileBase
       id={id}
@@ -146,6 +161,14 @@ export function WeatherTile({ id = 'weather', onRemove, isDraggable = true, onDr
               </>
             ) : null}
           </div>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing || loading}
+            className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors disabled:opacity-50"
+            aria-label="Refresh"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
