@@ -544,6 +544,7 @@ export function TileTray({
                     { id: 'fireflies', name: 'Fireflies', icon: '✨' },
                     { id: 'sakura', name: 'Sakura', icon: '🌸' },
                     { id: 'confetti', name: 'Confetti', icon: '🎉' },
+                    { id: 'fireworks', name: 'Fireworks', icon: '🎆' },
                 ].map((effect) => (
                     <button
                         key={effect.id}
