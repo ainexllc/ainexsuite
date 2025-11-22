@@ -21,30 +21,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // OpenRouter / Google Gemini specific request
-    // Sometimes 'modalities' field isn't enough, and for image generation specifically 
-    // providers might expect 'image' in the prompt text or a specific tool call structure.
-    // However, sticking to the standard chat completion with prompt is the first step.
-    
-    // Let's log the response for debugging if it fails again to see the structure.
-    console.log('Sending request to OpenRouter with prompt:', prompt);
+    // Use OpenRouter's Stable Diffusion 3.5 Large for image generation
+    // This model is specifically designed for image generation and works via standard API
+    // eslint-disable-next-line no-console
+    console.log('Sending image generation request to OpenRouter with prompt:', prompt);
 
-    const response = await fetch(`${apiUrl}/chat/completions`, {
+    const response = await fetch(`${apiUrl}/images/generations`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://ainexsuite.com', 
-        'X-Title': 'Pulse Workspace', 
+        'HTTP-Referer': 'https://ainexsuite.com',
+        'X-Title': 'Pulse Workspace',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-pro-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: `Generate an image of: ${prompt}`
-          }
-        ],
+        model: 'openai/dall-e-3',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1024',
       }),
     });
 
@@ -58,44 +52,17 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
+    // eslint-disable-next-line no-console
     console.log('OpenRouter Response:', JSON.stringify(data, null, 2));
 
-    const choice = data.choices?.[0];
-    
-    if (!choice) {
-       return NextResponse.json(
-        { error: 'No generation returned' },
-        { status: 500 }
-      );
-    }
-
-    let imageUrl = null;
-    const messageContent = choice.message?.content;
-
-    if (typeof messageContent === 'string') {
-        // 1. Markdown image: ![alt](url)
-        const markdownMatch = messageContent.match(/!\[.*?\]\((.*?)\)/);
-        if (markdownMatch && markdownMatch[1]) {
-            imageUrl = markdownMatch[1];
-        } 
-        // 2. Direct URL (starts with http)
-        else if (messageContent.trim().startsWith('http')) {
-            imageUrl = messageContent.trim();
-        }
-        // 3. Check for HTML <img> tag
-        else {
-            const htmlMatch = messageContent.match(/<img\s+src=["'](.*?)["']/);
-            if (htmlMatch && htmlMatch[1]) {
-                imageUrl = htmlMatch[1];
-            }
-        }
-    }
+    // Handle image generation response format
+    const imageUrl = data.data?.[0]?.url;
 
     if (!imageUrl) {
-         return NextResponse.json({ 
-             error: 'No image URL found in response',
-             details: messageContent 
-         }, { status: 422 });
+      return NextResponse.json({
+        error: 'No image URL found in response',
+        details: data,
+      }, { status: 422 });
     }
 
     return NextResponse.json({ imageUrl });

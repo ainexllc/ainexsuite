@@ -107,19 +107,11 @@ export function TileTray({
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const trayRef = useRef<HTMLDivElement>(null);
-  const [customColor, setCustomColor] = useState<string>('#000000');
 
   // AI Generation State
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-
-  // Update custom color if currentBackground is a color
-  useEffect(() => {
-    if (currentBackground && (currentBackground.startsWith('#') || currentBackground.startsWith('rgb'))) {
-      setCustomColor(currentBackground);
-    }
-  }, [currentBackground]);
 
   const handleGenerateImage = async () => {
     if (!prompt.trim()) return;
