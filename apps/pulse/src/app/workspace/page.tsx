@@ -4,37 +4,25 @@ import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
-import type { HealthMetric } from '@ainexsuite/types';
-import { MetricEntry } from '@/components/metric-entry';
-import { HealthChart } from '@/components/health-chart';
 import { AIAssistant } from '@/components/ai-assistant';
 import { DigitalClock } from '@/components/digital-clock';
-import { getHealthMetrics } from '@/lib/health';
-import { Activity, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 function PulseWorkspaceContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [metrics, setMetrics] = useState<HealthMetric[]>([]);
+  // Loading state to prevent flash of content
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
-    const loadMetrics = async () => {
-      setLoading(true);
-      try {
-        const data = await getHealthMetrics(30);
-        setMetrics(data);
-      } catch (error) {
-        console.error('Failed to load metrics:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void loadMetrics();
-  }, [user]);
+    // Simulate initial load or wait for user
+    if (user) {
+      setLoading(false);
+    } else if (!authLoading && !user) {
+      // If auth is done and no user, let the guard or router handle it
+      setLoading(false);
+    }
+  }, [user, authLoading]);
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -47,12 +35,6 @@ function PulseWorkspaceContent() {
     } catch (error) {
       console.error('Failed to sign out:', error);
     }
-  };
-
-  const handleUpdate = async () => {
-    if (!user) return;
-    const data = await getHealthMetrics(30);
-    setMetrics(data);
   };
 
   if (authLoading || loading) {
