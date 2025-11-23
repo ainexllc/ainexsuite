@@ -5,6 +5,8 @@ import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 const SETTINGS_COLLECTION = 'user_settings';
 const CLOCK_SETTINGS_DOC = 'pulse_clock';
 
+export type ClockStyle = 'digital' | 'analog' | 'neon' | 'flip' | 'particles';
+
 export interface ClockSettings {
   tiles: Record<string, string | null>;
   backgroundImage: string | null;
@@ -13,6 +15,7 @@ export interface ClockSettings {
   layoutId?: string; // ID of the selected layout configuration
   backgroundEffect?: string; // Selected background effect
   backgroundDim?: number; // Overlay opacity 0-100
+  clockStyle?: string; // 'digital', 'analog', etc.
 }
 
 export const ClockService = {

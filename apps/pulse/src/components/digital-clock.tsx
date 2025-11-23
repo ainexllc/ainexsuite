@@ -9,7 +9,7 @@ import { FocusTile } from './tiles/focus-tile';
 import { SparkTile } from './tiles/spark-tile';
 import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
-import { ClockService } from '@/lib/clock-settings';
+import { ClockService, ClockStyle } from '@/lib/clock-settings';
 import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
 import { BackgroundEffects, EffectType } from './background-effects';
 
@@ -62,6 +62,7 @@ export function DigitalClock() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [backgroundEffect, setBackgroundEffect] = useState<EffectType>('none');
   const [backgroundDim, setBackgroundDim] = useState<number>(50); // Default 50% for image readability
+  const [clockStyle, setClockStyle] = useState<ClockStyle>('digital');
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
   const [weatherZipcode, setWeatherZipcode] = useState<string>('66221');
   const [activeLayoutId, setActiveLayoutId] = useState<string>(DEFAULT_LAYOUT.id);
@@ -139,6 +140,9 @@ export function DigitalClock() {
         if (typeof settings.backgroundDim === 'number') {
             setBackgroundDim(settings.backgroundDim);
         }
+        if (settings.clockStyle) {
+            setClockStyle(settings.clockStyle as ClockStyle);
+        }
       }
     });
 
@@ -151,7 +155,8 @@ export function DigitalClock() {
     newFormat?: TimeFormat,
     newLayoutId?: string,
     newEffect?: EffectType,
-    newDim?: number
+    newDim?: number,
+    newClockStyle?: ClockStyle
   ) => {
     if (!user) return;
 
@@ -170,6 +175,9 @@ export function DigitalClock() {
     if (typeof newDim === 'number') {
         setBackgroundDim(newDim);
     }
+    if (newClockStyle) {
+        setClockStyle(newClockStyle);
+    }
 
     // Persist
     try {
@@ -180,7 +188,8 @@ export function DigitalClock() {
         weatherZipcode: weatherZipcode,
         layoutId: newLayoutId || activeLayoutId,
         backgroundEffect: newEffect || backgroundEffect,
-        backgroundDim: typeof newDim === 'number' ? newDim : backgroundDim
+        backgroundDim: typeof newDim === 'number' ? newDim : backgroundDim,
+        clockStyle: newClockStyle || clockStyle
       });
     } catch (error) {
       console.error('Failed to save clock settings:', error);
@@ -197,7 +206,8 @@ export function DigitalClock() {
         weatherZipcode: zip,
         layoutId: activeLayoutId,
         backgroundEffect,
-        backgroundDim
+        backgroundDim,
+        clockStyle
       }).catch(e => console.error(e));
     }
   };
@@ -241,6 +251,10 @@ export function DigitalClock() {
 
   const handleDimSelect = (dim: number) => {
       updateSettings(tiles, backgroundImage, undefined, undefined, undefined, dim);
+  };
+
+  const handleClockStyleSelect = (style: ClockStyle) => {
+      updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, style);
   };
 
   // Format time string for display
@@ -403,46 +417,164 @@ export function DigitalClock() {
     return null;
   };
 
+  const renderClockContent = () => {
+    if (!time) return null;
+
+    // Neon Style
+    if (clockStyle === 'neon') {
+        return (
+            <div className="relative">
+                <div 
+                    className="text-7xl font-bold tracking-wider relative z-10"
+                    style={{ 
+                        color: '#fff',
+                        textShadow: `
+                            0 0 5px #fff,
+                            0 0 10px #fff,
+                            0 0 20px #0ff,
+                            0 0 30px #0ff,
+                            0 0 40px #0ff
+                        `
+                    }}
+                >
+                    {getFormattedTime()}
+                </div>
+                {/* Reflection/Glow under */}
+                <div 
+                    className="absolute top-full left-0 right-0 text-7xl font-bold tracking-wider opacity-20 transform scale-y-[-0.5] origin-top blur-sm"
+                    style={{ 
+                        color: '#0ff',
+                    }}
+                >
+                    {getFormattedTime()}
+                </div>
+            </div>
+        );
+    }
+
+    // Retro Flip (Simplified CSS simulation)
+    if (clockStyle === 'flip') {
+        return (
+            <div className="flex gap-4 items-center">
+                {getFormattedTime().split('').map((char, i) => (
+                    <div key={i} className={`
+                        relative bg-[#222] text-white rounded-lg px-3 py-4 shadow-2xl border-t border-white/10
+                        ${char === ':' || char === ' ' ? 'bg-transparent shadow-none border-none px-0' : 'min-w-[60px]'}
+                    `}>
+                        <div className="text-6xl font-mono font-bold text-center">
+                            {char}
+                        </div>
+                        {char !== ':' && char !== ' ' && (
+                            <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-black/50 z-20" />
+                        )}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    // Analog
+    if (clockStyle === 'analog') {
+        const seconds = time.getSeconds();
+        const minutes = time.getMinutes();
+        const hours = time.getHours();
+        
+        const secondDeg = (seconds / 60) * 360;
+        const minuteDeg = ((minutes * 60 + seconds) / 3600) * 360;
+        const hourDeg = ((hours % 12 * 3600 + minutes * 60 + seconds) / 43200) * 360;
+
+        return (
+            <div className="relative w-48 h-48 rounded-full border-4 border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl flex items-center justify-center">
+                {/* Markers */}
+                {[...Array(12)].map((_, i) => (
+                    <div 
+                        key={i} 
+                        className={`absolute w-1 bg-white/50 ${i % 3 === 0 ? 'h-4' : 'h-2'}`}
+                        style={{ 
+                            top: '10px', 
+                            left: 'calc(50% - 0.5px)', 
+                            transformOrigin: '50% calc(50% + 10px - 50% + 50%)', // Wait, simpler rotation
+                            transform: `rotate(${i * 30}deg) translateY(-80px)` // Proper way for markers
+                        }}
+                    />
+                ))}
+                
+                {/* Hour Hand */}
+                <div 
+                    className="absolute w-1.5 bg-white h-12 rounded-full origin-bottom"
+                    style={{ transform: `rotate(${hourDeg}deg)`, bottom: '50%' }}
+                />
+                
+                {/* Minute Hand */}
+                <div 
+                    className="absolute w-1 bg-white/80 h-16 rounded-full origin-bottom"
+                    style={{ transform: `rotate(${minuteDeg}deg)`, bottom: '50%' }}
+                />
+                
+                {/* Second Hand */}
+                <div 
+                    className="absolute w-0.5 bg-red-500 h-20 rounded-full origin-bottom"
+                    style={{ transform: `rotate(${secondDeg}deg)`, bottom: '50%' }}
+                />
+                
+                {/* Center Dot */}
+                <div className="absolute w-3 h-3 bg-white rounded-full shadow-md z-10" />
+            </div>
+        );
+    }
+
+    // Default Digital
+    return (
+        <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg text-white">
+            {getFormattedTime()}
+        </div>
+    );
+  };
+
   const renderClock = () => (
       <div className={`flex flex-col items-center justify-center transition-transform duration-300 relative ${activeLayoutId.includes('studio') ? 'h-full' : 'mt-12 mb-12'}`}>
-          <div className="flex items-center gap-2 text-gray-400 mb-2">
+          <div className="flex items-center gap-2 text-gray-400 mb-4">
             <Clock className="w-4 h-4" />
             <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
           </div>
-          <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg">
-            {getFormattedTime()}
-          </div>
-          <div className="text-gray-400 mt-2 font-medium drop-shadow-md">
-            {time && time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </div>
+          
+          {renderClockContent()}
 
-          {/* Time Format Menu */}
-          <div className="mt-4 relative">
-            <button
-              onClick={() => setShowFormatMenu(!showFormatMenu)}
-              className="px-3 py-1 text-xs uppercase tracking-wider text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
-              aria-label="Change time format"
-            >
-              {timeFormat.toUpperCase()}
-            </button>
+          {clockStyle !== 'analog' && (
+            <div className="text-gray-400 mt-4 font-medium drop-shadow-md">
+                {time && time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          )}
 
-            {showFormatMenu && (
-              <div className="absolute top-full mt-2 bg-black/80 border border-white/20 rounded-lg overflow-hidden z-40">
+          {/* Time Format Menu (Only for digital styles) */}
+          {clockStyle !== 'analog' && (
+              <div className="mt-4 relative">
                 <button
-                  onClick={() => handleTimeFormatChange('12h')}
-                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '12h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
+                  onClick={() => setShowFormatMenu(!showFormatMenu)}
+                  className="px-3 py-1 text-xs uppercase tracking-wider text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+                  aria-label="Change time format"
                 >
-                  12-Hour Format
+                  {timeFormat.toUpperCase()}
                 </button>
-                <button
-                  onClick={() => handleTimeFormatChange('24h')}
-                  className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '24h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
-                >
-                  24-Hour Format
-                </button>
+
+                {showFormatMenu && (
+                  <div className="absolute top-full mt-2 bg-black/80 border border-white/20 rounded-lg overflow-hidden z-40">
+                    <button
+                      onClick={() => handleTimeFormatChange('12h')}
+                      className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '12h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
+                    >
+                      12-Hour Format
+                    </button>
+                    <button
+                      onClick={() => handleTimeFormatChange('24h')}
+                      className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '24h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
+                    >
+                      24-Hour Format
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+          )}
       </div>
   );
 
@@ -639,6 +771,8 @@ export function DigitalClock() {
               onSelectEffect={handleEffectSelect}
               backgroundDim={backgroundDim}
               onSelectDim={handleDimSelect}
+              clockStyle={clockStyle}
+              onSelectClockStyle={handleClockStyleSelect}
             />
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2 } from 'lucide-react';
+import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2, Clock } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { CalendarTile } from './calendar-tile';
@@ -11,6 +11,7 @@ import { MarketTile } from './market-tile';
 import { BACKGROUND_OPTIONS } from '@/lib/backgrounds';
 import { LAYOUTS } from '@/lib/layouts';
 import { EffectType } from '../background-effects';
+import { ClockStyle } from '@/lib/clock-settings';
 
 function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
   const baseColor = isActive ? 'bg-accent-500' : 'bg-white/40 group-hover:bg-white/60';
@@ -111,6 +112,8 @@ interface TileTrayProps {
   onSelectEffect: (effect: EffectType) => void;
   backgroundDim?: number;
   onSelectDim?: (dim: number) => void;
+  clockStyle?: ClockStyle;
+  onSelectClockStyle?: (style: ClockStyle) => void;
 }
 
 export function TileTray({ 
@@ -123,9 +126,11 @@ export function TileTray({
   activeEffect,
   onSelectEffect,
   backgroundDim = 50,
-  onSelectDim
+  onSelectDim,
+  clockStyle = 'digital',
+  onSelectClockStyle
 }: TileTrayProps) {
-  const [activeTab, setActiveTab] = useState<'tiles' | 'backgrounds' | 'layouts' | 'effects'>('tiles');
+  const [activeTab, setActiveTab] = useState<'tiles' | 'backgrounds' | 'layouts' | 'effects' | 'clock'>('tiles');
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const trayRef = useRef<HTMLDivElement>(null);
@@ -315,6 +320,17 @@ export function TileTray({
         >
           <ImageIcon className="w-3 h-3" />
           BG
+        </button>
+        <button
+          onClick={() => setActiveTab('clock')}
+          className={`flex-shrink-0 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
+            activeTab === 'clock' 
+              ? 'bg-white/10 text-white' 
+              : 'text-white/40 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Clock className="w-3 h-3" />
+          Clock
         </button>
         <button
           onClick={() => setActiveTab('effects')}
@@ -528,6 +544,49 @@ export function TileTray({
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'clock' && onSelectClockStyle && (
+            <div className="grid grid-cols-1 gap-3">
+                {[
+                    { id: 'digital', name: 'Digital Classic', desc: 'Clean, modern mono font' },
+                    { id: 'neon', name: 'Neon Cyber', desc: 'Glowing, futuristic look' },
+                    { id: 'flip', name: 'Retro Flip', desc: 'Classic split-flap display' },
+                    { id: 'analog', name: 'Analog', desc: 'Traditional watch face' },
+                ].map((style) => (
+                    <button
+                        key={style.id}
+                        onClick={() => onSelectClockStyle(style.id as ClockStyle)}
+                        className={`group flex items-center gap-4 p-3 rounded-xl border transition-all text-left ${
+                            clockStyle === style.id 
+                                ? 'bg-white/10 border-accent-500' 
+                                : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                        }`}
+                    >
+                        {/* Preview Icon/Graphic */}
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${clockStyle === style.id ? 'bg-accent-500/20 text-accent-500' : 'bg-white/5 text-white/40'}`}>
+                            {style.id === 'digital' && <span className="font-mono font-bold text-xs">12:00</span>}
+                            {style.id === 'neon' && <span className="font-bold text-xs" style={{ textShadow: '0 0 5px currentColor' }}>12:00</span>}
+                            {style.id === 'flip' && (
+                                <div className="flex gap-0.5">
+                                    <div className="w-4 h-5 bg-current rounded-sm opacity-50" />
+                                    <div className="w-4 h-5 bg-current rounded-sm opacity-50" />
+                                </div>
+                            )}
+                            {style.id === 'analog' && <Clock className="w-6 h-6" />}
+                        </div>
+                        
+                        <div>
+                            <h4 className={`text-sm font-medium ${clockStyle === style.id ? 'text-white' : 'text-white/80'}`}>
+                                {style.name}
+                            </h4>
+                            <p className="text-xs text-white/40 mt-1">
+                                {style.desc}
+                            </p>
+                        </div>
+                    </button>
+                ))}
+            </div>
         )}
 
         {activeTab === 'effects' && (
