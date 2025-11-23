@@ -21,13 +21,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Use OpenRouter's Stable Diffusion 3.5 Large for image generation
-    // This model is specifically designed for image generation and works via standard API
     // eslint-disable-next-line no-console
     console.log('Sending image generation request to OpenRouter with prompt:', prompt);
 
-    // Use Google Gemini 3 Pro with image generation capability
-    // This model supports image generation natively
+    // Use Gemini 3 Pro with image generation capability
+    // Requires modalities: ['image', 'text'] to enable image generation
     const response = await fetch(`${apiUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -44,6 +42,7 @@ export async function POST(request: Request) {
             content: prompt,
           }
         ],
+        modalities: ['image', 'text'],
       }),
     });
 
@@ -65,28 +64,33 @@ export async function POST(request: Request) {
     console.log('OpenRouter Response:', JSON.stringify(data, null, 2));
 
     // Extract image URL from response
-    const choice = data.choices?.[0];
-    if (!choice) {
-      return NextResponse.json({
-        error: 'No response from OpenRouter',
-        details: data,
-      }, { status: 422 });
-    }
-
-    const messageContent = choice.message?.content;
     let imageUrl = null;
 
-    if (typeof messageContent === 'string') {
-      // Try various URL patterns
-      // 1. Direct URL (http/https)
-      if (messageContent.trim().startsWith('http')) {
-        imageUrl = messageContent.trim();
+    // Gemini format: message.images array with image_url.url
+    const message = data.choices?.[0]?.message;
+    if (message?.images && Array.isArray(message.images)) {
+      const firstImage = message.images[0];
+      const imageDataUrl = firstImage?.image_url?.url;
+      if (imageDataUrl) {
+        imageUrl = imageDataUrl;
       }
-      // 2. Markdown image format: ![alt](url)
-      else {
-        const markdownMatch = messageContent.match(/!\[.*?\]\((.*?)\)/);
-        if (markdownMatch && markdownMatch[1]) {
-          imageUrl = markdownMatch[1];
+    }
+
+    // Fallback: try to extract from message content if no images array
+    if (!imageUrl && message?.content) {
+      if (typeof message.content === 'string') {
+        if (message.content.trim().startsWith('data:')) {
+          // Base64 data URL
+          imageUrl = message.content.trim();
+        } else if (message.content.trim().startsWith('http')) {
+          // Regular URL
+          imageUrl = message.content.trim();
+        } else {
+          // Try markdown format
+          const markdownMatch = message.content.match(/!\[.*?\]\((.*?)\)/);
+          if (markdownMatch && markdownMatch[1]) {
+            imageUrl = markdownMatch[1];
+          }
         }
       }
     }
@@ -94,7 +98,7 @@ export async function POST(request: Request) {
     if (!imageUrl) {
       return NextResponse.json({
         error: 'No image URL found in response',
-        details: { content: messageContent, fullResponse: data },
+        details: { message, fullResponse: data },
       }, { status: 422 });
     }
 
