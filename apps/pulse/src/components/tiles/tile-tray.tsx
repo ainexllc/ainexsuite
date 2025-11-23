@@ -8,6 +8,7 @@ import { FocusTile } from './focus-tile';
 import { SparkTile } from './spark-tile';
 import { WeatherTile } from './weather-tile';
 import { MarketTile } from './market-tile';
+import { TimerTile } from './timer-tile';
 import { BACKGROUND_OPTIONS } from '@/lib/backgrounds';
 import { LAYOUTS } from '@/lib/layouts';
 import { EffectType } from '../background-effects';
@@ -114,6 +115,9 @@ interface TileTrayProps {
   onSelectDim?: (dim: number) => void;
   clockStyle?: ClockStyle;
   onSelectClockStyle?: (style: ClockStyle) => void;
+  timeFormat?: '12h' | '24h';
+  onSelectTimeFormat?: (format: '12h' | '24h') => void;
+  onAddTile?: (type: string) => void;
 }
 
 export function TileTray({ 
@@ -128,7 +132,10 @@ export function TileTray({
   backgroundDim = 50,
   onSelectDim,
   clockStyle = 'digital',
-  onSelectClockStyle
+  onSelectClockStyle,
+  timeFormat = '12h',
+  onSelectTimeFormat,
+  onAddTile
 }: TileTrayProps) {
   const [activeTab, setActiveTab] = useState<'tiles' | 'backgrounds' | 'layouts' | 'effects' | 'clock'>('tiles');
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
@@ -349,24 +356,31 @@ export function TileTray({
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {activeTab === 'tiles' && (
           <div className="flex flex-col gap-4">
-            <div>
+            <div className="p-3 bg-white/5 rounded-lg border border-white/10 mb-2">
+                <div className="flex items-center gap-2 text-white/80 text-xs font-medium">
+                    <Grid className="w-4 h-4 text-accent-400" />
+                    <span>Drag to place, or click to add</span>
+                </div>
+            </div>
+            
+            <div onClick={() => onAddTile?.('calendar')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
               <CalendarTile id="calendar-tray" isDraggable={true} />
             </div>
-            <div>
+            <div onClick={() => onAddTile?.('focus')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
               <FocusTile id="focus-tray" isDraggable={true} />
             </div>
-            <div>
+            <div onClick={() => onAddTile?.('spark')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
               <SparkTile id="spark-tray" isDraggable={true} />
             </div>
-            <div>
+            <div onClick={() => onAddTile?.('weather')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
               <WeatherTile id="weather-tray" isDraggable={true} />
             </div>
-            <div>
+            <div onClick={() => onAddTile?.('market')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
               <MarketTile id="market-tray" isDraggable={true} />
             </div>
-            <p className="text-xs text-white/30 text-center mt-4 select-none">
-              Drag tiles to the slots around the clock
-            </p>
+            <div onClick={() => onAddTile?.('timer')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
+              <TimerTile id="timer-tray" isDraggable={true} />
+            </div>
           </div>
         )}
 
@@ -399,66 +413,71 @@ export function TileTray({
 
         {activeTab === 'backgrounds' && (
           <div className="flex flex-col gap-4">
-            {/* AI Generator */}
-            <div className="p-4 bg-gradient-to-b from-indigo-500/10 to-purple-500/10 rounded-xl border border-white/10 space-y-3">
-              <div className="flex items-center gap-2 text-indigo-400 mb-1">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">AI Generator</span>
-              </div>
-              
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe your dream background... (e.g., 'Cyberpunk city at night', 'Peaceful zen garden')"
-                className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50 resize-none h-20"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleGenerateImage();
-                  }
-                }}
-              />
-              
-              <button
-                onClick={handleGenerateImage}
-                disabled={isGenerating || !prompt.trim()}
-                className={`w-full py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                  isGenerating || !prompt.trim()
-                    ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                    : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                }`}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  'Generate Background'
-                )}
-              </button>
-
-              {generatedImage && (
-                <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                  <div className="relative aspect-video rounded-lg overflow-hidden border border-white/20 group">
-                    <Image 
-                      src={generatedImage} 
-                      alt="Generated background" 
-                      fill 
-                      className="object-cover" 
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                       <button
-                        onClick={() => onSelectBackground(generatedImage)}
-                        className="px-3 py-1.5 bg-white text-black text-xs font-bold rounded-full hover:scale-105 transition-transform"
-                      >
-                        Use Background
-                      </button>
+            {/* AI Generator Accordion */}
+            <details className="group bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+                <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-2 text-indigo-400">
+                        <Sparkles className="w-4 h-4" />
+                        <span className="text-xs font-semibold uppercase tracking-wider">AI Generator</span>
                     </div>
-                  </div>
+                    <div className="text-white/40 group-open:rotate-180 transition-transform">▼</div>
+                </summary>
+                
+                <div className="p-4 pt-0 space-y-3 bg-gradient-to-b from-indigo-500/10 to-purple-500/10">
+                    <textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Describe your dream background... (e.g., 'Cyberpunk city at night', 'Peaceful zen garden')"
+                        className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50 resize-none h-20"
+                        onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleGenerateImage();
+                        }
+                        }}
+                    />
+                    
+                    <button
+                        onClick={handleGenerateImage}
+                        disabled={isGenerating || !prompt.trim()}
+                        className={`w-full py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                        isGenerating || !prompt.trim()
+                            ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                            : 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                        }`}
+                    >
+                        {isGenerating ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Generating...
+                        </>
+                        ) : (
+                        'Generate Background'
+                        )}
+                    </button>
+
+                    {generatedImage && (
+                        <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="relative aspect-video rounded-lg overflow-hidden border border-white/20 group/img">
+                            <Image 
+                            src={generatedImage} 
+                            alt="Generated background" 
+                            fill 
+                            className="object-cover" 
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => onSelectBackground(generatedImage)}
+                                className="px-3 py-1.5 bg-white text-black text-xs font-bold rounded-full hover:scale-105 transition-transform"
+                            >
+                                Use Background
+                            </button>
+                            </div>
+                        </div>
+                        </div>
+                    )}
                 </div>
-              )}
-            </div>
+            </details>
 
             {/* Presets Grid */}
             <div className="grid grid-cols-2 gap-3">
@@ -501,52 +520,90 @@ export function TileTray({
               ))}
             </div>
 
-            {/* Custom Color Picker */}
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-              <div className="flex items-center justify-between gap-4">
-                <label htmlFor="bg-color-picker" className="text-xs font-medium text-white/80">Custom Color</label>
-                <div className="flex items-center gap-2">
-                  <input 
-                    id="bg-color-picker"
-                    type="color" 
-                    value={currentBackground?.startsWith('#') ? currentBackground : '#000000'}
-                    onChange={(e) => onSelectBackground(e.target.value)}
-                    className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
-                  />
-                  <span className="text-xs font-mono text-white/40">
-                    {currentBackground?.startsWith('#') ? currentBackground : ''}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Settings Accordion */}
+            <details className="group bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+                <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors">
+                    <span className="text-xs font-medium text-white/80">Settings (Color & Dimming)</span>
+                    <div className="text-white/40 group-open:rotate-180 transition-transform">▼</div>
+                </summary>
+                
+                <div className="p-3 pt-0 space-y-4">
+                    {/* Custom Color Picker */}
+                    <div className="flex items-center justify-between gap-4">
+                        <label htmlFor="bg-color-picker" className="text-xs font-medium text-white/60">Solid Color</label>
+                        <div className="flex items-center gap-2">
+                        <input 
+                            id="bg-color-picker"
+                            type="color" 
+                            value={currentBackground?.startsWith('#') ? currentBackground : '#000000'}
+                            onChange={(e) => onSelectBackground(e.target.value)}
+                            className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
+                        />
+                        <span className="text-xs font-mono text-white/40">
+                            {currentBackground?.startsWith('#') ? currentBackground : ''}
+                        </span>
+                        </div>
+                    </div>
 
-            {/* Dimming Controls */}
-            {onSelectDim && (
-              <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-white/80">Background Dimming</label>
-                  <span className="text-xs font-mono text-white/40">{backgroundDim}%</span>
+                    {/* Dimming Controls */}
+                    {onSelectDim && (
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-white/60">Overlay Opacity</label>
+                            <span className="text-xs font-mono text-white/40">{backgroundDim}%</span>
+                            </div>
+                            <input
+                            type="range"
+                            min="0"
+                            max="90"
+                            step="10"
+                            value={backgroundDim}
+                            onChange={(e) => onSelectDim(Number(e.target.value))}
+                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                            />
+                            <div className="flex justify-between text-[10px] text-white/30 px-1">
+                            <span>Bright</span>
+                            <span>Dim</span>
+                            <span>Dark</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="90"
-                  step="10"
-                  value={backgroundDim}
-                  onChange={(e) => onSelectDim(Number(e.target.value))}
-                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                />
-                <div className="flex justify-between text-[10px] text-white/30 px-1">
-                  <span>Bright</span>
-                  <span>Dim</span>
-                  <span>Dark</span>
-                </div>
-              </div>
-            )}
+            </details>
           </div>
         )}
 
         {activeTab === 'clock' && onSelectClockStyle && (
+            <div className="flex flex-col gap-4">
+              {/* Time Format Toggle */}
+              {onSelectTimeFormat && (
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-3">
+                  <label className="text-xs font-medium text-white/80">Time Format</label>
+                  <div className="flex p-1 bg-black/20 rounded-lg border border-white/5">
+                    <button
+                      onClick={() => onSelectTimeFormat('12h')}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        timeFormat === '12h'
+                          ? 'bg-white/10 text-white shadow-sm'
+                          : 'text-white/40 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      12-Hour
+                    </button>
+                    <button
+                      onClick={() => onSelectTimeFormat('24h')}
+                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        timeFormat === '24h'
+                          ? 'bg-white/10 text-white shadow-sm'
+                          : 'text-white/40 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      24-Hour
+                    </button>
+                  </div>
+                </div>
+              )}
+
             <div className="grid grid-cols-1 gap-3">
                 {[
                     { id: 'digital', name: 'Digital Classic', desc: 'Clean, modern mono font' },
@@ -589,6 +646,7 @@ export function TileTray({
                     </button>
                 ))}
             </div>
+          </div>
         )}
 
         {activeTab === 'effects' && (
@@ -603,6 +661,7 @@ export function TileTray({
                     { id: 'christmas-lights-snow', name: 'Lights & Snow', icon: '⛄' },
                     { id: 'fireflies', name: 'Fireflies', icon: '✨' },
                     { id: 'sakura', name: 'Sakura', icon: '🌸' },
+                    { id: 'autumn-leaves', name: 'Autumn', icon: '🍂' },
                     { id: 'confetti', name: 'Confetti', icon: '🎉' },
                     { id: 'fireworks', name: 'Fireworks', icon: '🎆' },
                     { id: 'bubbles', name: 'Bubbles', icon: '🫧' },

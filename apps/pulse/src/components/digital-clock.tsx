@@ -9,6 +9,7 @@ import { FocusTile } from './tiles/focus-tile';
 import { SparkTile } from './tiles/spark-tile';
 import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
+import { TimerTile } from './tiles/timer-tile';
 import { ClockService, ClockStyle } from '@/lib/clock-settings';
 import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
 import { BackgroundEffects, EffectType } from './background-effects';
@@ -455,6 +456,19 @@ export function DigitalClock() {
     updateSettings(newTiles, backgroundImage);
   };
 
+  const handleAddTile = (type: string) => {
+    // Generate unique ID
+    const uniqueId = `${type}-${Date.now()}`;
+    
+    // Find first empty slot
+    const emptySlot = activeLayout.slots.find(slot => !tiles[slot.id]);
+    
+    if (emptySlot) {
+      const newTiles = { ...tiles, [emptySlot.id]: uniqueId };
+      updateSettings(newTiles, backgroundImage);
+    }
+  };
+
   const removeTile = (slot: string) => {
     const newTiles = { ...tiles, [slot]: null };
     updateSettings(newTiles, backgroundImage);
@@ -486,6 +500,14 @@ export function DigitalClock() {
     if (tileId.includes('spark')) return <SparkTile {...props} />;
     if (tileId.includes('weather')) return <WeatherTile {...props} weatherZipcode={weatherZipcode} onZipcodeChange={handleZipcodeChange} />;
     if (tileId.includes('market')) return <MarketTile {...props} />;
+    if (tileId.includes('timer')) {
+        return (
+            <TimerTile
+                {...props}
+                defaultDuration={1500}
+            />
+        );
+    }
     return null;
   };
 
@@ -748,10 +770,10 @@ export function DigitalClock() {
   return (
     <div 
       ref={containerRef}
-      className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 bg-cover bg-center bg-no-repeat ${
+      className={`w-full bg-black text-white border border-outline-subtle shadow-sm flex flex-col items-center relative group transition-all duration-300 bg-cover bg-center bg-no-repeat pointer-events-none ${
         isMaximized
           ? 'fixed inset-0 z-50 rounded-none border-none justify-center overflow-hidden'
-          : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px]'
+          : 'p-8 rounded-2xl mb-8 justify-start min-h-[400px] aspect-video'
       }`}
       style={{
         backgroundImage: backgroundImage && backgroundImage.startsWith('http') ? `url(${backgroundImage})` : undefined,
@@ -773,14 +795,12 @@ export function DigitalClock() {
       />
 
       {/* Render Atmospheric Effects - Placed ABOVE the dimmer layer so they remain bright */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-30 pointer-events-none">
         <BackgroundEffects effect={backgroundEffect} />
       </div>
 
-      {/* Content Container (z-10 to sit above overlay) */}
-      <div className="relative z-10 w-full h-full flex flex-col items-center">
-        {/* Controls */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 z-20 opacity-20 group-hover:opacity-100 transition-opacity">
+      {/* Controls - Moved to root to ignore padding and ensure z-index */}
+      <div className="absolute top-0 right-0 m-2 flex items-center gap-2 z-50 opacity-20 group-hover:opacity-100 transition-opacity pointer-events-auto">
           <button
             onClick={toggleMaximize}
             className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
@@ -800,7 +820,10 @@ export function DigitalClock() {
           >
             <Plus className="w-5 h-5" />
           </button>
-        </div>
+      </div>
+
+      {/* Content Container (z-10 to sit above overlay) */}
+      <div className="relative z-10 w-full h-full flex flex-col items-center pointer-events-auto">
         
         {/* Dynamic Layout Rendering */}
         {activeLayoutId === 'studio-right' ? (
@@ -857,6 +880,9 @@ export function DigitalClock() {
               onSelectDim={handleDimSelect}
               clockStyle={clockStyle}
               onSelectClockStyle={handleClockStyleSelect}
+              timeFormat={timeFormat}
+              onSelectTimeFormat={handleTimeFormatChange}
+              onAddTile={handleAddTile}
             />
           </div>
         </div>

@@ -64,7 +64,7 @@ export function TileBase({
           </button>
         )}
       </div>
-      <div className="text-sm text-white/90 flex-1 overflow-hidden">
+      <div className="text-sm text-white/90 flex-1 overflow-visible">
         {children}
       </div>
     </div>

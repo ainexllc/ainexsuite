@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'fog' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'fireworks' | 'bubbles' | 'meteors' | 'plasma';
+export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'fog' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'fireworks' | 'bubbles' | 'meteors' | 'plasma' | 'autumn-leaves';
 
 interface BackgroundEffectsProps {
   effect: EffectType;
@@ -52,7 +52,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     'fireworks',
     'bubbles',
     'meteors',
-    'plasma'
+    'plasma',
+    'autumn-leaves'
   ].includes(effect);
 
   // Helper to determine if we need lights
@@ -168,6 +169,21 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
                 wobbleSpeed: Math.random() * 0.05 + 0.02,
                 opacity: Math.random() * 0.3 + 0.1
             });
+        }
+      } else if (effect === 'autumn-leaves') {
+        const colors = ['#e63946', '#f4a261', '#e76f51', '#d4a373', '#a98467'];
+        for (let i = 0; i < 60; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 3 + 3,
+            speedY: Math.random() * 1 + 1,
+            speedX: (Math.random() - 0.5) * 1,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            opacity: Math.random() * 0.3 + 0.6
+          });
         }
       } else if (effect === 'fireworks' || effect === 'meteors' || effect === 'plasma') {
         // Dynamic spawning
@@ -301,6 +317,41 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
 
           p.y += p.speedY || 1;
           p.x += (p.speedX || 0) + Math.sin(time + (p.rotation || 0)) * 0.5; // Sway
+          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 1);
+
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+          if (p.x > canvas.width) p.x = 0;
+          if (p.x < 0) p.x = canvas.width;
+        });
+      }
+      else if (effect === 'autumn-leaves') {
+        particles.forEach(p => {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(((p.rotation || 0) * Math.PI) / 180);
+          ctx.fillStyle = p.color || '#e76f51';
+          ctx.globalAlpha = p.opacity || 0.8;
+          
+          // Draw leaf shape
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.radius || 4, (p.radius || 4) * 0.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Leaf vein (optional detail)
+          ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(-(p.radius || 4), 0);
+          ctx.lineTo((p.radius || 4), 0);
+          ctx.stroke();
+
+          ctx.restore();
+
+          p.y += p.speedY || 1;
+          p.x += (p.speedX || 0) + Math.sin(time + (p.rotation || 0)) * 0.8; // Sway
           p.rotation = (p.rotation || 0) + (p.rotationSpeed || 1);
 
           if (p.y > canvas.height) {

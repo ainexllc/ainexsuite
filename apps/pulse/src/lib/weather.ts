@@ -53,32 +53,34 @@ export async function getLocationFromSearch(query: string) {
     if (!normalized) return null;
 
     // First try postal code search for zipcodes
-    const isZipcode = /^\d{5}$/.test(normalized);
-    let response: Response;
+    const isZipcode = /^\d{5,}$/.test(normalized);
+    let url: string;
+    let searchQuery = normalized;
 
     if (isZipcode) {
-      response = await fetch(
-        `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
-        {
-          headers: {
-            'User-Agent': 'AinexSuite-Weather-App'
-          }
-        }
-      );
+      url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=1&addressdetails=1`;
     } else {
-      // Avoid trailing commas which might cause bad requests in some query parsers, though URL encoding handles it
-      // Nominatim search 'q' parameter is flexible
-      response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=1`,
-        {
-          headers: {
-            'User-Agent': 'AinexSuite-Weather-App'
-          }
-        }
-      );
+      // If the query contains "City, State", extract just the city name for the search
+      // This helps with matching when user selects from dropdown
+      const parts = normalized.split(',');
+      if (parts.length > 1) {
+        searchQuery = parts[0].trim();
+      }
+      // Use structured city parameter for better matching
+      url = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(searchQuery)}&country=us&format=json&limit=1&addressdetails=1`;
     }
 
+    console.log('Searching for location:', { normalized, searchQuery, url });
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'AinexSuite-Weather-App',
+        'Accept': 'application/json'
+      }
+    });
+
     if (!response.ok) {
+      console.warn(`Nominatim API error: ${response.status}`);
       return null;
     }
 
@@ -86,15 +88,20 @@ export async function getLocationFromSearch(query: string) {
 
     if (data && data.length > 0) {
       const result = data[0];
-      const city = result.address?.city || result.address?.town || result.name || normalized;
-      const state = result.address?.state || '';
+      const address = result.address && typeof result.address === 'object' ? result.address as Record<string, string> : {};
+      const city = address.city || address.town || address.village || result.name || searchQuery;
+      const state = address.state || '';
       const displayName = state ? `${city}, ${state}` : city;
+
+      console.log('Location found:', displayName);
 
       return {
         name: displayName,
         latitude: parseFloat(result.lat),
         longitude: parseFloat(result.lon),
       };
+    } else {
+      console.warn('No results found for location:', normalized);
     }
   } catch (err) {
     console.error('Geocoding error:', err);
@@ -114,25 +121,30 @@ export async function getLocationSuggestions(query: string): Promise<Array<{ nam
 
   try {
     // Add delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Detect if input is a zipcode
-    const isZipcode = /^\d+$/.test(normalized);
+    // Detect if input is a zipcode (5+ digits)
+    const isZipcode = /^\d{5,}$/.test(normalized);
     let url: string;
 
     if (isZipcode) {
-      url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=5`;
+      // For zipcodes, use postalcode parameter
+      url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalized)}&country=us&format=json&limit=5&addressdetails=1`;
     } else {
-      url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(normalized)}&country=us&format=json&limit=5`;
+      // For city/state queries, use 'city' parameter for better matching
+      // Nominatim prefers structured queries for better accuracy
+      url = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(normalized)}&country=us&format=json&limit=5&addressdetails=1`;
     }
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'AinexSuite-Weather-App'
+        'User-Agent': 'AinexSuite-Weather-App',
+        'Accept': 'application/json'
       }
     });
 
     if (!response.ok) {
+      console.warn(`Nominatim API error: ${response.status}`);
       return [];
     }
 
@@ -143,12 +155,9 @@ export async function getLocationSuggestions(query: string): Promise<Array<{ nam
     }
 
     return data.map((result: Record<string, unknown>) => {
-      const city = result.address && typeof result.address === 'object'
-        ? (result.address as Record<string, string>).city || (result.address as Record<string, string>).town || (result.name as string)
-        : (result.name as string);
-      const state = result.address && typeof result.address === 'object'
-        ? (result.address as Record<string, string>).state || ''
-        : '';
+      const address = result.address && typeof result.address === 'object' ? result.address as Record<string, string> : {};
+      const city = address.city || address.town || address.village || (result.name as string) || 'Unknown';
+      const state = address.state || '';
       const displayName = state ? `${city}, ${state}` : city;
 
       return {
