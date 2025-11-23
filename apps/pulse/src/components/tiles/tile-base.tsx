@@ -45,7 +45,7 @@ export function TileBase({
       draggable={isDraggable}
       onDragStart={handleDragStart}
       onTouchStart={handleTouchStart}
-      className={`group relative bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm select-none touch-none flex flex-col h-full ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
+      className={`group relative bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-all duration-200 backdrop-blur-md select-none touch-none flex flex-col h-full ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
     >
       <div className="flex items-center justify-between mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-2">

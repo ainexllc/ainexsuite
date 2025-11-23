@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'fog' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'fireworks' | 'bubbles' | 'meteors' | 'plasma' | 'autumn-leaves';
+export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'fog' | 'ice' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'fireworks' | 'bubbles' | 'autumn-leaves' | 'meteors' | 'plasma';
 
 interface BackgroundEffectsProps {
   effect: EffectType;
@@ -51,9 +51,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     'sakura',
     'fireworks',
     'bubbles',
-    'meteors',
-    'plasma',
-    'autumn-leaves'
+    'autumn-leaves',
+    'ice'
   ].includes(effect);
 
   // Helper to determine if we need lights
@@ -72,6 +71,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     let animationFrameId: number;
     let particles: Particle[] = [];
     let time = 0;
+    let lastTime = performance.now();
     
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -85,6 +85,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     const init = () => {
       particles = [];
       time = 0;
+      lastTime = performance.now();
 
       if (effect === 'rain' || effect === 'heavy-rain') {
         const particleCount = effect === 'heavy-rain' ? 400 : 100;
@@ -92,9 +93,9 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            speed: Math.random() * 15 + (effect === 'heavy-rain' ? 20 : 10),
-            length: Math.random() * 20 + (effect === 'heavy-rain' ? 20 : 10),
-            opacity: Math.random() * 0.5 + (effect === 'heavy-rain' ? 0.3 : 0.1)
+            speed: Math.random() * 15 + (effect === 'heavy-rain' ? 25 : 15),
+            length: Math.random() * 20 + (effect === 'heavy-rain' ? 35 : 25),
+            opacity: Math.random() * 0.5 + (effect === 'heavy-rain' ? 0.4 : 0.2)
           });
         }
       } else if (effect === 'snow' || effect === 'heavy-snow' || effect === 'christmas-lights-snow') {
@@ -128,7 +129,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             radius: Math.random() * 300 + 150,
-            dx: (Math.random() - 0.5) * 0.3,
+            dx: Math.random() * 0.5 + 0.2, // Slow positive drift
             dy: (Math.random() - 0.5) * 0.1,
             opacity: Math.random() * 0.3 + 0.1
           });
@@ -150,7 +151,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            radius: Math.random() * 3 + 2,
+            radius: Math.random() * 5 + 5,
             speedY: Math.random() * 1 + 0.5,
             speedX: Math.random() * 1 - 0.5,
             rotation: Math.random() * 360,
@@ -176,7 +177,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           particles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            radius: Math.random() * 3 + 3,
+            radius: Math.random() * 8 + 8,
             speedY: Math.random() * 1 + 1,
             speedX: (Math.random() - 0.5) * 1,
             rotation: Math.random() * 360,
@@ -185,7 +186,29 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             opacity: Math.random() * 0.3 + 0.6
           });
         }
-      } else if (effect === 'fireworks' || effect === 'meteors' || effect === 'plasma') {
+      } else if (effect === 'ice') {
+          // Generate static frost patches
+          for (let i = 0; i < 20; i++) {
+              particles.push({
+                  x: Math.random() * canvas.width,
+                  y: Math.random() * canvas.height,
+                  radius: Math.random() * 100 + 50,
+                  rotation: Math.random() * 360,
+                  opacity: Math.random() * 0.2 + 0.1
+              });
+          }
+          // Add dynamic rain/melt drops
+          for (let i = 0; i < 50; i++) {
+              particles.push({
+                  type: 'spark', // Reusing spark type for melt drops
+                  x: Math.random() * canvas.width,
+                  y: Math.random() * canvas.height,
+                  speed: Math.random() * 2 + 0.5,
+                  length: Math.random() * 10 + 5,
+                  opacity: Math.random() * 0.3 + 0.1
+              });
+          }
+      } else if (effect === 'fireworks') {
         // Dynamic spawning
         particles = [];
       }
@@ -194,26 +217,39 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     init();
 
     const draw = () => {
+      const currentTime = performance.now();
+      const deltaTime = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+
+      if (deltaTime > 0.1) { // Prevent large jumps if tab inactive
+          lastTime = currentTime;
+          animationFrameId = requestAnimationFrame(draw);
+          return;
+      }
+      
+      // Normalize speed to 60FPS target
+      const fpsCorrection = deltaTime * 60;
+
       // Fade out effect for trails
-      if (effect === 'fireworks' || effect === 'meteors' || effect === 'plasma') {
+      if (effect === 'fireworks') {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
       
-      time += 0.01;
+      time += 0.01 * fpsCorrection;
 
       if (effect === 'rain' || effect === 'heavy-rain') {
         ctx.strokeStyle = 'rgba(174, 194, 224, 0.5)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = effect === 'heavy-rain' ? 3 : 2;
         ctx.lineCap = 'round';
         particles.forEach(p => {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(p.x, p.y + (p.length || 10));
           ctx.stroke();
-          p.y += p.speed || 5;
+          p.y += (p.speed || 5) * fpsCorrection;
           if (p.y > canvas.height) {
             p.y = -(p.length || 10);
             p.x = Math.random() * canvas.width;
@@ -226,8 +262,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.radius || 2, 0, Math.PI * 2);
           ctx.fill();
-          p.y += p.speed || 1;
-          p.x += Math.sin(time + (p.radius || 2)) * 0.5; // Add some horizontal drift
+          p.y += (p.speed || 1) * fpsCorrection;
+          p.x += Math.sin(time + (p.radius || 2)) * 0.5 * fpsCorrection; // Add some horizontal drift
           
           if (p.y > canvas.height) {
             p.y = -(p.radius || 2);
@@ -246,9 +282,9 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           ctx.fillRect(-(p.radius || 4), -(p.radius || 4), (p.radius || 4) * 2, (p.radius || 4) * 2); // Square confetti
           ctx.restore();
 
-          p.y += p.speedY || 2;
-          p.x += (p.speedX || 0) + Math.sin(time * 2) * 0.5; // Sway
-          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 2);
+          p.y += (p.speedY || 2) * fpsCorrection;
+          p.x += ((p.speedX || 0) + Math.sin(time * 2) * 0.5) * fpsCorrection; // Sway
+          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 2) * fpsCorrection;
 
           if (p.y > canvas.height) {
             p.y = -10;
@@ -269,8 +305,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             ctx.arc(p.x, p.y, p.radius || 150, 0, Math.PI * 2);
             ctx.fill();
 
-            p.x += p.dx || 0;
-            p.y += p.dy || 0;
+            p.x += (p.dx || 0) * fpsCorrection;
+            p.y += (p.dy || 0) * fpsCorrection;
 
             // Wrap around screen
             if (p.x < -(p.radius || 150)) p.x = canvas.width + (p.radius || 150);
@@ -290,8 +326,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           ctx.fill();
           
           // Gentle wandering
-          p.x += (p.speedX || 0) + Math.sin(time + (p.opacity || 0)) * 0.2;
-          p.y += (p.speedY || 0) + Math.cos(time + (p.opacity || 0)) * 0.2;
+          p.x += ((p.speedX || 0) + Math.sin(time + (p.opacity || 0)) * 0.2) * fpsCorrection;
+          p.y += ((p.speedY || 0) + Math.cos(time + (p.opacity || 0)) * 0.2) * fpsCorrection;
           
           // Wrap
           if (p.x < 0) p.x = canvas.width;
@@ -305,19 +341,48 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           ctx.save();
           ctx.translate(p.x, p.y);
           ctx.rotate(((p.rotation || 0) * Math.PI) / 180);
-          // Pink petal color
-          ctx.fillStyle = `rgba(255, 183, 178, ${p.opacity || 0.5})`;
           
-          // Draw petal shape (simple oval for now)
+          const r = p.radius || 5;
+
+          // Soft gradient for more realistic petal look
+          const gradient = ctx.createRadialGradient(-r*0.2, -r*0.2, 0, 0, 0, r * 1.5);
+          gradient.addColorStop(0, `rgba(255, 235, 240, ${p.opacity || 0.8})`); // Pale center
+          gradient.addColorStop(1, `rgba(255, 160, 180, ${p.opacity || 0.6})`); // Pink edges
+          ctx.fillStyle = gradient;
+          
+          // Detailed petal shape with notch
           ctx.beginPath();
-          ctx.ellipse(0, 0, p.radius || 3, (p.radius || 3) * 0.6, 0, 0, Math.PI * 2);
+          ctx.moveTo(0, r); // Bottom point
+          
+          // Left side curve
+          ctx.bezierCurveTo(
+            -r * 1.2, r * 0.4, 
+            -r * 1.2, -r * 0.8, 
+            0, -r * 0.6 // Top notch center
+          );
+          
+          // Right side curve
+          ctx.bezierCurveTo(
+            r * 1.2, -r * 0.8, 
+            r * 1.2, r * 0.4, 
+            0, r // Back to bottom
+          );
+          
           ctx.fill();
+          
+          // Subtle center vein
+          ctx.strokeStyle = `rgba(200, 100, 120, ${(p.opacity || 0.5) * 0.3})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, r * 0.8);
+          ctx.quadraticCurveTo(r * 0.1, 0, 0, -r * 0.3);
+          ctx.stroke();
           
           ctx.restore();
 
-          p.y += p.speedY || 1;
-          p.x += (p.speedX || 0) + Math.sin(time + (p.rotation || 0)) * 0.5; // Sway
-          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 1);
+          p.y += (p.speedY || 1) * fpsCorrection;
+          p.x += ((p.speedX || 0) + Math.sin(time + (p.rotation || 0)) * 0.5) * fpsCorrection; // Sway
+          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 1) * fpsCorrection;
 
           if (p.y > canvas.height) {
             p.y = -10;
@@ -337,22 +402,22 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           
           // Draw leaf shape
           ctx.beginPath();
-          ctx.ellipse(0, 0, p.radius || 4, (p.radius || 4) * 0.5, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, p.radius || 12, (p.radius || 12) * 0.5, 0, 0, Math.PI * 2);
           ctx.fill();
           
           // Leaf vein (optional detail)
           ctx.strokeStyle = 'rgba(0,0,0,0.2)';
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(-(p.radius || 4), 0);
-          ctx.lineTo((p.radius || 4), 0);
+          ctx.moveTo(-(p.radius || 12), 0);
+          ctx.lineTo((p.radius || 12), 0);
           ctx.stroke();
 
           ctx.restore();
 
-          p.y += p.speedY || 1;
-          p.x += (p.speedX || 0) + Math.sin(time + (p.rotation || 0)) * 0.8; // Sway
-          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 1);
+          p.y += (p.speedY || 1) * fpsCorrection;
+          p.x += ((p.speedX || 0) + Math.sin(time + (p.rotation || 0)) * 0.8) * fpsCorrection; // Sway
+          p.rotation = (p.rotation || 0) + (p.rotationSpeed || 1) * fpsCorrection;
 
           if (p.y > canvas.height) {
             p.y = -10;
@@ -380,8 +445,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             ctx.fillStyle = `rgba(255, 255, 255, ${(p.opacity || 0.2) * 2})`;
             ctx.fill();
 
-            p.y -= p.speedY || 1;
-            p.wobble = (p.wobble || 0) + (p.wobbleSpeed || 0.05);
+            p.y -= (p.speedY || 1) * fpsCorrection;
+            p.wobble = (p.wobble || 0) + (p.wobbleSpeed || 0.05) * fpsCorrection;
 
             if (p.y < -(p.radius || 10)) {
                 p.y = canvas.height + (p.radius || 10);
@@ -390,8 +455,8 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
         });
       }
       else if (effect === 'meteors') {
-          // Randomly spawn meteors
-          if (Math.random() < 0.05) {
+          // Randomly spawn meteors - adjusted prob for fps
+          if (Math.random() < 0.05 * fpsCorrection) {
               const angle = Math.PI / 4; // 45 degrees
               // Spawn either from top or left
               let startX, startY;
@@ -419,9 +484,9 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
               const p = particles[i];
               
               if (p.type === 'meteor') {
-                  p.x += p.vx || 0;
-                  p.y += p.vy || 0;
-                  p.life = (p.life || 100) - 2;
+                  p.x += (p.vx || 0) * fpsCorrection;
+                  p.y += (p.vy || 0) * fpsCorrection;
+                  p.life = (p.life || 100) - 2 * fpsCorrection;
                   
                   // Fade out near end of life
                   const alpha = Math.min(1, (p.life || 0) / 20);
@@ -446,7 +511,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
       }
       else if (effect === 'plasma') {
           // Randomly spawn lightning/plasma bolts
-          if (Math.random() < 0.1) {
+          if (Math.random() < 0.1 * fpsCorrection) {
               const startX = Math.random() * canvas.width;
               const startY = Math.random() * canvas.height;
 
@@ -474,7 +539,7 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           for (let i = particles.length - 1; i >= 0; i--) {
               const p = particles[i];
               
-              p.life = (p.life || 0) - 1;
+              p.life = (p.life || 0) - 1 * fpsCorrection;
               const alpha = (p.life || 0) / 10;
 
               ctx.strokeStyle = p.color || 'cyan';
@@ -500,9 +565,66 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
               }
           }
       }
+      else if (effect === 'ice') {
+          // Draw icy vignette/border
+          const gradient = ctx.createRadialGradient(
+              canvas.width / 2, canvas.height / 2, canvas.height / 3,
+              canvas.width / 2, canvas.height / 2, canvas.height
+          );
+          gradient.addColorStop(0, 'rgba(200, 230, 255, 0)');
+          gradient.addColorStop(1, 'rgba(180, 220, 255, 0.4)');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Draw frost crystals
+          particles.forEach(p => {
+              if (p.type === 'spark') {
+                  // Draw melting drops
+                  ctx.strokeStyle = `rgba(200, 230, 255, ${p.opacity || 0.3})`;
+                  ctx.lineWidth = 1.5;
+                  ctx.lineCap = 'round';
+                  ctx.beginPath();
+                  ctx.moveTo(p.x, p.y);
+                  ctx.lineTo(p.x, p.y + (p.length || 10));
+                  ctx.stroke();
+
+                  p.y += (p.speed || 1) * fpsCorrection;
+                  if (p.y > canvas.height) {
+                      p.y = -(p.length || 10);
+                      p.x = Math.random() * canvas.width;
+                  }
+                  return;
+              }
+
+              ctx.save();
+              ctx.translate(p.x, p.y);
+              ctx.rotate(((p.rotation || 0) * Math.PI) / 180);
+              
+              ctx.strokeStyle = `rgba(255, 255, 255, ${p.opacity || 0.1})`;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              
+              // Draw a snowflake/frost-like pattern
+              for(let i = 0; i < 6; i++) {
+                  ctx.moveTo(0, 0);
+                  ctx.lineTo(0, -(p.radius || 50));
+                  // Branches
+                  ctx.moveTo(0, -(p.radius || 50) * 0.4);
+                  ctx.lineTo((p.radius || 50) * 0.2, -(p.radius || 50) * 0.6);
+                  ctx.moveTo(0, -(p.radius || 50) * 0.4);
+                  ctx.lineTo(-(p.radius || 50) * 0.2, -(p.radius || 50) * 0.6);
+                  
+                  ctx.rotate(Math.PI / 3);
+              }
+              ctx.stroke();
+              ctx.restore();
+          });
+
+          // Rain sliding down (Ice Melt) effect removed (handled by particles now)
+      }
       else if (effect === 'fireworks') {
         // Randomly launch new fireworks
-        if (Math.random() < 0.03) {
+        if (Math.random() < 0.03 * fpsCorrection) {
           particles.push({
             type: 'rocket',
             x: Math.random() * canvas.width,
@@ -520,9 +642,9 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
 
           if (p.type === 'rocket') {
             // Rocket logic
-            p.x += p.vx || 0;
-            p.y += p.vy || 0;
-            if (p.vy !== undefined) p.vy += 0.1; // Gravity
+            p.x += (p.vx || 0) * fpsCorrection;
+            p.y += (p.vy || 0) * fpsCorrection;
+            if (p.vy !== undefined) p.vy += 0.1 * fpsCorrection; // Gravity
 
             ctx.fillStyle = p.color || 'white';
             ctx.fillRect(p.x, p.y, 2, 6);
@@ -548,12 +670,12 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             }
           } else if (p.type === 'spark') {
             // Spark logic
-            p.x += p.vx || 0;
-            p.y += p.vy || 0;
-            if (p.vy !== undefined) p.vy += 0.05; // Gravity
-            if (p.vx !== undefined) p.vx *= 0.95; // Air resistance
+            p.x += (p.vx || 0) * fpsCorrection;
+            p.y += (p.vy || 0) * fpsCorrection;
+            if (p.vy !== undefined) p.vy += 0.05 * fpsCorrection; // Gravity
+            if (p.vx !== undefined) p.vx *= 0.95; // Air resistance (exponential decay ok to leave per-frame for simplicity, or approximate)
             if (p.vy !== undefined) p.vy *= 0.95;
-            if (p.life !== undefined) p.life -= 1;
+            if (p.life !== undefined) p.life -= 1 * fpsCorrection;
 
             ctx.globalAlpha = Math.max(0, (p.life || 0) / 100);
             ctx.fillStyle = p.color || 'white';

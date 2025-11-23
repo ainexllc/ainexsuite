@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Clock, Maximize2, Minimize2, Plus } from 'lucide-react';
+import { Maximize2, Minimize2, Plus, Settings2 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileTray } from './tiles/tile-tray';
 import { CalendarTile } from './tiles/calendar-tile';
@@ -127,7 +127,6 @@ export function DigitalClock() {
   const [time, setTime] = useState<Date | null>(null);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
-  const [showFormatMenu, setShowFormatMenu] = useState(false);
   const isDraggingTile = useRef(false);
 
   // Initialize state with defaults
@@ -287,7 +286,6 @@ export function DigitalClock() {
 
   const handleTimeFormatChange = (format: TimeFormat) => {
     updateSettings(tiles, backgroundImage, format);
-    setShowFormatMenu(false);
   };
 
   const handleLayoutSelect = (layoutId: string) => {
@@ -511,6 +509,18 @@ export function DigitalClock() {
     return null;
   };
 
+  const renderEmptySlot = () => (
+    <button 
+        onClick={() => setIsTrayOpen(true)}
+        className="w-full h-full flex items-center justify-center group cursor-pointer outline-none"
+        aria-label="Add widget"
+    >
+        <div className="text-white/10 group-hover:text-white/40 transition-all duration-300 transform group-hover:scale-110 group-active:scale-95 p-4 rounded-full group-hover:bg-white/5">
+             <Plus className="w-8 h-8" />
+        </div>
+    </button>
+  );
+
   const renderClockContent = () => {
     if (!time) return null;
 
@@ -564,6 +574,64 @@ export function DigitalClock() {
                 {getFormattedTime().split('').map((char, i) => (
                     <FlipDigit key={i} digit={char} />
                 ))}
+            </div>
+        );
+    }
+
+    // Christmas Analog
+    if (clockStyle === 'christmas-analog') {
+        const seconds = time.getSeconds();
+        const minutes = time.getMinutes();
+        const hours = time.getHours();
+        
+        const secondDeg = (seconds / 60) * 360;
+        const minuteDeg = ((minutes * 60 + seconds) / 3600) * 360;
+        const hourDeg = ((hours % 12 * 3600 + minutes * 60 + seconds) / 43200) * 360;
+
+        return (
+            <div className="relative w-48 h-48 rounded-full border-[6px] border-red-600 bg-green-900/80 backdrop-blur-sm shadow-[0_0_20px_rgba(220,38,38,0.5)] flex items-center justify-center">
+                {/* Wreath Decoration */}
+                <div className="absolute inset-0 rounded-full border-[4px] border-dashed border-green-500 opacity-50" />
+                
+                {/* Markers - Candy Cane Stripes */}
+                {[...Array(12)].map((_, i) => (
+                    <div 
+                        key={i} 
+                        className={`absolute w-full h-full flex justify-center pt-2`}
+                        style={{ 
+                            transform: `rotate(${i * 30}deg)`,
+                        }}
+                    >
+                        <div className={`w-1.5 rounded-full ${i % 3 === 0 ? 'h-4 bg-white' : 'h-2 bg-red-400'}`} />
+                    </div>
+                ))}
+                
+                {/* Hour Hand - Gold */}
+                <div 
+                    className="absolute w-2 bg-yellow-400 h-12 rounded-full origin-bottom bottom-1/2 left-[calc(50%-4px)] shadow-sm"
+                    style={{ transform: `rotate(${hourDeg}deg)` }}
+                />
+                
+                {/* Minute Hand - White */}
+                <div 
+                    className="absolute w-1.5 bg-white h-16 rounded-full origin-bottom bottom-1/2 left-[calc(50%-3px)] shadow-sm"
+                    style={{ transform: `rotate(${minuteDeg}deg)` }}
+                />
+                
+                {/* Second Hand - Red Candy Cane */}
+                <div 
+                    className="absolute w-1 h-20 rounded-full origin-bottom bottom-1/2 left-[calc(50%-2px)]"
+                    style={{ 
+                        transform: `rotate(${secondDeg}deg)`,
+                        background: 'repeating-linear-gradient(to bottom, #ef4444, #ef4444 4px, #ffffff 4px, #ffffff 8px)'
+                    }}
+                />
+                
+                {/* Center Dot - Holly Berry */}
+                <div className="absolute w-4 h-4 bg-red-600 rounded-full shadow-md z-10 border-2 border-white" />
+                
+                {/* Festive Emoji */}
+                <div className="absolute bottom-8 text-xl opacity-80 animate-bounce" style={{ animationDuration: '3s' }}>🎄</div>
             </div>
         );
     }
@@ -629,6 +697,30 @@ export function DigitalClock() {
         );
     }
 
+    // Christmas Style
+    if (clockStyle === 'christmas') {
+        return (
+            <div className="relative p-4">
+                <div 
+                    className="text-6xl md:text-7xl font-bold tracking-wider relative z-10"
+                    style={{ 
+                        background: 'repeating-linear-gradient(45deg, #ef4444, #ef4444 10px, #ffffff 10px, #ffffff 20px)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        color: 'transparent',
+                        WebkitTextStroke: '1px rgba(255,255,255,0.3)',
+                        filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.5))'
+                    }}
+                >
+                    {getFormattedTime()}
+                </div>
+                {/* Decorative Holly/Star */}
+                <div className="absolute -top-2 -right-2 text-3xl animate-pulse">🎄</div>
+                <div className="absolute -bottom-2 -left-2 text-3xl animate-bounce" style={{ animationDuration: '3s' }}>🎅</div>
+            </div>
+        );
+    }
+
     // Default Digital
     return (
         <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg text-white">
@@ -639,46 +731,20 @@ export function DigitalClock() {
 
   const renderClock = () => (
       <div className={`flex flex-col items-center justify-center transition-transform duration-300 relative ${activeLayoutId.includes('studio') ? 'h-full' : 'mt-12 mb-12'}`}>
-          <div className="flex items-center gap-2 text-gray-400 mb-4">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
-          </div>
           
           {renderClockContent()}
 
-          {clockStyle !== 'analog' && (
+          {clockStyle !== 'analog' && clockStyle !== 'christmas-analog' && (
             <div className="text-gray-400 mt-4 font-medium drop-shadow-md">
                 {time && time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           )}
 
           {/* Time Format Menu (Only for digital styles) */}
-          {clockStyle !== 'analog' && (
-              <div className="mt-4 relative">
-                <button
-                  onClick={() => setShowFormatMenu(!showFormatMenu)}
-                  className="px-3 py-1 text-xs uppercase tracking-wider text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
-                  aria-label="Change time format"
-                >
-                  {timeFormat.toUpperCase()}
-                </button>
-
-                {showFormatMenu && (
-                  <div className="absolute top-full mt-2 bg-black/80 border border-white/20 rounded-lg overflow-hidden z-40">
-                    <button
-                      onClick={() => handleTimeFormatChange('12h')}
-                      className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '12h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
-                    >
-                      12-Hour Format
-                    </button>
-                    <button
-                      onClick={() => handleTimeFormatChange('24h')}
-                      className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '24h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
-                    >
-                      24-Hour Format
-                    </button>
-                  </div>
-                )}
+          {/* Removed text button */}
+          {clockStyle !== 'analog' && clockStyle !== 'christmas-analog' && (
+              <div className="mt-4 relative h-6 w-full">
+                {/* Hidden but kept structure if needed later, or can be removed entirely */}
               </div>
           )}
       </div>
@@ -708,9 +774,7 @@ export function DigitalClock() {
                         {renderTile(tiles[isRight ? 'left-1' : 'right-1'], isRight ? 'left-1' : 'right-1', 'medium')}
                     </div>
                 ) : (
-                    <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
-                        Drop Tile
-                    </div>
+                    renderEmptySlot()
                 )}
             </div>
         </div>
@@ -736,9 +800,7 @@ export function DigitalClock() {
                             {renderTile(tiles[slotId], slotId, 'small')}
                         </div>
                     ) : (
-                        <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
-                            Drop Tile
-                        </div>
+                        renderEmptySlot()
                     )}
                 </div>
                 );
@@ -818,7 +880,7 @@ export function DigitalClock() {
             className={`p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 ${isTrayOpen ? 'bg-white/10 text-white' : ''}`}
             aria-label="Customize"
           >
-            <Plus className="w-5 h-5" />
+            <Settings2 className="w-5 h-5" />
           </button>
       </div>
 
@@ -852,9 +914,7 @@ export function DigitalClock() {
                         {renderTile(tiles[slot.id], slot.id, slot.size)}
                         </div>
                     ) : (
-                        <div className="text-white/20 text-sm font-medium opacity-0 hover:opacity-100 transition-opacity select-none pointer-events-none">
-                        Drop Tile
-                        </div>
+                        renderEmptySlot()
                     )}
                     </div>
                 ))}

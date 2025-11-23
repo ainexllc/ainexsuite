@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TileBase } from './tile-base';
 import { StickyNote } from 'lucide-react';
 
