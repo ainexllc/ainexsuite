@@ -538,13 +538,15 @@ export function TileTray({
                     { id: 'heavy-rain', name: 'Heavy Rain', icon: '⛈️' },
                     { id: 'snow', name: 'Snow', icon: '❄️' },
                     { id: 'heavy-snow', name: 'Heavy Snow', icon: '🌨️' },
-                    { id: 'fog', name: 'Mystic Fog', icon: '🌫️' },
                     { id: 'christmas-lights', name: 'Lights', icon: '🎄' },
                     { id: 'christmas-lights-snow', name: 'Lights & Snow', icon: '⛄' },
                     { id: 'fireflies', name: 'Fireflies', icon: '✨' },
                     { id: 'sakura', name: 'Sakura', icon: '🌸' },
                     { id: 'confetti', name: 'Confetti', icon: '🎉' },
                     { id: 'fireworks', name: 'Fireworks', icon: '🎆' },
+                    { id: 'bubbles', name: 'Bubbles', icon: '🫧' },
+                    { id: 'meteors', name: 'Meteors', icon: '🌠' },
+                    { id: 'plasma', name: 'Plasma', icon: '⚡' },
                 ].map((effect) => (
                     <button
                         key={effect.id}
