@@ -5,7 +5,7 @@ import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 const SETTINGS_COLLECTION = 'user_settings';
 const CLOCK_SETTINGS_DOC = 'pulse_clock';
 
-export type ClockStyle = 'digital' | 'analog' | 'neon' | 'flip' | 'particles';
+export type ClockStyle = 'digital' | 'analog' | 'neon' | 'flip' | 'particles' | 'retro-digital';
 
 export interface ClockSettings {
   tiles: Record<string, string | null>;

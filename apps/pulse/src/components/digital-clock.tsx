@@ -49,6 +49,78 @@ const getSystemTimeFormat = (): TimeFormat => {
   return '12h';
 };
 
+// Flip Digit Component
+const FlipDigit = ({ digit }: { digit: string }) => {
+  const [current, setCurrent] = useState(digit);
+  const [prev, setPrev] = useState(digit);
+  const [flipping, setFlipping] = useState(false);
+
+  useEffect(() => {
+    if (digit !== current) {
+      setPrev(current);
+      setCurrent(digit);
+      setFlipping(true);
+      
+      const timer = setTimeout(() => {
+        setFlipping(false);
+        setPrev(digit);
+      }, 600);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [digit, current]);
+
+  if (digit === ':' || digit === ' ') {
+    return <div className="text-4xl md:text-6xl font-mono font-bold text-white/50 mx-1">{digit}</div>;
+  }
+
+  return (
+    <div className="relative w-12 h-16 md:w-20 md:h-28 bg-[#222] rounded-lg shadow-xl mx-0.5 md:mx-1 perspective-1000">
+      {/* Static Top (Next) */}
+      <div className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-black/20 z-0">
+        <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+          {current}
+        </div>
+      </div>
+      
+      {/* Static Bottom (Prev) */}
+      <div className="absolute top-1/2 left-0 right-0 bottom-0 overflow-hidden rounded-b-lg bg-[#282828] z-0">
+        <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+          {prev}
+        </div>
+      </div>
+
+      {/* Animated Flipping Layers */}
+      {flipping && (
+        <>
+          {/* Flipping Top (Prev -> moves down) */}
+          <div 
+            className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-black/20 z-20 origin-bottom animate-flip-top"
+            style={{ animationDuration: '0.6s', animationFillMode: 'forwards', transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
+          >
+            <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+              {prev}
+            </div>
+          </div>
+
+          {/* Flipping Bottom (Next -> moves up) */}
+          <div 
+            className="absolute top-1/2 left-0 right-0 bottom-0 overflow-hidden rounded-b-lg bg-[#282828] z-20 origin-top animate-flip-bottom"
+            style={{ animationDuration: '0.6s', animationFillMode: 'forwards', transformStyle: 'preserve-3d', backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
+          >
+            <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+              {current}
+            </div>
+          </div>
+        </>
+      )}
+      
+      {/* Middle Line */}
+      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-black/40 z-30 transform -translate-y-1/2 shadow-sm" />
+    </div>
+  );
+};
+
 export function DigitalClock() {
   const { user } = useAuth();
   const [time, setTime] = useState<Date | null>(null);
@@ -452,22 +524,23 @@ export function DigitalClock() {
         );
     }
 
-    // Retro Flip (Simplified CSS simulation)
+    // Retro Flip
     if (clockStyle === 'flip') {
         return (
-            <div className="flex gap-4 items-center">
+            <div className="flex items-center justify-center">
+                <style jsx global>{`
+                  @keyframes flip-top {
+                    100% { transform: rotateX(-90deg); }
+                  }
+                  @keyframes flip-bottom {
+                    100% { transform: rotateX(0deg); }
+                  }
+                  .animate-flip-top { animation: flip-top 0.6s ease-in forwards; }
+                  .animate-flip-bottom { animation: flip-bottom 0.6s ease-out forwards; }
+                  .perspective-1000 { perspective: 1000px; }
+                `}</style>
                 {getFormattedTime().split('').map((char, i) => (
-                    <div key={i} className={`
-                        relative bg-[#222] text-white rounded-lg px-3 py-4 shadow-2xl border-t border-white/10
-                        ${char === ':' || char === ' ' ? 'bg-transparent shadow-none border-none px-0' : 'min-w-[60px]'}
-                    `}>
-                        <div className="text-6xl font-mono font-bold text-center">
-                            {char}
-                        </div>
-                        {char !== ':' && char !== ' ' && (
-                            <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-black/50 z-20" />
-                        )}
-                    </div>
+                    <FlipDigit key={i} digit={char} />
                 ))}
             </div>
         );
@@ -489,36 +562,47 @@ export function DigitalClock() {
                 {[...Array(12)].map((_, i) => (
                     <div 
                         key={i} 
-                        className={`absolute w-1 bg-white/50 ${i % 3 === 0 ? 'h-4' : 'h-2'}`}
+                        className={`absolute w-full h-full flex justify-center pt-2`}
                         style={{ 
-                            top: '10px', 
-                            left: 'calc(50% - 0.5px)', 
-                            transformOrigin: '50% calc(50% + 10px - 50% + 50%)', // Wait, simpler rotation
-                            transform: `rotate(${i * 30}deg) translateY(-80px)` // Proper way for markers
+                            transform: `rotate(${i * 30}deg)`,
                         }}
-                    />
+                    >
+                        <div className={`w-1 bg-white/50 ${i % 3 === 0 ? 'h-4' : 'h-2'}`} />
+                    </div>
                 ))}
                 
                 {/* Hour Hand */}
                 <div 
-                    className="absolute w-1.5 bg-white h-12 rounded-full origin-bottom"
-                    style={{ transform: `rotate(${hourDeg}deg)`, bottom: '50%' }}
+                    className="absolute w-1.5 bg-white h-12 rounded-full origin-bottom bottom-1/2 left-[calc(50%-3px)]"
+                    style={{ transform: `rotate(${hourDeg}deg)` }}
                 />
                 
                 {/* Minute Hand */}
                 <div 
-                    className="absolute w-1 bg-white/80 h-16 rounded-full origin-bottom"
-                    style={{ transform: `rotate(${minuteDeg}deg)`, bottom: '50%' }}
+                    className="absolute w-1 bg-white/80 h-16 rounded-full origin-bottom bottom-1/2 left-[calc(50%-2px)]"
+                    style={{ transform: `rotate(${minuteDeg}deg)` }}
                 />
                 
                 {/* Second Hand */}
                 <div 
-                    className="absolute w-0.5 bg-red-500 h-20 rounded-full origin-bottom"
-                    style={{ transform: `rotate(${secondDeg}deg)`, bottom: '50%' }}
+                    className="absolute w-0.5 bg-red-500 h-20 rounded-full origin-bottom bottom-1/2 left-[calc(50%-1px)]"
+                    style={{ transform: `rotate(${secondDeg}deg)` }}
                 />
                 
                 {/* Center Dot */}
                 <div className="absolute w-3 h-3 bg-white rounded-full shadow-md z-10" />
+            </div>
+        );
+    }
+
+    // Retro Digital (Old School)
+    if (clockStyle === 'retro-digital') {
+        return (
+            <div className="relative p-4 bg-[#333] border-4 border-[#555] rounded-lg shadow-2xl">
+                <div className="font-vt323 text-8xl text-green-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] leading-none tracking-wider">
+                    {getFormattedTime()}
+                </div>
+                <div className="absolute inset-0 pointer-events-none bg-[url('data:image/svg+xml;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==')] opacity-20" />
             </div>
         );
     }

@@ -552,6 +552,7 @@ export function TileTray({
                     { id: 'digital', name: 'Digital Classic', desc: 'Clean, modern mono font' },
                     { id: 'neon', name: 'Neon Cyber', desc: 'Glowing, futuristic look' },
                     { id: 'flip', name: 'Retro Flip', desc: 'Classic split-flap display' },
+                    { id: 'retro-digital', name: 'Old School', desc: 'LCD 7-segment style' },
                     { id: 'analog', name: 'Analog', desc: 'Traditional watch face' },
                 ].map((style) => (
                     <button
@@ -573,6 +574,7 @@ export function TileTray({
                                     <div className="w-4 h-5 bg-current rounded-sm opacity-50" />
                                 </div>
                             )}
+                            {style.id === 'retro-digital' && <span className="font-mono font-bold text-xs tracking-widest">88:88</span>}
                             {style.id === 'analog' && <Clock className="w-6 h-6" />}
                         </div>
                         
