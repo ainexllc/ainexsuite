@@ -398,13 +398,12 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           if (Math.random() < 0.1) {
               const startX = Math.random() * canvas.width;
               const startY = Math.random() * canvas.height;
-              
+
               // Generate jagged path
               const segments = [{x: startX, y: startY}];
               let currX = startX;
               let currY = startY;
-              const length = 10;
-              
+
               for(let j=0; j<10; j++) {
                   currX += (Math.random() - 0.5) * 100;
                   currY += (Math.random() - 0.5) * 100;
