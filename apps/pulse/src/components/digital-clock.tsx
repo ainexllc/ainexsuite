@@ -71,21 +71,21 @@ const FlipDigit = ({ digit }: { digit: string }) => {
   }, [digit, current]);
 
   if (digit === ':' || digit === ' ') {
-    return <div className="text-4xl md:text-6xl font-mono font-bold text-white/50 mx-1">{digit}</div>;
+    return <div className="text-3xl md:text-5xl font-mono font-bold text-white/50 mx-0.5">{digit}</div>;
   }
 
   return (
-    <div className="relative w-12 h-16 md:w-20 md:h-28 bg-[#222] rounded-lg shadow-xl mx-0.5 md:mx-1 perspective-1000">
+    <div className="relative w-10 h-14 md:w-16 md:h-24 bg-[#222] rounded-lg shadow-xl mx-0.5 perspective-1000">
       {/* Static Top (Next) */}
       <div className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-black/20 z-0">
-        <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+        <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
           {current}
         </div>
       </div>
       
       {/* Static Bottom (Prev) */}
       <div className="absolute top-1/2 left-0 right-0 bottom-0 overflow-hidden rounded-b-lg bg-[#282828] z-0">
-        <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+        <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
           {prev}
         </div>
       </div>
@@ -98,7 +98,7 @@ const FlipDigit = ({ digit }: { digit: string }) => {
             className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-black/20 z-20 origin-bottom animate-flip-top"
             style={{ animationDuration: '0.6s', animationFillMode: 'forwards', transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+            <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
               {prev}
             </div>
           </div>
@@ -108,7 +108,7 @@ const FlipDigit = ({ digit }: { digit: string }) => {
             className="absolute top-1/2 left-0 right-0 bottom-0 overflow-hidden rounded-b-lg bg-[#282828] z-20 origin-top animate-flip-bottom"
             style={{ animationDuration: '0.6s', animationFillMode: 'forwards', transformStyle: 'preserve-3d', backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
           >
-            <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-4xl md:text-7xl font-bold text-white">
+            <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
               {current}
             </div>
           </div>
@@ -599,7 +599,7 @@ export function DigitalClock() {
     if (clockStyle === 'retro-digital') {
         return (
             <div className="relative p-4 bg-[#333] border-4 border-[#555] rounded-lg shadow-2xl">
-                <div className="font-vt323 text-8xl text-green-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] leading-none tracking-wider">
+                <div className="font-vt323 text-7xl text-green-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)] leading-none tracking-wider">
                     {getFormattedTime()}
                 </div>
                 <div className="absolute inset-0 pointer-events-none bg-[url('data:image/svg+xml;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==')] opacity-20" />
