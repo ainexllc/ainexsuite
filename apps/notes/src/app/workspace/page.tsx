@@ -8,7 +8,6 @@ import { useAppColors } from '@ainexsuite/theme';
 import { Loader2 } from 'lucide-react';
 import { NoteBoard } from '@/components/notes/note-board';
 import { WorkspaceInsights } from '@/components/notes/workspace-insights';
-import { NavigationPanel } from '../../components/layout/navigation-panel';
 
 export default function NotesWorkspace() {
   const { user, loading } = useAuth();
@@ -54,7 +53,6 @@ export default function NotesWorkspace() {
       searchPlaceholder="Search notes..."
       appName="NOTES"
       appColor={primary}
-      renderSidebar={(props) => <NavigationPanel {...props} />}
     >
       <WorkspacePageHeader
         title={`Welcome to Notes, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
