@@ -63,12 +63,18 @@ export function AppSwitcher({
 
   /**
    * Get the correct URL based on environment
+   * Always navigates to /workspace for authenticated users (except Suite Hub)
    */
   const getAppUrl = (app: AppConfig): string => {
     // Use prodUrl in production, devUrl in development
     const isProd = process.env.NODE_ENV === 'production' ||
                    typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
-    return isProd ? app.prodUrl : app.devUrl;
+    const baseUrl = isProd ? app.prodUrl : app.devUrl;
+    // Suite Hub (main) goes to root, all other apps go to /workspace
+    if (app.slug === 'main') {
+      return baseUrl;
+    }
+    return `${baseUrl}/workspace`;
   };
 
   /**
