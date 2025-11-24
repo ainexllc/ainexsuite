@@ -27,9 +27,14 @@ import { auth } from './client';
  * @returns {object} - Authentication state and any errors
  */
 export function useSSOAuth() {
+  // Check for auth token IMMEDIATELY on mount (synchronously)
+  const hasAuthTokenOnMount = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).has('auth_token')
+    : false;
+
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [hasAuthToken, setHasAuthToken] = useState(false);
+  const [hasAuthToken, setHasAuthToken] = useState(hasAuthTokenOnMount);
 
   useEffect(() => {
     const handleSSOAuth = async () => {
@@ -46,7 +51,7 @@ export function useSSOAuth() {
         return;
       }
 
-      // Mark that we're processing an SSO auth token
+      // Mark that we're processing an SSO auth token (redundant but ensures state consistency)
       setHasAuthToken(true);
 
       try {
