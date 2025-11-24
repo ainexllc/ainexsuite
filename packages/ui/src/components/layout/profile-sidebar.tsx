@@ -106,29 +106,6 @@ export function ProfileSidebar({
               </div>
             </div>
 
-            {/* Suite Updates */}
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-white/10 p-4 group cursor-pointer hover:border-white/20 transition-colors">
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 bg-purple-500/20 blur-2xl rounded-full" />
-              
-              <div className="relative z-10 space-y-3">
-                <div className="flex items-center gap-2 text-purple-300">
-                  <Sparkles className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">New in Suite</span>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-semibold text-white">Pulse Dashboard 2.0</h4>
-                  <p className="text-xs text-white/60 mt-1 leading-relaxed">
-                    Fully customizable widgets, new clock styles, and improved drag-and-drop layout.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-1 text-xs font-medium text-white/80 group-hover:text-white group-hover:gap-2 transition-all">
-                  See what&apos;s new <ArrowRight className="h-3 w-3" />
-                </div>
-              </div>
-            </div>
-
             {/* AI Usage */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -165,6 +142,41 @@ export function ProfileSidebar({
                     <div className="h-3 w-3 rounded-full bg-white/50" />
                   </div>
                 </button>
+              </div>
+            </div>
+
+            {/* Latest Updates */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-2">
+                <Sparkles className="h-3 w-3" /> What's New
+              </h4>
+              <div className="space-y-1">
+                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-500 group-hover:scale-150 transition-transform shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">Pulse Dashboard 2.0</p>
+                    <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">Custom widgets & drag-and-drop</p>
+                  </div>
+                  <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">2d</span>
+                </div>
+                
+                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 group-hover:scale-150 transition-transform shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">Smart Notes AI</p>
+                    <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">Auto-summaries and insights</p>
+                  </div>
+                  <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">5d</span>
+                </div>
+
+                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-green-500 group-hover:scale-150 transition-transform shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">Global Search</p>
+                    <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">Find anything across apps</p>
+                  </div>
+                  <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">1w</span>
+                </div>
               </div>
             </div>
 
