@@ -7,6 +7,7 @@ import { FeedbackWidget } from '../feedback/feedback-widget';
 import { SubscriptionSidebar } from '../layout/subscription-sidebar';
 import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
 import { ProfileSidebar } from '../layout/profile-sidebar';
+import { getNavigationApps } from '../../utils/navigation';
 
 interface WorkspaceLayoutProps {
   /**
@@ -58,19 +59,6 @@ interface WorkspaceLayoutProps {
   }>;
 }
 
-/**
- * WorkspaceLayout Component
- *
- * The standard layout for all app workspaces.
- * Includes:
- * - Fixed WorkspaceHeader (TopNav)
- * - AtmosphericGlows (Background)
- * - Standardized content container
- * - FeedbackWidget (Floating)
- *
- * The theme colors are controlled by the app's CSS variables
- * (--theme-primary, --theme-secondary).
- */
 export function WorkspaceLayout({
   children,
   user,
@@ -83,6 +71,11 @@ export function WorkspaceLayout({
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Generate default apps list if none provided
+  // Use the environment-aware helper to get consistent apps config
+  const defaultApps = getNavigationApps(process.env.NODE_ENV === 'development');
+  const displayApps = apps.length > 0 ? apps : defaultApps;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-surface-base text-text-primary">
@@ -101,21 +94,12 @@ export function WorkspaceLayout({
       />
 
       {/* App Navigation Sidebar */}
-      {apps.length > 0 ? (
-        <AppNavigationSidebar
-          isOpen={isNavOpen}
-          onClose={() => setIsNavOpen(false)}
-          apps={apps}
-          user={user}
-        />
-      ) : (
-        /* Fallback to subscription sidebar if no apps provided */
-        <SubscriptionSidebar
-          isOpen={isNavOpen}
-          onClose={() => setIsNavOpen(false)}
-          user={user}
-        />
-      )}
+      <AppNavigationSidebar
+        isOpen={isNavOpen}
+        onClose={() => setIsNavOpen(false)}
+        apps={displayApps}
+        user={user}
+      />
 
       {/* Profile Sidebar */}
       <ProfileSidebar

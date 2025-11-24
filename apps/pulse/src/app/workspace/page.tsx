@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, getNavigationApps } from '@ainexsuite/ui';
+import { WorkspaceLayout } from '@ainexsuite/ui';
 import { useRouter } from 'next/navigation';
 import { DigitalClock } from '@/components/digital-clock';
 import { Loader2 } from 'lucide-react';
@@ -12,7 +12,6 @@ function PulseWorkspaceContent() {
   const router = useRouter();
   // Loading state to prevent flash of content
   const [loading, setLoading] = useState(true);
-  const apps = getNavigationApps(process.env.NODE_ENV === 'development');
 
   useEffect(() => {
     // Simulate initial load or wait for user
@@ -55,7 +54,6 @@ function PulseWorkspaceContent() {
       onSignOut={handleSignOut}
       searchPlaceholder="Search health data..."
       appName="Pulse"
-      apps={apps}
     >
       <div className="max-w-7xl mx-auto">
         <DigitalClock />

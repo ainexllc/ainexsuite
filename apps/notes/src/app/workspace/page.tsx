@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspacePageHeader, getNavigationApps } from '@ainexsuite/ui';
+import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui';
 import { useAppColors } from '@ainexsuite/theme';
 import { Loader2 } from 'lucide-react';
 import { NoteBoard } from '@/components/notes/note-board';
@@ -13,7 +13,6 @@ export default function NotesWorkspace() {
   const { user, loading } = useAuth();
   const { primary } = useAppColors();
   const router = useRouter();
-  const apps = getNavigationApps(process.env.NODE_ENV === 'development');
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -54,7 +53,6 @@ export default function NotesWorkspace() {
       searchPlaceholder="Search notes..."
       appName="NOTES"
       appColor={primary}
-      apps={apps}
     >
       <WorkspacePageHeader
         title={`Welcome to Notes, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
