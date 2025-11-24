@@ -175,15 +175,16 @@ const legalLinks: FooterLink[] = [
 ];
 
 function MainHomePageContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, bootstrapStatus } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
 
   const isFromLogout = searchParams.get('from') === 'logout';
+  const isBootstrapping = bootstrapStatus === 'running';
 
   useEffect(() => {
-    if (loading) {
+    if (loading || isBootstrapping) {
       setLoadingMessage('Checking authentication...');
       return;
     }
@@ -193,10 +194,10 @@ function MainHomePageContent() {
     } else {
       setLoadingMessage('');
     }
-  }, [loading, user, isFromLogout]);
+  }, [loading, isBootstrapping, user, isFromLogout]);
 
   useEffect(() => {
-    if (!loading && user && !isFromLogout) {
+    if (!loading && !isBootstrapping && user && !isFromLogout) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -205,9 +206,9 @@ function MainHomePageContent() {
     }
 
     return undefined;
-  }, [loading, user, isFromLogout, router]);
+  }, [loading, isBootstrapping, user, isFromLogout, router]);
 
-  if (loading || (user && !isFromLogout)) {
+  if (loading || isBootstrapping || (user && !isFromLogout)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">

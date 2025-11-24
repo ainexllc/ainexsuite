@@ -21,7 +21,7 @@ export function TopNav() {
 
       <div className="flex items-center gap-4">
         <Link
-          href="https://www.ainexsuite.com"
+          href="https://www.ainexsuite.com/workspace"
           className="flex items-center gap-2 px-4 py-2 surface-card hover:surface-hover rounded-lg transition-colors"
         >
           <LayoutDashboard className="h-4 w-4" />

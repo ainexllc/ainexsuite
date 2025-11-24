@@ -82,14 +82,15 @@ const legalLinks: FooterLink[] = [
 ];
 
 function TrackHomePageContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, bootstrapStatus } = useAuth();
   const { needsActivation, checking } = useAppActivation('track');
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
   const [showActivation, setShowActivation] = useState(false);
+  const isBootstrapping = bootstrapStatus === 'running';
 
   useEffect(() => {
-    if (loading || checking) {
+    if (loading || checking || isBootstrapping) {
       setLoadingMessage('Checking authentication...');
       return;
     }
@@ -102,10 +103,10 @@ function TrackHomePageContent() {
     } else {
       setLoadingMessage('');
     }
-  }, [loading, checking, user, needsActivation]);
+  }, [loading, checking, isBootstrapping, user, needsActivation]);
 
   useEffect(() => {
-    if (!loading && !checking && user && !needsActivation) {
+    if (!loading && !checking && !isBootstrapping && user && !needsActivation) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -114,9 +115,9 @@ function TrackHomePageContent() {
     }
 
     return undefined;
-  }, [loading, checking, user, needsActivation, router]);
+  }, [loading, checking, isBootstrapping, user, needsActivation, router]);
 
-  if (loading || checking || (user && !needsActivation)) {
+  if (loading || checking || isBootstrapping || (user && !needsActivation)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">

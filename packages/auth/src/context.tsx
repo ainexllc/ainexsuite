@@ -20,13 +20,17 @@ import {
 } from './session';
 import { AuthBootstrap } from './auth-bootstrap';
 
+export type BootstrapStatus = 'idle' | 'running' | 'complete' | 'failed';
+
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
+  bootstrapStatus: BootstrapStatus;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   setIsBootstrapping: (value: boolean) => void;
+  setBootstrapStatus: (status: BootstrapStatus) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
+  const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -185,9 +190,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         firebaseUser,
         loading,
+        bootstrapStatus,
         signOut: signOutUser,
         logout: signOutUser,
         setIsBootstrapping,
+        setBootstrapStatus,
       }}
     >
       <AuthBootstrap />

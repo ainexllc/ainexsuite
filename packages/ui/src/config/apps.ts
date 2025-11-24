@@ -64,7 +64,6 @@ export const SUITE_APPS = {
 export type AppSlug = keyof typeof SUITE_APPS;
 
 export function getAppUrl(slug: string, isDev: boolean = false): string {
-  const domain = isDev ? 'localhost' : 'ainexsuite.com';
   const portMap: Record<string, number> = {
     main: 3000,
     notes: 3001,
@@ -82,8 +81,8 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
 
   if (isDev) {
     const port = portMap[slug] || 3000;
-    return `http://localhost:${port}`;
+    return `http://localhost:${port}/workspace`;
   }
 
-  return `https://${slug}.ainexsuite.com`;
+  return `https://${slug}.ainexsuite.com/workspace`;
 }

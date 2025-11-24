@@ -13,7 +13,6 @@ import {
   GraduationCap,
   Activity as ActivityIcon,
   Dumbbell,
-  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -32,14 +31,14 @@ const navItems = [
 const isDev = process.env.NODE_ENV === 'development';
 
 const apps = [
-  { href: isDev ? 'http://localhost:3001' : 'https://notes.ainexsuite.com', icon: FileText, label: 'Notes', external: true },
-  { href: isDev ? 'http://localhost:3002' : 'https://journey.ainexsuite.com', icon: BookOpen, label: 'Journey', external: true },
-  { href: isDev ? 'http://localhost:3003' : 'https://tasks.ainexsuite.com', icon: CheckSquare, label: 'Tasks', external: true },
-  { href: isDev ? 'http://localhost:3004' : 'https://track.ainexsuite.com', icon: TrendingUp, label: 'Track', external: true },
-  { href: isDev ? 'http://localhost:3005' : 'https://moments.ainexsuite.com', icon: Camera, label: 'Moments', external: true },
-  { href: isDev ? 'http://localhost:3006' : 'https://grow.ainexsuite.com', icon: GraduationCap, label: 'Grow', external: true },
-  { href: isDev ? 'http://localhost:3007' : 'https://pulse.ainexsuite.com', icon: ActivityIcon, label: 'Pulse', external: true },
-  { href: isDev ? 'http://localhost:3008' : 'https://fit.ainexsuite.com', icon: Dumbbell, label: 'Fit', external: true },
+  { href: isDev ? 'http://localhost:3001/workspace' : 'https://notes.ainexsuite.com/workspace', icon: FileText, label: 'Notes' },
+  { href: isDev ? 'http://localhost:3002/workspace' : 'https://journey.ainexsuite.com/workspace', icon: BookOpen, label: 'Journey' },
+  { href: isDev ? 'http://localhost:3003/workspace' : 'https://tasks.ainexsuite.com/workspace', icon: CheckSquare, label: 'Tasks' },
+  { href: isDev ? 'http://localhost:3004/workspace' : 'https://track.ainexsuite.com/workspace', icon: TrendingUp, label: 'Track' },
+  { href: isDev ? 'http://localhost:3005/workspace' : 'https://moments.ainexsuite.com/workspace', icon: Camera, label: 'Moments' },
+  { href: isDev ? 'http://localhost:3006/workspace' : 'https://grow.ainexsuite.com/workspace', icon: GraduationCap, label: 'Grow' },
+  { href: isDev ? 'http://localhost:3007/workspace' : 'https://pulse.ainexsuite.com/workspace', icon: ActivityIcon, label: 'Pulse' },
+  { href: isDev ? 'http://localhost:3008/workspace' : 'https://fit.ainexsuite.com/workspace', icon: Dumbbell, label: 'Fit' },
 ];
 
 const settingsItems = [
@@ -125,12 +124,10 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
           </NavSection>
 
           <NavSection title="Apps">
-            {apps.map(({ href, icon: Icon, label, external }) => (
+            {apps.map(({ href, icon: Icon, label }) => (
               <a
                 key={label}
                 href={href}
-                target={external ? '_blank' : undefined}
-                rel={external ? 'noopener noreferrer' : undefined}
                 className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors text-ink-500 hover:bg-surface-muted hover:text-ink-700"
                 onClick={onClose}
               >
@@ -140,7 +137,6 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
                   </span>
                   <span>{label}</span>
                 </span>
-                {external && <ExternalLink className="h-3.5 w-3.5 text-ink-400" />}
               </a>
             ))}
           </NavSection>

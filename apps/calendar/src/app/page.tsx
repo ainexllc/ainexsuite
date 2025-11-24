@@ -63,12 +63,13 @@ const legalLinks: FooterLink[] = [
 ];
 
 function CalendarHomePageContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, bootstrapStatus } = useAuth();
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
+  const isBootstrapping = bootstrapStatus === 'running';
 
   useEffect(() => {
-    if (loading) {
+    if (loading || isBootstrapping) {
       setLoadingMessage('Checking authentication...');
       return;
     }
@@ -78,10 +79,10 @@ function CalendarHomePageContent() {
     } else {
       setLoadingMessage('');
     }
-  }, [loading, user]);
+  }, [loading, isBootstrapping, user]);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && !isBootstrapping && user) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -90,9 +91,9 @@ function CalendarHomePageContent() {
     }
 
     return undefined;
-  }, [loading, user, router]);
+  }, [loading, isBootstrapping, user, router]);
 
-  if (loading || user) {
+  if (loading || isBootstrapping || user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">

@@ -26,7 +26,7 @@ import { getSessionCookie } from './session';
  * </AuthProvider>
  */
 export function AuthBootstrap() {
-  const { firebaseUser, setIsBootstrapping } = useAuth();
+  const { firebaseUser, setIsBootstrapping, setBootstrapStatus } = useAuth();
   const [bootstrapping, setBootstrapping] = useState(false);
   const [bootstrapped, setBootstrapped] = useState(false);
 
@@ -39,6 +39,7 @@ export function AuthBootstrap() {
     const sessionCookie = getSessionCookie();
     if (!sessionCookie) {
       setBootstrapped(true); // Mark as attempted to prevent re-checking
+      setBootstrapStatus('complete'); // No session to bootstrap, proceed to normal auth
       return;
     }
 
@@ -46,20 +47,23 @@ export function AuthBootstrap() {
     setBootstrapping(true);
     // Signal to AuthProvider that we're bootstrapping from existing session
     setIsBootstrapping(true);
+    setBootstrapStatus('running');
 
     bootstrapFromCookie(sessionCookie)
       .then(() => {
         setBootstrapped(true);
+        setBootstrapStatus('complete');
       })
       .catch((_error) => {
         // Reset bootstrapping flag on error
         setIsBootstrapping(false);
         setBootstrapped(true);
+        setBootstrapStatus('failed');
       })
       .finally(() => {
         setBootstrapping(false);
       });
-  }, [firebaseUser, bootstrapping, bootstrapped, setIsBootstrapping]);
+  }, [firebaseUser, bootstrapping, bootstrapped, setIsBootstrapping, setBootstrapStatus]);
 
   // Render nothing - this is a passive component
   return null;

@@ -3,7 +3,8 @@
  */
 
 import Cookies from 'js-cookie';
-import { SESSION_COOKIE_DOMAIN, SESSION_COOKIE_MAX_AGE } from '@ainexsuite/firebase/config';
+import { SESSION_COOKIE_MAX_AGE } from '@ainexsuite/firebase/config';
+import { getCookieDomain } from './utils/domain';
 
 const SESSION_COOKIE_NAME = '__session';
 
@@ -15,14 +16,16 @@ export interface SessionData {
 }
 
 /**
- * Set session cookie on .ainexsuite.com domain
- * This cookie will be accessible across all subdomains
+ * Set session cookie with dynamic domain detection
+ * This cookie will be accessible across all subdomains or app-specific domain
  */
 export function setSessionCookie(sessionCookie: string): void {
+  const cookieDomain = getCookieDomain();
+
   Cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
-    domain: SESSION_COOKIE_DOMAIN,
+    domain: cookieDomain,
     expires: SESSION_COOKIE_MAX_AGE / (60 * 60 * 24), // Convert seconds to days
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   });
@@ -39,8 +42,10 @@ export function getSessionCookie(): string | undefined {
  * Remove session cookie (logout)
  */
 export function removeSessionCookie(): void {
+  const cookieDomain = getCookieDomain();
+
   Cookies.remove(SESSION_COOKIE_NAME, {
-    domain: SESSION_COOKIE_DOMAIN,
+    domain: cookieDomain,
     path: '/',
   });
 }
