@@ -31,6 +31,8 @@ export function AppNavigationSidebar({
   const currentAppSlug = getCurrentAppSlug();
 
   const handleAppNavigation = (slug: string) => {
+    console.log('🔄 AppNavigationSidebar: handleAppNavigation called for', slug);
+    console.log('🔄 AppNavigationSidebar: currentAppSlug is', currentAppSlug);
     onClose();
     navigateToApp(slug, currentAppSlug || undefined);
   };
