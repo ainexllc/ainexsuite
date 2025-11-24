@@ -27,28 +27,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Detect cookie domain from request hostname
-    const hostname = request.headers.get('host') || '';
-    let cookieDomain = SESSION_COOKIE_DOMAIN; // Default: .ainexsuite.com
-
-    // If accessing via standalone domain (e.g., ainexnotes.com, www.ainexnotes.com)
-    if (hostname.includes('ainexnotes.com')) {
-      cookieDomain = '.ainexnotes.com';
-    } else if (hostname.includes('ainexjourney.com')) {
-      cookieDomain = '.ainexjourney.com';
-    } else if (hostname.includes('ainextask.com')) {
-      cookieDomain = '.ainextask.com';
-    } else if (hostname.includes('ainextrack.com')) {
-      cookieDomain = '.ainextrack.com';
-    } else if (hostname.includes('ainexmoments.com')) {
-      cookieDomain = '.ainexmoments.com';
-    } else if (hostname.includes('ainexgrow.com')) {
-      cookieDomain = '.ainexgrow.com';
-    } else if (hostname.includes('ainexpulse.com')) {
-      cookieDomain = '.ainexpulse.com';
-    } else if (hostname.includes('ainexfit.com')) {
-      cookieDomain = '.ainexfit.com';
-    }
+    // Use shared cookie domain for true SSO across all *.ainexsuite.com apps
+    const cookieDomain = SESSION_COOKIE_DOMAIN; // .ainexsuite.com in production
 
     // For local development, skip Cloud Function and create session from token
     if (process.env.NODE_ENV === 'development') {
