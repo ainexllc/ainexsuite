@@ -84,5 +84,11 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     return `http://localhost:${port}/workspace`;
   }
 
-  return `https://${slug}.ainexsuite.com/workspace`;
+  // Map internal slugs to production domains
+  const domainMap: Record<string, string> = {
+    todo: 'task', // todo app uses task.ainexsuite.com in production
+  };
+  const domain = domainMap[slug] || slug;
+
+  return `https://${domain}.ainexsuite.com/workspace`;
 }
