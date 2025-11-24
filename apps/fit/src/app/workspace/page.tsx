@@ -20,7 +20,7 @@ import { useFitStore } from '@/lib/store';
 import { Workout } from '@/types/models';
 
 function FitWorkspaceContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
   
   // Store
@@ -70,7 +70,8 @@ function FitWorkspaceContent() {
     setShowEditor(false);
   };
 
-  if (authLoading) {
+  // Show loading while authenticating or bootstrapping
+  if (authLoading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-orange-500" />

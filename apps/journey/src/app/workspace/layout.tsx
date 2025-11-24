@@ -11,15 +11,16 @@ export default function WorkspaceRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, loading, bootstrapStatus } = useAuth();
   const router = useRouter();
 
   // Redirect to login if not authenticated
+  // Wait for bootstrap to complete before redirecting to prevent interrupting auto-login
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && bootstrapStatus !== 'running') {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [user, loading, bootstrapStatus, router]);
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -34,7 +35,8 @@ export default function WorkspaceRootLayout({
     }
   };
 
-  if (loading) {
+  // Show loading while authenticating or bootstrapping
+  if (loading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <Loader2 className="h-8 w-8 animate-spin text-accent-500" />

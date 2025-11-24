@@ -36,7 +36,7 @@ import {
 } from '@/lib/analytics-utils';
 
 function GrowWorkspaceContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
   
   // Zustand Store
@@ -99,7 +99,8 @@ function GrowWorkspaceContent() {
     return partner?.uid || '';
   };
 
-  if (authLoading) {
+  // Show loading while authenticating or bootstrapping
+  if (authLoading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />

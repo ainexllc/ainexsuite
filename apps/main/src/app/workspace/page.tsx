@@ -56,18 +56,19 @@ const apps = Object.entries(SUITE_APPS).map(([slug, config]) => ({
 }));
 
 export default function WorkspacePage() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, bootstrapStatus } = useAuth();
   const router = useRouter();
   const { selectedVariant } = useVisualStyle();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
 
   // Redirect to login if not authenticated
+  // Wait for bootstrap to complete before redirecting to prevent interrupting auto-login
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && bootstrapStatus !== 'running') {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [user, loading, bootstrapStatus, router]);
 
   // Cmd+K / Ctrl+K keyboard shortcut for search
   useEffect(() => {
@@ -102,7 +103,8 @@ export default function WorkspacePage() {
     router.push('/');
   };
 
-  if (loading) {
+  // Show loading while authenticating or bootstrapping
+  if (loading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <Loader2 className="h-8 w-8 animate-spin text-accent-500" />

@@ -18,7 +18,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 type ViewType = 'list' | 'board' | 'my-day';
 
 export default function TodoWorkspacePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, bootstrapStatus } = useAuth();
   const router = useRouter();
 
   const [view, setView] = useState<ViewType>('list');
@@ -26,11 +26,12 @@ export default function TodoWorkspacePage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
 
   // Redirect to login if not authenticated
+  // Wait for bootstrap to complete before redirecting to prevent interrupting auto-login
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && bootstrapStatus !== 'running') {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [user, loading, bootstrapStatus, router]);
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -45,7 +46,8 @@ export default function TodoWorkspacePage() {
     }
   };
 
-  if (loading) {
+  // Show loading while authenticating or bootstrapping
+  if (loading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-[#8b5cf6]" />

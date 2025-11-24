@@ -15,7 +15,7 @@ import { Plus, TrendingUp, Loader2 } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
 function TrackWorkspaceContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [completions, setCompletions] = useState<HabitCompletion[]>([]);
@@ -65,7 +65,8 @@ function TrackWorkspaceContent() {
 
   const activeHabits = habits.filter((h) => h.active);
 
-  if (authLoading || loading) {
+  // Show loading while authenticating or bootstrapping
+  if (authLoading || loading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
