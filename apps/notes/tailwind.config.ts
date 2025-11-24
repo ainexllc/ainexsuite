@@ -38,6 +38,7 @@ const config: Config = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
     "../../packages/ui/src/**/*.{js,ts,jsx,tsx}",
     "../../packages/ui/dist/**/*.{js,ts,jsx,tsx}",
+    "../../packages/types/src/**/*.{ts,tsx}",
   ],
   theme: {
     extend: {
@@ -46,36 +47,37 @@ const config: Config = {
           white: "#FFFFFF",
           "white-soft": "#F9FAFB",
           "white-dark": "#2B2B2B",
-          lemon: "#FEFEA1",
+          // Bolder, more vibrant colors for glassmorphism glow
+          lemon: "#FACC15", // Yellow-400
           "lemon-soft": "#FFFED2",
           "lemon-dark": "#5D5C3D",
-          peach: "#FEC4A3",
+          peach: "#FB923C", // Orange-400
           "peach-soft": "#FFE1CE",
           "peach-dark": "#5E4838",
-          tangerine: "#FFD27F",
+          tangerine: "#F59E0B", // Amber-500
           "tangerine-soft": "#FFE7BA",
           "tangerine-dark": "#5F4E35",
-          mint: "#BBF7D0",
+          mint: "#34D399", // Emerald-400
           "mint-soft": "#DCFCE7",
           "mint-dark": "#345940",
-          fog: "#E0ECFF",
+          fog: "#94A3B8", // Slate-400
           "fog-soft": "#EDF3FF",
           "fog-dark": "#384A5E",
-          lavender: "#EAD8FF",
+          lavender: "#A78BFA", // Violet-400
           "lavender-soft": "#F3E8FF",
           "lavender-dark": "#4E3D5E",
-          blush: "#FAD7E5",
+          blush: "#F472B6", // Pink-400
           "blush-soft": "#FCE6EF",
           "blush-dark": "#5E3848",
-          sky: "#CDE3FF",
+          sky: "#38BDF8", // Sky-400
           "sky-soft": "#E3F0FF",
           "sky-dark": "#38495E",
-          moss: "#D5F5C1",
+          moss: "#A3E635", // Lime-400
           "moss-soft": "#E8FAD9",
           "moss-dark": "#3F5338",
-          coal: "#4F5B66",
+          coal: "#1E293B", // Slate-800
           "coal-soft": "#A1A8B0",
-          "coal-dark": "#1E2428",
+          "coal-dark": "#0F172A",
         },
       },
       backgroundImage: {
