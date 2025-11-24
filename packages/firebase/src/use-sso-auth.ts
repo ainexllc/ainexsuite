@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react';
 import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from './client';
 
+interface UseSSOAuthOptions {
+  /** Callback when SSO completes (success or failure) */
+  onComplete?: () => void;
+}
+
 /**
  * useSSOAuth Hook
  *
@@ -24,9 +29,12 @@ import { auth } from './client';
  * }
  * ```
  *
+ * @param options - Optional configuration including onComplete callback
  * @returns {object} - Authentication state and any errors
  */
-export function useSSOAuth() {
+export function useSSOAuth(options?: UseSSOAuthOptions) {
+  const { onComplete } = options || {};
+
   // Check for auth token IMMEDIATELY on mount (synchronously)
   const hasAuthTokenOnMount = typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).has('auth_token')
@@ -55,6 +63,8 @@ export function useSSOAuth() {
       if (!authToken) {
         // No auth token, nothing to do
         setHasAuthToken(false);
+        // Still call onComplete to signal we're done checking
+        onComplete?.();
         return;
       }
 
@@ -110,11 +120,14 @@ export function useSSOAuth() {
         window.history.replaceState({}, '', newUrl);
       } finally {
         setIsAuthenticating(false);
+        // Signal completion to parent (AuthProvider can now proceed)
+        onComplete?.();
       }
     };
 
     handleSSOAuth();
-  }, []); // Run only once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount - onComplete should be stable
 
   return {
     isAuthenticating,

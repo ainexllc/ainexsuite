@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from "next/font/
 import { AppProviders } from "@/components/providers/app-providers";
 import { ThemeProvider, AppColorProvider } from "@ainexsuite/theme";
 import { Toaster } from "@/components/ui/toaster";
-import { SSOHandler } from "@ainexsuite/firebase";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -52,7 +51,6 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AppColorProvider appId="notes" fallbackPrimary="#3b82f6" fallbackSecondary="#60a5fa">
-            <SSOHandler />
             <AppProviders>{children}</AppProviders>
             <Toaster />
           </AppColorProvider>

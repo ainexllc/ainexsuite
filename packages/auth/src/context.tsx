@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@ainexsuite/firebase';
+import { auth, SSOHandler } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User } from '@ainexsuite/types';
 import {
@@ -27,13 +27,28 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   bootstrapStatus: BootstrapStatus;
+  /** True when SSO auth_token is being processed - pages should wait */
+  ssoInProgress: boolean;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   setIsBootstrapping: (value: boolean) => void;
   setBootstrapStatus: (status: BootstrapStatus) => void;
+  /** Called by SSOHandler to signal SSO completion */
+  setSsoComplete: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/**
+ * Check if there's an SSO auth_token in the URL
+ * This is checked synchronously on initial render to prevent race conditions
+ */
+function checkForSSOToken(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return new URLSearchParams(window.location.search).has('auth_token');
+}
 
 // Helper function to create fallback user object
 function createFallbackUser(firebaseUser: FirebaseUser): User {
@@ -81,6 +96,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
   const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
+
+  // Track SSO status - initialized synchronously to detect auth_token before first render
+  const [ssoInProgress, setSsoInProgress] = useState(() => checkForSSOToken());
+
+  // Callback for SSOHandler to signal completion
+  const setSsoComplete = useCallback(() => {
+    console.log('🔐 AuthProvider: SSO complete signal received');
+    setSsoInProgress(false);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -184,19 +208,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setFirebaseUser(null);
   }, []);
 
+  // Effective loading state: true if auth is loading OR SSO is in progress
+  const effectiveLoading = loading || ssoInProgress;
+
   return (
     <AuthContext.Provider
       value={{
         user,
         firebaseUser,
-        loading,
+        loading: effectiveLoading, // Use effective loading to wait for SSO
         bootstrapStatus,
+        ssoInProgress,
         signOut: signOutUser,
         logout: signOutUser,
         setIsBootstrapping,
         setBootstrapStatus,
+        setSsoComplete,
       }}
     >
+      {/* SSOHandler processes auth_token from URL and signals completion */}
+      <SSOHandler onComplete={setSsoComplete} />
       <AuthBootstrap />
       {children}
     </AuthContext.Provider>

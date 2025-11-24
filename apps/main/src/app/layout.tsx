@@ -3,7 +3,6 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
-import { SSOHandler } from '@ainexsuite/firebase';
 import { VisualStyleProvider } from '@/components/providers/visual-style-provider';
 import '@ainexsuite/ui/styles';
 import './globals.css';
@@ -40,7 +39,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} theme-dark`} data-theme="dark">
       <body className="font-sans antialiased theme-dark">
-        <SSOHandler />
         <AuthProvider>
           <VisualStyleProvider>
             {children}

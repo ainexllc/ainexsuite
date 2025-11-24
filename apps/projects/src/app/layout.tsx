@@ -4,7 +4,6 @@ import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
 import { ThemeProvider } from '@ainexsuite/theme';
-import { SSOHandler } from '@ainexsuite/firebase';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -41,7 +40,6 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <AuthProvider>
-          <SSOHandler />
           <ThemeProvider>
             {children}
           </ThemeProvider>

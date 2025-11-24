@@ -2,30 +2,33 @@
 
 import { useSSOAuth } from './use-sso-auth';
 
+export interface SSOHandlerProps {
+  /** Callback when SSO completes (success or failure) - used by AuthProvider */
+  onComplete?: () => void;
+}
+
 /**
  * SSOHandler Component
  *
  * Client component that handles SSO authentication when users switch apps.
- * Add this to your root layout to enable automatic sign-in via auth tokens.
+ * Should be placed INSIDE AuthProvider for proper coordination.
  *
- * Usage in layout.tsx:
+ * Usage in app-providers.tsx:
  * ```tsx
  * import { SSOHandler } from '@ainexsuite/firebase';
  *
- * export default function RootLayout({ children }) {
+ * export function AppProviders({ children }) {
  *   return (
- *     <html>
- *       <body>
- *         <SSOHandler />
- *         <AuthProvider>{children}</AuthProvider>
- *       </body>
- *     </html>
+ *     <AuthProvider>
+ *       <SSOHandler />
+ *       {children}
+ *     </AuthProvider>
  *   );
  * }
  * ```
  */
-export function SSOHandler() {
-  const { isAuthenticating, authError } = useSSOAuth();
+export function SSOHandler({ onComplete }: SSOHandlerProps = {}) {
+  const { isAuthenticating, authError } = useSSOAuth({ onComplete });
 
   // Optional: Show a loading indicator or error message
   if (isAuthenticating) {
