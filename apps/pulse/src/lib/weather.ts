@@ -70,8 +70,6 @@ export async function getLocationFromSearch(query: string) {
       url = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(searchQuery)}&country=us&format=json&limit=1&addressdetails=1`;
     }
 
-    console.log('Searching for location:', { normalized, searchQuery, url });
-
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'AinexSuite-Weather-App',
@@ -92,8 +90,6 @@ export async function getLocationFromSearch(query: string) {
       const city = address.city || address.town || address.village || result.name || searchQuery;
       const state = address.state || '';
       const displayName = state ? `${city}, ${state}` : city;
-
-      console.log('Location found:', displayName);
 
       return {
         name: displayName,

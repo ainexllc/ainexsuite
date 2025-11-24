@@ -76,7 +76,6 @@ export function WeatherTile({
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleInputChange = (value: string) => {
-    console.log('Weather input changed:', value);
     setInputZipcode(value);
 
     // Clear previous timer
@@ -92,11 +91,9 @@ export function WeatherTile({
 
     // Debounce API calls - only search after user stops typing for 300ms
     debounceTimerRef.current = setTimeout(async () => {
-      console.log('Fetching suggestions for:', value);
       setIsLoadingSuggestions(true);
       try {
         const results = await getLocationSuggestions(value);
-        console.log('Got suggestions:', results);
         setSuggestions(results);
         setShowSuggestions(results.length > 0);
       } catch (err) {

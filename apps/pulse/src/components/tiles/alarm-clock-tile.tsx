@@ -1,7 +1,7 @@
 'use client';
 
 import { Bell, BellOff, Volume2, X, Clock } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { TileBase } from './tile-base';
 
 interface AlarmClockTileProps {
@@ -42,13 +42,54 @@ export function AlarmClockTile({
 
   // Initialize audio context
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+    audioContextRef.current = new AudioContext();
     return () => {
       if (audioContextRef.current) {
         audioContextRef.current.close();
       }
     };
   }, []);
+
+  const playAlarmSound = useCallback(() => {
+    if (!audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.frequency.value = selectedSound.frequency;
+    oscillator.type = 'sine';
+
+    // Pulsing effect
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
+
+    oscillator.start();
+
+    oscillatorRef.current = oscillator;
+    gainNodeRef.current = gainNode;
+
+    // Create pulsing pattern
+    let pulseCount = 0;
+    const pulseInterval = setInterval(() => {
+      if (pulseCount >= 20 || !isRinging) {
+        clearInterval(pulseInterval);
+        return;
+      }
+
+      const time = ctx.currentTime;
+      gainNode.gain.cancelScheduledValues(time);
+      gainNode.gain.setValueAtTime(0.3, time);
+      gainNode.gain.linearRampToValueAtTime(0, time + 0.2);
+      gainNode.gain.linearRampToValueAtTime(0.3, time + 0.4);
+
+      pulseCount++;
+    }, 500);
+  }, [selectedSound.frequency, isRinging]);
 
   // Check if alarm should ring
   useEffect(() => {
@@ -92,47 +133,7 @@ export function AlarmClockTile({
         clearInterval(checkIntervalRef.current);
       }
     };
-  }, [isAlarmSet, alarmTime]);
-
-  const playAlarmSound = () => {
-    if (!audioContextRef.current) return;
-
-    const ctx = audioContextRef.current;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    oscillator.frequency.value = selectedSound.frequency;
-    oscillator.type = 'sine';
-
-    // Pulsing effect
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
-
-    oscillator.start();
-
-    oscillatorRef.current = oscillator;
-    gainNodeRef.current = gainNode;
-
-    // Create pulsing pattern
-    let pulseCount = 0;
-    const pulseInterval = setInterval(() => {
-      if (pulseCount >= 20 || !isRinging) {
-        clearInterval(pulseInterval);
-        return;
-      }
-
-      const time = ctx.currentTime;
-      gainNode.gain.cancelScheduledValues(time);
-      gainNode.gain.setValueAtTime(0.3, time);
-      gainNode.gain.linearRampToValueAtTime(0, time + 0.2);
-      gainNode.gain.linearRampToValueAtTime(0.3, time + 0.4);
-
-      pulseCount++;
-    }, 500);
-  };
+  }, [isAlarmSet, alarmTime, playAlarmSound]);
 
   const stopAlarmSound = () => {
     if (oscillatorRef.current) {

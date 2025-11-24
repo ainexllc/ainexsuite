@@ -1,7 +1,7 @@
 'use client';
 
 import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2, Clock, Palette, Upload, Trash2, Check, Plus, AlertTriangle } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { CalendarTile } from './calendar-tile';
 import { FocusTile } from './focus-tile';
@@ -223,14 +223,7 @@ export function TileTray({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
-  // Load images when Appearance tab is active
-  useEffect(() => {
-    if (activeTab === 'appearance' && user) {
-      loadUserImages();
-    }
-  }, [activeTab, user]);
-
-  const loadUserImages = async () => {
+  const loadUserImages = useCallback(async () => {
     if (!user) return;
     setIsLoadingImages(true);
     try {
@@ -241,7 +234,14 @@ export function TileTray({
     } finally {
       setIsLoadingImages(false);
     }
-  };
+  }, [user]);
+
+  // Load images when Appearance tab is active
+  useEffect(() => {
+    if (activeTab === 'appearance' && user) {
+      loadUserImages();
+    }
+  }, [activeTab, user, loadUserImages]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -477,10 +477,10 @@ export function TileTray({
           ].map((tab) => (
               <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as 'widgets' | 'layout' | 'appearance' | 'clock')}
                   className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-medium transition-all ${
-                      activeTab === tab.id 
-                      ? 'bg-white/10 text-white shadow-sm' 
+                      activeTab === tab.id
+                      ? 'bg-white/10 text-white shadow-sm'
                       : 'text-white/40 hover:text-white hover:bg-white/10'
                   }`}
               >
