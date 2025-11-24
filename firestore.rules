@@ -222,6 +222,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // --- System Updates (Admin) ---
+    match /system_updates/{updateId} {
+      allow read: if isAuthenticated(); // All authenticated users can read updates
+      allow write: if isAdmin(); // Only admins can create/update system updates
+    }
+
     // --- Notes App Rules ---
     match /users/{userId}/notes/{noteId} {
       allow create: if isAuthenticated() && request.auth.uid == userId;
