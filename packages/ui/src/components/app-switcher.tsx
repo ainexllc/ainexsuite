@@ -62,6 +62,16 @@ export function AppSwitcher({
   }, [isOpen]);
 
   /**
+   * Get the correct URL based on environment
+   */
+  const getAppUrl = (app: AppConfig): string => {
+    // Use prodUrl in production, devUrl in development
+    const isProd = process.env.NODE_ENV === 'production' ||
+                   typeof window !== 'undefined' && !window.location.hostname.includes('localhost');
+    return isProd ? app.prodUrl : app.devUrl;
+  };
+
+  /**
    * Handle app switching with SSO
    * Requests a custom token and navigates with it
    */
@@ -69,29 +79,40 @@ export function AppSwitcher({
     event.preventDefault(); // Prevent default link navigation
     setIsOpen(false);
 
+    console.log('🔄 SSO: Switching to', app.name);
+
     try {
       // Call the custom-token API endpoint
+      console.log('🔄 SSO: Requesting custom token from /api/auth/custom-token');
       const response = await fetch('/api/auth/custom-token', {
         method: 'POST',
         credentials: 'include', // Include cookies
       });
 
+      console.log('🔄 SSO: Token response status:', response.status);
+
       if (response.ok) {
         const { customToken } = await response.json();
+        console.log('✅ SSO: Custom token received, navigating with auth');
 
-        // Navigate to target app with auth token
-        const targetUrl = new URL(app.devUrl);
+        // Get the correct URL based on environment
+        const targetUrl = new URL(getAppUrl(app));
         targetUrl.searchParams.set('auth_token', customToken);
+
+        console.log('🔄 SSO: Navigating to', targetUrl.toString());
         window.location.href = targetUrl.toString();
       } else {
         // If token generation fails, navigate without SSO (will require login)
-        console.warn('Failed to generate SSO token, navigating without authentication');
-        window.location.href = app.devUrl;
+        const errorData = await response.json();
+        console.warn('⚠️ SSO: Failed to generate token:', errorData);
+        console.warn('⚠️ SSO: Falling back to regular navigation (will require login)');
+        window.location.href = getAppUrl(app);
       }
     } catch (error) {
       // If anything fails, fall back to regular navigation
-      console.error('SSO error:', error);
-      window.location.href = app.devUrl;
+      console.error('❌ SSO: Error during app switch:', error);
+      console.warn('⚠️ SSO: Falling back to regular navigation');
+      window.location.href = getAppUrl(app);
     }
 
     onAppClick?.(app);
@@ -123,7 +144,7 @@ export function AppSwitcher({
           <div className="absolute left-0 top-full mt-2 w-80 bg-[#0a0a0a] rounded-xl shadow-2xl border border-white/10 z-50 overflow-hidden">
             {/* Suite Hub Link */}
             <a
-              href={APP_REGISTRY.main.devUrl}
+              href={getAppUrl(APP_REGISTRY.main)}
               onClick={(e) => handleAppSwitch(APP_REGISTRY.main, e)}
               className="flex items-center gap-3 p-4 hover:bg-white/5 border-b border-white/10 transition-colors cursor-pointer"
             >
@@ -151,7 +172,7 @@ export function AppSwitcher({
                   return (
                     <a
                       key={app.slug}
-                      href={app.devUrl}
+                      href={getAppUrl(app)}
                       onClick={(e) => handleAppSwitch(app, e)}
                       className={`flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer ${
                         app.slug === currentApp.slug ? 'bg-white/10' : ''
@@ -184,7 +205,7 @@ export function AppSwitcher({
                   return (
                     <a
                       key={app.slug}
-                      href={app.devUrl}
+                      href={getAppUrl(app)}
                       onClick={(e) => handleAppSwitch(app, e)}
                       className={`flex flex-col items-center p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer ${
                         isActive ? 'bg-white/10 ring-1 ring-white/20' : ''
