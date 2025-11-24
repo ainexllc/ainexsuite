@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       repoName = parts[1];
     }
 
-    const url = `https://api.github.com/repos/${owner}/${repoName}/commits?per_page=10&page=1`;
+    const url = `https://api.github.com/repos/${owner}/${repoName}/commits?per_page=20&page=1`;
     
     const headers: HeadersInit = {
       'Accept': 'application/vnd.github.v3+json',

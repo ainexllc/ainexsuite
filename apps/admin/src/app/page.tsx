@@ -201,7 +201,7 @@ export default function AdminDashboard() {
           <div className="space-y-4">
             {commitsLoading ? (
               // Loading state
-              Array.from({ length: 5 }).map((_, i) => (
+              Array.from({ length: 10 }).map((_, i) => (
                 <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-zinc-600/20 animate-pulse" />
