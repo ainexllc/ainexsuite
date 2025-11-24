@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
     const repo = process.env.GITHUB_REPO || 'ainexsuite/ainexsuite';
     const token = process.env.GITHUB_TOKEN;
 
+    console.log('Fetching commits for repo:', repo);
+
     // Parse repo format: owner/repo or full URL
     let owner: string;
     let repoName: string;
@@ -61,22 +63,40 @@ export async function GET(request: NextRequest) {
       repoName = parts[1];
     }
 
-    const url = `https://api.github.com/repos/${owner}/${repoName}/commits?per_page=20&page=1`;
+    const url = `https://api.github.com/repos/${owner}/${repoName}/commits?sha=main&per_page=20&page=1`;
     
     const headers: HeadersInit = {
       'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'AINexSuite-Admin',
     };
 
     if (token) {
-      headers['Authorization'] = `token ${token}`;
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
+    console.log('Fetching from URL:', url);
     const response = await fetch(url, { headers });
+    console.log('Response status:', response.status, response.statusText);
 
     if (!response.ok) {
-      const error = await response.text();
+      let errorMessage = `GitHub API error: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch {
+        const errorText = await response.text();
+        errorMessage = errorText || errorMessage;
+      }
+      
+      console.error('GitHub API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        url,
+        error: errorMessage
+      });
+      
       return NextResponse.json(
-        { error: `GitHub API error: ${response.status} ${error}` },
+        { error: errorMessage },
         { status: response.status }
       );
     }

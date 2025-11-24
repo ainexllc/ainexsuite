@@ -64,14 +64,18 @@ export default function AdminDashboard() {
     try {
       setCommitsLoading(true);
       setCommitsError(null);
+      console.log('Fetching commits from /api/github/commits');
       const response = await fetch('/api/github/commits');
+      console.log('Response status:', response.status, response.statusText);
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch commits');
       }
       
       setCommits(data.activities || []);
+      console.log('Commits set:', data.activities?.length || 0);
     } catch (error) {
       console.error('Failed to fetch GitHub commits:', error);
       setCommitsError(error instanceof Error ? error.message : 'Failed to fetch commits');
