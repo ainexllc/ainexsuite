@@ -51,7 +51,7 @@ export function AppNavigationSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-full w-[240px] bg-black/60 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-out z-40 overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed left-0 top-0 bottom-0 w-[240px] flex flex-col bg-black/60 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-out z-40 overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Glow Effects */}
@@ -59,7 +59,7 @@ export function AppNavigationSidebar({
         <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-blue-500/20 blur-3xl rounded-full pointer-events-none opacity-50" />
 
         {/* Header */}
-        <div className="relative z-10 sticky top-0 flex items-center justify-between p-4 border-b border-white/10 bg-transparent">
+        <div className="relative z-10 flex-none flex items-center justify-between p-4 border-b border-white/10 bg-transparent">
           <h2 className="text-lg font-semibold text-white">Apps</h2>
           <button
             onClick={onClose}
@@ -70,105 +70,103 @@ export function AppNavigationSidebar({
           </button>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto p-3">
-            <div className="space-y-2">
-              {/* Back to Dashboard */}
-              <Link
-                href="/workspace"
-                onClick={onClose}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
-              >
-                <Home className="h-5 w-5 flex-shrink-0" />
-                <span>Suite Dashboard</span>
-              </Link>
+        {/* Scrollable List */}
+        <div className="relative z-10 flex-1 overflow-y-auto p-3">
+          <div className="space-y-2">
+            {/* Back to Dashboard */}
+            <Link
+              href="/workspace"
+              onClick={onClose}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+            >
+              <Home className="h-5 w-5 flex-shrink-0" />
+              <span>Suite Dashboard</span>
+            </Link>
 
-              {/* Divider */}
-              <div className="my-2 border-t border-white/10" />
+            {/* Divider */}
+            <div className="my-2 border-t border-white/10" />
 
-              {/* Apps List */}
-              <div className="grid gap-2">
-                {apps.map((app) => {
-                  const IconComponent = app.icon;
-                  return (
-                    <a
-                      key={app.slug}
-                      href={app.url}
-                      onClick={onClose}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 overflow-hidden"
-                      style={{
-                        '--accent': app.color,
-                        '--accent-dim': `${app.color}1a`, // 10% opacity
-                        '--accent-glow': `${app.color}40`, // 25% opacity
-                      } as React.CSSProperties}
+            {/* Apps List */}
+            <div className="grid gap-2">
+              {apps.map((app) => {
+                const IconComponent = app.icon;
+                return (
+                  <a
+                    key={app.slug}
+                    href={app.url}
+                    onClick={onClose}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 overflow-hidden"
+                    style={{
+                      '--accent': app.color,
+                      '--accent-dim': `${app.color}1a`, // 10% opacity
+                      '--accent-glow': `${app.color}40`, // 25% opacity
+                    } as React.CSSProperties}
+                  >
+                    {/* Background & Border Effects */}
+                    <div className="absolute inset-0 bg-white/5 border border-white/5 rounded-xl transition-all duration-300 group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_15px_-3px_var(--accent-dim)]" />
+                    
+                    {/* Icon Container */}
+                    <div 
+                      className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-black"
+                      style={{ color: app.color }}
                     >
-                      {/* Background & Border Effects */}
-                      <div className="absolute inset-0 bg-white/5 border border-white/5 rounded-xl transition-all duration-300 group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_15px_-3px_var(--accent-dim)]" />
-                      
-                      {/* Icon Container */}
-                      <div 
-                        className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-black"
-                        style={{ color: app.color }}
-                      >
-                        <IconComponent className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                      </div>
+                      <IconComponent className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                    </div>
 
-                      {/* Text */}
-                      <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white">
-                        {app.name}
-                      </span>
+                    {/* Text */}
+                    <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white">
+                      {app.name}
+                    </span>
 
-                      {/* Arrow */}
-                      <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)]">
-                        →
-                      </span>
-                    </a>
-                  );
-                })}
-              </div>
+                    {/* Arrow */}
+                    <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)]">
+                      →
+                    </span>
+                  </a>
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          {/* Trial/Subscription Info at Bottom */}
-          <div className="p-3 border-t border-white/10 bg-black/20">
-            {isTrialActive && (
-              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4 text-amber-400" />
-                  <span className="text-xs font-semibold text-amber-300">Free Trial</span>
-                </div>
-                <p className="text-xs text-amber-200/70">
-                  {trialDaysRemaining === 1
-                    ? 'Last day of your trial'
-                    : `${trialDaysRemaining} days remaining`}
-                </p>
-                <Link
-                  href="/plans"
-                  onClick={onClose}
-                  className="mt-2 inline-block text-xs font-medium text-amber-300 hover:text-amber-200 transition"
-                >
-                  Upgrade to Pro →
-                </Link>
+        {/* Trial/Subscription Info at Bottom */}
+        <div className="relative z-10 flex-none p-3 pb-6 border-t border-white/10 bg-black/20">
+          {isTrialActive && (
+            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-amber-400" />
+                <span className="text-xs font-semibold text-amber-300">Free Trial</span>
               </div>
-            )}
+              <p className="text-xs text-amber-200/70">
+                {trialDaysRemaining === 1
+                  ? 'Last day of your trial'
+                  : `${trialDaysRemaining} days remaining`}
+              </p>
+              <Link
+                href="/plans"
+                onClick={onClose}
+                className="mt-2 inline-block text-xs font-medium text-amber-300 hover:text-amber-200 transition"
+              >
+                Upgrade to Pro →
+              </Link>
+            </div>
+          )}
 
-            {user?.subscriptionStatus && user?.subscriptionStatus !== 'trial' && (
-              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Crown className="h-4 w-4 text-emerald-400" />
-                  <span className="text-xs font-semibold text-emerald-300 capitalize">
-                    {user.subscriptionTier} Plan
-                  </span>
-                </div>
-                <p className="text-xs text-emerald-200/70 capitalize">
-                  {user.subscriptionStatus === 'active' ? 'Active subscription' : user.subscriptionStatus}
-                </p>
+          {user?.subscriptionStatus && user?.subscriptionStatus !== 'trial' && (
+            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className="h-4 w-4 text-emerald-400" />
+                <span className="text-xs font-semibold text-emerald-300 capitalize">
+                  {user.subscriptionTier} Plan
+                </span>
               </div>
-            )}
-          </div>
+              <p className="text-xs text-emerald-200/70 capitalize">
+                {user.subscriptionStatus === 'active' ? 'Active subscription' : user.subscriptionStatus}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </>
