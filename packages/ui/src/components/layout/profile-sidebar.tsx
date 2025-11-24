@@ -12,6 +12,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
+import { useSystemUpdates } from '../../hooks/use-system-updates';
 
 export interface ProfileSidebarProps {
   isOpen: boolean;
@@ -29,6 +30,17 @@ export interface ProfileSidebarProps {
   onActivityClick?: () => void;
 }
 
+function getRelativeTime(date: any) {
+  if (!date) return '';
+  const d = date.toDate ? date.toDate() : new Date(date);
+  const diff = Date.now() - d.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days === 0) return 'Today';
+  if (days === 1) return '1d ago';
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
 export function ProfileSidebar({
   isOpen,
   onClose,
@@ -36,6 +48,17 @@ export function ProfileSidebar({
   onSignOut,
   onSettingsClick,
 }: ProfileSidebarProps) {
+  const { updates, loading: updatesLoading } = useSystemUpdates();
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'feature': return 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]';
+      case 'improvement': return 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]';
+      case 'fix': return 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]';
+      default: return 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]';
+    }
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -151,32 +174,25 @@ export function ProfileSidebar({
                 <Sparkles className="h-3 w-3" /> What's New
               </h4>
               <div className="space-y-1">
-                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
-                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-500 group-hover:scale-150 transition-transform shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">Pulse Dashboard 2.0</p>
-                    <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">Custom widgets & drag-and-drop</p>
-                  </div>
-                  <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">2d</span>
-                </div>
-                
-                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
-                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 group-hover:scale-150 transition-transform shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">Smart Notes AI</p>
-                    <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">Auto-summaries and insights</p>
-                  </div>
-                  <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">5d</span>
-                </div>
-
-                <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
-                  <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-green-500 group-hover:scale-150 transition-transform shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">Global Search</p>
-                    <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors">Find anything across apps</p>
-                  </div>
-                  <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">1w</span>
-                </div>
+                {updatesLoading ? (
+                  <p className="text-xs text-white/30 px-2">Loading updates...</p>
+                ) : updates.length > 0 ? (
+                  updates.map((update) => (
+                    <div 
+                      key={update.id} 
+                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group"
+                    >
+                      <div className={`mt-1.5 h-1.5 w-1.5 rounded-full group-hover:scale-150 transition-transform ${getTypeColor(update.type)}`} />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{update.title}</p>
+                        <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors line-clamp-1">{update.description}</p>
+                      </div>
+                      <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">{getRelativeTime(update.date)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-white/30 px-2">No recent updates</p>
+                )}
               </div>
             </div>
 
