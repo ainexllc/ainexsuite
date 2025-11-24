@@ -88,7 +88,7 @@ export function AppNavigationSidebar({
               <div className="my-2 border-t border-white/10" />
 
               {/* Apps List */}
-              <div className="space-y-1">
+              <div className="grid gap-2">
                 {apps.map((app) => {
                   const IconComponent = app.icon;
                   return (
@@ -98,17 +98,31 @@ export function AppNavigationSidebar({
                       onClick={onClose}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-all hover:text-white overflow-hidden"
+                      className="group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 overflow-hidden"
+                      style={{
+                        '--accent': app.color,
+                        '--accent-dim': `${app.color}1a`, // 10% opacity
+                        '--accent-glow': `${app.color}40`, // 25% opacity
+                      } as React.CSSProperties}
                     >
-                      {/* Hover Background Gradient */}
-                      <div
-                        className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-gradient-to-br ${app.color || 'from-white/10 to-white/5'
-                          }`}
-                      />
+                      {/* Background & Border Effects */}
+                      <div className="absolute inset-0 bg-white/5 border border-white/5 rounded-xl transition-all duration-300 group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_15px_-3px_var(--accent-dim)]" />
+                      
+                      {/* Icon Container */}
+                      <div 
+                        className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-black"
+                        style={{ color: app.color }}
+                      >
+                        <IconComponent className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                      </div>
 
-                      <IconComponent className="relative z-10 h-5 w-5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
-                      <span className="relative z-10 flex-1">{app.name}</span>
-                      <span className="relative z-10 text-xs text-white/40 group-hover:text-white/60 transition-colors">
+                      {/* Text */}
+                      <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white">
+                        {app.name}
+                      </span>
+
+                      {/* Arrow */}
+                      <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)]">
                         →
                       </span>
                     </a>
