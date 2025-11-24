@@ -159,24 +159,38 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
     setError('');
 
     try {
+      console.log('🔐 HomepageTemplate: Starting email auth...');
       let result;
       if (isSignUp) {
         result = await createUserWithEmailAndPassword(auth, email, password);
       } else {
         result = await signInWithEmailAndPassword(auth, email, password);
       }
+      console.log('🔐 HomepageTemplate: Email auth successful, user:', result.user.email);
 
       // Create server-side session cookie for SSO
+      console.log('🔐 HomepageTemplate: Getting ID token for session cookie...');
       const idToken = await result.user.getIdToken();
-      await fetch('/api/auth/session', {
+      console.log('🔐 HomepageTemplate: Got ID token, calling /api/auth/session...');
+
+      const sessionResponse = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       });
 
+      console.log('🔐 HomepageTemplate: Session response status:', sessionResponse.status);
+      if (!sessionResponse.ok) {
+        const errorData = await sessionResponse.json();
+        console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
+      } else {
+        console.log('🔐 HomepageTemplate: Session cookie created successfully!');
+      }
+
       router.push('/workspace');
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
+      console.error('🔐 HomepageTemplate: Email auth error:', firebaseError);
       setError(firebaseError.message || 'Authentication failed. Please try again.');
     } finally {
       setSignInLoading(false);
@@ -188,20 +202,34 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
     setError('');
 
     try {
+      console.log('🔐 HomepageTemplate: Starting Google auth...');
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
+      console.log('🔐 HomepageTemplate: Google auth successful, user:', result.user.email);
 
       // Create server-side session cookie for SSO
+      console.log('🔐 HomepageTemplate: Getting ID token for session cookie...');
       const idToken = await result.user.getIdToken();
-      await fetch('/api/auth/session', {
+      console.log('🔐 HomepageTemplate: Got ID token, calling /api/auth/session...');
+
+      const sessionResponse = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       });
 
+      console.log('🔐 HomepageTemplate: Session response status:', sessionResponse.status);
+      if (!sessionResponse.ok) {
+        const errorData = await sessionResponse.json();
+        console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
+      } else {
+        console.log('🔐 HomepageTemplate: Session cookie created successfully!');
+      }
+
       router.push('/workspace');
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
+      console.error('🔐 HomepageTemplate: Google auth error:', firebaseError);
       if (firebaseError.code !== 'auth/popup-closed-by-user') {
         setError(firebaseError.message || 'Authentication failed. Please try again.');
       }
