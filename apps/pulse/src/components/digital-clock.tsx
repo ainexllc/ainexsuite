@@ -357,7 +357,7 @@ export function DigitalClock() {
 
   const handleToggleShowTiles = (show: boolean) => {
       updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, undefined, undefined, show);
-  };;
+  };
 
   // Format time string for display
   const getFormattedTime = (): string => {
