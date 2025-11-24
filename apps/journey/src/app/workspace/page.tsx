@@ -2,7 +2,6 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspacePageHeader } from '@ainexsuite/ui/components';
 import { DashboardView } from '@/components/dashboard/dashboard-view';
 
 export default function WorkspacePage() {
