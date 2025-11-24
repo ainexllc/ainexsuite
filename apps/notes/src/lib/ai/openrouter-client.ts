@@ -28,44 +28,68 @@ export class OpenRouterClient {
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || serverEnv.OPENROUTER_API_KEY || "";
-    if (!this.apiKey) {
-       console.warn("OPENROUTER_API_KEY is not configured.");
+    if (!this.apiKey && !serverEnv.XAI_API_KEY) {
+       console.warn("AI API keys are not configured.");
     }
   }
 
   async createCompletion(options: OpenRouterCompletionOptions): Promise<OpenRouterResponse> {
-    if (!this.apiKey) {
-        throw new Error("OpenRouter API key is missing");
-    }
-
+    let { model = this.defaultModel } = options;
     const {
       messages,
-      model = this.defaultModel,
       temperature = 0.7,
       maxTokens = 1000,
       topP = 1,
     } = options;
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+    let endpoint = `${this.baseUrl}/chat/completions`;
+    let token = this.apiKey;
+    let headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://ainexsuite.com", // Required by OpenRouter
+      "X-Title": "AiNexNotes", // Optional
+    };
+
+    // xAI Direct Override
+    // If the model requested is a Grok model AND we have an xAI key, go direct.
+    // We map the OpenRouter ID "x-ai/grok-4.1-fast" to "grok-beta" (or similar) for direct API.
+    if ((model.includes("grok") || model.includes("x-ai")) && serverEnv.XAI_API_KEY) {
+        endpoint = "https://api.x.ai/v1/chat/completions";
+        token = serverEnv.XAI_API_KEY;
+        
+        // Map OpenRouter IDs to xAI Direct IDs if needed
+        // "grok-beta" is typically the fast, latest model on xAI API.
+        if (model === "x-ai/grok-4.1-fast" || model === "grok-4.1-fast") {
+            model = "grok-beta"; 
+        }
+        
+        headers = {
+            "Content-Type": "application/json",
+        };
+    }
+
+    if (!token) {
+        throw new Error("AI API key is missing");
+    }
+
+    headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-        "HTTP-Referer": "https://ainexsuite.com", // Required by OpenRouter
-        "X-Title": "AiNexNotes", // Optional
-      },
+      headers,
       body: JSON.stringify({
         model,
         messages,
         temperature,
         max_tokens: maxTokens,
         top_p: topP,
+        stream: false
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`OpenRouter API error (${response.status}): ${errorText}`);
+      throw new Error(`AI API error (${response.status}): ${errorText}`);
     }
 
     return response.json();
