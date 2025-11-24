@@ -7,6 +7,54 @@ import { useAuth } from './context';
 import { getSessionCookie } from './session';
 
 /**
+ * Get cross-app session from localStorage (dev only)
+ * This is a copy of the utility from @ainexsuite/ui to avoid circular dependencies
+ */
+function getDevCrossAppSession(): string | null {
+  if (typeof window === 'undefined' || process.env.NODE_ENV !== 'development') {
+    return null;
+  }
+
+  try {
+    const session = localStorage.getItem('__cross_app_session');
+    const timestamp = localStorage.getItem('__cross_app_timestamp');
+
+    if (!session || !timestamp) {
+      return null;
+    }
+
+    // Check if session is less than 5 minutes old
+    const age = Date.now() - parseInt(timestamp, 10);
+    if (age > 5 * 60 * 1000) {
+      // Clean up expired session
+      localStorage.removeItem('__cross_app_session');
+      localStorage.removeItem('__cross_app_timestamp');
+      return null;
+    }
+
+    return session;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Clear cross-app session from localStorage
+ */
+function clearDevCrossAppSession(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    localStorage.removeItem('__cross_app_session');
+    localStorage.removeItem('__cross_app_timestamp');
+  } catch (error) {
+    // Silently fail
+  }
+}
+
+/**
  * AuthBootstrap Component
  *
  * Silently authenticates users from __session cookie on page load.
@@ -36,7 +84,19 @@ export function AuthBootstrap() {
       return;
     }
 
-    const sessionCookie = getSessionCookie();
+    // Check for session cookie (production) or cross-app session (dev)
+    let sessionCookie = getSessionCookie();
+
+    // In development, check for cross-app session from localStorage
+    if (!sessionCookie && process.env.NODE_ENV === 'development') {
+      const crossAppSession = getDevCrossAppSession();
+      if (crossAppSession) {
+        sessionCookie = crossAppSession;
+        // Clear the cross-app session after reading it
+        clearDevCrossAppSession();
+      }
+    }
+
     if (!sessionCookie) {
       setBootstrapped(true); // Mark as attempted to prevent re-checking
       setBootstrapStatus('complete'); // No session to bootstrap, proceed to normal auth

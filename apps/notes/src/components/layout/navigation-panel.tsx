@@ -1,7 +1,19 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { Tag, X } from "lucide-react";
+import {
+  Tag,
+  X,
+  FileText,
+  BookOpen,
+  CheckSquare,
+  TrendingUp,
+  Camera,
+  GraduationCap,
+  Activity as ActivityIcon,
+  Dumbbell,
+  Home,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from "@/lib/constants/navigation";
 import Link from "next/link";
@@ -10,6 +22,7 @@ import { clsx } from "clsx";
 import { useLabels } from "@/components/providers/labels-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import type { Label } from "@/lib/types/note";
+import { navigateToApp, getCurrentAppSlug } from "@ainexsuite/ui";
 
 type LabelNode = {
   label: Label;
@@ -80,12 +93,31 @@ function NavSection({
   );
 }
 
+// App definitions with slugs for cross-app navigation
+const apps = [
+  { slug: 'main', icon: Home, label: 'Dashboard' },
+  { slug: 'notes', icon: FileText, label: 'Notes' },
+  { slug: 'journey', icon: BookOpen, label: 'Journey' },
+  { slug: 'todo', icon: CheckSquare, label: 'Tasks' },
+  { slug: 'track', icon: TrendingUp, label: 'Track' },
+  { slug: 'moments', icon: Camera, label: 'Moments' },
+  { slug: 'grow', icon: GraduationCap, label: 'Grow' },
+  { slug: 'pulse', icon: ActivityIcon, label: 'Pulse' },
+  { slug: 'fit', icon: Dumbbell, label: 'Fit' },
+];
+
 export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
   const pathname = usePathname();
   const { labels, loading: labelsLoading, createLabel } = useLabels();
   const { activeLabelIds, setActiveLabelIds } = useNotes();
   const [isAddingLabel, setIsAddingLabel] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
+  const currentAppSlug = getCurrentAppSlug();
+
+  const handleAppNavigation = useCallback((slug: string) => {
+    onClose();
+    navigateToApp(slug, currentAppSlug || 'notes');
+  }, [onClose, currentAppSlug]);
 
   const sections = useMemo(
     () => [
@@ -190,6 +222,40 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
               })}
             </NavSection>
           ))}
+
+          <NavSection title="Apps">
+            {apps.map(({ slug, icon: Icon, label }) => {
+              const isCurrentApp = slug === currentAppSlug;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleAppNavigation(slug)}
+                  disabled={isCurrentApp}
+                  className={clsx(
+                    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors w-full text-left",
+                    isCurrentApp
+                      ? "bg-ink-200 text-ink-900 cursor-default"
+                      : "text-ink-500 hover:bg-surface-muted hover:text-ink-700",
+                  )}
+                >
+                  <span className="flex items-center gap-3 flex-1">
+                    <span className={clsx(
+                      "grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-transparent transition-colors",
+                      isCurrentApp
+                        ? "bg-ink-300/80 text-ink-900"
+                        : "bg-surface-muted text-ink-600",
+                    )}>
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className={clsx(isCurrentApp ? "text-ink-900" : "text-inherit")}>
+                      {label}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </NavSection>
 
           <NavSection title="Labels">
             <div className="space-y-1">

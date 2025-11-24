@@ -3,6 +3,7 @@
 import { X, Home } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode } from 'react';
+import { navigateToApp, getCurrentAppSlug } from '../../utils/cross-app-navigation';
 
 export interface AppNavigationSidebarProps {
   isOpen: boolean;
@@ -27,6 +28,13 @@ export function AppNavigationSidebar({
   apps,
   user,
 }: AppNavigationSidebarProps) {
+  const currentAppSlug = getCurrentAppSlug();
+
+  const handleAppNavigation = (slug: string) => {
+    onClose();
+    navigateToApp(slug, currentAppSlug || undefined);
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -78,12 +86,14 @@ export function AppNavigationSidebar({
             <div className="grid gap-2">
               {apps.map((app) => {
                 const IconComponent = app.icon;
+                const isCurrentApp = app.slug === currentAppSlug;
                 return (
-                  <a
+                  <button
                     key={app.slug}
-                    href={app.url}
-                    onClick={onClose}
-                    className="group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 overflow-hidden"
+                    type="button"
+                    onClick={() => handleAppNavigation(app.slug)}
+                    disabled={isCurrentApp}
+                    className="group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 overflow-hidden disabled:cursor-default disabled:opacity-75 w-full text-left"
                     style={{
                       '--accent': app.color,
                       '--accent-dim': `${app.color}1a`, // 10% opacity
@@ -91,26 +101,28 @@ export function AppNavigationSidebar({
                     } as React.CSSProperties}
                   >
                     {/* Background & Border Effects */}
-                    <div className="absolute inset-0 bg-white/5 border border-white/5 rounded-xl transition-all duration-300 group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_15px_-3px_var(--accent-dim)]" />
-                    
+                    <div className={`absolute inset-0 bg-white/5 border border-white/5 rounded-xl transition-all duration-300 ${isCurrentApp ? 'bg-[var(--accent-dim)] border-[var(--accent-glow)]' : 'group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_15px_-3px_var(--accent-dim)]'}`} />
+
                     {/* Icon Container */}
-                    <div 
-                      className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-black flex-shrink-0"
-                      style={{ color: app.color }}
+                    <div
+                      className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300 flex-shrink-0 ${isCurrentApp ? 'bg-[var(--accent)] border-[var(--accent)] text-black' : 'bg-black/40 border-white/10 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-black'}`}
+                      style={{ color: isCurrentApp ? undefined : app.color }}
                     >
                       <IconComponent className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                     </div>
 
                     {/* Text */}
-                    <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white truncate">
+                    <span className={`relative z-10 text-sm font-medium transition-colors duration-300 truncate ${isCurrentApp ? 'text-white' : 'text-white/70 group-hover:text-white'}`}>
                       {app.name}
                     </span>
 
                     {/* Arrow */}
-                    <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)] flex-shrink-0">
-                      →
-                    </span>
-                  </a>
+                    {!isCurrentApp && (
+                      <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)] flex-shrink-0">
+                        →
+                      </span>
+                    )}
+                  </button>
                 );
               })}
             </div>
