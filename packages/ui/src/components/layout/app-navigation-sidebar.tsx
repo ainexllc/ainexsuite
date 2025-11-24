@@ -51,7 +51,7 @@ export function AppNavigationSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-full w-[280px] bg-black/60 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-out z-40 overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed left-0 top-0 h-full w-[240px] bg-black/60 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-out z-40 overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Glow Effects */}
