@@ -133,7 +133,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     <>
       <article
         className={clsx(
-          "group relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-[#1a1a1a]/40 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl",
+          "group relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl",
           viewMode === "list"
             ? "flex items-start gap-4 px-5 py-3"
             : "break-inside-avoid px-6 py-6",
@@ -143,7 +143,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
         }}
       >
         {/* Note Color Tint Layer - Base Layer */}
-        <div className={clsx("absolute inset-0 pointer-events-none opacity-20 transition-colors duration-300", isDefault ? "bg-transparent" : `bg-${note.color}`)} />
+        <div className={clsx("absolute inset-0 pointer-events-none opacity-10 transition-colors duration-300", isDefault ? "bg-transparent" : `bg-${note.color}`)} />
 
         {/* Atmospheric Orbs - Middle Layer */}
         <div className={clsx("absolute -top-32 -right-32 h-64 w-64 rounded-full blur-[80px] pointer-events-none opacity-20 transition-colors duration-500", orbColor)} />
