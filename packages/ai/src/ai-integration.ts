@@ -67,7 +67,7 @@ export async function generateAIContent(
     checkRateLimit(userId, tier);
 
     // Step 2: Check usage limit (Firestore, atomic)
-    const usageCheck = await checkUsageLimit(db, userId, tier);
+    await checkUsageLimit(db, userId, tier);
 
     // Step 3: Generate content
     const result = await generateContent(prompt, tier, geminiApiKey, openaiApiKey);

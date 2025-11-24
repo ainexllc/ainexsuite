@@ -10,7 +10,6 @@ import {
   setDoc,
   updateDoc,
   increment,
-  serverTimestamp,
   type Firestore,
 } from 'firebase/firestore';
 import type { AITier, AIUsageRecord, AIUsageCheck } from '@ainexsuite/types';
