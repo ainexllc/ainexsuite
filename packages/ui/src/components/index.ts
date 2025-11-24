@@ -124,6 +124,16 @@ export {
 } from "./modal";
 
 export {
+  GlassModal,
+  GlassModalHeader,
+  GlassModalTitle,
+  GlassModalDescription,
+  GlassModalContent,
+  GlassModalFooter,
+  type GlassModalProps,
+} from "./glass-modal";
+
+export {
   ConfirmationDialog,
   type ConfirmationDialogProps,
 } from "./confirmation-dialog";

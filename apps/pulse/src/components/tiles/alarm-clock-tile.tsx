@@ -1,8 +1,9 @@
 'use client';
 
-import { Bell, BellOff, Volume2, X, Clock } from 'lucide-react';
+import { Bell, BellOff, Volume2, Clock, X } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TileBase } from './tile-base';
+import { GlassModal, GlassModalContent } from '@ainexsuite/ui';
 
 interface AlarmClockTileProps {
   id?: string;
@@ -286,60 +287,65 @@ export function AlarmClockTile({
         </div>
       </TileBase>
 
-      {/* Alarm Ringing Modal */}
-      {isRinging && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="relative max-w-md w-full mx-4 p-8 bg-gradient-to-br from-red-500/20 to-orange-500/20 border-2 border-red-500/50 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300">
+      {/* Alarm Ringing Modal with GlassModal */}
+      <GlassModal
+        isOpen={isRinging}
+        onClose={handleStopAlarm}
+        variant="frosted"
+        size="md"
+        closeOnBackdropClick={false}
+        closeOnEscape={false}
+        className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border-2 border-red-500/50"
+      >
+        <GlassModalContent className="relative py-8">
+          {/* Pulsing Background Effect */}
+          <div className="absolute inset-0 bg-red-500/10 rounded-3xl animate-pulse pointer-events-none" />
 
-            {/* Pulsing Background Effect */}
-            <div className="absolute inset-0 bg-red-500/10 rounded-2xl animate-pulse" />
-
-            {/* Bouncing Alarm Icon */}
-            <div className="relative flex justify-center mb-6">
-              <div className="animate-bounce">
-                <Bell className="w-24 h-24 text-red-400 drop-shadow-[0_0_20px_rgba(248,113,113,0.8)]" />
-              </div>
-            </div>
-
-            {/* Alarm Message */}
-            <div className="relative text-center mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">
-                Alarm!
-              </h2>
-              <p className="text-white/70 text-lg font-medium">
-                {alarmTime}
-              </p>
-              {isSnoozed && (
-                <p className="text-yellow-400 text-sm mt-2">
-                  (Snoozed alarm)
-                </p>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="relative flex flex-col gap-3">
-              <button
-                onClick={handleStopAlarm}
-                className="w-full py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-lg transition-all shadow-lg shadow-red-500/50 hover:scale-105 active:scale-95"
-              >
-                Stop Alarm
-              </button>
-              <button
-                onClick={handleSnooze}
-                className="w-full py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-lg transition-all border border-white/20 hover:scale-105 active:scale-95"
-              >
-                Snooze (5 min)
-              </button>
-            </div>
-
-            {/* Animated Rings */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-4 border-red-400/30 rounded-full animate-ping" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-orange-400/20 rounded-full animate-ping" style={{ animationDelay: '0.3s' }} />
+          {/* Bouncing Alarm Icon */}
+          <div className="relative flex justify-center mb-6">
+            <div className="animate-bounce">
+              <Bell className="w-24 h-24 text-red-400 drop-shadow-[0_0_20px_rgba(248,113,113,0.8)]" />
             </div>
           </div>
-        </div>
-      )}
+
+          {/* Alarm Message */}
+          <div className="relative text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              Alarm!
+            </h2>
+            <p className="text-white/70 text-lg font-medium">
+              {alarmTime}
+            </p>
+            {isSnoozed && (
+              <p className="text-yellow-400 text-sm mt-2">
+                (Snoozed alarm)
+              </p>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="relative flex flex-col gap-3">
+            <button
+              onClick={handleStopAlarm}
+              className="w-full py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-lg transition-all shadow-lg shadow-red-500/50 hover:scale-105 active:scale-95"
+            >
+              Stop Alarm
+            </button>
+            <button
+              onClick={handleSnooze}
+              className="w-full py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-lg transition-all border border-white/20 hover:scale-105 active:scale-95"
+            >
+              Snooze (5 min)
+            </button>
+          </div>
+
+          {/* Animated Rings */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-4 border-red-400/30 rounded-full animate-ping" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-orange-400/20 rounded-full animate-ping" style={{ animationDelay: '0.3s' }} />
+          </div>
+        </GlassModalContent>
+      </GlassModal>
     </>
   );
 }
