@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Loader2, Menu, X, Search, Sparkles, ChevronDown, Settings, Activity, RefreshCw } from 'lucide-react';
+import { Loader2, Menu, X, Search, Sparkles, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { AtmosphericGlows } from '../components/layouts/atmospheric-glows';
 import { AinexStudiosLogo } from '../components/branding/ainex-studios-logo';
-import { ProfileDropdown } from '../components/layout/profile-dropdown';
+import { ProfileSidebar } from '../components/layout/profile-sidebar';
 import { WelcomeHeader } from '../components/layouts/welcome-header';
 import { NavigationPanel, type NavSection } from '../components/layout/navigation-panel';
 import { ActivityPanel } from '../components/layout/activity-panel';
@@ -95,24 +95,6 @@ export function WorkspacePage({
     }
   };
 
-  const profileMenuItems = [
-    {
-      icon: <Settings className="h-4 w-4" />,
-      label: "Settings",
-      onClick: () => handleActivityToggle('settings'),
-    },
-    {
-      icon: <Activity className="h-4 w-4" />,
-      label: "Activity",
-      onClick: () => handleActivityToggle('activity'),
-    },
-    {
-      icon: <RefreshCw className="h-4 w-4" />,
-      label: "Refresh",
-      onClick: () => router.refresh(),
-    },
-  ];
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
@@ -195,51 +177,52 @@ export function WorkspacePage({
                 <Sparkles className="h-4 w-4" />
               </button>
 
-              {/* Profile Dropdown Button */}
-              <div className="relative">
-                <button
-                  type="button"
-                  className="flex items-center gap-2 h-9 rounded-full bg-white/5 text-white/70 shadow-sm transition hover:bg-white/10 px-2"
-                  aria-label="Profile menu"
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                >
-                  {user.photoURL ? (
-                    <Image
-                      src={user.photoURL}
-                      alt={user.displayName ?? user.email ?? 'Account'}
-                      width={28}
-                      height={28}
-                      className="rounded-full object-cover"
-                      sizes="28px"
-                    />
-                  ) : (
-                    <span
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white"
-                      style={{ backgroundColor: appColor }}
-                    >
-                      {user.displayName
-                        ? user.displayName
-                            .split(' ')
-                            .map((part: string) => part.charAt(0))
-                            .join('')
-                            .slice(0, 2)
-                            .toUpperCase()
-                        : (user.email?.charAt(0).toUpperCase() ?? 'U')}
-                    </span>
-                  )}
-                  <ChevronDown className="h-3.5 w-3.5 text-white/50" />
-                </button>
-                <ProfileDropdown
-                  isOpen={isProfileOpen}
-                  onClose={() => setIsProfileOpen(false)}
-                  user={user}
-                  onSignOut={handleSignOut}
-                  menuItems={profileMenuItems}
-                />
-              </div>
+              {/* Profile Sidebar Toggle */}
+              <button
+                type="button"
+                className="flex items-center gap-2 h-9 rounded-full bg-white/5 text-white/70 shadow-sm transition hover:bg-white/10 px-2"
+                aria-label="Profile menu"
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+              >
+                {user.photoURL ? (
+                  <Image
+                    src={user.photoURL}
+                    alt={user.displayName ?? user.email ?? 'Account'}
+                    width={28}
+                    height={28}
+                    className="rounded-full object-cover"
+                    sizes="28px"
+                  />
+                ) : (
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white"
+                    style={{ backgroundColor: appColor }}
+                  >
+                    {user.displayName
+                      ? user.displayName
+                          .split(' ')
+                          .map((part: string) => part.charAt(0))
+                          .join('')
+                          .slice(0, 2)
+                          .toUpperCase()
+                      : (user.email?.charAt(0).toUpperCase() ?? 'U')}
+                  </span>
+                )}
+                <ChevronDown className="h-3.5 w-3.5 text-white/50" />
+              </button>
             </div>
           </div>
         </header>
+
+        {/* Profile Sidebar */}
+        <ProfileSidebar
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          user={user}
+          onSignOut={handleSignOut}
+          onSettingsClick={() => handleActivityToggle('settings')}
+          onActivityClick={() => handleActivityToggle('activity')}
+        />
 
         {/* Main Content */}
         <main className="flex-1 overflow-x-hidden pt-16">

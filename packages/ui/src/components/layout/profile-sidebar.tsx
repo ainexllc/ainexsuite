@@ -1,8 +1,7 @@
 'use client';
 
-import { X, Clock, Crown, Settings, LogOut, User } from 'lucide-react';
+import { X, Clock, Crown, Settings, LogOut, Activity } from 'lucide-react';
 import Image from 'next/image';
-import { ReactNode } from 'react';
 
 export interface ProfileSidebarProps {
   isOpen: boolean;
@@ -16,6 +15,8 @@ export interface ProfileSidebarProps {
     trialStartDate?: number;
   };
   onSignOut: () => void;
+  onSettingsClick?: () => void;
+  onActivityClick?: () => void;
 }
 
 export function ProfileSidebar({
@@ -23,6 +24,8 @@ export function ProfileSidebar({
   onClose,
   user,
   onSignOut,
+  onSettingsClick,
+  onActivityClick,
 }: ProfileSidebarProps) {
   // Calculate trial days remaining
   const getRemainingTrialDays = () => {
@@ -126,10 +129,23 @@ export function ProfileSidebar({
 
           {/* Actions */}
           <div className="space-y-1">
+            {onActivityClick && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onActivityClick();
+                }}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                <Activity className="h-4 w-4" />
+                Activity
+              </button>
+            )}
+
             <button
               onClick={() => {
                 onClose();
-                // Settings functionality here
+                onSettingsClick?.();
               }}
               className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
             >

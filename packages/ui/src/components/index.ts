@@ -36,6 +36,11 @@ export {
 } from "./layout/subscription-sidebar";
 
 export {
+  ProfileSidebar,
+  type ProfileSidebarProps,
+} from "./layout/profile-sidebar";
+
+export {
   AppNavigationSidebar,
   type AppNavigationSidebarProps,
 } from "./layout/app-navigation-sidebar";
