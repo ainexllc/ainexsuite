@@ -51,7 +51,7 @@ export function AppNavigationSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 bottom-0 w-[240px] flex flex-col bg-black/60 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-out z-40 overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed left-0 top-0 bottom-0 w-[200px] flex flex-col bg-black/60 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-out z-40 overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Glow Effects */}
@@ -80,7 +80,7 @@ export function AppNavigationSidebar({
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
             >
               <Home className="h-5 w-5 flex-shrink-0" />
-              <span>Suite Dashboard</span>
+              <span className="truncate">Suite Dashboard</span>
             </Link>
 
             {/* Divider */}
@@ -109,19 +109,19 @@ export function AppNavigationSidebar({
                     
                     {/* Icon Container */}
                     <div 
-                      className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-black"
+                      className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-black flex-shrink-0"
                       style={{ color: app.color }}
                     >
                       <IconComponent className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                     </div>
 
                     {/* Text */}
-                    <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white">
+                    <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white truncate">
                       {app.name}
                     </span>
 
                     {/* Arrow */}
-                    <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)]">
+                    <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)] flex-shrink-0">
                       →
                     </span>
                   </a>
