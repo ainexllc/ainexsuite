@@ -10,6 +10,7 @@ import { SparkTile } from './tiles/spark-tile';
 import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
 import { TimerTile } from './tiles/timer-tile';
+import { AlarmClockTile } from './tiles/alarm-clock-tile';
 import { ClockService, ClockStyle } from '@/lib/clock-settings';
 import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
 import { BackgroundEffects, EffectType } from './background-effects';
@@ -523,6 +524,7 @@ export function DigitalClock() {
       variant: size
     };
 
+    if (tileId.includes('alarm-clock')) return <AlarmClockTile {...props} />;
     if (tileId.includes('calendar')) return <CalendarTile {...props} />;
     if (tileId.includes('focus')) return <FocusTile {...props} />;
     if (tileId.includes('spark')) return <SparkTile {...props} />;

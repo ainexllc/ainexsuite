@@ -9,6 +9,7 @@ import { SparkTile } from './spark-tile';
 import { WeatherTile } from './weather-tile';
 import { MarketTile } from './market-tile';
 import { TimerTile } from './timer-tile';
+import { AlarmClockTile } from './alarm-clock-tile';
 import { BACKGROUND_OPTIONS } from '@/lib/backgrounds';
 import { LAYOUTS } from '@/lib/layouts';
 import { EffectType } from '../background-effects';
@@ -521,6 +522,9 @@ export function TileTray({
               </div>
 
               <div className="grid grid-cols-1 gap-3">
+                  <div onClick={() => onAddTile?.('alarm-clock')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
+                  <AlarmClockTile id="alarm-clock-tray" isDraggable={true} />
+                  </div>
                   <div onClick={() => onAddTile?.('calendar')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
                   <CalendarTile id="calendar-tray" isDraggable={true} />
                   </div>
