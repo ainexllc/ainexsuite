@@ -57,13 +57,13 @@ export default function NotesWorkspace() {
       <WorkspacePageHeader
         title={`Welcome to Notes, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
         description="Your personal note-taking workspace"
-      >
-        {/* AI Workspace Insights */}
-        <WorkspaceInsights />
+      />
 
-        {/* Notes Content */}
-        <NoteBoard />
-      </WorkspacePageHeader>
+      {/* AI Workspace Insights */}
+      <WorkspaceInsights />
+
+      {/* Notes Content */}
+      <NoteBoard />
     </WorkspaceLayout>
   );
 }

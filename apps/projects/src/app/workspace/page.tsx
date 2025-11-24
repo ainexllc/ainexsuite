@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
 import { Loader2, LayoutGrid, ArrowLeft } from 'lucide-react';
 import { ProjectsBoard } from '@/components/projects-board';
 import { ProjectDashboard } from '@/components/project-dashboard';
@@ -52,25 +52,19 @@ export default function WorkspacePage() {
       searchPlaceholder="Search projects..."
       appName="Projects"
     >
-      {/* Welcome and Dashboard Section */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-text-primary mb-2">
-              {viewMode === 'dashboard' 
-                ? `Welcome to Projects, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`
-                : 'Planning Whiteboard'
-              }
-            </h2>
-            <p className="text-lg text-text-muted">
-              {viewMode === 'dashboard'
-                ? 'Your project workspace'
-                : 'Brainstorm and map out your ideas'
-              }
-            </p>
-          </div>
-          
-          {/* View Toggle Button */}
+      <WorkspacePageHeader
+        title={viewMode === 'dashboard'
+          ? `Welcome to Projects, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`
+          : 'Planning Whiteboard'
+        }
+        description={viewMode === 'dashboard'
+          ? 'Your project workspace'
+          : 'Brainstorm and map out your ideas'
+        }
+       />
+
+{/* View Toggle Button */}
+        <div className="flex justify-end mb-4">
           {viewMode === 'whiteboard' ? (
             <button
               onClick={() => setViewMode('dashboard')}
@@ -100,7 +94,6 @@ export default function WorkspacePage() {
             <ProjectDashboard onOpenWhiteboard={() => setViewMode('whiteboard')} />
           )}
         </div>
-      </section>
     </WorkspaceLayout>
   );
 }

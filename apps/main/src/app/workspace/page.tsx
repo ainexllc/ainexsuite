@@ -163,10 +163,10 @@ export default function WorkspacePage() {
           <WorkspacePageHeader
             title={`Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ${user.displayName?.split(' ')[0] || 'there'}!`}
             description="Here is your daily briefing."
-          >
-            {/* Smart Dashboard Grid */}
-            <SmartGrid />
-          </WorkspacePageHeader>
+          />
+
+          {/* Smart Dashboard Grid */}
+          <SmartGrid />
         </div>
       </WorkspaceLayout>
 

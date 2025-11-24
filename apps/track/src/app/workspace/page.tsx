@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import type { Habit, HabitCompletion } from '@ainexsuite/types';
 import { getHabits, getCompletions } from '@/lib/habits';
@@ -84,17 +84,15 @@ function TrackWorkspaceContent() {
       searchPlaceholder="Search habits..."
       appName="Track"
     >
+      <WorkspacePageHeader
+        title={`Welcome to Track, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
+        description={`${activeHabits.length} active ${activeHabits.length === 1 ? 'habit' : 'habits'}`}
+      />
+
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-text-primary mb-2">Habits</h1>
-                <p className="text-text-muted">
-                  {activeHabits.length} active {activeHabits.length === 1 ? 'habit' : 'habits'}
-                </p>
-              </div>
-
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => setIsCreatingHabit(true)}
                 className="flex items-center gap-2 px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition-colors"

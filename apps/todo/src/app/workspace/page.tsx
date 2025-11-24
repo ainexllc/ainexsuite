@@ -66,10 +66,10 @@ export default function TodoWorkspacePage() {
       appColor="#8b5cf6"
     >
       <TodoFirestoreSync />
-      
+
       <div className="max-w-7xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
-        
-        {/* Header */}
+
+        {/* Header with Controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 shrink-0">
           <div className="flex items-center gap-4 w-full sm:w-auto">
             <SpaceSwitcher />
@@ -122,7 +122,7 @@ export default function TodoWorkspacePage() {
               <TaskList onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
             </div>
           )}
-          
+
           {view === 'board' && (
             <div className="h-full overflow-x-auto overflow-y-hidden">
               <TaskBoard onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
@@ -138,8 +138,8 @@ export default function TodoWorkspacePage() {
       </div>
 
       {/* Editor Modal */}
-      <TaskEditor 
-        isOpen={showEditor} 
+      <TaskEditor
+        isOpen={showEditor}
         onClose={() => setShowEditor(false)}
         editTaskId={selectedTaskId}
       />

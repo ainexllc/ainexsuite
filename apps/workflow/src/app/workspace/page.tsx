@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
 import { Loader2 } from 'lucide-react';
 import { WorkflowCanvas } from '@/components/workflow-canvas/WorkflowCanvas';
 
@@ -50,22 +50,15 @@ export default function WorkspacePage() {
       searchPlaceholder="Search workflows..."
       appName="Workflow"
     >
-      {/* Welcome and Workflow Canvas Section */}
-      <section className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold text-text-primary mb-2">
-            Welcome to Workflow, {user.displayName ? user.displayName.split(' ')[0] : 'there'}!
-          </h2>
-          <p className="text-lg text-text-muted">
-            Your workflow design workspace
-          </p>
-        </div>
+      <WorkspacePageHeader
+        title={`Welcome to Workflow, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
+        description="Your workflow design workspace"
+      />
 
-        {/* Workflow Canvas */}
-        <div className="h-[calc(100vh-200px)] min-h-[600px] rounded-xl border border-outline-subtle bg-surface-elevated/50 backdrop-blur overflow-hidden relative shadow-inner">
-          <WorkflowCanvas />
-        </div>
-      </section>
+      {/* Workflow Canvas */}
+      <div className="h-[calc(100vh-200px)] min-h-[600px] rounded-xl border border-outline-subtle bg-surface-elevated/50 backdrop-blur overflow-hidden relative shadow-inner">
+        <WorkflowCanvas />
+      </div>
     </WorkspaceLayout>
   );
 }
