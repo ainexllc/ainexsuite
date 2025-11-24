@@ -40,13 +40,6 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
     ? new URLSearchParams(window.location.search).has('auth_token')
     : false;
 
-  // Debug logging
-  if (typeof window !== 'undefined') {
-    console.log('🔍 SSO: useSSOAuth initialized');
-    console.log('🔍 SSO: Current URL:', window.location.href);
-    console.log('🔍 SSO: hasAuthTokenOnMount:', hasAuthTokenOnMount);
-  }
-
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [hasAuthToken, setHasAuthToken] = useState(hasAuthTokenOnMount);
