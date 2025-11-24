@@ -3,10 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
 import { useAppColors } from '@ainexsuite/theme';
 import { Loader2 } from 'lucide-react';
 import { NoteBoard } from '@/components/notes/note-board';
+import { WorkspaceInsights } from '@/components/notes/workspace-insights';
 
 export default function NotesWorkspace() {
   const { user, loading } = useAuth();
@@ -53,20 +54,16 @@ export default function NotesWorkspace() {
       appName="NOTES"
       appColor={primary}
     >
-      {/* Welcome and Notes Section */}
-      <section className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold text-white mb-2">
-            Welcome to Notes, {user.displayName ? user.displayName.split(' ')[0] : 'there'}!
-          </h2>
-          <p className="text-lg text-white/70">
-            Your personal note-taking workspace
-          </p>
-        </div>
+      <WorkspacePageHeader
+        title={`Welcome to Notes, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
+        description="Your personal note-taking workspace"
+      >
+        {/* AI Workspace Insights */}
+        <WorkspaceInsights />
 
         {/* Notes Content */}
         <NoteBoard />
-      </section>
+      </WorkspacePageHeader>
     </WorkspaceLayout>
   );
 }

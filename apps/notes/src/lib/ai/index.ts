@@ -19,6 +19,7 @@
 
 // Export client
 export { GrokClient, getGrokClient, type GrokMessage, type GrokCompletionOptions, type GrokCompletionResponse } from "./grok-client";
+export { OpenRouterClient, getOpenRouterClient } from "./openrouter-client";
 
 // Export helper functions
 export {

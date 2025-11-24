@@ -39,6 +39,7 @@ export const serverEnv = {
   TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN ?? "",
   TWILIO_FROM_NUMBER: process.env.TWILIO_FROM_NUMBER ?? "",
   XAI_API_KEY: process.env.XAI_API_KEY ?? "",
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ?? "",
 } as const;
 
 export const firebaseClientConfig = {
