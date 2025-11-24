@@ -14,7 +14,15 @@ export const firebaseConfig = {
 };
 
 export const FIREBASE_REGION = 'us-central1';
-export const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
+
+// Session cookie duration: 14 days
+// Firebase Admin SDK createSessionCookie expects MILLISECONDS
+// res.cookies.set maxAge expects SECONDS
+export const SESSION_COOKIE_MAX_AGE_MS = 60 * 60 * 24 * 14 * 1000; // 14 days in milliseconds
+export const SESSION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 14; // 14 days in seconds
+
+// @deprecated Use SESSION_COOKIE_MAX_AGE_MS or SESSION_COOKIE_MAX_AGE_SECONDS
+export const SESSION_COOKIE_MAX_AGE = SESSION_COOKIE_MAX_AGE_MS; // Keep for backward compat
 
 // Environment-aware cookie domain
 export const SESSION_COOKIE_DOMAIN =

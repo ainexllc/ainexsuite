@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE_DOMAIN, SESSION_COOKIE_MAX_AGE } from '@ainexsuite/firebase/config';
+import { SESSION_COOKIE_DOMAIN, SESSION_COOKIE_MAX_AGE_MS, SESSION_COOKIE_MAX_AGE_SECONDS } from '@ainexsuite/firebase/config';
 
 /**
  * POST /api/auth/session
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         const res = NextResponse.json({ sessionCookie, user });
         res.cookies.set('__session', sessionCookie, {
           domain: cookieDomain,
-          maxAge: SESSION_COOKIE_MAX_AGE / 1000,
+          maxAge: SESSION_COOKIE_MAX_AGE_SECONDS, // 14 days in seconds
           httpOnly: true,
           secure: false, // Allow insecure cookies in dev
           sameSite: 'lax',
@@ -143,9 +143,9 @@ export async function POST(request: NextRequest) {
     // Verify ID token
     const decodedToken = await adminAuth.verifyIdToken(idToken);
 
-    // Create session cookie
+    // Create session cookie (Firebase Admin SDK expects milliseconds)
     const sessionCookie = await adminAuth.createSessionCookie(idToken, {
-      expiresIn: SESSION_COOKIE_MAX_AGE,
+      expiresIn: SESSION_COOKIE_MAX_AGE_MS,
     });
 
     // Get or create user document
@@ -187,9 +187,12 @@ export async function POST(request: NextRequest) {
     // Set session cookie on response
     const res = NextResponse.json({ sessionCookie, user });
 
+    console.log('🔐 session: Setting __session cookie with domain:', cookieDomain);
+    console.log('🔐 session: Cookie options - httpOnly: true, secure:', process.env.NODE_ENV === 'production', 'sameSite: lax, maxAge:', SESSION_COOKIE_MAX_AGE_SECONDS);
+
     res.cookies.set('__session', sessionCookie, {
       domain: cookieDomain,
-      maxAge: SESSION_COOKIE_MAX_AGE / 1000, // Convert to seconds
+      maxAge: SESSION_COOKIE_MAX_AGE_SECONDS, // 14 days in seconds
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

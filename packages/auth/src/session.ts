@@ -3,7 +3,7 @@
  */
 
 import Cookies from 'js-cookie';
-import { SESSION_COOKIE_MAX_AGE } from '@ainexsuite/firebase/config';
+import { SESSION_COOKIE_MAX_AGE_SECONDS } from '@ainexsuite/firebase/config';
 import { getCookieDomain } from './utils/domain';
 
 const SESSION_COOKIE_NAME = '__session';
@@ -17,22 +17,29 @@ export interface SessionData {
 
 /**
  * Set session cookie with dynamic domain detection
- * This cookie will be accessible across all subdomains or app-specific domain
+ * NOTE: This is only used for NON-httpOnly cookies (client-readable).
+ * The main session cookie is set by the server with httpOnly=true for security.
+ * This client-side cookie is a secondary backup for cases where we need client-side access.
+ *
+ * @deprecated Server now handles the primary session cookie. This is kept for backward compatibility.
  */
-export function setSessionCookie(sessionCookie: string): void {
-  const cookieDomain = getCookieDomain();
-
-  Cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
-    domain: cookieDomain,
-    expires: SESSION_COOKIE_MAX_AGE / (60 * 60 * 24), // Convert seconds to days
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  });
+export function setSessionCookie(_sessionCookie: string): void {
+  // IMPORTANT: Do NOT set a client-side cookie here.
+  // The server sets the __session cookie with httpOnly=true for security.
+  // Setting a duplicate non-httpOnly cookie causes issues where the browser
+  // sends the wrong cookie to the server.
+  //
+  // The session cookie is now managed entirely by the server via:
+  // - /api/auth/session (creates cookie on login)
+  // - /api/auth/custom-token (reads cookie for SSO)
+  console.log('🔐 Session: Server handles session cookie (httpOnly)');
 }
 
 /**
  * Get session cookie
+ * NOTE: This only reads non-httpOnly cookies. The primary session cookie
+ * is httpOnly and cannot be read by JavaScript (for security).
+ * Use this only for checking if a backup cookie exists.
  */
 export function getSessionCookie(): string | undefined {
   return Cookies.get(SESSION_COOKIE_NAME);
@@ -40,12 +47,21 @@ export function getSessionCookie(): string | undefined {
 
 /**
  * Remove session cookie (logout)
+ * NOTE: This removes any client-readable cookie. The httpOnly cookie
+ * is cleared when the browser receives a Set-Cookie header with max-age=0
+ * from the server logout endpoint.
  */
 export function removeSessionCookie(): void {
   const cookieDomain = getCookieDomain();
 
+  // Remove any client-side cookie (for cleanup)
   Cookies.remove(SESSION_COOKIE_NAME, {
     domain: cookieDomain,
+    path: '/',
+  });
+
+  // Also try without domain for same-origin cookies
+  Cookies.remove(SESSION_COOKIE_NAME, {
     path: '/',
   });
 }
@@ -110,7 +126,7 @@ export function shouldRefreshSession(): boolean {
   if (!lastActivity) return false;
 
   const elapsed = Date.now() - lastActivity;
-  const refreshThreshold = (SESSION_COOKIE_MAX_AGE * 1000) * 0.75; // 75% of max age
+  const refreshThreshold = (SESSION_COOKIE_MAX_AGE_SECONDS * 1000) * 0.75; // 75% of max age
 
   return elapsed > refreshThreshold;
 }
@@ -129,7 +145,7 @@ export function clearSessionData(): void {
  */
 export function initializeSession(sessionCookie: string): void {
   setSessionCookie(sessionCookie);
-  const expiryTimestamp = Date.now() + (SESSION_COOKIE_MAX_AGE * 1000);
+  const expiryTimestamp = Date.now() + (SESSION_COOKIE_MAX_AGE_SECONDS * 1000);
   setSessionTimeout(expiryTimestamp);
   updateLastActivity();
 }

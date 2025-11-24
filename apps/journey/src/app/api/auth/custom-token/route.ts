@@ -24,7 +24,13 @@ export async function POST(_request: NextRequest) {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('__session')?.value;
 
+    // Debug: Log all cookies received
+    const allCookies = cookieStore.getAll();
+    console.log('🔐 custom-token: All cookies received:', allCookies.map(c => c.name));
+    console.log('🔐 custom-token: __session cookie exists:', !!sessionCookie);
+
     if (!sessionCookie) {
+      console.log('🔐 custom-token: No __session cookie found in request');
       return NextResponse.json(
         { error: 'No session cookie found' },
         { status: 401 }
