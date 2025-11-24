@@ -57,10 +57,15 @@ export class OpenRouterClient {
         endpoint = "https://api.x.ai/v1/chat/completions";
         token = serverEnv.XAI_API_KEY;
         
-        // Map OpenRouter IDs to xAI Direct IDs if needed
-        // "grok-beta" is typically the fast, latest model on xAI API.
+        // Map OpenRouter IDs to xAI Direct IDs
+        // "grok-4-fast" is the closest match for "4.1 fast" on the direct API.
         if (model === "x-ai/grok-4.1-fast" || model === "grok-4.1-fast") {
-            model = "grok-beta"; 
+            model = "grok-4-fast"; 
+        } else if (model === "grok-beta" || model === "x-ai/grok-beta") {
+            model = "grok-3";
+        } else if (model.startsWith("x-ai/")) {
+            // Fallback: strip prefix
+            model = model.replace("x-ai/", "");
         }
         
         headers = {
@@ -69,10 +74,13 @@ export class OpenRouterClient {
     }
 
     if (!token) {
+        console.error("AI Client: Missing API Key");
         throw new Error("AI API key is missing");
     }
 
     headers["Authorization"] = `Bearer ${token}`;
+
+    console.log(`AI Client Request: ${endpoint} [Model: ${model}]`);
 
     const response = await fetch(endpoint, {
       method: "POST",
@@ -89,6 +97,7 @@ export class OpenRouterClient {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`AI Client Error (${response.status}):`, errorText);
       throw new Error(`AI API error (${response.status}): ${errorText}`);
     }
 
