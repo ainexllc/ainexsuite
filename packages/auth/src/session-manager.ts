@@ -27,34 +27,30 @@ export class SessionManager {
   }
 
   static async createSession(user: User): Promise<void> {
-    try {
-      // Get Firebase ID token
-      const idToken = await user.getIdToken();
+    // Get Firebase ID token
+    const idToken = await user.getIdToken();
 
-      // Call Cloud Function to create session cookie
-      const response = await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ idToken }),
-      });
+    // Call Cloud Function to create session cookie
+    const response = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idToken }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to create session');
-      }
-
-      const { sessionCookie } = await response.json();
-
-      // Set cookie with appropriate domain
-      const config = this.getDomainConfig();
-      this.setCookie('__session', sessionCookie, config);
-
-      // Store user info in localStorage for quick access
-      this.storeUserInfo(user);
-    } catch (error) {
-      throw error;
+    if (!response.ok) {
+      throw new Error('Failed to create session');
     }
+
+    const { sessionCookie } = await response.json();
+
+    // Set cookie with appropriate domain
+    const config = this.getDomainConfig();
+    this.setCookie('__session', sessionCookie, config);
+
+    // Store user info in localStorage for quick access
+    this.storeUserInfo(user);
   }
 
   static setCookie(name: string, value: string, config: SessionConfig): void {

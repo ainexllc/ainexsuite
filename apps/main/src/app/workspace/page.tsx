@@ -1,6 +1,6 @@
 'use client';
 
-// Custom SVG app icons for workspace navigation
+// Use shared navigation icons from the sidebar
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
@@ -9,37 +9,39 @@ import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
 import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
 import { useVisualStyle } from '@/lib/theme/visual-style';
-import { useAllAppColors } from '@ainexsuite/theme';
-import { Loader2, Settings as AdminIcon } from 'lucide-react';
+import {
+  Loader2,
+  StickyNote,
+  Map,
+  CheckSquare,
+  TrendingUp,
+  Camera,
+  Sprout,
+  HeartPulse,
+  Dumbbell,
+  Briefcase,
+  Workflow,
+  Shield as AdminIcon
+} from 'lucide-react';
 import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
-import { AppsNavVision } from '@/components/workspace/apps-nav-vision';
-import { NotesIcon } from '@/components/icons/notes-icon';
-import { JourneyIcon } from '@/components/icons/journey-icon';
-import { TasksIcon } from '@/components/icons/tasks-icon';
-import { TrackIcon } from '@/components/icons/track-icon';
-import { MomentsIcon } from '@/components/icons/moments-icon';
-import { GrowIcon } from '@/components/icons/grow-icon';
-import { PulseIcon } from '@/components/icons/pulse-icon';
-import { FitIcon } from '@/components/icons/fit-icon';
-import { ProjectsIcon } from '@/components/icons/projects-icon';
-import { WorkflowIcon } from '@/components/icons/workflow-icon';
+import { MarketingSlideshow } from '@/components/workspace/marketing-slideshow';
 import { SUITE_APPS, getAppUrl } from '@ainexsuite/ui';
 
 // Environment-aware app URLs
 const isDev = process.env.NODE_ENV === 'development';
 
-// Map custom icons to shared app configuration
+// Map Lucide icons to shared app configuration (same as navigation sidebar)
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  notes: NotesIcon,
-  journey: JourneyIcon,
-  todo: TasksIcon,
-  track: TrackIcon,
-  moments: MomentsIcon,
-  grow: GrowIcon,
-  pulse: PulseIcon,
-  fit: FitIcon,
-  projects: ProjectsIcon,
-  workflow: WorkflowIcon,
+  notes: StickyNote,
+  journey: Map,
+  todo: CheckSquare,
+  track: TrendingUp,
+  moments: Camera,
+  grow: Sprout,
+  pulse: HeartPulse,
+  fit: Dumbbell,
+  projects: Briefcase,
+  workflow: Workflow,
   admin: AdminIcon,
 };
 
@@ -48,7 +50,7 @@ const apps = Object.entries(SUITE_APPS).map(([slug, config]) => ({
   name: config.name,
   slug: config.slug,
   description: config.description,
-  icon: iconMap[slug] || AdminIcon,
+  icon: iconMap[slug] || Briefcase,
   color: config.color,
   url: getAppUrl(slug, isDev),
 }));
@@ -57,7 +59,6 @@ export default function WorkspacePage() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const { selectedVariant } = useVisualStyle();
-  const { colors: appColors } = useAllAppColors();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
 
@@ -67,19 +68,6 @@ export default function WorkspacePage() {
       router.push('/');
     }
   }, [user, loading, router]);
-
-  // Combine apps with installation status and dynamic colors
-  const allAppsWithStatus = apps.map(app => {
-    const dynamicColors = appColors[app.slug];
-    return {
-      ...app,
-      // Use dynamic colors if available, otherwise keep legacy gradient classes
-      primaryColor: dynamicColors?.primary,
-      secondaryColor: dynamicColors?.secondary,
-      isInstalled: !!user?.appsUsed?.[app.slug as keyof typeof user.appsUsed],
-      isLocked: false // Default to unlocked/available for now
-    };
-  }).sort((a, b) => (a.isInstalled === b.isInstalled ? 0 : a.isInstalled ? -1 : 1)); // Installed first
 
   // Cmd+K / Ctrl+K keyboard shortcut for search
   useEffect(() => {
@@ -158,10 +146,9 @@ export default function WorkspacePage() {
         onActivityClick={() => setActivePanel('activity')}
       >
         <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-          {/* Apps Placeholder Section */}
-          <section className="space-y-3">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">Apps</h3>
-            <AppsNavVision apps={allAppsWithStatus} />
+          {/* Marketing Slideshow */}
+          <section>
+            <MarketingSlideshow />
           </section>
 
           {/* AI Insights Section */}

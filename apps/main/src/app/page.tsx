@@ -32,9 +32,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Reading your latest reflections for key signals…', emoji: '🔎' },
-  { text: 'Mapping emotional trends and focus shifts in seconds…', emoji: '🧩' },
-  { text: 'Delivering your next breakthrough prompt on demand…', emoji: '🚀' },
+  { text: 'Syncing your journal, notes, tasks, and fitness data in real-time…', emoji: '🔄' },
+  { text: 'AI analyzing patterns across all your apps for insights…', emoji: '🧠' },
+  { text: 'Your unified workspace is ready—everything connected…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -44,71 +44,71 @@ const navLinks: NavLink[] = [
 
 const appCards: AppCard[] = [
   {
-    name: 'Journey',
-    description: 'AI-powered journaling with mood tracking, insights, and thoughtful prompts.',
-    icon: BookOpen,
-    color: '#f97316',
-    href: 'https://journey.ainexsuite.com',
-  },
-  {
     name: 'Notes',
-    description: 'Smart note-taking with AI organization, tags, and powerful search.',
+    description: 'AI-powered knowledge base with multimodal capture, auto-organization, and intelligent synthesis. Capture clarity.',
     icon: StickyNote,
     color: '#3b82f6',
     href: 'https://notes.ainexsuite.com',
   },
   {
+    name: 'Journey',
+    description: 'Personal reflection studio with narrative intelligence, emotional analytics, and memory mapping. Write your story.',
+    icon: BookOpen,
+    color: '#f97316',
+    href: 'https://journey.ainexsuite.com',
+  },
+  {
+    name: 'Todo',
+    description: 'Adaptive task management with AI prioritization, dependency tracking, and calendar-aware planning. Plan boldly.',
+    icon: CheckSquare,
+    color: '#f59e0b',
+    href: 'https://todo.ainexsuite.com',
+  },
+  {
     name: 'Fit',
-    description: 'Fitness tracking with workout plans, progress analytics, and AI coaching.',
+    description: 'Adaptive training & coaching with performance intelligence, recovery guardrails, and wearable sync. Train smarter.',
     icon: Dumbbell,
     color: '#22c55e',
     href: 'https://fit.ainexsuite.com',
   },
   {
     name: 'Grow',
-    description: 'Personal development tracker for goals, habits, and continuous improvement.',
+    description: 'Habit consistency builder with streak analytics, smart reminders, and routine automation. Build unbreakable habits.',
     icon: TrendingUp,
     color: '#8b5cf6',
     href: 'https://grow.ainexsuite.com',
   },
   {
-    name: 'Moments',
-    description: 'Photo memories organized automatically with AI-powered tagging and stories.',
-    icon: Camera,
-    color: '#ec4899',
-    href: 'https://moments.ainexsuite.com',
-  },
-  {
     name: 'Pulse',
-    description: 'Health metrics dashboard tracking vitals, sleep, and wellness trends.',
+    description: 'Time mastery & focus companion with smart clock, Pomodoro timers, and circadian rhythm support. Master your time.',
     icon: Heart,
     color: '#ef4444',
     href: 'https://pulse.ainexsuite.com',
   },
   {
-    name: 'Todo',
-    description: 'Intelligent task management with AI prioritization and time blocking.',
-    icon: CheckSquare,
-    color: '#f59e0b',
-    href: 'https://todo.ainexsuite.com',
+    name: 'Moments',
+    description: 'Memory vault & storytelling with AI organization, mood clustering, and shareable highlight reels. Capture the moment.',
+    icon: Camera,
+    color: '#ec4899',
+    href: 'https://moments.ainexsuite.com',
   },
   {
     name: 'Track',
-    description: 'Universal tracking for anything—habits, metrics, streaks, and more.',
+    description: 'Universal progress tracking with smart logging, goal forecasting, and noise-filtering charts. Visualize change.',
     icon: Activity,
     color: '#14b8a6',
     href: 'https://track.ainexsuite.com',
   },
   {
     name: 'Projects',
-    description: 'Project management with timelines, milestones, and team collaboration.',
+    description: 'Visual project management with interactive whiteboards, team collaboration, and progress analytics. Plan. Execute. Deliver.',
     icon: FolderKanban,
     color: '#6366f1',
     href: 'https://projects.ainexsuite.com',
   },
   {
     name: 'Workflow',
-    description: 'Automation workflows connecting your apps and data seamlessly.',
+    description: 'Visual automation engine with drag-and-drop designer, real-time monitoring, and custom logic. Build workflows.',
     icon: WorkflowIcon,
     color: '#10b981',
     href: 'https://workflow.ainexsuite.com',
@@ -242,35 +242,35 @@ function MainHomePageContent() {
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Privacy-first & Encrypted' },
+          badge: { icon: Shield, text: 'Privacy-First & Encrypted' },
           headline: 'Ten apps. One workspace. Zero friction.',
           subheadline: 'Your complete life operating system.',
-          description: 'Stop juggling disconnected apps. AINexSuite brings journaling, notes, fitness, projects, and more into one intelligent workspace where everything works together seamlessly.',
+          description: 'Replace 10+ disconnected tools with one unified workspace. AINexSuite brings notes, journaling, fitness, projects, habits, time tracking, memories, and automation into an intelligent ecosystem powered by AI—where everything works together seamlessly.',
           highlights: [
             {
               icon: Brain,
-              title: 'AI That Knows You',
-              description: 'Cross-app intelligence that learns from your entire life—not just one slice of it.',
+              title: 'AI-Powered Intelligence',
+              description: 'Grok 4 integration across every app learns from your entire life—journal insights inform goals, health metrics guide planning, patterns emerge everywhere.',
             },
             {
               icon: LinkIcon,
-              title: 'Everything Connected',
-              description: 'Tasks reference journal entries. Fitness affects mood tracking. Insights flow everywhere.',
+              title: 'Unified & Connected',
+              description: 'Real-time data sync across all apps. Tasks reference journal entries. Workouts update mood tracking. Memories connect to moments. Everything flows together.',
             },
           ],
         }}
         apps={{
-          sectionTitle: 'All Your Apps, One Unified Workspace',
-          sectionDescription: 'Ten specialized apps working together seamlessly. From journaling to fitness, notes to projects—everything connected, everything intelligent.',
+          sectionTitle: 'Ten Specialized Apps, One Ecosystem',
+          sectionDescription: 'From knowledge capture to memory preservation, fitness to focus, habits to automation—each app is powerful alone, transformative together. Built on Firebase with real-time sync and Grok 4 AI intelligence.',
           cards: appCards,
         }}
         login={{
           badgeText: 'Early Access',
-          signUpTitle: 'Create Account',
-          signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to access AINexAgent.',
-          signInDescription: 'Sign in to access your AI workspace.',
-          footerText: 'We never post or access your data without permission. 30-day trial included.',
+          signUpTitle: 'Start Your Journey',
+          signInTitle: 'Welcome Back',
+          signUpDescription: 'Create your account to unlock all 10 apps. One workspace, infinite possibilities.',
+          signInDescription: 'Sign in to access your unified workspace and all your apps.',
+          footerText: 'Enterprise-grade encryption. Your data is yours. 30-day free trial included.',
         }}
         features={{
           sectionTitle: 'Why Unified Matters',
@@ -278,7 +278,7 @@ function MainHomePageContent() {
           cards: featureCards,
         }}
         footer={{
-          appDisplayName: "AINexAgent",
+          appDisplayName: "AINexSuite",
           productLinks,
           companyLinks,
           resourceLinks,

@@ -51,7 +51,7 @@ export function AuthBootstrap() {
       .then(() => {
         setBootstrapped(true);
       })
-      .catch((error) => {
+      .catch((_error) => {
         // Reset bootstrapping flag on error
         setIsBootstrapping(false);
         setBootstrapped(true);
@@ -66,23 +66,18 @@ export function AuthBootstrap() {
 }
 
 async function bootstrapFromCookie(sessionCookie: string): Promise<void> {
-  try {
-    const response = await fetch('/api/auth/custom-token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionCookie }),
-    });
+  const response = await fetch('/api/auth/custom-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionCookie }),
+  });
 
-    if (!response.ok) {
-      throw new Error(`Failed to get custom token: ${response.status}`);
-    }
-
-    const { customToken } = await response.json();
-
-    // Sign in with custom token
-    await signInWithCustomToken(auth, customToken);
-  } catch (error) {
-    // Silent fail - user will need to login manually
-    throw error;
+  if (!response.ok) {
+    throw new Error(`Failed to get custom token: ${response.status}`);
   }
+
+  const { customToken } = await response.json();
+
+  // Sign in with custom token
+  await signInWithCustomToken(auth, customToken);
 }

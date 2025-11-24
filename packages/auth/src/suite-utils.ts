@@ -119,7 +119,7 @@ export function canAccessApp(user: User, appName: AppName): { allowed: boolean; 
 /**
  * Mark an app as used for the current user
  */
-export function markAppAsUsed(appName: AppName): void {
+export function markAppAsUsed(_appName: AppName): void {
   // This function will be called by each app to track usage
   // Implementation will be done via Cloud Function call
 }

@@ -11,7 +11,7 @@ export interface VisionApp {
   slug: string;
   description: string;
   icon: React.ElementType;
-  color?: string; // Legacy: e.g. "from-purple-500 to-pink-500"
+  color?: string; // Hex color for accent (e.g., "#8b5cf6")
   primaryColor?: string; // New: Hex color from Firestore
   secondaryColor?: string; // New: Hex color from Firestore
   url: string;
@@ -25,58 +25,47 @@ interface AppsNavVisionProps {
 }
 
 export function AppsNavVision({ apps, className }: AppsNavVisionProps) {
-  // In the main dashboard, we don't necessarily have an "active" state for these 
-  // because clicking them takes you to a different subdomain. 
-  // However, we could highlight 'dashboard' if we had one in the list.
-  
   return (
-    <div className={clsx("w-full border-b border-white/5 bg-black/20 backdrop-blur-sm z-20", className)}>
-        {/* Scrollable Container */}
-        <div className="flex items-start justify-center gap-2 px-4 py-4 w-full max-w-[1440px] mx-auto flex-wrap min-[830px]:flex-nowrap">
-          {apps.map((app) => (
-            <Link 
+    <div className={clsx("w-full rounded-xl border border-white/10 bg-black/20 backdrop-blur-xl overflow-hidden", className)}>
+      {/* Horizontal scrollable container */}
+      <div className="flex items-center gap-3 px-4 py-4 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        {apps.map((app) => {
+          const accentColor = app.primaryColor || app.color || '#8b5cf6';
+
+          return (
+            <Link
               key={app.slug}
               href={app.url}
-              className="group flex flex-col items-center gap-2 min-w-[72px] pb-2 outline-none no-underline"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex items-center gap-3 min-w-[140px] rounded-xl px-3 py-2.5 transition-all duration-300 hover:translate-y-[-2px] overflow-hidden flex-shrink-0"
+              style={{
+                '--accent': accentColor,
+                '--accent-dim': `${accentColor}1a`, // 10% opacity
+                '--accent-glow': `${accentColor}40`, // 25% opacity
+              } as React.CSSProperties}
             >
-              {/* Glass Icon Container */}
-              <motion.div 
-                 whileHover={{ y: -4 }}
-                 whileTap={{ scale: 0.95 }}
-                 className={clsx(
-                   "relative w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300",
-                   "bg-white/5 backdrop-blur-md border border-white/10 shadow-lg",
-                   "group-hover:bg-white/10 group-hover:border-white/20",
-                   !app.isInstalled && "opacity-80 saturate-50"
-                 )}
+              {/* Background & Border Effects */}
+              <div className="absolute inset-0 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_20px_-5px_var(--accent-glow)]" />
+
+              {/* Icon Container */}
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] flex-shrink-0"
+                style={{ color: accentColor }}
               >
-                {/* Inner Sphere */}
-                <div
-                  className={clsx(
-                    "w-10 h-10 rounded-xl flex items-center justify-center shadow-inner",
-                    !app.primaryColor && "bg-gradient-to-br",
-                    !app.primaryColor && app.color
-                  )}
-                  style={
-                    app.primaryColor
-                      ? { backgroundColor: app.primaryColor }
-                      : undefined
-                  }
-                >
-                   <app.icon className="w-5 h-5 text-white drop-shadow-md" />
-                </div>
+                <app.icon className="h-4.5 w-4.5 transition-all duration-300 group-hover:text-black" />
               </motion.div>
 
               {/* App Name */}
-              <span className={clsx(
-                "text-[11px] font-medium tracking-wide transition-colors duration-200",
-                app.isInstalled ? "text-gray-400 group-hover:text-white" : "text-gray-600 group-hover:text-gray-400"
-              )}>
+              <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white truncate">
                 {app.name}
               </span>
             </Link>
-          ))}
-        </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

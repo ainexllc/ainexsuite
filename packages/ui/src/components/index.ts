@@ -40,6 +40,46 @@ export {
   type ProfileSidebarProps,
 } from "./layout/profile-sidebar";
 
+// Profile Components
+export {
+  ProfileSection,
+  type ProfileSectionProps,
+} from "./profile/profile-section";
+
+export {
+  UsageMeter,
+  type UsageMeterProps,
+} from "./profile/usage-meter";
+
+export {
+  ConnectedApps,
+  type ConnectedAppsProps,
+  type App,
+} from "./profile/connected-apps";
+
+export {
+  ActivityStats,
+  type ActivityStatsProps,
+  type ActivityStat,
+} from "./profile/activity-stats";
+
+export {
+  ThemeToggle,
+  type ThemeToggleProps,
+  type Theme,
+} from "./profile/theme-toggle";
+
+export {
+  HelpSupport,
+  type HelpSupportProps,
+} from "./profile/help-support";
+
+export {
+  WhatsNew,
+  type WhatsNewProps,
+  type Update,
+} from "./profile/whats-new";
+
 export {
   AppNavigationSidebar,
   type AppNavigationSidebarProps,

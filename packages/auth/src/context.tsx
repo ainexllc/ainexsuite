@@ -164,7 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Update last activity
         updateLastActivity();
-      } catch (error) {
+      } catch (_error) {
+        // Silent fail on refresh - user will be prompted to login when session expires
       }
     }, 60000); // Check every minute
 
