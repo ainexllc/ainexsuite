@@ -142,14 +142,14 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           setIsEditing(true);
         }}
       >
-        {/* Atmospheric Orbs */}
+        {/* Note Color Tint Layer - Base Layer */}
+        <div className={clsx("absolute inset-0 pointer-events-none opacity-20 transition-colors duration-300", isDefault ? "bg-transparent" : `bg-${note.color}`)} />
+
+        {/* Atmospheric Orbs - Middle Layer */}
         <div className={clsx("absolute -top-32 -right-32 h-64 w-64 rounded-full blur-[80px] pointer-events-none opacity-20 transition-colors duration-500", orbColor)} />
         <div className={clsx("absolute -bottom-32 -left-32 h-64 w-64 rounded-full blur-[80px] pointer-events-none opacity-15 transition-colors duration-500", orb2Color)} />
         
-        {/* Note Color Tint Layer */}
-        <div className={clsx("absolute inset-0 pointer-events-none opacity-10 transition-colors duration-300", isDefault ? "bg-transparent" : `bg-${note.color}`)} />
-
-        {/* Pattern Overlay */}
+        {/* Pattern Overlay - Top Layer */}
         {patternClass && (
             <div className={clsx("absolute inset-0 pointer-events-none opacity-5 mix-blend-overlay", patternClass)} />
         )}
