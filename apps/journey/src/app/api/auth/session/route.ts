@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
       cookieDomain = '.ainexnotes.com';
     } else if (hostname.includes('ainexjourney.com')) {
       cookieDomain = '.ainexjourney.com';
-    } else if (hostname.includes('ainextodo.com')) {
-      cookieDomain = '.ainextodo.com';
+    } else if (hostname.includes('ainextask.com')) {
+      cookieDomain = '.ainextask.com';
     } else if (hostname.includes('ainextrack.com')) {
       cookieDomain = '.ainextrack.com';
     } else if (hostname.includes('ainexmoments.com')) {

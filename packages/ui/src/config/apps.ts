@@ -12,7 +12,7 @@ export const SUITE_APPS = {
     color: '#f97316', // orange-500
   },
   todo: {
-    name: 'Todo',
+    name: 'Task',
     slug: 'todo',
     description: 'Manage tasks and projects',
     color: '#8b5cf6', // violet-500
