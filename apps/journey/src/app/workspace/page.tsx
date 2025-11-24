@@ -16,11 +16,6 @@ export default function WorkspacePage() {
 
   return (
     <>
-      <WorkspacePageHeader
-        title={`Welcome to Journey, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
-        description="Your personal journaling workspace"
-      />
-
       {/* Dashboard Content */}
       <DashboardView dateFilter={dateFilter || undefined} />
     </>

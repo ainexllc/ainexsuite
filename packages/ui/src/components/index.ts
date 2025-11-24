@@ -92,7 +92,7 @@ export {
 
 export { AtmosphericGlows } from "./layouts/atmospheric-glows";
 export { WorkspaceHeader } from "./layouts/workspace-header";
-export { WorkspacePageHeader, type WorkspacePageHeaderProps } from "./layouts/workspace-page-header";
+// WorkspacePageHeader hidden - may be used later (see _workspace-page-header.tsx)
 export { WorkspaceLayout } from "./layouts/workspace-layout";
 export {
   FooterPageLayout,

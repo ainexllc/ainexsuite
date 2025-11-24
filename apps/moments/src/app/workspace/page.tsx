@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import type { Moment } from '@ainexsuite/types';
 import { PhotoGrid } from '@/components/photo-grid';
@@ -83,11 +83,6 @@ function MomentsWorkspaceContent() {
       searchPlaceholder="Search moments..."
       appName="Moments"
     >
-      <WorkspacePageHeader
-        title={`Welcome to Moments, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
-        description="Capture and cherish your precious memories"
-      />
-
       <div className="max-w-7xl mx-auto">
         {/* Filter Bar */}
         {allTags.length > 0 && (

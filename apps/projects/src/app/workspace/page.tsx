@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { Loader2, LayoutGrid, ArrowLeft } from 'lucide-react';
 import { ProjectsBoard } from '@/components/projects-board';
 import { ProjectDashboard } from '@/components/project-dashboard';
@@ -52,18 +52,7 @@ export default function WorkspacePage() {
       searchPlaceholder="Search projects..."
       appName="Projects"
     >
-      <WorkspacePageHeader
-        title={viewMode === 'dashboard'
-          ? `Welcome to Projects, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`
-          : 'Planning Whiteboard'
-        }
-        description={viewMode === 'dashboard'
-          ? 'Your project workspace'
-          : 'Brainstorm and map out your ideas'
-        }
-       />
-
-{/* View Toggle Button */}
+      {/* View Toggle Button */}
         <div className="flex justify-end mb-4">
           {viewMode === 'whiteboard' ? (
             <button

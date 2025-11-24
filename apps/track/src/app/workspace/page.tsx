@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import type { Habit, HabitCompletion } from '@ainexsuite/types';
 import { getHabits, getCompletions } from '@/lib/habits';
@@ -84,11 +84,6 @@ function TrackWorkspaceContent() {
       searchPlaceholder="Search habits..."
       appName="Track"
     >
-      <WorkspacePageHeader
-        title={`Welcome to Track, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
-        description={`${activeHabits.length} active ${activeHabits.length === 1 ? 'habit' : 'habits'}`}
-      />
-
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">

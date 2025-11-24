@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import { WorkoutList } from '@/components/workout-list';
 import { WorkoutEditor } from '@/components/workout-editor';
@@ -89,12 +89,7 @@ function FitWorkspaceContent() {
     >
       <FitFirestoreSync />
 
-      <WorkspacePageHeader
-        title={`Welcome to Fit, ${user.displayName ? user.displayName.split(' ')[0] : 'there'}!`}
-        description="Track your fitness journey"
-       />
-
-<div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4 w-full sm:w-auto">

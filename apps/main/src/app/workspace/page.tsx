@@ -7,7 +7,7 @@ import { useAuth } from '@ainexsuite/auth';
 
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
-import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
+import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useVisualStyle } from '@/lib/theme/visual-style';
 import {
   Loader2,
@@ -160,11 +160,6 @@ export default function WorkspacePage() {
           </section>
 
           {/* Welcome Section with Dashboard */}
-          <WorkspacePageHeader
-            title={`Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ${user.displayName?.split(' ')[0] || 'there'}!`}
-            description="Here is your daily briefing."
-          />
-
           {/* Smart Dashboard Grid */}
           <SmartGrid />
         </div>
