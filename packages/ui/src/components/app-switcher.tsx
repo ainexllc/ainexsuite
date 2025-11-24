@@ -4,11 +4,11 @@
  * AppSwitcher Component
  * Waffle menu that allows users to quickly switch between apps
  * Shows recently used apps and all available apps
+ * Implements SSO - automatically signs users into target apps
  */
 
 import { useState, useEffect } from 'react';
 import { Grid, Home } from 'lucide-react';
-import Link from 'next/link';
 import * as LucideIcons from 'lucide-react';
 import type { AppConfig, AppSlug } from '@ainexsuite/types';
 import { APP_REGISTRY } from '@ainexsuite/types';
@@ -61,8 +61,39 @@ export function AppSwitcher({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen]);
 
-  const handleAppClick = (app: AppConfig) => {
+  /**
+   * Handle app switching with SSO
+   * Requests a custom token and navigates with it
+   */
+  const handleAppSwitch = async (app: AppConfig, event: React.MouseEvent) => {
+    event.preventDefault(); // Prevent default link navigation
     setIsOpen(false);
+
+    try {
+      // Call the custom-token API endpoint
+      const response = await fetch('/api/auth/custom-token', {
+        method: 'POST',
+        credentials: 'include', // Include cookies
+      });
+
+      if (response.ok) {
+        const { customToken } = await response.json();
+
+        // Navigate to target app with auth token
+        const targetUrl = new URL(app.devUrl);
+        targetUrl.searchParams.set('auth_token', customToken);
+        window.location.href = targetUrl.toString();
+      } else {
+        // If token generation fails, navigate without SSO (will require login)
+        console.warn('Failed to generate SSO token, navigating without authentication');
+        window.location.href = app.devUrl;
+      }
+    } catch (error) {
+      // If anything fails, fall back to regular navigation
+      console.error('SSO error:', error);
+      window.location.href = app.devUrl;
+    }
+
     onAppClick?.(app);
   };
 
@@ -91,10 +122,10 @@ export function AppSwitcher({
           {/* Menu */}
           <div className="absolute left-0 top-full mt-2 w-80 bg-[#0a0a0a] rounded-xl shadow-2xl border border-white/10 z-50 overflow-hidden">
             {/* Suite Hub Link */}
-            <Link
+            <a
               href={APP_REGISTRY.main.devUrl}
-              onClick={() => handleAppClick(APP_REGISTRY.main)}
-              className="flex items-center gap-3 p-4 hover:bg-white/5 border-b border-white/10 transition-colors"
+              onClick={(e) => handleAppSwitch(APP_REGISTRY.main, e)}
+              className="flex items-center gap-3 p-4 hover:bg-white/5 border-b border-white/10 transition-colors cursor-pointer"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-sky-500">
                 <Home className="h-5 w-5 text-white" />
@@ -107,7 +138,7 @@ export function AppSwitcher({
                   Return to dashboard
                 </div>
               </div>
-            </Link>
+            </a>
 
             {/* Recently Used Section */}
             {recentlyUsedApps.length > 0 && (
@@ -118,11 +149,11 @@ export function AppSwitcher({
                 {recentlyUsedApps.map(app => {
                   const Icon = getIcon(app.icon);
                   return (
-                    <Link
+                    <a
                       key={app.slug}
                       href={app.devUrl}
-                      onClick={() => handleAppClick(app)}
-                      className={`flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors ${
+                      onClick={(e) => handleAppSwitch(app, e)}
+                      className={`flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer ${
                         app.slug === currentApp.slug ? 'bg-white/10' : ''
                       }`}
                     >
@@ -134,7 +165,7 @@ export function AppSwitcher({
                       <span className="text-sm text-white font-medium">
                         {app.name}
                       </span>
-                    </Link>
+                    </a>
                   );
                 })}
               </div>
@@ -151,11 +182,11 @@ export function AppSwitcher({
                   const isActive = app.slug === currentApp.slug;
 
                   return (
-                    <Link
+                    <a
                       key={app.slug}
                       href={app.devUrl}
-                      onClick={() => handleAppClick(app)}
-                      className={`flex flex-col items-center p-3 rounded-lg hover:bg-white/5 transition-colors ${
+                      onClick={(e) => handleAppSwitch(app, e)}
+                      className={`flex flex-col items-center p-3 rounded-lg hover:bg-white/5 transition-colors cursor-pointer ${
                         isActive ? 'bg-white/10 ring-1 ring-white/20' : ''
                       }`}
                     >
@@ -170,7 +201,7 @@ export function AppSwitcher({
                       {isActive && (
                         <div className="mt-1 h-1 w-1 rounded-full bg-white/60" />
                       )}
-                    </Link>
+                    </a>
                   );
                 })}
               </div>
