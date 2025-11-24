@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
+import { navigateToApp, getCurrentAppSlug } from '@ainexsuite/ui';
 
 interface NavigationPanelProps {
   isOpen: boolean;
@@ -27,18 +28,16 @@ const navItems = [
   { href: '/', icon: Home, label: 'Dashboard' },
 ];
 
-// Environment-aware app URLs
-const isDev = process.env.NODE_ENV === 'development';
-
+// App definitions with slugs for cross-app navigation
 const apps = [
-  { href: isDev ? 'http://localhost:3001/workspace' : 'https://notes.ainexsuite.com/workspace', icon: FileText, label: 'Notes' },
-  { href: isDev ? 'http://localhost:3002/workspace' : 'https://journey.ainexsuite.com/workspace', icon: BookOpen, label: 'Journey' },
-  { href: isDev ? 'http://localhost:3003/workspace' : 'https://tasks.ainexsuite.com/workspace', icon: CheckSquare, label: 'Tasks' },
-  { href: isDev ? 'http://localhost:3004/workspace' : 'https://track.ainexsuite.com/workspace', icon: TrendingUp, label: 'Track' },
-  { href: isDev ? 'http://localhost:3005/workspace' : 'https://moments.ainexsuite.com/workspace', icon: Camera, label: 'Moments' },
-  { href: isDev ? 'http://localhost:3006/workspace' : 'https://grow.ainexsuite.com/workspace', icon: GraduationCap, label: 'Grow' },
-  { href: isDev ? 'http://localhost:3007/workspace' : 'https://pulse.ainexsuite.com/workspace', icon: ActivityIcon, label: 'Pulse' },
-  { href: isDev ? 'http://localhost:3008/workspace' : 'https://fit.ainexsuite.com/workspace', icon: Dumbbell, label: 'Fit' },
+  { slug: 'notes', icon: FileText, label: 'Notes' },
+  { slug: 'journey', icon: BookOpen, label: 'Journey' },
+  { slug: 'todo', icon: CheckSquare, label: 'Tasks' },
+  { slug: 'track', icon: TrendingUp, label: 'Track' },
+  { slug: 'moments', icon: Camera, label: 'Moments' },
+  { slug: 'grow', icon: GraduationCap, label: 'Grow' },
+  { slug: 'pulse', icon: ActivityIcon, label: 'Pulse' },
+  { slug: 'fit', icon: Dumbbell, label: 'Fit' },
 ];
 
 const settingsItems = [
@@ -65,6 +64,12 @@ function NavSection({
 
 export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
   const pathname = usePathname();
+  const currentAppSlug = getCurrentAppSlug();
+
+  const handleAppNavigation = (slug: string) => {
+    onClose();
+    navigateToApp(slug, currentAppSlug || 'main');
+  };
 
   return (
     <div
@@ -124,12 +129,12 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
           </NavSection>
 
           <NavSection title="Apps">
-            {apps.map(({ href, icon: Icon, label }) => (
-              <a
+            {apps.map(({ slug, icon: Icon, label }) => (
+              <button
                 key={label}
-                href={href}
-                onClick={onClose}
-                className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors text-ink-500 hover:bg-surface-muted hover:text-ink-700 w-full text-left no-underline"
+                type="button"
+                onClick={() => handleAppNavigation(slug)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors text-ink-500 hover:bg-surface-muted hover:text-ink-700 w-full text-left"
               >
                 <span className="flex items-center gap-3 flex-1">
                   <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-transparent transition-colors bg-surface-muted text-ink-600">
@@ -137,7 +142,7 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
                   </span>
                   <span>{label}</span>
                 </span>
-              </a>
+              </button>
             ))}
           </NavSection>
 

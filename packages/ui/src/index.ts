@@ -12,6 +12,7 @@
 export * from './lib/utils';
 export * from './utils/reactFlowEdgeUtils';
 export * from './utils/navigation';
+export * from './utils/cross-app-navigation';
 export * from './components';
 export * from './templates';
 export * from './hooks';
