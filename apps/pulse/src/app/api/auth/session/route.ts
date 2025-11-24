@@ -153,8 +153,12 @@ export async function POST(request: NextRequest) {
 
     let user;
     if (!userDoc.exists) {
-      // Create new user
+      // Create new user with 30-day trial access to ALL apps
       const now = Date.now();
+      const trialEndDate = now + (30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+      const allApps = ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+
       user = {
         uid: decodedToken.uid,
         email: decodedToken.email || '',
@@ -168,19 +172,44 @@ export async function POST(request: NextRequest) {
           timezone: 'America/New_York',
           notifications: { email: true, push: true, inApp: true },
         },
-        apps: {},
+        // Auto-activate all apps for trial period
+        apps: allApps.reduce((acc, app) => ({ ...acc, [app]: true }), {}),
         appPermissions: {},
         appsUsed: {},
-        appsEligible: [],
+        appsEligible: allApps,
         trialStartDate: now,
+        trialEndDate: trialEndDate,
         subscriptionStatus: 'trial',
-        suiteAccess: false,
+        suiteAccess: true, // Grant suite access during trial
       };
+
+      console.log('✅ New user created with 30-day trial access to all apps:', user.email);
       await userRef.set(user);
     } else {
       user = userDoc.data();
-      // Update last login
-      await userRef.update({ lastLoginAt: FieldValue.serverTimestamp() });
+
+      // Check if user needs trial access upgrade (for existing users)
+      if (user && (!user.apps || Object.keys(user.apps).length === 0)) {
+        const allApps = ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+        const trialEndDate = (user.trialStartDate || Date.now()) + (30 * 24 * 60 * 60 * 1000);
+
+        await userRef.update({
+          apps: allApps.reduce((acc, app) => ({ ...acc, [app]: true }), {}),
+          appsEligible: allApps,
+          trialEndDate: trialEndDate,
+          suiteAccess: true,
+          lastLoginAt: FieldValue.serverTimestamp(),
+        });
+
+        console.log('✅ Existing user upgraded with 30-day trial access:', user.email);
+
+        // Reload user data
+        const updatedDoc = await userRef.get();
+        user = updatedDoc.data();
+      } else {
+        // Just update last login
+        await userRef.update({ lastLoginAt: FieldValue.serverTimestamp() });
+      }
     }
 
     // Set session cookie on response

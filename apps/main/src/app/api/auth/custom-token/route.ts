@@ -24,9 +24,12 @@ export async function POST(_request: NextRequest) {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('__session')?.value;
 
+    console.log('🔐 Custom token request - Session cookie exists:', !!sessionCookie);
+
     if (!sessionCookie) {
+      console.error('❌ No session cookie found for custom token generation');
       return NextResponse.json(
-        { error: 'No session cookie found' },
+        { error: 'No session cookie found. Please log in first.' },
         { status: 401 }
       );
     }
@@ -35,17 +38,29 @@ export async function POST(_request: NextRequest) {
 
     // Verify session cookie (checkRevoked = true)
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    console.log('✅ Session cookie verified for user:', decodedClaims.uid);
 
     // Create custom token for this user
     const customToken = await adminAuth.createCustomToken(decodedClaims.uid);
+    console.log('✅ Custom token generated for SSO app switching');
 
     return NextResponse.json({ customToken });
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('❌ Custom token generation failed:', errorMessage);
+
+    // Provide more specific error messages
+    let userMessage = 'Failed to generate authentication token';
+    if (errorMessage.includes('expired')) {
+      userMessage = 'Your session has expired. Please log in again.';
+    } else if (errorMessage.includes('revoked')) {
+      userMessage = 'Your session has been revoked. Please log in again.';
+    }
 
     return NextResponse.json(
       {
-        error: 'Failed to generate custom token',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+        error: userMessage,
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
       },
       { status: 401 }
     );
