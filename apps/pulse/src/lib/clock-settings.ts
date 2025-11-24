@@ -15,6 +15,8 @@ export interface ClockSettings {
   backgroundEffect?: string; // Selected background effect
   backgroundDim?: number; // Dim level for background (0-100)
   clockStyle?: ClockStyle; // Clock style preference
+  showClock?: boolean; // Whether to show/hide the clock
+  showTiles?: boolean; // Whether to show/hide the tiles
 }
 
 export const ClockService = {

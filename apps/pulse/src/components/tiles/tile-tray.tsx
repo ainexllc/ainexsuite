@@ -177,12 +177,16 @@ interface TileTrayProps {
   timeFormat?: '12h' | '24h';
   onSelectTimeFormat?: (format: '12h' | '24h') => void;
   onAddTile?: (type: string) => void;
+  showClock?: boolean;
+  onToggleShowClock?: (show: boolean) => void;
+  showTiles?: boolean;
+  onToggleShowTiles?: (show: boolean) => void;
 }
 
-export function TileTray({ 
-  isOpen, 
-  onClose, 
-  currentBackground, 
+export function TileTray({
+  isOpen,
+  onClose,
+  currentBackground,
   onSelectBackground,
   activeLayoutId,
   onSelectLayout,
@@ -194,7 +198,11 @@ export function TileTray({
   onSelectClockStyle,
   timeFormat = '12h',
   onSelectTimeFormat,
-  onAddTile
+  onAddTile,
+  showClock = true,
+  onToggleShowClock,
+  showTiles = true,
+  onToggleShowTiles
 }: TileTrayProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'widgets' | 'layout' | 'appearance' | 'clock'>('widgets');
@@ -485,13 +493,33 @@ export function TileTray({
         <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           {activeTab === 'widgets' && (
             <div className="flex flex-col gap-4">
+              {onToggleShowTiles && (
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-white/80">Show Tiles</label>
+                    <button
+                      onClick={() => onToggleShowTiles(!showTiles)}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${
+                        showTiles ? 'bg-indigo-500' : 'bg-white/10'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                          showTiles ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="p-3 bg-indigo-500/10 rounded-lg border border-indigo-500/20 mb-2">
                   <div className="flex items-center gap-2 text-indigo-200 text-xs font-medium">
                       <Grid className="w-4 h-4" />
                       <span>Drag to place, or click to auto-fill</span>
                   </div>
               </div>
-              
+
               <div className="grid grid-cols-1 gap-3">
                   <div onClick={() => onAddTile?.('calendar')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
                   <CalendarTile id="calendar-tray" isDraggable={true} />
@@ -823,7 +851,27 @@ export function TileTray({
 
           {activeTab === 'clock' && onSelectClockStyle && (
               <div className="flex flex-col gap-6">
-                
+
+              {onToggleShowClock && (
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-white/80">Show Clock</label>
+                    <button
+                      onClick={() => onToggleShowClock(!showClock)}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${
+                        showClock ? 'bg-indigo-500' : 'bg-white/10'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                          showClock ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-3">
                   {[
                       { id: 'digital', name: 'Digital Classic', desc: 'Clean, modern mono font' },
