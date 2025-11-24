@@ -139,6 +139,8 @@ export function DigitalClock() {
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(getSystemTimeFormat());
   const [weatherZipcode, setWeatherZipcode] = useState<string>('66221');
   const [activeLayoutId, setActiveLayoutId] = useState<string>(DEFAULT_LAYOUT.id);
+  const [showClock, setShowClock] = useState<boolean>(true);
+  const [showTiles, setShowTiles] = useState<boolean>(true);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const trayContainerRef = useRef<HTMLDivElement>(null);
@@ -216,6 +218,12 @@ export function DigitalClock() {
         if (settings.clockStyle) {
             setClockStyle(settings.clockStyle as ClockStyle);
         }
+        if (typeof settings.showClock === 'boolean') {
+            setShowClock(settings.showClock);
+        }
+        if (typeof settings.showTiles === 'boolean') {
+            setShowTiles(settings.showTiles);
+        }
       }
     });
 
@@ -223,13 +231,15 @@ export function DigitalClock() {
   }, [user]);
 
   const updateSettings = async (
-    newTiles: Record<string, string | null>, 
-    newBg: string | null, 
+    newTiles: Record<string, string | null>,
+    newBg: string | null,
     newFormat?: TimeFormat,
     newLayoutId?: string,
     newEffect?: EffectType,
     newDim?: number,
-    newClockStyle?: ClockStyle
+    newClockStyle?: ClockStyle,
+    newShowClock?: boolean,
+    newShowTiles?: boolean
   ) => {
     if (!user) return;
 
@@ -251,6 +261,12 @@ export function DigitalClock() {
     if (newClockStyle) {
         setClockStyle(newClockStyle);
     }
+    if (typeof newShowClock === 'boolean') {
+        setShowClock(newShowClock);
+    }
+    if (typeof newShowTiles === 'boolean') {
+        setShowTiles(newShowTiles);
+    }
 
     // Persist
     try {
@@ -262,7 +278,9 @@ export function DigitalClock() {
         layoutId: newLayoutId || activeLayoutId,
         backgroundEffect: newEffect || backgroundEffect,
         backgroundDim: typeof newDim === 'number' ? newDim : backgroundDim,
-        clockStyle: newClockStyle || clockStyle
+        clockStyle: newClockStyle || clockStyle,
+        showClock: typeof newShowClock === 'boolean' ? newShowClock : showClock,
+        showTiles: typeof newShowTiles === 'boolean' ? newShowTiles : showTiles
       });
     } catch (error) {
       console.error('Failed to save clock settings:', error);
@@ -280,7 +298,9 @@ export function DigitalClock() {
         layoutId: activeLayoutId,
         backgroundEffect,
         backgroundDim,
-        clockStyle
+        clockStyle,
+        showClock,
+        showTiles
       }).catch(e => console.error(e));
     }
   };
@@ -329,6 +349,14 @@ export function DigitalClock() {
   const handleClockStyleSelect = (style: ClockStyle) => {
       updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, style);
   };
+
+  const handleToggleShowClock = (show: boolean) => {
+      updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, undefined, show);
+  };
+
+  const handleToggleShowTiles = (show: boolean) => {
+      updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, undefined, undefined, show);
+  };;
 
   // Format time string for display
   const getFormattedTime = (): string => {
@@ -700,33 +728,37 @@ export function DigitalClock() {
   const renderStudioLayout = (isRight: boolean) => {
     // isRight = true means Studio Right (Clock Left, Grid Right)
     // isRight = false means Studio Left (Grid Left, Clock Right)
-    
+
     const clockColumn = (
         <div className="flex flex-col gap-6 h-full justify-center">
-            <div className="flex-1 flex items-center justify-center">
-                {renderClock()}
-            </div>
-            <div 
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, isRight ? 'left-1' : 'right-1')}
-                className={`
-                    min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
-                    ${tiles[isRight ? 'left-1' : 'right-1'] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
-                    ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
-                `}
-            >
-                 {tiles[isRight ? 'left-1' : 'right-1'] ? (
-                    <div className="w-full h-full">
-                        {renderTile(tiles[isRight ? 'left-1' : 'right-1'], isRight ? 'left-1' : 'right-1', 'medium')}
-                    </div>
-                ) : (
-                    renderEmptySlot()
-                )}
-            </div>
+            {showClock && (
+                <div className="flex-1 flex items-center justify-center">
+                    {renderClock()}
+                </div>
+            )}
+            {showTiles && (
+                <div
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, isRight ? 'left-1' : 'right-1')}
+                    className={`
+                        min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative
+                        ${tiles[isRight ? 'left-1' : 'right-1'] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'}
+                        ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                    `}
+                >
+                     {tiles[isRight ? 'left-1' : 'right-1'] ? (
+                        <div className="w-full h-full">
+                            {renderTile(tiles[isRight ? 'left-1' : 'right-1'], isRight ? 'left-1' : 'right-1', 'medium')}
+                        </div>
+                    ) : (
+                        renderEmptySlot()
+                    )}
+                </div>
+            )}
         </div>
     );
 
-    const gridColumn = (
+    const gridColumn = showTiles ? (
         <div className="grid grid-cols-2 gap-6 auto-rows-fr">
             {['1', '2', '3', '4'].map((num) => {
                 const slotId = isRight ? `right-${num}` : `left-${num}`;
@@ -736,8 +768,8 @@ export function DigitalClock() {
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, slotId)}
                     className={`
-                        min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
-                        ${tiles[slotId] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
+                        min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative
+                        ${tiles[slotId] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'}
                         ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
                     `}
                 >
@@ -752,7 +784,7 @@ export function DigitalClock() {
                 );
             })}
         </div>
-    );
+    ) : null;
 
     return (
         <div className="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
@@ -841,30 +873,32 @@ export function DigitalClock() {
         ) : (
             /* Standard Layouts (Classic, Dashboard, Focus) */
             <>
-                {renderClock()}
-                <div className={`w-full max-w-6xl grid ${activeLayout.gridClassName} mt-auto px-4 pb-4 transition-all duration-300`}>
-                {activeLayout.slots.map((slot) => (
-                    <div
-                    key={slot.id}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, slot.id)}
-                    className={`
-                        min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative 
-                        ${slot.className} 
-                        ${tiles[slot.id] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'} 
-                        ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
-                    `}
-                    >
-                    {tiles[slot.id] ? (
-                        <div className="w-full h-full">
-                        {renderTile(tiles[slot.id], slot.id, slot.size)}
+                {showClock && renderClock()}
+                {showTiles && (
+                    <div className={`w-full max-w-6xl grid ${activeLayout.gridClassName} mt-auto px-4 pb-4 transition-all duration-300`}>
+                    {activeLayout.slots.map((slot) => (
+                        <div
+                        key={slot.id}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, slot.id)}
+                        className={`
+                            min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative
+                            ${slot.className}
+                            ${tiles[slot.id] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'}
+                            ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                        `}
+                        >
+                        {tiles[slot.id] ? (
+                            <div className="w-full h-full">
+                            {renderTile(tiles[slot.id], slot.id, slot.size)}
+                            </div>
+                        ) : (
+                            renderEmptySlot()
+                        )}
                         </div>
-                    ) : (
-                        renderEmptySlot()
-                    )}
+                    ))}
                     </div>
-                ))}
-                </div>
+                )}
             </>
         )}
       </div>
@@ -873,9 +907,9 @@ export function DigitalClock() {
       {isTrayOpen && (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-50">
           <div className="pointer-events-auto inline-block" ref={trayContainerRef}>
-            <TileTray 
-              isOpen={isTrayOpen} 
-              onClose={() => setIsTrayOpen(false)} 
+            <TileTray
+              isOpen={isTrayOpen}
+              onClose={() => setIsTrayOpen(false)}
               currentBackground={backgroundImage}
               onSelectBackground={handleBackgroundSelect}
               activeLayoutId={activeLayoutId}
@@ -889,6 +923,10 @@ export function DigitalClock() {
               timeFormat={timeFormat}
               onSelectTimeFormat={handleTimeFormatChange}
               onAddTile={handleAddTile}
+              showClock={showClock}
+              onToggleShowClock={handleToggleShowClock}
+              showTiles={showTiles}
+              onToggleShowTiles={handleToggleShowTiles}
             />
           </div>
         </div>
