@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
-import { auth } from '@ainexsuite/firebase';
+import { auth, useSSOAuth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
   Loader2,
@@ -83,6 +83,7 @@ const legalLinks: FooterLink[] = [
 function JourneyHomePageContent() {
   const { user, loading, bootstrapStatus } = useAuth();
   const { needsActivation, checking } = useAppActivation('journey');
+  const { isAuthenticating: isSSOAuthenticating, hasAuthToken } = useSSOAuth();
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
   const [showActivation, setShowActivation] = useState(false);
@@ -96,8 +97,12 @@ function JourneyHomePageContent() {
   }, [user, needsActivation]);
 
   useEffect(() => {
-    if (loading || checking || isBootstrapping) {
-      setLoadingMessage('Checking authentication...');
+    if (loading || checking || isBootstrapping || isSSOAuthenticating || hasAuthToken) {
+      if (isSSOAuthenticating || hasAuthToken) {
+        setLoadingMessage('Signing you in via SSO...');
+      } else {
+        setLoadingMessage('Checking authentication...');
+      }
       return;
     }
 
@@ -106,10 +111,10 @@ function JourneyHomePageContent() {
     } else {
       setLoadingMessage('');
     }
-  }, [loading, checking, isBootstrapping, user, needsActivation]);
+  }, [loading, checking, isBootstrapping, isSSOAuthenticating, hasAuthToken, user, needsActivation]);
 
   useEffect(() => {
-    if (!loading && !checking && !isBootstrapping && user && !needsActivation) {
+    if (!loading && !checking && !isBootstrapping && !isSSOAuthenticating && !hasAuthToken && user && !needsActivation) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -118,9 +123,9 @@ function JourneyHomePageContent() {
     }
 
     return undefined;
-  }, [loading, checking, isBootstrapping, user, needsActivation, router]);
+  }, [loading, checking, isBootstrapping, isSSOAuthenticating, hasAuthToken, user, needsActivation, router]);
 
-  if (loading || checking || isBootstrapping || (user && !needsActivation)) {
+  if (loading || checking || isBootstrapping || isSSOAuthenticating || hasAuthToken || (user && !needsActivation)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">

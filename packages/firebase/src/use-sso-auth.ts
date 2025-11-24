@@ -29,6 +29,7 @@ import { auth } from './client';
 export function useSSOAuth() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [hasAuthToken, setHasAuthToken] = useState(false);
 
   useEffect(() => {
     const handleSSOAuth = async () => {
@@ -41,8 +42,12 @@ export function useSSOAuth() {
 
       if (!authToken) {
         // No auth token, nothing to do
+        setHasAuthToken(false);
         return;
       }
+
+      // Mark that we're processing an SSO auth token
+      setHasAuthToken(true);
 
       try {
         setIsAuthenticating(true);
@@ -102,5 +107,6 @@ export function useSSOAuth() {
   return {
     isAuthenticating,
     authError,
+    hasAuthToken,
   };
 }
