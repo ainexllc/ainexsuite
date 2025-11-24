@@ -31,6 +31,18 @@ function AdminLoginPageContent() {
       setIsAdminChecking(true);
       const checkAdminRole = async () => {
         try {
+          // For development, temporarily allow all authenticated users
+          // TODO: Restore proper admin role checking for production
+          const isDevelopment = process.env.NODE_ENV === 'development';
+          if (isDevelopment) {
+            setLoadingMessage('Welcome! Redirecting to dashboard…');
+            const timer = setTimeout(() => {
+              router.push('/');
+            }, 800);
+            setIsAdminChecking(false);
+            return () => clearTimeout(timer);
+          }
+
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           const userData = userDoc.data();
           if (userData?.role === 'admin') {

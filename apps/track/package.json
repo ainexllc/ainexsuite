@@ -4,7 +4,7 @@
   "private": true,
   "description": "Track app - Habit tracking and streak monitoring at track.ainexsuite.com",
   "scripts": {
-    "dev": "next dev -p 3004",
+    "dev": "next dev -p ${PORT:-3004}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",

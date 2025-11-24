@@ -54,6 +54,9 @@ ainexsuite/
 # Install dependencies
 pnpm install
 
+# Set up development environment (creates .env.local files for all apps)
+./scripts/setup-dev-env.sh
+
 # Build all packages
 pnpm build
 
@@ -164,9 +167,9 @@ pnpm deploy:notes
 
 ## Documentation
 
-- [Final Plan](./finalplan.md) - Complete 9-week implementation plan
-- [Progress Tracker](./PROGRESS.md) - Detailed progress and next steps
-- [Design System](./packages/ui/src/styles/globals.css) - NoteNex design system
+- [GEMINI Report](./GEMINI.md) - Latest standardization report
+- [Design System](./docs/ui-ux/DESIGN_SYSTEM.md) - NoteNex design system
+- [Architecture](./docs/architecture/project-structure.md) - Project structure and layout
 - [Custom Skills](./.claude/skills/) - Expert guidance documents
 
 ## License
@@ -175,4 +178,4 @@ Private - AINex LLC
 
 ---
 
-**Status**: Phase 1 Complete - Ready for app development
+**Status**: Phase 4 In Progress - App Feature Implementation

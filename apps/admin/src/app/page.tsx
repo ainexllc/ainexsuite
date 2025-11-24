@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { 
   Users, 
-  Activity, 
+  Activity as ActivityIcon, 
   TrendingUp, 
   MessageSquare,
   ArrowUpRight,
@@ -13,6 +13,9 @@ import {
 } from 'lucide-react';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
+import { getActivityFeed, subscribeToActivityFeed } from '@ainexsuite/firebase';
+import type { Activity } from '@ainexsuite/types';
+import { getActivityDescription, getActivityColor, formatActivityTime } from '@ainexsuite/types';
 
 interface DashboardStats {
   totalUsers: number;
@@ -29,13 +32,16 @@ export default function AdminDashboard() {
     systemStatus: 'healthy'
   });
 
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
         // Get real counts from Firestore
         const userColl = collection(db, 'users');
         const feedbackColl = collection(db, 'feedback');
-        
+
         const [userSnapshot, feedbackSnapshot] = await Promise.all([
           getCountFromServer(userColl),
           getCountFromServer(feedbackColl)
@@ -52,7 +58,35 @@ export default function AdminDashboard() {
       }
     };
 
+    const fetchActivities = async () => {
+      try {
+        setActivitiesLoading(true);
+        const response = await getActivityFeed({ limit: 10 });
+        setActivities(response.activities);
+      } catch (error) {
+        console.error('Failed to fetch activities:', error);
+        // Keep empty activities array on error
+      } finally {
+        setActivitiesLoading(false);
+      }
+    };
+
     fetchStats();
+    fetchActivities();
+
+    // Set up real-time activity updates
+    const unsubscribe = subscribeToActivityFeed(
+      { limit: 10 },
+      (response) => {
+        setActivities(response.activities);
+        setActivitiesLoading(false);
+      },
+      (error) => {
+        console.error('Activity subscription error:', error);
+      }
+    );
+
+    return unsubscribe;
   }, []);
 
   return (
@@ -103,7 +137,7 @@ export default function AdminDashboard() {
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400">
-                <Activity className="h-6 w-6" />
+                <ActivityIcon className="h-6 w-6" />
               </div>
               <span className="flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
@@ -141,44 +175,50 @@ export default function AdminDashboard() {
             Recent Activity
           </h2>
           <div className="space-y-4">
-            {[1, 2, 3].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs font-bold">
-                    JD
+            {activitiesLoading ? (
+              // Loading state
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-zinc-600/20 animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="h-4 w-48 bg-zinc-600/20 rounded animate-pulse" />
+                      <div className="h-3 w-32 bg-zinc-600/20 rounded animate-pulse" />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">John Doe created a new project</p>
-                    <p className="text-xs text-zinc-500">Project: Annual Report 2025</p>
-                  </div>
+                  <div className="h-3 w-12 bg-zinc-600/20 rounded animate-pulse" />
                 </div>
-                <span className="text-xs text-zinc-500">2m ago</span>
-              </div>
-            ))}
-             <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs font-bold">
-                    SJ
+              ))
+            ) : activities.length > 0 ? (
+              // Real activities
+              activities.map((activity) => (
+                <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs font-bold">
+                      {activity.app.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        {getActivityDescription(activity)} "{activity.itemTitle}"
+                      </p>
+                      <p className="text-xs text-zinc-500 capitalize">
+                        {activity.app}: {activity.itemType}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Sarah Jenkins completed a goal</p>
-                    <p className="text-xs text-zinc-500">Goal: Read 12 Books</p>
-                  </div>
+                  <span className="text-xs text-zinc-500">
+                    {formatActivityTime(activity.timestamp)}
+                  </span>
                 </div>
-                <span className="text-xs text-zinc-500">15m ago</span>
+              ))
+            ) : (
+              // Empty state
+              <div className="text-center py-8">
+                <Activity className="h-8 w-8 text-zinc-600 mx-auto mb-2" />
+                <p className="text-sm text-zinc-500">No recent activity</p>
+                <p className="text-xs text-zinc-600 mt-1">Activity from all apps will appear here</p>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 text-xs font-bold">
-                    SYS
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">System Alert: High Memory Usage</p>
-                    <p className="text-xs text-zinc-500">Instance #us-east-1b</p>
-                  </div>
-                </div>
-                <span className="text-xs text-zinc-500">1h ago</span>
-              </div>
+            )}
           </div>
         </div>
 

@@ -4,7 +4,7 @@
   "private": true,
   "description": "AINexSuite projects app for project management and tracking",
   "scripts": {
-    "dev": "next dev -p 3009",
+    "dev": "next dev -p ${PORT:-3009}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",

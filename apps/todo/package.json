@@ -4,7 +4,7 @@
   "private": true,
   "description": "Todo app - Project management and task tracking at todo.ainexsuite.com",
   "scripts": {
-    "dev": "next dev -p 3003",
+    "dev": "next dev -p ${PORT:-3003}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",

@@ -35,6 +35,15 @@ export function AdminShell({
     const checkAdminRole = async () => {
       if (!user) return;
       try {
+        // For development, temporarily allow all authenticated users
+        // TODO: Restore proper admin role checking for production
+        const isDevelopment = process.env.NODE_ENV === 'development';
+        if (isDevelopment) {
+          setIsAdmin(true);
+          setCheckingRole(false);
+          return;
+        }
+
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.data();
         if (userData?.role === 'admin') {
