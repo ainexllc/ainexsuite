@@ -57,6 +57,14 @@ interface WorkspaceLayoutProps {
     icon: React.ComponentType<{ className?: string }>;
     color?: string;
   }>;
+  /**
+   * Handler for clicking settings in the profile sidebar
+   */
+  onSettingsClick?: () => void;
+  /**
+   * Handler for clicking activity in the profile sidebar
+   */
+  onActivityClick?: () => void;
 }
 
 export function WorkspaceLayout({
@@ -68,6 +76,8 @@ export function WorkspaceLayout({
   appColor,
   showGlows = true,
   apps = [],
+  onSettingsClick,
+  onActivityClick,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -107,6 +117,8 @@ export function WorkspaceLayout({
         onClose={() => setIsProfileOpen(false)}
         user={user}
         onSignOut={onSignOut}
+        onSettingsClick={onSettingsClick}
+        onActivityClick={onActivityClick}
       />
 
       {/* Main Content */}

@@ -7,7 +7,7 @@ import { useAuth } from '@ainexsuite/auth';
 
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
+import { WorkspaceLayout, WorkspacePageHeader } from '@ainexsuite/ui/components';
 import { useVisualStyle } from '@/lib/theme/visual-style';
 import { useAllAppColors } from '@ainexsuite/theme';
 import { Loader2, Settings as AdminIcon } from 'lucide-react';
@@ -154,6 +154,8 @@ export default function WorkspacePage() {
         appColor={selectedVariant.id === 'ember-glow' ? '#f97316' : '#38bdf8'}
         showGlows={false} // We handle our own atmospheric glows
         apps={apps}
+        onSettingsClick={() => setActivePanel('settings')}
+        onActivityClick={() => setActivePanel('activity')}
       >
         <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
           {/* Apps Placeholder Section */}
@@ -170,21 +172,14 @@ export default function WorkspacePage() {
             </div>
           </section>
 
-          {/* Welcome Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">Dashboard</h3>
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-2">
-                Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user.displayName?.split(' ')[0] || 'there'}!
-              </h2>
-              <p className="text-lg text-white/70">
-                Here is your daily briefing.
-              </p>
-            </div>
-          </div>
-
-          {/* Smart Dashboard Grid */}
-          <SmartGrid />
+          {/* Welcome Section with Dashboard */}
+          <WorkspacePageHeader
+            title={`Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ${user.displayName?.split(' ')[0] || 'there'}!`}
+            description="Here is your daily briefing."
+          >
+            {/* Smart Dashboard Grid */}
+            <SmartGrid />
+          </WorkspacePageHeader>
         </div>
       </WorkspaceLayout>
 
