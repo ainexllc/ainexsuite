@@ -83,8 +83,6 @@ export function AppNavigationSidebar({
                     key={app.slug}
                     href={app.url}
                     onClick={onClose}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 overflow-hidden"
                     style={{
                       '--accent': app.color,
