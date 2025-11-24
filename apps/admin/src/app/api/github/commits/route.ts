@@ -29,15 +29,9 @@ interface CommitActivity {
 
 export async function GET(request: NextRequest) {
   try {
-    const repo = process.env.GITHUB_REPO;
+    // Default to ainexsuite/ainexsuite if not configured
+    const repo = process.env.GITHUB_REPO || 'ainexsuite/ainexsuite';
     const token = process.env.GITHUB_TOKEN;
-
-    if (!repo) {
-      return NextResponse.json(
-        { error: 'GITHUB_REPO environment variable not set' },
-        { status: 500 }
-      );
-    }
 
     // Parse repo format: owner/repo or full URL
     let owner: string;

@@ -259,10 +259,26 @@ export default function AdminDashboard() {
               <div className="text-center py-8">
                 <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
                 <p className="text-sm font-medium text-red-400 mb-1">Failed to load commits</p>
-                <p className="text-xs text-zinc-500 mb-4">{commitsError}</p>
+                <p className="text-xs text-zinc-500 mb-2 max-w-md mx-auto">{commitsError}</p>
+                {commitsError.includes('GitHub API error') && (
+                  <div className="text-xs text-zinc-600 mt-3 p-3 bg-zinc-800/50 rounded-lg max-w-md mx-auto">
+                    <p className="font-medium text-zinc-400 mb-1">Troubleshooting:</p>
+                    <p className="text-left mb-2">
+                      Default repo: <code className="text-indigo-400">ainexsuite/ainexsuite</code>
+                    </p>
+                    <p className="text-left">
+                      To use a different repo, add to <code className="text-indigo-400">apps/admin/.env.local</code>:
+                    </p>
+                    <pre className="text-left mt-2 p-2 bg-zinc-900 rounded text-zinc-300 overflow-x-auto">
+{`GITHUB_REPO=owner/repo
+# Or full URL:
+# GITHUB_REPO=https://github.com/owner/repo`}
+                    </pre>
+                  </div>
+                )}
                 <button
                   onClick={fetchCommits}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+                  className="mt-4 text-xs text-indigo-400 hover:text-indigo-300 underline"
                 >
                   Try again
                 </button>
@@ -273,7 +289,7 @@ export default function AdminDashboard() {
                 <GitCommit className="h-8 w-8 text-zinc-600 mx-auto mb-2" />
                 <p className="text-sm text-zinc-500">No recent commits</p>
                 <p className="text-xs text-zinc-600 mt-1">
-                  Configure GITHUB_REPO in environment variables
+                  Showing commits from <code className="text-indigo-400">ainexsuite/ainexsuite</code>
                 </p>
               </div>
             )}

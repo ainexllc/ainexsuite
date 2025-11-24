@@ -51,6 +51,7 @@ PORT=$port
 # NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
 
 # GitHub Configuration (for commit activity feed)
+# Defaults to ainexsuite/ainexsuite if not set
 # GITHUB_REPO=owner/repo
 # Or use full URL: GITHUB_REPO=https://github.com/owner/repo
 # GITHUB_TOKEN=your-github-token (optional, for private repos or higher rate limits)
