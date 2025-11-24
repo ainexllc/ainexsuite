@@ -44,3 +44,15 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 functions/lib/
+
+# Development logs
+dev.log
+*_debug.log
+*.log
+
+# Environment backups (sensitive)
+docs/reference/env-backups/
+**/ENV_*.txt
+
+# Auto-generated Vercel docs
+**/.vercel/README.txt

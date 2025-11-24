@@ -34,7 +34,29 @@ create_env_file() {
 
     if [ ! -f "$env_file" ]; then
         echo "Creating $env_file with port $port"
-        cat > "$env_file" << EOF
+        
+        # Special handling for admin app
+        if [ "$app_name" = "admin" ]; then
+            cat > "$env_file" << EOF
+# AINexSuite $app_name App
+# Port configuration for local development
+PORT=$port
+
+# Firebase Configuration (add your values here)
+# NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+# FIREBASE_ADMIN_PROJECT_ID=your-project-id
+# FIREBASE_ADMIN_CLIENT_EMAIL=your-service-account-email
+# FIREBASE_ADMIN_PRIVATE_KEY=your-private-key
+# FIREBASE_ADMIN_DATABASE_URL=https://your-project-id-default-rtdb.firebaseio.com
+# NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+
+# GitHub Configuration (for commit activity feed)
+# GITHUB_REPO=owner/repo
+# Or use full URL: GITHUB_REPO=https://github.com/owner/repo
+# GITHUB_TOKEN=your-github-token (optional, for private repos or higher rate limits)
+EOF
+        else
+            cat > "$env_file" << EOF
 # AINexSuite $app_name App
 # Port configuration for local development
 PORT=$port
@@ -51,6 +73,7 @@ PORT=$port
 # OPENROUTER_API_KEY=your-openrouter-key
 # GROK_API_KEY=your-grok-key
 EOF
+        fi
     else
         echo "✓ $env_file already exists"
     fi

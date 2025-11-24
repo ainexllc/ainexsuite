@@ -13,15 +13,39 @@ import {
 } from 'lucide-react';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { getActivityFeed, subscribeToActivityFeed } from '@ainexsuite/firebase';
-import type { Activity } from '@ainexsuite/types';
-import { getActivityDescription, getActivityColor, formatActivityTime } from '@ainexsuite/types';
+import { GitCommit, ExternalLink } from 'lucide-react';
 
 interface DashboardStats {
   totalUsers: number;
   totalFeedback: number;
   activeNow: number; // Placeholder for now
   systemStatus: 'healthy' | 'degraded' | 'down';
+}
+
+interface CommitActivity {
+  id: string;
+  message: string;
+  author: string;
+  authorAvatar?: string;
+  timestamp: number;
+  url: string;
+  sha: string;
+}
+
+function formatActivityTime(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+
+  return new Date(timestamp).toLocaleDateString();
 }
 
 export default function AdminDashboard() {
@@ -32,8 +56,30 @@ export default function AdminDashboard() {
     systemStatus: 'healthy'
   });
 
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [commits, setCommits] = useState<CommitActivity[]>([]);
+  const [commitsLoading, setCommitsLoading] = useState(true);
+  const [commitsError, setCommitsError] = useState<string | null>(null);
+
+  const fetchCommits = async () => {
+    try {
+      setCommitsLoading(true);
+      setCommitsError(null);
+      const response = await fetch('/api/github/commits');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch commits');
+      }
+      
+      setCommits(data.activities || []);
+    } catch (error) {
+      console.error('Failed to fetch GitHub commits:', error);
+      setCommitsError(error instanceof Error ? error.message : 'Failed to fetch commits');
+      setCommits([]);
+    } finally {
+      setCommitsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -58,35 +104,13 @@ export default function AdminDashboard() {
       }
     };
 
-    const fetchActivities = async () => {
-      try {
-        setActivitiesLoading(true);
-        const response = await getActivityFeed({ limit: 10 });
-        setActivities(response.activities);
-      } catch (error) {
-        console.error('Failed to fetch activities:', error);
-        // Keep empty activities array on error
-      } finally {
-        setActivitiesLoading(false);
-      }
-    };
-
     fetchStats();
-    fetchActivities();
+    fetchCommits();
 
-    // Set up real-time activity updates
-    const unsubscribe = subscribeToActivityFeed(
-      { limit: 10 },
-      (response) => {
-        setActivities(response.activities);
-        setActivitiesLoading(false);
-      },
-      (error) => {
-        console.error('Activity subscription error:', error);
-      }
-    );
+    // Refresh commits every 5 minutes
+    const interval = setInterval(fetchCommits, 5 * 60 * 1000);
 
-    return unsubscribe;
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -167,15 +191,15 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Recent Activity Feed (Mock) */}
+      {/* Recent GitHub Commits */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-zinc-900/50 border border-white/10 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-zinc-400" />
-            Recent Activity
+            <GitCommit className="h-5 w-5 text-zinc-400" />
+            Recent Commits
           </h2>
           <div className="space-y-4">
-            {activitiesLoading ? (
+            {commitsLoading ? (
               // Loading state
               Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
@@ -189,34 +213,68 @@ export default function AdminDashboard() {
                   <div className="h-3 w-12 bg-zinc-600/20 rounded animate-pulse" />
                 </div>
               ))
-            ) : activities.length > 0 ? (
-              // Real activities
-              activities.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs font-bold">
-                      {activity.app.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white">
-                        {getActivityDescription(activity)} "{activity.itemTitle}"
+            ) : commits.length > 0 ? (
+              // Real commits
+              commits.map((commit) => (
+                <a
+                  key={commit.id}
+                  href={commit.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {commit.authorAvatar ? (
+                      <img
+                        src={commit.authorAvatar}
+                        alt={commit.author}
+                        className="h-8 w-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs font-bold">
+                        {commit.author.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">
+                        {commit.message}
                       </p>
-                      <p className="text-xs text-zinc-500 capitalize">
-                        {activity.app}: {activity.itemType}
+                      <p className="text-xs text-zinc-500 flex items-center gap-2">
+                        <span>{commit.author}</span>
+                        <span>•</span>
+                        <span className="font-mono text-zinc-600">{commit.sha}</span>
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs text-zinc-500">
-                    {formatActivityTime(activity.timestamp)}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <span className="text-xs text-zinc-500">
+                      {formatActivityTime(commit.timestamp)}
+                    </span>
+                    <ExternalLink className="h-4 w-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </a>
               ))
+            ) : commitsError ? (
+              // Error state
+              <div className="text-center py-8">
+                <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                <p className="text-sm font-medium text-red-400 mb-1">Failed to load commits</p>
+                <p className="text-xs text-zinc-500 mb-4">{commitsError}</p>
+                <button
+                  onClick={fetchCommits}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+                >
+                  Try again
+                </button>
+              </div>
             ) : (
               // Empty state
               <div className="text-center py-8">
-                <Activity className="h-8 w-8 text-zinc-600 mx-auto mb-2" />
-                <p className="text-sm text-zinc-500">No recent activity</p>
-                <p className="text-xs text-zinc-600 mt-1">Activity from all apps will appear here</p>
+                <GitCommit className="h-8 w-8 text-zinc-600 mx-auto mb-2" />
+                <p className="text-sm text-zinc-500">No recent commits</p>
+                <p className="text-xs text-zinc-600 mt-1">
+                  Configure GITHUB_REPO in environment variables
+                </p>
               </div>
             )}
           </div>
