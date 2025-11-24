@@ -61,6 +61,13 @@ export function WorkspaceInsights() {
       });
 
       if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 500) {
+          const errorData = await response.json().catch(() => ({ error: "Server error" }));
+          if (errorData.error?.includes("API key") || errorData.error?.includes("API Key") || errorData.error?.includes("configuration missing")) {
+            throw new Error("AI features require API key configuration. Please contact support.");
+          }
+        }
         throw new Error("Failed to generate insights");
       }
 
@@ -137,7 +144,15 @@ export function WorkspaceInsights() {
                 <p className="text-sm">Analyzing your recent notes...</p>
              </div>
         ) : error ? (
-            <div className="text-red-400 text-sm py-2">{error}</div>
+            <div className="text-center py-8 space-y-3">
+              <div className="text-yellow-400 text-sm font-medium">AI Insights Unavailable</div>
+              <div className="text-white/60 text-xs leading-relaxed max-w-sm mx-auto">
+                {error.includes("API key") ?
+                  "AI features require configuration. Workspace insights will be available once set up." :
+                  error
+                }
+              </div>
+            </div>
         ) : data ? (
             <div className="grid gap-6 md:grid-cols-3">
                 {/* Focus */}
