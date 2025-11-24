@@ -1,6 +1,16 @@
 'use client';
 
-import { X, Clock, Crown, Settings, LogOut, Activity } from 'lucide-react';
+import { 
+  X, 
+  Settings, 
+  LogOut, 
+  CheckSquare, 
+  Calendar, 
+  Zap, 
+  Moon, 
+  Bell,
+  CreditCard
+} from 'lucide-react';
 import Image from 'next/image';
 
 export interface ProfileSidebarProps {
@@ -25,21 +35,7 @@ export function ProfileSidebar({
   user,
   onSignOut,
   onSettingsClick,
-  onActivityClick,
 }: ProfileSidebarProps) {
-  // Calculate trial days remaining
-  const getRemainingTrialDays = () => {
-    if (!user.trialStartDate || user.subscriptionStatus !== 'trial') return null;
-    const trialEndDate = new Date(user.trialStartDate);
-    trialEndDate.setDate(trialEndDate.getDate() + 30);
-    const now = new Date();
-    const daysRemaining = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, daysRemaining);
-  };
-
-  const trialDaysRemaining = getRemainingTrialDays();
-  const isTrialActive = user.subscriptionStatus === 'trial' && trialDaysRemaining !== null && trialDaysRemaining > 0;
-
   return (
     <>
       {/* Overlay */}
@@ -52,112 +48,151 @@ export function ProfileSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed right-0 top-0 h-full w-[320px] bg-surface-elevated/95 backdrop-blur-2xl border-l border-outline-subtle/60 transition-transform duration-300 ease-out z-40 shadow-2xl ${isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed right-0 top-0 h-full w-[360px] bg-black/60 backdrop-blur-xl border-l border-white/10 transition-transform duration-300 ease-out z-40 shadow-2xl overflow-hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <h2 className="text-lg font-semibold text-white">Profile</h2>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition hover:bg-white/10"
-            aria-label="Close sidebar"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        {/* Glow Effects */}
+        <div className="absolute -top-24 -left-24 h-80 w-80 bg-purple-500/20 blur-3xl rounded-full pointer-events-none opacity-40" />
+        <div className="absolute -bottom-24 -right-24 h-80 w-80 bg-blue-500/20 blur-3xl rounded-full pointer-events-none opacity-40" />
 
-        {/* Content */}
-        <div className="p-4 space-y-6">
-
-          {/* User Info */}
-          <div className="flex flex-col items-center text-center space-y-3">
-            <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-white/10">
-              {user.photoURL ? (
-                <Image
-                  src={user.photoURL}
-                  alt={user.displayName ?? user.email ?? 'User'}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-purple-600 flex items-center justify-center text-xl font-bold text-white">
-                  {user.displayName
-                    ? user.displayName
-                      .split(' ')
-                      .map((part) => part.charAt(0))
-                      .join('')
-                      .slice(0, 2)
-                      .toUpperCase()
-                    : (user.email?.charAt(0).toUpperCase() ?? 'U')}
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="text-lg font-medium text-white">{user.displayName || 'User'}</h3>
-              <p className="text-sm text-white/50">{user.email}</p>
-            </div>
+        <div className="relative z-10 flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <h2 className="text-lg font-semibold text-white">Profile</h2>
+            <button
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition hover:bg-white/10"
+              aria-label="Close sidebar"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
-          {/* Subscription Status */}
-          <div className="space-y-3">
-            {isTrialActive && (
-              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 flex items-center gap-3">
-                <Clock className="h-5 w-5 text-amber-400 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-300">
-                    {trialDaysRemaining === 1 ? 'Last day of trial' : `${trialDaysRemaining} days left`}
-                  </p>
-                  <p className="text-xs text-amber-200/70">Free trial</p>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+            
+            {/* User Identity */}
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-white/5 shadow-xl">
+                {user.photoURL ? (
+                  <Image
+                    src={user.photoURL}
+                    alt={user.displayName ?? user.email ?? 'User'}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-2xl font-bold text-white">
+                    {user.displayName
+                      ? user.displayName
+                        .split(' ')
+                        .map((part) => part.charAt(0))
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase()
+                      : (user.email?.charAt(0).toUpperCase() ?? 'U')}
+                  </div>
+                )}
+                {/* Status Indicator */}
+                <div className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-black" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-white">{user.displayName || 'User'}</h3>
+                <p className="text-sm text-white/50">{user.email}</p>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/70 border border-white/5">
+                  <CreditCard className="h-3 w-3" />
+                  <span className="capitalize">{user.subscriptionTier || 'Free'} Plan</span>
                 </div>
               </div>
-            )}
+            </div>
 
-            {user.subscriptionStatus && user.subscriptionStatus !== 'trial' && (
-               <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 flex items-center gap-3">
-                <Crown className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-                 <div className="flex-1">
-                    <p className="text-sm font-medium text-emerald-300 capitalize">
-                      {user.subscriptionTier || 'Active'} Plan
-                    </p>
-                    <p className="text-xs text-emerald-200/70 capitalize">{user.subscriptionStatus}</p>
+            {/* Daily Pulse */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Daily Pulse</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-white/5 p-4 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-orange-500/20 text-orange-400 group-hover:scale-110 transition-transform">
+                      <CheckSquare className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-medium text-white/40">Todo</span>
                   </div>
-               </div>
-            )}
+                  <p className="text-2xl font-bold text-white">3</p>
+                  <p className="text-xs text-white/50">Tasks due</p>
+                </div>
+                <div className="rounded-xl bg-white/5 p-4 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
+                      <Calendar className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-medium text-white/40">Meet</span>
+                  </div>
+                  <p className="text-2xl font-bold text-white">14:00</p>
+                  <p className="text-xs text-white/50">Team Sync</p>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Usage */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-2">
+                  <Zap className="h-3 w-3" /> AI Credits
+                </h4>
+                <span className="text-xs text-white/70">750 / 1000</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full w-[75%] bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+              </div>
+              <p className="text-xs text-white/40">Resets in 12 days</p>
+            </div>
+
+            {/* Quick Settings */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Quick Settings</h4>
+              <div className="space-y-1">
+                <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors group">
+                  <div className="flex items-center gap-3 text-white/70 group-hover:text-white">
+                    <Moon className="h-4 w-4" />
+                    <span className="text-sm font-medium">Dark Mode</span>
+                  </div>
+                  <div className="h-5 w-9 rounded-full bg-purple-600 p-1 flex justify-end">
+                    <div className="h-3 w-3 rounded-full bg-white" />
+                  </div>
+                </button>
+                <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors group">
+                  <div className="flex items-center gap-3 text-white/70 group-hover:text-white">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm font-medium">Focus Mode</span>
+                  </div>
+                  <div className="h-5 w-9 rounded-full bg-white/20 p-1 flex justify-start">
+                    <div className="h-3 w-3 rounded-full bg-white/50" />
+                  </div>
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          {/* Actions */}
-          <div className="space-y-1">
-            {onActivityClick && (
-              <button
-                onClick={() => {
-                  onClose();
-                  onActivityClick();
-                }}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
-              >
-                <Activity className="h-4 w-4" />
-                Activity
-              </button>
-            )}
-
+          {/* Footer Actions */}
+          <div className="p-6 border-t border-white/10 space-y-2 bg-black/20">
             <button
               onClick={() => {
                 onClose();
                 onSettingsClick?.();
               }}
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white border border-transparent hover:border-white/10"
             >
               <Settings className="h-4 w-4" />
               Settings
             </button>
-
-            <button
+            
+             <button
               onClick={() => {
-                onClose();
-                onSignOut();
+                 onClose();
+                 onSignOut();
               }}
-              className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+              className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300 border border-transparent hover:border-red-500/20"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
