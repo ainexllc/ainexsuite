@@ -177,6 +177,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
+        credentials: 'include', // Ensure cookies are processed
       });
 
       console.log('🔐 HomepageTemplate: Session response status:', sessionResponse.status);
@@ -184,15 +185,18 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         const errorData = await sessionResponse.json();
         console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
       } else {
-        console.log('🔐 HomepageTemplate: Session cookie created successfully!');
+        const data = await sessionResponse.json();
+        console.log('🔐 HomepageTemplate: Session cookie created successfully!', data);
+        // Small delay to ensure browser processes Set-Cookie header
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      router.push('/workspace');
+      // Use window.location for full page navigation to ensure cookies are sent
+      window.location.href = '/workspace';
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
       console.error('🔐 HomepageTemplate: Email auth error:', firebaseError);
       setError(firebaseError.message || 'Authentication failed. Please try again.');
-    } finally {
       setSignInLoading(false);
     }
   };
@@ -216,6 +220,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
+        credentials: 'include', // Ensure cookies are processed
       });
 
       console.log('🔐 HomepageTemplate: Session response status:', sessionResponse.status);
@@ -223,10 +228,14 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         const errorData = await sessionResponse.json();
         console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
       } else {
-        console.log('🔐 HomepageTemplate: Session cookie created successfully!');
+        const data = await sessionResponse.json();
+        console.log('🔐 HomepageTemplate: Session cookie created successfully!', data);
+        // Small delay to ensure browser processes Set-Cookie header
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      router.push('/workspace');
+      // Use window.location for full page navigation to ensure cookies are sent
+      window.location.href = '/workspace';
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
       console.error('🔐 HomepageTemplate: Google auth error:', firebaseError);
