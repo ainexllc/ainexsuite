@@ -48,8 +48,28 @@ export function useSSOAuth() {
         setIsAuthenticating(true);
         setAuthError(null);
 
+        console.log('🔐 SSO: Signing in with custom token');
+
         // Sign in with the custom token
-        await signInWithCustomToken(auth, authToken);
+        const userCredential = await signInWithCustomToken(auth, authToken);
+        console.log('✅ SSO: Client-side authentication successful');
+
+        // Get ID token and create server-side session cookie
+        console.log('🔐 SSO: Creating server-side session cookie');
+        const idToken = await userCredential.user.getIdToken();
+
+        const sessionResponse = await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+
+        if (!sessionResponse.ok) {
+          console.error('❌ SSO: Failed to create session cookie');
+          throw new Error('Failed to create session cookie');
+        }
+
+        console.log('✅ SSO: Server-side session cookie created');
 
         // Remove auth_token from URL without refreshing the page
         urlParams.delete('auth_token');
@@ -58,9 +78,10 @@ export function useSSOAuth() {
           window.location.hash;
 
         window.history.replaceState({}, '', newUrl);
+        console.log('✅ SSO: Authentication complete');
 
       } catch (error) {
-        console.error('SSO authentication failed:', error);
+        console.error('❌ SSO: Authentication failed:', error);
         setAuthError(error instanceof Error ? error.message : 'Authentication failed');
 
         // Still remove the token from URL even if auth failed
