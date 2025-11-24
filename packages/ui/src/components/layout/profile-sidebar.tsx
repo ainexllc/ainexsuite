@@ -4,8 +4,6 @@ import {
   X, 
   Settings, 
   LogOut, 
-  CheckSquare, 
-  Calendar, 
   Zap, 
   Moon, 
   Bell,
@@ -102,33 +100,6 @@ export function ProfileSidebar({
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/70 border border-white/5">
                   <CreditCard className="h-3 w-3" />
                   <span className="capitalize">{user.subscriptionTier || 'Free'} Plan</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Daily Pulse */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Daily Pulse</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-white/5 p-4 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="p-2 rounded-lg bg-orange-500/20 text-orange-400 group-hover:scale-110 transition-transform">
-                      <CheckSquare className="h-4 w-4" />
-                    </div>
-                    <span className="text-xs font-medium text-white/40">Todo</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">3</p>
-                  <p className="text-xs text-white/50">Tasks due</p>
-                </div>
-                <div className="rounded-xl bg-white/5 p-4 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
-                      <Calendar className="h-4 w-4" />
-                    </div>
-                    <span className="text-xs font-medium text-white/40">Meet</span>
-                  </div>
-                  <p className="text-2xl font-bold text-white">14:00</p>
-                  <p className="text-xs text-white/50">Team Sync</p>
                 </div>
               </div>
             </div>
