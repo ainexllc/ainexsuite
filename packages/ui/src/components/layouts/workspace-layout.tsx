@@ -6,6 +6,7 @@ import { AtmosphericGlows } from './atmospheric-glows';
 import { FeedbackWidget } from '../feedback/feedback-widget';
 import { SubscriptionSidebar } from '../layout/subscription-sidebar';
 import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
+import { ProfileSidebar } from '../layout/profile-sidebar';
 
 interface WorkspaceLayoutProps {
   /**
@@ -81,6 +82,7 @@ export function WorkspaceLayout({
   apps = [],
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-surface-base text-text-primary">
@@ -95,6 +97,7 @@ export function WorkspaceLayout({
         appName={appName}
         appColor={appColor}
         onNavigationToggle={() => setIsNavOpen(!isNavOpen)}
+        onProfileToggle={() => setIsProfileOpen(!isProfileOpen)}
       />
 
       {/* App Navigation Sidebar */}
@@ -113,6 +116,14 @@ export function WorkspaceLayout({
           user={user}
         />
       )}
+
+      {/* Profile Sidebar */}
+      <ProfileSidebar
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        user={user}
+        onSignOut={onSignOut}
+      />
 
       {/* Main Content */}
       <main className="flex-1 pt-16">
