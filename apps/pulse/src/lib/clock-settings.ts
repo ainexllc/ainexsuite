@@ -1,11 +1,10 @@
-import { db, storage } from '@ainexsuite/firebase';
+import { db } from '@ainexsuite/firebase';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 const SETTINGS_COLLECTION = 'user_settings';
 const CLOCK_SETTINGS_DOC = 'pulse_clock';
 
-export type ClockStyle = 'digital' | 'analog' | 'neon' | 'flip' | 'particles' | 'retro-digital' | 'christmas' | 'christmas-analog';
+export type ClockStyle = 'digital' | 'neon' | 'flip' | 'analog' | 'retro-digital';
 
 export interface ClockSettings {
   tiles: Record<string, string | null>;
@@ -14,33 +13,14 @@ export interface ClockSettings {
   weatherZipcode?: string; // User's preferred zipcode for weather tile
   layoutId?: string; // ID of the selected layout configuration
   backgroundEffect?: string; // Selected background effect
-  backgroundDim?: number; // Overlay opacity 0-100
-  clockStyle?: string; // 'digital', 'analog', etc.
+  backgroundDim?: number; // Dim level for background (0-100)
+  clockStyle?: ClockStyle; // Clock style preference
 }
 
 export const ClockService = {
   async saveSettings(userId: string, settings: Partial<ClockSettings>) {
     const docRef = doc(db, 'users', userId, SETTINGS_COLLECTION, CLOCK_SETTINGS_DOC);
-
-    let settingsToSave: Partial<ClockSettings> = { ...settings };
-
-    // Handle large base64 images by uploading to Storage
-    if (settings.backgroundImage && settings.backgroundImage.startsWith('data:')) {
-      try {
-        // Upload base64 image to Storage
-        const storageRef = ref(storage, `users/${userId}/backgrounds/generated-${Date.now()}.png`);
-        await uploadString(storageRef, settings.backgroundImage, 'data_url');
-        // Get the download URL and store that instead of the base64
-        const downloadUrl = await getDownloadURL(storageRef);
-        settingsToSave = { ...settingsToSave, backgroundImage: downloadUrl };
-      } catch (error) {
-        console.error('Failed to upload background image to Storage:', error);
-        // If upload fails, don't save the base64 data which would exceed Firestore limits
-        settingsToSave = { ...settingsToSave, backgroundImage: undefined };
-      }
-    }
-
-    await setDoc(docRef, settingsToSave, { merge: true });
+    await setDoc(docRef, settings, { merge: true });
   },
 
   async getSettings(userId: string): Promise<ClockSettings | null> {

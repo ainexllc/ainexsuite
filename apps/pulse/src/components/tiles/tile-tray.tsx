@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2, Clock, Palette, Upload, Trash2, Check, Plus, AlertTriangle, XCircle } from 'lucide-react';
+import { X, Layout, Image as ImageIcon, GripHorizontal, Grid, CloudRain, Sparkles, Loader2, Clock, Palette, Upload, Trash2, Check, Plus, AlertTriangle } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { CalendarTile } from './calendar-tile';
@@ -198,7 +198,6 @@ export function TileTray({
 }: TileTrayProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'widgets' | 'layout' | 'appearance' | 'clock'>('widgets');
-  const [activeBackgroundTab, setActiveBackgroundTab] = useState<'image' | 'atmosphere'>('image');
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const trayRef = useRef<HTMLDivElement>(null);
@@ -214,7 +213,6 @@ export function TileTray({
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [isAiGeneratorOpen, setIsAiGeneratorOpen] = useState(false);
 
   // Load images when Appearance tab is active
   useEffect(() => {
@@ -303,11 +301,6 @@ export function TileTray({
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const handleDiscardGeneratedImage = () => {
-    setGeneratedImage(null);
-    setPrompt('');
   };
 
   const handleGenerateImage = async () => {
@@ -470,7 +463,7 @@ export function TileTray({
           {[
               { id: 'widgets', label: 'Widgets', icon: Grid },
               { id: 'layout', label: 'Layout', icon: Layout },
-              { id: 'appearance', label: 'Background', icon: Palette },
+              { id: 'appearance', label: 'Look', icon: Palette },
               { id: 'clock', label: 'Clock', icon: Clock },
           ].map((tab) => (
               <button
@@ -550,37 +543,13 @@ export function TileTray({
           )}
 
           {activeTab === 'appearance' && (
-            <div className="flex flex-col gap-4">
-              {/* Background Sub-Tabs */}
-              <div className="flex p-1 gap-1 bg-black/20 rounded-lg border border-white/5">
-                <button
-                  onClick={() => setActiveBackgroundTab('image')}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                    activeBackgroundTab === 'image'
-                      ? 'bg-white/10 text-white shadow-sm'
-                      : 'text-white/40 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  Image
-                </button>
-                <button
-                  onClick={() => setActiveBackgroundTab('atmosphere')}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                    activeBackgroundTab === 'atmosphere'
-                      ? 'bg-white/10 text-white shadow-sm'
-                      : 'text-white/40 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  Atmosphere
-                </button>
-              </div>
-
-              {/* Section: Background Image */}
-              {activeBackgroundTab === 'image' && (
-                <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-200">
+            <div className="flex flex-col gap-6">
+              
+              {/* Section: Background */}
+              <div className="space-y-3">
                   <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider flex items-center gap-2">
                       <ImageIcon className="w-3 h-3" />
-                      Background Image
+                      Background
                   </h4>
 
                   {/* My Images / Upload */}
@@ -664,20 +633,16 @@ export function TileTray({
                   </div>
 
                   {/* AI Generator */}
-                  <div className="group bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-                      <button 
-                        onClick={() => setIsAiGeneratorOpen(!isAiGeneratorOpen)}
-                        className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors"
-                      >
+                  <details className="group bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+                      <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors">
                           <div className="flex items-center gap-2 text-indigo-400">
                               <Sparkles className="w-4 h-4" />
                               <span className="text-xs font-semibold uppercase tracking-wider">AI Generator</span>
                           </div>
-                          <div className={`text-white/40 transition-transform duration-200 ${isAiGeneratorOpen ? 'rotate-180' : ''}`}>▼</div>
-                      </button>
+                          <div className="text-white/40 group-open:rotate-180 transition-transform">▼</div>
+                      </summary>
                       
-                      {isAiGeneratorOpen && (
-                        <div className="p-4 pt-0 space-y-3 bg-gradient-to-b from-indigo-500/10 to-purple-500/10 border-t border-white/5 animate-in slide-in-from-top-2 duration-200">
+                      <div className="p-4 pt-0 space-y-3 bg-gradient-to-b from-indigo-500/10 to-purple-500/10">
                           <textarea
                               value={prompt}
                               onChange={(e) => setPrompt(e.target.value)}
@@ -721,11 +686,10 @@ export function TileTray({
                                   />
                                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                   <button
-                                      onClick={handleDiscardGeneratedImage}
-                                      className="px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-medium rounded-full hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 transition-all flex items-center gap-1"
+                                      onClick={() => onSelectBackground(generatedImage)}
+                                      className="px-3 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-medium rounded-full hover:bg-white hover:text-black transition-all"
                                   >
-                                      <XCircle className="w-3 h-3" />
-                                      Discard
+                                      Use
                                   </button>
                                   <button
                                       onClick={handleSaveGeneratedImage}
@@ -739,8 +703,7 @@ export function TileTray({
                               </div>
                           )}
                       </div>
-                      )}
-                  </div>
+                  </details>
 
                   {/* Presets Grid */}
                   <div className="grid grid-cols-2 gap-3">
@@ -819,33 +782,24 @@ export function TileTray({
                           </div>
                       )}
                   </div>
-                </div>
-              )}
+              </div>
 
               {/* Section: Effects */}
-              {activeBackgroundTab === 'atmosphere' && (
-                <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-200">
+              <div className="space-y-3">
                   <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider flex items-center gap-2">
                       <CloudRain className="w-3 h-3" />
-                      Atmosphere Effects
+                      Atmosphere
                   </h4>
                   <div className="grid grid-cols-3 gap-2">
                       {[
                           { id: 'none', name: 'None', icon: '🚫' },
                           { id: 'rain', name: 'Rain', icon: '🌧️' },
-                          { id: 'heavy-rain', name: 'Heavy Rain', icon: '⛈️' },
                           { id: 'snow', name: 'Snow', icon: '❄️' },
-                          { id: 'heavy-snow', name: 'Blizzard', icon: '🌨️' },
-                          { id: 'fog', name: 'Fog', icon: '🌫️' },
-                          { id: 'ice', name: 'Ice', icon: '🧊' },
                           { id: 'fireflies', name: 'Fireflies', icon: '✨' },
                           { id: 'sakura', name: 'Sakura', icon: '🌸' },
                           { id: 'autumn-leaves', name: 'Autumn', icon: '🍂' },
                           { id: 'confetti', name: 'Confetti', icon: '🎉' },
-                          { id: 'fireworks', name: 'Fireworks', icon: '🎆' },
-                          { id: 'bubbles', name: 'Bubbles', icon: '🫧' },
                           { id: 'christmas-lights', name: 'Lights', icon: '🎄' },
-                          { id: 'christmas-lights-snow', name: 'Lights + Snow', icon: '🎅' },
                       ].map((effect) => (
                           <button
                               key={effect.id}
@@ -863,8 +817,7 @@ export function TileTray({
                           </button>
                       ))}
                   </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -877,8 +830,6 @@ export function TileTray({
                       { id: 'neon', name: 'Neon Cyber', desc: 'Glowing, futuristic look' },
                       { id: 'flip', name: 'Retro Flip', desc: 'Classic split-flap display' },
                       { id: 'retro-digital', name: 'Old School', desc: 'LCD 7-segment style' },
-                      { id: 'christmas', name: 'Christmas Digital', desc: 'Festive holiday spirit' },
-                      { id: 'christmas-analog', name: 'Christmas Analog', desc: 'Traditional festive clock' },
                       { id: 'analog', name: 'Analog', desc: 'Traditional watch face' },
                   ].map((style) => (
                       <button
@@ -901,8 +852,6 @@ export function TileTray({
                                   </div>
                               )}
                               {style.id === 'retro-digital' && <span className="font-mono font-bold text-xs tracking-widest">88:88</span>}
-                              {style.id === 'christmas' && <span className="text-lg">🎄</span>}
-                              {style.id === 'christmas-analog' && <span className="text-lg">🎅</span>}
                               {style.id === 'analog' && <Clock className="w-6 h-6" />}
                           </div>
                           
