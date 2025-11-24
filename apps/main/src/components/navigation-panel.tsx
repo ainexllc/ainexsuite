@@ -125,13 +125,15 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
 
           <NavSection title="Apps">
             {apps.map(({ href, icon: Icon, label }) => (
-              <button
+              <a
                 key={label}
-                onClick={() => {
-                  window.location.href = href;
+                href={href}
+                onClick={(e) => {
+                  e.preventDefault();
                   onClose();
+                  window.location.assign(href);
                 }}
-                className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors text-ink-500 hover:bg-surface-muted hover:text-ink-700 w-full text-left"
+                className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors text-ink-500 hover:bg-surface-muted hover:text-ink-700 w-full text-left no-underline"
               >
                 <span className="flex items-center gap-3 flex-1">
                   <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-transparent transition-colors bg-surface-muted text-ink-600">
@@ -139,7 +141,7 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
                   </span>
                   <span>{label}</span>
                 </span>
-              </button>
+              </a>
             ))}
           </NavSection>
 
