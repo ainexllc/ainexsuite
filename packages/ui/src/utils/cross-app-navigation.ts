@@ -7,20 +7,22 @@ import { getAppUrl } from '../config/apps';
 import type { AppSlug } from '../config/apps';
 
 /**
- * Navigate to another app's workspace with automatic authentication
+ * Navigate to another app's workspace with automatic authentication via SSO
  *
- * In production:
- * - Relies on shared session cookie across subdomains (.ainexsuite.com)
- * - User will be automatically authenticated via AuthBootstrap
+ * Flow:
+ * 1. Request custom token from current app's /api/auth/custom-token
+ * 2. Navigate to target app with ?auth_token parameter
+ * 3. Target app's SSOHandler picks up token and signs user in
+ * 4. Creates server-side session cookie
+ * 5. User is fully authenticated
  *
  * In development:
- * - Uses localStorage to pass session info between localhost ports
- * - Target app will pick up the session and auto-login
+ * - Also syncs session to localStorage as fallback
  *
  * @param appSlug - The target app slug (e.g., 'notes', 'journey', 'pulse')
  * @param currentAppSlug - Optional current app slug to avoid navigating to same app
  */
-export function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: string): void {
+export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: string): Promise<void> {
   // Don't navigate if clicking on current app
   if (currentAppSlug && appSlug === currentAppSlug) {
     return;
@@ -29,13 +31,46 @@ export function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: string
   const isDev = process.env.NODE_ENV === 'development';
   const targetUrl = getAppUrl(appSlug, isDev);
 
+  console.log('🔄 SSO: Navigating to', appSlug);
+
   // In development, sync session cookie to localStorage for cross-port authentication
   if (isDev) {
     syncSessionForDev();
   }
 
-  // Navigate to target app's workspace
-  window.location.href = targetUrl;
+  try {
+    // Request custom token for SSO
+    console.log('🔄 SSO: Requesting custom token from /api/auth/custom-token');
+    const response = await fetch('/api/auth/custom-token', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    console.log('🔄 SSO: Token response status:', response.status);
+
+    if (response.ok) {
+      const { customToken } = await response.json();
+      console.log('✅ SSO: Custom token received, navigating with auth');
+
+      // Add auth token to URL
+      const urlWithToken = new URL(targetUrl);
+      urlWithToken.searchParams.set('auth_token', customToken);
+
+      console.log('🔄 SSO: Navigating to', urlWithToken.toString());
+      window.location.href = urlWithToken.toString();
+    } else {
+      // Fallback: Navigate without SSO (user will need to login)
+      const errorData = await response.json();
+      console.warn('⚠️ SSO: Failed to generate token:', errorData);
+      console.warn('⚠️ SSO: Falling back to regular navigation (will require login)');
+      window.location.href = targetUrl;
+    }
+  } catch (error) {
+    // Fallback: Navigate without SSO
+    console.error('❌ SSO: Error during navigation:', error);
+    console.warn('⚠️ SSO: Falling back to regular navigation');
+    window.location.href = targetUrl;
+  }
 }
 
 /**
