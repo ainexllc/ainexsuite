@@ -7,7 +7,9 @@ import {
   Zap, 
   Moon, 
   Bell,
-  CreditCard
+  CreditCard,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -100,6 +102,29 @@ export function ProfileSidebar({
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/70 border border-white/5">
                   <CreditCard className="h-3 w-3" />
                   <span className="capitalize">{user.subscriptionTier || 'Free'} Plan</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Suite Updates */}
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-white/10 p-4 group cursor-pointer hover:border-white/20 transition-colors">
+              <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 bg-purple-500/20 blur-2xl rounded-full" />
+              
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-2 text-purple-300">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-wider">New in Suite</span>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-semibold text-white">Pulse Dashboard 2.0</h4>
+                  <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                    Fully customizable widgets, new clock styles, and improved drag-and-drop layout.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1 text-xs font-medium text-white/80 group-hover:text-white group-hover:gap-2 transition-all">
+                  See what&apos;s new <ArrowRight className="h-3 w-3" />
                 </div>
               </div>
             </div>
