@@ -8,7 +8,7 @@ import { DigitalClock } from '@/components/digital-clock';
 import { Loader2 } from 'lucide-react';
 
 function PulseWorkspaceContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
   // Loading state to prevent flash of content
   const [loading, setLoading] = useState(true);
@@ -17,11 +17,11 @@ function PulseWorkspaceContent() {
     // Simulate initial load or wait for user
     if (user) {
       setLoading(false);
-    } else if (!authLoading && !user) {
+    } else if (!authLoading && !user && bootstrapStatus !== 'running') {
       // If auth is done and no user, let the guard or router handle it
       setLoading(false);
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, bootstrapStatus]);
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -36,7 +36,8 @@ function PulseWorkspaceContent() {
     }
   };
 
-  if (authLoading || loading) {
+  // Show loading while authenticating or bootstrapping
+  if (authLoading || loading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <Loader2 className="h-8 w-8 animate-spin text-accent-500" />

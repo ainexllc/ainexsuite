@@ -13,7 +13,7 @@ import { getMoments } from '@/lib/moments';
 import { Plus, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 function MomentsWorkspaceContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
   const [moments, setMoments] = useState<Moment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +64,8 @@ function MomentsWorkspaceContent() {
   const allTags = Array.from(new Set(moments.flatMap((m) => m.tags || []))).sort();
   const filteredMoments = selectedTag ? moments.filter((m) => m.tags?.includes(selectedTag)) : moments;
 
-  if (authLoading || loading) {
+  // Show loading while authenticating or bootstrapping
+  if (authLoading || loading || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
