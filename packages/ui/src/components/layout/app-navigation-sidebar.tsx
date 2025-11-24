@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Home, Clock, Crown } from 'lucide-react';
+import { X, Home } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode } from 'react';
 
@@ -27,18 +27,6 @@ export function AppNavigationSidebar({
   apps,
   user,
 }: AppNavigationSidebarProps) {
-  // Calculate trial days remaining
-  const getRemainingTrialDays = () => {
-    if (!user?.trialStartDate || user?.subscriptionStatus !== 'trial') return null;
-    const trialEndDate = new Date(user.trialStartDate);
-    trialEndDate.setDate(trialEndDate.getDate() + 30);
-    const now = new Date();
-    const daysRemaining = Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, daysRemaining);
-  };
-
-  const trialDaysRemaining = getRemainingTrialDays();
-  const isTrialActive = user?.subscriptionStatus === 'trial' && trialDaysRemaining !== null && trialDaysRemaining > 0;
   return (
     <>
       {/* Overlay */}
@@ -129,44 +117,6 @@ export function AppNavigationSidebar({
               })}
             </div>
           </div>
-        </div>
-
-        {/* Trial/Subscription Info at Bottom */}
-        <div className="relative z-10 flex-none p-3 pb-6 border-t border-white/10 bg-black/20">
-          {isTrialActive && (
-            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-amber-400" />
-                <span className="text-xs font-semibold text-amber-300">Free Trial</span>
-              </div>
-              <p className="text-xs text-amber-200/70">
-                {trialDaysRemaining === 1
-                  ? 'Last day of your trial'
-                  : `${trialDaysRemaining} days remaining`}
-              </p>
-              <Link
-                href="/plans"
-                onClick={onClose}
-                className="mt-2 inline-block text-xs font-medium text-amber-300 hover:text-amber-200 transition"
-              >
-                Upgrade to Pro →
-              </Link>
-            </div>
-          )}
-
-          {user?.subscriptionStatus && user?.subscriptionStatus !== 'trial' && (
-            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Crown className="h-4 w-4 text-emerald-400" />
-                <span className="text-xs font-semibold text-emerald-300 capitalize">
-                  {user.subscriptionTier} Plan
-                </span>
-              </div>
-              <p className="text-xs text-emerald-200/70 capitalize">
-                {user.subscriptionStatus === 'active' ? 'Active subscription' : user.subscriptionStatus}
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </>
