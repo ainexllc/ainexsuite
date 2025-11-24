@@ -65,6 +65,10 @@ interface WorkspaceLayoutProps {
    * Handler for clicking activity in the profile sidebar
    */
   onActivityClick?: () => void;
+  /**
+   * Optional custom sidebar renderer. If provided, it replaces the default AppNavigationSidebar.
+   */
+  renderSidebar?: (props: { isOpen: boolean; onClose: () => void }) => ReactNode;
 }
 
 export function WorkspaceLayout({
@@ -78,6 +82,7 @@ export function WorkspaceLayout({
   apps = [],
   onSettingsClick,
   onActivityClick,
+  renderSidebar,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -103,13 +108,17 @@ export function WorkspaceLayout({
         onProfileToggle={() => setIsProfileOpen(!isProfileOpen)}
       />
 
-      {/* App Navigation Sidebar */}
-      <AppNavigationSidebar
-        isOpen={isNavOpen}
-        onClose={() => setIsNavOpen(false)}
-        apps={displayApps}
-        user={user}
-      />
+      {/* Sidebar (Custom or Default) */}
+      {renderSidebar ? (
+        renderSidebar({ isOpen: isNavOpen, onClose: () => setIsNavOpen(false) })
+      ) : (
+        <AppNavigationSidebar
+          isOpen={isNavOpen}
+          onClose={() => setIsNavOpen(false)}
+          apps={displayApps}
+          user={user}
+        />
+      )}
 
       {/* Profile Sidebar */}
       <ProfileSidebar
