@@ -52,15 +52,11 @@ export function ProfileSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed right-0 top-0 h-full w-[320px] bg-black/60 backdrop-blur-xl border-l border-white/10 transition-transform duration-300 ease-out z-40 shadow-2xl overflow-hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed right-0 top-0 h-full w-[320px] bg-surface-elevated/95 backdrop-blur-2xl border-l border-outline-subtle/60 transition-transform duration-300 ease-out z-40 shadow-2xl ${isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
       >
-        {/* Glow Effects */}
-        <div className="absolute -top-24 -left-24 h-64 w-64 bg-purple-500/20 blur-3xl rounded-full pointer-events-none opacity-50" />
-        <div className="absolute -bottom-24 -right-24 h-64 w-64 bg-blue-500/20 blur-3xl rounded-full pointer-events-none opacity-50" />
-
         {/* Header */}
-        <div className="relative z-10 flex items-center justify-between p-4 border-b border-white/10 bg-transparent">
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
           <h2 className="text-lg font-semibold text-white">Profile</h2>
           <button
             onClick={onClose}
@@ -72,7 +68,7 @@ export function ProfileSidebar({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 p-4 space-y-6">
+        <div className="p-4 space-y-6">
 
           {/* User Info */}
           <div className="flex flex-col items-center text-center space-y-3">
@@ -101,6 +97,33 @@ export function ProfileSidebar({
               <h3 className="text-lg font-medium text-white">{user.displayName || 'User'}</h3>
               <p className="text-sm text-white/50">{user.email}</p>
             </div>
+          </div>
+
+          {/* Subscription Status */}
+          <div className="space-y-3">
+            {isTrialActive && (
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 flex items-center gap-3">
+                <Clock className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-amber-300">
+                    {trialDaysRemaining === 1 ? 'Last day of trial' : `${trialDaysRemaining} days left`}
+                  </p>
+                  <p className="text-xs text-amber-200/70">Free trial</p>
+                </div>
+              </div>
+            )}
+
+            {user.subscriptionStatus && user.subscriptionStatus !== 'trial' && (
+               <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 flex items-center gap-3">
+                <Crown className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                 <div className="flex-1">
+                    <p className="text-sm font-medium text-emerald-300 capitalize">
+                      {user.subscriptionTier || 'Active'} Plan
+                    </p>
+                    <p className="text-xs text-emerald-200/70 capitalize">{user.subscriptionStatus}</p>
+                  </div>
+               </div>
+            )}
           </div>
 
           {/* Actions */}
