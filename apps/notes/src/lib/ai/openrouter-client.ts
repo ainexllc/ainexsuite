@@ -62,7 +62,7 @@ export class OpenRouterClient {
         if (model === "x-ai/grok-4.1-fast" || model === "grok-4.1-fast") {
             model = "grok-4-1-fast-non-reasoning"; 
         } else if (model === "grok-beta" || model === "x-ai/grok-beta") {
-            model = "grok-3";
+            model = "grok-4-fast-non-reasoning";
         } else if (model.startsWith("x-ai/")) {
             // Fallback: strip prefix
             model = model.replace("x-ai/", "");
