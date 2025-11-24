@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { SSOHandler } from '@ainexsuite/firebase';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -37,6 +38,7 @@ export default function RootLayout({
       <body className="font-sans antialiased transition-colors duration-300">
         <ThemeProvider>
           <AuthProvider>
+            <SSOHandler />
             {children}
           </AuthProvider>
         </ThemeProvider>

@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
 import { ToastProvider } from '@/lib/toast';
+import { SSOHandler } from '@ainexsuite/firebase';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className="font-sans antialiased theme-dark">
         <AuthProvider>
           <ToastProvider>
+            <SSOHandler />
             {children}
           </ToastProvider>
         </AuthProvider>
