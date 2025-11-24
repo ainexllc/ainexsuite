@@ -159,11 +159,21 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
     setError('');
 
     try {
+      let result;
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        result = await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        result = await signInWithEmailAndPassword(auth, email, password);
       }
+
+      // Create server-side session cookie for SSO
+      const idToken = await result.user.getIdToken();
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
       router.push('/workspace');
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
@@ -179,7 +189,16 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+
+      // Create server-side session cookie for SSO
+      const idToken = await result.user.getIdToken();
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
       router.push('/workspace');
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
