@@ -105,17 +105,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const auth = await getFirebaseAuth();
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
-    await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+
+    // Create server-side session cookie for SSO
+    const idToken = await result.user.getIdToken();
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    });
   }, []);
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {
     const auth = await getFirebaseAuth();
-    await signInWithEmailAndPassword(auth, email, password);
+    const result = await signInWithEmailAndPassword(auth, email, password);
+
+    // Create server-side session cookie for SSO
+    const idToken = await result.user.getIdToken();
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    });
   }, []);
 
   const signUpWithEmail = useCallback(async (email: string, password: string) => {
     const auth = await getFirebaseAuth();
-    await createUserWithEmailAndPassword(auth, email, password);
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+
+    // Create server-side session cookie for SSO
+    const idToken = await result.user.getIdToken();
+    await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    });
   }, []);
 
   const signOut = useCallback(async () => {
