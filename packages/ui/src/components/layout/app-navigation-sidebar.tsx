@@ -51,12 +51,15 @@ export function AppNavigationSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-full w-[280px] bg-surface-elevated/95 backdrop-blur-2xl border-r border-outline-subtle/60 transition-transform duration-300 ease-out z-40 overflow-y-auto ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed left-0 top-0 h-full w-[280px] bg-black/60 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 ease-out z-40 overflow-hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
+        {/* Glow Effects */}
+        <div className="absolute -top-24 -right-24 h-64 w-64 bg-purple-500/20 blur-3xl rounded-full pointer-events-none opacity-50" />
+        <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-blue-500/20 blur-3xl rounded-full pointer-events-none opacity-50" />
+
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between p-4 border-b border-white/10 bg-surface-elevated/95">
+        <div className="relative z-10 sticky top-0 flex items-center justify-between p-4 border-b border-white/10 bg-transparent">
           <h2 className="text-lg font-semibold text-white">Apps</h2>
           <button
             onClick={onClose}
@@ -68,47 +71,55 @@ export function AppNavigationSidebar({
         </div>
 
         {/* Content */}
-        <div className="flex flex-col h-full p-3">
-          <div className="space-y-2 flex-1">
-            {/* Back to Dashboard */}
-            <Link
-              href="/workspace"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
-            >
-              <Home className="h-5 w-5 flex-shrink-0" />
-              <span>Suite Dashboard</span>
-            </Link>
+        <div className="relative z-10 flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="space-y-2">
+              {/* Back to Dashboard */}
+              <Link
+                href="/workspace"
+                onClick={onClose}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+              >
+                <Home className="h-5 w-5 flex-shrink-0" />
+                <span>Suite Dashboard</span>
+              </Link>
 
-            {/* Divider */}
-            <div className="my-2 border-t border-white/10" />
+              {/* Divider */}
+              <div className="my-2 border-t border-white/10" />
 
-            {/* Apps List */}
-            <div className="space-y-1">
-              {apps.map((app) => {
-                const IconComponent = app.icon;
-                return (
-                  <a
-                    key={app.slug}
-                    href={app.url}
-                    onClick={onClose}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white group"
-                  >
-                    <IconComponent className="h-5 w-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="flex-1">{app.name}</span>
-                    <span className="text-xs text-white/40 group-hover:text-white/60 transition">
-                      →
-                    </span>
-                  </a>
-                );
-              })}
+              {/* Apps List */}
+              <div className="space-y-1">
+                {apps.map((app) => {
+                  const IconComponent = app.icon;
+                  return (
+                    <a
+                      key={app.slug}
+                      href={app.url}
+                      onClick={onClose}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition-all hover:text-white overflow-hidden"
+                    >
+                      {/* Hover Background Gradient */}
+                      <div
+                        className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-gradient-to-br ${app.color || 'from-white/10 to-white/5'
+                          }`}
+                      />
+
+                      <IconComponent className="relative z-10 h-5 w-5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                      <span className="relative z-10 flex-1">{app.name}</span>
+                      <span className="relative z-10 text-xs text-white/40 group-hover:text-white/60 transition-colors">
+                        →
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Trial/Subscription Info at Bottom */}
-          <div className="border-t border-white/10 pt-3 mt-3">
+          <div className="p-3 border-t border-white/10 bg-black/20">
             {isTrialActive && (
               <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
                 <div className="flex items-center gap-2 mb-2">

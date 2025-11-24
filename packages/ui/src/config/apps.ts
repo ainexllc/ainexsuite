@@ -1,138 +1,89 @@
-/**
- * Shared App Navigation Configuration
- * Used across all Suite apps to provide consistent navigation
- */
-
-export interface AppConfig {
-  name: string;
-  slug: string;
-  description: string;
-  color: string;
-  devPort: number;
-  prodUrl: string;
-}
-
-export const SUITE_APPS: Record<string, AppConfig> = {
+export const SUITE_APPS = {
   notes: {
     name: 'Notes',
     slug: 'notes',
-    description: 'Quickly capture thoughts, ideas, and meeting notes. AI-powered organization.',
-    color: 'from-blue-500 to-blue-600',
-    devPort: 3001,
-    prodUrl: 'https://notes.ainexsuite.com',
+    description: 'Capture your thoughts and ideas',
+    color: '#eab308', // yellow-500
   },
   journey: {
     name: 'Journey',
     slug: 'journey',
-    description: 'Reflect on your daily experiences with guided prompts and mood tracking.',
-    color: 'from-purple-500 to-purple-600',
-    devPort: 3002,
-    prodUrl: 'https://journey.ainexsuite.com',
+    description: 'Plan your path and track progress',
+    color: '#f97316', // orange-500
   },
   todo: {
-    name: 'Tasks',
+    name: 'Todo',
     slug: 'todo',
-    description: 'Manage to-dos and projects. Never miss a deadline with smart priorities.',
-    color: 'from-green-500 to-green-600',
-    devPort: 3003,
-    prodUrl: 'https://tasks.ainexsuite.com',
+    description: 'Manage tasks and projects',
+    color: '#8b5cf6', // violet-500
   },
   track: {
     name: 'Track',
     slug: 'track',
-    description: 'Build better habits with visual streaks and progress analytics.',
-    color: 'from-orange-500 to-orange-600',
-    devPort: 3004,
-    prodUrl: 'https://track.ainexsuite.com',
+    description: 'Monitor habits and goals',
+    color: '#22c55e', // green-500
   },
   moments: {
     name: 'Moments',
     slug: 'moments',
-    description: 'Capture life\'s beautiful moments. Create a visual timeline of memories.',
-    color: 'from-yellow-500 to-yellow-600',
-    devPort: 3005,
-    prodUrl: 'https://moments.ainexsuite.com',
+    description: 'Cherish your memories',
+    color: '#ec4899', // pink-500
   },
   grow: {
     name: 'Grow',
     slug: 'grow',
-    description: 'Track your learning journey, set goals, and master new skills.',
-    color: 'from-teal-500 to-teal-600',
-    devPort: 3006,
-    prodUrl: 'https://grow.ainexsuite.com',
+    description: 'Personal development tools',
+    color: '#14b8a6', // teal-500
   },
   pulse: {
     name: 'Pulse',
     slug: 'pulse',
-    description: 'Monitor health metrics, wellness trends, and vital signs.',
-    color: 'from-red-500 to-red-600',
-    devPort: 3007,
-    prodUrl: 'https://pulse.ainexsuite.com',
+    description: 'Health and vitality tracking',
+    color: '#ef4444', // red-500
   },
   fit: {
     name: 'Fit',
     slug: 'fit',
-    description: 'Record workouts and track fitness progress. Visualize your gains.',
-    color: 'from-blue-500 to-blue-600',
-    devPort: 3008,
-    prodUrl: 'https://fit.ainexsuite.com',
+    description: 'Workout and fitness tracking',
+    color: '#3b82f6', // blue-500
   },
   projects: {
     name: 'Projects',
     slug: 'projects',
-    description: 'Visual whiteboard with sticky notes for creative team collaboration.',
-    color: 'from-pink-500 to-pink-600',
-    devPort: 3009,
-    prodUrl: 'https://projects.ainexsuite.com',
+    description: 'Manage complex projects',
+    color: '#6366f1', // indigo-500
   },
   workflow: {
     name: 'Workflow',
     slug: 'workflow',
-    description: 'Build and automate visual workflows with drag-and-drop simplicity.',
-    color: 'from-cyan-500 to-cyan-600',
-    devPort: 3010,
-    prodUrl: 'https://workflow.ainexsuite.com',
+    description: 'Automate your daily tasks',
+    color: '#06b6d4', // cyan-500
   },
-  calendar: {
-    name: 'Calendar',
-    slug: 'calendar',
-    description: 'Unified calendar for all your events and schedules.',
-    color: 'from-violet-500 to-violet-600',
-    devPort: 3012,
-    prodUrl: 'https://calendar.ainexsuite.com',
-  },
-  admin: {
-    name: 'Admin',
-    slug: 'admin',
-    description: 'Administrative dashboard for system management.',
-    color: 'from-slate-500 to-slate-600',
-    devPort: 3011,
-    prodUrl: 'https://admin.ainexsuite.com',
-  },
-};
+} as const;
 
-/**
- * Get URL for an app based on environment
- */
-export function getAppUrl(slug: string, isDev: boolean = process.env.NODE_ENV === 'development'): string {
-  const app = SUITE_APPS[slug];
-  if (!app) {
-    console.warn(`App with slug "${slug}" not found in SUITE_APPS`);
-    return '';
+export type AppSlug = keyof typeof SUITE_APPS;
+
+export function getAppUrl(slug: string, isDev: boolean = false): string {
+  const domain = isDev ? 'localhost' : 'ainexsuite.com';
+  const portMap: Record<string, number> = {
+    main: 3000,
+    notes: 3001,
+    journey: 3002,
+    todo: 3003,
+    track: 3004,
+    moments: 3005,
+    grow: 3006,
+    pulse: 3007,
+    fit: 3008,
+    projects: 3009,
+    workflow: 3010,
+    admin: 3011,
+  };
+
+  if (isDev) {
+    const port = portMap[slug] || 3000;
+    return `http://localhost:${port}`;
   }
-  return isDev ? `http://localhost:${app.devPort}` : app.prodUrl;
-}
 
-/**
- * Get all apps as array
- */
-export function getAllApps(): AppConfig[] {
-  return Object.values(SUITE_APPS);
-}
-
-/**
- * Get app by slug
- */
-export function getApp(slug: string): AppConfig | undefined {
-  return SUITE_APPS[slug];
+  return `https://${slug}.ainexsuite.com`;
 }
