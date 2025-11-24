@@ -43,7 +43,7 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     color: 'blue',
     gradient: 'from-blue-500 to-sky-500',
     devUrl: 'http://localhost:3000',
-    prodUrl: 'https://suite.ainexsuite.com',
+    prodUrl: 'https://www.ainexsuite.com',
     devPort: 3000,
     category: 'system',
     features: ['Dashboard', 'Activity Feed', 'App Switcher', 'Universal Search'],
