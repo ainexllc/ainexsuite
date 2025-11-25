@@ -81,6 +81,7 @@ export function WorkspacePage({
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNavOpen, activePanel]);
 
   // Handle sign out
@@ -91,7 +92,8 @@ export function WorkspacePage({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (firebaseAuth as any).signOut(auth);
       router.push('/');
-    } catch (error) {
+    } catch {
+      // Sign out failed - ignore
     }
   };
 

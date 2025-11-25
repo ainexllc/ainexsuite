@@ -4,29 +4,34 @@ import { useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus, Settings, Flame, Layout, Package, Crown, Activity } from 'lucide-react';
+import { Loader2, Plus, Settings, Layout, Package, Crown, Sparkles, BarChart3, Rocket } from 'lucide-react';
+import Link from 'next/link';
 
 // Core Components
 import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 import { MemberManager } from '@/components/spaces/MemberManager';
 import { HabitEditor } from '@/components/habits/HabitEditor';
+import { HabitCard } from '@/components/habits/HabitCard';
 import { HabitPacks } from '@/components/gamification/HabitPacks';
 import { QuestBar } from '@/components/gamification/QuestBar';
 import { WagerCard } from '@/components/gamification/WagerCard';
-import { NudgeButton } from '@/components/gamification/NudgeButton';
 import { FirestoreSync } from '@/components/FirestoreSync';
 import { QuestEditor } from '@/components/gamification/QuestEditor';
 import { NotificationBell } from '@/components/gamification/NotificationBell';
 import { NotificationToast } from '@/components/gamification/NotificationToast';
+import { HabitSuggester } from '@/components/ai/HabitSuggester';
+import { AIInsightsBanner } from '@/components/ai/AIInsightsBanner';
+import { WelcomeFlow } from '@/components/onboarding/WelcomeFlow';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { BottomNav } from '@/components/mobile/BottomNav';
 
 // Analytics Components
-import { ConsistencyChart } from '@/components/analytics/ConsistencyChart';
-import { InsightsGrid } from '@/components/analytics/InsightsGrid';
+import { CombinedInsights } from '@/components/analytics/CombinedInsights';
 import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
 
 // Store & Types
 import { useGrowStore } from '@/lib/store';
-import { isHabitDueToday } from '@/lib/date-utils';
+import { getHabitStatus, getTodayDateString } from '@/lib/date-utils';
 import { Habit, Member, Quest } from '@/types/models';
 import {
   calculateWeeklyConsistency,
@@ -34,23 +39,35 @@ import {
   calculateCompletionRate,
   getTeamContribution
 } from '@/lib/analytics-utils';
+import { canCreateHabit } from '@/lib/permissions';
 
 function GrowWorkspaceContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
   
   // Zustand Store
-  const { 
-    getCurrentSpace, 
-    getSpaceHabits, 
-    getSpaceQuests, 
+  const {
+    spaces,
+    getCurrentSpace,
+    getSpaceHabits,
+    getSpaceQuests,
     addCompletion,
-    completions 
+    removeCompletion,
+    completions
   } = useGrowStore();
+
+  // Onboarding state - show if no spaces exist after initial load
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
   
   const currentSpace = getCurrentSpace();
   const habits = currentSpace ? getSpaceHabits(currentSpace.id) : [];
   const quests = currentSpace ? getSpaceQuests(currentSpace.id) : [];
+
+  // Permission check for habit creation
+  const createPermission = currentSpace && user
+    ? canCreateHabit(currentSpace, user.uid)
+    : { allowed: false, reason: 'No space selected' };
 
   // Analytics Calculations
   const weeklyStats = calculateWeeklyConsistency(habits, completions);
@@ -66,6 +83,7 @@ function GrowWorkspaceContent() {
   const [showMemberManager, setShowMemberManager] = useState(false);
   const [showHabitPacks, setShowHabitPacks] = useState(false);
   const [showQuestEditor, setShowQuestEditor] = useState(false);
+  const [showAISuggester, setShowAISuggester] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState<string | undefined>(undefined);
 
   // Handle sign out
@@ -84,13 +102,22 @@ function GrowWorkspaceContent() {
   const handleCompleteHabit = (habitId: string) => {
     if (!user || !currentSpace) return;
     addCompletion({
-      id: `comp_${Date.now()}`,
+      id: `comp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       habitId,
       spaceId: currentSpace.id,
       userId: user.uid,
-      date: new Date().toISOString().split('T')[0],
+      date: getTodayDateString(),
       completedAt: new Date().toISOString(),
     });
+  };
+
+  const handleUndoComplete = (habitId: string) => {
+    removeCompletion(habitId);
+  };
+
+  const handleEditHabit = (habitId: string) => {
+    setSelectedHabitId(habitId);
+    setShowHabitEditor(true);
   };
 
   const getPartnerId = () => {
@@ -109,6 +136,24 @@ function GrowWorkspaceContent() {
   }
 
   if (!user) return null;
+
+  // Check if onboarding needed (delayed to allow Firestore sync)
+  // Show onboarding if user has no spaces after data loads
+  if (!onboardingChecked && bootstrapStatus === 'complete') {
+    setTimeout(() => {
+      if (spaces.length === 0) {
+        setShowOnboarding(true);
+      }
+      setOnboardingChecked(true);
+    }, 1000);
+  }
+
+  // Show onboarding flow
+  if (showOnboarding) {
+    return (
+      <WelcomeFlow onComplete={() => setShowOnboarding(false)} />
+    );
+  }
 
   return (
     <WorkspaceLayout
@@ -135,24 +180,47 @@ function GrowWorkspaceContent() {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <NotificationBell />
+          <Link
+            href="/workspace/analytics"
+            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 transition-colors"
+            title="View Analytics"
+          >
+            <BarChart3 className="h-5 w-5" />
+          </Link>
+          <button
+            onClick={() => setShowAISuggester(true)}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500/20 to-purple-500/20 hover:from-violet-500/30 hover:to-purple-500/30 border border-violet-500/30 text-violet-300 text-sm transition-all"
+            title="Get AI habit suggestions"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">AI Suggest</span>
+          </button>
           <button
             onClick={() => setShowHabitPacks(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-sm transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-sm transition-colors"
           >
             <Package className="h-4 w-4" />
-            <span>Packs</span>
+            <span className="hidden sm:inline">Packs</span>
           </button>
           <button
             onClick={() => {
-              setSelectedHabitId(undefined);
-              setShowHabitEditor(true);
+              if (createPermission.allowed) {
+                setSelectedHabitId(undefined);
+                setShowHabitEditor(true);
+              }
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20"
+            disabled={!createPermission.allowed}
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              createPermission.allowed
+                ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                : 'bg-white/10 text-white/40 cursor-not-allowed'
+            }`}
+            title={createPermission.allowed ? 'Create a new habit' : createPermission.reason}
           >
             <Plus className="h-4 w-4" />
-            <span>New Habit</span>
+            <span className="hidden sm:inline">New Habit</span>
           </button>
         </div>
       </div>
@@ -192,95 +260,95 @@ function GrowWorkspaceContent() {
       )}
 
       {/* Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
         
         {/* Main Habits List */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <Layout className="h-5 w-5 text-indigo-400" />
             Today&apos;s Focus
           </h2>
 
           {habits.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-white/10 rounded-xl bg-white/5">
-              <p className="text-white/50 mb-4">No habits yet. Start small!</p>
-              <button
-                onClick={() => setShowHabitPacks(true)}
-                className="text-indigo-400 text-sm hover:underline"
-              >
-                Browse Habit Packs
-              </button>
-            </div>
+            <EmptyState
+              icon={<Rocket className="h-8 w-8" />}
+              title="Ready to grow?"
+              description="Start with a few simple habits. Consistency beats intensity - even 5 minutes a day adds up!"
+              action={{
+                label: 'Get AI Suggestions',
+                onClick: () => setShowAISuggester(true),
+              }}
+              secondaryAction={{
+                label: 'Browse Packs',
+                onClick: () => setShowHabitPacks(true),
+              }}
+            />
           ) : (
             <div className="space-y-3">
-              {habits.map((habit: Habit) => {
-                // Simple MVP: Check if active. In real app, check completion status for today.
-                const isDue = isHabitDueToday(habit);
-                if (!isDue) return null;
+              {/* Due habits first */}
+              {habits
+                .filter((habit: Habit) => {
+                  const status = getHabitStatus(habit, completions);
+                  return status === 'due' || status === 'completed';
+                })
+                .map((habit: Habit) => (
+                  <HabitCard
+                    key={habit.id}
+                    habit={habit}
+                    completions={completions}
+                    onComplete={handleCompleteHabit}
+                    onUndoComplete={handleUndoComplete}
+                    onEdit={handleEditHabit}
+                    spaceType={currentSpace?.type || 'personal'}
+                    partnerId={getPartnerId()}
+                  />
+                ))}
 
-                return (
-                  <div 
-                    key={habit.id} 
-                    className={`group relative flex items-center justify-between p-4 rounded-xl border transition-all ${
-                      habit.isFrozen 
-                        ? 'bg-blue-900/10 border-blue-500/20 opacity-70' 
-                        : 'bg-[#1a1a1a] border-white/5 hover:border-white/10 hover:shadow-md'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={() => handleCompleteHabit(habit.id)}
-                        disabled={habit.isFrozen}
-                        className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                          habit.isFrozen
-                            ? 'border-blue-400/30 cursor-not-allowed'
-                            : 'border-indigo-500 hover:bg-indigo-500/20'
-                        }`}
-                      >
-                        {/* Checkmark logic would go here based on completions */}
-                      </button>
-                      
-                      <div>
-                        <h3 className="text-sm font-medium text-white flex items-center gap-2">
-                          {habit.title}
-                          {habit.isFrozen && <span className="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded">Frozen</span>}
-                        </h3>
-                        {habit.description && <p className="text-xs text-white/40">{habit.description}</p>}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      {/* Streak */}
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-orange-400 bg-orange-500/10 px-2 py-1 rounded-full">
-                        <Flame className="h-3 w-3" />
-                        {habit.currentStreak}
-                      </div>
-
-                      {/* Nudge (If Team/Couple) */}
-                      {currentSpace?.type !== 'personal' && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <NudgeButton 
-                            targetName="Partner" 
-                            targetId={getPartnerId()}
-                            habitTitle={habit.title} 
-                          />
-                        </div>
-                      )}
-
-                      {/* Edit */}
-                      <button
-                        onClick={() => {
-                          setSelectedHabitId(habit.id);
-                          setShowHabitEditor(true);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-white/30 hover:text-white transition-all"
-                      >
-                        <Settings className="h-4 w-4" />
-                      </button>
-                    </div>
+              {/* Not due today (collapsed section) */}
+              {habits.filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due').length > 0 && (
+                <div className="mt-6 pt-4 border-t border-white/5">
+                  <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Not scheduled today</p>
+                  <div className="space-y-2">
+                    {habits
+                      .filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due')
+                      .map((habit: Habit) => (
+                        <HabitCard
+                          key={habit.id}
+                          habit={habit}
+                          completions={completions}
+                          onComplete={handleCompleteHabit}
+                          onUndoComplete={handleUndoComplete}
+                          onEdit={handleEditHabit}
+                          spaceType={currentSpace?.type || 'personal'}
+                          partnerId={getPartnerId()}
+                        />
+                      ))}
                   </div>
-                );
-              })}
+                </div>
+              )}
+
+              {/* Frozen habits */}
+              {habits.filter((habit: Habit) => habit.isFrozen).length > 0 && (
+                <div className="mt-6 pt-4 border-t border-white/5">
+                  <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Frozen</p>
+                  <div className="space-y-2">
+                    {habits
+                      .filter((habit: Habit) => habit.isFrozen)
+                      .map((habit: Habit) => (
+                        <HabitCard
+                          key={habit.id}
+                          habit={habit}
+                          completions={completions}
+                          onComplete={handleCompleteHabit}
+                          onUndoComplete={handleUndoComplete}
+                          onEdit={handleEditHabit}
+                          spaceType={currentSpace?.type || 'personal'}
+                          partnerId={getPartnerId()}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -288,14 +356,13 @@ function GrowWorkspaceContent() {
         {/* Sidebar: Analytics & Wagers */}
         <div className="space-y-6">
           
+          {/* AI Insights */}
+          <AIInsightsBanner />
+          
           {/* Analytics Module */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/50">
-              <Activity className="h-4 w-4" />
-              Insights
-            </div>
-            <ConsistencyChart data={weeklyStats} />
-            <InsightsGrid 
+            <CombinedInsights 
+              weeklyStats={weeklyStats}
               bestDay={bestDay} 
               totalCompletions={totalCompletions} 
               completionRate={completionRate} 
@@ -350,6 +417,27 @@ function GrowWorkspaceContent() {
             </div>
           </div>
         )}
+
+      {/* AI Habit Suggester */}
+      <HabitSuggester
+        isOpen={showAISuggester}
+        onClose={() => setShowAISuggester(false)}
+      />
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNav
+        onAddHabit={() => {
+          if (createPermission.allowed) {
+            setSelectedHabitId(undefined);
+            setShowHabitEditor(true);
+          }
+        }}
+        canAddHabit={createPermission.allowed}
+        addHabitReason={createPermission.reason}
+      />
+
+      {/* Bottom padding for mobile nav */}
+      <div className="h-20 md:hidden" />
     </WorkspaceLayout>
   );
 }

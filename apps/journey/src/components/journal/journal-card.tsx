@@ -143,7 +143,7 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
 
   return (
     <div className={cn("relative group overflow-hidden transition-all duration-300", 
-        theme ? cn(theme.panel, theme.radius, theme.border, theme.shadow, theme.bgHover) : "bg-zinc-800/95 backdrop-blur-md rounded-xl border border-white/10"
+        theme ? cn(theme.panel, theme.radius, theme.border, theme.shadow, theme.bgHover) : "bg-white/5 backdrop-blur-sm rounded-xl border border-white/10"
     )}>
       {/* Action buttons overlay */}
       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
@@ -292,7 +292,7 @@ function DateBadge({ createdAt, theme }: { createdAt: Date | string | number, th
   const accentText = theme?.accent || 'text-[#f97316]';
   const textPrimary = theme?.textPrimary || 'text-white';
   const textSecondary = theme?.textSecondary || 'text-white/60';
-  const bgSurface = theme?.bgSurface || 'bg-zinc-900/90';
+  const bgSurface = theme?.bgSurface || 'bg-white/5';
   const borderClass = theme?.border || 'border-white/10';
 
   return (

@@ -21,6 +21,15 @@ const config: Config = {
           master: '#8b5cf6',
         },
       },
+      animation: {
+        shimmer: 'shimmer 0.6s ease-out',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
     },
   },
   plugins: [],

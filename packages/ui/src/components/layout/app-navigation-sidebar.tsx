@@ -68,7 +68,7 @@ export function AppNavigationSidebar({
 }: AppNavigationSidebarProps) {
   const currentAppSlug = getCurrentAppSlug();
   const isLoggedIn = !!user?.uid;
-  const { statuses, isChecking, checkStatuses, getStatus } = useAppLoginStatus({ isLoggedIn });
+  const { isChecking, checkStatuses, getStatus } = useAppLoginStatus({ isLoggedIn });
 
   // Check login statuses when sidebar opens and user is logged in
   useEffect(() => {

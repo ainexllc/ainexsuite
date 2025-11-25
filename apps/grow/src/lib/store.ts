@@ -2,16 +2,19 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Space, Habit, Quest, Completion, Notification } from '../types/models';
-import { 
-  createSpaceInDb, 
-  updateSpaceInDb, 
-  createHabitInDb, 
-  updateHabitInDb, 
+import {
+  createSpaceInDb,
+  updateSpaceInDb,
+  createHabitInDb,
+  updateHabitInDb,
+  deleteHabitInDb,
   createCompletionInDb,
+  deleteCompletionInDb,
   createQuestInDb,
   createNotificationInDb,
   markNotificationReadInDb
 } from './firebase-service';
+import { getUpdatedStreakValues, getTodayDateString } from './date-utils';
 
 interface GrowState {
   // State
@@ -35,8 +38,10 @@ interface GrowState {
   updateSpace: (spaceId: string, updates: Partial<Space>) => Promise<void>;
   addHabit: (habit: Habit) => Promise<void>;
   updateHabit: (habitId: string, updates: Partial<Habit>) => Promise<void>;
+  deleteHabit: (habitId: string) => Promise<void>;
   toggleHabitFreeze: (habitId: string, currentStatus: boolean) => Promise<void>;
   addCompletion: (completion: Completion) => Promise<void>;
+  removeCompletion: (habitId: string) => Promise<void>;
   addQuest: (quest: Quest) => Promise<void>;
   sendNotification: (notification: Notification) => Promise<void>;
   markNotificationRead: (notificationId: string) => Promise<void>;
@@ -98,6 +103,15 @@ export const useGrowStore = create<GrowState>()(
         await updateHabitInDb(habitId, updates);
       },
 
+      deleteHabit: async (habitId) => {
+        set((state) => ({
+          habits: state.habits.filter((h) => h.id !== habitId),
+          // Also remove completions for this habit
+          completions: state.completions.filter((c) => c.habitId !== habitId)
+        }));
+        await deleteHabitInDb(habitId);
+      },
+
       toggleHabitFreeze: async (habitId, currentStatus) => {
         const newStatus = !currentStatus;
         set((state) => ({
@@ -107,8 +121,58 @@ export const useGrowStore = create<GrowState>()(
       },
 
       addCompletion: async (completion) => {
-        set((state) => ({ completions: [...state.completions, completion] }));
+        const state = get();
+        const newCompletions = [...state.completions, completion];
+        set({ completions: newCompletions });
+
+        // Update habit streak
+        const habit = state.habits.find(h => h.id === completion.habitId);
+        if (habit) {
+          const { currentStreak, bestStreak } = getUpdatedStreakValues(habit, newCompletions);
+          const updates = {
+            currentStreak,
+            bestStreak,
+            lastCompletedAt: completion.completedAt
+          };
+          set((s) => ({
+            habits: s.habits.map(h =>
+              h.id === completion.habitId ? { ...h, ...updates } : h
+            )
+          }));
+          await updateHabitInDb(completion.habitId, updates);
+        }
+
         await createCompletionInDb(completion);
+      },
+
+      removeCompletion: async (habitId) => {
+        const state = get();
+        const today = getTodayDateString();
+
+        // Find today's completion for this habit
+        const completionToRemove = state.completions.find(
+          c => c.habitId === habitId && c.date === today
+        );
+
+        if (!completionToRemove) return;
+
+        // Remove from state
+        const newCompletions = state.completions.filter(c => c.id !== completionToRemove.id);
+        set({ completions: newCompletions });
+
+        // Recalculate streak
+        const habit = state.habits.find(h => h.id === habitId);
+        if (habit) {
+          const { currentStreak, bestStreak } = getUpdatedStreakValues(habit, newCompletions);
+          set((s) => ({
+            habits: s.habits.map(h =>
+              h.id === habitId ? { ...h, currentStreak, bestStreak } : h
+            )
+          }));
+          await updateHabitInDb(habitId, { currentStreak, bestStreak });
+        }
+
+        await deleteCompletionInDb(completionToRemove.id);
       },
 
       addQuest: async (quest) => {

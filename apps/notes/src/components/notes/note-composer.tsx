@@ -375,25 +375,25 @@ export function NoteComposer() {
   }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
 
   return (
-    <section className="w-full">
+    <section className="w-full mb-8">
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-3xl border-2 border-outline-subtle bg-surface-elevated px-5 py-3 text-left text-sm text-muted shadow-lg transition hover:border-orange-500 hover:bg-surface-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:shadow-none"
+          className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] backdrop-blur-sm"
           onClick={() => setExpanded(true)}
         >
-          <span>Take a note…</span>
-          <span className="flex items-center gap-2 text-xs text-ink-400">
-            <CheckSquare className="h-4 w-4" />
-            <ImageIcon className="h-4 w-4" />
+          <span>Take a note...</span>
+          <span className="flex items-center gap-3 text-white/30">
+            <CheckSquare className="h-5 w-5" />
+            <ImageIcon className="h-5 w-5" />
           </span>
         </button>
       ) : (
         <div
           ref={composerRef}
           className={clsx(
-            "w-full rounded-3xl shadow-2xl transition focus-within:shadow-[0_30px_80px_-45px_rgba(0,0,0,0.25)] dark:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.35)] dark:focus-within:shadow-[0_12px_30px_-8px_rgba(249,115,22,0.45)]",
-            backgroundClass,
+            "w-full rounded-2xl shadow-xl bg-[#121212] border border-white/10 backdrop-blur-xl transition-all",
+            color !== "default" && backgroundClass,
           )}
         >
           <div className="flex flex-col gap-3 px-5 py-4">
@@ -402,7 +402,7 @@ export function NoteComposer() {
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Title"
-                className="w-full bg-transparent text-base font-semibold text-ink-800 placeholder:text-ink-400 focus:outline-none"
+                className="w-full bg-transparent text-lg font-semibold text-white placeholder:text-white/30 focus:outline-none"
                 autoFocus
                 ref={titleInputRef}
               />
@@ -410,10 +410,10 @@ export function NoteComposer() {
                 type="button"
                 onClick={() => setPinned((prev) => !prev)}
                 className={clsx(
-                  "icon-button h-9 w-9 rounded-full",
+                  "p-2 rounded-full transition-colors",
                   pinned
-                    ? "text-accent-600 bg-accent-100"
-                    : "text-ink-500 bg-surface-muted/70",
+                    ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "text-white/40 hover:text-white hover:bg-white/10",
                 )}
                 aria-label={pinned ? "Unpin note" : "Pin note"}
               >
@@ -431,9 +431,9 @@ export function NoteComposer() {
                     void handleSubmit();
                   }
                 }}
-                placeholder="Start writing…"
-                rows={attachments.length ? 2 : 3}
-                className="min-h-[88px] w-full resize-none bg-transparent text-sm text-ink-700 placeholder:text-ink-400 focus:outline-none"
+                placeholder="What's on your mind?..."
+                rows={attachments.length ? 3 : 5}
+                className="min-h-[120px] w-full resize-none bg-transparent text-base text-white/90 placeholder:text-white/30 focus:outline-none leading-relaxed"
               />
             ) : (
               <div className="space-y-3">
@@ -699,7 +699,7 @@ export function NoteComposer() {
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -729,25 +729,25 @@ export function NoteComposer() {
                       }
                     });
                   }}
-                  className="icon-button h-9 w-9"
+                  className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
                   aria-label="Toggle checklist mode"
                 >
-                  <CheckSquare className="h-4 w-4" />
+                  <CheckSquare className="h-5 w-5" />
                 </button>
                 <button
                   type="button"
-                  className="icon-button h-9 w-9"
+                  className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                   aria-label="Add image attachment"
                 >
-                  <ImageIcon className="h-4 w-4" />
+                  <ImageIcon className="h-5 w-5" />
                 </button>
                 <div className="relative">
                   <button
                     type="button"
                     className={clsx(
-                      "icon-button h-9 w-9",
-                      showPalette && "bg-accent-100 text-accent-600",
+                      "p-2 rounded-full transition-colors",
+                      showPalette ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : "text-white/50 hover:text-white hover:bg-white/10"
                     )}
                     onClick={() => {
                       setShowPalette((prev) => !prev);
@@ -755,7 +755,7 @@ export function NoteComposer() {
                     }}
                     aria-label="Choose color"
                   >
-                    <Palette className="h-4 w-4" />
+                    <Palette className="h-5 w-5" />
                   </button>
                   {showPalette ? (
                     <div className="absolute bottom-12 left-1/2 z-30 flex -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl">
@@ -781,8 +781,8 @@ export function NoteComposer() {
                 <button
                   type="button"
                   className={clsx(
-                    "icon-button h-9 w-9",
-                    showLabelPicker && "bg-accent-100 text-accent-600",
+                    "p-2 rounded-full transition-colors",
+                    showLabelPicker ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : "text-white/50 hover:text-white hover:bg-white/10"
                   )}
                   onClick={() => {
                     setShowLabelPicker((prev) => !prev);
@@ -790,14 +790,13 @@ export function NoteComposer() {
                   }}
                   aria-label="Manage labels"
                 >
-                  <Tag className="h-4 w-4" />
+                  <Tag className="h-5 w-5" />
                 </button>
                 <button
                   type="button"
                   className={clsx(
-                    "icon-button h-9 w-9",
-                    reminderPanelOpen && "bg-accent-100 text-accent-600",
-                    reminderEnabled && !reminderPanelOpen && "text-accent-500",
+                    "p-2 rounded-full transition-colors",
+                    reminderPanelOpen ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : reminderEnabled ? "text-[var(--color-primary)]" : "text-white/50 hover:text-white hover:bg-white/10"
                   )}
                   onClick={() => {
                     setReminderPanelOpen((prev) => {
@@ -819,26 +818,26 @@ export function NoteComposer() {
                   aria-label="Set reminder"
                 >
                   <BellRing
-                    className={clsx("h-4 w-4", reminderEnabled && "fill-current")}
+                    className={clsx("h-5 w-5", reminderEnabled && "fill-current")}
                   />
                 </button>
                 <button
                   type="button"
                   className={clsx(
-                    "icon-button h-9 w-9",
-                    archived && "bg-surface-muted text-ink-600",
+                    "p-2 rounded-full transition-colors",
+                    archived ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : "text-white/50 hover:text-white hover:bg-white/10"
                   )}
                   onClick={() => setArchived((prev) => !prev)}
                   aria-label={archived ? "Unarchive note" : "Archive note"}
                 >
-                  <Archive className="h-4 w-4" />
+                  <Archive className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-xs font-medium text-ink-500 hover:text-ink-700"
+                  className="text-sm font-medium text-white/50 hover:text-white transition-colors"
                   onClick={resetState}
                 >
                   Close
@@ -846,10 +845,10 @@ export function NoteComposer() {
                 <button
                   type="button"
                   onClick={() => void handleSubmit()}
-                  className="rounded-full bg-accent-500 px-4 py-1.5 text-sm font-medium text-ink-50 shadow-sm transition hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 disabled:opacity-60"
+                  className="rounded-full bg-[var(--color-primary)] px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Saving…" : "Save"}
+                  {isSubmitting ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>

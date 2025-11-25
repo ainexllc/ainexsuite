@@ -58,9 +58,9 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
           type="button"
           onClick={generateInsights}
           disabled={(!title && !content)}
-          className="group inline-flex items-center gap-2 rounded-full border border-outline-subtle bg-surface-base/50 px-3 py-1.5 text-xs font-medium text-ink-600 hover:border-accent-500 hover:text-accent-600 disabled:opacity-50 disabled:hover:border-outline-subtle disabled:hover:text-ink-600 transition-all"
+          className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 disabled:opacity-50 disabled:hover:bg-white/5 disabled:hover:text-white/70 transition-all"
         >
-          <Sparkles className="h-3.5 w-3.5 text-accent-500 transition-transform group-hover:scale-110" />
+          <Sparkles className="h-3.5 w-3.5 text-accent-400 transition-transform group-hover:scale-110" />
           Generate AI Insights
         </button>
       </div>
@@ -68,11 +68,11 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
   }
 
   return (
-    <div className="rounded-xl border border-outline-subtle/60 bg-surface-muted/30 p-4 text-sm">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm backdrop-blur-sm">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-accent-600 font-semibold">
+        <div className="flex items-center gap-2 text-accent-400 font-semibold">
           <Sparkles className="h-4 w-4" />
-          <h3>AI Insights</h3>
+          <h3 className="text-white">AI Insights</h3>
         </div>
         <div className="flex gap-2">
            {data && (
@@ -80,7 +80,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
               type="button"
               onClick={generateInsights}
               disabled={loading}
-              className="p-1 text-ink-400 hover:text-accent-600 transition-colors rounded-full hover:bg-accent-50"
+              className="p-1 text-white/40 hover:text-white transition-colors rounded-full hover:bg-white/10"
               title="Regenerate"
             >
               <RefreshCw className={clsx("h-3.5 w-3.5", loading && "animate-spin")} />
@@ -90,21 +90,21 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-3 py-2 text-ink-muted">
-          <Loader2 className="h-4 w-4 animate-spin" />
+        <div className="flex items-center gap-3 py-2 text-white/50">
+          <Loader2 className="h-4 w-4 animate-spin text-accent-400" />
           <span>Analyzing your note...</span>
         </div>
       ) : error ? (
-        <div className="text-danger text-xs">{error}</div>
+        <div className="text-red-400 text-xs">{error}</div>
       ) : data ? (
         <div className="space-y-4">
           {/* Summary */}
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-medium text-ink-500 uppercase tracking-wide">
+            <div className="flex items-center gap-2 text-xs font-medium text-white/50 uppercase tracking-wide">
               <FileText className="h-3 w-3" />
               <span>Summary</span>
             </div>
-            <p className="text-ink-700 leading-relaxed pl-5">
+            <p className="text-white/80 leading-relaxed pl-5">
               {data.summary}
             </p>
           </div>
@@ -112,7 +112,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
           {/* Action Items */}
           {data.actionItems.length > 0 && (
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-medium text-ink-500 uppercase tracking-wide">
+              <div className="flex items-center justify-between text-xs font-medium text-white/50 uppercase tracking-wide">
                 <div className="flex items-center gap-2">
                   <ListTodo className="h-3 w-3" />
                   <span>Suggested Actions</span>
@@ -120,7 +120,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
                 {onAddChecklistItems && (
                   <button 
                     onClick={() => onAddChecklistItems(data.actionItems)}
-                    className="flex items-center gap-1 text-[10px] text-accent-600 hover:underline"
+                    className="flex items-center gap-1 text-[10px] text-accent-400 hover:text-accent-300 hover:underline"
                   >
                     <Plus className="h-3 w-3" /> Add all to checklist
                   </button>
@@ -128,7 +128,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
               </div>
               <ul className="space-y-1 pl-5">
                 {data.actionItems.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-ink-700">
+                  <li key={i} className="flex items-start gap-2 text-white/80">
                     <span className="mt-1.5 h-1 w-1 rounded-full bg-accent-400 shrink-0" />
                     <span>{item}</span>
                   </li>
@@ -140,7 +140,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
           {/* Tags */}
           {data.tags.length > 0 && (
             <div className="space-y-1.5">
-               <div className="flex items-center justify-between text-xs font-medium text-ink-500 uppercase tracking-wide">
+               <div className="flex items-center justify-between text-xs font-medium text-white/50 uppercase tracking-wide">
                 <div className="flex items-center gap-2">
                   <Tags className="h-3 w-3" />
                   <span>Suggested Tags</span>
@@ -148,7 +148,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
                 {onAddTags && (
                   <button 
                     onClick={() => onAddTags(data.tags)}
-                    className="flex items-center gap-1 text-[10px] text-accent-600 hover:underline"
+                    className="flex items-center gap-1 text-[10px] text-accent-400 hover:text-accent-300 hover:underline"
                   >
                     <Plus className="h-3 w-3" /> Add tags
                   </button>
@@ -158,7 +158,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
                 {data.tags.map((tag, i) => (
                   <span 
                     key={i} 
-                    className="inline-flex items-center rounded-md bg-surface-base border border-outline-subtle px-2 py-1 text-xs text-ink-600"
+                    className="inline-flex items-center rounded-md bg-white/10 border border-white/10 px-2 py-1 text-xs text-white/80"
                   >
                     #{tag}
                   </span>

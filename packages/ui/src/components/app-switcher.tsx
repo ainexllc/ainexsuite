@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Grid, Home, Check, Circle } from 'lucide-react';
+import { Grid, Home, Check } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import type { AppConfig, AppSlug } from '@ainexsuite/types';
 import { APP_REGISTRY } from '@ainexsuite/types';

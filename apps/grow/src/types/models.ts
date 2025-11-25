@@ -1,6 +1,12 @@
 // apps/grow/src/types/models.ts
 
-export type SpaceType = 'personal' | 'couple' | 'squad';
+export type SpaceType = 'personal' | 'couple' | 'family' | 'squad';
+
+// Member age group for family spaces
+export type MemberAgeGroup = 'adult' | 'child';
+
+// Habit creation policy for squad spaces
+export type HabitCreationPolicy = 'admin_only' | 'anyone';
 
 export interface Member {
   uid: string;
@@ -8,6 +14,7 @@ export interface Member {
   photoURL?: string;
   role: 'admin' | 'member' | 'observer';
   joinedAt: string;
+  ageGroup?: MemberAgeGroup; // Only relevant for family spaces
 }
 
 export interface Space {
@@ -15,10 +22,12 @@ export interface Space {
   name: string;
   type: SpaceType;
   members: Member[];
-  memberUids: string[]; 
+  memberUids: string[];
   createdAt: string;
   createdBy: string;
   themeColor?: string;
+  habitCreationPolicy?: HabitCreationPolicy; // For squad spaces (default: 'admin_only')
+  dashboardToken?: string; // For family dashboard access without auth
 }
 
 export type FrequencyType = 'daily' | 'weekly' | 'interval' | 'specific_days';
@@ -52,6 +61,9 @@ export interface Habit {
   bestStreak: number;
   isFrozen: boolean;
   createdAt: string;
+  createdBy?: string; // Track who created the habit
+  lastCompletedAt?: string; // ISO date string for interval scheduling
+  streakFrozenAt?: string; // When streak was frozen (grace period tracking)
   wager?: Wager;
 }
 
@@ -91,4 +103,35 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   data?: Record<string, unknown>; // Flexible payload for deep links
+}
+
+// Reminder types
+export type ReminderTime = 'morning' | 'afternoon' | 'evening' | 'custom';
+
+export interface ReminderSettings {
+  enabled: boolean;
+  time: ReminderTime;
+  customTime?: string; // HH:mm format for custom time
+  daysOfWeek: number[]; // 0-6, Sunday-Saturday
+}
+
+export interface HabitReminder {
+  id: string;
+  habitId: string;
+  userId: string;
+  settings: ReminderSettings;
+  lastNotifiedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserReminderPreferences {
+  userId: string;
+  globalEnabled: boolean;
+  defaultTime: ReminderTime;
+  defaultCustomTime?: string;
+  quietHoursStart?: string; // HH:mm
+  quietHoursEnd?: string;   // HH:mm
+  soundEnabled: boolean;
+  vibrationEnabled: boolean;
 }

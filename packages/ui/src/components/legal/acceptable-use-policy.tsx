@@ -1,5 +1,5 @@
 import { FooterPageLayout } from '../layouts/footer-page-layout';
-import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 export function AcceptableUsePolicy() {
   return (

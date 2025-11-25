@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Sparkles, Zap, Target, Layers, RefreshCw, Loader2 } from "lucide-react";
-import { clsx } from "clsx";
+import { useState, useEffect, useMemo } from "react";
+import { Zap, Target, Layers } from "lucide-react";
 import { useNotes } from "@/components/providers/notes-provider";
+import { useAppColors } from "@ainexsuite/theme";
+import {
+  AIInsightsCard,
+  AIInsightsBulletList,
+  AIInsightsTagList,
+  AIInsightsText,
+  type AIInsightsSection,
+} from "@ainexsuite/ui";
 
 interface InsightData {
   weeklyFocus: string;
@@ -11,8 +18,13 @@ interface InsightData {
   pendingActions: string[];
 }
 
-export function WorkspaceInsights() {
+interface WorkspaceInsightsProps {
+  variant?: "default" | "sidebar";
+}
+
+export function WorkspaceInsights({ variant = "default" }: WorkspaceInsightsProps) {
   const { notes, loading: notesLoading } = useNotes();
+  const { primary: primaryColor } = useAppColors();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -40,16 +52,16 @@ export function WorkspaceInsights() {
 
   const generateInsights = async () => {
     if (!hasEnoughData || loading) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       // Prepare payload
       const payload = recentNotes.map(n => ({
         title: n.title,
-        content: n.type === 'checklist' 
-          ? n.checklist.map(i => i.text).join('\n') 
+        content: n.type === 'checklist'
+          ? n.checklist.map(i => i.text).join('\n')
           : n.body,
         date: n.updatedAt.toISOString().split('T')[0]
       }));
@@ -91,7 +103,7 @@ export function WorkspaceInsights() {
       try {
         const { insights, timestamp } = JSON.parse(cached);
         const age = Date.now() - timestamp;
-        
+
         if (age < CACHE_DURATION) {
           setData(insights);
           setLastUpdated(new Date(timestamp));
@@ -104,105 +116,73 @@ export function WorkspaceInsights() {
 
     // If no cache or expired, generate if we have data and haven't tried yet
     if (hasEnoughData && !data && !loading && !error) {
-      // Only auto-generate if we really have nothing
-      // We might want to make this manual to save costs, but per user request "regenerates twice" implies they expect persistence
-      // Let's keep auto-generation BUT only if we didn't load from cache
       generateInsights();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notesLoading, hasEnoughData]); 
+  }, [notesLoading, hasEnoughData]);
+
+  // Build sections for the shared component
+  const sections: AIInsightsSection[] = useMemo(() => {
+    if (!data) return [];
+
+    const isSidebar = variant === "sidebar";
+
+    return [
+      // Pending Actions - first in sidebar
+      {
+        icon: <Zap className="h-3.5 w-3.5" />,
+        label: "Pending Actions",
+        content: (
+          <AIInsightsBulletList
+            items={data.pendingActions}
+            accentColor={primaryColor}
+          />
+        ),
+      },
+      // Current Focus
+      {
+        icon: <Target className="h-3.5 w-3.5" />,
+        label: "Current Focus",
+        content: <AIInsightsText>{data.weeklyFocus}</AIInsightsText>,
+      },
+      // Active Themes
+      {
+        icon: <Layers className="h-3.5 w-3.5" />,
+        label: "Active Themes",
+        content: <AIInsightsTagList tags={data.commonThemes} />,
+      },
+    ].map((section, index) => ({
+      ...section,
+      // Reorder for non-sidebar: focus first, themes second, actions third
+      ...(isSidebar ? {} : {
+        content: (
+          <div style={{ order: index === 0 ? 3 : index === 1 ? 1 : 2 }}>
+            {section.content}
+          </div>
+        ),
+      }),
+    }));
+  }, [data, primaryColor, variant]);
 
   if (notesLoading || !hasEnoughData) return null;
 
+  // Format error message
+  const errorMessage = error?.includes("API key")
+    ? "AI features require configuration. Workspace insights will be available once set up."
+    : error;
+
   return (
-    <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-accent-400">
-            <Sparkles className="h-5 w-5" />
-            <h3 className="font-semibold text-white">AI Workspace Insights</h3>
-            {lastUpdated && (
-              <span className="text-xs text-white/40 font-normal ml-2">
-                Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={generateInsights}
-            disabled={loading}
-            className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-            title="Refresh Insights"
-          >
-             <RefreshCw className={clsx("h-4 w-4", loading && "animate-spin")} />
-          </button>
-        </div>
-
-        {loading ? (
-             <div className="flex flex-col items-center justify-center py-8 text-white/50 gap-3">
-                <Loader2 className="h-6 w-6 animate-spin text-accent-500" />
-                <p className="text-sm">Analyzing your recent notes...</p>
-             </div>
-        ) : error ? (
-            <div className="text-center py-8 space-y-3">
-              <div className="text-yellow-400 text-sm font-medium">AI Insights Unavailable</div>
-              <div className="text-white/60 text-xs leading-relaxed max-w-sm mx-auto">
-                {error.includes("API key") ?
-                  "AI features require configuration. Workspace insights will be available once set up." :
-                  error
-                }
-              </div>
-            </div>
-        ) : data ? (
-            <div className="grid gap-6 md:grid-cols-3">
-                {/* Focus */}
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/50">
-                        <Target className="h-3.5 w-3.5" />
-                        <span>Current Focus</span>
-                    </div>
-                    <p className="text-sm text-white/90 leading-relaxed">
-                        {data.weeklyFocus}
-                    </p>
-                </div>
-
-                {/* Themes */}
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/50">
-                        <Layers className="h-3.5 w-3.5" />
-                        <span>Active Themes</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {data.commonThemes.map((theme, i) => (
-                            <span key={i} className="inline-flex items-center rounded-md bg-white/10 px-2.5 py-1 text-xs text-white/80 ring-1 ring-inset ring-white/10">
-                                {theme}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/50">
-                        <Zap className="h-3.5 w-3.5" />
-                        <span>Pending Actions</span>
-                    </div>
-                    <ul className="space-y-2">
-                        {data.pendingActions.map((action, i) => (
-                             <li key={i} className="flex items-start gap-2 text-sm text-white/80">
-                                <span className="mt-1.5 h-1 w-1 rounded-full bg-accent-400 shrink-0" />
-                                <span>{action}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-        ) : null}
-        
-        {/* Decoration */}
-        <div className="absolute -top-24 -right-24 h-48 w-48 bg-accent-500/20 blur-3xl rounded-full pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 h-48 w-48 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
-      </div>
-    </div>
+    <AIInsightsCard
+      title="AI Insights"
+      sections={sections}
+      accentColor={primaryColor}
+      variant={variant}
+      isLoading={loading}
+      loadingMessage="Analyzing your recent notes..."
+      error={errorMessage}
+      lastUpdated={lastUpdated}
+      onRefresh={generateInsights}
+      refreshDisabled={loading}
+    />
   );
 }

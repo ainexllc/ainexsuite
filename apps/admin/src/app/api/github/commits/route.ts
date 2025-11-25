@@ -20,6 +20,7 @@ interface GitHubCommit {
 interface CommitActivity {
   id: string;
   message: string;
+  body?: string;
   author: string;
   authorAvatar?: string;
   timestamp: number;
@@ -103,15 +104,22 @@ export async function GET(_request: NextRequest) {
 
     const commits: GitHubCommit[] = await response.json();
 
-    const activities: CommitActivity[] = commits.map((commit) => ({
-      id: commit.sha,
-      message: commit.commit.message.split('\n')[0], // First line only
-      author: commit.author?.login || commit.commit.author.name,
-      authorAvatar: commit.author?.avatar_url,
-      timestamp: new Date(commit.commit.author.date).getTime(),
-      url: commit.html_url,
-      sha: commit.sha.substring(0, 7),
-    }));
+    const activities: CommitActivity[] = commits.map((commit) => {
+      const lines = commit.commit.message.split('\n');
+      const title = lines[0];
+      const body = lines.slice(1).join('\n').trim();
+
+      return {
+        id: commit.sha,
+        message: title,
+        body: body || undefined, // Full message body for expansion
+        author: commit.author?.login || commit.commit.author.name,
+        authorAvatar: commit.author?.avatar_url,
+        timestamp: new Date(commit.commit.author.date).getTime(),
+        url: commit.html_url,
+        sha: commit.sha.substring(0, 7),
+      };
+    });
 
     return NextResponse.json({ activities });
   } catch (error) {

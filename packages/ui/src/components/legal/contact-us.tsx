@@ -1,7 +1,7 @@
 'use client';
 
 import { FooterPageLayout } from '../layouts/footer-page-layout';
-import { Mail, MessageSquare, Clock, HelpCircle, Send, MapPin, Phone } from 'lucide-react';
+import { Mail, MessageSquare, Clock, HelpCircle, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -39,7 +39,7 @@ export function ContactUs() {
             Get in Touch
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            Have a question or need help? We're here to assist you. Choose your preferred contact method or fill out the form below.
+            Have a question or need help? We&apos;re here to assist you. Choose your preferred contact method or fill out the form below.
           </p>
         </div>
 
@@ -63,7 +63,7 @@ export function ContactUs() {
           <div className="rounded-3xl border border-white/10 bg-zinc-800/80 p-8 shadow-lg">
             <div className="mb-6">
               <h2 className="text-2xl font-semibold text-white mb-2">Send Us a Message</h2>
-              <p className="text-white/60">Fill out the form below and we'll get back to you within 24 hours.</p>
+              <p className="text-white/60">Fill out the form below and we&apos;ll get back to you within 24 hours.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">

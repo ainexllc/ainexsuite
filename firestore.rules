@@ -23,29 +23,39 @@ service cloud.firestore {
     }
 
     match /habits/{habitId} {
-      allow read: if isAuthenticated() && 
+      allow read: if isAuthenticated() &&
         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
-      
-      allow create: if isAuthenticated() && 
-        exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
-        request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids;
 
-      allow update: if isAuthenticated() && 
+      // Create: member of space + must set createdBy to their own uid
+      allow create: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids &&
+        request.resource.data.createdBy == request.auth.uid;
+
+      allow update, delete: if isAuthenticated() &&
         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
     }
 
     match /quests/{questId} {
-      allow read, create, update: if isAuthenticated() && 
+      allow read, update: if isAuthenticated() &&
         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
+
+      allow create: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids;
     }
 
     match /completions/{completionId} {
-      allow read, create, update, delete: if isAuthenticated() && 
+      allow read, update, delete: if isAuthenticated() &&
         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
+
+      allow create: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids;
     }
     
     match /learning_goals/{goalId} {

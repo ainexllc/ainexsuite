@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { ChevronDown, Plus, User, Users, Heart, Settings } from 'lucide-react';
 import { useGrowStore } from '../../lib/store';
 import { Space } from '../../types/models';
+import { SpaceCreatorModal } from './SpaceCreatorModal';
 
 export function SpaceSwitcher() {
-  const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useGrowStore();
+  const { spaces, currentSpaceId, setCurrentSpace } = useGrowStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [showCreatorModal, setShowCreatorModal] = useState(false);
 
   const currentSpace = spaces.find((s: Space) => s.id === currentSpaceId);
 
@@ -21,23 +23,8 @@ export function SpaceSwitcher() {
   };
 
   const handleCreateSpace = () => {
-    // Quick mock create for MVP
-    const name = prompt('Space Name:');
-    if (!name) return;
-    
-    const type = prompt('Type (personal/couple/squad):') as Space['type'];
-    if (!['personal', 'couple', 'squad'].includes(type)) return;
-
-    addSpace({
-      id: `space_${Date.now()}`,
-      name,
-      type,
-      members: [],
-      memberUids: [],
-      createdAt: new Date().toISOString(),
-      createdBy: 'current_user',
-    });
     setIsOpen(false);
+    setShowCreatorModal(true);
   };
 
   return (
@@ -105,6 +92,12 @@ export function SpaceSwitcher() {
           </div>
         </>
       )}
+
+      {/* Space Creator Modal */}
+      <SpaceCreatorModal
+        isOpen={showCreatorModal}
+        onClose={() => setShowCreatorModal(false)}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { FooterPageLayout } from '../layouts/footer-page-layout';
-import { Shield, Lock, Download, Trash2, Edit3, Eye, CheckCircle, Mail } from 'lucide-react';
+import { Shield, Lock, Download, Trash2, Edit3, Eye, CheckCircle } from 'lucide-react';
 
 export function GDPRHelp() {
   const userRights = [

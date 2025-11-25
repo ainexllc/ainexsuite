@@ -1,15 +1,14 @@
 'use client';
 
-import { 
-  X, 
-  Settings, 
-  LogOut, 
-  Zap, 
-  Moon, 
+import {
+  X,
+  Settings,
+  LogOut,
+  Zap,
+  Moon,
   Bell,
   CreditCard,
-  Sparkles,
-  ArrowRight
+  Sparkles
 } from 'lucide-react';
 import Image from 'next/image';
 import { useSystemUpdates } from '../../hooks/use-system-updates';
@@ -171,7 +170,7 @@ export function ProfileSidebar({
             {/* Latest Updates */}
             <div className="space-y-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-2">
-                <Sparkles className="h-3 w-3" /> What's New
+                <Sparkles className="h-3 w-3" /> What&apos;s New
               </h4>
               <div className="space-y-1">
                 {updatesLoading ? (

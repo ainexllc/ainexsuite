@@ -4,7 +4,8 @@ import { ReactNode, useState } from 'react';
 import { WorkspaceHeader } from './workspace-header';
 import { AtmosphericGlows } from './atmospheric-glows';
 import { FeedbackWidget } from '../feedback/feedback-widget';
-import { SubscriptionSidebar } from '../layout/subscription-sidebar';
+// SubscriptionSidebar imported for future use
+// import { SubscriptionSidebar } from '../layout/subscription-sidebar';
 import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
 import { ProfileSidebar } from '../layout/profile-sidebar';
 import { getNavigationApps } from '../../utils/navigation';

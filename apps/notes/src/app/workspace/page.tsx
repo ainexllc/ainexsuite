@@ -64,11 +64,25 @@ export default function NotesWorkspace() {
       appName="NOTES"
       appColor={primary}
     >
-      {/* AI Workspace Insights */}
-      <WorkspaceInsights />
+      {/* Two-column layout matching Journey: max-w-7xl, mx-auto, gap-8 */}
+      <div className="max-w-7xl mx-auto">
+        <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
+          {/* Left: Notes Content */}
+          <div className="space-y-6">
+            <NoteBoard />
 
-      {/* Notes Content */}
-      <NoteBoard />
+            {/* Mobile: AI Insights shown inline */}
+            <div className="xl:hidden">
+              <WorkspaceInsights variant="sidebar" />
+            </div>
+          </div>
+
+          {/* Right: AI Insights Sidebar (visible on xl screens) */}
+          <div className="sticky top-28 hidden h-fit flex-col gap-6 xl:flex">
+            <WorkspaceInsights variant="sidebar" />
+          </div>
+        </div>
+      </div>
     </WorkspaceLayout>
   );
 }

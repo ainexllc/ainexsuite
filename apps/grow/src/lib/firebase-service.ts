@@ -3,6 +3,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   onSnapshot,
@@ -12,11 +13,33 @@ import {
 import { db } from '@ainexsuite/firebase';
 import { Habit, Space, Quest, Completion, Notification } from '../types/models';
 
+// Helper to deeply remove undefined values from objects (Firestore doesn't accept undefined)
+function removeUndefined<T>(obj: T): T {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(removeUndefined) as T;
+  }
+  if (typeof obj === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        result[key] = typeof value === 'object' && value !== null
+          ? removeUndefined(value)
+          : value;
+      }
+    }
+    return result as T;
+  }
+  return obj;
+}
+
 // --- Spaces ---
 
 export async function createSpaceInDb(space: Space) {
   const spaceRef = doc(collection(db, 'spaces'), space.id);
-  await setDoc(spaceRef, space);
+  await setDoc(spaceRef, removeUndefined(space));
 }
 
 export async function updateSpaceInDb(spaceId: string, updates: Partial<Space>) {
@@ -40,12 +63,17 @@ export function subscribeToUserSpaces(userId: string, callback: (spaces: Space[]
 
 export async function createHabitInDb(habit: Habit) {
   const habitRef = doc(collection(db, 'habits'), habit.id);
-  await setDoc(habitRef, habit);
+  await setDoc(habitRef, removeUndefined(habit));
 }
 
 export async function updateHabitInDb(habitId: string, updates: Partial<Habit>) {
   const habitRef = doc(db, 'habits', habitId);
-  await updateDoc(habitRef, updates);
+  await updateDoc(habitRef, removeUndefined(updates));
+}
+
+export async function deleteHabitInDb(habitId: string) {
+  const habitRef = doc(db, 'habits', habitId);
+  await deleteDoc(habitRef);
 }
 
 export function subscribeToSpaceHabits(spaceId: string, callback: (habits: Habit[]) => void) {
@@ -64,12 +92,12 @@ export function subscribeToSpaceHabits(spaceId: string, callback: (habits: Habit
 
 export async function createCompletionInDb(completion: Completion) {
   const compRef = doc(collection(db, 'completions'), completion.id);
-  await setDoc(compRef, completion);
-  
-  // Also update the habit streak
-  // Note: Ideally this is a Transaction. For MVP, we do a separate write.
-  // Logic for streak calculation usually happens on read or via Cloud Function.
-  // We will rely on client-side calculation for display for now.
+  await setDoc(compRef, removeUndefined(completion));
+}
+
+export async function deleteCompletionInDb(completionId: string) {
+  const compRef = doc(db, 'completions', completionId);
+  await deleteDoc(compRef);
 }
 
 export function subscribeToCompletions(spaceId: string, callback: (completions: Completion[]) => void) {
@@ -88,7 +116,7 @@ export function subscribeToCompletions(spaceId: string, callback: (completions: 
 
 export async function createQuestInDb(quest: Quest) {
   const questRef = doc(collection(db, 'quests'), quest.id);
-  await setDoc(questRef, quest);
+  await setDoc(questRef, removeUndefined(quest));
 }
 
 export function subscribeToSpaceQuests(spaceId: string, callback: (quests: Quest[]) => void) {
@@ -107,7 +135,7 @@ export function subscribeToSpaceQuests(spaceId: string, callback: (quests: Quest
 
 export async function createNotificationInDb(notification: Notification) {
   const notifRef = doc(collection(db, 'notifications'), notification.id);
-  await setDoc(notifRef, notification);
+  await setDoc(notifRef, removeUndefined(notification));
 }
 
 export async function markNotificationReadInDb(notificationId: string) {

@@ -8,11 +8,16 @@ import {
   MessageSquare,
   ArrowUpRight,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ChevronDown,
+  ChevronRight,
+  Sparkles,
+  Star,
+  Target
 } from 'lucide-react';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { GitCommit, ExternalLink } from 'lucide-react';
+import { GitCommit, ExternalLink, Loader2 } from 'lucide-react';
 
 interface DashboardStats {
   totalUsers: number;
@@ -24,11 +29,18 @@ interface DashboardStats {
 interface CommitActivity {
   id: string;
   message: string;
+  body?: string;
   author: string;
   authorAvatar?: string;
   timestamp: number;
   url: string;
   sha: string;
+}
+
+interface DashboardInsights {
+  summary: string;
+  highlights: string[];
+  recommendations: string[];
 }
 
 function formatActivityTime(timestamp: number): string {
@@ -58,6 +70,62 @@ export default function AdminDashboard() {
   const [commits, setCommits] = useState<CommitActivity[]>([]);
   const [commitsLoading, setCommitsLoading] = useState(true);
   const [commitsError, setCommitsError] = useState<string | null>(null);
+  const [expandedCommits, setExpandedCommits] = useState<Set<string>>(new Set());
+
+  const [insights, setInsights] = useState<DashboardInsights | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState<string | null>(null);
+
+  const toggleCommitExpansion = (commitId: string) => {
+    setExpandedCommits(prev => {
+      const next = new Set(prev);
+      if (next.has(commitId)) {
+        next.delete(commitId);
+      } else {
+        next.add(commitId);
+      }
+      return next;
+    });
+  };
+
+  const fetchDashboardInsights = async () => {
+    try {
+      setInsightsLoading(true);
+      setInsightsError(null);
+
+      const response = await fetch('/api/dashboard/insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          commits: commits.slice(0, 10).map(c => ({
+            message: c.message,
+            author: c.author,
+            timestamp: c.timestamp
+          })),
+          stats: {
+            totalUsers: stats.totalUsers,
+            totalFeedback: stats.totalFeedback,
+            activeNow: stats.activeNow
+          }
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch insights');
+      }
+
+      setInsights(data.insights);
+    } catch (error) {
+      console.error('Failed to fetch dashboard insights:', error);
+      setInsightsError(error instanceof Error ? error.message : 'Failed to fetch insights');
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
 
   const fetchCommits = async () => {
     try {
@@ -68,11 +136,11 @@ export default function AdminDashboard() {
       console.log('Response status:', response.status, response.statusText);
       const data = await response.json();
       console.log('Response data:', data);
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch commits');
       }
-      
+
       setCommits(data.activities || []);
       console.log('Commits set:', data.activities?.length || 0);
     } catch (error) {
@@ -116,12 +184,93 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // Fetch insights when data is ready
+  useEffect(() => {
+    if (commits.length > 0 && stats.totalUsers > 0 && !insights && !insightsLoading) {
+      fetchDashboardInsights();
+    }
+  }, [commits, stats]);
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Mission Control</h1>
         <p className="text-zinc-400">Real-time overview of platform performance and growth.</p>
+      </div>
+
+      {/* AI Insights */}
+      <div className="relative bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl border border-indigo-500/20 p-6 overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl" />
+
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-5 w-5 text-indigo-400" />
+            <h2 className="text-lg font-semibold text-white">Platform Intelligence</h2>
+            <span className="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">
+              Powered by Grok
+            </span>
+            <button
+              onClick={fetchDashboardInsights}
+              disabled={insightsLoading}
+              className="ml-auto text-xs text-indigo-400 hover:text-indigo-300 transition-colors disabled:opacity-50"
+            >
+              {insightsLoading ? 'Analyzing...' : 'Refresh'}
+            </button>
+          </div>
+
+          {insightsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-indigo-400" />
+              <span className="ml-2 text-sm text-zinc-400">Analyzing platform data...</span>
+            </div>
+          ) : insightsError ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-red-400">{insightsError}</p>
+            </div>
+          ) : insights ? (
+            <div className="space-y-4">
+              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
+                <p className="text-sm text-zinc-200 leading-relaxed">
+                  {insights.summary}
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-black/20 rounded-lg p-4 border border-white/5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Star className="h-4 w-4 text-yellow-400" />
+                    <h3 className="text-sm font-semibold text-white">Highlights</h3>
+                  </div>
+                  <ul className="space-y-2">
+                    {insights.highlights.map((highlight, i) => (
+                      <li key={i} className="text-xs text-zinc-300 flex items-start gap-2">
+                        <span className="text-yellow-400 mt-0.5">★</span>
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="bg-black/20 rounded-lg p-4 border border-white/5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Target className="h-4 w-4 text-emerald-400" />
+                    <h3 className="text-sm font-semibold text-white">Recommendations</h3>
+                  </div>
+                  <ul className="space-y-2">
+                    {insights.recommendations.map((rec, i) => (
+                      <li key={i} className="text-xs text-zinc-300 flex items-start gap-2">
+                        <span className="text-emerald-400 mt-0.5">→</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* KPI Grid */}
@@ -197,66 +346,120 @@ export default function AdminDashboard() {
       {/* Recent GitHub Commits */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-zinc-900/50 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <GitCommit className="h-5 w-5 text-zinc-400" />
-            Recent Commits
-          </h2>
-          <div className="space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+              <GitCommit className="h-5 w-5 text-zinc-400" />
+              Recent Commits
+            </h2>
+            {commits.length > 0 && (
+              <span className="text-xs text-zinc-500">
+                {commits.length} commit{commits.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+          <div className="space-y-3">
             {commitsLoading ? (
               // Loading state
-              Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-zinc-600/20 animate-pulse" />
-                    <div className="space-y-2">
-                      <div className="h-4 w-48 bg-zinc-600/20 rounded animate-pulse" />
-                      <div className="h-3 w-32 bg-zinc-600/20 rounded animate-pulse" />
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/5">
+                  <div className="flex items-start gap-3">
+                    <div className="h-6 w-6 rounded-full bg-zinc-600/20 animate-pulse flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-3/4 bg-zinc-600/20 rounded animate-pulse" />
+                      <div className="h-3 w-1/2 bg-zinc-600/20 rounded animate-pulse" />
                     </div>
                   </div>
-                  <div className="h-3 w-12 bg-zinc-600/20 rounded animate-pulse" />
                 </div>
               ))
             ) : commits.length > 0 ? (
-              // Real commits
-              commits.map((commit) => (
-                <a
-                  key={commit.id}
-                  href={commit.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {commit.authorAvatar ? (
-                      <img
-                        src={commit.authorAvatar}
-                        alt={commit.author}
-                        className="h-8 w-8 rounded-full"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-xs font-bold">
-                        {commit.author.charAt(0).toUpperCase()}
+              // Real commits - GitHub-inspired style
+              commits.slice(0, 10).map((commit) => {
+                const isExpanded = expandedCommits.has(commit.id);
+                const hasBody = commit.body && commit.body.length > 0;
+
+                return (
+                  <div
+                    key={commit.id}
+                    className="group p-4 rounded-lg border border-white/5 bg-white/5 hover:bg-white/[0.07] hover:border-white/10 transition-all"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        {commit.authorAvatar ? (
+                          <img
+                            src={commit.authorAvatar}
+                            alt={commit.author}
+                            className="h-6 w-6 rounded-full ring-1 ring-white/10"
+                          />
+                        ) : (
+                          <div className="h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center text-indigo-300 text-[10px] font-bold ring-1 ring-white/10">
+                            {commit.author.charAt(0).toUpperCase()}
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">
-                        {commit.message}
-                      </p>
-                      <p className="text-xs text-zinc-500 flex items-center gap-2">
-                        <span>{commit.author}</span>
-                        <span>•</span>
-                        <span className="font-mono text-zinc-600">{commit.sha}</span>
-                      </p>
+
+                      <div className="flex-1 min-w-0">
+                        {/* Commit message */}
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <h3 className="text-sm font-medium text-white leading-snug group-hover:text-indigo-300 transition-colors">
+                            {commit.message}
+                          </h3>
+                          <a
+                            href={commit.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-shrink-0 text-zinc-500 hover:text-indigo-400 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                            title="View on GitHub"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </div>
+
+                        {/* Metadata bar */}
+                        <div className="flex items-center gap-3 text-xs text-zinc-500">
+                          <span className="font-medium text-zinc-400">{commit.author}</span>
+                          <span className="text-zinc-700">•</span>
+                          <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-zinc-800/50 text-zinc-500 border border-white/5">
+                            {commit.sha}
+                          </span>
+                          <span className="text-zinc-700">•</span>
+                          <span>{formatActivityTime(commit.timestamp)}</span>
+                        </div>
+
+                        {/* Expandable body */}
+                        {hasBody && (
+                          <div className="mt-3">
+                            <button
+                              onClick={() => toggleCommitExpansion(commit.id)}
+                              className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+                            >
+                              {isExpanded ? (
+                                <>
+                                  <ChevronDown className="h-3.5 w-3.5" />
+                                  Hide full message
+                                </>
+                              ) : (
+                                <>
+                                  <ChevronRight className="h-3.5 w-3.5" />
+                                  Show full message
+                                </>
+                              )}
+                            </button>
+
+                            {isExpanded && (
+                              <div className="mt-3 p-4 rounded-lg bg-black/40 border border-white/5">
+                                <pre className="text-xs text-zinc-300 whitespace-pre-wrap font-mono leading-relaxed">
+                                  {commit.body}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <span className="text-xs text-zinc-500">
-                      {formatActivityTime(commit.timestamp)}
-                    </span>
-                    <ExternalLink className="h-4 w-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </a>
-              ))
+                );
+              })
             ) : commitsError ? (
               // Error state
               <div className="text-center py-8">

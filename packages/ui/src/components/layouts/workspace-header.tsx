@@ -45,7 +45,7 @@ interface WorkspaceHeaderProps {
  */
 export function WorkspaceHeader({
   user,
-  onSignOut,
+  onSignOut: _onSignOut,
   appName,
   appColor,
   onNavigationToggle,

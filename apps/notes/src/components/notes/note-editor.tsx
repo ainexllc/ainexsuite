@@ -112,6 +112,32 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     () => [...preferences.reminderChannels],
   );
   const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>("once");
+
+  // Calculate dynamic height based on content rows
+  const contentRows = useMemo(() => {
+    if (mode === "checklist") {
+      return checklist.length;
+    }
+    // Count lines in body text
+    return body.split('\n').length;
+  }, [mode, checklist.length, body]);
+
+  // Determine modal size class based on content
+  const modalSizeClass = useMemo(() => {
+    // Account for attachments adding height
+    const hasAttachments = existingAttachments.length > 0 || newAttachments.length > 0;
+    const effectiveRows = contentRows + (hasAttachments ? 6 : 0);
+
+    if (effectiveRows <= 5) {
+      return "min-h-[320px]"; // Small - few items
+    } else if (effectiveRows <= 10) {
+      return "min-h-[420px]"; // Medium
+    } else if (effectiveRows <= 15) {
+      return "min-h-[520px]"; // Large
+    } else {
+      return "min-h-[620px]"; // Extra large - lots of content
+    }
+  }, [contentRows, existingAttachments.length, newAttachments.length]);
   const [customCron, setCustomCron] = useState("");
   const [reminderPrimed, setReminderPrimed] = useState(false);
   const [reminderPanelOpen, setReminderPanelOpen] = useState(false);
@@ -673,16 +699,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   };
 
   const content = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/60 px-3 py-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/60 px-4 py-4 sm:px-6 sm:py-6">
       <div
         ref={editorContainerRef}
         className={clsx(
-          "relative w-full max-w-2xl rounded-3xl border border-outline-subtle shadow-2xl dark:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.35)]",
+          "relative w-full max-w-3xl max-h-[85vh] flex flex-col rounded-3xl border border-outline-subtle shadow-2xl dark:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.35)]",
+          modalSizeClass,
           backgroundClass,
           patternClass,
         )}
       >
-        <div className="flex flex-col gap-4 px-6 py-5">
+        <div className="flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto">
           <div className="flex items-start justify-between gap-3">
             <input
               value={title}
@@ -845,7 +872,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               value={body}
               onChange={(event) => setBody(event.target.value)}
               placeholder="Write your note…"
-              rows={4}
+              rows={8}
               className={clsx("min-h-[120px] w-full resize-none bg-transparent text-sm focus:outline-none", textColors.body, textColors.placeholder)}
             />
           ) : (
@@ -1135,6 +1162,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             </div>
           )}
 
+        </div>
+
+        {/* Bottom toolbar - anchored to bottom */}
+        <div className="flex-shrink-0 border-t border-outline-subtle/30 px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <button
@@ -1304,43 +1335,43 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </button>
             </div>
           </div>
-      {showLabelPicker ? (
-        <div className="flex flex-wrap gap-2 border-t border-outline-subtle/60 pt-3">
-          {labels.length ? (
-            labels.map((label) => {
-              const isSelected = selectedLabelIds.includes(label.id);
-              return (
-                <button
-                  key={label.id}
-                  type="button"
-                  className={clsx(
-                    "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
-                    isSelected
-                      ? "border-accent-500 bg-accent-100 text-ink-100"
-                      : "border-outline-subtle bg-surface-muted text-ink-600 hover:border-outline-strong",
-                  )}
-                  onClick={() => toggleLabelSelection(label.id)}
-                >
-                  <span
-                    className={clsx(
-                      "h-2 w-2 rounded-full",
-                      label.color === "default"
-                        ? "bg-ink-400"
-                        : `bg-${label.color}`,
-                    )}
-                  />
-                  {label.name}
-                </button>
-              );
-            })
-          ) : (
-            <p className="text-xs text-muted">
-              Create labels from the sidebar to organize notes.
-            </p>
-          )}
+          {showLabelPicker ? (
+            <div className="flex flex-wrap gap-2 border-t border-outline-subtle/60 pt-3 mt-3">
+              {labels.length ? (
+                labels.map((label) => {
+                  const isSelected = selectedLabelIds.includes(label.id);
+                  return (
+                    <button
+                      key={label.id}
+                      type="button"
+                      className={clsx(
+                        "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
+                        isSelected
+                          ? "border-accent-500 bg-accent-100 text-ink-100"
+                          : "border-outline-subtle bg-surface-muted text-ink-600 hover:border-outline-strong",
+                      )}
+                      onClick={() => toggleLabelSelection(label.id)}
+                    >
+                      <span
+                        className={clsx(
+                          "h-2 w-2 rounded-full",
+                          label.color === "default"
+                            ? "bg-ink-400"
+                            : `bg-${label.color}`,
+                        )}
+                      />
+                      {label.name}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="text-xs text-muted">
+                  Create labels from the sidebar to organize notes.
+                </p>
+              )}
+            </div>
+          ) : null}
         </div>
-      ) : null}
-    </div>
 
         <button
           type="button"

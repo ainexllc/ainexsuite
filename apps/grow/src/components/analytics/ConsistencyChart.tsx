@@ -4,13 +4,14 @@ import { DayStats } from '../../lib/analytics-utils';
 
 interface ConsistencyChartProps {
   data: DayStats[];
+  transparent?: boolean;
 }
 
-export function ConsistencyChart({ data }: ConsistencyChartProps) {
+export function ConsistencyChart({ data, transparent }: ConsistencyChartProps) {
   const maxCount = Math.max(...data.map(d => d.count), 1);
 
   return (
-    <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-5">
+    <div className={transparent ? "p-0" : "bg-[#1a1a1a] border border-white/10 rounded-xl p-5"}>
       <h3 className="text-sm font-bold text-white mb-4">Last 7 Days Activity</h3>
       
       <div className="flex items-end justify-between h-32 gap-2">

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Users, Snowflake, Save, Trash2, Check, Flame, X } from 'lucide-react';
 import { useGrowStore } from '../../lib/store';
+import { useAuth } from '@ainexsuite/auth';
 import { Habit, FrequencyType, Schedule, Wager, Member } from '../../types/models';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 interface HabitEditorProps {
   isOpen: boolean;
@@ -14,13 +16,15 @@ interface HabitEditorProps {
 const DEFAULT_SCHEDULE: Schedule = { type: 'daily' };
 
 export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) {
-  const { 
-    getCurrentSpace, 
-    addHabit, 
-    updateHabit, 
-    habits 
+  const { user } = useAuth();
+  const {
+    getCurrentSpace,
+    addHabit,
+    updateHabit,
+    deleteHabit,
+    habits
   } = useGrowStore();
-  
+
   const currentSpace = getCurrentSpace();
   
   // Form State
@@ -30,6 +34,8 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
   const [assignees, setAssignees] = useState<string[]>([]);
   const [isFrozen, setIsFrozen] = useState(false);
   const [wager, setWager] = useState<Wager | undefined>(undefined);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Load data if editing
   useEffect(() => {
@@ -54,11 +60,10 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
     }
   }, [editHabitId, isOpen, habits, currentSpace]);
 
-  if (!isOpen || !currentSpace) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (!user || !currentSpace) return; // Guard for TypeScript
+
     const habitData: Partial<Habit> = {
       title,
       description,
@@ -83,6 +88,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         isFrozen,
         wager,
         createdAt: new Date().toISOString(),
+        createdBy: user.uid,
       });
     }
     onClose();
@@ -101,14 +107,39 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
     const newDays = currentDays.includes(dayIndex)
       ? currentDays.filter(d => d !== dayIndex)
       : [...currentDays, dayIndex];
-    
+
     setSchedule({ ...schedule, daysOfWeek: newDays.sort() });
   };
 
+  const handleDelete = async () => {
+    if (!editHabitId) return;
+    setIsDeleting(true);
+    try {
+      await deleteHabit(editHabitId);
+      setShowDeleteConfirm(false);
+      onClose();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  if (!isOpen || !currentSpace || !user) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-        {/* Header */}
+    <React.Fragment>
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Habit?"
+        description={`"${title}" and all its completion history will be permanently deleted. This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="w-full max-w-2xl bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+          {/* Header */}
         <div className="p-6 border-b border-white/10 flex items-center justify-between shrink-0">
           <h3 className="text-xl font-bold text-white">
             {editHabitId ? 'Edit Habit' : 'New Habit'}
@@ -312,7 +343,11 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         {/* Footer */}
         <div className="p-6 border-t border-white/10 flex justify-end gap-3 shrink-0">
           {editHabitId && (
-            <button className="mr-auto text-red-400 hover:text-red-300 text-sm flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors">
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="mr-auto text-red-400 hover:text-red-300 text-sm flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors"
+            >
               <Trash2 className="h-4 w-4" /> Delete
             </button>
           )}
@@ -332,5 +367,6 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         </div>
       </div>
     </div>
+    </React.Fragment>
   );
 }

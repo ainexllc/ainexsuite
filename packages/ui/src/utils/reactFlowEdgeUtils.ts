@@ -327,14 +327,7 @@ export function debugEdges(edges: GenericEdge[], nodes: GenericNode[]): EdgeDebu
     summary,
   };
 
-  // Log detailed debug information
-
-  if (orphanedEdges.length > 0) {
-  }
-
-  if (duplicates.length > 0) {
-  }
-
+  // Debug information available via return value
 
   return debugInfo;
 }

@@ -88,7 +88,7 @@ export async function createJournalEntry(
 // Update an existing journal entry
 export async function updateJournalEntry(
   entryId: string,
-  data: Partial<JournalEntryFormData>
+  data: Partial<JournalEntryFormData> & { attachments?: JournalEntry['attachments'] }
 ): Promise<void> {
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
   const sanitizedData = { ...data };

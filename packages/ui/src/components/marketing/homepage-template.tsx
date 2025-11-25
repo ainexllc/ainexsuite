@@ -135,6 +135,7 @@ export type HomepageTemplateProps = {
 };
 
 export function HomepageTemplate(props: HomepageTemplateProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const [activeDemo, setActiveDemo] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
