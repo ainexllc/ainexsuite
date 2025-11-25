@@ -211,19 +211,67 @@ export async function POST(request: NextRequest) {
     }
 
     // Production: Create session cookie server-side
-    const { getAdminAuth, getAdminFirestore } = await import('@/lib/firebase/admin-app');
+    console.log('[session] Production mode - initializing Firebase Admin...');
+
+    let getAdminAuth, getAdminFirestore;
+    try {
+      const adminModule = await import('@/lib/firebase/admin-app');
+      getAdminAuth = adminModule.getAdminAuth;
+      getAdminFirestore = adminModule.getAdminFirestore;
+      console.log('[session] Firebase Admin module imported successfully');
+    } catch (importError) {
+      console.error('[session] Failed to import Firebase Admin:', importError);
+      return NextResponse.json(
+        { error: 'Failed to initialize Firebase Admin', details: importError instanceof Error ? importError.message : 'Import failed' },
+        { status: 500 }
+      );
+    }
+
     const { FieldValue } = await import('firebase-admin/firestore');
 
-    const adminAuth = getAdminAuth();
-    const adminDb = getAdminFirestore();
+    let adminAuth, adminDb;
+    try {
+      adminAuth = getAdminAuth();
+      adminDb = getAdminFirestore();
+      console.log('[session] Firebase Admin Auth and Firestore initialized');
+    } catch (initError) {
+      console.error('[session] Failed to initialize Firebase Admin services:', initError);
+      return NextResponse.json(
+        { error: 'Failed to initialize Firebase services', details: initError instanceof Error ? initError.message : 'Init failed' },
+        { status: 500 }
+      );
+    }
 
     // Verify ID token
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    console.log('[session] Verifying ID token...');
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+      console.log('[session] ID token verified for user:', decodedToken.uid);
+    } catch (verifyError: unknown) {
+      const errorObj = verifyError as { code?: string; message?: string };
+      console.error('[session] Failed to verify ID token:', errorObj);
+      return NextResponse.json(
+        { error: 'Invalid ID token', code: errorObj?.code, details: errorObj?.message },
+        { status: 401 }
+      );
+    }
 
     // Create session cookie (Firebase Admin SDK expects milliseconds)
-    const sessionCookie = await adminAuth.createSessionCookie(idToken, {
-      expiresIn: SESSION_COOKIE_MAX_AGE_MS,
-    });
+    console.log('[session] Creating session cookie...');
+    let sessionCookie;
+    try {
+      sessionCookie = await adminAuth.createSessionCookie(idToken, {
+        expiresIn: SESSION_COOKIE_MAX_AGE_MS,
+      });
+      console.log('[session] Session cookie created successfully');
+    } catch (cookieError) {
+      console.error('[session] Failed to create session cookie:', cookieError);
+      return NextResponse.json(
+        { error: 'Failed to create session cookie', details: cookieError instanceof Error ? cookieError.message : 'Cookie creation failed' },
+        { status: 500 }
+      );
+    }
 
     // Get or create user document
     const userRef = adminDb.collection('users').doc(decodedToken.uid);
@@ -231,8 +279,12 @@ export async function POST(request: NextRequest) {
 
     let user;
     if (!userDoc.exists) {
-      // Create new user
+      // Create new user with 30-day trial access to ALL apps
       const now = Date.now();
+      const trialEndDate = now + (30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+      const allApps = ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+
       user = {
         uid: decodedToken.uid,
         email: decodedToken.email || '',
@@ -246,19 +298,44 @@ export async function POST(request: NextRequest) {
           timezone: 'America/New_York',
           notifications: { email: true, push: true, inApp: true },
         },
-        apps: {},
+        // Auto-activate all apps for trial period
+        apps: allApps.reduce((acc, app) => ({ ...acc, [app]: true }), {}),
         appPermissions: {},
         appsUsed: {},
-        appsEligible: [],
+        appsEligible: allApps,
         trialStartDate: now,
+        trialEndDate: trialEndDate,
         subscriptionStatus: 'trial',
-        suiteAccess: false,
+        suiteAccess: true, // Grant suite access during trial
       };
+
+      console.log('[session] New user created with 30-day trial access to all apps:', user.email);
       await userRef.set(user);
     } else {
       user = userDoc.data();
-      // Update last login
-      await userRef.update({ lastLoginAt: FieldValue.serverTimestamp() });
+
+      // Check if user needs trial access upgrade (for existing users)
+      if (user && (!user.apps || Object.keys(user.apps).length === 0)) {
+        const allApps = ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+        const trialEndDate = (user.trialStartDate || Date.now()) + (30 * 24 * 60 * 60 * 1000);
+
+        await userRef.update({
+          apps: allApps.reduce((acc, app) => ({ ...acc, [app]: true }), {}),
+          appsEligible: allApps,
+          trialEndDate: trialEndDate,
+          suiteAccess: true,
+          lastLoginAt: FieldValue.serverTimestamp(),
+        });
+
+        console.log('[session] Existing user upgraded with 30-day trial access:', user.email);
+
+        // Reload user data
+        const updatedDoc = await userRef.get();
+        user = updatedDoc.data();
+      } else {
+        // Just update last login
+        await userRef.update({ lastLoginAt: FieldValue.serverTimestamp() });
+      }
     }
 
     // Set session cookie on response
@@ -280,10 +357,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     const stack = error instanceof Error ? error.stack : undefined;
+    console.error('[session] Unhandled error:', error);
     return NextResponse.json(
       {
         error: 'Failed to create session',
         message,
+        details: message,
         stack: process.env.NODE_ENV === 'development' ? stack : undefined,
       },
       { status: 500 }
