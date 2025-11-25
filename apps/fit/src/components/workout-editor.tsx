@@ -68,7 +68,7 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
         exercises: exercises.filter((e) => e.name.trim()),
       };
 
-      onSave(data);
+      await onSave(data);
     } catch (error) {
       console.error('Failed to save workout:', error);
     } finally {
@@ -77,7 +77,7 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
       <div className="w-full max-w-3xl bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/10 sticky top-0 bg-[#1a1a1a] z-10">
           <h2 className="text-xl font-bold text-white">
