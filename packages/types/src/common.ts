@@ -25,7 +25,7 @@ export interface UserPreferences {
 export interface ActivityItem {
   id: string;
   userId: string;
-  app: 'notes' | 'journey' | 'todo' | 'track' | 'moments' | 'grow' | 'pulse' | 'fit';
+  app: 'notes' | 'journey' | 'todo' | 'health' | 'moments' | 'grow' | 'pulse' | 'fit';
   action: 'created' | 'updated' | 'deleted' | 'completed';
   itemId: string;
   itemTitle: string;

@@ -160,19 +160,15 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
     setError('');
 
     try {
-      console.log('🔐 HomepageTemplate: Starting email auth...');
       let result;
       if (isSignUp) {
         result = await createUserWithEmailAndPassword(auth, email, password);
       } else {
         result = await signInWithEmailAndPassword(auth, email, password);
       }
-      console.log('🔐 HomepageTemplate: Email auth successful, user:', result.user.email);
 
       // Create server-side session cookie for SSO
-      console.log('🔐 HomepageTemplate: Getting ID token for session cookie...');
       const idToken = await result.user.getIdToken();
-      console.log('🔐 HomepageTemplate: Got ID token, calling /api/auth/session...');
 
       const sessionResponse = await fetch('/api/auth/session', {
         method: 'POST',
@@ -181,13 +177,11 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         credentials: 'include', // Ensure cookies are processed
       });
 
-      console.log('🔐 HomepageTemplate: Session response status:', sessionResponse.status);
       if (!sessionResponse.ok) {
         const errorData = await sessionResponse.json();
         console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
       } else {
-        const data = await sessionResponse.json();
-        console.log('🔐 HomepageTemplate: Session cookie created successfully!', data);
+        await sessionResponse.json();
         // Small delay to ensure browser processes Set-Cookie header
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -207,15 +201,11 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
     setError('');
 
     try {
-      console.log('🔐 HomepageTemplate: Starting Google auth...');
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      console.log('🔐 HomepageTemplate: Google auth successful, user:', result.user.email);
 
       // Create server-side session cookie for SSO
-      console.log('🔐 HomepageTemplate: Getting ID token for session cookie...');
       const idToken = await result.user.getIdToken();
-      console.log('🔐 HomepageTemplate: Got ID token, calling /api/auth/session...');
 
       const sessionResponse = await fetch('/api/auth/session', {
         method: 'POST',
@@ -224,13 +214,11 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         credentials: 'include', // Ensure cookies are processed
       });
 
-      console.log('🔐 HomepageTemplate: Session response status:', sessionResponse.status);
       if (!sessionResponse.ok) {
         const errorData = await sessionResponse.json();
         console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
       } else {
-        const data = await sessionResponse.json();
-        console.log('🔐 HomepageTemplate: Session cookie created successfully!', data);
+        await sessionResponse.json();
         // Small delay to ensure browser processes Set-Cookie header
         await new Promise(resolve => setTimeout(resolve, 100));
       }

@@ -14,11 +14,6 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     let sessionCookie = cookieStore.get('__session')?.value;
 
-    // Debug logging
-    const allCookies = cookieStore.getAll();
-    console.log('[SSO DEBUG custom-token] All cookies:', allCookies.map(c => c.name).join(', '));
-    console.log('[SSO DEBUG custom-token] __session cookie found:', !!sessionCookie);
-
     // In development, also check request body (for cross-port auth)
     if (!sessionCookie && process.env.NODE_ENV === 'development') {
       try {

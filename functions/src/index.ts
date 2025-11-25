@@ -71,9 +71,9 @@ export const generateSessionCookie = functions
           },
           apps: {
             notes: false,
-            journal: false,
+            journey: false,
             todo: false,
-            track: false,
+            health: false,
             moments: false,
             grow: false,
             pulse: false,

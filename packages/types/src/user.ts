@@ -38,7 +38,7 @@ export interface User {
     notes?: { approved: boolean; approvedAt: Timestamp };
     journey?: { approved: boolean; approvedAt: Timestamp };
     todo?: { approved: boolean; approvedAt: Timestamp };
-    track?: { approved: boolean; approvedAt: Timestamp };
+    health?: { approved: boolean; approvedAt: Timestamp };
     moments?: { approved: boolean; approvedAt: Timestamp };
     grow?: { approved: boolean; approvedAt: Timestamp };
     pulse?: { approved: boolean; approvedAt: Timestamp };
@@ -51,11 +51,14 @@ export interface User {
     notes: boolean;
     journey: boolean;
     todo: boolean;
-    track: boolean;
+    health: boolean;
     moments: boolean;
     grow: boolean;
     pulse: boolean;
     fit: boolean;
+    projects?: boolean;
+    workflow?: boolean;
+    calendar?: boolean;
   };
 
   // Suite upsell tracking
@@ -63,7 +66,7 @@ export interface User {
     notes?: Timestamp;
     journey?: Timestamp;
     todo?: Timestamp;
-    track?: Timestamp;
+    health?: Timestamp;
     moments?: Timestamp;
     grow?: Timestamp;
     pulse?: Timestamp;

@@ -244,11 +244,12 @@ export async function getProductivityAnalytics(): Promise<ProductivityAnalytics>
   );
 
   // Determine most productive app
+  // Note: GROW handles habits now, HEALTH handles body metrics
   const activityCounts = {
     notes: trends.notesThisWeek,
     journal: trends.journalEntriesThisWeek,
     todo: trends.tasksCompletedThisWeek,
-    track: trends.habitsCompletedThisWeek,
+    grow: trends.habitsCompletedThisWeek,
     moments: trends.momentsThisWeek,
     fit: trends.workoutsThisWeek,
   };

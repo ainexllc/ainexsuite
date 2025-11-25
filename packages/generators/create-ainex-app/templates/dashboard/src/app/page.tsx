@@ -31,12 +31,12 @@ const apps = [
     domain: "todo.ainexsuite.com",
   },
   {
-    name: "Track",
-    slug: "track",
+    name: "Health",
+    slug: "health",
     icon: Calendar,
-    color: "bg-purple-500",
-    description: "Habit tracking and streaks",
-    domain: "track.ainexsuite.com",
+    color: "bg-emerald-500",
+    description: "Body metrics and wellness tracking",
+    domain: "health.ainexsuite.com",
   },
   {
     name: "Moments",

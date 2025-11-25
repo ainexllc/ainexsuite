@@ -17,11 +17,11 @@ export const SUITE_APPS = {
     description: 'Manage tasks and projects',
     color: '#8b5cf6', // violet-500
   },
-  track: {
-    name: 'Track',
-    slug: 'track',
-    description: 'Monitor habits and goals',
-    color: '#22c55e', // green-500
+  health: {
+    name: 'Health',
+    slug: 'health',
+    description: 'Track body metrics and wellness',
+    color: '#10b981', // emerald-500
   },
   moments: {
     name: 'Moments',
@@ -69,7 +69,7 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     notes: 3001,
     journey: 3002,
     todo: 3003,
-    track: 3004,
+    health: 3004,
     moments: 3005,
     grow: 3006,
     pulse: 3007,
@@ -82,6 +82,11 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
   if (isDev) {
     const port = portMap[slug] || 3000;
     return `http://localhost:${port}/workspace`;
+  }
+
+  // Main app uses the root domain in production
+  if (slug === 'main') {
+    return 'https://ainexsuite.com/workspace';
   }
 
   // Map internal slugs to production domains

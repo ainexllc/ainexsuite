@@ -58,10 +58,13 @@ export class OpenRouterClient {
         token = serverEnv.XAI_API_KEY;
         
         // Map OpenRouter IDs to xAI Direct IDs
-        if (model === "x-ai/grok-4.1-fast" || model === "grok-4.1-fast") {
-            model = "grok-beta"; // Mapping to available beta model if fast not available, or pass through
+        // Note: grok-beta was deprecated on 2025-09-15
+        if (model === "grok-4.1-fast" || model === "x-ai/grok-4.1-fast") {
+            model = "grok-4.1-fast"; // Fast non-reasoning model
+        } else if (model === "grok-3" || model === "x-ai/grok-3") {
+            model = "grok-3";
         } else if (model === "grok-beta" || model === "x-ai/grok-beta") {
-            model = "grok-beta";
+            model = "grok-3"; // grok-beta deprecated, use grok-3
         } else if (model.startsWith("x-ai/")) {
             // Fallback: strip prefix
             model = model.replace("x-ai/", "");
@@ -73,6 +76,22 @@ export class OpenRouterClient {
     }
 
     if (!token) {
+        if (process.env.NODE_ENV === "development") {
+            console.warn("AI Client: Missing API Key in development. Returning mock response.");
+            return {
+                choices: [{
+                    message: {
+                        role: "assistant",
+                        content: JSON.stringify({
+                            weeklyVibe: "Simulated Vibe (Dev Mode)",
+                            recurringThemes: ["Simulated Theme 1", "Simulated Theme 2"],
+                            reflectionPrompts: ["Simulated Prompt 1?", "Simulated Prompt 2?", "Simulated Prompt 3?"]
+                        })
+                    },
+                    finish_reason: "stop"
+                }]
+            };
+        }
         console.error("AI Client: Missing API Key");
         throw new Error("AI API key is missing");
     }

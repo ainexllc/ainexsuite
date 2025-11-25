@@ -15,7 +15,6 @@ import {
   noteToSearchResult,
   journalToSearchResult,
   taskToSearchResult,
-  habitToSearchResult,
   momentToSearchResult,
   learningGoalToSearchResult,
   healthMetricToSearchResult,
@@ -23,7 +22,6 @@ import {
   Note,
   JournalEntry,
   Todo,
-  Habit,
   Moment,
   LearningGoal,
   HealthMetric,
@@ -58,7 +56,7 @@ export async function GET(request: NextRequest) {
           notes: 0,
           journey: 0,
           todo: 0,
-          track: 0,
+          health: 0,
           moments: 0,
           grow: 0,
           pulse: 0,
@@ -73,7 +71,7 @@ export async function GET(request: NextRequest) {
       'notes',
       'journey',
       'todo',
-      'track',
+      'health',
       'moments',
       'grow',
       'pulse',
@@ -85,7 +83,7 @@ export async function GET(request: NextRequest) {
       notes: 0,
       journey: 0,
       todo: 0,
-      track: 0,
+      health: 0,
       moments: 0,
       grow: 0,
       pulse: 0,
@@ -164,27 +162,25 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Search Track (Habits)
-    if (appsToSearch.includes('track')) {
-      const habitsRef = collection(db, 'habits');
-      const habitsQuery = query(
-        habitsRef,
+    // Search Health (Health Metrics)
+    if (appsToSearch.includes('health')) {
+      const healthRef = collection(db, 'health_metrics');
+      const healthQuery = query(
+        healthRef,
         where('ownerId', '==', userId),
         orderBy('updatedAt', 'desc'),
         firestoreLimit(limitParam)
       );
-      const habitsSnapshot = await getDocs(habitsQuery);
+      const healthSnapshot = await getDocs(healthQuery);
 
-      habitsSnapshot.forEach((doc) => {
-        const habit = doc.data() as Habit;
-        const matchesName = habit.name.toLowerCase().includes(searchLower);
-        const matchesDescription = habit.description
-          ?.toLowerCase()
-          .includes(searchLower);
+      healthSnapshot.forEach((doc) => {
+        const metric = doc.data() as HealthMetric;
+        const matchesDate = metric.date?.toLowerCase().includes(searchLower);
+        const matchesNotes = metric.notes?.toLowerCase().includes(searchLower);
 
-        if (matchesName || matchesDescription) {
-          allResults.push(habitToSearchResult(habit, doc.id));
-          appCounts.track++;
+        if (matchesDate || matchesNotes) {
+          allResults.push(healthMetricToSearchResult(metric, doc.id));
+          appCounts.health++;
         }
       });
     }

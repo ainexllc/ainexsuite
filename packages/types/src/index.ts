@@ -5,6 +5,7 @@
 
 // Common types
 export * from './common';
+export * from './space';
 
 // User types
 export * from './user';

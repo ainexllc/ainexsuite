@@ -13,7 +13,6 @@ import {
 import {
   FileText,
   CheckSquare,
-  Target,
   Image as ImageIcon,
   BookOpen,
   Activity as ActivityIcon,
@@ -31,7 +30,7 @@ const APP_ICONS: Record<SearchableApp, React.ReactNode> = {
   notes: <FileText className="h-4 w-4" />,
   journey: <BookOpen className="h-4 w-4" />,
   todo: <CheckSquare className="h-4 w-4" />,
-  track: <Target className="h-4 w-4" />,
+  health: <ActivityIcon className="h-4 w-4" />,
   moments: <ImageIcon className="h-4 w-4" />,
   grow: <BookOpen className="h-4 w-4" />,
   pulse: <ActivityIcon className="h-4 w-4" />,
@@ -51,7 +50,7 @@ const APP_COLORS: Record<SearchableApp, string> = {
   notes: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
   journey: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   todo: 'bg-green-500/10 text-green-500 border-green-500/20',
-  track: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+  health: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
   moments: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
   grow: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
   pulse: 'bg-red-500/10 text-red-500 border-red-500/20',
@@ -125,7 +124,7 @@ export default function ActivityFeed({ limit = 20 }: ActivityFeedProps) {
             <option value="notes">Notes</option>
             <option value="journey">Journey</option>
             <option value="todo">Todo</option>
-            <option value="track">Track</option>
+            <option value="health">Health</option>
             <option value="moments">Moments</option>
             <option value="grow">Grow</option>
             <option value="pulse">Pulse</option>

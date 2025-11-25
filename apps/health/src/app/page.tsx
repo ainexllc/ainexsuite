@@ -11,8 +11,8 @@ import {
   Scale,
   Activity,
   TrendingUp,
-  Ruler,
-  LineChart,
+  Moon,
+  Heart,
 } from 'lucide-react';
 
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
@@ -24,9 +24,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Logging your morning weigh-in…', emoji: '⚖️' },
-  { text: 'Calculating weekly average and trend lines…', emoji: '📊' },
-  { text: 'Projecting progress toward your goal weight…', emoji: '📉' },
+  { text: 'Logging your morning health check-in…', emoji: '' },
+  { text: 'Calculating sleep quality trends…', emoji: '' },
+  { text: 'Analyzing your wellness patterns…', emoji: '' },
 ];
 
 const navLinks: NavLink[] = [
@@ -36,29 +36,29 @@ const navLinks: NavLink[] = [
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Smart Weight Log',
+    title: 'Body Metrics',
     description:
-      'Log daily with one tap. AI smooths out fluctuations to show your true trend.',
+      'Track weight, sleep, hydration, and energy levels. See trends that reveal your health patterns.',
     icon: Scale,
   },
   {
-    title: 'Body Metrics',
+    title: 'Sleep & Recovery',
     description:
-      'Track measurements, body fat %, and muscle mass alongside your weight.',
-    icon: Ruler,
+      'Log sleep hours and quality. Understand how rest affects your energy and mood.',
+    icon: Moon,
   },
   {
-    title: 'Goal Forecasting',
+    title: 'Wellness Insights',
     description:
-      'See when you\'ll hit your target based on your current rate of progress.',
+      'AI-powered analysis identifies correlations between your habits and how you feel.',
     icon: TrendingUp,
   },
 ];
 
 const productLinks: FooterLink[] = [
-  { label: 'Tracking Features', href: '/features' },
+  { label: 'Health Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'Templates', href: '/templates', external: true },
+  { label: 'FAQ', href: '/faq' },
 ];
 
 const companyLinks: FooterLink[] = [
@@ -69,7 +69,7 @@ const companyLinks: FooterLink[] = [
 
 const resourceLinks: FooterLink[] = [
   { label: 'Help Center', href: '/help', external: true },
-  { label: 'Contact Us', href: 'mailto:track@ainexsuite.com' },
+  { label: 'Contact Us', href: 'mailto:health@ainexsuite.com' },
   { label: 'Documentation', href: '/docs', external: true },
 ];
 
@@ -81,9 +81,9 @@ const legalLinks: FooterLink[] = [
   { label: 'GDPR', href: '/gdpr', external: true },
 ];
 
-function TrackHomePageContent() {
+function HealthHomePageContent() {
   const { user, loading, bootstrapStatus } = useAuth();
-  const { needsActivation, checking } = useAppActivation('track');
+  const { needsActivation, checking } = useAppActivation('health');
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
   const [showActivation, setShowActivation] = useState(false);
@@ -96,7 +96,7 @@ function TrackHomePageContent() {
     }
 
     if (user && !needsActivation) {
-      setLoadingMessage('Welcome back! Redirecting you to your tracking dashboard…');
+      setLoadingMessage('Welcome back! Redirecting you to your health dashboard…');
     } else if (user && needsActivation) {
       setLoadingMessage('');
       setShowActivation(true);
@@ -123,16 +123,16 @@ function TrackHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#14b8a6]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-emerald-500/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#14b8a6]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-emerald-500" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#14b8a6] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -146,50 +146,50 @@ function TrackHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TRACK" appColor="#14b8a6" />}
-        backgroundComponent={<LayeredBackground primaryColor="#14b8a6" secondaryColor="#2dd4bf" variant="structured" />}
-        appName="track"
-        accentColor="#14b8a6"
-        gradientFrom="#14b8a6"
-        gradientTo="#2dd4bf"
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="HEALTH" appColor="#10b981" />}
+        backgroundComponent={<LayeredBackground primaryColor="#10b981" secondaryColor="#34d399" variant="structured" />}
+        appName="health"
+        accentColor="#10b981"
+        gradientFrom="#10b981"
+        gradientTo="#34d399"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Privacy-first tracking' },
-          headline: 'Track your progress. Visualize change.',
-          subheadline: 'AINex Track turns daily data points into a clear picture of your health journey.',
-          description: 'Simple, intelligent logging for weight, measurements, and body composition. See the trends that matter.',
+          badge: { icon: Shield, text: 'Privacy-first wellness' },
+          headline: 'Your body. Your data. Your journey.',
+          subheadline: 'AINex Health turns daily check-ins into actionable wellness insights.',
+          description: 'Track weight, sleep, hydration, energy, and vitals. Discover patterns that help you feel your best.',
           highlights: [
             {
-              icon: LineChart,
-              title: 'Smart Charts',
-              description: 'Visualize your trajectory with smoothing that hides noise and reveals progress.',
+              icon: Heart,
+              title: 'Holistic Tracking',
+              description: 'Monitor body metrics, sleep quality, hydration, and energy in one place.',
             },
             {
               icon: Activity,
-              title: 'Body Comp',
-              description: 'Track more than just scale weight—monitor muscle, fat, and measurements.',
+              title: 'Smart Insights',
+              description: 'AI identifies correlations between your habits and how you feel.',
             },
           ],
         }}
         login={{
-          badgeText: 'Health Tracker',
-          signUpTitle: 'Join AINex Track',
+          badgeText: 'Wellness Tracker',
+          signUpTitle: 'Join AINex Health',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to start tracking your body metrics.',
-          signInDescription: 'Sign in to access your tracking dashboard.',
+          signUpDescription: 'Create your account to start tracking your wellness journey.',
+          signInDescription: 'Sign in to access your health dashboard.',
           footerText: 'Your health data is encrypted and yours alone. Export anytime.',
         }}
         features={{
-          sectionTitle: 'Built for clarity',
-          sectionDescription: 'Track cuts through the noise of daily fluctuations to show you the real story of your progress.',
+          sectionTitle: 'Built for wellness',
+          sectionDescription: 'Health helps you understand the connection between what you do and how you feel.',
           cards: featureCards,
         }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
-            appName="track"
-            appDisplayName="Track"
+            appName="health"
+            appDisplayName="Health"
             onActivated={() => window.location.reload()}
             onDifferentEmail={async () => {
               await firebaseSignOut(auth);
@@ -198,7 +198,7 @@ function TrackHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "AINex Track",
+          appDisplayName: "AINex Health",
           productLinks,
           companyLinks,
           resourceLinks,
@@ -209,6 +209,6 @@ function TrackHomePageContent() {
   );
 }
 
-export default function TrackHomePage() {
-  return <TrackHomePageContent />;
+export default function HealthHomePage() {
+  return <HealthHomePageContent />;
 }

@@ -33,7 +33,7 @@ export type SearchableApp =
   | 'notes'
   | 'journey'
   | 'todo'
-  | 'track'
+  | 'health'
   | 'moments'
   | 'grow'
   | 'pulse'
@@ -187,9 +187,10 @@ export function taskToSearchResult(task: Todo, id: string): SearchResult {
 }
 
 export function habitToSearchResult(habit: Habit, id: string): SearchResult {
+  // Note: Habits are now in GROW app, but keeping for backwards compatibility
   return {
     id,
-    app: 'track',
+    app: 'grow',
     type: 'habit',
     title: habit.name,
     content: habit.description || '',
@@ -199,7 +200,30 @@ export function habitToSearchResult(habit: Habit, id: string): SearchResult {
     },
     createdAt: habit.createdAt,
     updatedAt: habit.updatedAt,
-    url: `${getAppUrl('track', 3004)}?habit=${id}`,
+    url: `${getAppUrl('grow', 3006)}?habit=${id}`,
+  };
+}
+
+export function healthToSearchResult(
+  metric: HealthMetric,
+  id: string
+): SearchResult {
+  return {
+    id,
+    app: 'health',
+    type: 'health_metric',
+    title: `Health Check-in - ${metric.date}`,
+    content: metric.notes || '',
+    metadata: {
+      weight: metric.weight,
+      sleep: metric.sleep,
+      water: metric.water,
+      mood: metric.mood,
+      energy: metric.energy,
+    },
+    createdAt: metric.createdAt,
+    updatedAt: metric.updatedAt,
+    url: `${getAppUrl('health', 3004)}`,
   };
 }
 

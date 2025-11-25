@@ -12,7 +12,7 @@ const APPS = [
   { name: 'journey', label: 'Journal' },
   { name: 'notes', label: 'Notes' },
   { name: 'todo', label: 'Tasks' },
-  { name: 'track', label: 'Tracker' },
+  { name: 'health', label: 'Health' },
   { name: 'moments', label: 'Moments' },
   { name: 'grow', label: 'Grow' },
   { name: 'pulse', label: 'Pulse' },

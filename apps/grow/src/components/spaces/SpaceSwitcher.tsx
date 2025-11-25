@@ -31,28 +31,28 @@ export function SpaceSwitcher() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors w-full"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-surface-hover transition-colors w-full min-w-[200px] max-w-[300px]"
       >
-        <div className="h-8 w-8 rounded-md bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white">
+        <div className="h-8 w-8 rounded-md bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white flex-shrink-0">
           {currentSpace ? getIcon(currentSpace.type) : <User className="h-4 w-4" />}
         </div>
-        <div className="flex-1 text-left">
-          <p className="text-sm font-medium text-white leading-none">
+        <div className="flex-1 text-left min-w-0">
+          <p className="text-sm font-medium text-ink-900 leading-none truncate">
             {currentSpace?.name || 'My Growth'}
           </p>
-          <p className="text-xs text-white/50 capitalize">
+          <p className="text-xs text-ink-500 capitalize truncate">
             {currentSpace?.type || 'Personal'}
           </p>
         </div>
-        <ChevronDown className="h-4 w-4 text-white/50" />
+        <ChevronDown className="h-4 w-4 text-ink-500 flex-shrink-0" />
       </button>
 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 w-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden">
+          <div className="absolute top-full left-0 min-w-full w-max max-w-sm mt-2 bg-surface-elevated border border-outline-subtle rounded-xl shadow-floating z-50 overflow-hidden">
             <div className="p-1">
-              <div className="px-2 py-1.5 text-xs font-medium text-white/40 uppercase">
+              <div className="px-2 py-1.5 text-xs font-medium text-ink-400 uppercase">
                 My Spaces
               </div>
               {spaces.map((space: Space) => (
@@ -64,26 +64,28 @@ export function SpaceSwitcher() {
                   }}
                   className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm transition-colors ${
                     currentSpaceId === space.id 
-                      ? 'bg-white/10 text-white' 
-                      : 'text-white/70 hover:bg-white/5 hover:text-white'
+                      ? 'bg-primary/10 text-primary' 
+                      : 'text-ink-600 hover:bg-surface-hover hover:text-ink-900'
                   }`}
                 >
-                  {getIcon(space.type)}
-                  {space.name}
+                  <div className="flex-shrink-0">
+                    {getIcon(space.type)}
+                  </div>
+                  <span className="truncate">{space.name}</span>
                 </button>
               ))}
             </div>
             
-            <div className="border-t border-white/10 p-1">
+            <div className="border-t border-outline-subtle p-1">
               <button
                 onClick={handleCreateSpace}
-                className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-indigo-400 hover:bg-white/5 transition-colors"
+                className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-primary hover:bg-surface-hover transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 Create New Space
               </button>
               <button
-                className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-white/50 hover:bg-white/5 hover:text-white transition-colors"
+                className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-ink-500 hover:bg-surface-hover hover:text-ink-900 transition-colors"
               >
                 <Settings className="h-4 w-4" />
                 Manage Spaces

@@ -1,16 +1,29 @@
 import { db, storage, createActivity } from '@ainexsuite/firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, getDoc, orderBy } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, getDoc, orderBy, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Moment, CreateMomentInput, UpdateMomentInput } from '@ainexsuite/types';
+import type { Moment, CreateMomentInput, UpdateMomentInput, Reaction, Comment } from '@ainexsuite/types';
 import { getCurrentUserId } from './utils';
 
 const MOMENTS_COLLECTION = 'moments';
 
-export async function getMoments(): Promise<Moment[]> {
+export async function getMoments(spaceId?: string): Promise<Moment[]> {
+  // If spaceId provided, we fetch moments for that space (public/shared view)
+  if (spaceId) {
+    const q = query(
+      collection(db, MOMENTS_COLLECTION),
+      where('spaceId', '==', spaceId),
+      orderBy('date', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Moment));
+  }
+
+  // Otherwise fetch personal moments (ownerId = user, spaceId = null)
   const userId = getCurrentUserId();
   const q = query(
     collection(db, MOMENTS_COLLECTION),
     where('ownerId', '==', userId),
+    where('spaceId', '==', null),
     orderBy('date', 'desc')
   );
 
@@ -23,7 +36,10 @@ export async function createMoment(input: Omit<CreateMomentInput, 'ownerId'>): P
   const momentData = {
     ...input,
     ownerId: userId,
+    spaceId: input.spaceId || null,
     thumbnailUrl: input.photoUrl, // Use full photo as thumbnail for now
+    reactions: [],
+    comments: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -38,7 +54,7 @@ export async function createMoment(input: Omit<CreateMomentInput, 'ownerId'>): P
       itemType: 'moment',
       itemId: docRef.id,
       itemTitle: input.title,
-      metadata: { location: input.location, tags: input.tags },
+      metadata: { location: input.location, tags: input.tags, spaceId: input.spaceId },
     });
   } catch (error) {
     console.error('Failed to log activity:', error);
@@ -106,4 +122,57 @@ export async function uploadPhoto(file: File): Promise<string> {
   await uploadBytes(storageRef, file);
   const downloadUrl = await getDownloadURL(storageRef);
   return downloadUrl;
+}
+
+// --- Interaction Features ---
+
+export async function toggleReaction(momentId: string, userId: string, emoji: string): Promise<void> {
+  const docRef = doc(db, MOMENTS_COLLECTION, momentId);
+  const snapshot = await getDoc(docRef);
+  if (!snapshot.exists()) return;
+
+  const moment = snapshot.data() as Moment;
+  const reactions = moment.reactions || [];
+  
+  // Check if user already reacted with this emoji
+  const existingIndex = reactions.findIndex(r => r.uid === userId && r.type === emoji);
+
+  if (existingIndex >= 0) {
+    // Remove reaction
+    const reactionToRemove = reactions[existingIndex];
+    await updateDoc(docRef, {
+      reactions: arrayRemove(reactionToRemove)
+    });
+  } else {
+    // Add reaction
+    const newReaction: Reaction = {
+      uid: userId,
+      type: emoji,
+      timestamp: Date.now()
+    };
+    await updateDoc(docRef, {
+      reactions: arrayUnion(newReaction)
+    });
+  }
+}
+
+export async function addComment(momentId: string, userId: string, text: string): Promise<void> {
+  const docRef = doc(db, MOMENTS_COLLECTION, momentId);
+  const newComment: Comment = {
+    id: `cmt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    uid: userId,
+    text,
+    timestamp: Date.now()
+  };
+
+  await updateDoc(docRef, {
+    comments: arrayUnion(newComment)
+  });
+}
+
+export async function deleteComment(momentId: string, comment: Comment): Promise<void> {
+  const docRef = doc(db, MOMENTS_COLLECTION, momentId);
+  await updateDoc(docRef, {
+    comments: arrayRemove(comment)
+  });
 }

@@ -8,7 +8,7 @@ export type AppSlug =
   | 'notes'
   | 'journey'
   | 'todo'
-  | 'track'
+  | 'health'
   | 'moments'
   | 'grow'
   | 'pulse'
@@ -91,18 +91,18 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['Task Management', 'Projects', 'Due Dates', 'Priorities'],
     status: 'active',
   },
-  track: {
-    name: 'Track',
-    slug: 'track',
-    description: 'Build and maintain great habits with visual streaks and progress tracking.',
-    icon: 'TrendingUp',
-    color: 'green',
-    gradient: 'from-green-500 to-emerald-500',
+  health: {
+    name: 'Health',
+    slug: 'health',
+    description: 'Track your body metrics, wellness, and health data. Monitor weight, sleep, vitals, and supplements.',
+    icon: 'Heart',
+    color: 'emerald',
+    gradient: 'from-emerald-500 to-teal-500',
     devUrl: 'http://localhost:3004',
-    prodUrl: 'https://track.ainexsuite.com',
+    prodUrl: 'https://health.ainexsuite.com',
     devPort: 3004,
-    category: 'productivity',
-    features: ['Habit Tracking', 'Streak Visualization', 'Progress Charts', 'Reminders'],
+    category: 'health',
+    features: ['Weight Tracking', 'Sleep Monitoring', 'Vitals', 'Supplements', 'Body Metrics'],
     status: 'active',
   },
   moments: {

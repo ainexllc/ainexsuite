@@ -45,7 +45,6 @@ export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: 
 
     if (response.ok) {
       const { customToken } = await response.json();
-      console.log('✅ SSO: Navigating to', appSlug, 'with auth token');
 
       // Add auth token to URL
       const urlWithToken = new URL(targetUrl);
@@ -54,7 +53,6 @@ export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: 
       window.location.href = urlWithToken.toString();
     } else {
       // No valid session - navigate without SSO (target app will handle auth)
-      console.log('⚠️ SSO: No valid session, navigating to', appSlug, 'without auth');
       window.location.href = targetUrl;
     }
   } catch (error) {
@@ -225,7 +223,7 @@ export function getCurrentAppSlug(): AppSlug | 'main' | 'admin' | null {
     '3001': 'notes',
     '3002': 'journey',
     '3003': 'todo',
-    '3004': 'track',
+    '3004': 'health',
     '3005': 'moments',
     '3006': 'grow',
     '3007': 'pulse',

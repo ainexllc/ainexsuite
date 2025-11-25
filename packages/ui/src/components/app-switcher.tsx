@@ -198,7 +198,6 @@ export function AppSwitcher({
     setIsOpen(false);
 
     const targetUrl = getAppUrl(app);
-    console.log('🔄 SSO: Switching to', app.name, '- target:', targetUrl);
 
     try {
       // Call the custom-token API endpoint
@@ -209,7 +208,6 @@ export function AppSwitcher({
 
       if (response.ok) {
         const { customToken } = await response.json();
-        console.log('✅ SSO: Custom token received, navigating with auth');
 
         // Get the correct URL based on environment
         const urlWithToken = new URL(targetUrl);
@@ -219,7 +217,6 @@ export function AppSwitcher({
       } else {
         // Token generation failed - user probably not logged in on this app
         // Navigate without SSO (target app will handle authentication)
-        console.log('⚠️ SSO: No valid session, navigating without auth token');
         window.location.href = targetUrl;
       }
     } catch (error) {

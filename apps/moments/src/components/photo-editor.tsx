@@ -8,11 +8,12 @@ import { X, Trash2, Upload, MapPin, Tag as TagIcon, Image as ImageIcon } from 'l
 
 interface PhotoEditorProps {
   moment: Moment | null;
+  spaceId?: string;
   onClose: () => void;
   onSave: () => void;
 }
 
-export function PhotoEditor({ moment, onClose, onSave }: PhotoEditorProps) {
+export function PhotoEditor({ moment, spaceId, onClose, onSave }: PhotoEditorProps) {
   const [title, setTitle] = useState(moment?.title || '');
   const [caption, setCaption] = useState(moment?.caption || '');
   const [location, setLocation] = useState(moment?.location || '');
@@ -95,6 +96,7 @@ export function PhotoEditor({ moment, onClose, onSave }: PhotoEditorProps) {
           photoUrl,
           date: Date.now(),
           collectionId: null,
+          spaceId: spaceId,
         });
       }
 

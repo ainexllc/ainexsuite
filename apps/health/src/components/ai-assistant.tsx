@@ -10,18 +10,20 @@ export function AIAssistant() {
   const [input, setInput] = useState('');
 
   const { messages, sendMessage, loading } = useGrokAssistant({
-    appName: 'track',
-    systemPrompt: `You are a motivational habit-building AI assistant.
+    appName: 'health',
+    systemPrompt: `You are a supportive health and wellness AI assistant.
 
 Your role is to help users:
-- Build sustainable habits that stick
-- Overcome obstacles and setbacks
-- Stay motivated during difficult days
-- Suggest effective habit-stacking strategies
-- Provide science-backed habit formation tips
-- Celebrate wins and progress
+- Track and understand their body metrics (weight, sleep, hydration, vitals)
+- Identify patterns and correlations in their health data
+- Provide science-backed wellness tips
+- Offer gentle guidance on improving sleep, hydration, and energy
+- Celebrate progress and encourage consistency
+- Suggest when to consult healthcare professionals
 
-Be encouraging, practical, and focused on long-term behavior change.`,
+Important: You are NOT a medical professional. Always recommend consulting doctors for medical concerns.
+
+Be supportive, encouraging, and focused on holistic wellness.`,
   });
 
   const handleSend = () => {
@@ -34,8 +36,9 @@ Be encouraging, practical, and focused on long-term behavior change.`,
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        type="button"
         className={cn(
-          'fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
+          'fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
           isOpen && 'rotate-180'
         )}
       >
@@ -43,27 +46,28 @@ Be encouraging, practical, and focused on long-term behavior change.`,
       </button>
 
       {isOpen && (
-        <div className="fixed bottom-24 right-8 w-96 h-[500px] surface-elevated border border-surface-hover rounded-lg shadow-2xl flex flex-col z-50">
-          <div className="p-4 border-b border-surface-hover">
+        <div className="fixed bottom-24 right-8 w-96 h-[500px] bg-surface-elevated border border-outline-subtle rounded-2xl shadow-2xl flex flex-col z-50">
+          <div className="p-4 border-b border-outline-subtle">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">Habit Coach</h3>
-                <p className="text-xs text-ink-600">Powered by Grok</p>
+                <h3 className="font-semibold text-ink-900">Health Coach</h3>
+                <p className="text-xs text-ink-500">Powered by Grok</p>
               </div>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
-              <div className="text-center text-ink-600 py-8 space-y-2 text-sm">
-                <p>I&apos;m here to help you build lasting habits!</p>
+              <div className="text-center text-ink-500 py-8 space-y-2 text-sm">
+                <p>I&apos;m here to help with your wellness journey!</p>
                 <p>Ask me about:</p>
-                <p>• Staying motivated</p>
-                <p>• Habit strategies</p>
-                <p>• Overcoming setbacks</p>
+                <p> Improving sleep quality</p>
+                <p> Staying hydrated</p>
+                <p> Understanding your trends</p>
+                <p> Energy optimization tips</p>
               </div>
             ) : (
               messages.map((message, index) => (
@@ -76,10 +80,10 @@ Be encouraging, practical, and focused on long-term behavior change.`,
                 >
                   <div
                     className={cn(
-                      'max-w-[80%] px-4 py-2 rounded-lg',
+                      'max-w-[80%] px-4 py-2 rounded-xl',
                       message.role === 'user'
-                        ? 'bg-accent-500 text-white'
-                        : 'surface-card'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-surface-muted text-ink-900'
                     )}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -90,22 +94,22 @@ Be encouraging, practical, and focused on long-term behavior change.`,
 
             {loading && (
               <div className="flex justify-start">
-                <div className="surface-card px-4 py-2 rounded-lg">
+                <div className="bg-surface-muted px-4 py-2 rounded-xl">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-accent-500 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-accent-500 rounded-full animate-bounce delay-100" />
-                    <div className="w-2 h-2 bg-accent-500 rounded-full animate-bounce delay-200" />
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-100" />
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-200" />
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="p-4 border-t border-surface-hover">
+          <div className="p-4 border-t border-outline-subtle">
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Ask anything..."
+                placeholder="Ask about your health..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -115,12 +119,13 @@ Be encouraging, practical, and focused on long-term behavior change.`,
                   }
                 }}
                 disabled={loading}
-                className="flex-1 px-3 py-2 surface-card rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-surface-muted rounded-xl border border-outline-subtle focus:border-emerald-500 focus:outline-none disabled:opacity-50 text-ink-900"
               />
               <button
                 onClick={handleSend}
+                type="button"
                 disabled={!input.trim() || loading}
-                className="p-2 bg-accent-500 hover:bg-accent-600 rounded-lg transition-colors disabled:opacity-50"
+                className="p-2 bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors disabled:opacity-50 text-white"
               >
                 <Send className="h-5 w-5" />
               </button>

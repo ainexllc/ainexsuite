@@ -52,7 +52,7 @@ export class SmartDashboardService {
       journey: [],
       grow: [],
       pulse: [],
-      track: [],
+      health: [],
       moments: [],
       projects: []
     };
@@ -368,13 +368,13 @@ export class SmartDashboardService {
         const data = doc.data();
         return {
           id: doc.id,
-          appSlug: 'track',
+          appSlug: 'health',
           type: 'streak' as InsightType,
-          title: 'Active Habit',
-          subtitle: data.name,
+          title: 'Health Check-in',
+          subtitle: `Logged on ${data.date}`,
           priority: 'medium' as InsightPriority,
           timestamp: this.parseDate(data.createdAt),
-          actionUrl: '/track'
+          actionUrl: '/health'
         };
       });
       callback(insights);

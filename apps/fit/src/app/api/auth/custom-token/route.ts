@@ -14,10 +14,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     let sessionCookie = cookieStore.get('__session')?.value;
 
-    // DEBUG: Log all cookies received
-    const allCookies = cookieStore.getAll();
-    console.log('[custom-token] All cookies:', allCookies.map(c => ({ name: c.name, hasValue: !!c.value })));
-    console.log('[custom-token] __session cookie found:', !!sessionCookie);
+    // DEBUG logging removed for production
 
     // In development, also check request body (for cross-port auth)
     if (!sessionCookie && process.env.NODE_ENV === 'development') {
@@ -30,7 +27,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!sessionCookie) {
-      console.log('[custom-token] No session cookie - returning 401');
       return NextResponse.json(
         { error: 'No session cookie found' },
         { status: 401 }

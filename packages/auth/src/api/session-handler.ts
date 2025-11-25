@@ -116,7 +116,7 @@ async function createOrUpdateUser(firebaseUser: any): Promise<User> {
       lastLoginAt: now,
       // In dev mode, pre-activate all apps
       appsEligible: isDev
-        ? ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit']
+        ? ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit']
         : [],
       accountType: isDev ? 'suite' : 'single-app',
       appPermissions: {},
@@ -124,7 +124,7 @@ async function createOrUpdateUser(firebaseUser: any): Promise<User> {
         notes: isDev,
         journey: isDev,
         todo: isDev,
-        track: isDev,
+        health: isDev,
         moments: isDev,
         grow: isDev,
         pulse: isDev,
@@ -177,14 +177,14 @@ export async function handleSessionCreation(req: NextRequest) {
         },
         createdAt: Date.now(),
         lastLoginAt: Date.now(),
-        appsEligible: ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit'],
+        appsEligible: ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit'],
         accountType: 'suite',
         appPermissions: {},
         apps: {
           notes: true,
           journey: true,
           todo: true,
-          track: true,
+          health: true,
           moments: true,
           grow: true,
           pulse: true,

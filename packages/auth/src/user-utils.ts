@@ -37,7 +37,7 @@ export function hasAppAccess(user: User, appId: string): boolean {
 
   // Priority 3: Fallback to legacy apps field
   if (user.apps && user.apps[appId as keyof typeof user.apps] !== undefined) {
-    return user.apps[appId as keyof typeof user.apps];
+    return user.apps[appId as keyof typeof user.apps] ?? false;
   }
 
   return false;
@@ -136,7 +136,7 @@ export function migrateUserData(user: User): Partial<User> {
 
   // If still no apps, and in development, grant all apps
   if (appsEligible.length === 0 && process.env.NODE_ENV === 'development') {
-    appsEligible.push('notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit');
+    appsEligible.push('notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit');
   }
 
   const accountType = calculateAccountType({ ...user, appsEligible });

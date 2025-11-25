@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
             notes: true,
             journey: true,
             todo: true,
-            track: true,
+            health: true,
             moments: true,
             grow: true,
             pulse: true,
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
           },
           appPermissions: {},
           appsUsed: {},
-          appsEligible: ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'],
+          appsEligible: ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'],
           trialStartDate: Date.now(),
           subscriptionStatus: 'trial' as const,
           suiteAccess: true,
@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
       const now = Date.now();
       const trialEndDate = now + (30 * 24 * 60 * 60 * 1000); // 30 days from now
 
-      const allApps = ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+      const allApps = ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
 
       user = {
         uid: decodedToken.uid,
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
 
       // Check if user needs trial access upgrade (for existing users)
       if (user && (!user.apps || Object.keys(user.apps).length === 0)) {
-        const allApps = ['notes', 'journey', 'todo', 'track', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+        const allApps = ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
         const trialEndDate = (user.trialStartDate || Date.now()) + (30 * 24 * 60 * 60 * 1000);
 
         await userRef.update({

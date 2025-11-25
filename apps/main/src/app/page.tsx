@@ -93,11 +93,11 @@ const appCards: AppCard[] = [
     href: 'https://moments.ainexsuite.com',
   },
   {
-    name: 'Track',
-    description: 'Universal progress tracking with smart logging, goal forecasting, and noise-filtering charts. Visualize change.',
+    name: 'Health',
+    description: 'Track your body metrics, wellness, and health data. Monitor weight, sleep, vitals, and supplements.',
     icon: Activity,
-    color: '#14b8a6',
-    href: 'https://track.ainexsuite.com',
+    color: '#10b981',
+    href: 'https://health.ainexsuite.com',
   },
   {
     name: 'Project',

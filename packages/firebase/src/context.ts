@@ -41,9 +41,9 @@ export interface AppContext {
     overdue: number;
     todayTasks: Array<{ title: string; priority: string }>;
   };
-  track: {
+  health: {
     total: number;
-    activeStreaks: Array<{ name: string; currentStreak: number }>;
+    recentMetrics: Array<{ type: string; value: number | string | null; date: number }>;
   };
   moments: {
     total: number;
@@ -148,26 +148,27 @@ export async function getAggregatedContext(): Promise<AppContext> {
     }
   });
 
-  // Track context
-  const habitsRef = collection(db, 'habits');
-  const habitsQuery = query(
-    habitsRef,
+  // Health context
+  const healthRef = collection(db, 'health_metrics');
+  const healthQuery = query(
+    healthRef,
     where('ownerId', '==', userId),
-    orderBy('createdAt', 'desc'),
+    orderBy('date', 'desc'),
     firestoreLimit(10)
   );
-  const habitsSnapshot = await getDocs(habitsQuery);
-  const track = {
-    total: habitsSnapshot.size,
-    activeStreaks: [] as Array<{ name: string; currentStreak: number }>,
+  const healthSnapshot = await getDocs(healthQuery);
+  const health = {
+    total: healthSnapshot.size,
+    recentMetrics: [] as Array<{ type: string; value: number | string | null; date: number }>,
   };
-  // Note: Actual streak calculation would require completions data
-  habitsSnapshot.forEach((doc) => {
+  healthSnapshot.forEach((doc) => {
     const data = doc.data();
-    track.activeStreaks.push({
-      name: data.name,
-      currentStreak: 0, // Placeholder
-    });
+    if (data.weight) {
+      health.recentMetrics.push({ type: 'weight', value: data.weight, date: data.date });
+    }
+    if (data.sleep) {
+      health.recentMetrics.push({ type: 'sleep', value: data.sleep, date: data.date });
+    }
   });
 
   // Moments context
@@ -269,7 +270,7 @@ export async function getAggregatedContext(): Promise<AppContext> {
     notes,
     journal,
     todo,
-    track,
+    health,
     moments,
     grow,
     pulse,
@@ -311,9 +312,13 @@ export function formatContextForAI(context: AppContext): string {
     );
   }
 
-  // Track
-  if (context.track.total > 0) {
-    parts.push(`**Habits**: Tracking ${context.track.total} habits.`);
+  // Health
+  if (context.health.total > 0) {
+    parts.push(`**Health**: ${context.health.total} health check-ins recorded.`);
+    if (context.health.recentMetrics.length > 0) {
+      const metrics = context.health.recentMetrics.slice(0, 3).map(m => `${m.type}: ${m.value}`).join(', ');
+      parts.push(`Recent metrics: ${metrics}`);
+    }
   }
 
   // Moments

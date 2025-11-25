@@ -12,7 +12,7 @@ const APP_SLUGS = [
   'notes',
   'journey',
   'todo',
-  'track',
+  'health',
   'moments',
   'grow',
   'pulse',
