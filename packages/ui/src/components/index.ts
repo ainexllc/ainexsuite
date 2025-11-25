@@ -164,6 +164,7 @@ export {
 // Suite Components
 export { SuiteNavigation, type SuiteNavigationProps } from "./suite-navigation";
 export { AppSwitcher, type AppSwitcherProps } from "./app-switcher";
+export { AppLoginStatus, AppLoginStatusBadge, type AppLoginStatusProps } from "./app-login-status";
 
 // Legal Components
 export {

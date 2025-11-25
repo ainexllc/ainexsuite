@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import {
   Home,
   Settings,
@@ -13,15 +14,23 @@ import {
   GraduationCap,
   Activity as ActivityIcon,
   Dumbbell,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { navigateToApp, getCurrentAppSlug } from '@ainexsuite/ui';
+import {
+  navigateToApp,
+  getCurrentAppSlug,
+  useAppLoginStatus,
+  AppLoginStatus,
+} from '@ainexsuite/ui';
 
 interface NavigationPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Whether the current user is logged in */
+  isLoggedIn?: boolean;
 }
 
 const navItems = [
@@ -62,9 +71,17 @@ function NavSection({
   );
 }
 
-export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
+export function NavigationPanel({ isOpen, onClose, isLoggedIn = false }: NavigationPanelProps) {
   const pathname = usePathname();
   const currentAppSlug = getCurrentAppSlug();
+  const { isChecking, checkStatuses, getStatus } = useAppLoginStatus({ isLoggedIn });
+
+  // Check login statuses when panel opens
+  useEffect(() => {
+    if (isOpen && isLoggedIn) {
+      checkStatuses();
+    }
+  }, [isOpen, isLoggedIn, checkStatuses]);
 
   const handleAppNavigation = (slug: string) => {
     onClose();
@@ -129,6 +146,22 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
           </NavSection>
 
           <NavSection title="Apps">
+            <div className="flex items-center justify-between px-3 mb-2">
+              <span className="text-[10px] text-ink-400">
+                {isLoggedIn ? 'SSO Status' : 'Sign in to sync'}
+              </span>
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  onClick={checkStatuses}
+                  disabled={isChecking}
+                  className="p-1 rounded hover:bg-surface-muted transition-colors disabled:opacity-50"
+                  title="Refresh login status"
+                >
+                  <RefreshCw className={clsx('h-3 w-3 text-ink-400', isChecking && 'animate-spin')} />
+                </button>
+              )}
+            </div>
             {apps.map(({ slug, icon: Icon, label }) => (
               <button
                 key={label}
@@ -137,11 +170,14 @@ export function NavigationPanel({ isOpen, onClose }: NavigationPanelProps) {
                 className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors text-ink-500 hover:bg-surface-muted hover:text-ink-700 w-full text-left"
               >
                 <span className="flex items-center gap-3 flex-1">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-transparent transition-colors bg-surface-muted text-ink-600">
+                  <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-transparent transition-colors bg-surface-muted text-ink-600">
                     <Icon className="h-4 w-4" />
                   </span>
                   <span>{label}</span>
                 </span>
+                {isLoggedIn && (
+                  <AppLoginStatus status={getStatus(slug)} size="sm" />
+                )}
               </button>
             ))}
           </NavSection>

@@ -1,9 +1,11 @@
 'use client';
 
-import { X, Home } from 'lucide-react';
+import { X, Home, RefreshCw, Check } from 'lucide-react';
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import { useEffect } from 'react';
 import { navigateToApp, getCurrentAppSlug } from '../../utils/cross-app-navigation';
+import { useAppLoginStatus } from '../../hooks/use-app-login-status';
+import type { LoginStatus } from '../../utils/cross-app-navigation';
 
 export interface AppNavigationSidebarProps {
   isOpen: boolean;
@@ -16,10 +18,47 @@ export interface AppNavigationSidebarProps {
     color?: string;
   }>;
   user?: {
+    uid?: string;
     subscriptionStatus?: string;
     subscriptionTier?: string;
     trialStartDate?: number;
   };
+}
+
+/**
+ * Small status indicator component
+ */
+function LoginStatusIndicator({ status }: { status: LoginStatus }) {
+  if (status === 'checking') {
+    return (
+      <div
+        className="h-2.5 w-2.5 rounded-full bg-zinc-600 animate-pulse"
+        title="Checking login status..."
+      />
+    );
+  }
+
+  if (status === 'logged-in') {
+    return (
+      <div
+        className="h-2.5 w-2.5 rounded-full bg-emerald-500 flex items-center justify-center"
+        title="Logged in"
+      >
+        <Check className="h-1.5 w-1.5 text-white" strokeWidth={3} />
+      </div>
+    );
+  }
+
+  if (status === 'logged-out') {
+    return (
+      <div
+        className="h-2.5 w-2.5 rounded-full bg-zinc-600"
+        title="Not logged in"
+      />
+    );
+  }
+
+  return null;
 }
 
 export function AppNavigationSidebar({
@@ -29,10 +68,17 @@ export function AppNavigationSidebar({
   user,
 }: AppNavigationSidebarProps) {
   const currentAppSlug = getCurrentAppSlug();
+  const isLoggedIn = !!user?.uid;
+  const { statuses, isChecking, checkStatuses, getStatus } = useAppLoginStatus({ isLoggedIn });
+
+  // Check login statuses when sidebar opens and user is logged in
+  useEffect(() => {
+    if (isOpen && isLoggedIn) {
+      checkStatuses();
+    }
+  }, [isOpen, isLoggedIn, checkStatuses]);
 
   const handleAppNavigation = (slug: string) => {
-    console.log('🔄 AppNavigationSidebar: handleAppNavigation called for', slug);
-    console.log('🔄 AppNavigationSidebar: currentAppSlug is', currentAppSlug);
     onClose();
     navigateToApp(slug, currentAppSlug || undefined);
   };
@@ -58,7 +104,19 @@ export function AppNavigationSidebar({
 
         {/* Header */}
         <div className="relative z-10 flex-none flex items-center justify-between p-4 border-b border-white/10 bg-transparent">
-          <h2 className="text-lg font-semibold text-white">Apps</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-white">Apps</h2>
+            {isLoggedIn && (
+              <button
+                onClick={checkStatuses}
+                disabled={isChecking}
+                className="p-1 rounded hover:bg-white/10 transition-colors disabled:opacity-50"
+                title="Refresh SSO status"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 text-white/50 ${isChecking ? 'animate-spin' : ''}`} />
+              </button>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition hover:bg-white/10"
@@ -118,8 +176,15 @@ export function AppNavigationSidebar({
                       {app.name}
                     </span>
 
-                    {/* Arrow */}
-                    {!isCurrentApp && (
+                    {/* Login Status Indicator */}
+                    {isLoggedIn && (
+                      <span className="relative z-10 ml-auto flex-shrink-0">
+                        <LoginStatusIndicator status={getStatus(app.slug)} />
+                      </span>
+                    )}
+
+                    {/* Arrow (only when not logged in) */}
+                    {!isCurrentApp && !isLoggedIn && (
                       <span className="relative z-10 ml-auto text-xs text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[var(--accent)] flex-shrink-0">
                         →
                       </span>

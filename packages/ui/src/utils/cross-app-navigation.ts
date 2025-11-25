@@ -128,6 +128,78 @@ export function clearDevCrossAppSession(): void {
 }
 
 /**
+ * Login status type for app authentication checks
+ */
+export type LoginStatus = 'checking' | 'logged-in' | 'logged-out' | 'error';
+
+/**
+ * Check login status for a specific app
+ * Makes a request to the app's session endpoint to verify authentication
+ *
+ * @param appSlug - The app slug to check
+ * @returns Promise resolving to the login status
+ */
+export async function checkAppLoginStatus(appSlug: AppSlug | string): Promise<LoginStatus> {
+  const isDev = process.env.NODE_ENV === 'development';
+  const baseUrl = getAppUrl(appSlug, isDev).replace('/workspace', '');
+
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/session`, {
+      method: 'GET',
+      credentials: 'include',
+      mode: 'cors',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.user ? 'logged-in' : 'logged-out';
+    }
+    return 'logged-out';
+  } catch {
+    // CORS or network error - can't determine status
+    return 'error';
+  }
+}
+
+/**
+ * Check login status for all apps
+ * Returns a map of app slugs to their login status
+ *
+ * @param appSlugs - Array of app slugs to check
+ * @param currentAppSlug - Current app slug (will be marked based on isLoggedIn)
+ * @param isLoggedIn - Whether user is logged into current app
+ * @returns Promise resolving to a map of login statuses
+ */
+export async function checkAllAppsLoginStatus(
+  appSlugs: (AppSlug | string)[],
+  currentAppSlug?: string,
+  isLoggedIn?: boolean
+): Promise<Record<string, LoginStatus>> {
+  const results: Record<string, LoginStatus> = {};
+
+  // Set current app status immediately
+  if (currentAppSlug) {
+    results[currentAppSlug] = isLoggedIn ? 'logged-in' : 'logged-out';
+  }
+
+  // Check all other apps in parallel
+  const promises = appSlugs
+    .filter(slug => slug !== currentAppSlug)
+    .map(async (slug) => {
+      const status = await checkAppLoginStatus(slug);
+      return { slug, status };
+    });
+
+  const statusResults = await Promise.all(promises);
+
+  statusResults.forEach(({ slug, status }) => {
+    results[slug] = status;
+  });
+
+  return results;
+}
+
+/**
  * Get current app slug from hostname or port
  */
 export function getCurrentAppSlug(): AppSlug | 'main' | 'admin' | null {
