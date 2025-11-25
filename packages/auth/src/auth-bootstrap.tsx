@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from '@ainexsuite/firebase';
 import { useAuth } from './context';
-import { getSessionCookie } from './session';
 
 /**
  * Get cross-app session from localStorage (dev only)
@@ -61,10 +60,13 @@ function clearDevCrossAppSession(): void {
  *
  * Flow:
  * 1. Check if user is already authenticated
- * 2. Check if __session cookie exists
- * 3. Call /api/auth/custom-token to generate Firebase custom token
- * 4. Sign in with custom token (which triggers onAuthStateChanged)
- * 5. AuthContext hydrates with user data from existing session (skips creating new session)
+ * 2. Call /api/auth/custom-token to get a custom token (server checks httpOnly cookie)
+ * 3. Sign in with custom token (which triggers onAuthStateChanged)
+ * 4. AuthContext hydrates with user data from existing session (skips creating new session)
+ *
+ * NOTE: The __session cookie is httpOnly, so we can't check for it client-side.
+ * Instead, we call the custom-token endpoint which reads the cookie server-side.
+ * If no cookie exists, the endpoint returns 401 and we proceed to normal auth flow.
  *
  * Usage:
  * Add to AuthProvider children:
@@ -74,62 +76,108 @@ function clearDevCrossAppSession(): void {
  * </AuthProvider>
  */
 export function AuthBootstrap() {
-  const { firebaseUser, setIsBootstrapping, setBootstrapStatus } = useAuth();
+  const { firebaseUser, setIsBootstrapping, setBootstrapStatus, ssoInProgress } = useAuth();
   const [bootstrapping, setBootstrapping] = useState(false);
   const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
-    // Skip if already authenticated or currently bootstrapping
-    if (firebaseUser || bootstrapping || bootstrapped) {
+    // Skip if already authenticated, currently bootstrapping, or SSO in progress
+    if (firebaseUser || bootstrapping || bootstrapped || ssoInProgress) {
+      console.log('[SSO DEBUG] AuthBootstrap - skipping:', { firebaseUser: !!firebaseUser, bootstrapping, bootstrapped, ssoInProgress });
       return;
     }
 
-    // Check for session cookie (production) or cross-app session (dev)
-    let sessionCookie = getSessionCookie();
-
-    // In development, check for cross-app session from localStorage
-    if (!sessionCookie && process.env.NODE_ENV === 'development') {
+    // In development, check for cross-app session from localStorage first
+    if (process.env.NODE_ENV === 'development') {
       const crossAppSession = getDevCrossAppSession();
       if (crossAppSession) {
-        sessionCookie = crossAppSession;
+        console.log('[SSO DEBUG] AuthBootstrap - found dev cross-app session');
         // Clear the cross-app session after reading it
         clearDevCrossAppSession();
+
+        // Bootstrap from the dev session
+        setBootstrapping(true);
+        setIsBootstrapping(true);
+        setBootstrapStatus('running');
+
+        bootstrapFromDevSession(crossAppSession)
+          .then(() => {
+            setBootstrapped(true);
+            setBootstrapStatus('complete');
+          })
+          .catch(() => {
+            setIsBootstrapping(false);
+            setBootstrapped(true);
+            setBootstrapStatus('failed');
+          })
+          .finally(() => {
+            setBootstrapping(false);
+          });
+        return;
       }
     }
 
-    if (!sessionCookie) {
-      setBootstrapped(true); // Mark as attempted to prevent re-checking
-      setBootstrapStatus('complete'); // No session to bootstrap, proceed to normal auth
-      return;
-    }
-
-    // Bootstrap from cookie
+    // Try to bootstrap from httpOnly session cookie
+    // The server will check for the cookie - we can't read it client-side
+    console.log('[SSO DEBUG] AuthBootstrap - attempting to bootstrap from httpOnly cookie');
     setBootstrapping(true);
-    // Signal to AuthProvider that we're bootstrapping from existing session
     setIsBootstrapping(true);
     setBootstrapStatus('running');
 
-    bootstrapFromCookie(sessionCookie)
+    bootstrapFromHttpOnlyCookie()
       .then(() => {
+        console.log('[SSO DEBUG] AuthBootstrap - bootstrap succeeded');
         setBootstrapped(true);
         setBootstrapStatus('complete');
       })
-      .catch((_error) => {
-        // Reset bootstrapping flag on error
+      .catch((error) => {
+        // No session cookie or invalid - proceed to normal auth flow
+        console.log('[SSO DEBUG] AuthBootstrap - no valid session:', error.message);
         setIsBootstrapping(false);
         setBootstrapped(true);
-        setBootstrapStatus('failed');
+        setBootstrapStatus('complete'); // Not failed, just no session to bootstrap
       })
       .finally(() => {
         setBootstrapping(false);
       });
-  }, [firebaseUser, bootstrapping, bootstrapped, setIsBootstrapping, setBootstrapStatus]);
+  }, [firebaseUser, bootstrapping, bootstrapped, ssoInProgress, setIsBootstrapping, setBootstrapStatus]);
 
   // Render nothing - this is a passive component
   return null;
 }
 
-async function bootstrapFromCookie(sessionCookie: string): Promise<void> {
+/**
+ * Bootstrap from httpOnly session cookie via server endpoint
+ * The server reads the cookie and returns a custom token
+ */
+async function bootstrapFromHttpOnlyCookie(): Promise<void> {
+  console.log('[SSO DEBUG] Calling /api/auth/custom-token with credentials:include');
+
+  const response = await fetch('/api/auth/custom-token', {
+    method: 'POST',
+    credentials: 'include', // Include httpOnly cookies
+  });
+
+  console.log('[SSO DEBUG] custom-token response:', response.status);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to get custom token: ${response.status}`);
+  }
+
+  const { customToken } = await response.json();
+  console.log('[SSO DEBUG] Got custom token, signing in...');
+
+  // Sign in with custom token
+  await signInWithCustomToken(auth, customToken);
+  console.log('[SSO DEBUG] signInWithCustomToken success');
+}
+
+/**
+ * Bootstrap from dev cross-app session (localStorage)
+ * This is for development only where cookies don't work across ports
+ */
+async function bootstrapFromDevSession(sessionCookie: string): Promise<void> {
   const response = await fetch('/api/auth/custom-token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
