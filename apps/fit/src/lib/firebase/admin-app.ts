@@ -7,19 +7,54 @@ import { serverEnv, clientEnv } from "@/env";
 
 let adminAppInitialized = false;
 
-function getAdminOptions(): AppOptions {
-  // Debug: Log what credentials we have
-  console.log('[admin-app] Checking Firebase Admin env vars:', {
-    hasProjectId: !!serverEnv.FIREBASE_ADMIN_PROJECT_ID,
-    projectId: serverEnv.FIREBASE_ADMIN_PROJECT_ID,
-    hasClientEmail: !!serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL,
-    clientEmail: serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL,
-    hasPrivateKey: !!serverEnv.FIREBASE_ADMIN_PRIVATE_KEY,
-    privateKeyLength: serverEnv.FIREBASE_ADMIN_PRIVATE_KEY?.length,
-    privateKeyStart: serverEnv.FIREBASE_ADMIN_PRIVATE_KEY?.substring(0, 30),
-    privateKeyEnd: serverEnv.FIREBASE_ADMIN_PRIVATE_KEY?.substring(-30),
-  });
+/**
+ * Normalizes a Firebase private key to ensure proper formatting.
+ * Handles various edge cases:
+ * - Keys with literal \n strings that need conversion to actual newlines
+ * - Keys that already have actual newlines
+ * - Keys with surrounding quotes (single or double)
+ * - Keys with extra whitespace
+ */
+function normalizePrivateKey(rawKey: string): string {
+  // Step 1: Trim whitespace
+  let key = rawKey.trim();
 
+  // Step 2: Remove surrounding quotes if present (single or double)
+  if ((key.startsWith('"') && key.endsWith('"')) ||
+      (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+
+  // Step 3: Convert literal \n strings to actual newlines
+  // Only do this if the key doesn't already contain actual newlines
+  if (!key.includes('\n') && key.includes('\\n')) {
+    key = key.replace(/\\n/g, '\n');
+  }
+
+  // Step 4: Ensure proper PEM format with headers
+  const BEGIN_MARKER = '-----BEGIN PRIVATE KEY-----';
+  const END_MARKER = '-----END PRIVATE KEY-----';
+
+  if (!key.includes(BEGIN_MARKER) || !key.includes(END_MARKER)) {
+    throw new Error(
+      'Invalid private key format: Missing PEM headers. ' +
+      'Key must start with "-----BEGIN PRIVATE KEY-----" and end with "-----END PRIVATE KEY-----"'
+    );
+  }
+
+  // Step 5: Normalize line breaks
+  const lines = key.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+  if (lines.length < 3) {
+    throw new Error(
+      'Invalid private key format: Key must have at least header, body, and footer lines'
+    );
+  }
+
+  return lines.join('\n');
+}
+
+function getAdminOptions(): AppOptions {
   if (
     !serverEnv.FIREBASE_ADMIN_PROJECT_ID ||
     !serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL ||
@@ -30,10 +65,7 @@ function getAdminOptions(): AppOptions {
     );
   }
 
-  const privateKey = serverEnv.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, "\n");
-  console.log('[admin-app] Private key after replacement - starts with:', privateKey.substring(0, 30));
-  console.log('[admin-app] Private key after replacement - ends with:', privateKey.substring(privateKey.length - 30));
-  console.log('[admin-app] Private key contains actual newlines:', privateKey.includes('\n'));
+  const privateKey = normalizePrivateKey(serverEnv.FIREBASE_ADMIN_PRIVATE_KEY);
 
   return {
     credential: cert({
