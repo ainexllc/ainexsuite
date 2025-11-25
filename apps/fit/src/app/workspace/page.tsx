@@ -6,8 +6,9 @@ import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import { WorkoutList } from '@/components/workout-list';
 import { WorkoutEditor } from '@/components/workout-editor';
+import { WorkoutComposer } from '@/components/workout-composer';
 import { AIAssistant } from '@/components/ai-assistant';
-import { Plus, Dumbbell, Loader2, Trophy } from 'lucide-react';
+import { Dumbbell, Loader2, Trophy } from 'lucide-react';
 
 // New Components
 import { BuddySwitcher } from '@/components/social/BuddySwitcher';
@@ -118,7 +119,9 @@ function FitWorkspaceContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            
+            {/* Workout Composer - Entry point like Notes */}
+            <WorkoutComposer onWorkoutCreated={handleUpdate} />
+
             {/* Squad Feed (only if not personal) */}
             {currentSpace?.type !== 'personal' && (
               <SharedWorkoutFeed />
@@ -132,7 +135,7 @@ function FitWorkspaceContent() {
                   My Logs
                 </h2>
               </div>
-              
+
               {workouts.filter((w: Workout) => w.userId === user.uid).length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-white/10 rounded-2xl bg-surface-elevated/50">
                   <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
@@ -140,19 +143,9 @@ function FitWorkspaceContent() {
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">Start Your Fitness Journey</h3>
                   <p className="text-white/50 mb-6 text-center max-w-md">
-                    Track your workouts, visualize progress, and crush your goals. 
-                    Log your first session to get started!
+                    Track your workouts, visualize progress, and crush your goals.
+                    Click &ldquo;Log a workout...&rdquo; above to get started!
                   </p>
-                  <button
-                    onClick={() => {
-                      setSelectedWorkout(null);
-                      setShowEditor(true);
-                    }}
-                    className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
-                  >
-                    <Plus className="h-5 w-5" />
-                    Log Workout
-                  </button>
                 </div>
               ) : (
                 <WorkoutList
@@ -174,18 +167,6 @@ function FitWorkspaceContent() {
           </div>
         </div>
       </div>
-
-      <button
-        onClick={() => {
-          setSelectedWorkout(null);
-          setShowEditor(true);
-        }}
-        className="fixed bottom-8 left-8 w-14 h-14 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-40"
-        type="button"
-        aria-label="Log workout"
-      >
-        <Plus className="h-6 w-6 text-white" />
-      </button>
 
       {showEditor && (
         <WorkoutEditor
