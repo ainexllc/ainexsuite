@@ -1,7 +1,6 @@
 'use client';
 
 import { X, Home, RefreshCw, Check } from 'lucide-react';
-import Link from 'next/link';
 import { useEffect } from 'react';
 import { navigateToApp, getCurrentAppSlug } from '../../utils/cross-app-navigation';
 import { useAppLoginStatus } from '../../hooks/use-app-login-status';
@@ -129,15 +128,20 @@ export function AppNavigationSidebar({
         {/* Scrollable List */}
         <div className="relative z-10 flex-1 overflow-y-auto p-3">
           <div className="space-y-2">
-            {/* Back to Dashboard */}
-            <Link
-              href="/workspace"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white"
+            {/* Suite Dashboard - Navigate to main app (ainexsuite.com) */}
+            <button
+              type="button"
+              onClick={() => handleAppNavigation('main')}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white w-full text-left"
             >
               <Home className="h-5 w-5 flex-shrink-0" />
               <span className="truncate">Suite Dashboard</span>
-            </Link>
+              {isLoggedIn && (
+                <span className="ml-auto flex-shrink-0">
+                  <LoginStatusIndicator status={getStatus('main')} />
+                </span>
+              )}
+            </button>
 
             {/* Divider */}
             <div className="my-2 border-t border-white/10" />
