@@ -17,7 +17,7 @@ import { TriviaGame } from '@/components/trivia-game';
 import { MomentsInsights } from '@/components/moments-insights';
 import { FlipbookPlayer } from '@/components/flipbook-player';
 import { SlideshowPlayer } from '@/components/slideshow-player';
-import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book, Share2 } from 'lucide-react';
 
 function MomentsWorkspaceContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
@@ -114,28 +114,43 @@ function MomentsWorkspaceContent() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <MomentsSpaceSwitcher userId={user.uid} />
+                
+                {/* View Options - Always Available */}
+                <button
+                  onClick={() => setShowFlipbook(true)}
+                  className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+                  title="View as Flipbook"
+                  disabled={filteredMoments.length === 0}
+                >
+                  <Book className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setShowSlideshow(true)}
+                  className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+                  title="Play Slideshow"
+                  disabled={filteredMoments.length === 0}
+                >
+                  <Play className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setShowGame(true)}
+                  className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+                  title="Play Trivia"
+                  disabled={filteredMoments.length === 0}
+                >
+                  <Gamepad2 className="h-5 w-5" />
+                </button>
+
+                {/* Space Specific Controls */}
                 {currentSpace && (
                   <>
+                    <div className="w-px h-6 bg-outline-subtle mx-1" />
                     <button
-                      onClick={() => setShowFlipbook(true)}
+                      onClick={() => setShowSettings(true)}
                       className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                      title="View as Flipbook"
+                      title="Share Space"
                     >
-                      <Book className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setShowSlideshow(true)}
-                      className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                      title="Play Slideshow"
-                    >
-                      <Play className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setShowGame(true)}
-                      className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                      title="Play Trivia"
-                    >
-                      <Gamepad2 className="h-5 w-5" />
+                      <Share2 className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => setShowSettings(true)}
@@ -221,41 +236,55 @@ function MomentsWorkspaceContent() {
             <MomentsInsights moments={moments} variant="sidebar" />
 
             {/* Quick Actions */}
-            {currentSpace && (
-              <div className="rounded-2xl bg-surface-elevated border border-outline-subtle p-5">
-                <h3 className="text-sm font-semibold text-text-primary mb-4">Quick Actions</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setShowFlipbook(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
-                  >
-                    <Book className="h-4 w-4 text-pink-500" />
-                    View Flipbook
-                  </button>
-                  <button
-                    onClick={() => setShowSlideshow(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
-                  >
-                    <Play className="h-4 w-4 text-pink-500" />
-                    Play Slideshow
-                  </button>
-                  <button
-                    onClick={() => setShowGame(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
-                  >
-                    <Gamepad2 className="h-4 w-4 text-pink-500" />
-                    Memory Trivia
-                  </button>
-                  <button
-                    onClick={() => setShowSettings(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
-                  >
-                    <Settings className="h-4 w-4 text-pink-500" />
-                    Space Settings
-                  </button>
-                </div>
+            <div className="rounded-2xl bg-surface-elevated border border-outline-subtle p-5">
+              <h3 className="text-sm font-semibold text-text-primary mb-4">Quick Actions</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowFlipbook(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
+                  disabled={filteredMoments.length === 0}
+                >
+                  <Book className="h-4 w-4 text-pink-500" />
+                  View Flipbook
+                </button>
+                <button
+                  onClick={() => setShowSlideshow(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
+                  disabled={filteredMoments.length === 0}
+                >
+                  <Play className="h-4 w-4 text-pink-500" />
+                  Play Slideshow
+                </button>
+                <button
+                  onClick={() => setShowGame(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
+                  disabled={filteredMoments.length === 0}
+                >
+                  <Gamepad2 className="h-4 w-4 text-pink-500" />
+                  Memory Trivia
+                </button>
+                
+                {currentSpace && (
+                  <>
+                    <div className="h-px bg-outline-subtle my-2" />
+                    <button
+                      onClick={() => setShowSettings(true)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                      <Share2 className="h-4 w-4 text-pink-500" />
+                      Share Space
+                    </button>
+                    <button
+                      onClick={() => setShowSettings(true)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
+                    >
+                      <Settings className="h-4 w-4 text-pink-500" />
+                      Space Settings
+                    </button>
+                  </>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
