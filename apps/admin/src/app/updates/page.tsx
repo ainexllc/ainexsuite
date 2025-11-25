@@ -13,15 +13,14 @@ import {
   limit 
 } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { 
-  Sparkles, 
-  Plus, 
-  Trash2, 
+import {
+  Sparkles,
+  Plus,
+  Trash2,
   Calendar,
   Megaphone,
   Zap,
-  Wrench,
-  Info
+  Wrench
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -127,7 +126,7 @@ export default function UpdatesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white mb-1">System Updates</h1>
-          <p className="text-zinc-400">Manage "What's New" items shown in the user sidebar.</p>
+          <p className="text-zinc-400">Manage &quot;What&apos;s New&quot; items shown in the user sidebar.</p>
         </div>
         <button
           onClick={() => setIsCreating(!isCreating)}

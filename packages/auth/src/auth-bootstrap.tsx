@@ -81,8 +81,14 @@ export function AuthBootstrap() {
   const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
-    // Skip if already authenticated, currently bootstrapping, or SSO in progress
-    if (firebaseUser || bootstrapping || bootstrapped || ssoInProgress) {
+    // If already authenticated, mark bootstrap as complete (no need to check for session)
+    if (firebaseUser) {
+      setBootstrapStatus('complete');
+      return;
+    }
+
+    // Skip if currently bootstrapping, already bootstrapped, or SSO in progress
+    if (bootstrapping || bootstrapped || ssoInProgress) {
       return;
     }
 

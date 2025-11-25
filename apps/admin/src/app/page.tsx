@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { 
-  Users, 
-  Activity as ActivityIcon, 
-  TrendingUp, 
+import {
+  Users,
+  Activity as ActivityIcon,
+  TrendingUp,
   MessageSquare,
   ArrowUpRight,
-  Clock,
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';

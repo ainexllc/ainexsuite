@@ -27,7 +27,7 @@ interface CommitActivity {
   sha: string;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Default to ainexsuite/ainexsuite if not configured
     const repo = process.env.GITHUB_REPO || 'ainexsuite/ainexsuite';
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     if (repo.includes('github.com')) {
       // Full URL format: https://github.com/owner/repo
-      const match = repo.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      const match = repo.match(/github\.com\/([^/]+)\/([^/]+)/);
       if (!match) {
         return NextResponse.json(
           { error: 'Invalid GITHUB_REPO format. Use owner/repo or https://github.com/owner/repo' },

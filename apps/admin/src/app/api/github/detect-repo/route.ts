@@ -21,7 +21,7 @@ export async function GET() {
     // Formats: https://github.com/owner/repo.git
     //          git@github.com:owner/repo.git
     //          https://github.com/owner/repo
-    let match = url.match(/github\.com[/:]([^\/]+)\/([^\/]+?)(?:\.git)?$/);
+    const match = url.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
     
     if (match) {
       const owner = match[1];

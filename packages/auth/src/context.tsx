@@ -20,7 +20,7 @@ import {
 } from './session';
 import { AuthBootstrap } from './auth-bootstrap';
 
-export type BootstrapStatus = 'idle' | 'running' | 'complete' | 'failed';
+export type BootstrapStatus = 'pending' | 'running' | 'complete' | 'failed';
 
 interface AuthContextType {
   user: User | null;
@@ -95,7 +95,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
-  const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
+  // Start as 'pending' - bootstrap must check for session before we can show public pages
+  const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('pending');
 
   // Track SSO status - initialized synchronously to detect auth_token before first render
   const [ssoInProgress, setSsoInProgress] = useState(() => {
@@ -253,8 +254,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setFirebaseUser(null);
   }, []);
 
-  // Effective loading state: true if auth is loading OR SSO is in progress
-  const effectiveLoading = loading || ssoInProgress;
+  // Effective loading state: true if auth is loading OR SSO is in progress OR bootstrap hasn't checked yet
+  // Bootstrap must complete before showing public pages (to detect existing session cookies)
+  const bootstrapPending = bootstrapStatus === 'pending' || bootstrapStatus === 'running';
+  const effectiveLoading = loading || ssoInProgress || (!user && bootstrapPending);
 
   return (
     <AuthContext.Provider
