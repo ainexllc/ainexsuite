@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Sparkles, Users, MapPin, Smile } from "lucide-react";
+import { Sparkles, Users, Smile } from "lucide-react";
 import type { Moment } from "@ainexsuite/types";
 import { useAppColors } from "@ainexsuite/theme";
 import {
   AIInsightsCard,
-  AIInsightsBulletList,
   AIInsightsTagList,
   AIInsightsText,
   type AIInsightsSection,

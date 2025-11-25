@@ -56,11 +56,6 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
     }
   };
 
-  // Calculate z-index for stacking
-  const getZIndex = (index: number) => {
-    return totalPages - Math.abs(currentPage - index);
-  };
-
   return (
     <div className="fixed inset-0 z-[100] bg-[#121212] flex flex-col items-center justify-center overflow-hidden perspective-1000">
       {/* Controls Header */}
@@ -98,8 +93,7 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
           {moments.map((moment, index) => {
             // Determine state of this page relative to current
             const isFlipped = index < currentPage;
-            const isCurrent = index === currentPage;
-            
+
             // Calculate rotation
             // If flipped (past), rotate -180deg
             // If current or future, rotate 0deg (or slightly open book effect)

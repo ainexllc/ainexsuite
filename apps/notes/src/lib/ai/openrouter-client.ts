@@ -80,6 +80,7 @@ export class OpenRouterClient {
 
     headers["Authorization"] = `Bearer ${token}`;
 
+    // eslint-disable-next-line no-console
     console.log(`AI Client Request: ${endpoint} [Model: ${model}]`);
 
     const response = await fetch(endpoint, {

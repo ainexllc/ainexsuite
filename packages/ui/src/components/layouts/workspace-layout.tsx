@@ -9,6 +9,7 @@ import { FeedbackWidget } from '../feedback/feedback-widget';
 import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
 import { ProfileSidebar } from '../layout/profile-sidebar';
 import { getNavigationApps } from '../../utils/navigation';
+import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
 
 interface WorkspaceLayoutProps {
   /**
@@ -88,6 +89,15 @@ export function WorkspaceLayout({
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // Auto-hide navigation hook
+  const {
+    isVisible: isNavVisible,
+    autoHideEnabled,
+    toggleAutoHide,
+    headerProps,
+    hoverZoneProps,
+  } = useAutoHideNav();
+
   // Generate default apps list if none provided
   // Use the environment-aware helper to get consistent apps config
   const defaultApps = getNavigationApps(process.env.NODE_ENV === 'development');
@@ -98,6 +108,9 @@ export function WorkspaceLayout({
       {/* Background Effects */}
       {showGlows && <AtmosphericGlows />}
 
+      {/* Hover Zone for auto-hide reveal */}
+      <div {...hoverZoneProps} />
+
       {/* Header */}
       <WorkspaceHeader
         user={user}
@@ -107,6 +120,10 @@ export function WorkspaceLayout({
         appColor={appColor}
         onNavigationToggle={() => setIsNavOpen(!isNavOpen)}
         onProfileToggle={() => setIsProfileOpen(!isProfileOpen)}
+        isVisible={isNavVisible}
+        autoHideEnabled={autoHideEnabled}
+        onAutoHideToggle={toggleAutoHide}
+        headerMouseProps={headerProps}
       />
 
       {/* Sidebar (Custom or Default) */}
@@ -132,7 +149,10 @@ export function WorkspaceLayout({
       />
 
       {/* Main Content */}
-      <main className="flex-1 pt-16">
+      <main
+        className="flex-1 transition-[padding-top] duration-300"
+        style={{ paddingTop: isNavVisible ? '4rem' : '0' }}
+      >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
           {children}
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, Sparkles, ChevronDown } from 'lucide-react';
+import { Menu, Sparkles, ChevronDown, PanelTopClose, PanelTop } from 'lucide-react';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 
@@ -19,6 +19,25 @@ interface WorkspaceHeaderProps {
   appColor?: string;
   onNavigationToggle?: () => void;
   onProfileToggle?: () => void;
+  /**
+   * Whether the header is currently visible (for auto-hide feature)
+   */
+  isVisible?: boolean;
+  /**
+   * Whether auto-hide is enabled
+   */
+  autoHideEnabled?: boolean;
+  /**
+   * Callback to toggle auto-hide
+   */
+  onAutoHideToggle?: () => void;
+  /**
+   * Props to spread on the header for mouse events
+   */
+  headerMouseProps?: {
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+  };
 }
 
 /**
@@ -50,15 +69,22 @@ export function WorkspaceHeader({
   appColor,
   onNavigationToggle,
   onProfileToggle,
+  isVisible = true,
+  autoHideEnabled = false,
+  onAutoHideToggle,
+  headerMouseProps,
 }: WorkspaceHeaderProps) {
   return (
     <header
-      className="fixed inset-x-0 top-0 z-30 backdrop-blur-2xl transition-colors border-b"
+      className="fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b"
       style={{
         backgroundColor: 'rgba(5, 5, 5, 0.95)',
         borderColor: 'rgba(var(--theme-primary-rgb), 0.2)',
-        boxShadow: '0 8px 30px -12px rgba(var(--theme-primary-rgb), 0.3)'
+        boxShadow: '0 8px 30px -12px rgba(var(--theme-primary-rgb), 0.3)',
+        transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+        transition: 'transform 0.3s ease-in-out',
       }}
+      {...headerMouseProps}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6">
         {/* Left: Hamburger + Logo */}
@@ -82,6 +108,27 @@ export function WorkspaceHeader({
 
         {/* Right: Actions */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Auto-hide Toggle (desktop only) */}
+          {onAutoHideToggle && (
+            <button
+              type="button"
+              onClick={onAutoHideToggle}
+              className="hidden lg:flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-all hover:bg-white/10"
+              style={{
+                backgroundColor: autoHideEnabled ? 'rgba(var(--theme-primary-rgb), 0.15)' : 'transparent',
+                color: autoHideEnabled ? 'var(--theme-primary-light)' : 'rgba(255,255,255,0.5)'
+              }}
+              aria-label={autoHideEnabled ? 'Disable auto-hide navbar' : 'Enable auto-hide navbar'}
+              title={autoHideEnabled ? 'Disable auto-hide (Cmd+\\)' : 'Enable auto-hide (Cmd+\\)'}
+            >
+              {autoHideEnabled ? (
+                <PanelTopClose className="h-4 w-4" />
+              ) : (
+                <PanelTop className="h-4 w-4" />
+              )}
+            </button>
+          )}
+
           {/* AI Assistant Button */}
           <button
             type="button"

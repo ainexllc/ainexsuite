@@ -130,6 +130,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
     getValues,
     formState: { errors },
   } = useForm({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(journalSchema as any),
     defaultValues: {
       title: initialData?.title || '',
