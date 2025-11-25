@@ -85,40 +85,35 @@ export function AppSwitcher({
     event.preventDefault(); // Prevent default link navigation
     setIsOpen(false);
 
-    console.log('🔄 SSO: Switching to', app.name);
+    const targetUrl = getAppUrl(app);
+    console.log('🔄 SSO: Switching to', app.name, '- target:', targetUrl);
 
     try {
       // Call the custom-token API endpoint
-      console.log('🔄 SSO: Requesting custom token from /api/auth/custom-token');
       const response = await fetch('/api/auth/custom-token', {
         method: 'POST',
-        credentials: 'include', // Include cookies
+        credentials: 'include', // Include httpOnly cookies
       });
-
-      console.log('🔄 SSO: Token response status:', response.status);
 
       if (response.ok) {
         const { customToken } = await response.json();
         console.log('✅ SSO: Custom token received, navigating with auth');
 
         // Get the correct URL based on environment
-        const targetUrl = new URL(getAppUrl(app));
-        targetUrl.searchParams.set('auth_token', customToken);
+        const urlWithToken = new URL(targetUrl);
+        urlWithToken.searchParams.set('auth_token', customToken);
 
-        console.log('🔄 SSO: Navigating to', targetUrl.toString());
-        window.location.href = targetUrl.toString();
+        window.location.href = urlWithToken.toString();
       } else {
-        // If token generation fails, navigate without SSO (will require login)
-        const errorData = await response.json();
-        console.warn('⚠️ SSO: Failed to generate token:', errorData);
-        console.warn('⚠️ SSO: Falling back to regular navigation (will require login)');
-        window.location.href = getAppUrl(app);
+        // Token generation failed - user probably not logged in on this app
+        // Navigate without SSO (target app will handle authentication)
+        console.log('⚠️ SSO: No valid session, navigating without auth token');
+        window.location.href = targetUrl;
       }
     } catch (error) {
       // If anything fails, fall back to regular navigation
       console.error('❌ SSO: Error during app switch:', error);
-      console.warn('⚠️ SSO: Falling back to regular navigation');
-      window.location.href = getAppUrl(app);
+      window.location.href = targetUrl;
     }
 
     onAppClick?.(app);

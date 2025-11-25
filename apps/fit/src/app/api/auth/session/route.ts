@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESSION_COOKIE_DOMAIN, SESSION_COOKIE_MAX_AGE_MS, SESSION_COOKIE_MAX_AGE_SECONDS } from '@ainexsuite/firebase/config';
+import { getSessionCookieDomain, SESSION_COOKIE_MAX_AGE_MS, SESSION_COOKIE_MAX_AGE_SECONDS } from '@ainexsuite/firebase/config';
 
 /**
  * POST /api/auth/session
@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Use shared cookie domain for true SSO across all *.ainexsuite.com apps
-    const cookieDomain = SESSION_COOKIE_DOMAIN; // .ainexsuite.com in production
+    const cookieDomain = getSessionCookieDomain(); // .ainexsuite.com in production
+    console.log('[session] Cookie domain resolved to:', cookieDomain, '(VERCEL_ENV:', process.env.VERCEL_ENV, ', NODE_ENV:', process.env.NODE_ENV, ')');
 
     // For local development, skip Cloud Function and create session from token
     if (process.env.NODE_ENV === 'development') {

@@ -26,23 +26,19 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     let sessionCookie = cookieStore.get('__session')?.value;
 
-    console.log('[SSO DEBUG] custom-token: httpOnly cookie exists:', !!sessionCookie);
-
     // In development, also check request body (for cross-port auth)
     if (!sessionCookie && process.env.NODE_ENV === 'development') {
       try {
         const body = await request.json();
         sessionCookie = body.sessionCookie;
-        console.log('[SSO DEBUG] custom-token: body sessionCookie exists:', !!sessionCookie);
       } catch {
         // No body or invalid JSON - that's fine
       }
     }
 
     if (!sessionCookie) {
-      console.log('[SSO DEBUG] custom-token: No session cookie found');
       return NextResponse.json(
-        { error: 'No session cookie found. Please log in first.' },
+        { error: 'No session cookie found' },
         { status: 401 }
       );
     }
@@ -50,32 +46,25 @@ export async function POST(request: NextRequest) {
     const adminAuth = getAdminAuth();
 
     // Verify session cookie (checkRevoked = true)
-    console.log('[SSO DEBUG] custom-token: Verifying session cookie...');
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
-    console.log('[SSO DEBUG] custom-token: Session verified for user:', decodedClaims.uid);
 
     // Create custom token for this user
     const customToken = await adminAuth.createCustomToken(decodedClaims.uid);
-    console.log('[SSO DEBUG] custom-token: Custom token created');
 
     return NextResponse.json({ customToken });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('[SSO DEBUG] custom-token: Error:', errorMessage);
 
     // Provide more specific error messages
     let userMessage = 'Failed to generate authentication token';
     if (errorMessage.includes('expired')) {
-      userMessage = 'Your session has expired. Please log in again.';
+      userMessage = 'Session expired';
     } else if (errorMessage.includes('revoked')) {
-      userMessage = 'Your session has been revoked. Please log in again.';
+      userMessage = 'Session revoked';
     }
 
     return NextResponse.json(
-      {
-        error: userMessage,
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
-      },
+      { error: userMessage },
       { status: 401 }
     );
   }

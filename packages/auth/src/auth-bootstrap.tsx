@@ -83,7 +83,6 @@ export function AuthBootstrap() {
   useEffect(() => {
     // Skip if already authenticated, currently bootstrapping, or SSO in progress
     if (firebaseUser || bootstrapping || bootstrapped || ssoInProgress) {
-      console.log('[SSO DEBUG] AuthBootstrap - skipping:', { firebaseUser: !!firebaseUser, bootstrapping, bootstrapped, ssoInProgress });
       return;
     }
 
@@ -91,7 +90,7 @@ export function AuthBootstrap() {
     if (process.env.NODE_ENV === 'development') {
       const crossAppSession = getDevCrossAppSession();
       if (crossAppSession) {
-        console.log('[SSO DEBUG] AuthBootstrap - found dev cross-app session');
+        console.log('[AuthBootstrap] Found dev cross-app session, bootstrapping...');
         // Clear the cross-app session after reading it
         clearDevCrossAppSession();
 
@@ -102,6 +101,7 @@ export function AuthBootstrap() {
 
         bootstrapFromDevSession(crossAppSession)
           .then(() => {
+            console.log('[AuthBootstrap] Dev session bootstrap succeeded');
             setBootstrapped(true);
             setBootstrapStatus('complete');
           })
@@ -119,20 +119,18 @@ export function AuthBootstrap() {
 
     // Try to bootstrap from httpOnly session cookie
     // The server will check for the cookie - we can't read it client-side
-    console.log('[SSO DEBUG] AuthBootstrap - attempting to bootstrap from httpOnly cookie');
     setBootstrapping(true);
     setIsBootstrapping(true);
     setBootstrapStatus('running');
 
     bootstrapFromHttpOnlyCookie()
       .then(() => {
-        console.log('[SSO DEBUG] AuthBootstrap - bootstrap succeeded');
+        console.log('[AuthBootstrap] Session bootstrap succeeded');
         setBootstrapped(true);
         setBootstrapStatus('complete');
       })
-      .catch((error) => {
-        // No session cookie or invalid - proceed to normal auth flow
-        console.log('[SSO DEBUG] AuthBootstrap - no valid session:', error.message);
+      .catch(() => {
+        // No session cookie or invalid - proceed to normal auth flow (this is normal for new visitors)
         setIsBootstrapping(false);
         setBootstrapped(true);
         setBootstrapStatus('complete'); // Not failed, just no session to bootstrap
@@ -151,26 +149,20 @@ export function AuthBootstrap() {
  * The server reads the cookie and returns a custom token
  */
 async function bootstrapFromHttpOnlyCookie(): Promise<void> {
-  console.log('[SSO DEBUG] Calling /api/auth/custom-token with credentials:include');
-
   const response = await fetch('/api/auth/custom-token', {
     method: 'POST',
     credentials: 'include', // Include httpOnly cookies
   });
 
-  console.log('[SSO DEBUG] custom-token response:', response.status);
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Failed to get custom token: ${response.status}`);
+    throw new Error(errorData.error || `No valid session: ${response.status}`);
   }
 
   const { customToken } = await response.json();
-  console.log('[SSO DEBUG] Got custom token, signing in...');
 
   // Sign in with custom token
   await signInWithCustomToken(auth, customToken);
-  console.log('[SSO DEBUG] signInWithCustomToken success');
 }
 
 /**

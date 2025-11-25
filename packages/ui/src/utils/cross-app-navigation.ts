@@ -31,8 +31,6 @@ export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: 
   const isDev = process.env.NODE_ENV === 'development';
   const targetUrl = getAppUrl(appSlug, isDev);
 
-  console.log('🔄 SSO: Navigating to', appSlug);
-
   // In development, sync session cookie to localStorage for cross-port authentication
   if (isDev) {
     syncSessionForDev();
@@ -40,35 +38,28 @@ export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: 
 
   try {
     // Request custom token for SSO
-    console.log('🔄 SSO: Requesting custom token from /api/auth/custom-token');
     const response = await fetch('/api/auth/custom-token', {
       method: 'POST',
-      credentials: 'include',
+      credentials: 'include', // Include httpOnly cookies
     });
-
-    console.log('🔄 SSO: Token response status:', response.status);
 
     if (response.ok) {
       const { customToken } = await response.json();
-      console.log('✅ SSO: Custom token received, navigating with auth');
+      console.log('✅ SSO: Navigating to', appSlug, 'with auth token');
 
       // Add auth token to URL
       const urlWithToken = new URL(targetUrl);
       urlWithToken.searchParams.set('auth_token', customToken);
 
-      console.log('🔄 SSO: Navigating to', urlWithToken.toString());
       window.location.href = urlWithToken.toString();
     } else {
-      // Fallback: Navigate without SSO (user will need to login)
-      const errorData = await response.json();
-      console.warn('⚠️ SSO: Failed to generate token:', errorData);
-      console.warn('⚠️ SSO: Falling back to regular navigation (will require login)');
+      // No valid session - navigate without SSO (target app will handle auth)
+      console.log('⚠️ SSO: No valid session, navigating to', appSlug, 'without auth');
       window.location.href = targetUrl;
     }
   } catch (error) {
     // Fallback: Navigate without SSO
     console.error('❌ SSO: Error during navigation:', error);
-    console.warn('⚠️ SSO: Falling back to regular navigation');
     window.location.href = targetUrl;
   }
 }

@@ -25,6 +25,19 @@ export const SESSION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 14; // 14 days in s
 export const SESSION_COOKIE_MAX_AGE = SESSION_COOKIE_MAX_AGE_MS; // Keep for backward compat
 
 // Environment-aware cookie domain
+// Use a function for runtime evaluation since this package is built separately
+// and process.env.NODE_ENV would be evaluated at package build time otherwise
+export function getSessionCookieDomain(): string {
+  // Check for Vercel production environment or explicit production flag
+  if (process.env.VERCEL_ENV === 'production' ||
+      process.env.NODE_ENV === 'production') {
+    return '.ainexsuite.com';
+  }
+  return '.localhost';
+}
+
+// @deprecated Use getSessionCookieDomain() instead - this constant may not work correctly
+// in monorepos where the package is built separately from the apps
 export const SESSION_COOKIE_DOMAIN =
   process.env.NODE_ENV === 'production'
     ? '.ainexsuite.com'    // Production: shared across *.ainexsuite.com
