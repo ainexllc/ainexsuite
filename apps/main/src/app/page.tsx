@@ -100,11 +100,11 @@ const appCards: AppCard[] = [
     href: 'https://track.ainexsuite.com',
   },
   {
-    name: 'Projects',
+    name: 'Project',
     description: 'Visual project management with interactive whiteboards, team collaboration, and progress analytics. Plan. Execute. Deliver.',
     icon: FolderKanban,
     color: '#6366f1',
-    href: 'https://projects.ainexsuite.com',
+    href: 'https://project.ainexsuite.com',
   },
   {
     name: 'Workflow',

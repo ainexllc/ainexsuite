@@ -48,7 +48,7 @@ export const SUITE_APPS = {
     color: '#3b82f6', // blue-500
   },
   projects: {
-    name: 'Projects',
+    name: 'Project',
     slug: 'projects',
     description: 'Manage complex projects',
     color: '#6366f1', // indigo-500

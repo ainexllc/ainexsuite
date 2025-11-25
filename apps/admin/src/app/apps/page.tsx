@@ -21,7 +21,7 @@ const DEFAULT_APPS: AppConfig[] = [
   { id: 'pulse', name: 'Pulse', primary: '#ef4444', secondary: '#f87171' },
   { id: 'todo', name: 'Todo', primary: '#f59e0b', secondary: '#fbbf24' },
   { id: 'track', name: 'Track', primary: '#14b8a6', secondary: '#2dd4bf' },
-  { id: 'projects', name: 'Projects', primary: '#6366f1', secondary: '#818cf8' },
+  { id: 'projects', name: 'Project', primary: '#6366f1', secondary: '#818cf8' },
   { id: 'workflow', name: 'Workflow', primary: '#10b981', secondary: '#34d399' },
 ];
 

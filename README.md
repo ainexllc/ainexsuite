@@ -16,7 +16,7 @@ Multi-app productivity suite with 8 apps + main dashboard, single sign-on, share
 ainexsuite/
 ├── apps/                    # 11 Next.js applications
 │   ├── main/               # www.ainexsuite.com
-│   ├── projects/           # projects.ainexsuite.com
+│   ├── projects/           # project.ainexsuite.com
 │   ├── notes/              # notes.ainexsuite.com
 │   ├── journey/            # journey.ainexsuite.com
 │   ├── todo/               # todo.ainexsuite.com

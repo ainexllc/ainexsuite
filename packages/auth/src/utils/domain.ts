@@ -52,8 +52,8 @@ export function getCookieDomain(hostname?: string): string {
     return '.ainextrack.com';
   }
 
-  if (host.includes('ainexprojects.com')) {
-    return '.ainexprojects.com';
+  if (host.includes('ainexproject.com')) {
+    return '.ainexproject.com';
   }
 
   if (host.includes('ainexworkflow.com')) {
