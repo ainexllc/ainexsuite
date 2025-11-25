@@ -1,6 +1,6 @@
 /**
  * Session cookie utilities for SSO across subdomains
- * @version 1.1.1 - Firebase Admin credentials properly set with private key
+ * @version 1.1.2 - Fixed trailing newlines in env vars
  */
 
 import Cookies from 'js-cookie';
