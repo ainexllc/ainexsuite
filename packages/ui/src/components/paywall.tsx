@@ -56,7 +56,7 @@ export function Paywall({ message, daysRemaining, onUpgrade }: PaywallProps) {
             Get access to all 8 productivity apps:
           </p>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            {['Notes', 'Journal', 'Tasks', 'Track', 'Moments', 'Grow', 'Pulse', 'Fit'].map((app) => (
+            {['Notes', 'Journal', 'Tasks', 'Health', 'Moments', 'Grow', 'Pulse', 'Fit'].map((app) => (
               <div key={app} className="flex items-center gap-2 text-ink-600">
                 <Check className="h-4 w-4 text-accent-500 flex-shrink-0" />
                 <span>{app}</span>

@@ -1,14 +1,14 @@
-import { 
-  StickyNote, 
-  Map, 
-  CheckSquare, 
-  TrendingUp, 
-  Camera, 
-  Sprout, 
-  HeartPulse, 
-  Dumbbell, 
-  Briefcase, 
-  Workflow 
+import {
+  StickyNote,
+  Map,
+  CheckSquare,
+  Heart,
+  Camera,
+  Sprout,
+  HeartPulse,
+  Dumbbell,
+  Briefcase,
+  Workflow
 } from 'lucide-react';
 import { SUITE_APPS, getAppUrl } from '../config/apps';
 
@@ -16,7 +16,7 @@ const ICON_MAP = {
   notes: StickyNote,
   journey: Map,
   todo: CheckSquare,
-  track: TrendingUp,
+  health: Heart,
   moments: Camera,
   grow: Sprout,
   pulse: HeartPulse,
