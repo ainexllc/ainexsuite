@@ -149,20 +149,28 @@ export function AuthBootstrap() {
  * The server reads the cookie and returns a custom token
  */
 async function bootstrapFromHttpOnlyCookie(): Promise<void> {
+  console.log('[AuthBootstrap] Attempting to bootstrap from httpOnly cookie...');
+  console.log('[AuthBootstrap] Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'SSR');
+
   const response = await fetch('/api/auth/custom-token', {
     method: 'POST',
     credentials: 'include', // Include httpOnly cookies
   });
 
+  console.log('[AuthBootstrap] custom-token response status:', response.status);
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.log('[AuthBootstrap] custom-token error:', errorData.error || response.status);
     throw new Error(errorData.error || `No valid session: ${response.status}`);
   }
 
   const { customToken } = await response.json();
+  console.log('[AuthBootstrap] Got custom token, signing in...');
 
   // Sign in with custom token
   await signInWithCustomToken(auth, customToken);
+  console.log('[AuthBootstrap] Sign in with custom token complete');
 }
 
 /**

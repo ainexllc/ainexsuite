@@ -300,6 +300,10 @@ export async function POST(request: NextRequest) {
     // Set session cookie on response
     const res = NextResponse.json({ sessionCookie, user });
 
+    console.log('[SSO DEBUG session POST] Cookie domain:', cookieDomain);
+    console.log('[SSO DEBUG session POST] NODE_ENV:', process.env.NODE_ENV);
+    console.log('[SSO DEBUG session POST] VERCEL_ENV:', process.env.VERCEL_ENV);
+
     res.cookies.set('__session', sessionCookie, {
       domain: cookieDomain,
       maxAge: SESSION_COOKIE_MAX_AGE_SECONDS, // 14 days in seconds

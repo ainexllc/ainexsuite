@@ -127,6 +127,9 @@ export async function POST(request: NextRequest) {
 
     // Use shared cookie domain for true SSO across all *.ainexsuite.com apps
     const cookieDomain = getSessionCookieDomain(); // .ainexsuite.com in production
+    console.log('[SSO DEBUG session POST] Cookie domain:', cookieDomain);
+    console.log('[SSO DEBUG session POST] NODE_ENV:', process.env.NODE_ENV);
+    console.log('[SSO DEBUG session POST] VERCEL_ENV:', process.env.VERCEL_ENV);
 
     // For local development, skip Cloud Function and create session from token
     if (process.env.NODE_ENV === 'development') {
