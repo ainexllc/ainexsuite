@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getAdminAuth, getAdminFirestore } from '@/lib/firebase/admin-app';
+import { getAdminAuth, getAdminFirestore } from '@ainexsuite/auth/server';
 import { FieldValue } from 'firebase-admin/firestore';
 
 /**

@@ -3,7 +3,6 @@ import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
-import { serverEnv } from "@/env";
 import { firebaseConfig } from "@ainexsuite/firebase/config";
 
 let adminAppInitialized = false;
@@ -55,17 +54,24 @@ function normalizePrivateKey(rawKey: string): string {
   return lines.join('\n');
 }
 
+/**
+ * Get Firebase Admin options with validated credentials.
+ *
+ * IMPORTANT: projectId is hardcoded from shared firebaseConfig to prevent
+ * auth/argument-error "incorrect aud (audience)" errors during token verification.
+ * The projectId MUST match the client's project ID (alnexsuite) for proper SSO.
+ */
 function getAdminOptions(): AppOptions {
-  if (
-    !serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL ||
-    !serverEnv.FIREBASE_ADMIN_PRIVATE_KEY
-  ) {
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+
+  if (!clientEmail || !privateKey) {
     throw new Error(
       "Firebase admin environment variables are missing. Populate FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY in .env.local to enable secure server features.",
     );
   }
 
-  const privateKey = normalizePrivateKey(serverEnv.FIREBASE_ADMIN_PRIVATE_KEY);
+  const normalizedPrivateKey = normalizePrivateKey(privateKey);
 
   // CRITICAL: Use the hardcoded projectId from shared config to ensure
   // token verification matches the client's project ID (alnexsuite).
@@ -75,15 +81,18 @@ function getAdminOptions(): AppOptions {
   return {
     credential: cert({
       projectId: projectId,
-      clientEmail: serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL,
-      privateKey: privateKey,
+      clientEmail: clientEmail,
+      privateKey: normalizedPrivateKey,
     }),
     storageBucket: firebaseConfig.storageBucket,
     projectId: projectId,
-    databaseURL: serverEnv.FIREBASE_ADMIN_DATABASE_URL,
   };
 }
 
+/**
+ * Get or initialize the Firebase Admin app instance.
+ * Singleton pattern ensures only one instance is created.
+ */
 export function getAdminApp() {
   if (!adminAppInitialized) {
     const apps = getApps();
@@ -98,14 +107,23 @@ export function getAdminApp() {
   return getApps()[0]!;
 }
 
+/**
+ * Get Firebase Admin Auth instance.
+ */
 export function getAdminAuth() {
   return getAuth(getAdminApp());
 }
 
+/**
+ * Get Firebase Admin Firestore instance.
+ */
 export function getAdminFirestore() {
   return getFirestore(getAdminApp());
 }
 
+/**
+ * Get Firebase Admin Storage instance.
+ */
 export function getAdminStorage() {
   return getStorage(getAdminApp());
 }

@@ -1,5 +1,5 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
-import { getAdminAuth } from "@/lib/firebase/admin-app";
+import { getAdminAuth } from "@ainexsuite/auth/server";
 
 export async function verifyIdToken(
   idToken: string,

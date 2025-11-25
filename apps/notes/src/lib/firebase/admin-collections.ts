@@ -1,4 +1,4 @@
-import { getAdminFirestore } from "@/lib/firebase/admin-app";
+import { getAdminFirestore } from "@ainexsuite/auth/server";
 import {
   labelCollectionPath,
   noteCollectionPath,

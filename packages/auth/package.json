@@ -16,6 +16,10 @@
     "./migrations": {
       "types": "./dist/migrations/index.d.ts",
       "default": "./dist/migrations/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "default": "./dist/server/index.js"
     }
   },
   "scripts": {

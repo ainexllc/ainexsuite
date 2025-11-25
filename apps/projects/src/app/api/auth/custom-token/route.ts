@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getAdminAuth } from '@/lib/firebase/admin-app';
+import { getAdminAuth } from '@ainexsuite/auth/server';
 
 /**
  * POST /api/auth/custom-token

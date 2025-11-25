@@ -27,3 +27,7 @@ export {
 // Export subscription-utils (includes re-exports of suite-utils functions)
 export * from './subscription-utils';
 export * from './subscription-guard';
+
+// NOTE: Server-side utilities (Firebase Admin SDK) are NOT exported here
+// to prevent bundling Node.js-only code into client bundles.
+// Import from '@ainexsuite/auth/server' instead for server-side code.

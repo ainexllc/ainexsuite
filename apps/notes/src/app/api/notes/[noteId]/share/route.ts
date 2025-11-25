@@ -6,7 +6,7 @@ import {
 } from "firebase-admin/firestore";
 import { adminNoteDoc } from "@/lib/firebase/admin-collections";
 import { getUserFromHeaders } from "@/lib/auth/server-verify";
-import { getAdminAuth } from "@/lib/firebase/admin-app";
+import { getAdminAuth } from "@ainexsuite/auth/server";
 
 const sharePayloadSchema = z.object({
   email: z.string().email(),

@@ -4,7 +4,7 @@ import {
   Timestamp,
   type QueryDocumentSnapshot,
 } from "firebase-admin/firestore";
-import { getAdminFirestore, getAdminAuth } from "@/lib/firebase/admin-app";
+import { getAdminFirestore, getAdminAuth } from "@ainexsuite/auth/server";
 import { sendEmail, sendSms } from "@/lib/notifications/channels";
 import type { ReminderDoc } from "@/lib/types/reminder";
 import { serverEnv } from "@/env";
