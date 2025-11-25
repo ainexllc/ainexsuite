@@ -147,14 +147,26 @@ export async function POST(request: NextRequest) {
 
     // Verify ID token
     console.log('[session] Verifying ID token...');
+    console.log('[session] ID token length:', idToken?.length);
+    console.log('[session] ID token prefix:', idToken?.substring(0, 50) + '...');
     let decodedToken;
     try {
       decodedToken = await adminAuth.verifyIdToken(idToken);
       console.log('[session] ID token verified for user:', decodedToken.uid);
-    } catch (verifyError) {
-      console.error('[session] Failed to verify ID token:', verifyError);
+    } catch (verifyError: unknown) {
+      const errorObj = verifyError as { code?: string; message?: string };
+      console.error('[session] Failed to verify ID token:', {
+        code: errorObj?.code,
+        message: errorObj?.message,
+        fullError: verifyError
+      });
       return NextResponse.json(
-        { error: 'Invalid ID token', details: verifyError instanceof Error ? verifyError.message : 'Verification failed' },
+        {
+          error: 'Invalid ID token',
+          code: errorObj?.code || 'UNKNOWN',
+          details: errorObj?.message || 'Verification failed',
+          hint: 'Check if Firebase Admin credentials match the Firebase project'
+        },
         { status: 401 }
       );
     }

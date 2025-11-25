@@ -8,6 +8,18 @@ import { serverEnv, clientEnv } from "@/env";
 let adminAppInitialized = false;
 
 function getAdminOptions(): AppOptions {
+  // Debug: Log what credentials we have
+  console.log('[admin-app] Checking Firebase Admin env vars:', {
+    hasProjectId: !!serverEnv.FIREBASE_ADMIN_PROJECT_ID,
+    projectId: serverEnv.FIREBASE_ADMIN_PROJECT_ID,
+    hasClientEmail: !!serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL,
+    clientEmail: serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL,
+    hasPrivateKey: !!serverEnv.FIREBASE_ADMIN_PRIVATE_KEY,
+    privateKeyLength: serverEnv.FIREBASE_ADMIN_PRIVATE_KEY?.length,
+    privateKeyStart: serverEnv.FIREBASE_ADMIN_PRIVATE_KEY?.substring(0, 30),
+    privateKeyEnd: serverEnv.FIREBASE_ADMIN_PRIVATE_KEY?.substring(-30),
+  });
+
   if (
     !serverEnv.FIREBASE_ADMIN_PROJECT_ID ||
     !serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL ||
@@ -18,11 +30,16 @@ function getAdminOptions(): AppOptions {
     );
   }
 
+  const privateKey = serverEnv.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, "\n");
+  console.log('[admin-app] Private key after replacement - starts with:', privateKey.substring(0, 30));
+  console.log('[admin-app] Private key after replacement - ends with:', privateKey.substring(privateKey.length - 30));
+  console.log('[admin-app] Private key contains actual newlines:', privateKey.includes('\n'));
+
   return {
     credential: cert({
       projectId: serverEnv.FIREBASE_ADMIN_PROJECT_ID,
       clientEmail: serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL,
-      privateKey: serverEnv.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      privateKey: privateKey,
     }),
     storageBucket: clientEnv.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
     projectId: clientEnv.NEXT_PUBLIC_FIREBASE_PROJECT_ID,

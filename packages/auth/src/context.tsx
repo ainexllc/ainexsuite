@@ -156,7 +156,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             initializeSession(sessionCookie);
             setUser(userData);
           } else {
-            console.log('[SSO DEBUG] Session creation failed, using fallback user');
+            // Log the full error response to help debug
+            try {
+              const errorData = await response.json();
+              console.error('[SSO DEBUG] Session creation failed:', {
+                status: response.status,
+                code: errorData.code,
+                error: errorData.error,
+                details: errorData.details,
+                hint: errorData.hint
+              });
+            } catch {
+              console.error('[SSO DEBUG] Session creation failed:', response.status, '(no response body)');
+            }
             // Fallback: Create minimal user object from Firebase user
             setUser(createFallbackUser(firebaseUser));
           }
