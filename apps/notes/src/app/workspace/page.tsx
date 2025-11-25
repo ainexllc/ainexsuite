@@ -14,10 +14,14 @@ export default function NotesWorkspace() {
   const { primary } = useAppColors();
   const router = useRouter();
 
+  console.log('[SSO DEBUG] NotesWorkspace render - loading:', loading, 'ssoInProgress:', ssoInProgress, 'bootstrapStatus:', bootstrapStatus, 'user:', user?.uid || null);
+
   // Redirect to login if not authenticated
   // Wait for bootstrap and SSO to complete before redirecting to prevent interrupting auto-login
   useEffect(() => {
+    console.log('[SSO DEBUG] NotesWorkspace effect - loading:', loading, 'ssoInProgress:', ssoInProgress, 'bootstrapStatus:', bootstrapStatus, 'user:', user?.uid || null);
     if (!loading && !ssoInProgress && !user && bootstrapStatus !== 'running') {
+      console.log('[SSO DEBUG] NotesWorkspace - redirecting to / (no user)');
       router.push('/');
     }
   }, [user, loading, ssoInProgress, bootstrapStatus, router]);
@@ -37,6 +41,7 @@ export default function NotesWorkspace() {
 
   // Show loading while authenticating, bootstrapping, or SSO in progress
   if (loading || ssoInProgress || bootstrapStatus === 'running') {
+    console.log('[SSO DEBUG] NotesWorkspace - showing loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
@@ -45,8 +50,11 @@ export default function NotesWorkspace() {
   }
 
   if (!user) {
+    console.log('[SSO DEBUG] NotesWorkspace - no user, returning null');
     return null;
   }
+
+  console.log('[SSO DEBUG] NotesWorkspace - rendering workspace for user:', user.uid);
 
   return (
     <WorkspaceLayout

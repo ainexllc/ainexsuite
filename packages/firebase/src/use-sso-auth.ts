@@ -53,10 +53,13 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
       const urlParams = new URLSearchParams(window.location.search);
       const authToken = urlParams.get('auth_token');
 
+      console.log('[SSO DEBUG] useSSOAuth - authToken present:', !!authToken);
+
       if (!authToken) {
         // No auth token, nothing to do
         setHasAuthToken(false);
         // Still call onComplete to signal we're done checking
+        console.log('[SSO DEBUG] No auth token, calling onComplete');
         onComplete?.();
         return;
       }
@@ -68,7 +71,7 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
         setIsAuthenticating(true);
         setAuthError(null);
 
-        console.log('🔐 SSO: Signing in with custom token');
+        console.log('[SSO DEBUG] Calling signInWithCustomToken...');
 
         // Sign in with the custom token
         // This triggers onAuthStateChanged in AuthProvider, which will:
@@ -76,8 +79,7 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
         // 2. Set the user state
         // 3. Mark ssoInProgress as false
         await signInWithCustomToken(auth, authToken);
-        console.log('✅ SSO: Client-side authentication successful');
-        console.log('🔐 SSO: AuthProvider will handle session creation and completion');
+        console.log('[SSO DEBUG] signInWithCustomToken SUCCESS');
 
         // Remove auth_token from URL without refreshing the page
         urlParams.delete('auth_token');
@@ -86,14 +88,14 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
           window.location.hash;
 
         window.history.replaceState({}, '', newUrl);
-        console.log('✅ SSO: URL cleaned up');
+        console.log('[SSO DEBUG] URL cleaned up, waiting for onAuthStateChanged to complete SSO');
 
         // Note: We don't call onComplete() here anymore.
         // AuthProvider's onAuthStateChanged will set ssoInProgress = false
         // once the user is fully authenticated and user state is set.
 
       } catch (error) {
-        console.error('❌ SSO: Authentication failed:', error);
+        console.error('[SSO DEBUG] signInWithCustomToken FAILED:', error);
         setAuthError(error instanceof Error ? error.message : 'Authentication failed');
 
         // Still remove the token from URL even if auth failed
@@ -106,6 +108,7 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
 
         // Signal completion on error so pages don't hang
         // AuthProvider's onAuthStateChanged will also catch this (no user)
+        console.log('[SSO DEBUG] Calling onComplete due to error');
         onComplete?.();
       } finally {
         setIsAuthenticating(false);

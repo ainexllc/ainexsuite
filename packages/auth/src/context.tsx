@@ -98,26 +98,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
 
   // Track SSO status - initialized synchronously to detect auth_token before first render
-  const [ssoInProgress, setSsoInProgress] = useState(() => checkForSSOToken());
+  const [ssoInProgress, setSsoInProgress] = useState(() => {
+    const hasToken = checkForSSOToken();
+    console.log('[SSO DEBUG] AuthProvider init - hasAuthToken:', hasToken, 'url:', typeof window !== 'undefined' ? window.location.href : 'SSR');
+    return hasToken;
+  });
 
   // Callback for SSOHandler to signal completion
   const setSsoComplete = useCallback(() => {
-    console.log('🔐 AuthProvider: SSO complete signal received');
+    console.log('[SSO DEBUG] setSsoComplete called');
     setSsoInProgress(false);
   }, []);
 
   useEffect(() => {
+    console.log('[SSO DEBUG] onAuthStateChanged effect setup - ssoInProgress:', ssoInProgress, 'isBootstrapping:', isBootstrapping);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('[SSO DEBUG] onAuthStateChanged fired - firebaseUser:', firebaseUser?.uid || null, 'ssoInProgress:', ssoInProgress);
       setFirebaseUser(firebaseUser);
 
       if (firebaseUser) {
         try {
           // Get ID token and create session cookie
           const idToken = await firebaseUser.getIdToken();
+          console.log('[SSO DEBUG] Got ID token for user:', firebaseUser.uid);
 
           // Skip session creation if we're bootstrapping from an existing session cookie
           // This prevents double authentication when refreshing the page
           if (isBootstrapping) {
+            console.log('[SSO DEBUG] Bootstrap path - skipping session creation');
             // Session cookie already exists, just hydrate user from Firebase
             // No need to call /api/auth/session again
             setUser(createFallbackUser(firebaseUser));
@@ -125,48 +134,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false);
             // SSO is complete when we have a user
             if (ssoInProgress) {
-              console.log('🔐 AuthProvider: SSO complete (bootstrap path)');
+              console.log('[SSO DEBUG] SSO complete (bootstrap path)');
               setSsoInProgress(false);
             }
             return;
           }
 
           // Call Cloud Function to generate session cookie (only on fresh login)
+          console.log('[SSO DEBUG] Calling /api/auth/session...');
           const response = await fetch('/api/auth/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idToken }),
           });
 
+          console.log('[SSO DEBUG] /api/auth/session response:', response.status);
+
           if (response.ok) {
             const { sessionCookie, user: userData } = await response.json();
+            console.log('[SSO DEBUG] Session created, user data:', userData?.uid);
             initializeSession(sessionCookie);
             setUser(userData);
           } else {
+            console.log('[SSO DEBUG] Session creation failed, using fallback user');
             // Fallback: Create minimal user object from Firebase user
             setUser(createFallbackUser(firebaseUser));
           }
         } catch (error) {
+          console.log('[SSO DEBUG] Error in auth flow:', error);
           // Fallback: Create minimal user object from Firebase user
           setUser(createFallbackUser(firebaseUser));
         }
 
         // SSO is complete when user is set
         if (ssoInProgress) {
-          console.log('🔐 AuthProvider: SSO complete (user authenticated)');
+          console.log('[SSO DEBUG] SSO complete (user authenticated) - setting ssoInProgress=false');
           setSsoInProgress(false);
         }
       } else {
+        console.log('[SSO DEBUG] No firebase user - clearing session');
         removeSessionCookie();
         setUser(null);
         // If SSO was in progress but no user, it failed - mark complete anyway
         if (ssoInProgress) {
-          console.log('🔐 AuthProvider: SSO complete (no user - failed or logged out)');
+          console.log('[SSO DEBUG] SSO complete (no user - failed or logged out)');
           setSsoInProgress(false);
         }
       }
 
       setLoading(false);
+      console.log('[SSO DEBUG] Auth state processing complete - loading=false');
     });
 
     return () => unsubscribe();
