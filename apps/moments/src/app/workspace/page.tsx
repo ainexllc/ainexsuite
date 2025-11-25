@@ -14,6 +14,7 @@ import { MomentsSpaceSwitcher } from '@/components/moments-space-switcher';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
+import { MomentsInsights } from '@/components/moments-insights';
 import { FlipbookPlayer } from '@/components/flipbook-player';
 import { SlideshowPlayer } from '@/components/slideshow-player';
 import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book } from 'lucide-react';
@@ -216,33 +217,8 @@ function MomentsWorkspaceContent() {
               <FlashbackWidget onDetail={setDetailMoment} />
             )}
 
-            {/* Stats Card */}
-            <div className="rounded-2xl bg-surface-elevated border border-outline-subtle p-5">
-              <h3 className="text-sm font-semibold text-text-primary mb-4">Your Moments</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-pink-500">{moments.length}</p>
-                  <p className="text-xs text-text-muted">Total</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-pink-500">{allTags.length}</p>
-                  <p className="text-xs text-text-muted">Tags</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-pink-500">{spaces.length}</p>
-                  <p className="text-xs text-text-muted">Spaces</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-pink-500">
-                    {moments.filter(m => {
-                      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-                      return m.date > weekAgo;
-                    }).length}
-                  </p>
-                  <p className="text-xs text-text-muted">This Week</p>
-                </div>
-              </div>
-            </div>
+            {/* AI Insights */}
+            <MomentsInsights moments={moments} variant="sidebar" />
 
             {/* Quick Actions */}
             {currentSpace && (
