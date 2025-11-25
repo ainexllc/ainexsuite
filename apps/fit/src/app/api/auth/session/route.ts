@@ -166,6 +166,7 @@ export async function POST(request: NextRequest) {
     // Set session cookie on response
     const res = NextResponse.json({ sessionCookie, user });
 
+    console.log('[session] Setting __session cookie with domain:', cookieDomain);
     res.cookies.set('__session', sessionCookie, {
       domain: cookieDomain,
       maxAge: SESSION_COOKIE_MAX_AGE_SECONDS, // 14 days in seconds
