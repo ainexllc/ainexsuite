@@ -51,7 +51,12 @@ function FitWorkspaceContent() {
   };
   
   const handleSaveWorkout = async (workoutData: Partial<Workout>) => {
-    if (!user || !currentSpace) return;
+    if (!user) return;
+    
+    if (!currentSpace) {
+      alert('No workout space found. Please refresh or create a space.');
+      return;
+    }
     
     // Convert legacy workout format to new model if needed
     // Our new addWorkout expects a Workout object

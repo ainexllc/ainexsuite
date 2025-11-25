@@ -8,6 +8,7 @@ import {
   subscribeToSpaceWorkouts, 
   subscribeToSpaceChallenges 
 } from '../lib/firebase-service';
+import { FitSpace } from '../types/models';
 
 export function FitFirestoreSync() {
   const { user } = useAuth();
@@ -15,14 +16,39 @@ export function FitFirestoreSync() {
     currentSpaceId, 
     setSpaces, 
     setWorkouts, 
-    setChallenges 
+    setChallenges,
+    addSpace 
   } = useFitStore();
 
   useEffect(() => {
     if (!user) return;
-    const unsubscribe = subscribeToUserFitSpaces(user.uid, setSpaces);
+    const unsubscribe = subscribeToUserFitSpaces(user.uid, (spaces) => {
+      setSpaces(spaces);
+
+      // Auto-create personal space if none exists
+      if (spaces.length === 0) {
+        const defaultSpace: FitSpace = {
+          id: `fit_space_${user.uid}_personal`,
+          name: 'My Workouts',
+          type: 'personal',
+          members: [{
+            uid: user.uid,
+            displayName: user.displayName || 'Me',
+            photoURL: user.photoURL || undefined,
+            role: 'admin',
+            joinedAt: new Date().toISOString()
+          }],
+          memberUids: [user.uid],
+          createdAt: new Date().toISOString(),
+          createdBy: user.uid,
+        };
+        addSpace(defaultSpace).catch(err => 
+          console.error('Failed to create default space:', err)
+        );
+      }
+    });
     return () => unsubscribe();
-  }, [user, setSpaces]);
+  }, [user, setSpaces, addSpace]);
 
   useEffect(() => {
     if (!currentSpaceId) return;
