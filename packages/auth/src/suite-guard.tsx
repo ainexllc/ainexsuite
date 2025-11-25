@@ -19,12 +19,13 @@ interface SuiteGuardProps {
 }
 
 export function SuiteGuard({ appName, children, PaywallComponent, LoadingComponent }: SuiteGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, ssoInProgress } = useAuth();
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [accessAllowed, setAccessAllowed] = useState(false);
 
   useEffect(() => {
-    if (loading) {
+    // Wait for auth loading and SSO to complete before making decisions
+    if (loading || ssoInProgress) {
       return;
     }
 
@@ -35,7 +36,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
     }
 
     checkAccess();
-  }, [user, loading, appName]);
+  }, [user, loading, ssoInProgress, appName]);
 
   const checkAccess = async () => {
     if (!user) {
@@ -86,7 +87,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
     }
   };
 
-  if (loading || checkingAccess) {
+  if (loading || ssoInProgress || checkingAccess) {
     if (LoadingComponent) {
       return <LoadingComponent message="Checking access..." />;
     }

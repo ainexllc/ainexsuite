@@ -123,6 +123,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(createFallbackUser(firebaseUser));
             setIsBootstrapping(false);
             setLoading(false);
+            // SSO is complete when we have a user
+            if (ssoInProgress) {
+              console.log('🔐 AuthProvider: SSO complete (bootstrap path)');
+              setSsoInProgress(false);
+            }
             return;
           }
 
@@ -145,16 +150,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Fallback: Create minimal user object from Firebase user
           setUser(createFallbackUser(firebaseUser));
         }
+
+        // SSO is complete when user is set
+        if (ssoInProgress) {
+          console.log('🔐 AuthProvider: SSO complete (user authenticated)');
+          setSsoInProgress(false);
+        }
       } else {
         removeSessionCookie();
         setUser(null);
+        // If SSO was in progress but no user, it failed - mark complete anyway
+        if (ssoInProgress) {
+          console.log('🔐 AuthProvider: SSO complete (no user - failed or logged out)');
+          setSsoInProgress(false);
+        }
       }
 
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [isBootstrapping]);
+  }, [isBootstrapping, ssoInProgress]);
 
   // Automatic session refresh
   useEffect(() => {

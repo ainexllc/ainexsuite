@@ -10,17 +10,17 @@ import { NoteBoard } from '@/components/notes/note-board';
 import { WorkspaceInsights } from '@/components/notes/workspace-insights';
 
 export default function NotesWorkspace() {
-  const { user, loading, bootstrapStatus } = useAuth();
+  const { user, loading, bootstrapStatus, ssoInProgress } = useAuth();
   const { primary } = useAppColors();
   const router = useRouter();
 
   // Redirect to login if not authenticated
-  // Wait for bootstrap to complete before redirecting to prevent interrupting auto-login
+  // Wait for bootstrap and SSO to complete before redirecting to prevent interrupting auto-login
   useEffect(() => {
-    if (!loading && !user && bootstrapStatus !== 'running') {
+    if (!loading && !ssoInProgress && !user && bootstrapStatus !== 'running') {
       router.push('/');
     }
-  }, [user, loading, bootstrapStatus, router]);
+  }, [user, loading, ssoInProgress, bootstrapStatus, router]);
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -35,8 +35,8 @@ export default function NotesWorkspace() {
     }
   };
 
-  // Show loading while authenticating or bootstrapping
-  if (loading || bootstrapStatus === 'running') {
+  // Show loading while authenticating, bootstrapping, or SSO in progress
+  if (loading || ssoInProgress || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />

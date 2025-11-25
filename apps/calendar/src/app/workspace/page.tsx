@@ -63,7 +63,7 @@ const apps = Object.entries(SUITE_APPS).map(([slug, config]) => ({
 }));
 
 export default function WorkspacePage() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, ssoInProgress } = useAuth();
   const router = useRouter();
   const { selectedVariant } = useVisualStyle();
   const { toast } = useToast();
@@ -82,16 +82,17 @@ export default function WorkspacePage() {
   useReminders(events);
 
   // Redirect to login if not authenticated
+  // Wait for SSO to complete before redirecting to prevent interrupting app switching
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !ssoInProgress && !user) {
       const isDev = process.env.NODE_ENV === 'development';
       const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
 
-      window.location.href = isDev 
-        ? 'http://localhost:3000' 
+      window.location.href = isDev
+        ? 'http://localhost:3000'
         : mainDomain ? `https://${mainDomain}/login` : '/login';
     }
-  }, [user, loading, router]);
+  }, [user, loading, ssoInProgress, router]);
 
   // Fetch events
   useEffect(() => {
@@ -277,7 +278,7 @@ export default function WorkspacePage() {
     setIsModalOpen(true);
   };
 
-  if (loading) {
+  if (loading || ssoInProgress) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <Loader2 className="h-8 w-8 animate-spin text-accent-500" />

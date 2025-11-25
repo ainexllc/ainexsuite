@@ -71,25 +71,13 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
         console.log('🔐 SSO: Signing in with custom token');
 
         // Sign in with the custom token
-        const userCredential = await signInWithCustomToken(auth, authToken);
+        // This triggers onAuthStateChanged in AuthProvider, which will:
+        // 1. Create the server-side session cookie
+        // 2. Set the user state
+        // 3. Mark ssoInProgress as false
+        await signInWithCustomToken(auth, authToken);
         console.log('✅ SSO: Client-side authentication successful');
-
-        // Get ID token and create server-side session cookie
-        console.log('🔐 SSO: Creating server-side session cookie');
-        const idToken = await userCredential.user.getIdToken();
-
-        const sessionResponse = await fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        });
-
-        if (!sessionResponse.ok) {
-          console.error('❌ SSO: Failed to create session cookie');
-          throw new Error('Failed to create session cookie');
-        }
-
-        console.log('✅ SSO: Server-side session cookie created');
+        console.log('🔐 SSO: AuthProvider will handle session creation and completion');
 
         // Remove auth_token from URL without refreshing the page
         urlParams.delete('auth_token');
@@ -98,7 +86,11 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
           window.location.hash;
 
         window.history.replaceState({}, '', newUrl);
-        console.log('✅ SSO: Authentication complete');
+        console.log('✅ SSO: URL cleaned up');
+
+        // Note: We don't call onComplete() here anymore.
+        // AuthProvider's onAuthStateChanged will set ssoInProgress = false
+        // once the user is fully authenticated and user state is set.
 
       } catch (error) {
         console.error('❌ SSO: Authentication failed:', error);
@@ -111,10 +103,12 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
           window.location.hash;
 
         window.history.replaceState({}, '', newUrl);
+
+        // Signal completion on error so pages don't hang
+        // AuthProvider's onAuthStateChanged will also catch this (no user)
+        onComplete?.();
       } finally {
         setIsAuthenticating(false);
-        // Signal completion to parent (AuthProvider can now proceed)
-        onComplete?.();
       }
     };
 

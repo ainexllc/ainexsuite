@@ -125,12 +125,13 @@ function LoadingState() {
  * Wraps app content and checks subscription status
  */
 export function SubscriptionGuard({ appName, children }: SubscriptionGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, ssoInProgress } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
-    if (loading) {
+    // Wait for auth and SSO to complete before checking
+    if (loading || ssoInProgress) {
       setIsChecking(true);
       return;
     }
@@ -152,7 +153,7 @@ export function SubscriptionGuard({ appName, children }: SubscriptionGuardProps)
     const canAccess = canAccessApp(user, appName);
     setHasAccess(canAccess);
     setIsChecking(false);
-  }, [user, loading, appName]);
+  }, [user, loading, ssoInProgress, appName]);
 
   const handleUpgrade = () => {
     // Redirect to pricing/upgrade page
