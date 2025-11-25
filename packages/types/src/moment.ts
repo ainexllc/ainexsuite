@@ -21,6 +21,9 @@ export interface Moment extends BaseDocument {
   date: number; // timestamp
   location: string;
   tags: string[];
+  people?: string[];
+  mood?: string;
+  weather?: string;
   collectionId: string | null;
   spaceId?: string;
   reactions?: Reaction[];

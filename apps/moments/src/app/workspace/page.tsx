@@ -14,8 +14,9 @@ import { MomentsSpaceSwitcher } from '@/components/moments-space-switcher';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
+import { FlipbookPlayer } from '@/components/flipbook-player';
 import { SlideshowPlayer } from '@/components/slideshow-player';
-import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book } from 'lucide-react';
 
 function MomentsWorkspaceContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
@@ -34,6 +35,7 @@ function MomentsWorkspaceContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const [showSlideshow, setShowSlideshow] = useState(false);
+  const [showFlipbook, setShowFlipbook] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState<Moment | null>(null);
   const [detailMoment, setDetailMoment] = useState<Moment | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -113,6 +115,13 @@ function MomentsWorkspaceContent() {
                 <MomentsSpaceSwitcher userId={user.uid} />
                 {currentSpace && (
                   <>
+                    <button
+                      onClick={() => setShowFlipbook(true)}
+                      className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+                      title="View as Flipbook"
+                    >
+                      <Book className="h-5 w-5" />
+                    </button>
                     <button
                       onClick={() => setShowSlideshow(true)}
                       className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
@@ -241,6 +250,13 @@ function MomentsWorkspaceContent() {
                 <h3 className="text-sm font-semibold text-text-primary mb-4">Quick Actions</h3>
                 <div className="space-y-2">
                   <button
+                    onClick={() => setShowFlipbook(true)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
+                  >
+                    <Book className="h-4 w-4 text-pink-500" />
+                    View Flipbook
+                  </button>
+                  <button
                     onClick={() => setShowSlideshow(true)}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
                   >
@@ -311,6 +327,13 @@ function MomentsWorkspaceContent() {
         <SlideshowPlayer
           moments={filteredMoments}
           onClose={() => setShowSlideshow(false)}
+        />
+      )}
+
+      {showFlipbook && (
+        <FlipbookPlayer
+          moments={filteredMoments}
+          onClose={() => setShowFlipbook(false)}
         />
       )}
     </WorkspaceLayout>

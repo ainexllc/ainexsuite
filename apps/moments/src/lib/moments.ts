@@ -48,13 +48,20 @@ export async function createMoment(input: Omit<CreateMomentInput, 'ownerId'>): P
 
   // Log activity
   try {
+    const metadata: Record<string, string | number | boolean | string[]> = {};
+    if (input.location) metadata.location = input.location;
+    if (input.tags?.length) metadata.tags = input.tags;
+    if (input.spaceId) metadata.spaceId = input.spaceId;
+    if (input.mood) metadata.mood = input.mood;
+    if (input.people?.length) metadata.people = input.people;
+    
     await createActivity({
       app: 'moments',
       action: 'created',
       itemType: 'moment',
       itemId: docRef.id,
       itemTitle: input.title,
-      metadata: { location: input.location, tags: input.tags, spaceId: input.spaceId },
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     });
   } catch (error) {
     console.error('Failed to log activity:', error);
@@ -75,13 +82,18 @@ export async function updateMoment(
 
   // Log activity
   try {
+    const metadata: Record<string, string | number | boolean | string[]> = {};
+    if (updates.location) metadata.location = updates.location;
+    if (updates.tags?.length) metadata.tags = updates.tags;
+    if (updates.mood) metadata.mood = updates.mood;
+
     await createActivity({
       app: 'moments',
       action: 'updated',
       itemType: 'moment',
       itemId: id,
       itemTitle: updates.title || 'Moment',
-      metadata: { location: updates.location, tags: updates.tags },
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     });
   } catch (error) {
     console.error('Failed to log activity:', error);

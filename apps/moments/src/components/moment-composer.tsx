@@ -1,16 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, MapPin, Calendar, Tag, X, Loader2 } from 'lucide-react';
+import { Camera, MapPin, Calendar, Tag, X, Loader2, Smile, Users, Cloud } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
-import { createMoment } from '@/lib/moments';
+import { createMoment, uploadPhoto } from '@/lib/moments';
 import { useMomentsStore } from '@/lib/store';
 
 interface MomentComposerProps {
   spaceId?: string;
   onMomentCreated?: () => void;
 }
+
+const MOODS = [
+  { emoji: '😊', label: 'Happy' },
+  { emoji: '🥰', label: 'Loved' },
+  { emoji: '🎉', label: 'Excited' },
+  { emoji: '😌', label: 'Chill' },
+  { emoji: '😔', label: 'Sad' },
+  { emoji: '😴', label: 'Tired' },
+];
+
+const WEATHER_OPTIONS = ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Windy', 'Foggy'];
 
 export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps) {
   const { user } = useAuth();
@@ -22,6 +33,14 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
+  
+  // New Fields
+  const [mood, setMood] = useState('');
+  const [weather, setWeather] = useState('');
+  const [people, setPeople] = useState<string[]>([]);
+  const [peopleInput, setPeopleInput] = useState('');
+  const [showPeopleInput, setShowPeopleInput] = useState(false);
+
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +65,11 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     setTags([]);
     setTagInput('');
     setShowTagInput(false);
+    setMood('');
+    setWeather('');
+    setPeople([]);
+    setPeopleInput('');
+    setShowPeopleInput(false);
     if (photoPreview) {
       URL.revokeObjectURL(photoPreview);
     }
@@ -80,28 +104,38 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     setTags(tags.filter(t => t !== tagToRemove));
   };
 
+  const handleAddPerson = () => {
+    const trimmed = peopleInput.trim();
+    if (trimmed && !people.includes(trimmed)) {
+      setPeople([...people, trimmed]);
+      setPeopleInput('');
+    }
+  };
+
+  const handleRemovePerson = (personToRemove: string) => {
+    setPeople(people.filter(p => p !== personToRemove));
+  };
+
   const handleSubmit = useCallback(async () => {
     if (isSubmitting || !user || !photoFile) return;
 
     try {
       setIsSubmitting(true);
 
-      // Convert file to base64 for upload
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve) => {
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(photoFile);
-      });
-      const base64 = await base64Promise;
+      // Upload photo to Firebase Storage first (not base64 to Firestore)
+      const photoUrl = await uploadPhoto(photoFile);
 
-      // Create the moment
+      // Create the moment with the Storage URL
       await createMoment({
         title: caption.trim() || 'Untitled Moment',
         caption: caption.trim(),
         location: location.trim(),
         date: new Date(date).getTime(),
         tags: tags,
-        photoUrl: base64,
+        people: people,
+        mood: mood,
+        weather: weather,
+        photoUrl: photoUrl,
         collectionId: null,
         spaceId: spaceId || undefined,
       });
@@ -115,7 +149,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, user, photoFile, caption, location, date, tags, spaceId, fetchMoments, onMomentCreated, resetState]);
+  }, [isSubmitting, user, photoFile, caption, location, date, tags, people, mood, weather, spaceId, fetchMoments, onMomentCreated, resetState]);
 
   // Handle click outside to close if empty
   useEffect(() => {
@@ -201,7 +235,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
               className="w-full resize-none bg-transparent text-base text-white/90 placeholder:text-white/30 focus:outline-none leading-relaxed"
             />
 
-            {/* Date & Location Row */}
+            {/* Meta Row 1: Date & Location */}
             <div className="flex flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
                 <Calendar className="h-4 w-4 text-white/40" />
@@ -224,9 +258,62 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
               </div>
             </div>
 
-            {/* Tags */}
-            {tags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
+            {/* Meta Row 2: Weather & Mood */}
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-2 flex-1 min-w-[150px]">
+                <Cloud className="h-4 w-4 text-white/40" />
+                <select
+                  value={weather}
+                  onChange={(e) => setWeather(e.target.value)}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500"
+                >
+                  <option value="" className="text-black">Weather...</option>
+                  {WEATHER_OPTIONS.map(w => (
+                    <option key={w} value={w} className="text-black">{w}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex items-center gap-2 flex-[2] min-w-[200px] overflow-x-auto pb-1">
+                <Smile className="h-4 w-4 text-white/40 shrink-0" />
+                <div className="flex items-center gap-1">
+                  {MOODS.map((m) => (
+                    <button
+                      key={m.label}
+                      type="button"
+                      onClick={() => setMood(mood === m.label ? '' : m.label)}
+                      className={clsx(
+                        "p-1.5 rounded-lg text-lg transition-colors hover:bg-white/10",
+                        mood === m.label ? "bg-pink-500/20 ring-1 ring-pink-500" : "opacity-60 hover:opacity-100"
+                      )}
+                      title={m.label}
+                    >
+                      {m.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tags & People Lists */}
+            {(tags.length > 0 || people.length > 0) && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {people.map((person) => (
+                  <span
+                    key={person}
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-2.5 py-1 text-xs font-medium text-blue-300"
+                  >
+                    <Users className="h-3 w-3" />
+                    {person}
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePerson(person)}
+                      className="text-blue-300/60 hover:text-blue-300 ml-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
                 {tags.map((tag) => (
                   <span
                     key={tag}
@@ -257,6 +344,51 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   <Camera className="h-5 w-5" />
                 </button>
 
+                {/* Add People Button */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    className={clsx(
+                      "p-2 rounded-full transition-colors",
+                      showPeopleInput ? "text-blue-400 bg-blue-500/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                    )}
+                    onClick={() => {
+                      setShowPeopleInput(!showPeopleInput);
+                      setShowTagInput(false);
+                    }}
+                    title="Add people"
+                  >
+                    <Users className="h-5 w-5" />
+                  </button>
+
+                  {showPeopleInput && (
+                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl">
+                      <div className="flex gap-2">
+                        <input
+                          value={peopleInput}
+                          onChange={(e) => setPeopleInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddPerson();
+                            }
+                          }}
+                          placeholder="Who's with you?"
+                          className="flex-1 bg-black/20 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500"
+                          autoFocus
+                        />
+                        <button
+                          onClick={handleAddPerson}
+                          className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Add Tags Button */}
                 <div className="relative">
                   <button
                     type="button"
@@ -264,7 +396,10 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                       "p-2 rounded-full transition-colors",
                       showTagInput ? "text-pink-500 bg-pink-500/10" : "text-white/50 hover:text-white hover:bg-white/10"
                     )}
-                    onClick={() => setShowTagInput(!showTagInput)}
+                    onClick={() => {
+                      setShowTagInput(!showTagInput);
+                      setShowPeopleInput(false);
+                    }}
                     title="Add tags"
                   >
                     <Tag className="h-5 w-5" />
