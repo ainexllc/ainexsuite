@@ -2,6 +2,104 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionCookieDomain, SESSION_COOKIE_MAX_AGE_MS, SESSION_COOKIE_MAX_AGE_SECONDS } from '@ainexsuite/firebase/config';
 
 /**
+ * GET /api/auth/session
+ * Check if user has a valid session cookie (for SSO status checking)
+ */
+export async function GET(request: NextRequest) {
+  const origin = request.headers.get('origin');
+  const isAllowedOrigin = origin && (
+    origin.includes('ainexsuite.com') ||
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1')
+  );
+
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': isAllowedOrigin ? origin : '',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  try {
+    const sessionCookie = request.cookies.get('__session')?.value;
+
+    if (!sessionCookie) {
+      return NextResponse.json(
+        { user: null, authenticated: false },
+        { headers: corsHeaders }
+      );
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
+        return NextResponse.json(
+          { user: { uid: decoded.uid }, authenticated: true },
+          { headers: corsHeaders }
+        );
+      } catch {
+        return NextResponse.json(
+          { user: null, authenticated: false },
+          { headers: corsHeaders }
+        );
+      }
+    }
+
+    const { getAdminAuth, getAdminFirestore } = await import('@/lib/firebase/admin-app');
+    const adminAuth = getAdminAuth();
+    const adminDb = getAdminFirestore();
+
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const userDoc = await adminDb.collection('users').doc(decodedClaims.uid).get();
+    const userData = userDoc.exists ? userDoc.data() : null;
+
+    return NextResponse.json(
+      {
+        user: userData ? {
+          uid: decodedClaims.uid,
+          email: decodedClaims.email,
+          displayName: userData.displayName || decodedClaims.name,
+          photoURL: userData.photoURL || decodedClaims.picture,
+        } : {
+          uid: decodedClaims.uid,
+          email: decodedClaims.email,
+        },
+        authenticated: true,
+      },
+      { headers: corsHeaders }
+    );
+  } catch (error) {
+    console.error('Session verification failed:', error instanceof Error ? error.message : error);
+    return NextResponse.json(
+      { user: null, authenticated: false },
+      { headers: corsHeaders }
+    );
+  }
+}
+
+/**
+ * OPTIONS /api/auth/session - Handle CORS preflight requests
+ */
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin');
+  const isAllowedOrigin = origin && (
+    origin.includes('ainexsuite.com') ||
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1')
+  );
+
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': isAllowedOrigin ? origin : '',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
+
+/**
  * POST /api/auth/session
  * Generate session cookie after Firebase Auth login
  */
