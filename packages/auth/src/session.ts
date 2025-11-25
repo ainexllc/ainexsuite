@@ -1,5 +1,6 @@
 /**
  * Session cookie utilities for SSO across subdomains
+ * @version 1.1.0 - Firebase Admin credentials now configured in Vercel
  */
 
 import Cookies from 'js-cookie';
