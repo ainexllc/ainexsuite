@@ -114,19 +114,66 @@ export async function POST(request: NextRequest) {
     }
 
     // Production: Create session cookie server-side
-    const { getAdminAuth, getAdminFirestore } = await import('@/lib/firebase/admin-app');
+    console.log('[session] Production mode - initializing Firebase Admin...');
+
+    let getAdminAuth, getAdminFirestore;
+    try {
+      const adminModule = await import('@/lib/firebase/admin-app');
+      getAdminAuth = adminModule.getAdminAuth;
+      getAdminFirestore = adminModule.getAdminFirestore;
+      console.log('[session] Firebase Admin module imported successfully');
+    } catch (importError) {
+      console.error('[session] Failed to import Firebase Admin:', importError);
+      return NextResponse.json(
+        { error: 'Failed to initialize Firebase Admin', details: importError instanceof Error ? importError.message : 'Import failed' },
+        { status: 500 }
+      );
+    }
+
     const { FieldValue } = await import('firebase-admin/firestore');
 
-    const adminAuth = getAdminAuth();
-    const adminDb = getAdminFirestore();
+    let adminAuth, adminDb;
+    try {
+      adminAuth = getAdminAuth();
+      adminDb = getAdminFirestore();
+      console.log('[session] Firebase Admin Auth and Firestore initialized');
+    } catch (initError) {
+      console.error('[session] Failed to initialize Firebase Admin services:', initError);
+      return NextResponse.json(
+        { error: 'Failed to initialize Firebase services', details: initError instanceof Error ? initError.message : 'Init failed' },
+        { status: 500 }
+      );
+    }
 
     // Verify ID token
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    console.log('[session] Verifying ID token...');
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+      console.log('[session] ID token verified for user:', decodedToken.uid);
+    } catch (verifyError) {
+      console.error('[session] Failed to verify ID token:', verifyError);
+      return NextResponse.json(
+        { error: 'Invalid ID token', details: verifyError instanceof Error ? verifyError.message : 'Verification failed' },
+        { status: 401 }
+      );
+    }
 
     // Create session cookie (Firebase Admin SDK expects milliseconds)
-    const sessionCookie = await adminAuth.createSessionCookie(idToken, {
-      expiresIn: SESSION_COOKIE_MAX_AGE_MS,
-    });
+    console.log('[session] Creating session cookie...');
+    let sessionCookie;
+    try {
+      sessionCookie = await adminAuth.createSessionCookie(idToken, {
+        expiresIn: SESSION_COOKIE_MAX_AGE_MS,
+      });
+      console.log('[session] Session cookie created successfully');
+    } catch (cookieError) {
+      console.error('[session] Failed to create session cookie:', cookieError);
+      return NextResponse.json(
+        { error: 'Failed to create session cookie', details: cookieError instanceof Error ? cookieError.message : 'Cookie creation failed' },
+        { status: 500 }
+      );
+    }
 
     // Get or create user document
     const userRef = adminDb.collection('users').doc(decodedToken.uid);
@@ -181,10 +228,14 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     const stack = error instanceof Error ? error.stack : undefined;
+    // Log error server-side for debugging
+    console.error('[session] Unhandled error:', error);
     return NextResponse.json(
       {
         error: 'Failed to create session',
         message,
+        // Include error details in production too for debugging
+        details: message,
         stack: process.env.NODE_ENV === 'development' ? stack : undefined,
       },
       { status: 500 }
