@@ -212,6 +212,8 @@ export async function POST(request: NextRequest) {
 
     // Production: Create session cookie server-side
     console.log('[session] Production mode - initializing Firebase Admin...');
+    console.log('[session] FIREBASE_ADMIN_PROJECT_ID:', process.env.FIREBASE_ADMIN_PROJECT_ID);
+    console.log('[session] Expected client projectId: alnexsuite');
 
     let getAdminAuth, getAdminFirestore;
     try {

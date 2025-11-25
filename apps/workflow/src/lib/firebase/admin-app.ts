@@ -3,7 +3,8 @@ import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
-import { serverEnv, clientEnv } from "@/env";
+import { serverEnv } from "@/env";
+import { firebaseConfig } from "@ainexsuite/firebase/config";
 
 let adminAppInitialized = false;
 
@@ -56,25 +57,29 @@ function normalizePrivateKey(rawKey: string): string {
 
 function getAdminOptions(): AppOptions {
   if (
-    !serverEnv.FIREBASE_ADMIN_PROJECT_ID ||
     !serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL ||
     !serverEnv.FIREBASE_ADMIN_PRIVATE_KEY
   ) {
     throw new Error(
-      "Firebase admin environment variables are missing. Populate FIREBASE_ADMIN_* in .env.local to enable secure server features.",
+      "Firebase admin environment variables are missing. Populate FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY in .env.local to enable secure server features.",
     );
   }
 
   const privateKey = normalizePrivateKey(serverEnv.FIREBASE_ADMIN_PRIVATE_KEY);
 
+  // CRITICAL: Use the hardcoded projectId from shared config to ensure
+  // token verification matches the client's project ID (alnexsuite).
+  // This prevents auth/argument-error "incorrect aud (audience)" errors.
+  const projectId = firebaseConfig.projectId; // Always "alnexsuite"
+
   return {
     credential: cert({
-      projectId: serverEnv.FIREBASE_ADMIN_PROJECT_ID,
+      projectId: projectId,
       clientEmail: serverEnv.FIREBASE_ADMIN_CLIENT_EMAIL,
       privateKey: privateKey,
     }),
-    storageBucket: clientEnv.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    projectId: clientEnv.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: firebaseConfig.storageBucket,
+    projectId: projectId,
     databaseURL: serverEnv.FIREBASE_ADMIN_DATABASE_URL,
   };
 }
