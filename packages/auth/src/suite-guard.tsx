@@ -24,22 +24,18 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
   const [accessAllowed, setAccessAllowed] = useState(false);
 
   useEffect(() => {
-    console.log('[SSO DEBUG] SuiteGuard effect - loading:', loading, 'ssoInProgress:', ssoInProgress, 'user:', user?.uid || null);
 
     // Wait for auth loading and SSO to complete before making decisions
     if (loading || ssoInProgress) {
-      console.log('[SSO DEBUG] SuiteGuard - waiting for auth/SSO...');
       return;
     }
 
     if (!user) {
       // Redirect non-logged-in users to public homepage
-      console.log('[SSO DEBUG] SuiteGuard - NO USER, redirecting to /');
       window.location.href = '/';
       return;
     }
 
-    console.log('[SSO DEBUG] SuiteGuard - user authenticated, checking access');
     checkAccess();
   }, [user, loading, ssoInProgress, appName]);
 
