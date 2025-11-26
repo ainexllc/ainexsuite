@@ -150,14 +150,10 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 backdrop-blur-sm"
+          className="flex w-full items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 backdrop-blur-sm"
           onClick={() => setExpanded(true)}
         >
           <span>Log a workout...</span>
-          <span className="flex items-center gap-3 text-white/30">
-            <Dumbbell className="h-5 w-5" />
-            <Clock className="h-5 w-5" />
-          </span>
         </button>
       ) : (
         <div
