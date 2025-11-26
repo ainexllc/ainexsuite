@@ -17,6 +17,7 @@ import { HealthCheckinComposer } from '@/components/health-checkin-composer';
 import { HealthEditModal } from '@/components/health-edit-modal';
 import { HealthStats } from '@/components/health-stats';
 import { HealthHistory } from '@/components/health-history';
+import { HealthInsights } from '@/components/health-insights';
 import { AIAssistant } from '@/components/ai-assistant';
 import { FitIntegrationWidget } from '@/components/fit-integration-widget';
 import { Activity, Loader2, Calendar } from 'lucide-react';
@@ -198,6 +199,7 @@ function HealthWorkspaceContent() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            <HealthInsights metrics={metrics} variant="sidebar" />
             <HealthStats metrics={metrics} />
             <FitIntegrationWidget />
           </div>
