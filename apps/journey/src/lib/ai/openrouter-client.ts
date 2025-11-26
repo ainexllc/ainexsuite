@@ -56,11 +56,15 @@ export class OpenRouterClient {
     if ((model.includes("grok") || model.includes("x-ai")) && serverEnv.XAI_API_KEY) {
         endpoint = "https://api.x.ai/v1/chat/completions";
         token = serverEnv.XAI_API_KEY;
-        
-        // Map OpenRouter IDs to xAI Direct IDs
-        // Note: grok-beta was deprecated on 2025-09-15
-        if (model === "grok-3-fast" || model === "x-ai/grok-3-fast") {
-            model = "grok-3-fast"; // Fast non-reasoning model
+
+        // Map model IDs to xAI Direct IDs
+        // Available models: grok-4-1-fast-non-reasoning, grok-4, grok-3, grok-3-fast
+        if (model.includes("grok-4") && model.includes("fast")) {
+            model = "grok-4-1-fast-non-reasoning"; // Latest fast non-reasoning model
+        } else if (model.includes("grok-4")) {
+            model = "grok-4"; // Full Grok 4
+        } else if (model === "x-ai/grok-3-fast" || model === "grok-3-fast") {
+            model = "grok-3-fast"; // Grok 3 fast
         } else if (model === "grok-3" || model === "x-ai/grok-3") {
             model = "grok-3";
         } else if (model === "grok-beta" || model === "x-ai/grok-beta") {
@@ -69,10 +73,13 @@ export class OpenRouterClient {
             // Fallback: strip prefix
             model = model.replace("x-ai/", "");
         }
-        
+
         headers = {
             "Content-Type": "application/json",
         };
+    } else if (model.includes("grok") || model.includes("x-ai")) {
+        // No xAI key available, fall back to default model
+        model = this.defaultModel;
     }
 
     if (!token) {

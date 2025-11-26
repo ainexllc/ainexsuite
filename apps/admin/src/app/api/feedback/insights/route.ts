@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
             content: `Analyze this recent user feedback and provide insights:\n\n${feedbackSummary}\n\nProvide your analysis in this exact JSON format:\n{\n  "summary": "...",\n  "trends": ["...", "...", "..."],\n  "actionItems": ["...", "...", "..."]\n}`
           }
         ],
-        model: 'grok-4-1-fast',
+        model: 'grok-4-1-fast-non-reasoning',
         temperature: 0.7,
       }),
     });
