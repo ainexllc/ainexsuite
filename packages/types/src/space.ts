@@ -1,5 +1,5 @@
 export type SpaceRole = 'admin' | 'member' | 'viewer';
-export type SpaceType = 'personal' | 'family' | 'couple' | 'squad' | 'project';
+export type SpaceType = 'personal' | 'family' | 'work' | 'couple' | 'buddy' | 'squad' | 'project';
 
 export interface SpaceMember {
   uid: string;

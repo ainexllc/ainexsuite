@@ -12,7 +12,7 @@ import { FitInsights } from '@/components/fit-insights';
 import { Dumbbell, Loader2, Trophy } from 'lucide-react';
 
 // New Components
-import { BuddySwitcher } from '@/components/social/BuddySwitcher';
+import { SpaceSwitcher } from '@/components/spaces';
 import { Leaderboard } from '@/components/social/Leaderboard';
 import { SharedWorkoutFeed } from '@/components/social/SharedWorkoutFeed';
 import { ChallengeEditor } from '@/components/social/ChallengeEditor';
@@ -126,7 +126,7 @@ function FitWorkspaceContent() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4 w-full sm:w-auto">
-            <BuddySwitcher />
+            <SpaceSwitcher />
           </div>
 
           <div className="flex items-center gap-3">

@@ -4,19 +4,19 @@ import { useState } from 'react';
 import { SpaceSwitcher as SharedSpaceSwitcher, SpaceEditor as SharedSpaceEditor } from '@ainexsuite/ui';
 import type { SpaceItem } from '@ainexsuite/ui';
 import type { SpaceType as SharedSpaceType } from '@ainexsuite/types';
-import type { SpaceType as GrowSpaceType } from '../../types/models';
-import { useGrowStore } from '../../lib/store';
+import type { SpaceType as FitSpaceType } from '../../types/models';
+import { useFitStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
 
 /**
- * Grow app SpaceSwitcher - wraps shared UI component with app-specific data
+ * Fit app SpaceSwitcher - wraps shared UI component with app-specific data
  */
 export function SpaceSwitcher() {
   const { user } = useAuth();
-  const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useGrowStore();
+  const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useFitStore();
   const [showSpaceEditor, setShowSpaceEditor] = useState(false);
 
-  // Map Space to SpaceItem for the shared component
+  // Map FitSpace to SpaceItem for the shared component
   const spaceItems: SpaceItem[] = spaces.map((space) => ({
     id: space.id,
     name: space.name,
@@ -26,13 +26,13 @@ export function SpaceSwitcher() {
   const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
     if (!user) return;
 
-    // Only allow types supported by grow app
-    const growType = data.type as GrowSpaceType;
+    // Only allow types supported by fit app
+    const fitType = data.type as FitSpaceType;
 
     await addSpace({
-      id: `grow_space_${Date.now()}`,
+      id: `fit_space_${Date.now()}`,
       name: data.name,
-      type: growType,
+      type: fitType,
       members: [{
         uid: user.uid,
         displayName: user.displayName || 'Me',
@@ -53,8 +53,8 @@ export function SpaceSwitcher() {
         currentSpaceId={currentSpaceId}
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
-        spacesLabel="Growth Spaces"
-        defaultSpaceName="My Growth"
+        spacesLabel="Workout Spaces"
+        defaultSpaceName="My Workouts"
       />
 
       <SharedSpaceEditor
@@ -62,12 +62,14 @@ export function SpaceSwitcher() {
         onClose={() => setShowSpaceEditor(false)}
         onSubmit={handleCreateSpace}
         spaceTypes={[
-          { value: 'personal', label: 'Personal', description: 'Your private growth' },
-          { value: 'couple', label: 'Couple', description: 'Share with your partner' },
-          { value: 'family', label: 'Family', description: 'Share with family members' },
-          { value: 'squad', label: 'Squad', description: 'Team accountability' },
+          { value: 'personal', label: 'Personal', description: 'Your private workouts' },
+          { value: 'buddy', label: 'Buddy', description: 'Partner workouts' },
+          { value: 'squad', label: 'Squad', description: 'Team fitness challenges' },
         ]}
       />
     </>
   );
 }
+
+// Re-export as BuddySwitcher for backwards compatibility
+export { SpaceSwitcher as BuddySwitcher };

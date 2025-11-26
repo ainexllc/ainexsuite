@@ -14,6 +14,8 @@ import {
   BellRing,
   Tag,
   X,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useNotes } from "@/components/providers/notes-provider";
@@ -62,6 +64,7 @@ export function NoteComposer() {
   const [archived, setArchived] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([]);
@@ -190,6 +193,30 @@ export function NoteComposer() {
       }
       return [...prev, channel];
     });
+  };
+
+  const handleEnhanceBody = async () => {
+    if (!body.trim() || isEnhancing) return;
+
+    try {
+      setIsEnhancing(true);
+      const response = await fetch("/api/ai/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: body, task: "improve" }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.enhanced) {
+          setBody(data.enhanced);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to enhance body:", error);
+    } finally {
+      setIsEnhancing(false);
+    }
   };
 
   const handleSubmit = useCallback(async () => {
@@ -417,19 +444,42 @@ export function NoteComposer() {
             </div>
 
             {mode === "text" ? (
-              <textarea
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                onKeyDown={(event) => {
-                  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-                    event.preventDefault();
-                    void handleSubmit();
-                  }
-                }}
-                placeholder="What's on your mind?..."
-                rows={attachments.length ? 3 : 5}
-                className="min-h-[120px] w-full resize-none bg-transparent text-base text-white/90 placeholder:text-white/30 focus:outline-none leading-relaxed"
-              />
+              <div className="relative">
+                <textarea
+                  value={body}
+                  onChange={(event) => setBody(event.target.value)}
+                  onKeyDown={(event) => {
+                    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                      event.preventDefault();
+                      void handleSubmit();
+                    }
+                  }}
+                  placeholder="What's on your mind?..."
+                  rows={attachments.length ? 3 : 5}
+                  className="min-h-[120px] w-full resize-none bg-transparent text-base text-white/90 placeholder:text-white/30 focus:outline-none leading-relaxed pr-10"
+                />
+                {body.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => void handleEnhanceBody()}
+                    disabled={isEnhancing}
+                    className={clsx(
+                      "absolute bottom-2 right-0 p-1.5 rounded-full transition-all",
+                      isEnhancing
+                        ? "text-[var(--color-primary)] cursor-wait"
+                        : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                    )}
+                    aria-label="Enhance with AI"
+                    title="Enhance with AI"
+                  >
+                    {isEnhancing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                  </button>
+                )}
+              </div>
             ) : (
               <div className="space-y-3">
                 {checklist.map((item, idx) => (

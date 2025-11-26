@@ -193,3 +193,14 @@ export {
 // Existing Components
 export { Footer } from "./footer";
 export { Paywall } from "./paywall";
+
+// Space Components
+export {
+  SpaceSwitcher,
+  SpaceEditor,
+  type SpaceSwitcherProps,
+  type SpaceEditorProps,
+  type SpaceItem,
+  type SpaceTypeConfig,
+  type SpaceTypeOption,
+} from "./spaces";

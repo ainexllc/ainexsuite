@@ -1,97 +1,79 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Plus, User, Users, Briefcase } from 'lucide-react';
+import { SpaceSwitcher as SharedSpaceSwitcher, SpaceEditor as SharedSpaceEditor } from '@ainexsuite/ui';
+import type { SpaceItem } from '@ainexsuite/ui';
+import type { SpaceType as SharedSpaceType } from '@ainexsuite/types';
+import type { SpaceType as TaskSpaceType, TaskList } from '../../types/models';
 import { useTodoStore } from '../../lib/store';
-import { TaskSpace } from '../../types/models';
-import { SpaceEditor } from './SpaceEditor';
+import { useAuth } from '@ainexsuite/auth';
 
+/**
+ * Todo app SpaceSwitcher - wraps shared UI component with app-specific data
+ */
 export function SpaceSwitcher() {
-  const { spaces, currentSpaceId, setCurrentSpace } = useTodoStore();
-  const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+  const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useTodoStore();
   const [showSpaceEditor, setShowSpaceEditor] = useState(false);
 
-  const currentSpace = spaces.find((s: TaskSpace) => s.id === currentSpaceId);
+  // Map TaskSpace to SpaceItem for the shared component
+  const spaceItems: SpaceItem[] = spaces.map((space) => ({
+    id: space.id,
+    name: space.name,
+    type: space.type as SharedSpaceType,
+  }));
 
-  const getIcon = (type: TaskSpace['type']) => {
-    switch (type) {
-      case 'personal': return <User className="h-4 w-4" />;
-      case 'family': return <Users className="h-4 w-4" />;
-      case 'work': return <Briefcase className="h-4 w-4" />;
-      default: return <User className="h-4 w-4" />;
-    }
-  };
+  const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
+    if (!user) return;
 
-  const handleCreateSpace = () => {
-    setIsOpen(false);
-    setShowSpaceEditor(true);
+    // Only allow types supported by todo app
+    const taskType = data.type as TaskSpaceType;
+
+    // Default lists for new space
+    const defaultLists: TaskList[] = [
+      { id: `list_${Date.now()}_1`, title: 'To Do', order: 0 },
+      { id: `list_${Date.now()}_2`, title: 'In Progress', order: 1 },
+      { id: `list_${Date.now()}_3`, title: 'Done', order: 2 },
+    ];
+
+    await addSpace({
+      id: `todo_space_${Date.now()}`,
+      name: data.name,
+      type: taskType,
+      members: [{
+        uid: user.uid,
+        displayName: user.displayName || 'Me',
+        photoURL: user.photoURL || undefined,
+        role: 'admin',
+        joinedAt: new Date().toISOString()
+      }],
+      memberUids: [user.uid],
+      createdAt: new Date().toISOString(),
+      createdBy: user.uid,
+      lists: defaultLists,
+    });
   };
 
   return (
     <>
-      <div className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors w-full"
-        >
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-accent-500 to-accent-400 flex items-center justify-center text-white">
-            {currentSpace ? getIcon(currentSpace.type) : <User className="h-4 w-4" />}
-          </div>
-          <div className="flex-1 text-left">
-            <p className="text-sm font-medium text-white leading-none">
-              {currentSpace?.name || 'My Tasks'}
-            </p>
-            <p className="text-xs text-white/50 capitalize">
-              {currentSpace?.type || 'Personal'}
-            </p>
-          </div>
-          <ChevronDown className="h-4 w-4 text-white/50" />
-        </button>
+      <SharedSpaceSwitcher
+        spaces={spaceItems}
+        currentSpaceId={currentSpaceId}
+        onSpaceChange={setCurrentSpace}
+        onCreateSpace={() => setShowSpaceEditor(true)}
+        spacesLabel="Task Spaces"
+        defaultSpaceName="My Tasks"
+      />
 
-        {isOpen && (
-          <>
-            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-            <div className="absolute top-full left-0 w-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden">
-              <div className="p-1">
-                <div className="px-2 py-1.5 text-xs font-medium text-white/40 uppercase">
-                  Task Spaces
-                </div>
-                {spaces.map((space: TaskSpace) => (
-                  <button
-                    key={space.id}
-                    onClick={() => {
-                      setCurrentSpace(space.id);
-                      setIsOpen(false);
-                    }}
-                    className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm transition-colors ${
-                      currentSpaceId === space.id
-                        ? 'bg-white/10 text-white'
-                        : 'text-white/70 hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    {getIcon(space.type)}
-                    {space.name}
-                  </button>
-                ))}
-              </div>
-
-              <div className="border-t border-white/10 p-1">
-                <button
-                  onClick={handleCreateSpace}
-                  className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-accent-400 hover:bg-white/5 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create New Space
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      <SpaceEditor
+      <SharedSpaceEditor
         isOpen={showSpaceEditor}
         onClose={() => setShowSpaceEditor(false)}
+        onSubmit={handleCreateSpace}
+        spaceTypes={[
+          { value: 'personal', label: 'Personal', description: 'Your private tasks and goals' },
+          { value: 'family', label: 'Family', description: 'Share with family members' },
+          { value: 'work', label: 'Work', description: 'Team projects and tasks' },
+        ]}
       />
     </>
   );

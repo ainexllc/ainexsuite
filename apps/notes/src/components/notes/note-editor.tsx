@@ -16,6 +16,8 @@ import {
   BellRing,
   CalendarClock,
   Share2,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { clsx } from "clsx";
 import type {
@@ -93,6 +95,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [removedAttachments, setRemovedAttachments] = useState<NoteAttachment[]>([]);
   const [newAttachments, setNewAttachments] = useState<AttachmentDraft[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -298,6 +301,30 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     },
     [handleInviteCollaborator],
   );
+
+  const handleEnhanceBody = async () => {
+    if (!body.trim() || isEnhancing) return;
+
+    try {
+      setIsEnhancing(true);
+      const response = await fetch("/api/ai/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: body, task: "improve" }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.enhanced) {
+          setBody(data.enhanced);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to enhance body:", error);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   const handleSave = useCallback(async () => {
     if (isSaving) {
@@ -826,13 +853,36 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           ) : null}
 
           {mode === "text" ? (
-            <textarea
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              placeholder="Write your note…"
-              rows={8}
-              className="min-h-[120px] w-full resize-none bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none"
-            />
+            <div className="relative">
+              <textarea
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                placeholder="Write your note…"
+                rows={8}
+                className="min-h-[120px] w-full resize-none bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none pr-10"
+              />
+              {body.trim() && (
+                <button
+                  type="button"
+                  onClick={() => void handleEnhanceBody()}
+                  disabled={isEnhancing}
+                  className={clsx(
+                    "absolute bottom-2 right-0 p-1.5 rounded-full transition-all",
+                    isEnhancing
+                      ? "text-[var(--color-primary)] cursor-wait"
+                      : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                  )}
+                  aria-label="Enhance with AI"
+                  title="Enhance with AI"
+                >
+                  {isEnhancing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                </button>
+              )}
+            </div>
           ) : (
             <div className="space-y-3">
               {checklist.map((item, idx) => (

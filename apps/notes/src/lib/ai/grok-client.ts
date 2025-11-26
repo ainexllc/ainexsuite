@@ -1,6 +1,6 @@
 /**
  * Grok AI Client
- * Provides integration with xAI's Grok API using the grok-beta model
+ * Provides integration with xAI's Grok API using the grok-4-1-fast model (non-reasoning)
  */
 
 import { serverEnv } from "@/env";
@@ -40,7 +40,7 @@ export interface GrokCompletionResponse {
 export class GrokClient {
   private apiKey: string;
   private baseUrl = "https://api.x.ai/v1";
-  private model = "grok-beta";
+  private model = "grok-4-1-fast";
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || serverEnv.XAI_API_KEY || "";

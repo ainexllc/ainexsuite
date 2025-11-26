@@ -1,2 +1,2 @@
 export { SpaceSwitcher } from "./SpaceSwitcher";
-export { SpaceEditor } from "./SpaceEditor";
+// SpaceEditor is now from @ainexsuite/ui
