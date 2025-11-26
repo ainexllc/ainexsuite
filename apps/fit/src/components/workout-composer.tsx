@@ -34,7 +34,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
 
   const composerRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const hasSubmittedRef = useRef(false);
+  const isSubmittingRef = useRef(false);
 
   const resetState = useCallback(() => {
     setExpanded(false);
@@ -44,7 +44,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
     setExercises([]);
     setFeeling(undefined);
     setShowFeelingPicker(false);
-    hasSubmittedRef.current = false;
+    isSubmittingRef.current = false;
   }, []);
 
   const hasContent = title.trim() || exercises.some(e => e.name.trim());
@@ -92,20 +92,21 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
   };
 
   const handleSubmit = useCallback(async () => {
-    // Prevent duplicate submissions
-    if (isSubmitting || hasSubmittedRef.current || !user || !currentSpace) return;
+    // Prevent duplicate submissions using ref (synchronous check)
+    if (isSubmittingRef.current || !user || !currentSpace) return;
 
     if (!title.trim()) {
       titleInputRef.current?.focus();
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      hasSubmittedRef.current = true;
+    // Set ref immediately to block any concurrent calls
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
+    try {
       const newWorkout: Workout = {
-        id: `workout_${Date.now()}`,
+        id: `workout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         spaceId: currentSpace.id,
         userId: user.uid,
         title: title.trim(),
@@ -120,11 +121,10 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       resetState();
     } catch (error) {
       console.error('Failed to create workout:', error);
-      hasSubmittedRef.current = false;
-    } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [isSubmitting, user, currentSpace, title, date, duration, exercises, feeling, addWorkout, onWorkoutCreated, resetState]);
+  }, [user, currentSpace, title, date, duration, exercises, feeling, addWorkout, onWorkoutCreated, resetState]);
 
   // Handle click outside to close only if empty (no auto-submit)
   useEffect(() => {

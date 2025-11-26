@@ -60,6 +60,12 @@ export const useFitStore = create<FitState>()(
       },
 
       addWorkout: async (workout) => {
+        // Check if workout with this ID already exists (prevent duplicates)
+        const existing = get().workouts.find(w => w.id === workout.id);
+        if (existing) {
+          console.warn('Workout already exists, skipping duplicate:', workout.id);
+          return;
+        }
         set((state) => ({ workouts: [workout, ...state.workouts] }));
         await createWorkoutInDb(workout);
       },
