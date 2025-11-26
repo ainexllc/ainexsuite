@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Plus, Settings } from 'lucide-react';
 import { useSmartHubStore } from '@/lib/store';
 import { DeviceGrid } from '@/components/devices/device-grid';
@@ -13,12 +13,23 @@ import { IntegrationsModal } from '@/components/integrations-modal';
 
 function SmartHubWorkspaceContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
-  const { loadDevices, isLoading: devicesLoading, setIntegrationsModalOpen } = useSmartHubStore();
+  const { loadDevices, isLoading: devicesLoading, setIntegrationsModalOpen, setIntegrationStatus } = useSmartHubStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     loadDevices();
   }, [loadDevices]);
+
+  useEffect(() => {
+    const connected = searchParams.get('connected');
+    if (connected === 'google') {
+      setIntegrationStatus('google', true);
+      setIntegrationsModalOpen(true);
+      // Clean up URL
+      router.replace('/workspace');
+    }
+  }, [searchParams, setIntegrationStatus, setIntegrationsModalOpen, router]);
 
   const handleSignOut = async () => {
     try {
