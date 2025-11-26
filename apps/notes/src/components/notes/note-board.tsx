@@ -10,8 +10,8 @@ import { Container } from "@/components/layout/container";
 
 function NotesSkeleton() {
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
-      {Array.from({ length: 6 }).map((_, index) => (
+    <div className="columns-1 sm:columns-2 gap-4">
+      {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
           className="mb-4 h-40 break-inside-avoid rounded-3xl bg-surface-muted/80 shadow-inner animate-pulse"
@@ -52,15 +52,17 @@ export function NoteBoard() {
     await updatePreferences({ viewMode: mode });
   };
 
-  const masonryClasses = "columns-1 sm:columns-2 lg:columns-3 gap-4";
+  const masonryClasses = "columns-1 sm:columns-2 gap-4";
 
   return (
-    <Container className="space-y-8 lg:px-0 cq-board" variant="narrow">
-      <div className="flex items-center justify-between gap-4">
+    <Container className="space-y-1 lg:px-0 cq-board" variant="narrow">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <NoteComposer />
         </div>
-        <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
+        <div className="pt-1">
+          <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
+        </div>
       </div>
 
       {loading ? (

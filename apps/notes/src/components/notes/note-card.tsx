@@ -5,7 +5,6 @@
 import { useMemo, useState } from "react";
 import {
   Archive,
-  LayoutGrid,
   Palette,
   Pin,
   PinOff,
@@ -13,11 +12,10 @@ import {
   Users,
 } from "lucide-react";
 import { clsx } from "clsx";
-import type { Note, NotePattern } from "@/lib/types/note";
+import type { Note } from "@/lib/types/note";
 import type { ViewMode } from "@/lib/types/settings";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
-import { NOTE_PATTERNS } from "@/lib/constants/note-patterns";
 import { NoteEditor } from "@/components/notes/note-editor";
 import { useLabels } from "@/components/providers/labels-provider";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
@@ -32,7 +30,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
   const { labels } = useLabels();
   const [isEditing, setIsEditing] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
-  const [showPatternPicker, setShowPatternPicker] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const labelMap = useMemo(() => {
@@ -45,15 +42,8 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
       .filter((label): label is NonNullable<typeof label> => Boolean(label));
   }, [note.labelIds, labelMap]);
 
-  const patternClass = note.pattern && note.pattern !== "none"
-    ? NOTE_PATTERNS.find((p) => p.id === note.pattern)?.patternClass || ""
-    : "";
-
-  // Determine orb colors based on note color
-  const isDefault = note.color === "default";
-  const orbColor = isDefault ? "bg-orange-500" : `bg-${note.color}`;
-  // For variety, we could use a secondary color, but using the same one keeps it cohesive
-  const orb2Color = isDefault ? "bg-blue-500" : `bg-${note.color}`;
+  const noteColorConfig = NOTE_COLORS.find((c) => c.id === note.color);
+  const footerClass = noteColorConfig?.footerClass || "bg-white/5";
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -93,7 +83,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
 
   const handleOpenPalette = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    setShowPatternPicker(false);
     setShowPalette((prev) => !prev);
   };
 
@@ -110,30 +99,11 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     setShowPalette(false);
   };
 
-  const handleOpenPatternPicker = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setShowPalette(false);
-    setShowPatternPicker((prev) => !prev);
-  };
-
-  const handlePatternSelect = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-    pattern: NotePattern,
-  ) => {
-    event.stopPropagation();
-    if (pattern === note.pattern) {
-      setShowPatternPicker(false);
-      return;
-    }
-    await updateNote(note.id, { pattern });
-    setShowPatternPicker(false);
-  };
-
   return (
     <>
       <article
         className={clsx(
-          "group relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl",
+          "group relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-black/60 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl",
           viewMode === "list"
             ? "flex items-start gap-4 px-5 py-3"
             : "break-inside-avoid px-6 py-6",
@@ -142,18 +112,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           setIsEditing(true);
         }}
       >
-        {/* Note Color Tint Layer - Base Layer */}
-        <div className={clsx("absolute inset-0 pointer-events-none opacity-10 transition-colors duration-300", isDefault ? "bg-transparent" : `bg-${note.color}`)} />
-
-        {/* Atmospheric Orbs - Middle Layer */}
-        <div className={clsx("absolute -top-32 -right-32 h-64 w-64 rounded-full blur-[80px] pointer-events-none opacity-20 transition-colors duration-500", orbColor)} />
-        <div className={clsx("absolute -bottom-32 -left-32 h-64 w-64 rounded-full blur-[80px] pointer-events-none opacity-15 transition-colors duration-500", orb2Color)} />
-        
-        {/* Pattern Overlay - Top Layer */}
-        {patternClass && (
-            <div className={clsx("absolute inset-0 pointer-events-none opacity-5 mix-blend-overlay", patternClass)} />
-        )}
-
         <div className="relative z-10 w-full">
           <button
             type="button"
@@ -254,7 +212,10 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             ) : null}
           </div>
 
-          <footer className="mt-4 flex items-center justify-between pt-2 border-t border-white/5">
+          <footer className={clsx(
+            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-3xl",
+            footerClass
+          )}>
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-white/40">
               {note.sharedWithUserIds?.length ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/80">
@@ -301,40 +262,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                         )}
                         onClick={(event) => handleColorSelect(event, option.id)}
                         aria-label={`Set color ${option.label}`}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-              <div className="relative flex items-center">
-                <button
-                  type="button"
-                  onClick={handleOpenPatternPicker}
-                  className={clsx(
-                    "icon-button h-8 w-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10",
-                    showPatternPicker && "bg-white/20 text-white",
-                  )}
-                  aria-label="Change pattern"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </button>
-                {showPatternPicker ? (
-                  <div
-                    className="absolute bottom-10 right-0 z-30 flex flex-row flex-nowrap items-center gap-2 rounded-2xl bg-[#1a1a1a]/95 p-3 shadow-2xl backdrop-blur-xl border border-white/10"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    {NOTE_PATTERNS.map((pattern) => (
-                      <button
-                        key={pattern.id}
-                        type="button"
-                        className={clsx(
-                          "inline-flex shrink-0 h-6 w-6 rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 shadow-sm border-white/20",
-                          pattern.previewClass,
-                          pattern.id === (note.pattern || "none") && "ring-2 ring-white",
-                        )}
-                        onClick={(event) => handlePatternSelect(event, pattern.id)}
-                        aria-label={`Set pattern ${pattern.label}`}
-                        title={pattern.description}
                       />
                     ))}
                   </div>

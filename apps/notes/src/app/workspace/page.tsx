@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui';
@@ -13,6 +13,7 @@ export default function NotesWorkspace() {
   const { user, loading, bootstrapStatus, ssoInProgress } = useAuth();
   const { primary } = useAppColors();
   const router = useRouter();
+  const [mobileInsightsExpanded, setMobileInsightsExpanded] = useState(false);
 
   // Redirect to login if not authenticated
   // Wait for bootstrap and SSO to complete before redirecting to prevent interrupting auto-login
@@ -58,15 +59,25 @@ export default function NotesWorkspace() {
     >
       {/* Two-column layout matching Journey: max-w-7xl, mx-auto, gap-8 */}
       <div className="max-w-7xl mx-auto">
+        {/* Mobile: Condensed AI Insights at top (hidden on xl+) */}
+        <div className="xl:hidden mb-4">
+          {mobileInsightsExpanded ? (
+            <WorkspaceInsights
+              variant="sidebar"
+              onExpand={() => setMobileInsightsExpanded(false)}
+            />
+          ) : (
+            <WorkspaceInsights
+              variant="condensed"
+              onExpand={() => setMobileInsightsExpanded(true)}
+            />
+          )}
+        </div>
+
         <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
           {/* Left: Notes Content */}
           <div className="space-y-6">
             <NoteBoard />
-
-            {/* Mobile: AI Insights shown inline */}
-            <div className="xl:hidden">
-              <WorkspaceInsights variant="sidebar" />
-            </div>
           </div>
 
           {/* Right: AI Insights Sidebar (visible on xl screens) */}

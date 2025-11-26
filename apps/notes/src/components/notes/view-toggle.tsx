@@ -11,15 +11,15 @@ type ViewToggleProps = {
 
 export function ViewToggle({ viewMode, onViewModeChange }: ViewToggleProps) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full bg-surface-muted/80 p-1 shadow-sm">
+    <div className="inline-flex items-center gap-1 rounded-full bg-black/40 backdrop-blur-sm p-1 shadow-sm border border-white/10">
       <button
         type="button"
         onClick={() => onViewModeChange("masonry")}
         className={clsx(
-          "inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+          "inline-flex h-8 w-8 items-center justify-center rounded-full transition-all",
           viewMode === "masonry"
-            ? "bg-accent-500 text-white shadow-sm"
-            : "text-ink-600 hover:bg-surface-muted hover:text-ink-800",
+            ? "bg-[var(--color-primary)] text-white shadow-md"
+            : "text-white/60 hover:bg-white/10 hover:text-white",
         )}
         aria-label="Masonry view"
         title="Masonry view"
@@ -30,10 +30,10 @@ export function ViewToggle({ viewMode, onViewModeChange }: ViewToggleProps) {
         type="button"
         onClick={() => onViewModeChange("list")}
         className={clsx(
-          "inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+          "inline-flex h-8 w-8 items-center justify-center rounded-full transition-all",
           viewMode === "list"
-            ? "bg-accent-500 text-white shadow-sm"
-            : "text-ink-600 hover:bg-surface-muted hover:text-ink-800",
+            ? "bg-[var(--color-primary)] text-white shadow-md"
+            : "text-white/60 hover:bg-white/10 hover:text-white",
         )}
         aria-label="List view"
         title="List view"

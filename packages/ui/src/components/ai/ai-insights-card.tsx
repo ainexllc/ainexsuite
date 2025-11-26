@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Sparkles, RefreshCw, Loader2, X } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 export interface AIInsightsSection {
@@ -17,8 +17,8 @@ export interface AIInsightsCardProps {
   sections: AIInsightsSection[];
   /** Primary accent color (hex) - uses app color from Firestore */
   accentColor: string;
-  /** Layout variant */
-  variant?: "default" | "sidebar";
+  /** Layout variant: default (3-col grid), sidebar (stacked), condensed (compact horizontal) */
+  variant?: "default" | "sidebar" | "condensed";
   /** Whether insights are loading */
   isLoading?: boolean;
   /** Loading message to display */
@@ -31,12 +31,16 @@ export interface AIInsightsCardProps {
   onRefresh?: () => void;
   /** Callback when dismiss is clicked (only shown if provided) */
   onDismiss?: () => void;
+  /** Callback when expand is clicked (only for condensed variant) */
+  onExpand?: () => void;
   /** Whether refresh is disabled */
   refreshDisabled?: boolean;
   /** Additional class names */
   className?: string;
   /** Children to render after sections */
   children?: ReactNode;
+  /** Summary text for condensed variant (shows first item if not provided) */
+  condensedSummary?: string;
 }
 
 /**
@@ -54,11 +58,77 @@ export function AIInsightsCard({
   lastUpdated = null,
   onRefresh,
   onDismiss,
+  onExpand,
   refreshDisabled = false,
   className,
   children,
+  condensedSummary,
 }: AIInsightsCardProps) {
   const isSidebar = variant === "sidebar";
+  const isCondensed = variant === "condensed";
+
+  // Condensed variant: compact horizontal layout
+  if (isCondensed) {
+    return (
+      <div className={cn("animate-in fade-in slide-in-from-top-2 duration-300", className)}>
+        <button
+          onClick={onExpand}
+          className="w-full relative overflow-hidden rounded-xl border backdrop-blur-xl p-3 text-left transition-all hover:border-opacity-70 active:scale-[0.99]"
+          style={{
+            borderColor: `${accentColor}33`,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            boxShadow: `inset 0 0 60px -20px ${accentColor}40`
+          }}
+        >
+          <div className="flex items-center gap-3">
+            {/* Icon */}
+            <div
+              className="flex-shrink-0 rounded-lg p-2"
+              style={{ backgroundColor: `${accentColor}20` }}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" style={{ color: accentColor }} />
+              ) : (
+                <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-white/50 uppercase tracking-wide">
+                  {title}
+                </span>
+                {lastUpdated && (
+                  <span className="text-[10px] text-white/30">
+                    {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                )}
+              </div>
+              {isLoading ? (
+                <p className="text-sm text-white/60 truncate">{loadingMessage}</p>
+              ) : error ? (
+                <p className="text-sm text-yellow-400/80 truncate">Tap to view details</p>
+              ) : (
+                <p className="text-sm text-white/80 truncate">
+                  {condensedSummary || "Tap to view insights"}
+                </p>
+              )}
+            </div>
+
+            {/* Expand indicator */}
+            <ChevronDown className="h-4 w-4 text-white/40 flex-shrink-0" />
+          </div>
+
+          {/* Subtle accent line */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-[2px] opacity-30"
+            style={{ backgroundColor: accentColor }}
+          />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -101,6 +171,15 @@ export function AIInsightsCard({
                 title="Refresh Insights"
               >
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+              </button>
+            )}
+            {onExpand && isSidebar && (
+              <button
+                onClick={onExpand}
+                className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                title="Collapse"
+              >
+                <ChevronUp className="h-4 w-4" />
               </button>
             )}
             {onDismiss && (

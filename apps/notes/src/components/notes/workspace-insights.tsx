@@ -19,10 +19,11 @@ interface InsightData {
 }
 
 interface WorkspaceInsightsProps {
-  variant?: "default" | "sidebar";
+  variant?: "default" | "sidebar" | "condensed";
+  onExpand?: () => void;
 }
 
-export function WorkspaceInsights({ variant = "default" }: WorkspaceInsightsProps) {
+export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceInsightsProps) {
   const { notes, loading: notesLoading } = useNotes();
   const { primary: primaryColor } = useAppColors();
   const [loading, setLoading] = useState(false);
@@ -164,6 +165,14 @@ export function WorkspaceInsights({ variant = "default" }: WorkspaceInsightsProp
     }));
   }, [data, primaryColor, variant]);
 
+  // Condensed summary: show current focus or first pending action
+  const condensedSummary = useMemo(() => {
+    if (!data) return undefined;
+    if (data.weeklyFocus) return data.weeklyFocus;
+    if (data.pendingActions.length > 0) return data.pendingActions[0];
+    return undefined;
+  }, [data]);
+
   if (notesLoading || !hasEnoughData) return null;
 
   // Format error message
@@ -183,6 +192,8 @@ export function WorkspaceInsights({ variant = "default" }: WorkspaceInsightsProp
       lastUpdated={lastUpdated}
       onRefresh={generateInsights}
       refreshDisabled={loading}
+      onExpand={onExpand}
+      condensedSummary={condensedSummary}
     />
   );
 }

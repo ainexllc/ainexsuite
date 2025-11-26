@@ -23,8 +23,8 @@ export interface OpenRouterResponse {
 export class OpenRouterClient {
   private apiKey: string;
   private baseUrl = "https://openrouter.ai/api/v1";
-  // Default to Gemini Flash 1.5 for speed/cost
-  private defaultModel = "google/gemini-flash-1.5";
+  // Default to Gemini 2.0 Flash for speed/cost
+  private defaultModel = "google/gemini-2.0-flash-001";
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || serverEnv.OPENROUTER_API_KEY || "";
@@ -56,10 +56,14 @@ export class OpenRouterClient {
         endpoint = "https://api.x.ai/v1/chat/completions";
         token = serverEnv.XAI_API_KEY;
 
-        // Map OpenRouter IDs to xAI Direct IDs
-        // Available models: grok-3, grok-3-fast, grok-3-mini, grok-3-mini-fast
-        if (model === "x-ai/grok-3-fast" || model === "grok-3-fast") {
-            model = "grok-3-fast"; // Fast non-reasoning model
+        // Map model IDs to xAI Direct IDs
+        // Available models: grok-4-1-fast-non-reasoning, grok-4, grok-3, grok-3-fast
+        if (model.includes("grok-4") && model.includes("fast")) {
+            model = "grok-4-1-fast-non-reasoning"; // Latest fast non-reasoning model
+        } else if (model.includes("grok-4")) {
+            model = "grok-4"; // Full Grok 4
+        } else if (model === "x-ai/grok-3-fast" || model === "grok-3-fast") {
+            model = "grok-3-fast"; // Grok 3 fast
         } else if (model === "grok-3" || model === "x-ai/grok-3") {
             model = "grok-3";
         } else if (model === "grok-beta" || model === "x-ai/grok-beta") {
@@ -72,6 +76,9 @@ export class OpenRouterClient {
         headers = {
             "Content-Type": "application/json",
         };
+    } else if (model.includes("grok") || model.includes("x-ai")) {
+        // No xAI key available, fall back to default model
+        model = this.defaultModel;
     }
 
     if (!token) {

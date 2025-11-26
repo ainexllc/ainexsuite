@@ -8,7 +8,6 @@ import {
   Archive,
   CheckSquare,
   Image as ImageIcon,
-  LayoutGrid,
   Palette,
   Pin,
   PinOff,
@@ -25,12 +24,9 @@ import type {
   NoteAttachment,
   NoteColor,
   NoteDraft,
-  NotePattern,
 } from "@/lib/types/note";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
-import { NOTE_PATTERNS } from "@/lib/constants/note-patterns";
-import { getTextColorForBackground } from "@/lib/utils/note-colors";
 import { useLabels } from "@/components/providers/labels-provider";
 import { useReminders } from "@/components/providers/reminders-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
@@ -89,7 +85,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     note.checklist,
   );
   const [color, setColor] = useState<NoteColor>(note.color);
-  const [pattern, setPattern] = useState<NotePattern | undefined>(note.pattern || "none");
   const [pinned, setPinned] = useState(note.pinned);
   const [archived, setArchived] = useState(note.archived);
   const [existingAttachments, setExistingAttachments] = useState<NoteAttachment[]>(
@@ -99,7 +94,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [newAttachments, setNewAttachments] = useState<AttachmentDraft[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
-  const [showPatternPicker, setShowPatternPicker] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
     note.labelIds ?? [],
@@ -313,7 +307,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     const titleChanged = title !== note.title;
     const bodyChanged = body !== note.body;
     const colorChanged = color !== note.color;
-    const patternChanged = pattern !== note.pattern;
     const pinnedChanged = pinned !== note.pinned;
     const archivedChanged = archived !== note.archived;
     const attachmentsRemoved = removedAttachments.length > 0;
@@ -358,7 +351,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       !titleChanged &&
       !bodyChanged &&
       !colorChanged &&
-      !patternChanged &&
       !pinnedChanged &&
       !archivedChanged &&
       !checklistChanged &&
@@ -406,10 +398,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
       if (colorChanged) {
         updates.color = color;
-      }
-
-      if (patternChanged) {
-        updates.pattern = pattern;
       }
 
       if (labelsChanged) {
@@ -498,8 +486,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     note.body,
     color,
     note.color,
-    pattern,
-    note.pattern,
     pinned,
     note.pinned,
     archived,
@@ -548,24 +534,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleSave, onClose]);
 
-  useEffect(() => {
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!editorContainerRef.current) {
-        return;
-      }
-
-      if (editorContainerRef.current.contains(event.target as Node)) {
-        return;
-      }
-
-      void handleSave();
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [handleSave]);
 
   useEffect(
     () => () => {
@@ -611,16 +579,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
   }, [checklist]);
 
-  const backgroundClass =
-    color === "default"
-      ? "bg-[#1a1a1a] dark:bg-[#1a1a1a]"
-      : `bg-${color} dark:bg-${color}-dark`;
-
-  const patternClass = pattern && pattern !== "none"
-    ? NOTE_PATTERNS.find((p) => p.id === pattern)?.patternClass || ""
-    : "";
-
-  const textColors = getTextColorForBackground(color);
+  const noteColorConfig = NOTE_COLORS.find((c) => c.id === color);
+  const footerClass = noteColorConfig?.footerClass || "bg-white/5";
   const canUseSms = Boolean(preferences.smsNumber?.trim());
 
   useEffect(() => {
@@ -699,14 +659,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   };
 
   const content = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/60 px-4 py-4 sm:px-6 sm:py-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-4 sm:px-6 sm:py-6">
       <div
         ref={editorContainerRef}
         className={clsx(
-          "relative w-full max-w-3xl max-h-[85vh] flex flex-col rounded-3xl border border-outline-subtle shadow-2xl dark:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.35)]",
+          "relative w-full max-w-3xl max-h-[85vh] flex flex-col rounded-3xl border border-white/10 bg-[#1a1a1a]/95 backdrop-blur-xl shadow-2xl",
           modalSizeClass,
-          backgroundClass,
-          patternClass,
         )}
       >
         <div className="flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto">
@@ -715,7 +673,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Title"
-              className={clsx("w-full bg-transparent text-lg font-semibold focus:outline-none", textColors.title, textColors.placeholder)}
+              className="w-full bg-transparent text-lg font-semibold text-white placeholder-white/40 focus:outline-none"
             />
             <div className="flex items-center gap-2 mr-14">
               <button
@@ -873,7 +831,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               onChange={(event) => setBody(event.target.value)}
               placeholder="Write your note…"
               rows={8}
-              className={clsx("min-h-[120px] w-full resize-none bg-transparent text-sm focus:outline-none", textColors.body, textColors.placeholder)}
+              className="min-h-[120px] w-full resize-none bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none"
             />
           ) : (
             <div className="space-y-3">
@@ -919,7 +877,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         delete checklistInputRefs.current[item.id];
                       }
                     }}
-                    className={clsx("flex-1 border-b border-transparent bg-transparent pb-1 text-sm focus:border-outline-strong focus:outline-none", textColors.body, textColors.placeholder)}
+                    className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-white/80 placeholder-white/40 focus:border-white/30 focus:outline-none"
                   />
                   <button
                     type="button"
@@ -938,7 +896,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <button
                 type="button"
                 onClick={handleAddChecklistItem}
-                className={clsx("inline-flex items-center gap-2 rounded-full border border-outline-subtle px-3 py-1 text-xs font-medium transition hover:border-outline-strong", textColors.muted)}
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-medium text-white/60 transition hover:border-white/40 hover:text-white/80"
               >
                 <CheckSquare className="h-3.5 w-3.5" /> Add item
               </button>
@@ -1164,8 +1122,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
         </div>
 
-        {/* Bottom toolbar - anchored to bottom */}
-        <div className="flex-shrink-0 border-t border-outline-subtle/30 px-6 py-4">
+        {/* Bottom toolbar - anchored to bottom with color */}
+        <div className={clsx("flex-shrink-0 rounded-b-3xl px-6 py-4", footerClass)}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <button
@@ -1196,14 +1154,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     }
                   });
                 }}
-                className="icon-button h-10 w-10"
+                className={clsx(
+                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  mode === "checklist" && "bg-white/20 text-white"
+                )}
                 aria-label="Toggle checklist mode"
               >
                 <CheckSquare className="h-4 w-4" />
               </button>
               <button
                 type="button"
-                className="icon-button h-10 w-10"
+                className="icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10"
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Add images"
               >
@@ -1213,20 +1174,19 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowPatternPicker(false);
                     setShowPalette((prev) => !prev);
                     setShowLabelPicker(false);
                   }}
                   className={clsx(
-                    "icon-button h-10 w-10",
-                    showPalette && "bg-accent-100 text-accent-600",
+                    "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                    showPalette && "bg-white/20 text-white",
                   )}
                   aria-label="Change color"
                 >
                   <Palette className="h-4 w-4" />
                 </button>
                 {showPalette ? (
-                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl">
+                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl bg-[#1a1a1a]/95 p-3 shadow-2xl backdrop-blur-xl border border-white/10">
                     {NOTE_COLORS.map((option) => (
                       <button
                         key={option.id}
@@ -1238,52 +1198,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         className={clsx(
                           "inline-flex shrink-0 h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
                           option.swatchClass,
-                          option.id === color && "ring-2 ring-accent-600",
+                          option.id === color && "ring-2 ring-white",
                         )}
                         aria-label={`Set color ${option.label}`}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowPatternPicker((prev) => !prev);
-                    setShowPalette(false);
-                    setShowLabelPicker(false);
-                  }}
-                  className={clsx(
-                    "icon-button h-10 w-10",
-                    showPatternPicker && "bg-accent-100 text-accent-600",
-                  )}
-                  aria-label="Change pattern"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </button>
-                {showPatternPicker ? (
-                  <div
-                    className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl"
-                    style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', gap: '0.5rem' }}
-                  >
-                    {NOTE_PATTERNS.map((patternOption) => (
-                      <button
-                        key={patternOption.id}
-                        type="button"
-                        onClick={() => {
-                          setPattern(patternOption.id);
-                          setShowPatternPicker(false);
-                        }}
-                        style={{ display: 'inline-block', flexShrink: 0, width: '32px', height: '32px' }}
-                        className={clsx(
-                          "rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 shadow-sm",
-                          "border-gray-300 dark:border-gray-600",
-                          patternOption.previewClass,
-                          patternOption.id === pattern && "ring-2 ring-accent-600",
-                        )}
-                        aria-label={`Set pattern ${patternOption.label}`}
-                        title={patternOption.description}
                       />
                     ))}
                   </div>
@@ -1294,11 +1211,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 onClick={() => {
                   setShowLabelPicker((prev) => !prev);
                   setShowPalette(false);
-                  setShowPatternPicker(false);
                 }}
                 className={clsx(
-                  "icon-button h-10 w-10",
-                  showLabelPicker && "bg-accent-100 text-accent-600",
+                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  showLabelPicker && "bg-white/20 text-white",
                 )}
                 aria-label="Manage labels"
               >
@@ -1307,8 +1223,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <button
                 type="button"
                 className={clsx(
-                  "icon-button h-10 w-10",
-                  archived && "bg-surface-muted text-ink-600",
+                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  archived && "bg-white/20 text-white",
                 )}
                 onClick={() => setArchived((prev) => !prev)}
                 aria-label={archived ? "Unarchive" : "Archive"}
@@ -1320,7 +1236,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="rounded-full border border-outline-subtle px-4 py-1.5 text-sm font-medium text-ink-600"
+                className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:border-white/40"
                 onClick={onClose}
               >
                 Cancel
@@ -1328,7 +1244,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <button
                 type="button"
                 onClick={() => void handleSave()}
-                className="rounded-full bg-accent-500 px-5 py-1.5 text-sm font-semibold text-ink-50 shadow-sm transition hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 disabled:opacity-60"
+                className="rounded-full bg-white px-5 py-1.5 text-sm font-semibold text-black shadow-sm transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white disabled:opacity-60"
                 disabled={isSaving}
               >
                 {isSaving ? "Saving…" : "Save"}
@@ -1336,7 +1252,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             </div>
           </div>
           {showLabelPicker ? (
-            <div className="flex flex-wrap gap-2 border-t border-outline-subtle/60 pt-3 mt-3">
+            <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3 mt-3">
               {labels.length ? (
                 labels.map((label) => {
                   const isSelected = selectedLabelIds.includes(label.id);
@@ -1347,8 +1263,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       className={clsx(
                         "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
                         isSelected
-                          ? "border-accent-500 bg-accent-100 text-ink-100"
-                          : "border-outline-subtle bg-surface-muted text-ink-600 hover:border-outline-strong",
+                          ? "border-white bg-white/20 text-white"
+                          : "border-white/20 bg-white/5 text-white/70 hover:border-white/40 hover:text-white",
                       )}
                       onClick={() => toggleLabelSelection(label.id)}
                     >
@@ -1356,7 +1272,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         className={clsx(
                           "h-2 w-2 rounded-full",
                           label.color === "default"
-                            ? "bg-ink-400"
+                            ? "bg-white/40"
                             : `bg-${label.color}`,
                         )}
                       />
@@ -1365,7 +1281,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   );
                 })
               ) : (
-                <p className="text-xs text-muted">
+                <p className="text-xs text-white/50">
                   Create labels from the sidebar to organize notes.
                 </p>
               )}
