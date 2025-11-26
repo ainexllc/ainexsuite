@@ -147,12 +147,14 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
   const [showEmailModal, setShowEmailModal] = useState(false);
 
   useEffect(() => {
+    if (!props.demoSteps || props.demoSteps.length === 0) return;
+
     const timer = setInterval(() => {
       setActiveDemo((prev) => (prev + 1) % props.demoSteps.length);
     }, 3200);
 
     return () => clearInterval(timer);
-  }, [props.demoSteps.length]);
+  }, [props.demoSteps?.length]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -380,14 +382,16 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                 })}
               </div>
 
-              <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 max-w-2xl mx-auto">
-                <Sparkles className="h-4 w-4 flex-shrink-0" style={{ color: accentColor }} />
-                <div className="overflow-hidden">
-                  <div key={props.demoSteps[activeDemo].text} className="transition-opacity duration-300" aria-live="polite">
-                    {props.demoSteps[activeDemo].emoji} {props.demoSteps[activeDemo].text}
+              {props.demoSteps && props.demoSteps.length > 0 && (
+                <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 max-w-2xl mx-auto">
+                  <Sparkles className="h-4 w-4 flex-shrink-0" style={{ color: accentColor }} />
+                  <div className="overflow-hidden">
+                    <div key={props.demoSteps[activeDemo].text} className="transition-opacity duration-300" aria-live="polite">
+                      {props.demoSteps[activeDemo].emoji} {props.demoSteps[activeDemo].text}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
