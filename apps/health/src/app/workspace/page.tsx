@@ -14,6 +14,7 @@ import {
   getTodayDate,
 } from '@/lib/health-metrics';
 import { HealthCheckinComposer } from '@/components/health-checkin-composer';
+import { HealthEditModal } from '@/components/health-edit-modal';
 import { HealthStats } from '@/components/health-stats';
 import { HealthHistory } from '@/components/health-history';
 import { AIAssistant } from '@/components/ai-assistant';
@@ -26,6 +27,7 @@ function HealthWorkspaceContent() {
   const [metrics, setMetrics] = useState<HealthMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [todayMetric, setTodayMetric] = useState<HealthMetric | null>(null);
+  const [editingMetric, setEditingMetric] = useState<HealthMetric | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -83,6 +85,17 @@ function HealthWorkspaceContent() {
       await loadData();
     } catch (error) {
       console.error('Failed to save check-in:', error);
+    }
+  };
+
+  const handleEditMetric = async (data: Partial<HealthMetric>) => {
+    if (!editingMetric) return;
+    try {
+      await updateHealthMetric(editingMetric.id, data);
+      await loadData();
+      setEditingMetric(null);
+    } catch (error) {
+      console.error('Failed to update check-in:', error);
     }
   };
 
@@ -177,7 +190,7 @@ function HealthWorkspaceContent() {
             {metrics.length > 0 && (
               <HealthHistory
                 metrics={metrics}
-                onEdit={() => {}}
+                onEdit={setEditingMetric}
                 onDelete={handleDeleteMetric}
               />
             )}
@@ -192,6 +205,15 @@ function HealthWorkspaceContent() {
       </div>
 
       <AIAssistant />
+
+      {/* Edit Modal */}
+      {editingMetric && (
+        <HealthEditModal
+          metric={editingMetric}
+          onSave={handleEditMetric}
+          onClose={() => setEditingMetric(null)}
+        />
+      )}
     </WorkspaceLayout>
   );
 }

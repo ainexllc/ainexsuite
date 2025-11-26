@@ -26,7 +26,7 @@ function FitWorkspaceContent() {
   const router = useRouter();
   
   // Store
-  const { getCurrentSpace, workouts, addWorkout } = useFitStore();
+  const { getCurrentSpace, workouts, addWorkout, updateWorkout } = useFitStore();
   const currentSpace = getCurrentSpace();
   
   const [showEditor, setShowEditor] = useState(false);
@@ -55,27 +55,36 @@ function FitWorkspaceContent() {
   
   const handleSaveWorkout = async (workoutData: Partial<Workout>) => {
     if (!user) return;
-    
+
     if (!currentSpace) {
       alert('No workout space found. Please refresh or create a space.');
       return;
     }
-    
-    // Convert legacy workout format to new model if needed
-    // Our new addWorkout expects a Workout object
-    const newWorkout: Workout = {
-      id: selectedWorkout?.id || `workout_${Date.now()}`,
-      spaceId: currentSpace.id,
-      userId: user.uid,
-      title: workoutData.title || 'Workout',
-      date: workoutData.date || new Date().toISOString(),
-      duration: workoutData.duration || 0,
-      exercises: workoutData.exercises || [],
-      // Map other fields as needed or use defaults
-    };
-    
-    await addWorkout(newWorkout);
+
+    // If editing an existing workout, update it
+    if (selectedWorkout?.id) {
+      await updateWorkout(selectedWorkout.id, {
+        title: workoutData.title || 'Workout',
+        date: workoutData.date || new Date().toISOString(),
+        duration: workoutData.duration || 0,
+        exercises: workoutData.exercises || [],
+      });
+    } else {
+      // Create new workout
+      const newWorkout: Workout = {
+        id: `workout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        spaceId: currentSpace.id,
+        userId: user.uid,
+        title: workoutData.title || 'Workout',
+        date: workoutData.date || new Date().toISOString(),
+        duration: workoutData.duration || 0,
+        exercises: workoutData.exercises || [],
+      };
+      await addWorkout(newWorkout);
+    }
+
     setShowEditor(false);
+    setSelectedWorkout(null);
   };
 
   // Show loading while authenticating or bootstrapping

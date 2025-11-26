@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Dumbbell, Calendar, Clock, Plus, X, Loader2, Trash2, Smile } from 'lucide-react';
+import { Calendar, Clock, Plus, X, Loader2, Trash2, Smile } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useFitStore } from '@/lib/store';
