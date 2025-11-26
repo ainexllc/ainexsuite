@@ -72,8 +72,14 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to generate insights");
+        // Handle specific error cases
+        if (response.status === 500) {
+          const errorData = await response.json().catch(() => ({ error: "Server error" }));
+          if (errorData.error?.includes("API key") || errorData.error?.includes("API Key") || errorData.error?.includes("configuration missing")) {
+            throw new Error("AI features require API key configuration. Please contact support.");
+          }
+        }
+        throw new Error("Failed to generate insights");
       }
 
       const result = await response.json();
@@ -161,6 +167,11 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
 
   if (!hasEnoughData) return null;
 
+  // Format error message
+  const errorMessage = error?.includes("API key")
+    ? "AI features require configuration. Journal insights will be available once set up."
+    : error;
+
   return (
     <AIInsightsCard
       title="AI Insights"
@@ -169,7 +180,7 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
       variant={variant}
       isLoading={loading}
       loadingMessage="Reflecting on your entries..."
-      error={error}
+      error={errorMessage}
       lastUpdated={lastUpdated}
       onRefresh={generateInsights}
       refreshDisabled={loading}
