@@ -13,12 +13,13 @@ import {
   deleteHealthMetric,
   getTodayDate,
 } from '@/lib/health-metrics';
-import { HealthCheckinForm } from '@/components/health-checkin-form';
+import { HealthCheckinComposer } from '@/components/health-checkin-composer';
+import { HealthEditModal } from '@/components/health-edit-modal';
 import { HealthStats } from '@/components/health-stats';
 import { HealthHistory } from '@/components/health-history';
 import { AIAssistant } from '@/components/ai-assistant';
 import { FitIntegrationWidget } from '@/components/fit-integration-widget';
-import { Plus, Activity, Loader2, Calendar } from 'lucide-react';
+import { Activity, Loader2, Calendar } from 'lucide-react';
 
 function HealthWorkspaceContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
@@ -26,9 +27,7 @@ function HealthWorkspaceContent() {
   const [metrics, setMetrics] = useState<HealthMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [todayMetric, setTodayMetric] = useState<HealthMetric | null>(null);
-  const [showCheckinForm, setShowCheckinForm] = useState(false);
   const [editingMetric, setEditingMetric] = useState<HealthMetric | null>(null);
-  const [selectedDate, setSelectedDate] = useState(getTodayDate());
 
   const loadData = useCallback(async () => {
     try {
@@ -66,9 +65,7 @@ function HealthWorkspaceContent() {
 
   const handleSaveCheckin = async (data: Partial<HealthMetric>) => {
     try {
-      if (editingMetric) {
-        await updateHealthMetric(editingMetric.id, data);
-      } else if (todayMetric && data.date === getTodayDate()) {
+      if (todayMetric && data.date === getTodayDate()) {
         await updateHealthMetric(todayMetric.id, data);
       } else {
         await createHealthMetric({
@@ -86,10 +83,19 @@ function HealthWorkspaceContent() {
         });
       }
       await loadData();
-      setShowCheckinForm(false);
-      setEditingMetric(null);
     } catch (error) {
       console.error('Failed to save check-in:', error);
+    }
+  };
+
+  const handleEditMetric = async (data: Partial<HealthMetric>) => {
+    if (!editingMetric) return;
+    try {
+      await updateHealthMetric(editingMetric.id, data);
+      await loadData();
+      setEditingMetric(null);
+    } catch (error) {
+      console.error('Failed to update check-in:', error);
     }
   };
 
@@ -126,32 +132,19 @@ function HealthWorkspaceContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Header with Quick Check-in */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-ink-900">Health Dashboard</h1>
-                <p className="text-ink-500 mt-1">Track your wellness journey</p>
-              </div>
-              <button
-                onClick={() => {
-                  setSelectedDate(getTodayDate());
-                  setEditingMetric(null);
-                  setShowCheckinForm(true);
-                }}
-                className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-emerald-500/20"
-                type="button"
-              >
-                <Plus className="h-5 w-5" />
-                {todayMetric ? 'Update Today' : 'Check-in Today'}
-              </button>
-            </div>
+            {/* Composer - Notes/Journal style */}
+            <HealthCheckinComposer
+              existingMetric={todayMetric}
+              date={getTodayDate()}
+              onSave={handleSaveCheckin}
+            />
 
             {/* Today's Status Card */}
             {todayMetric && (
               <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
                 <div className="flex items-center gap-3 mb-4">
                   <Calendar className="h-6 w-6" />
-                  <h2 className="text-lg font-semibold">Today&apos;s Check-in Complete</h2>
+                  <h2 className="text-lg font-semibold">Today&apos;s Check-in</h2>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {todayMetric.weight && (
@@ -184,19 +177,12 @@ function HealthWorkspaceContent() {
 
             {/* Empty State */}
             {!todayMetric && metrics.length === 0 && (
-              <div className="text-center py-12 rounded-2xl bg-surface-elevated border border-outline-subtle">
+              <div className="text-center py-12 rounded-2xl bg-white/5 border border-white/10">
                 <Activity className="h-16 w-16 mx-auto mb-4 text-emerald-500/50" />
-                <p className="text-ink-600 mb-2">No health data yet</p>
-                <p className="text-ink-400 text-sm mb-4">
-                  Start tracking your weight, sleep, hydration, and more
+                <p className="text-white/70 mb-2">No health data yet</p>
+                <p className="text-white/50 text-sm">
+                  Click above to start tracking your wellness journey
                 </p>
-                <button
-                  onClick={() => setShowCheckinForm(true)}
-                  className="text-emerald-500 hover:text-emerald-600 font-medium"
-                  type="button"
-                >
-                  Create your first check-in
-                </button>
               </div>
             )}
 
@@ -204,11 +190,7 @@ function HealthWorkspaceContent() {
             {metrics.length > 0 && (
               <HealthHistory
                 metrics={metrics}
-                onEdit={(metric) => {
-                  setEditingMetric(metric);
-                  setSelectedDate(metric.date);
-                  setShowCheckinForm(true);
-                }}
+                onEdit={setEditingMetric}
                 onDelete={handleDeleteMetric}
               />
             )}
@@ -222,24 +204,16 @@ function HealthWorkspaceContent() {
         </div>
       </div>
 
-      {/* Check-in Modal */}
-      {showCheckinForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-surface-elevated rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <HealthCheckinForm
-              existingMetric={editingMetric || (selectedDate === getTodayDate() ? todayMetric : null)}
-              date={selectedDate}
-              onSave={handleSaveCheckin}
-              onClose={() => {
-                setShowCheckinForm(false);
-                setEditingMetric(null);
-              }}
-            />
-          </div>
-        </div>
-      )}
-
       <AIAssistant />
+
+      {/* Edit Modal */}
+      {editingMetric && (
+        <HealthEditModal
+          metric={editingMetric}
+          onSave={handleEditMetric}
+          onClose={() => setEditingMetric(null)}
+        />
+      )}
     </WorkspaceLayout>
   );
 }

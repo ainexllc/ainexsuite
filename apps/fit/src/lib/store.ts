@@ -4,6 +4,7 @@ import { FitSpace, Workout, Challenge } from '../types/models';
 import {
   createFitSpaceInDb,
   createWorkoutInDb,
+  updateWorkoutInDb,
   createChallengeInDb,
   deleteWorkoutFromDb,
   archiveWorkoutInDb
@@ -25,6 +26,7 @@ interface FitState {
   setCurrentSpace: (spaceId: string) => void;
   addSpace: (space: FitSpace) => Promise<void>;
   addWorkout: (workout: Workout) => Promise<void>;
+  updateWorkout: (workoutId: string, data: Partial<Workout>) => Promise<void>;
   deleteWorkout: (workoutId: string) => Promise<void>;
   archiveWorkout: (workoutId: string) => Promise<void>;
   addChallenge: (challenge: Challenge) => Promise<void>;
@@ -60,8 +62,24 @@ export const useFitStore = create<FitState>()(
       },
 
       addWorkout: async (workout) => {
+        // Check if workout with this ID already exists (prevent duplicates)
+        const existing = get().workouts.find(w => w.id === workout.id);
+        if (existing) {
+          console.warn('Workout already exists, skipping duplicate:', workout.id);
+          return;
+        }
         set((state) => ({ workouts: [workout, ...state.workouts] }));
         await createWorkoutInDb(workout);
+      },
+
+      updateWorkout: async (workoutId, data) => {
+        // Update local state optimistically
+        set((state) => ({
+          workouts: state.workouts.map(w =>
+            w.id === workoutId ? { ...w, ...data } : w
+          )
+        }));
+        await updateWorkoutInDb(workoutId, data);
       },
 
       deleteWorkout: async (workoutId) => {

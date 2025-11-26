@@ -19,8 +19,8 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: 'Track - AINexSuite',
-  description: 'Habit tracking and streak monitoring with AI insights',
+  title: 'Health - AINexSuite',
+  description: 'Health metrics and wellness tracking with AI insights',
 };
 
 export default function RootLayout({

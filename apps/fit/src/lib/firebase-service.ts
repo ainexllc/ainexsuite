@@ -39,6 +39,11 @@ export async function createWorkoutInDb(workout: Workout) {
   await setDoc(workoutRef, workout);
 }
 
+export async function updateWorkoutInDb(workoutId: string, data: Partial<Workout>) {
+  const workoutRef = doc(db, 'workouts', workoutId);
+  await updateDoc(workoutRef, data);
+}
+
 export function subscribeToSpaceWorkouts(spaceId: string, callback: (workouts: Workout[]) => void) {
   const q = query(
     collection(db, 'workouts'),
