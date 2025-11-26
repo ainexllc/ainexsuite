@@ -637,6 +637,9 @@ importers:
       '@ainexsuite/firebase':
         specifier: workspace:*
         version: link:../../packages/firebase
+      '@ainexsuite/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       '@ainexsuite/types':
         specifier: workspace:*
         version: link:../../packages/types
