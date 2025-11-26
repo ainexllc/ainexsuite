@@ -104,12 +104,14 @@ export async function createNote(
     labelIds?: string[];
     reminderAt?: Date | null;
     reminderId?: string | null;
+    spaceId?: string;
   },
 ) {
   const type = input.type ?? (input.checklist?.length ? "checklist" : "text");
   const noteData = createNotePayload(userId, {
     ...input,
     type,
+    spaceId: input.spaceId,
   });
 
   const docRef = await addDoc(clientNoteCollection(userId), noteData);

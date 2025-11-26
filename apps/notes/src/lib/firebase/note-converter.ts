@@ -51,6 +51,7 @@ export const noteConverter: FirestoreDataConverter<Note> = {
     return {
       id: snapshot.id,
       ownerId: data.ownerId,
+      spaceId: data.spaceId,
       title: data.title,
       body: data.body,
       type: data.type,
@@ -87,12 +88,14 @@ export function createNotePayload(
     reminderAt?: Date | null;
     deletedAt?: Date | null;
     sharedWith?: NoteCollaborator[];
+    spaceId?: string;
   },
 ) {
   const now = serverTimestamp();
 
   return {
     ownerId,
+    ...(overrides.spaceId ? { spaceId: overrides.spaceId } : {}),
     title: overrides.title ?? "",
     body: overrides.body ?? "",
     type: overrides.type,

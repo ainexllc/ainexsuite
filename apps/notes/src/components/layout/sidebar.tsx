@@ -10,6 +10,7 @@ import { clsx } from "clsx";
 import { useLabels } from "@/components/providers/labels-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import type { Label } from "@/lib/types/note";
+import { SpaceSwitcher } from "@/components/spaces";
 
 type LabelNode = {
   label: Label;
@@ -157,6 +158,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </button>
       </div>
       <div className="flex-1 overflow-y-auto">
+        {/* Space Switcher */}
+        {!isCollapsed && (
+          <div className="px-3 pb-2">
+            <SpaceSwitcher />
+          </div>
+        )}
+
         {sections.map((section) => (
           <NavSection key={section.title} title={section.title} isCollapsed={isCollapsed}>
             {section.items.map(({ href, icon: Icon, label, badge }) => {

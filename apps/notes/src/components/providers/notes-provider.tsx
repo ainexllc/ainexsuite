@@ -26,6 +26,7 @@ import {
   restoreNote as restoreNoteMutation,
   permanentlyDeleteNote,
 } from "@/lib/firebase/note-service";
+import { useSpaces } from "@/components/providers/spaces-provider";
 
 type CreateNoteInput = {
   title?: string;
@@ -39,6 +40,7 @@ type CreateNoteInput = {
   reminderAt?: Date | null;
   reminderId?: string | null;
   attachments?: File[];
+  spaceId?: string;
 };
 
 type NotesContextValue = {
@@ -72,6 +74,7 @@ type NotesProviderProps = {
 
 export function NotesProvider({ children }: NotesProviderProps) {
   const { user } = useAuth();
+  const { currentSpaceId } = useSpaces();
   const [ownedNotes, setOwnedNotes] = useState<Note[]>([]);
   const [sharedNotes, setSharedNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,9 +165,13 @@ export function NotesProvider({ children }: NotesProviderProps) {
           size: file.size,
         })) ?? [];
 
+      // Use the provided spaceId or fall back to current space (unless it's "personal" which means no spaceId)
+      const effectiveSpaceId = input.spaceId ?? (currentSpaceId === "personal" ? undefined : currentSpaceId);
+
       const optimisticNote: Note = {
         id: tempId,
         ownerId: userId,
+        spaceId: effectiveSpaceId,
         title: input.title ?? "",
         body: input.body ?? "",
         type:
@@ -188,7 +195,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       setPendingNotes((prev) => [optimisticNote, ...prev]);
 
       try {
-        const noteId = await createNoteMutation(userId, noteInput);
+        const noteId = await createNoteMutation(userId, { ...noteInput, spaceId: effectiveSpaceId });
 
         if (attachments?.length) {
           const uploads = await Promise.all(
@@ -208,7 +215,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
         });
       }
     },
-    [userId],
+    [userId, currentSpaceId],
   );
 
   const handleUpdate = useCallback(
@@ -362,6 +369,19 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return false;
       }
 
+      // Filter by current space
+      // "personal" space shows notes with no spaceId (personal notes)
+      // Other spaces show notes with matching spaceId
+      if (currentSpaceId === "personal") {
+        if (note.spaceId) {
+          return false; // Personal view only shows notes without a spaceId
+        }
+      } else {
+        if (note.spaceId !== currentSpaceId) {
+          return false; // Space view only shows notes matching the space
+        }
+      }
+
       const matchesLabels = !hasLabelFilter
         ? true
         : activeLabelIds.some((labelId) => note.labelIds.includes(labelId));
@@ -391,7 +411,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       others,
       trashed,
     };
-  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds]);
+  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId]);
 
   useEffect(() => {
     computedNotesRef.current = computedNotes;

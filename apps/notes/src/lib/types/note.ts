@@ -1,4 +1,38 @@
 import type { Timestamp } from "firebase/firestore";
+
+// ============ Space Types ============
+export type SpaceType = "personal" | "family" | "work";
+
+export type SpaceMemberRole = "admin" | "member" | "viewer";
+
+export type SpaceMember = {
+  uid: string;
+  displayName: string;
+  photoURL?: string;
+  role: SpaceMemberRole;
+  joinedAt: string;
+};
+
+export type NoteSpaceDoc = {
+  name: string;
+  type: SpaceType;
+  members: SpaceMember[];
+  memberUids: string[];
+  createdAt: Timestamp;
+  createdBy: string;
+};
+
+export type NoteSpace = Omit<NoteSpaceDoc, "createdAt"> & {
+  id: string;
+  createdAt: Date;
+};
+
+export type NoteSpaceDraft = {
+  name?: string;
+  type?: SpaceType;
+};
+
+// ============ Note Types ============
 export type NoteType = "text" | "checklist";
 
 export type NoteColor =
@@ -56,6 +90,7 @@ export type NoteCollaborator = {
 
 export type NoteDoc = {
   ownerId: string;
+  spaceId?: string; // Optional - null/undefined means personal default space
   title: string;
   body: string;
   type: NoteType;
@@ -90,6 +125,7 @@ export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "sha
 export type NoteDraft = {
   title?: string;
   body?: string;
+  spaceId?: string;
   checklist?: ChecklistItem[];
   color?: NoteColor;
   pattern?: NotePattern;
