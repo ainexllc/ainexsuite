@@ -10,28 +10,20 @@ interface ColorGenerationRequest {
 
 // Color generation using Grok via xAI API
 async function generateColorsWithGrok(appName: string, appDescription?: string, mood?: string): Promise<{ primary: string; secondary: string; provider: string }> {
-  const apiKey = process.env.GROK_API_KEY;
+  const apiKey = process.env.XAI_API_KEY;
 
   if (!apiKey) {
-    throw new Error('GROK_API_KEY not configured');
+    throw new Error('XAI_API_KEY not configured');
   }
 
   const prompt = `Generate a BRIGHT, BOLD, and VIBRANT color palette for an app called "${appName}"${appDescription ? ` which is ${appDescription}` : ''}${mood ? ` with a ${mood} mood` : ''}.
 
-Return ONLY a JSON object with two hex color codes (including the # symbol):
-- "primary": A BRIGHT, BOLD main brand color with high saturation (85-100%)
-- "secondary": A complementary VIBRANT color that creates visual interest (can be analogous, complementary, or triadic)
+Return ONLY a valid JSON object with no markdown formatting or code blocks. The object must contain exactly two keys:
+- "primary": A BRIGHT, BOLD main brand color hex code
+- "secondary": A complementary VIBRANT color hex code
 
-REQUIREMENTS:
-- Use BRIGHT, BOLD colors with HIGH saturation (85-100%)
-- Avoid dull, muted, or pastel colors
-- Create energetic, modern color combinations
-- Ensure colors are visually distinct and eye-catching
-- Good contrast for accessibility
-- Each generation should produce DIFFERENT colors
-
-Return format:
-{"primary":"#hexcode","secondary":"#hexcode"}`;
+Example response:
+{"primary": "#FF5733", "secondary": "#33FF57"}`;
 
   const response = await fetch('https://api.x.ai/v1/chat/completions', {
     method: 'POST',
@@ -40,14 +32,14 @@ Return format:
       'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'grok-3-fast',
+      model: 'grok-2-latest',
       messages: [
         {
           role: 'user',
           content: prompt,
         },
       ],
-      temperature: 1.0,
+      temperature: 0.7,
     }),
   });
 
@@ -59,8 +51,8 @@ Return format:
   const data = await response.json();
   const content = data.choices[0].message.content;
 
-  // Extract JSON from the response
-  const jsonMatch = content.match(/\{[^}]+\}/);
+  // Extract JSON from the response (handle potential markdown wrapping)
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('Failed to parse color response from Grok');
   }
