@@ -34,6 +34,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
 
   const composerRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const hasSubmittedRef = useRef(false);
 
   const resetState = useCallback(() => {
     setExpanded(false);
@@ -43,6 +44,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
     setExercises([]);
     setFeeling(undefined);
     setShowFeelingPicker(false);
+    hasSubmittedRef.current = false;
   }, []);
 
   const hasContent = title.trim() || exercises.some(e => e.name.trim());
@@ -90,7 +92,8 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
   };
 
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting || !user || !currentSpace) return;
+    // Prevent duplicate submissions
+    if (isSubmitting || hasSubmittedRef.current || !user || !currentSpace) return;
 
     if (!title.trim()) {
       titleInputRef.current?.focus();
@@ -99,6 +102,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
 
     try {
       setIsSubmitting(true);
+      hasSubmittedRef.current = true;
 
       const newWorkout: Workout = {
         id: `workout_${Date.now()}`,
@@ -116,6 +120,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       resetState();
     } catch (error) {
       console.error('Failed to create workout:', error);
+      hasSubmittedRef.current = false;
     } finally {
       setIsSubmitting(false);
     }
@@ -129,7 +134,8 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       if (!composerRef.current) return;
       if (composerRef.current.contains(event.target as Node)) return;
 
-      if (isSubmitting) return;
+      // Don't submit if already submitting or already submitted
+      if (isSubmitting || hasSubmittedRef.current) return;
 
       if (hasContent) {
         void handleSubmit();
