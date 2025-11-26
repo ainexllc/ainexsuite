@@ -2,6 +2,8 @@ import {
   collection,
   doc,
   setDoc,
+  deleteDoc,
+  updateDoc,
   query,
   where,
   onSnapshot,
@@ -41,6 +43,8 @@ export function subscribeToSpaceWorkouts(spaceId: string, callback: (workouts: W
   const q = query(
     collection(db, 'workouts'),
     where('spaceId', '==', spaceId),
+    where('archived', '!=', true),
+    orderBy('archived'),
     orderBy('date', 'desc'),
     limit(50)
   );
@@ -48,6 +52,27 @@ export function subscribeToSpaceWorkouts(spaceId: string, callback: (workouts: W
   return onSnapshot(q, (snapshot) => {
     const workouts = snapshot.docs.map(doc => doc.data() as Workout);
     callback(workouts);
+  });
+}
+
+export async function deleteWorkoutFromDb(workoutId: string) {
+  const workoutRef = doc(db, 'workouts', workoutId);
+  await deleteDoc(workoutRef);
+}
+
+export async function archiveWorkoutInDb(workoutId: string) {
+  const workoutRef = doc(db, 'workouts', workoutId);
+  await updateDoc(workoutRef, {
+    archived: true,
+    archivedAt: new Date().toISOString()
+  });
+}
+
+export async function unarchiveWorkoutInDb(workoutId: string) {
+  const workoutRef = doc(db, 'workouts', workoutId);
+  await updateDoc(workoutRef, {
+    archived: false,
+    archivedAt: null
   });
 }
 

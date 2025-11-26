@@ -48,6 +48,8 @@ export interface Workout {
   feeling?: 'great' | 'good' | 'tired' | 'exhausted';
   likes?: string[]; // Array of user UIDs who liked this
   comments?: Comment[];
+  archived?: boolean; // Soft-delete/archive flag
+  archivedAt?: string;
 }
 
 export interface Comment {

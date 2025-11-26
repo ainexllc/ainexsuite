@@ -5,6 +5,8 @@ const serverSchema = z.object({
   FIREBASE_ADMIN_CLIENT_EMAIL: z.string().optional(),
   FIREBASE_ADMIN_PRIVATE_KEY: z.string().optional(),
   FIREBASE_ADMIN_DATABASE_URL: z.string().url().optional(),
+  XAI_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
 });
 
 const clientSchema = z.object({
@@ -25,12 +27,16 @@ export const serverEnv = serverSchema.parse(
         FIREBASE_ADMIN_CLIENT_EMAIL: 'build@example.com',
         FIREBASE_ADMIN_PRIVATE_KEY: 'build-placeholder',
         FIREBASE_ADMIN_DATABASE_URL: 'https://example.com',
+        XAI_API_KEY: '',
+        OPENROUTER_API_KEY: '',
       }
     : {
         FIREBASE_ADMIN_PROJECT_ID: process.env.FIREBASE_ADMIN_PROJECT_ID,
         FIREBASE_ADMIN_CLIENT_EMAIL: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
         FIREBASE_ADMIN_PRIVATE_KEY: process.env.FIREBASE_ADMIN_PRIVATE_KEY,
         FIREBASE_ADMIN_DATABASE_URL: process.env.FIREBASE_ADMIN_DATABASE_URL,
+        XAI_API_KEY: process.env.XAI_API_KEY,
+        OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
       }
 );
 

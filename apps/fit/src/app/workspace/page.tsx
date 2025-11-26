@@ -8,6 +8,7 @@ import { WorkoutList } from '@/components/workout-list';
 import { WorkoutEditor } from '@/components/workout-editor';
 import { WorkoutComposer } from '@/components/workout-composer';
 import { AIAssistant } from '@/components/ai-assistant';
+import { FitInsights } from '@/components/fit-insights';
 import { Dumbbell, Loader2, Trophy } from 'lucide-react';
 
 // New Components
@@ -31,6 +32,7 @@ function FitWorkspaceContent() {
   const [showEditor, setShowEditor] = useState(false);
   const [showChallengeEditor, setShowChallengeEditor] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [mobileInsightsExpanded, setMobileInsightsExpanded] = useState(false);
 
   // Handle sign out
   const handleSignOut = async () => {
@@ -97,12 +99,27 @@ function FitWorkspaceContent() {
       <FitFirestoreSync />
 
       <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        {/* Mobile: Condensed AI Insights at top (hidden on xl+) */}
+        <div className="xl:hidden mb-4">
+          {mobileInsightsExpanded ? (
+            <FitInsights
+              variant="sidebar"
+              onExpand={() => setMobileInsightsExpanded(false)}
+            />
+          ) : (
+            <FitInsights
+              variant="condensed"
+              onExpand={() => setMobileInsightsExpanded(true)}
+            />
+          )}
+        </div>
+
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4 w-full sm:w-auto">
             <BuddySwitcher />
           </div>
-          
+
           <div className="flex items-center gap-3">
              {currentSpace?.type !== 'personal' && (
                <button
@@ -116,9 +133,9 @@ function FitWorkspaceContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="space-y-8">
             {/* Workout Composer - Entry point like Notes */}
             <WorkoutComposer onWorkoutCreated={handleUpdate} />
 
@@ -160,10 +177,10 @@ function FitWorkspaceContent() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar - AI Insights + Leaderboard */}
+          <div className="sticky top-28 hidden h-fit flex-col gap-6 xl:flex">
+            <FitInsights variant="sidebar" />
             <Leaderboard />
-            {/* Add Weekly Volume Stats here later */}
           </div>
         </div>
       </div>

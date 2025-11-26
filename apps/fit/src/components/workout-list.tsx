@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import type { Workout } from '@/types/models';
 import { format } from 'date-fns';
-import { Calendar, Clock, Dumbbell, Edit } from 'lucide-react';
+import { Calendar, Clock, Dumbbell, Edit, Trash2, Archive, MoreVertical } from 'lucide-react';
+import { useFitStore } from '@/lib/store';
 
 interface WorkoutListProps {
   workouts: Workout[];
@@ -11,6 +13,20 @@ interface WorkoutListProps {
 }
 
 export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
+  const { deleteWorkout, archiveWorkout } = useFitStore();
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const handleDelete = async (workoutId: string) => {
+    await deleteWorkout(workoutId);
+    setConfirmDelete(null);
+    setMenuOpen(null);
+  };
+
+  const handleArchive = async (workoutId: string) => {
+    await archiveWorkout(workoutId);
+    setMenuOpen(null);
+  };
   return (
     <div className="grid gap-4">
       {workouts.map((workout) => {
@@ -41,12 +57,59 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
                 </div>
               </div>
 
-              <button
-                onClick={() => onEdit(workout)}
-                className="p-2 hover:bg-surface-hover rounded-lg transition-colors"
-              >
-                <Edit className="h-4 w-4 text-ink-600" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => onEdit(workout)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Edit className="h-4 w-4 text-white/60" />
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setMenuOpen(menuOpen === workout.id ? null : workout.id)}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <MoreVertical className="h-4 w-4 text-white/60" />
+                  </button>
+                  {menuOpen === workout.id && (
+                    <div className="absolute right-0 top-full mt-1 z-20 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[140px]">
+                      <button
+                        onClick={() => handleArchive(workout.id)}
+                        className="w-full px-4 py-2 text-left text-sm text-white/70 hover:bg-white/10 flex items-center gap-2"
+                      >
+                        <Archive className="h-4 w-4" />
+                        Archive
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(workout.id)}
+                        className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-white/10 flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                  {confirmDelete === workout.id && (
+                    <div className="absolute right-0 top-full mt-1 z-30 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl p-4 min-w-[200px]">
+                      <p className="text-sm text-white mb-3">Delete this workout permanently?</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setConfirmDelete(null)}
+                          className="flex-1 px-3 py-1.5 text-sm text-white/70 hover:bg-white/10 rounded-lg border border-white/10"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleDelete(workout.id)}
+                          className="flex-1 px-3 py-1.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">

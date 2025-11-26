@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { FitSpace, Workout, Challenge } from '../types/models';
-import { 
-  createFitSpaceInDb, 
-  createWorkoutInDb, 
-  createChallengeInDb 
+import {
+  createFitSpaceInDb,
+  createWorkoutInDb,
+  createChallengeInDb,
+  deleteWorkoutFromDb,
+  archiveWorkoutInDb
 } from './firebase-service';
 
 interface FitState {
@@ -23,6 +25,8 @@ interface FitState {
   setCurrentSpace: (spaceId: string) => void;
   addSpace: (space: FitSpace) => Promise<void>;
   addWorkout: (workout: Workout) => Promise<void>;
+  deleteWorkout: (workoutId: string) => Promise<void>;
+  archiveWorkout: (workoutId: string) => Promise<void>;
   addChallenge: (challenge: Challenge) => Promise<void>;
   
   // Getters
@@ -58,6 +62,16 @@ export const useFitStore = create<FitState>()(
       addWorkout: async (workout) => {
         set((state) => ({ workouts: [workout, ...state.workouts] }));
         await createWorkoutInDb(workout);
+      },
+
+      deleteWorkout: async (workoutId) => {
+        set((state) => ({ workouts: state.workouts.filter(w => w.id !== workoutId) }));
+        await deleteWorkoutFromDb(workoutId);
+      },
+
+      archiveWorkout: async (workoutId) => {
+        set((state) => ({ workouts: state.workouts.filter(w => w.id !== workoutId) }));
+        await archiveWorkoutInDb(workoutId);
       },
 
       addChallenge: async (challenge) => {
