@@ -59,12 +59,6 @@ export const SUITE_APPS = {
     description: 'Automate your daily tasks',
     color: '#06b6d4', // cyan-500
   },
-  smarthub: {
-    name: 'Smart',
-    slug: 'smarthub',
-    description: 'Connect your world',
-    color: '#0ea5e9', // sky-500
-  },
 } as const;
 
 export type AppSlug = keyof typeof SUITE_APPS;
@@ -83,7 +77,6 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     project: 3009,
     workflow: 3010,
     admin: 3011,
-    smarthub: 3012,
   };
 
   if (isDev) {
@@ -99,7 +92,6 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
   // Map internal slugs to production domains
   const domainMap: Record<string, string> = {
     todo: 'task', // todo app uses task.ainexsuite.com in production
-    smarthub: 'smart', // smarthub uses smart.ainexsuite.com
   };
   const domain = domainMap[slug] || slug;
 
