@@ -43,6 +43,7 @@ export interface User {
     grow?: { approved: boolean; approvedAt: Timestamp };
     pulse?: { approved: boolean; approvedAt: Timestamp };
     fit?: { approved: boolean; approvedAt: Timestamp };
+    smarthub?: { approved: boolean; approvedAt: Timestamp };
     suite?: { approved: boolean; approvedAt: Timestamp };
   };
 
@@ -59,6 +60,7 @@ export interface User {
     projects?: boolean;
     workflow?: boolean;
     calendar?: boolean;
+    smarthub?: boolean;
   };
 
   // Suite upsell tracking
@@ -71,6 +73,7 @@ export interface User {
     grow?: Timestamp;
     pulse?: Timestamp;
     fit?: Timestamp;
+    smarthub?: Timestamp;
   };
 
   // Subscription & Trial

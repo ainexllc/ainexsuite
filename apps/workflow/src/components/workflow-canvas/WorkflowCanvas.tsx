@@ -495,7 +495,7 @@ function WorkflowCanvasInner() {
   // Zoom controls (using reactFlowInstance)
   const handleFitView = useCallback(() => {
     if (reactFlowInstance) {
-      reactFlowInstance.fitView({ padding: 0.2 });
+      reactFlowInstance.fitView({ padding: 0.2, maxZoom: 1 });
     }
   }, [reactFlowInstance]);
 
@@ -907,6 +907,7 @@ function WorkflowCanvasInner() {
           snapToGrid={snapToGrid}
           snapGrid={[20, 20]}
           fitView
+          fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
           deleteKeyCode="Delete"
           multiSelectionKeyCode="Shift"
           selectionOnDrag={true}

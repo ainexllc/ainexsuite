@@ -8,7 +8,8 @@ import {
   HeartPulse,
   Dumbbell,
   Briefcase,
-  Workflow
+  Workflow,
+  Cpu
 } from 'lucide-react';
 import { SUITE_APPS, getAppUrl } from '../config/apps';
 
@@ -23,6 +24,7 @@ const ICON_MAP = {
   fit: Dumbbell,
   projects: Briefcase,
   workflow: Workflow,
+  smarthub: Cpu,
 };
 
 export function getNavigationApps(isDev: boolean = false) {
