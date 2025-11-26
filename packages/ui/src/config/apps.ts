@@ -47,9 +47,9 @@ export const SUITE_APPS = {
     description: 'Workout and fitness tracking',
     color: '#3b82f6', // blue-500
   },
-  projects: {
+  project: {
     name: 'Project',
-    slug: 'projects',
+    slug: 'project',
     description: 'Manage complex projects',
     color: '#6366f1', // indigo-500
   },
@@ -80,7 +80,7 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     grow: 3006,
     pulse: 3007,
     fit: 3008,
-    projects: 3009,
+    project: 3009,
     workflow: 3010,
     admin: 3011,
     smarthub: 3012,
@@ -100,7 +100,6 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
   const domainMap: Record<string, string> = {
     todo: 'task', // todo app uses task.ainexsuite.com in production
     smarthub: 'smart', // smarthub uses smart.ainexsuite.com
-    projects: 'project', // projects app uses project.ainexsuite.com
   };
   const domain = domainMap[slug] || slug;
 

@@ -22,7 +22,7 @@ const ICON_MAP = {
   grow: Sprout,
   pulse: HeartPulse,
   fit: Dumbbell,
-  projects: Briefcase,
+  project: Briefcase,
   workflow: Workflow,
   smarthub: Cpu,
 };

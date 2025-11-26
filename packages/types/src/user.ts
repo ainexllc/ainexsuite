@@ -57,7 +57,7 @@ export interface User {
     grow: boolean;
     pulse: boolean;
     fit: boolean;
-    projects?: boolean;
+    project?: boolean;
     workflow?: boolean;
     calendar?: boolean;
     smarthub?: boolean;
