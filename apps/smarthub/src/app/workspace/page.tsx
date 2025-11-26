@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
