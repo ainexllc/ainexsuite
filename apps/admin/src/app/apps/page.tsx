@@ -178,88 +178,100 @@ export default function AppsManagement() {
       )}
 
       {/* Grid Container */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {apps.map((app) => (
             <div key={app.id} className="group relative bg-black/40 backdrop-blur-xl border border-white/10 hover:border-cyan-500/30 transition-all duration-300 rounded-xl overflow-hidden">
                 {/* Top Status Bar */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 
-                <div className="p-4 space-y-4">
+                <div className="p-6 space-y-5">
                     {/* Header */}
                     <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded bg-zinc-900 border border-white/10 group-hover:border-white/20 transition-colors">
-                                <LayoutGrid className="h-5 w-5" style={{ color: app.primary }} />
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded bg-zinc-900 border border-white/10 group-hover:border-white/20 transition-colors">
+                                <LayoutGrid className="h-6 w-6" style={{ color: app.primary }} />
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm text-white tracking-wide">{app.name.toUpperCase()}</h3>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${app.status === 'live' ? 'bg-emerald-500 animate-pulse' : app.status === 'beta' ? 'bg-cyan-500' : 'bg-yellow-500'}`} />
-                                    <span className="text-[9px] text-zinc-500 uppercase tracking-wider">{app.status || 'UNKNOWN'}</span>
+                                <h3 className="font-bold text-base text-white tracking-wide">{app.name.toUpperCase()}</h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className={`w-2 h-2 rounded-full ${app.status === 'live' ? 'bg-emerald-500 animate-pulse' : app.status === 'beta' ? 'bg-cyan-500' : 'bg-yellow-500'}`} />
+                                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">{app.status || 'UNKNOWN'}</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                                 onClick={() => { setShowAIModal(app.id); setAiDescription(''); setAiMood(''); }}
-                                className="p-1.5 text-purple-400 hover:text-white hover:bg-purple-500/20 rounded transition-colors"
+                                className="p-2 text-purple-400 hover:text-white hover:bg-purple-500/20 rounded transition-colors"
                                 title="AI Generate"
                             >
-                                <Sparkles className="h-3.5 w-3.5" />
+                                <Sparkles className="h-4 w-4" />
                             </button>
                             <button
                                 onClick={() => handleSave(app)}
                                 disabled={saving === app.id}
-                                className="p-1.5 text-cyan-400 hover:text-white hover:bg-cyan-500/20 rounded transition-colors disabled:opacity-50"
+                                className="p-2 text-cyan-400 hover:text-white hover:bg-cyan-500/20 rounded transition-colors disabled:opacity-50"
                                 title="Save"
                             >
-                                {saving === app.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                                {saving === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             </button>
                         </div>
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-2 py-2 border-y border-white/5">
-                        <div className="bg-white/[0.02] p-2 rounded border border-white/5">
-                            <p className="text-[9px] text-zinc-500 uppercase">Users</p>
-                            <p className="text-xs font-bold text-white font-mono">{app.userCount?.toLocaleString()}</p>
+                    <div className="grid grid-cols-2 gap-3 py-3 border-y border-white/5">
+                        <div className="bg-white/[0.02] p-3 rounded border border-white/5">
+                            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Users</p>
+                            <p className="text-sm font-bold text-white font-mono">{app.userCount?.toLocaleString()}</p>
                         </div>
-                        <div className="bg-white/[0.02] p-2 rounded border border-white/5">
-                            <p className="text-[9px] text-zinc-500 uppercase">Version</p>
-                            <p className="text-xs font-bold text-white font-mono">{app.version}</p>
+                        <div className="bg-white/[0.02] p-3 rounded border border-white/5">
+                            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Version</p>
+                            <p className="text-sm font-bold text-white font-mono">{app.version}</p>
                         </div>
-                        <div className="col-span-2 bg-white/[0.02] p-2 rounded border border-white/5 flex justify-between items-center">
-                            <p className="text-[9px] text-zinc-500 uppercase">Last Deploy</p>
-                            <p className="text-[10px] text-zinc-300 font-mono">{app.lastDeployed}</p>
+                        <div className="col-span-2 bg-white/[0.02] p-3 rounded border border-white/5 flex justify-between items-center">
+                            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Last Deploy</p>
+                            <p className="text-xs text-zinc-300 font-mono">{app.lastDeployed}</p>
                         </div>
                     </div>
 
                     {/* Color Controls */}
-                    <div className="space-y-2">
-                        <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">Theme Config</p>
-                        <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-3">
+                        <p className="text-[10px] text-zinc-600 uppercase tracking-wider font-bold">Theme Config</p>
+                        <div className="grid grid-cols-2 gap-3">
                             <div className="relative group/input">
                                 <div className="absolute inset-0 bg-white/5 rounded opacity-0 group-hover/input:opacity-100 transition-opacity pointer-events-none" />
-                                <div className="flex items-center gap-2 p-1.5 border border-white/10 rounded bg-black/20">
-                                    <div className="w-3 h-3 rounded-sm ring-1 ring-white/20" style={{ backgroundColor: app.primary }} />
+                                <div className="flex items-center gap-3 p-2 border border-white/10 rounded bg-black/20">
+                                    <div className="w-4 h-4 rounded-sm ring-1 ring-white/20 shrink-0" style={{ backgroundColor: app.primary }} />
                                     <input
                                         type="text"
                                         value={app.primary}
                                         onChange={(e) => handleColorChange(app.id, 'primary', e.target.value)}
-                                        className="w-full bg-transparent text-[10px] text-zinc-300 font-mono focus:outline-none uppercase"
+                                        className="w-full bg-transparent text-xs text-zinc-300 font-mono focus:outline-none uppercase tracking-wide"
+                                    />
+                                    <input
+                                        type="color"
+                                        value={app.primary}
+                                        onChange={(e) => handleColorChange(app.id, 'primary', e.target.value)}
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                     />
                                 </div>
                             </div>
                             <div className="relative group/input">
                                 <div className="absolute inset-0 bg-white/5 rounded opacity-0 group-hover/input:opacity-100 transition-opacity pointer-events-none" />
-                                <div className="flex items-center gap-2 p-1.5 border border-white/10 rounded bg-black/20">
-                                    <div className="w-3 h-3 rounded-sm ring-1 ring-white/20" style={{ backgroundColor: app.secondary }} />
+                                <div className="flex items-center gap-3 p-2 border border-white/10 rounded bg-black/20">
+                                    <div className="w-4 h-4 rounded-sm ring-1 ring-white/20 shrink-0" style={{ backgroundColor: app.secondary }} />
                                     <input
                                         type="text"
                                         value={app.secondary}
                                         onChange={(e) => handleColorChange(app.id, 'secondary', e.target.value)}
-                                        className="w-full bg-transparent text-[10px] text-zinc-300 font-mono focus:outline-none uppercase"
+                                        className="w-full bg-transparent text-xs text-zinc-300 font-mono focus:outline-none uppercase tracking-wide"
+                                    />
+                                    <input
+                                        type="color"
+                                        value={app.secondary}
+                                        onChange={(e) => handleColorChange(app.id, 'secondary', e.target.value)}
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                     />
                                 </div>
                             </div>
