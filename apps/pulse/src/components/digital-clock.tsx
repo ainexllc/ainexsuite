@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Maximize2, Minimize2, Plus, Settings2, Airplay } from 'lucide-react';
+import { Maximize2, Minimize2, Plus, Settings2 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileTray } from './tiles/tile-tray';
 import { CalendarTile } from './tiles/calendar-tile';
@@ -33,15 +33,6 @@ interface FullscreenDocument extends Document {
   mozFullScreenElement?: Element;
   webkitExitFullscreen?: () => Promise<void>;
   mozCancelFullScreen?: () => Promise<void>;
-}
-
-// AirPlay types for Safari
-interface AirPlayVideoElement extends HTMLVideoElement {
-  webkitShowPlaybackTargetPicker?: () => void;
-}
-
-interface WebkitPlaybackTargetAvailabilityEvent extends Event {
-  availability: 'available' | 'not-available';
 }
 
 // Detect system clock format preference
@@ -154,8 +145,6 @@ export function DigitalClock() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trayContainerRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
-  const airplayVideoRef = useRef<HTMLVideoElement>(null);
-  const [airplayAvailable, setAirplayAvailable] = useState(false);
 
   const activeLayout = LAYOUTS[activeLayoutId] || DEFAULT_LAYOUT;
 
@@ -201,33 +190,6 @@ export function DigitalClock() {
       document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
     };
   }, []);
-
-  // AirPlay availability detection (Safari only)
-  useEffect(() => {
-    const video = airplayVideoRef.current as AirPlayVideoElement | null;
-    if (!video) return;
-
-    // Check if AirPlay is supported (Safari)
-    if ('webkitShowPlaybackTargetPicker' in video) {
-      const handleAvailability = (event: Event) => {
-        const airplayEvent = event as WebkitPlaybackTargetAvailabilityEvent;
-        setAirplayAvailable(airplayEvent.availability === 'available');
-      };
-
-      video.addEventListener('webkitplaybacktargetavailabilitychanged', handleAvailability);
-
-      return () => {
-        video.removeEventListener('webkitplaybacktargetavailabilitychanged', handleAvailability);
-      };
-    }
-  }, []);
-
-  const triggerAirPlay = () => {
-    const video = airplayVideoRef.current as AirPlayVideoElement | null;
-    if (video?.webkitShowPlaybackTargetPicker) {
-      video.webkitShowPlaybackTargetPicker();
-    }
-  };
 
   // Sync with Firestore on load and changes
   useEffect(() => {
@@ -844,19 +806,6 @@ export function DigitalClock() {
 
       {/* Controls - Moved to root to ignore padding and ensure z-index */}
       <div className="absolute top-0 right-0 m-2 flex items-center gap-2 z-50 opacity-20 group-hover:opacity-100 transition-opacity pointer-events-auto">
-          {/* AirPlay Button - Shows when AirPlay devices are available or always visible on Safari */}
-          <button
-            onClick={triggerAirPlay}
-            className={`p-2 transition-colors rounded-full hover:bg-white/10 ${
-              airplayAvailable
-                ? 'text-blue-400 hover:text-blue-300'
-                : 'text-gray-400 hover:text-white'
-            }`}
-            aria-label="Cast to AirPlay"
-            title="Cast to Apple TV or AirPlay device"
-          >
-            <Airplay className="w-5 h-5" />
-          </button>
           <button
             onClick={toggleMaximize}
             className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
@@ -947,14 +896,6 @@ export function DigitalClock() {
           </div>
         </div>
       )}
-
-      {/* Hidden video element for AirPlay detection (Safari) */}
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video
-        ref={airplayVideoRef}
-        className="hidden"
-        playsInline
-      />
     </div>
   );
 }
