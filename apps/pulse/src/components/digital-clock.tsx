@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Clock, Maximize2, Minimize2, Plus, Settings2, Airplay } from 'lucide-react';
+import { Maximize2, Minimize2, Plus, Settings2, Airplay } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileTray } from './tiles/tile-tray';
 import { CalendarTile } from './tiles/calendar-tile';
@@ -137,7 +137,6 @@ export function DigitalClock() {
   const [time, setTime] = useState<Date | null>(null);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
-  const [showFormatMenu, setShowFormatMenu] = useState(false);
   const isDraggingTile = useRef(false);
 
   // Initialize state with defaults
@@ -346,7 +345,6 @@ export function DigitalClock() {
 
   const handleTimeFormatChange = (format: TimeFormat) => {
     updateSettings(tiles, backgroundImage, format);
-    setShowFormatMenu(false);
   };
 
   const handleLayoutSelect = (layoutId: string) => {
@@ -719,47 +717,12 @@ export function DigitalClock() {
 
   const renderClock = () => (
       <div className={`flex flex-col items-center justify-center transition-transform duration-300 relative ${activeLayoutId.includes('studio') ? 'h-full' : 'mt-12 mb-12'}`}>
-          <div className="flex items-center gap-2 text-gray-400 mb-4">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm uppercase tracking-wider font-medium shadow-sm">Current Time</span>
-          </div>
-          
           {renderClockContent()}
 
           {clockStyle !== 'analog' && (
             <div className="text-gray-400 mt-4 font-medium drop-shadow-md">
                 {time && time.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
-          )}
-
-          {/* Time Format Menu (Only for digital styles) */}
-          {clockStyle !== 'analog' && (
-              <div className="mt-4 relative">
-                <button
-                  onClick={() => setShowFormatMenu(!showFormatMenu)}
-                  className="px-3 py-1 text-xs uppercase tracking-wider text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
-                  aria-label="Change time format"
-                >
-                  {timeFormat.toUpperCase()}
-                </button>
-
-                {showFormatMenu && (
-                  <div className="absolute top-full mt-2 bg-black/80 border border-white/20 rounded-lg overflow-hidden z-40">
-                    <button
-                      onClick={() => handleTimeFormatChange('12h')}
-                      className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '12h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
-                    >
-                      12-Hour Format
-                    </button>
-                    <button
-                      onClick={() => handleTimeFormatChange('24h')}
-                      className={`block w-full px-4 py-2 text-sm text-left hover:bg-white/10 ${timeFormat === '24h' ? 'bg-white/20 text-white' : 'text-gray-400'}`}
-                    >
-                      24-Hour Format
-                    </button>
-                  </div>
-                )}
-              </div>
           )}
       </div>
   );

@@ -52,22 +52,23 @@ export class OpenRouterClient {
 
     // xAI Direct Override
     // If the model requested is a Grok model AND we have an xAI key, go direct.
-    // We map the OpenRouter ID "x-ai/grok-4.1-fast" to "grok-beta" (or similar) for direct API.
     if ((model.includes("grok") || model.includes("x-ai")) && serverEnv.XAI_API_KEY) {
         endpoint = "https://api.x.ai/v1/chat/completions";
         token = serverEnv.XAI_API_KEY;
-        
+
         // Map OpenRouter IDs to xAI Direct IDs
-        // "grok-4-1-fast-non-reasoning" is the specific model requested by user (verified working).
-        if (model === "x-ai/grok-4.1-fast" || model === "grok-4.1-fast") {
-            model = "grok-4-1-fast-non-reasoning"; 
+        // Available models: grok-3, grok-3-fast, grok-3-mini, grok-3-mini-fast
+        if (model === "x-ai/grok-3-fast" || model === "grok-3-fast") {
+            model = "grok-3-fast"; // Fast non-reasoning model
+        } else if (model === "grok-3" || model === "x-ai/grok-3") {
+            model = "grok-3";
         } else if (model === "grok-beta" || model === "x-ai/grok-beta") {
-            model = "grok-4-fast-non-reasoning";
+            model = "grok-3"; // grok-beta deprecated, use grok-3
         } else if (model.startsWith("x-ai/")) {
             // Fallback: strip prefix
             model = model.replace("x-ai/", "");
         }
-        
+
         headers = {
             "Content-Type": "application/json",
         };

@@ -42,7 +42,7 @@ Return ONLY a valid JSON object with this structure:
         { role: "system", content: "You are a personal productivity assistant. You speak only valid JSON. Do not include markdown formatting or explanations." },
         { role: "user", content: prompt }
       ],
-      model: "x-ai/grok-4.1-fast", // Fast and non-reasoning (per user request)
+      model: "grok-3-fast", // Fast non-reasoning model
       temperature: 0.3, // Lower temperature for deterministic output
     });
 

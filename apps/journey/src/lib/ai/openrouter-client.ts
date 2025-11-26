@@ -59,8 +59,8 @@ export class OpenRouterClient {
         
         // Map OpenRouter IDs to xAI Direct IDs
         // Note: grok-beta was deprecated on 2025-09-15
-        if (model === "grok-4.1-fast" || model === "x-ai/grok-4.1-fast") {
-            model = "grok-4.1-fast"; // Fast non-reasoning model
+        if (model === "grok-3-fast" || model === "x-ai/grok-3-fast") {
+            model = "grok-3-fast"; // Fast non-reasoning model
         } else if (model === "grok-3" || model === "x-ai/grok-3") {
             model = "grok-3";
         } else if (model === "grok-beta" || model === "x-ai/grok-beta") {

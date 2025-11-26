@@ -40,7 +40,7 @@ Return format:
       'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'grok-4-fast',
+      model: 'grok-3-fast',
       messages: [
         {
           role: 'user',

@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Use the existing OpenRouter client (supports xAI/Grok direct)
     const client = getOpenRouterClient();
-    const aiResponse = await client.ask(userMessage, SYSTEM_PROMPT, "grok-4.1-fast");
+    const aiResponse = await client.ask(userMessage, SYSTEM_PROMPT, "grok-3-fast");
 
     // Parse the JSON response from AI
     let insights;
