@@ -192,76 +192,83 @@ export default function AdminDashboard() {
   }, [commits, stats]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 font-mono text-xs">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Mission Control</h1>
-        <p className="text-zinc-400">Real-time overview of platform performance and growth.</p>
+      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div>
+          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-bebas tracking-widest leading-none">MISSION CONTROL</h1>
+          <p className="text-zinc-500 uppercase tracking-[0.3em] text-[10px] mt-1">System Status: Online</p>
+        </div>
+        <div className="flex gap-2">
+          <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded text-[10px] font-bold animate-pulse">LIVE</span>
+          <span className="px-2 py-1 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded text-[10px] font-bold">V2.0.4</span>
+        </div>
       </div>
 
-      {/* AI Insights */}
-      <div className="relative bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl border border-indigo-500/20 p-6 overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl" />
-
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-5 w-5 text-indigo-400" />
-            <h2 className="text-lg font-semibold text-white">Platform Intelligence</h2>
-            <span className="text-xs text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">
-              Powered by Grok
+      {/* AI Insights - Holographic HUD */}
+      <div className="relative group overflow-hidden rounded-xl border border-cyan-500/30 bg-black/60 backdrop-blur-xl shadow-[0_0_30px_rgba(6,182,212,0.15)] transition-all hover:border-cyan-500/50 hover:shadow-[0_0_50px_rgba(6,182,212,0.25)]">
+        {/* HUD Lines */}
+        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500/50 rounded-tl-lg" />
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500/50 rounded-tr-lg" />
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500/50 rounded-bl-lg" />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500/50 rounded-br-lg" />
+        
+        <div className="relative p-6">
+          <div className="flex items-center gap-2 mb-4 border-b border-cyan-500/20 pb-3">
+            <Sparkles className="h-4 w-4 text-cyan-400 animate-spin-slow" />
+            <h2 className="text-sm font-bold text-cyan-100 uppercase tracking-widest">Platform Intelligence</h2>
+            <span className="ml-auto text-[10px] text-cyan-500 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+              AI_ACTIVE
             </span>
             <button
               onClick={fetchDashboardInsights}
               disabled={insightsLoading}
-              className="ml-auto text-xs text-indigo-400 hover:text-indigo-300 transition-colors disabled:opacity-50"
+              className="text-[10px] text-cyan-400 hover:text-white transition-colors disabled:opacity-50 border border-cyan-500/30 px-2 py-0.5 rounded hover:bg-cyan-500/20"
             >
-              {insightsLoading ? 'Analyzing...' : 'Refresh'}
+              {insightsLoading ? 'PROCESSING...' : 'REFRESH'}
             </button>
           </div>
 
           {insightsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-indigo-400" />
-              <span className="ml-2 text-sm text-zinc-400">Analyzing platform data...</span>
-            </div>
-          ) : insightsError ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-red-400">{insightsError}</p>
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
+              <span className="ml-2 text-xs text-cyan-500/70 font-mono animate-pulse">Analyzing data stream...</span>
             </div>
           ) : insights ? (
             <div className="space-y-4">
-              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                <p className="text-sm text-zinc-200 leading-relaxed">
+              <div className="bg-cyan-900/10 rounded border border-cyan-500/20 p-3 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent,rgba(6,182,212,0.1),transparent)] -skew-x-12 animate-shimmer" />
+                <p className="text-xs text-cyan-100 leading-relaxed relative z-10 font-mono">
+                  <span className="text-cyan-500 mr-2">{`>`}</span>
                   {insights.summary}
                 </p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Star className="h-4 w-4 text-yellow-400" />
-                    <h3 className="text-sm font-semibold text-white">Highlights</h3>
+                <div className="bg-black/40 rounded border border-white/10 p-3">
+                  <div className="flex items-center gap-2 mb-2 text-yellow-400">
+                    <Star className="h-3 w-3" />
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider">Key Signals</h3>
                   </div>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {insights.highlights.map((highlight, i) => (
-                      <li key={i} className="text-xs text-zinc-300 flex items-start gap-2">
-                        <span className="text-yellow-400 mt-0.5">★</span>
+                      <li key={i} className="text-[10px] text-zinc-400 flex items-start gap-2 font-mono">
+                        <span className="text-yellow-500/50 mt-0.5">★</span>
                         <span>{highlight}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Target className="h-4 w-4 text-emerald-400" />
-                    <h3 className="text-sm font-semibold text-white">Recommendations</h3>
+                <div className="bg-black/40 rounded border border-white/10 p-3">
+                  <div className="flex items-center gap-2 mb-2 text-emerald-400">
+                    <Target className="h-3 w-3" />
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider">Tactical Ops</h3>
                   </div>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {insights.recommendations.map((rec, i) => (
-                      <li key={i} className="text-xs text-zinc-300 flex items-start gap-2">
-                        <span className="text-emerald-400 mt-0.5">→</span>
+                      <li key={i} className="text-[10px] text-zinc-400 flex items-start gap-2 font-mono">
+                        <span className="text-emerald-500/50 mt-0.5">→</span>
                         <span>{rec}</span>
                       </li>
                     ))}
@@ -273,278 +280,150 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* KPI Grid - Compact */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Users */}
-        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-indigo-500/50 to-transparent">
-          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
-            <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                <Users className="h-6 w-6" />
-              </div>
-              <span className="flex items-center text-xs font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-1 rounded-full">
-                <ArrowUpRight className="h-3 w-3 mr-1" /> +12%
-              </span>
-            </div>
-            <div className="relative z-10">
-              <h3 className="text-4xl font-black text-white mb-1 tracking-tight font-bebas">{stats.totalUsers}</h3>
-              <p className="text-xs font-mono text-indigo-200/60 uppercase tracking-widest">Total Users</p>
-            </div>
+        <div className="group relative overflow-hidden rounded-xl bg-zinc-900/80 border border-white/10 p-4 hover:border-indigo-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex justify-between items-start mb-2">
+            <Users className="h-5 w-5 text-indigo-400" />
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded border border-emerald-400/20">+12%</span>
           </div>
+          <h3 className="text-3xl font-black text-white tracking-tighter font-bebas">{stats.totalUsers}</h3>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Total Users</p>
         </div>
 
         {/* Feedback */}
-        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-purple-500/50 to-transparent">
-          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
-            <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="p-3 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                <MessageSquare className="h-6 w-6" />
-              </div>
-              <span className="text-[10px] font-bold text-purple-300/50 uppercase tracking-wider border border-purple-500/20 px-2 py-1 rounded-full bg-purple-500/5">All Time</span>
-            </div>
-            <div className="relative z-10">
-              <h3 className="text-4xl font-black text-white mb-1 tracking-tight font-bebas">{stats.totalFeedback}</h3>
-              <p className="text-xs font-mono text-purple-200/60 uppercase tracking-widest">Feedback Items</p>
-            </div>
+        <div className="group relative overflow-hidden rounded-xl bg-zinc-900/80 border border-white/10 p-4 hover:border-purple-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex justify-between items-start mb-2">
+            <MessageSquare className="h-5 w-5 text-purple-400" />
+            <span className="text-[10px] font-bold text-zinc-500 uppercase">All Time</span>
           </div>
+          <h3 className="text-3xl font-black text-white tracking-tighter font-bebas">{stats.totalFeedback}</h3>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Feedback</p>
         </div>
 
         {/* Active Now */}
-        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-emerald-500/50 to-transparent">
-          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
-            <div className="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                <ActivityIcon className="h-6 w-6" />
-              </div>
-              <div className="relative flex items-center justify-center w-4 h-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
-              </div>
-            </div>
-            <div className="relative z-10">
-              <h3 className="text-4xl font-black text-white mb-1 tracking-tight font-bebas">{stats.activeNow}</h3>
-              <p className="text-xs font-mono text-emerald-200/60 uppercase tracking-widest">Active Sessions</p>
-            </div>
+        <div className="group relative overflow-hidden rounded-xl bg-zinc-900/80 border border-white/10 p-4 hover:border-emerald-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex justify-between items-start mb-2">
+            <ActivityIcon className="h-5 w-5 text-emerald-400" />
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
+            </span>
           </div>
+          <h3 className="text-3xl font-black text-white tracking-tighter font-bebas">{stats.activeNow}</h3>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Active Sessions</p>
         </div>
 
         {/* System Status */}
-        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-blue-500/50 to-transparent">
-          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
-            <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="p-3 rounded-2xl bg-blue-500/20 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                <TrendingUp className="h-6 w-6" />
-              </div>
-              <span className="text-[10px] font-bold text-blue-300/50 uppercase tracking-wider font-mono">99.9% Uptime</span>
-            </div>
-            <div className="relative z-10">
-              <h3 className="text-2xl font-black text-emerald-400 mb-1 tracking-tight flex items-center gap-2 shadow-[0_0_20px_rgba(52,211,153,0.4)] drop-shadow-md">
-                <CheckCircle2 className="h-6 w-6" /> OPERATIONAL
-              </h3>
-              <p className="text-xs font-mono text-blue-200/60 uppercase tracking-widest mt-2">System Status</p>
-            </div>
+        <div className="group relative overflow-hidden rounded-xl bg-zinc-900/80 border border-white/10 p-4 hover:border-blue-500/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="flex justify-between items-start mb-2">
+            <TrendingUp className="h-5 w-5 text-blue-400" />
+            <span className="text-[10px] font-bold text-blue-400 font-mono">99.9%</span>
           </div>
+          <h3 className="text-xl font-black text-emerald-400 tracking-tight flex items-center gap-2 mt-1">
+            <CheckCircle2 className="h-4 w-4" /> ONLINE
+          </h3>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-2">System Status</p>
         </div>
       </div>
 
-      {/* Recent GitHub Commits */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-black/40 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-3 font-bebas tracking-wide">
-              <GitCommit className="h-5 w-5 text-cyan-400" />
-              Code Activity
+      {/* Data Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Commits Feed - Dense */}
+        <div className="lg:col-span-2 bg-black/40 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+            <h2 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider">
+              <GitCommit className="h-4 w-4 text-zinc-500" />
+              Git Data Stream
             </h2>
             {commits.length > 0 && (
-              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[10px] font-mono text-white/50 uppercase tracking-wider">
-                {commits.length} COMMITS
+              <span className="text-[10px] font-mono text-zinc-500 bg-white/5 px-2 py-0.5 rounded">
+                BUFFER: {commits.length}
               </span>
             )}
           </div>
-          <div className="space-y-3">
+          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-800">
             {commitsLoading ? (
-              // Loading state
               Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 animate-pulse">
-                  <div className="flex items-start gap-3">
-                    <div className="h-8 w-8 rounded-full bg-white/10" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-3/4 bg-white/10 rounded" />
-                      <div className="h-3 w-1/2 bg-white/5 rounded" />
-                    </div>
-                  </div>
-                </div>
+                <div key={i} className="h-12 bg-white/5 rounded animate-pulse" />
               ))
             ) : commits.length > 0 ? (
-              // Real commits - GitHub-inspired style
               commits.slice(0, 10).map((commit) => {
                 const isExpanded = expandedCommits.has(commit.id);
-                const hasBody = commit.body && commit.body.length > 0;
-
                 return (
                   <div
                     key={commit.id}
-                    className="group p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
+                    className="group flex flex-col bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/10 rounded transition-all cursor-pointer"
+                    onClick={() => toggleCommitExpansion(commit.id)}
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 pt-1">
-                        {commit.authorAvatar ? (
-                          <img
-                            src={commit.authorAvatar}
-                            alt={commit.author}
-                            className="h-8 w-8 rounded-full ring-2 ring-black shadow-lg grayscale group-hover:grayscale-0 transition-all"
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-black shadow-lg">
-                            {commit.author.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-
+                    <div className="flex items-center gap-3 p-2">
+                      <div className="font-mono text-[10px] text-zinc-600 w-16 truncate shrink-0">{commit.sha.substring(0, 7)}</div>
                       <div className="flex-1 min-w-0">
-                        {/* Commit message */}
-                        <div className="flex items-start justify-between gap-3 mb-1">
-                          <h3 className="text-sm font-medium text-zinc-200 leading-snug group-hover:text-cyan-300 transition-colors font-mono">
-                            {commit.message}
-                          </h3>
-                          <a
-                            href={commit.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-shrink-0 text-zinc-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
-                            onClick={(e) => e.stopPropagation()}
-                            title="View on GitHub"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
+                        <div className="text-[11px] text-zinc-300 truncate font-medium group-hover:text-cyan-300 transition-colors">
+                          {commit.message}
                         </div>
-
-                        {/* Metadata bar */}
-                        <div className="flex items-center gap-3 text-[10px] text-zinc-500 font-mono uppercase tracking-wide">
-                          <span className="text-zinc-400">{commit.author}</span>
-                          <span className="text-zinc-700">|</span>
-                          <span className="px-1.5 py-0.5 rounded bg-white/5 text-zinc-400 border border-white/5">
-                            {commit.sha.substring(0, 7)}
-                          </span>
-                          <span className="text-zinc-700">|</span>
-                          <span>{formatActivityTime(commit.timestamp)}</span>
-                        </div>
-
-                        {/* Expandable body */}
-                        {hasBody && (
-                          <div className="mt-3">
-                            <button
-                              onClick={() => toggleCommitExpansion(commit.id)}
-                              className="flex items-center gap-1.5 text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium uppercase tracking-wider"
-                            >
-                              {isExpanded ? (
-                                <>
-                                  <ChevronDown className="h-3 w-3" />
-                                  Collapse
-                                </>
-                              ) : (
-                                <>
-                                  <ChevronRight className="h-3 w-3" />
-                                  Expand Details
-                                </>
-                              )}
-                            </button>
-
-                            {isExpanded && (
-                              <div className="mt-3 p-4 rounded-lg bg-black/50 border border-white/5 shadow-inner">
-                                <pre className="text-xs text-zinc-400 whitespace-pre-wrap font-mono leading-relaxed">
-                                  {commit.body}
-                                </pre>
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </div>
+                      <div className="text-[10px] text-zinc-500 shrink-0">{formatActivityTime(commit.timestamp)}</div>
+                      <ExternalLink className="h-3 w-3 text-zinc-700 group-hover:text-white transition-colors opacity-0 group-hover:opacity-100" />
                     </div>
+                    {isExpanded && commit.body && (
+                      <div className="px-2 pb-2 pl-20">
+                        <pre className="text-[10px] text-zinc-400 bg-black/50 p-2 rounded border border-white/5 whitespace-pre-wrap">
+                          {commit.body}
+                        </pre>
+                      </div>
+                    )}
                   </div>
                 );
               })
-            ) : commitsError ? (
-              // Error state
-              <div className="text-center py-12 rounded-xl bg-red-500/5 border border-red-500/10">
-                <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-3" />
-                <p className="text-sm font-medium text-red-400 mb-1">Connection Lost</p>
-                <p className="text-xs text-red-400/60 mb-4 max-w-md mx-auto font-mono">{commitsError}</p>
-                {commitsError.includes('GitHub API error') && (
-                  <div className="text-xs text-zinc-500 mt-3 p-4 bg-black/40 rounded-lg max-w-md mx-auto text-left font-mono border border-white/5">
-                    <p className="text-zinc-400 mb-2">DEBUG_LOG:</p>
-                    <p className="mb-1 text-indigo-400">Default Repo: ainexsuite/ainexsuite</p>
-                    <p>Check env vars for GITHUB_REPO override.</p>
-                  </div>
-                )}
-                <button
-                  onClick={fetchCommits}
-                  className="mt-6 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border border-red-500/20"
-                >
-                  Retry Connection
-                </button>
-              </div>
             ) : (
-              // Empty state
-              <div className="text-center py-12">
-                <GitCommit className="h-12 w-12 text-zinc-800 mx-auto mb-4" />
-                <p className="text-sm text-zinc-500 font-mono">NO_DATA_FOUND</p>
-              </div>
+              <div className="text-center py-8 text-zinc-600 text-xs">NO_DATA_PACKETS</div>
             )}
           </div>
         </div>
 
-        <div className="bg-black/40 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl flex flex-col">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3 font-bebas tracking-wide">
-            <ActivityIcon className="h-5 w-5 text-emerald-400" />
-            System Diagnostics
+        {/* System Diagnostics - HUD Style */}
+        <div className="bg-black/40 border border-white/10 rounded-2xl p-4 backdrop-blur-md flex flex-col">
+          <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2 uppercase tracking-wider border-b border-white/5 pb-2">
+            <ActivityIcon className="h-4 w-4 text-emerald-500" />
+            Diagnostics
           </h2>
-          <div className="space-y-6 flex-1">
-            <div className="group">
-              <div className="flex justify-between text-xs mb-2 font-mono uppercase tracking-wider">
-                <span className="text-zinc-400 group-hover:text-emerald-400 transition-colors">DB Load</span>
-                <span className="text-emerald-400 font-bold">12%</span>
+          <div className="space-y-4 flex-1">
+            {[
+              { label: 'DB Load', value: 12, color: 'bg-emerald-500', text: 'text-emerald-400' },
+              { label: 'Storage', value: 45, color: 'bg-blue-500', text: 'text-blue-400' },
+              { label: 'Compute', value: 89, color: 'bg-purple-500', text: 'text-purple-400' }
+            ].map((metric) => (
+              <div key={metric.label} className="group">
+                <div className="flex justify-between text-[10px] mb-1 font-mono uppercase tracking-wider">
+                  <span className="text-zinc-500 group-hover:text-white transition-colors">{metric.label}</span>
+                  <span className={`font-bold ${metric.text}`}>{metric.value}%</span>
+                </div>
+                <div className="h-1 bg-zinc-800/50 rounded-full overflow-hidden backdrop-blur-sm">
+                  <div 
+                    className={`h-full ${metric.color} shadow-[0_0_10px_currentColor] transition-all duration-1000`} 
+                    style={{ width: `${metric.value}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 w-[12%] shadow-[0_0_10px_#10b981]" />
-              </div>
-            </div>
-            <div className="group">
-              <div className="flex justify-between text-xs mb-2 font-mono uppercase tracking-wider">
-                <span className="text-zinc-400 group-hover:text-blue-400 transition-colors">Storage</span>
-                <span className="text-blue-400 font-bold">45%</span>
-              </div>
-              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 w-[45%] shadow-[0_0_10px_#3b82f6]" />
-              </div>
-            </div>
-            <div className="group">
-              <div className="flex justify-between text-xs mb-2 font-mono uppercase tracking-wider">
-                <span className="text-zinc-400 group-hover:text-purple-400 transition-colors">Compute</span>
-                <span className="text-purple-400 font-bold">89%</span>
-              </div>
-              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-purple-600 to-purple-400 w-[89%] shadow-[0_0_10px_#a855f7]" />
-              </div>
-            </div>
+            ))}
             
-            <div className="mt-auto pt-6 border-t border-white/10">
-              <div className="flex items-center justify-between text-xs text-zinc-500 font-mono">
-                <span>STATUS</span>
-                <span className="text-emerald-500 animate-pulse">● LIVE</span>
-              </div>
-              <div className="mt-2 p-3 rounded-lg bg-black/60 border border-white/5 text-[10px] font-mono text-zinc-600">
-                <span className="text-zinc-400">{`>`}</span> system_check --full
-                <br />
-                <span className="text-emerald-500/70">{`>`} all systems nominal</span>
+            <div className="mt-auto pt-4 border-t border-white/5">
+              <div className="p-3 rounded bg-black/80 border border-white/5 text-[10px] font-mono text-zinc-500 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/50" />
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-zinc-400">ROOT_ACCESS</span>
+                  <span className="text-emerald-500 font-bold animate-pulse">GRANTED</span>
+                </div>
+                <div className="opacity-60">
+                  {`> sys_integrity_check`}<br/>
+                  {`> status: nominal`}
+                </div>
               </div>
             </div>
           </div>

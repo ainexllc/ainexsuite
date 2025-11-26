@@ -112,18 +112,22 @@ export function AdminShell({
   };
 
   return (
-    <div className="flex min-h-screen bg-[#050505] text-white overflow-hidden relative">
+    <div className="flex min-h-screen bg-[#030303] text-white overflow-hidden relative font-mono selection:bg-cyan-500/30">
       {/* Global Animated Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
-        <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-cyan-900/10 rounded-full blur-[100px]" />
+        {/* Hex Grid */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]" />
+        
+        {/* Orbs */}
+        <div className="absolute top-[-10%] left-[20%] w-[40vw] h-[40vw] bg-fuchsia-600/10 rounded-full blur-[100px] animate-pulse duration-[4s]" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[30vw] h-[30vw] bg-cyan-600/10 rounded-full blur-[80px] animate-pulse duration-[5s]" />
       </div>
 
       <AdminSidebar onSignOut={handleSignOut} />
       
-      <main className="flex-1 overflow-y-auto h-screen relative z-10">
-        <div className="p-8 max-w-[1600px] mx-auto">
+      <main className="flex-1 overflow-y-auto h-screen relative z-10 scrollbar-hide">
+        <div className="p-4 max-w-[1800px] mx-auto">
           {children}
         </div>
       </main>
