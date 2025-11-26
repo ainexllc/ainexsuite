@@ -233,7 +233,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [firebaseUser]);
 
   const signOutUser = useCallback(async () => {
+    try {
+      // Clear the shared session cookie via API (clears for all apps)
+      await fetch('/api/auth/session', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Failed to clear session cookie:', error);
+    }
+
+    // Sign out of Firebase Auth
     await firebaseSignOut(auth);
+
+    // Clear local session data
     clearSessionData();
     setUser(null);
     setFirebaseUser(null);

@@ -134,6 +134,41 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 /**
+ * DELETE /api/auth/session
+ * Clear session cookie (global sign-out across all apps)
+ */
+export async function DELETE(request: NextRequest) {
+  const corsHeaders = getCorsHeaders(request);
+  const cookieDomain = getSessionCookieDomain();
+
+  try {
+    // Create response that clears the session cookie
+    const res = NextResponse.json(
+      { success: true, message: 'Signed out successfully' },
+      { headers: corsHeaders }
+    );
+
+    // Clear the cookie by setting it with maxAge: 0
+    res.cookies.set('__session', '', {
+      domain: cookieDomain,
+      maxAge: 0,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return res;
+  } catch (error) {
+    console.error('Sign out error:', error instanceof Error ? error.message : error);
+    return NextResponse.json(
+      { error: 'Failed to sign out' },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+/**
  * POST /api/auth/session
  * Generate session cookie after Firebase Auth login
  */
