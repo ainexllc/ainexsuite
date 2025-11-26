@@ -48,7 +48,8 @@ function convertTimestampToDate(data: any): any {
 // Create a new journal entry
 export async function createJournalEntry(
   userId: string,
-  data: JournalEntryFormData
+  data: JournalEntryFormData,
+  spaceId?: string
 ): Promise<string> {
   const now = new Date();
   const journalData = {
@@ -61,6 +62,8 @@ export async function createJournalEntry(
     isDraft: data.isDraft ?? true,
     mediaUrls: [],
     ownerId: userId,
+    // Only include spaceId if it's not the default personal space
+    ...(spaceId && spaceId !== 'personal' ? { spaceId } : {}),
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
@@ -176,6 +179,7 @@ export async function getUserJournalEntries(
     mood?: string;
     sortBy?: 'createdAt' | 'updatedAt';
     sortOrder?: 'asc' | 'desc';
+    spaceId?: string;
   } = {}
 ): Promise<{
   entries: JournalEntry[];
@@ -184,6 +188,16 @@ export async function getUserJournalEntries(
   const constraints: QueryConstraint[] = [
     where('ownerId', '==', userId)
   ];
+
+  // Add space filter
+  // Personal space (default) = entries with no spaceId or spaceId === 'personal'
+  // Other spaces = entries with matching spaceId
+  if (options.spaceId && options.spaceId !== 'personal') {
+    constraints.push(where('spaceId', '==', options.spaceId));
+  } else {
+    // For personal space, we want entries that DON'T have a spaceId
+    // Firestore doesn't support != null easily, so we filter in memory for personal space
+  }
 
   // Add tag filter if provided
   if (options.tags && options.tags.length > 0) {
@@ -212,7 +226,7 @@ export async function getUserJournalEntries(
   const q = query(collection(db, JOURNALS_COLLECTION), ...constraints);
   const querySnapshot = await getDocs(q);
 
-  const entries: JournalEntry[] = [];
+  let entries: JournalEntry[] = [];
   querySnapshot.forEach((doc) => {
     const data = convertTimestampToDate(doc.data());
     entries.push({
@@ -220,6 +234,11 @@ export async function getUserJournalEntries(
       ...data
     } as JournalEntry);
   });
+
+  // For personal space, filter out entries that belong to other spaces
+  if (!options.spaceId || options.spaceId === 'personal') {
+    entries = entries.filter(entry => !entry.spaceId || entry.spaceId === 'personal');
+  }
 
   const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
 
@@ -245,24 +264,24 @@ export async function searchJournalEntries(
 }
 
 // Get "On This Day" entries
-export async function getOnThisDayEntries(userId: string): Promise<JournalEntry[]> {
+export async function getOnThisDayEntries(userId: string, spaceId?: string): Promise<JournalEntry[]> {
   try {
     // Since Firestore doesn't support filtering by just month/day across years easily without a specific field,
     // we'll fetch all entries and filter in memory.
     // Optimization: If user has many entries, we might want to add 'monthDay' field (MM-DD) to documents.
     // For now, we assume reasonable number of entries or fetch latest 500.
-    
-    const { entries } = await getUserJournalEntries(userId, { limit: 500 });
-    
+
+    const { entries } = await getUserJournalEntries(userId, { limit: 500, spaceId });
+
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentDay = today.getDate();
-    
+
     return entries.filter(entry => {
       const entryDate = new Date(entry.date);
       // Filter out entries from today (current year)
       if (entryDate.getFullYear() === today.getFullYear()) return false;
-      
+
       return entryDate.getMonth() === currentMonth && entryDate.getDate() === currentDay;
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '@ainexsuite/auth';
@@ -12,6 +12,7 @@ import { getMoodLabel } from '@/lib/utils/mood';
 import { plainText } from '@/lib/utils/text';
 import { NotebookLiteDashboard } from '@/components/dashboard/notebook-lite-dashboard';
 import { DEFAULT_THEME_ID } from '@/lib/dashboard-themes';
+import { useSpaces } from '@/components/providers/spaces-provider';
 
 const POSITIVE_MOODS: Set<MoodType> = new Set([
   'happy',
@@ -39,6 +40,7 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 export function DashboardView({ dateFilter }: { dateFilter?: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { currentSpaceId } = useSpaces();
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [onThisDayEntries, setOnThisDayEntries] = useState<JournalEntry[]>([]);
@@ -63,23 +65,7 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
     localStorage.setItem('journey-dashboard-theme', themeId);
   };
 
-  useEffect(() => {
-    if (user) {
-      setLoadingMessage('Loading your journal entries...');
-      // Add timeout to prevent infinite loading
-      const timeoutId = setTimeout(() => {
-        setLoading(false);
-        setEntries([]);
-      }, 10000); // 10 second timeout
-
-      void loadEntries().finally(() => clearTimeout(timeoutId));
-    } else {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, dateFilter]); // Add dateFilter to dependencies
-
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -96,8 +82,9 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
           limit: 100,
           sortBy: 'createdAt',
           sortOrder: 'desc',
+          spaceId: currentSpaceId,
         }),
-        getOnThisDayEntries(user.uid)
+        getOnThisDayEntries(user.uid, currentSpaceId)
       ]);
 
       clearTimeout(timeoutId);
@@ -114,7 +101,22 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, currentSpaceId, toast]);
+
+  useEffect(() => {
+    if (user) {
+      setLoadingMessage('Loading your journal entries...');
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        setLoading(false);
+        setEntries([]);
+      }, 10000); // 10 second timeout
+
+      void loadEntries().finally(() => clearTimeout(timeoutId));
+    } else {
+      setLoading(false);
+    }
+  }, [user, dateFilter, currentSpaceId, loadEntries]);
 
   const filteredEntries = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();

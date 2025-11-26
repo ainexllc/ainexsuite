@@ -13,6 +13,7 @@ import {
 import { clsx } from "clsx";
 import { useAuth } from "@ainexsuite/auth";
 import { createJournalEntry, updateJournalEntry } from "@/lib/firebase/firestore";
+import { useSpaces } from "@/components/providers/spaces-provider";
 import { uploadMultipleFiles } from "@/lib/firebase/storage";
 import { moodConfig, getMoodColor } from "@/lib/utils/mood";
 import type { MoodType } from "@ainexsuite/types";
@@ -31,6 +32,7 @@ interface JournalComposerProps {
 export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { currentSpaceId } = useSpaces();
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -95,7 +97,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
         date: new Date().toISOString(),
         links: [],
         isPrivate: false,
-      });
+      }, currentSpaceId);
 
       // 2. Upload attachments if any
       if (attachments.length > 0) {
@@ -148,6 +150,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
     attachments,
     onEntryCreated,
     toast,
+    currentSpaceId,
   ]);
 
   const handleFilesSelected = (files: FileList | null) => {
