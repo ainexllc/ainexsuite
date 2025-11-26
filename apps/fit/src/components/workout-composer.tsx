@@ -126,7 +126,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
     }
   }, [isSubmitting, user, currentSpace, title, date, duration, exercises, feeling, addWorkout, onWorkoutCreated, resetState]);
 
-  // Handle click outside to close if empty
+  // Handle click outside to close only if empty (no auto-submit)
   useEffect(() => {
     if (!expanded) return;
 
@@ -134,19 +134,16 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       if (!composerRef.current) return;
       if (composerRef.current.contains(event.target as Node)) return;
 
-      // Don't submit if already submitting or already submitted
-      if (isSubmitting || hasSubmittedRef.current) return;
-
-      if (hasContent) {
-        void handleSubmit();
-      } else {
+      // Only close if there's no content - don't auto-submit
+      // User must explicitly click "Log Workout" to save
+      if (!hasContent) {
         resetState();
       }
     };
 
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
+  }, [expanded, hasContent, resetState]);
 
   return (
     <section className="w-full mb-8">
