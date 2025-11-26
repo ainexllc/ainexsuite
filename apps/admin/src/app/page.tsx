@@ -276,84 +276,96 @@ export default function AdminDashboard() {
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Users */}
-        <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-xl bg-indigo-500/20 text-indigo-400">
+        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-indigo-500/50 to-transparent">
+          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
                 <Users className="h-6 w-6" />
               </div>
-              <span className="flex items-center text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full">
+              <span className="flex items-center text-xs font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-1 rounded-full">
                 <ArrowUpRight className="h-3 w-3 mr-1" /> +12%
               </span>
             </div>
-            <h3 className="text-3xl font-bold text-white mb-1">{stats.totalUsers}</h3>
-            <p className="text-sm text-zinc-500">Total Users</p>
+            <div className="relative z-10">
+              <h3 className="text-4xl font-black text-white mb-1 tracking-tight font-bebas">{stats.totalUsers}</h3>
+              <p className="text-xs font-mono text-indigo-200/60 uppercase tracking-widest">Total Users</p>
+            </div>
           </div>
         </div>
 
         {/* Feedback */}
-        <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400">
+        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-purple-500/50 to-transparent">
+          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-3 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                 <MessageSquare className="h-6 w-6" />
               </div>
-              <span className="text-xs font-medium text-zinc-500">All time</span>
+              <span className="text-[10px] font-bold text-purple-300/50 uppercase tracking-wider border border-purple-500/20 px-2 py-1 rounded-full bg-purple-500/5">All Time</span>
             </div>
-            <h3 className="text-3xl font-bold text-white mb-1">{stats.totalFeedback}</h3>
-            <p className="text-sm text-zinc-500">Feedback Items</p>
+            <div className="relative z-10">
+              <h3 className="text-4xl font-black text-white mb-1 tracking-tight font-bebas">{stats.totalFeedback}</h3>
+              <p className="text-xs font-mono text-purple-200/60 uppercase tracking-widest">Feedback Items</p>
+            </div>
           </div>
         </div>
 
-        {/* Active Now (Mock) */}
-        <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400">
+        {/* Active Now */}
+        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-emerald-500/50 to-transparent">
+          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                 <ActivityIcon className="h-6 w-6" />
               </div>
-              <span className="flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
+              <div className="relative flex items-center justify-center w-4 h-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
+              </div>
             </div>
-            <h3 className="text-3xl font-bold text-white mb-1">{stats.activeNow}</h3>
-            <p className="text-sm text-zinc-500">Active Sessions</p>
+            <div className="relative z-10">
+              <h3 className="text-4xl font-black text-white mb-1 tracking-tight font-bebas">{stats.activeNow}</h3>
+              <p className="text-xs font-mono text-emerald-200/60 uppercase tracking-widest">Active Sessions</p>
+            </div>
           </div>
         </div>
 
         {/* System Status */}
-        <div className="p-6 rounded-2xl bg-zinc-900/50 border border-white/10 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-xl bg-blue-500/20 text-blue-400">
+        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-blue-500/50 to-transparent">
+          <div className="relative h-full rounded-[22px] bg-black/80 backdrop-blur-xl p-6 overflow-hidden group">
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/30 rounded-full blur-[50px] group-hover:blur-[40px] transition-all" />
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-3 rounded-2xl bg-blue-500/20 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                 <TrendingUp className="h-6 w-6" />
               </div>
-              <span className="text-xs font-medium text-zinc-500">Uptime 99.9%</span>
+              <span className="text-[10px] font-bold text-blue-300/50 uppercase tracking-wider font-mono">99.9% Uptime</span>
             </div>
-            <h3 className="text-xl font-bold text-emerald-400 mb-1 flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5" /> Operational
-            </h3>
-            <p className="text-sm text-zinc-500">System Status</p>
+            <div className="relative z-10">
+              <h3 className="text-2xl font-black text-emerald-400 mb-1 tracking-tight flex items-center gap-2 shadow-[0_0_20px_rgba(52,211,153,0.4)] drop-shadow-md">
+                <CheckCircle2 className="h-6 w-6" /> OPERATIONAL
+              </h3>
+              <p className="text-xs font-mono text-blue-200/60 uppercase tracking-widest mt-2">System Status</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Recent GitHub Commits */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-zinc-900/50 border border-white/10 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <GitCommit className="h-5 w-5 text-zinc-400" />
-              Recent Commits
+        <div className="lg:col-span-2 bg-black/40 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center gap-3 font-bebas tracking-wide">
+              <GitCommit className="h-5 w-5 text-cyan-400" />
+              Code Activity
             </h2>
             {commits.length > 0 && (
-              <span className="text-xs text-zinc-500">
-                {commits.length} commit{commits.length !== 1 ? 's' : ''}
+              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-[10px] font-mono text-white/50 uppercase tracking-wider">
+                {commits.length} COMMITS
               </span>
             )}
           </div>
@@ -361,12 +373,12 @@ export default function AdminDashboard() {
             {commitsLoading ? (
               // Loading state
               Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/5">
+                <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 animate-pulse">
                   <div className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-zinc-600/20 animate-pulse flex-shrink-0" />
+                    <div className="h-8 w-8 rounded-full bg-white/10" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 w-3/4 bg-zinc-600/20 rounded animate-pulse" />
-                      <div className="h-3 w-1/2 bg-zinc-600/20 rounded animate-pulse" />
+                      <div className="h-4 w-3/4 bg-white/10 rounded" />
+                      <div className="h-3 w-1/2 bg-white/5 rounded" />
                     </div>
                   </div>
                 </div>
@@ -380,18 +392,18 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={commit.id}
-                    className="group p-4 rounded-lg border border-white/5 bg-white/5 hover:bg-white/[0.07] hover:border-white/10 transition-all"
+                    className="group p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 pt-1">
                         {commit.authorAvatar ? (
                           <img
                             src={commit.authorAvatar}
                             alt={commit.author}
-                            className="h-6 w-6 rounded-full ring-1 ring-white/10"
+                            className="h-8 w-8 rounded-full ring-2 ring-black shadow-lg grayscale group-hover:grayscale-0 transition-all"
                           />
                         ) : (
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center text-indigo-300 text-[10px] font-bold ring-1 ring-white/10">
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-black shadow-lg">
                             {commit.author.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -399,15 +411,15 @@ export default function AdminDashboard() {
 
                       <div className="flex-1 min-w-0">
                         {/* Commit message */}
-                        <div className="flex items-start justify-between gap-3 mb-2">
-                          <h3 className="text-sm font-medium text-white leading-snug group-hover:text-indigo-300 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-1">
+                          <h3 className="text-sm font-medium text-zinc-200 leading-snug group-hover:text-cyan-300 transition-colors font-mono">
                             {commit.message}
                           </h3>
                           <a
                             href={commit.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-shrink-0 text-zinc-500 hover:text-indigo-400 transition-colors"
+                            className="flex-shrink-0 text-zinc-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                             onClick={(e) => e.stopPropagation()}
                             title="View on GitHub"
                           >
@@ -416,13 +428,13 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Metadata bar */}
-                        <div className="flex items-center gap-3 text-xs text-zinc-500">
-                          <span className="font-medium text-zinc-400">{commit.author}</span>
-                          <span className="text-zinc-700">•</span>
-                          <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-zinc-800/50 text-zinc-500 border border-white/5">
-                            {commit.sha}
+                        <div className="flex items-center gap-3 text-[10px] text-zinc-500 font-mono uppercase tracking-wide">
+                          <span className="text-zinc-400">{commit.author}</span>
+                          <span className="text-zinc-700">|</span>
+                          <span className="px-1.5 py-0.5 rounded bg-white/5 text-zinc-400 border border-white/5">
+                            {commit.sha.substring(0, 7)}
                           </span>
-                          <span className="text-zinc-700">•</span>
+                          <span className="text-zinc-700">|</span>
                           <span>{formatActivityTime(commit.timestamp)}</span>
                         </div>
 
@@ -431,24 +443,24 @@ export default function AdminDashboard() {
                           <div className="mt-3">
                             <button
                               onClick={() => toggleCommitExpansion(commit.id)}
-                              className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
+                              className="flex items-center gap-1.5 text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium uppercase tracking-wider"
                             >
                               {isExpanded ? (
                                 <>
-                                  <ChevronDown className="h-3.5 w-3.5" />
-                                  Hide full message
+                                  <ChevronDown className="h-3 w-3" />
+                                  Collapse
                                 </>
                               ) : (
                                 <>
-                                  <ChevronRight className="h-3.5 w-3.5" />
-                                  Show full message
+                                  <ChevronRight className="h-3 w-3" />
+                                  Expand Details
                                 </>
                               )}
                             </button>
 
                             {isExpanded && (
-                              <div className="mt-3 p-4 rounded-lg bg-black/40 border border-white/5">
-                                <pre className="text-xs text-zinc-300 whitespace-pre-wrap font-mono leading-relaxed">
+                              <div className="mt-3 p-4 rounded-lg bg-black/50 border border-white/5 shadow-inner">
+                                <pre className="text-xs text-zinc-400 whitespace-pre-wrap font-mono leading-relaxed">
                                   {commit.body}
                                 </pre>
                               </div>
@@ -462,84 +474,78 @@ export default function AdminDashboard() {
               })
             ) : commitsError ? (
               // Error state
-              <div className="text-center py-8">
-                <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                <p className="text-sm font-medium text-red-400 mb-1">Failed to load commits</p>
-                <p className="text-xs text-zinc-500 mb-2 max-w-md mx-auto">{commitsError}</p>
+              <div className="text-center py-12 rounded-xl bg-red-500/5 border border-red-500/10">
+                <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-3" />
+                <p className="text-sm font-medium text-red-400 mb-1">Connection Lost</p>
+                <p className="text-xs text-red-400/60 mb-4 max-w-md mx-auto font-mono">{commitsError}</p>
                 {commitsError.includes('GitHub API error') && (
-                  <div className="text-xs text-zinc-600 mt-3 p-3 bg-zinc-800/50 rounded-lg max-w-md mx-auto">
-                    <p className="font-medium text-zinc-400 mb-1">Troubleshooting:</p>
-                    <p className="text-left mb-2">
-                      Default repo: <code className="text-indigo-400">ainexsuite/ainexsuite</code>
-                    </p>
-                    <p className="text-left">
-                      To use a different repo, add to <code className="text-indigo-400">apps/admin/.env.local</code>:
-                    </p>
-                    <pre className="text-left mt-2 p-2 bg-zinc-900 rounded text-zinc-300 overflow-x-auto">
-{`GITHUB_REPO=owner/repo
-# Or full URL:
-# GITHUB_REPO=https://github.com/owner/repo`}
-                    </pre>
+                  <div className="text-xs text-zinc-500 mt-3 p-4 bg-black/40 rounded-lg max-w-md mx-auto text-left font-mono border border-white/5">
+                    <p className="text-zinc-400 mb-2">DEBUG_LOG:</p>
+                    <p className="mb-1 text-indigo-400">Default Repo: ainexsuite/ainexsuite</p>
+                    <p>Check env vars for GITHUB_REPO override.</p>
                   </div>
                 )}
                 <button
                   onClick={fetchCommits}
-                  className="mt-4 text-xs text-indigo-400 hover:text-indigo-300 underline"
+                  className="mt-6 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border border-red-500/20"
                 >
-                  Try again
+                  Retry Connection
                 </button>
               </div>
             ) : (
               // Empty state
-              <div className="text-center py-8">
-                <GitCommit className="h-8 w-8 text-zinc-600 mx-auto mb-2" />
-                <p className="text-sm text-zinc-500">No recent commits</p>
-                <p className="text-xs text-zinc-600 mt-1">
-                  Showing commits from <code className="text-indigo-400">ainexsuite/ainexsuite</code>
-                </p>
+              <div className="text-center py-12">
+                <GitCommit className="h-12 w-12 text-zinc-800 mx-auto mb-4" />
+                <p className="text-sm text-zinc-500 font-mono">NO_DATA_FOUND</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-zinc-400" />
-            System Health
+        <div className="bg-black/40 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl flex flex-col">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3 font-bebas tracking-wide">
+            <ActivityIcon className="h-5 w-5 text-emerald-400" />
+            System Diagnostics
           </h2>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-zinc-400">Database Load</span>
-                <span className="text-emerald-400">12%</span>
+          <div className="space-y-6 flex-1">
+            <div className="group">
+              <div className="flex justify-between text-xs mb-2 font-mono uppercase tracking-wider">
+                <span className="text-zinc-400 group-hover:text-emerald-400 transition-colors">DB Load</span>
+                <span className="text-emerald-400 font-bold">12%</span>
               </div>
-              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 w-[12%]" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-zinc-400">Storage Usage</span>
-                <span className="text-blue-400">45%</span>
-              </div>
-              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 w-[45%]" />
+              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 w-[12%] shadow-[0_0_10px_#10b981]" />
               </div>
             </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-zinc-400">Function Invocations</span>
-                <span className="text-purple-400">89%</span>
+            <div className="group">
+              <div className="flex justify-between text-xs mb-2 font-mono uppercase tracking-wider">
+                <span className="text-zinc-400 group-hover:text-blue-400 transition-colors">Storage</span>
+                <span className="text-blue-400 font-bold">45%</span>
               </div>
-              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 w-[89%]" />
+              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 w-[45%] shadow-[0_0_10px_#3b82f6]" />
+              </div>
+            </div>
+            <div className="group">
+              <div className="flex justify-between text-xs mb-2 font-mono uppercase tracking-wider">
+                <span className="text-zinc-400 group-hover:text-purple-400 transition-colors">Compute</span>
+                <span className="text-purple-400 font-bold">89%</span>
+              </div>
+              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-purple-600 to-purple-400 w-[89%] shadow-[0_0_10px_#a855f7]" />
               </div>
             </div>
             
-            <div className="pt-4 mt-4 border-t border-white/10">
-              <p className="text-xs text-zinc-500">
-                Last automated check: Just now
-              </p>
+            <div className="mt-auto pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between text-xs text-zinc-500 font-mono">
+                <span>STATUS</span>
+                <span className="text-emerald-500 animate-pulse">● LIVE</span>
+              </div>
+              <div className="mt-2 p-3 rounded-lg bg-black/60 border border-white/5 text-[10px] font-mono text-zinc-600">
+                <span className="text-zinc-400">{`>`}</span> system_check --full
+                <br />
+                <span className="text-emerald-500/70">{`>`} all systems nominal</span>
+              </div>
             </div>
           </div>
         </div>

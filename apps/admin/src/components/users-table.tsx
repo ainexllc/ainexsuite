@@ -97,37 +97,43 @@ export function UsersTable() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search users by name, email, or UID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-950 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
-          />
+      <div className="flex items-center justify-between gap-4 bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-lg">
+        <div className="relative flex-1 max-w-md group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg opacity-0 group-focus-within:opacity-50 transition duration-500 blur-sm" />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-cyan-400 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search users by name, email, or UID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black/80 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 transition-all"
+            />
+          </div>
         </div>
-        <div className="text-sm text-zinc-500">
-          Showing {filteredUsers.length} of {users.length} loaded users
+        <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider bg-white/5 px-3 py-1 rounded-full border border-white/5">
+          {filteredUsers.length} / {users.length} RECORDS
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+      <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
+        {/* Decorative Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+        
+        <div className="relative overflow-x-auto">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Subscription</th>
-                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Apps</th>
-                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider">Joined</th>
-                <th className="px-6 py-3 text-xs font-medium text-zinc-400 uppercase tracking-wider text-right">Actions</th>
+              <tr className="border-b border-white/10 bg-white/[0.02]">
+                <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] font-mono">User Identity</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] font-mono">Subscription Tier</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] font-mono">Status</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] font-mono">Apps</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] font-mono">Role</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] font-mono">Joined</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] font-mono text-right">Command</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -142,90 +148,92 @@ export function UsersTable() {
                 }
 
                 return (
-                  <tr key={user.uid} className="hover:bg-white/5 transition-colors">
+                  <tr key={user.uid} className="group hover:bg-white/[0.03] transition-all duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-zinc-800 overflow-hidden border border-white/10">
-                          {user.photoURL ? (
-                            <Image className="h-10 w-10 object-cover" src={user.photoURL} alt={user.displayName || 'User avatar'} width={40} height={40} unoptimized />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center text-zinc-500">
-                              {user.displayName?.[0] || user.email?.[0]}
-                            </div>
-                          )}
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full blur opacity-40 group-hover:opacity-70 transition-opacity" />
+                          <div className="h-10 w-10 relative flex-shrink-0 rounded-full bg-zinc-900 overflow-hidden border border-white/10 group-hover:border-cyan-500/50 transition-colors">
+                            {user.photoURL ? (
+                              <Image className="h-10 w-10 object-cover" src={user.photoURL} alt={user.displayName || 'User avatar'} width={40} height={40} unoptimized />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-zinc-500 font-mono text-xs">
+                                {user.displayName?.[0] || user.email?.[0]}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-white">{user.displayName || 'Unnamed User'}</div>
-                          <div className="text-sm text-zinc-500">{user.email}</div>
-                          <div className="text-xs text-zinc-600 font-mono mt-0.5">{user.uid}</div>
+                          <div className="text-sm font-medium text-white group-hover:text-cyan-200 transition-colors">{user.displayName || 'Unnamed User'}</div>
+                          <div className="text-xs text-zinc-500">{user.email}</div>
+                          <div className="text-[10px] text-zinc-700 font-mono mt-1 uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">ID: {user.uid.substring(0, 8)}...</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-zinc-500" />
-                        <span className="text-sm font-medium text-white capitalize">
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <span className="text-sm font-medium capitalize">
                           {user.subscriptionTier || 'Free Trial'}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={clsx(
-                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                        "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border backdrop-blur-sm shadow-[0_0_10px_rgba(0,0,0,0.2)]",
                         user.subscriptionStatus === 'active'
-                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
                           : user.subscriptionStatus === 'trial'
-                          ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                          ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
                           : user.subscriptionStatus === 'expired'
-                          ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-                          : 'bg-red-500/10 text-red-500 border-red-500/20'
+                          ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                          : 'bg-red-500/10 text-red-400 border-red-500/20'
                       )}>
-                        {user.subscriptionStatus === 'trial' && <AlertCircle className="h-3 w-3 mr-1" />}
+                        {user.subscriptionStatus === 'active' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 animate-pulse" />}
                         {user.subscriptionStatus || 'inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.subscribedApps && user.subscribedApps.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {user.subscribedApps.map((app) => (
-                            <span key={app} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                              {app}
+                          {user.subscribedApps.slice(0, 3).map((app) => (
+                            <span key={app} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                              {app.substring(0, 3).toUpperCase()}
                             </span>
                           ))}
+                          {user.subscribedApps.length > 3 && (
+                            <span className="text-[10px] text-zinc-600 self-center">+{user.subscribedApps.length - 3}</span>
+                          )}
                         </div>
                       ) : (
-                        <span className="text-xs text-zinc-500">All apps</span>
+                        <span className="text-xs text-zinc-600 font-mono">ALL_ACCESS</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.role === 'admin' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border border-amber-500/30 uppercase tracking-wide shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                           <Shield className="h-3 w-3" /> Admin
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400 border border-white/10">
+                        <span className="text-xs text-zinc-500 font-medium pl-2">
                           User
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-400">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3" />
-                        {joinedDate}
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-zinc-400 font-mono">
+                      {joinedDate}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => handlePromoteAdmin(user.uid, user.role)}
                           disabled={actionLoading === user.uid}
                           className={clsx(
-                            "p-2 rounded-lg transition-colors",
+                            "p-2 rounded-lg transition-all duration-200 border border-transparent",
                             user.role === 'admin' 
-                              ? "text-zinc-500 hover:bg-red-500/10 hover:text-red-400" 
-                              : "text-zinc-500 hover:bg-indigo-500/10 hover:text-indigo-400"
+                              ? "text-red-400 hover:bg-red-500/10 hover:border-red-500/30 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
+                              : "text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/30 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
                           )}
-                          title={user.role === 'admin' ? "Remove Admin" : "Promote to Admin"}
+                          title={user.role === 'admin' ? "Revoke Access" : "Grant Admin"}
                         >
                           {actionLoading === user.uid ? (
                             <Loader2 className="h-4 w-4 animate-spin" />

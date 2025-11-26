@@ -65,15 +65,15 @@ export function AdminShell({
 
   // If on login page, just render children (the login page)
   if (isLoginPage) {
-    return <div className="bg-zinc-950 min-h-screen text-zinc-50">{children}</div>;
+    return <div className="bg-surface-base min-h-screen text-ink-900">{children}</div>;
   }
 
   if (loading || checkingRole) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-          <p className="text-zinc-500 text-sm">Verifying privileges...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--theme-primary))]" />
+          <p className="text-ink-500 text-sm">Verifying privileges...</p>
         </div>
       </div>
     );
@@ -81,17 +81,17 @@ export function AdminShell({
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 space-y-4 p-4 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-base text-ink-500 space-y-4 p-4 text-center">
         <div className="p-4 rounded-full bg-red-500/10 border border-red-500/20 mb-2">
           <ShieldAlert className="h-12 w-12 text-red-500" />
         </div>
-        <h1 className="text-2xl font-bold text-white">Access Denied</h1>
-        <p className="max-w-md">
+        <h1 className="text-2xl font-bold text-ink-900">Access Denied</h1>
+        <p className="max-w-md text-ink-600">
           You do not have administrative privileges. This area is restricted to authorized personnel only.
         </p>
-        <button 
+        <button
           onClick={() => router.push('/login')}
-          className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors font-medium"
+          className="mt-4 px-6 py-2 bg-surface-elevated hover:bg-surface-muted rounded-lg text-ink-900 transition-colors font-medium border border-outline-subtle"
         >
           Sign in as Admin
         </button>
@@ -112,10 +112,18 @@ export function AdminShell({
   };
 
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-zinc-50">
+    <div className="flex min-h-screen bg-[#050505] text-white overflow-hidden relative">
+      {/* Global Animated Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
+        <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-cyan-900/10 rounded-full blur-[100px]" />
+      </div>
+
       <AdminSidebar onSignOut={handleSignOut} />
-      <main className="flex-1 overflow-y-auto h-screen">
-        <div className="p-8 max-w-7xl mx-auto">
+      
+      <main className="flex-1 overflow-y-auto h-screen relative z-10">
+        <div className="p-8 max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>
