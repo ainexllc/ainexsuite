@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { getTheme, DashboardTheme } from '@/lib/dashboard-themes';
 import { JournalComposer } from '@/components/journal/journal-composer';
 import { JournalInsights } from '@/components/journal/journal-insights';
+import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 
 interface DashboardStats {
   streak: number;
@@ -135,6 +136,10 @@ export function NotebookLiteDashboard({
       <div className="space-y-12 pb-20 max-w-7xl mx-auto">
         <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
           <div className="space-y-6">
+            {/* Space Switcher above journal composer */}
+            <div className="flex items-center gap-4">
+              <SpaceSwitcher />
+            </div>
             <JournalComposer onEntryCreated={onEntryUpdated} />
 
             <MobileOverview

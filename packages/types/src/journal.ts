@@ -21,6 +21,7 @@ export interface JournalEntry extends BaseDocument {
   isPrivate: boolean;
   isDraft: boolean;
   wordCount?: number;
+  spaceId?: string; // Optional - null/undefined means personal default space
 }
 
 export type CreateJournalEntryInput = Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt' | 'wordCount'>;

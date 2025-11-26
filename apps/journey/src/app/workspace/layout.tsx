@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { Loader2 } from 'lucide-react';
+import { SpacesProvider } from '@/components/providers/spaces-provider';
 
 export default function WorkspaceRootLayout({
   children,
@@ -49,13 +50,15 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      searchPlaceholder="Search journal entries..."
-      appName="Journey"
-    >
-      {children}
-    </WorkspaceLayout>
+    <SpacesProvider>
+      <WorkspaceLayout
+        user={user}
+        onSignOut={handleSignOut}
+        searchPlaceholder="Search journal entries..."
+        appName="Journey"
+      >
+        {children}
+      </WorkspaceLayout>
+    </SpacesProvider>
   );
 }
