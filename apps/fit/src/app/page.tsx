@@ -6,7 +6,7 @@ import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
-  Loader2,
+  Loader2, // eslint-disable-line @typescript-eslint/no-unused-vars
   Shield,
   BrainCircuit,
   HeartPulse,
