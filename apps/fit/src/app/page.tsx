@@ -125,7 +125,7 @@ function FitHomePageContent() {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="h-16 w-16 rounded-full bg-[#22c55e]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#22c55e]" />
+            <div className="relative mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#22c55e]/20 border-t-[#22c55e]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">

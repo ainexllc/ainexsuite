@@ -102,6 +102,7 @@ export {
 // Background Components
 export { LayeredBackground } from "./backgrounds/layered-background";
 export { CanvasWaveBackground } from "./backgrounds/canvas-wave-background";
+export { WorkspaceBackground } from "./backgrounds/workspace-background";
 
 // Branding Components
 export { AinexStudiosLogo, type AinexStudiosLogoProps } from "./branding/ainex-studios-logo";

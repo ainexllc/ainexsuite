@@ -64,7 +64,7 @@ export default function TodoWorkspacePage() {
       user={user}
       onSignOut={handleSignOut}
       searchPlaceholder="Search tasks..."
-      appName="Tasks"
+      appName="Task"
       appColor="#8b5cf6"
     >
       <TodoFirestoreSync />

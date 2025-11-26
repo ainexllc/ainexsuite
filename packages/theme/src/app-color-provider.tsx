@@ -4,19 +4,29 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
 
-interface AppColors {
+export type BackgroundVariant = 'glow' | 'aurora' | 'minimal' | 'grid' | 'dots' | 'mesh';
+
+interface AppTheme {
   primary: string;
   secondary: string;
+  backgroundVariant: BackgroundVariant;
+  backgroundIntensity: number;
   loading: boolean;
 }
 
-const AppColorContext = createContext<AppColors>({
+const AppColorContext = createContext<AppTheme>({
   primary: '#3b82f6',
   secondary: '#60a5fa',
+  backgroundVariant: 'glow',
+  backgroundIntensity: 0.25,
   loading: true,
 });
 
 export function useAppColors() {
+  return useContext(AppColorContext);
+}
+
+export function useAppTheme() {
   return useContext(AppColorContext);
 }
 
@@ -33,61 +43,101 @@ export function AppColorProvider({
   fallbackPrimary = '#3b82f6',
   fallbackSecondary = '#60a5fa',
 }: AppColorProviderProps) {
-  const [colors, setColors] = useState<AppColors>({
+  const [theme, setTheme] = useState<AppTheme>({
     primary: fallbackPrimary,
     secondary: fallbackSecondary,
+    backgroundVariant: 'glow',
+    backgroundIntensity: 0.25,
     loading: true,
   });
 
   useEffect(() => {
-    // Listen to real-time color updates from Firestore
-    const unsubscribe = onSnapshot(
+    // Track loading states for both listeners
+    let appColorsLoaded = false;
+    let themeLoaded = false;
+    let appColors = { primary: fallbackPrimary, secondary: fallbackSecondary };
+    let globalTheme = { backgroundVariant: 'glow' as BackgroundVariant, backgroundIntensity: 0.25 };
+
+    const updateTheme = () => {
+      const isLoading = !appColorsLoaded || !themeLoaded;
+      setTheme({
+        primary: appColors.primary,
+        secondary: appColors.secondary,
+        backgroundVariant: globalTheme.backgroundVariant,
+        backgroundIntensity: globalTheme.backgroundIntensity,
+        loading: isLoading,
+      });
+    };
+
+    // Listen to real-time color updates from Firestore (app-specific)
+    const unsubscribeAppColors = onSnapshot(
       doc(db, 'apps', appId),
       (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setColors({
+          appColors = {
             primary: data.primary || fallbackPrimary,
             secondary: data.secondary || fallbackSecondary,
-            loading: false,
-          });
+          };
         } else {
-          // Document doesn't exist, use fallbacks (no error)
-          setColors({
-            primary: fallbackPrimary,
-            secondary: fallbackSecondary,
-            loading: false,
-          });
+          appColors = { primary: fallbackPrimary, secondary: fallbackSecondary };
         }
+        appColorsLoaded = true;
+        updateTheme();
       },
-      (error) => {
+      () => {
         // Permission errors or other issues - use fallbacks silently
-        setColors({
-          primary: fallbackPrimary,
-          secondary: fallbackSecondary,
-          loading: false,
-        });
+        appColors = { primary: fallbackPrimary, secondary: fallbackSecondary };
+        appColorsLoaded = true;
+        updateTheme();
       }
     );
 
-    return () => unsubscribe();
+    // Listen to global theme settings from Firestore
+    const unsubscribeGlobalTheme = onSnapshot(
+      doc(db, 'settings', 'theme'),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          globalTheme = {
+            backgroundVariant: (data.backgroundVariant as BackgroundVariant) || 'glow',
+            backgroundIntensity: data.backgroundIntensity ?? 0.25,
+          };
+        } else {
+          globalTheme = { backgroundVariant: 'glow', backgroundIntensity: 0.25 };
+        }
+        themeLoaded = true;
+        updateTheme();
+      },
+      () => {
+        // Permission errors or other issues - use defaults silently
+        globalTheme = { backgroundVariant: 'glow', backgroundIntensity: 0.25 };
+        themeLoaded = true;
+        updateTheme();
+      }
+    );
+
+    return () => {
+      unsubscribeAppColors();
+      unsubscribeGlobalTheme();
+    };
   }, [appId, fallbackPrimary, fallbackSecondary]);
 
   // Apply colors to CSS variables
   useEffect(() => {
-    if (!colors.loading) {
+    if (!theme.loading) {
       // Set --color-* variables (new standard)
-      document.documentElement.style.setProperty('--color-primary', colors.primary);
-      document.documentElement.style.setProperty('--color-secondary', colors.secondary);
+      document.documentElement.style.setProperty('--color-primary', theme.primary);
+      document.documentElement.style.setProperty('--color-secondary', theme.secondary);
 
       // Also set --theme-* variables (for backward compatibility with WorkspaceLayout)
-      document.documentElement.style.setProperty('--theme-primary', colors.primary);
-      document.documentElement.style.setProperty('--theme-secondary', colors.secondary);
-      document.documentElement.style.setProperty('--theme-primary-light', colors.secondary);
+      document.documentElement.style.setProperty('--theme-primary', theme.primary);
+      document.documentElement.style.setProperty('--theme-secondary', theme.secondary);
+      document.documentElement.style.setProperty('--theme-primary-light', theme.secondary);
 
       // Also set individual RGB values for use with opacity
-      const primaryRgb = hexToRgb(colors.primary);
-      const secondaryRgb = hexToRgb(colors.secondary);
+      const primaryRgb = hexToRgb(theme.primary);
+      const secondaryRgb = hexToRgb(theme.secondary);
 
       if (primaryRgb) {
         document.documentElement.style.setProperty('--color-primary-rgb', primaryRgb);
@@ -98,10 +148,10 @@ export function AppColorProvider({
         document.documentElement.style.setProperty('--theme-secondary-rgb', secondaryRgb);
       }
     }
-  }, [colors]);
+  }, [theme]);
 
   return (
-    <AppColorContext.Provider value={colors}>
+    <AppColorContext.Provider value={theme}>
       {children}
     </AppColorContext.Provider>
   );

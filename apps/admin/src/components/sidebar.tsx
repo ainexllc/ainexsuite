@@ -12,7 +12,8 @@ import {
   Sparkles,
   X,
   Cpu,
-  Zap
+  Zap,
+  Paintbrush
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
@@ -26,6 +27,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Overview', href: '/', icon: LayoutDashboard },
   { label: 'Apps', href: '/apps', icon: LayoutGrid },
+  { label: 'Theme', href: '/theme', icon: Paintbrush },
   { label: 'Users', href: '/users', icon: Users },
   { label: 'Feedback', href: '/feedback', icon: MessageSquare },
   { label: 'Updates', href: '/updates', icon: Sparkles },

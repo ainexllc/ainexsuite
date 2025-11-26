@@ -142,7 +142,7 @@ export default function WorkspacePage() {
         onSignOut={handleSignOut}
         appName="Suite"
         appColor={selectedVariant.id === 'ember-glow' ? '#f97316' : '#38bdf8'}
-        showGlows={false} // We handle our own atmospheric glows
+        showBackground={false}
         apps={apps}
         onSettingsClick={() => setActivePanel('settings')}
         onActivityClick={() => setActivePanel('activity')}

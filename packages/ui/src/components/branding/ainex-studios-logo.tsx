@@ -68,7 +68,7 @@ export function AinexStudiosLogo({
         style={{
           letterSpacing: config.letterSpacing,
           marginLeft: align === 'start' ? '-0.3em' : '0',
-          color: appColor || '#3b82f6',
+          color: appColor || 'var(--theme-primary, #3b82f6)',
           marginTop: appNameOffset ? `${appNameOffset}px` : undefined
         }}
       >

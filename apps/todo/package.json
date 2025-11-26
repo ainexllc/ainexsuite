@@ -14,6 +14,7 @@
     "@ainexsuite/ai": "workspace:*",
     "@ainexsuite/auth": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
+    "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "@dnd-kit/core": "^6.1.0",

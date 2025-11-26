@@ -36,7 +36,8 @@ export function subscribeToUserFitSpaces(userId: string, callback: (spaces: FitS
 
 export async function createWorkoutInDb(workout: Workout) {
   const workoutRef = doc(collection(db, 'workouts'), workout.id);
-  await setDoc(workoutRef, workout);
+  // Ensure archived field is set so Firestore query can find it
+  await setDoc(workoutRef, { ...workout, archived: false });
 }
 
 export async function updateWorkoutInDb(workoutId: string, data: Partial<Workout>) {

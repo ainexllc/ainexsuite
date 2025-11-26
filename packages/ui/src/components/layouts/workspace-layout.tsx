@@ -2,7 +2,7 @@
 
 import { ReactNode, useState } from 'react';
 import { WorkspaceHeader } from './workspace-header';
-import { AtmosphericGlows } from './atmospheric-glows';
+import { WorkspaceBackground } from '../backgrounds/workspace-background';
 import { FeedbackWidget } from '../feedback/feedback-widget';
 // SubscriptionSidebar imported for future use
 // import { SubscriptionSidebar } from '../layout/subscription-sidebar';
@@ -10,6 +10,7 @@ import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
 import { ProfileSidebar } from '../layout/profile-sidebar';
 import { getNavigationApps } from '../../utils/navigation';
 import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
+import { useAppTheme } from '@ainexsuite/theme';
 
 interface WorkspaceLayoutProps {
   /**
@@ -45,10 +46,26 @@ interface WorkspaceLayoutProps {
    */
   appColor?: string;
   /**
-   * Whether to show the atmospheric background glows
+   * Whether to show the background gradient
    * @default true
    */
-  showGlows?: boolean;
+  showBackground?: boolean;
+  /**
+   * Background style variant
+   * - 'glow': Soft radial glow from top
+   * - 'aurora': Northern lights style with multiple subtle layers
+   * - 'minimal': Very subtle, single gradient
+   * - 'grid': Subtle grid pattern with accent color highlights
+   * - 'dots': Dot matrix pattern
+   * - 'mesh': Multi-point mesh gradient with noise
+   * @default 'grid'
+   */
+  backgroundVariant?: 'glow' | 'aurora' | 'minimal' | 'grid' | 'dots' | 'mesh';
+  /**
+   * Background gradient intensity (0.0 - 1.0)
+   * @default 0.15
+   */
+  backgroundIntensity?: number;
   /**
    * Apps to show in the left navigation sidebar
    */
@@ -80,7 +97,9 @@ export function WorkspaceLayout({
   searchPlaceholder,
   appName,
   appColor,
-  showGlows = true,
+  showBackground = true,
+  backgroundVariant: propBackgroundVariant,
+  backgroundIntensity: propBackgroundIntensity,
   apps = [],
   onSettingsClick,
   onActivityClick,
@@ -88,6 +107,13 @@ export function WorkspaceLayout({
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Get global theme settings (from AppColorProvider context)
+  const appTheme = useAppTheme();
+
+  // Use global theme settings if available, otherwise fall back to props/defaults
+  const backgroundVariant = propBackgroundVariant ?? appTheme.backgroundVariant ?? 'grid';
+  const backgroundIntensity = propBackgroundIntensity ?? appTheme.backgroundIntensity ?? 0.5;
 
   // Auto-hide navigation hook
   const {
@@ -104,9 +130,12 @@ export function WorkspaceLayout({
   const displayApps = apps.length > 0 ? apps : defaultApps;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-surface-base text-text-primary">
+    <div className="relative min-h-screen overflow-x-hidden text-text-primary">
+      {/* Base background color */}
+      <div className="fixed inset-0 -z-20 bg-surface-base" />
+
       {/* Background Effects */}
-      {showGlows && <AtmosphericGlows />}
+      {showBackground && <WorkspaceBackground variant={backgroundVariant} intensity={backgroundIntensity} />}
 
       {/* Hover Zone for auto-hide reveal */}
       <div {...hoverZoneProps} />

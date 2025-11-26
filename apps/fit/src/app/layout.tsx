@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
+import { AppColorProvider } from '@ainexsuite/theme';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -26,7 +27,9 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${bebasNeue.variable} theme-dark`} data-theme="dark">
       <body className="bg-surface-base text-ink-900 font-sans theme-dark">
         <AuthProvider>
-          {children}
+          <AppColorProvider appId="fit" fallbackPrimary="#22c55e" fallbackSecondary="#4ade80">
+            {children}
+          </AppColorProvider>
         </AuthProvider>
       </body>
     </html>

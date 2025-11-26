@@ -299,7 +299,7 @@ export default function WorkspacePage() {
         onSignOut={handleSignOut}
         appName="Calendar"
         appColor="#8b5cf6"
-        showGlows={true}
+        showBackground={true}
         apps={apps}
       >
         <div className="h-[calc(100vh-80px)] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">

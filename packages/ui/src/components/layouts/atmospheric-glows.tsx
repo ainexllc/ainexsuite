@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 interface AtmosphericGlowsProps {
   /**
    * Primary glow color with opacity
@@ -17,6 +19,16 @@ interface AtmosphericGlowsProps {
    * Additional CSS classes to apply to the container
    */
   className?: string;
+}
+
+// Helper to convert hex to rgba
+function hexToRgba(hex: string, alpha: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return `rgba(249, 115, 22, ${alpha})`; // fallback orange
+  const r = parseInt(result[1], 16);
+  const g = parseInt(result[2], 16);
+  const b = parseInt(result[3], 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 /**
@@ -48,14 +60,50 @@ export function AtmosphericGlows({
   secondaryColor,
   className
 }: AtmosphericGlowsProps = {}) {
-  // Use CSS variables if no colors provided (backwards compatible)
+  // State to hold computed colors from CSS variables (using secondary accent mixed with dark)
+  const [computedPrimary, setComputedPrimary] = useState('rgba(249, 115, 22, 0.35)');
+  const [computedSecondary, setComputedSecondary] = useState('rgba(249, 115, 22, 0.25)');
+
+  // Read CSS variables set by AppColorProvider - use secondary color for both glows
+  useEffect(() => {
+    if (primaryColor || secondaryColor) return; // Skip if colors are provided directly
+
+    const updateColors = () => {
+      const root = document.documentElement;
+      const secondary = getComputedStyle(root).getPropertyValue('--color-secondary').trim();
+
+      // Use secondary color for both glows (mixed with dark background)
+      if (secondary && secondary.startsWith('#')) {
+        setComputedPrimary(hexToRgba(secondary, 0.35));
+        setComputedSecondary(hexToRgba(secondary, 0.20));
+      }
+    };
+
+    // Initial update
+    updateColors();
+
+    // Watch for CSS variable changes using MutationObserver
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          updateColors();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+
+    return () => observer.disconnect();
+  }, [primaryColor, secondaryColor]);
+
+  // Use provided colors or computed colors from CSS variables
   const primaryStyle = primaryColor
     ? { backgroundColor: primaryColor }
-    : { backgroundColor: 'rgba(var(--theme-primary-rgb), 0.35)' };
+    : { backgroundColor: computedPrimary };
 
   const secondaryStyle = secondaryColor
     ? { backgroundColor: secondaryColor }
-    : { backgroundColor: 'rgba(var(--theme-secondary-rgb), 0.25)' };
+    : { backgroundColor: computedSecondary };
 
   return (
     <>

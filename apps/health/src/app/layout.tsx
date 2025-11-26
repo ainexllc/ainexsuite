@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
+import { AppColorProvider } from '@ainexsuite/theme';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -32,7 +33,9 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} theme-dark`} data-theme="dark">
       <body className="font-sans antialiased theme-dark">
         <AuthProvider>
-          {children}
+          <AppColorProvider appId="health" fallbackPrimary="#10b981" fallbackSecondary="#34d399">
+            {children}
+          </AppColorProvider>
         </AuthProvider>
       </body>
     </html>

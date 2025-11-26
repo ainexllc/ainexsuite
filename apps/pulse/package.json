@@ -12,6 +12,7 @@
     "@ainexsuite/ai": "workspace:*",
     "@ainexsuite/auth": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
+    "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "date-fns": "^2.30.0",
