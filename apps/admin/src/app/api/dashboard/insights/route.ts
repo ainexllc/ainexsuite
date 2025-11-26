@@ -14,7 +14,7 @@ interface SystemMetric {
 
 export async function POST(request: NextRequest) {
   try {
-    const grokApiKey = process.env.GROK_API_KEY;
+    const grokApiKey = process.env.XAI_API_KEY;
 
     if (!grokApiKey) {
       return NextResponse.json(
@@ -73,7 +73,7 @@ ${stats ? `Platform Stats:\n- Total Users: ${stats.totalUsers}\n- Feedback Items
             content: `Analyze this platform data and provide insights:\n\n${context}\n\nProvide your analysis in this exact JSON format:\n{\n  "summary": "...",\n  "highlights": ["...", "...", "..."],\n  "recommendations": ["...", "...", "..."]\n}`
           }
         ],
-        model: 'grok-3',
+        model: 'grok-2-latest',
         temperature: 0.7,
       }),
     });
