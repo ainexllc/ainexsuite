@@ -58,9 +58,9 @@ const legalLinks: FooterLink[] = [
 export default function SmartHubLandingPage() {
   return (
     <HomepageTemplate
-      logo={<AinexStudiosLogo appName="Smart Hub" appColor="#0ea5e9" size="lg" asLink={false} />}
+      logo={<AinexStudiosLogo appName="Smart" appColor="#0ea5e9" size="lg" asLink={false} />}
       backgroundComponent={<LayeredBackground />}
-      appName="Smart Hub"
+      appName="Smart"
       accentColor="#0ea5e9"
       gradientFrom="#0ea5e9"
       gradientTo="#38bdf8"
@@ -89,16 +89,16 @@ export default function SmartHubLandingPage() {
         signUpTitle: 'Connect Your Home',
         signInTitle: 'Welcome Back',
         signUpDescription: 'Create your account to start managing your smart home.',
-        signInDescription: 'Sign in to access your Smart Hub dashboard.',
+        signInDescription: 'Sign in to access your Smart dashboard.',
         footerText: 'Secure connection. Your data stays private.',
       }}
       features={{
-        sectionTitle: 'Why Smart Hub?',
+        sectionTitle: 'Why Smart?',
         sectionDescription: 'Seamlessly integrate your devices for a smarter living experience.',
         cards: featureCards,
       }}
       footer={{
-        appDisplayName: "Smart Hub",
+        appDisplayName: "Smart",
         productLinks,
         companyLinks,
         resourceLinks,

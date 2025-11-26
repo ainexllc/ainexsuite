@@ -60,7 +60,7 @@ export const SUITE_APPS = {
     color: '#06b6d4', // cyan-500
   },
   smarthub: {
-    name: 'Smart Hub',
+    name: 'Smart',
     slug: 'smarthub',
     description: 'Connect your world',
     color: '#0ea5e9', // sky-500
@@ -100,6 +100,7 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
   const domainMap: Record<string, string> = {
     todo: 'task', // todo app uses task.ainexsuite.com in production
     smarthub: 'smart', // smarthub uses smart.ainexsuite.com
+    projects: 'project', // projects app uses project.ainexsuite.com
   };
   const domain = domainMap[slug] || slug;
 

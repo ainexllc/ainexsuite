@@ -37,14 +37,14 @@ function SmartHubWorkspaceContent() {
       user={user}
       onSignOut={handleSignOut}
       searchPlaceholder="Search devices..."
-      appName="Smart Hub"
+      appName="Smart"
       appColor="#0ea5e9"
     >
       <div className="max-w-4xl mx-auto py-20 text-center">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-sky-500/10 mb-6">
           <Cpu className="h-10 w-10 text-sky-500" />
         </div>
-        <h1 className="text-3xl font-bold text-white mb-4">Smart Hub Coming Soon</h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Smart Coming Soon</h1>
         <p className="text-white/50 max-w-lg mx-auto text-lg leading-relaxed">
           We are building the ultimate command center for your smart home. 
           Google Home integration, automation routines, and real-time device monitoring will be available here shortly.
