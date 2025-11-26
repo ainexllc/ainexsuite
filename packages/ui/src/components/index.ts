@@ -201,6 +201,5 @@ export {
   type SpaceSwitcherProps,
   type SpaceEditorProps,
   type SpaceItem,
-  type SpaceTypeConfig,
   type SpaceTypeOption,
 } from "./spaces";

@@ -13,7 +13,8 @@ import {
   X,
   Cpu,
   Zap,
-  Paintbrush
+  Paintbrush,
+  Layers
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
@@ -27,6 +28,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Overview', href: '/', icon: LayoutDashboard },
   { label: 'Apps', href: '/apps', icon: LayoutGrid },
+  { label: 'Spaces', href: '/spaces', icon: Layers },
   { label: 'Theme', href: '/theme', icon: Paintbrush },
   { label: 'Users', href: '/users', icon: Users },
   { label: 'Feedback', href: '/feedback', icon: MessageSquare },

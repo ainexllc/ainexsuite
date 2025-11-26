@@ -6,6 +6,7 @@ import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { Loader2 } from 'lucide-react';
 import { WorkflowCanvas } from '@/components/workflow-canvas/WorkflowCanvas';
+import { SpaceSwitcher } from '@/components/spaces';
 
 export default function WorkspacePage() {
   const { user, loading, bootstrapStatus, ssoInProgress } = useAuth();
@@ -52,6 +53,11 @@ export default function WorkspacePage() {
       searchPlaceholder="Search workflows..."
       appName="Workflow"
     >
+      {/* Header with Space Switcher */}
+      <div className="flex items-center gap-4 mb-6">
+        <SpaceSwitcher />
+      </div>
+
       {/* Workflow Canvas */}
       <div className="h-[calc(100vh-200px)] min-h-[600px] rounded-xl border border-outline-subtle bg-surface-elevated/50 backdrop-blur overflow-hidden relative shadow-inner">
         <WorkflowCanvas />

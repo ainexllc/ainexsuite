@@ -822,6 +822,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.0(react@19.2.0)
+      zustand:
+        specifier: ^5.0.8
+        version: 5.0.8(@types/react@19.2.2)(react@19.2.0)
     devDependencies:
       '@ainexsuite/config':
         specifier: workspace:*
@@ -892,6 +895,9 @@ importers:
       recharts:
         specifier: ^2.10.3
         version: 2.15.4(react-dom@19.2.0)(react@19.2.0)
+      zustand:
+        specifier: ^5.0.8
+        version: 5.0.8(@types/react@19.2.2)(react@19.2.0)
     devDependencies:
       '@ainexsuite/config':
         specifier: workspace:*
@@ -1047,6 +1053,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.0(react@19.2.0)
+      zustand:
+        specifier: ^5.0.8
+        version: 5.0.8(@types/react@19.2.2)(react@19.2.0)
     devDependencies:
       '@ainexsuite/config':
         specifier: workspace:*

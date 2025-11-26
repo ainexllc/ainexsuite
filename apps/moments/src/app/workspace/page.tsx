@@ -10,7 +10,7 @@ import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
 import { MomentComposer } from '@/components/moment-composer';
 import { useMomentsStore } from '@/lib/store';
-import { MomentsSpaceSwitcher } from '@/components/moments-space-switcher';
+import { SpaceSwitcher } from '@/components/spaces';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
@@ -113,7 +113,7 @@ function MomentsWorkspaceContent() {
             {/* Space Controls & Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <MomentsSpaceSwitcher userId={user.uid} />
+                <SpaceSwitcher />
                 
                 {/* View Options - Always Available */}
                 <button

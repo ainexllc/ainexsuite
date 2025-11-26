@@ -5,6 +5,7 @@ import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui';
 import { useRouter } from 'next/navigation';
 import { DigitalClock } from '@/components/digital-clock';
+import { SpaceSwitcher } from '@/components/spaces';
 import { Loader2 } from 'lucide-react';
 
 function PulseWorkspaceContent() {
@@ -57,6 +58,9 @@ function PulseWorkspaceContent() {
       appName="Pulse"
     >
       <div className="max-w-7xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <SpaceSwitcher />
+        </div>
         <DigitalClock />
       </div>
     </WorkspaceLayout>

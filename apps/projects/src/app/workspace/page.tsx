@@ -7,6 +7,7 @@ import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { Loader2, LayoutGrid, ArrowLeft } from 'lucide-react';
 import { ProjectsBoard } from '@/components/projects-board';
 import { ProjectDashboard } from '@/components/project-dashboard';
+import { SpaceSwitcher } from '@/components/spaces';
 
 export default function WorkspacePage() {
   const { user, loading, bootstrapStatus, ssoInProgress } = useAuth();
@@ -54,8 +55,10 @@ export default function WorkspacePage() {
       searchPlaceholder="Search projects..."
       appName="Projects"
     >
-      {/* View Toggle Button */}
-        <div className="flex justify-end mb-4">
+      {/* Header with Space Switcher and View Toggle */}
+        <div className="flex items-center justify-between mb-4">
+          <SpaceSwitcher />
+          <div className="flex items-center gap-3">
           {viewMode === 'whiteboard' ? (
             <button
               onClick={() => setViewMode('dashboard')}
@@ -73,6 +76,7 @@ export default function WorkspacePage() {
               Open Whiteboard
             </button>
           )}
+          </div>
         </div>
 
         {/* Content */}
