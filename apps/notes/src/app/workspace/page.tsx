@@ -8,6 +8,7 @@ import { useAppColors } from '@ainexsuite/theme';
 import { Loader2 } from 'lucide-react';
 import { NoteBoard } from '@/components/notes/note-board';
 import { WorkspaceInsights } from '@/components/notes/workspace-insights';
+import { SpaceSwitcher } from '@/components/spaces';
 
 export default function NotesWorkspace() {
   const { user, loading, bootstrapStatus, ssoInProgress } = useAuth();
@@ -77,6 +78,10 @@ export default function NotesWorkspace() {
         <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
           {/* Left: Notes Content */}
           <div className="space-y-6">
+            {/* Space Switcher above note composer */}
+            <div className="flex items-center gap-4">
+              <SpaceSwitcher />
+            </div>
             <NoteBoard />
           </div>
 
