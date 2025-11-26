@@ -228,7 +228,7 @@ export function getCurrentAppSlug(): AppSlug | 'main' | 'admin' | null {
     '3006': 'grow',
     '3007': 'pulse',
     '3008': 'fit',
-    '3009': 'projects',
+    '3009': 'project',
     '3010': 'workflow',
     '3011': 'admin',
   };
