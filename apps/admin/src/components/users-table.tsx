@@ -17,10 +17,7 @@ import {
   Search,
   Shield,
   ShieldOff,
-  Loader2,
-  Calendar,
-  CreditCard,
-  AlertCircle
+  Loader2
 } from 'lucide-react';
 import type { User } from '@ainexsuite/types';
 import { clsx } from 'clsx';

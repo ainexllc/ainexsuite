@@ -73,7 +73,7 @@ ${stats ? `Platform Stats:\n- Total Users: ${stats.totalUsers}\n- Feedback Items
             content: `Analyze this platform data and provide insights:\n\n${context}\n\nProvide your analysis in this exact JSON format:\n{\n  "summary": "...",\n  "highlights": ["...", "...", "..."],\n  "recommendations": ["...", "...", "..."]\n}`
           }
         ],
-        model: 'grok-2-latest',
+        model: 'grok-4-1-fast',
         temperature: 0.7,
       }),
     });

@@ -7,7 +7,7 @@ interface FeedbackItem {
 
 export async function POST(request: NextRequest) {
   try {
-    const grokApiKey = process.env.GROK_API_KEY;
+    const grokApiKey = process.env.XAI_API_KEY;
 
     if (!grokApiKey) {
       return NextResponse.json(
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
             content: `Analyze this recent user feedback and provide insights:\n\n${feedbackSummary}\n\nProvide your analysis in this exact JSON format:\n{\n  "summary": "...",\n  "trends": ["...", "...", "..."],\n  "actionItems": ["...", "...", "..."]\n}`
           }
         ],
-        model: 'grok-3',
+        model: 'grok-4-1-fast',
         temperature: 0.7,
       }),
     });
