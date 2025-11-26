@@ -1,18 +1,17 @@
-'use client';
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2, Plus, Settings } from 'lucide-react';
 import { useSmartHubStore } from '@/lib/store';
 import { DeviceGrid } from '@/components/devices/device-grid';
 import { RoomSelector } from '@/components/devices/room-selector';
 import { SmartHubInsights } from '@/components/insights/smarthub-insights';
+import { IntegrationsModal } from '@/components/integrations-modal';
 
 function SmartHubWorkspaceContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
-  const { loadDevices } = useSmartHubStore();
+  const { loadDevices, isLoading: devicesLoading, setIntegrationsModalOpen } = useSmartHubStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -56,12 +55,23 @@ function SmartHubWorkspaceContent() {
           {/* Main Content */}
           <div className="space-y-8">
             {/* Header & Controls */}
-            <div className="flex items-center justify-between">
-              <RoomSelector />
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-sm font-medium transition-colors">
-                <Plus className="h-4 w-4" />
-                Add Device
-              </button>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 overflow-hidden">
+                <RoomSelector />
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button 
+                  onClick={() => setIntegrationsModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-white/80 text-sm font-medium transition-colors"
+                >
+                  <Settings className="h-4 w-4" />
+                  Integrations
+                </button>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-sm font-medium transition-colors">
+                  <Plus className="h-4 w-4" />
+                  Add Device
+                </button>
+              </div>
             </div>
 
             {/* Device Grid */}
@@ -87,6 +97,7 @@ function SmartHubWorkspaceContent() {
 
         </div>
       </div>
+      <IntegrationsModal />
     </WorkspaceLayout>
   );
 }
