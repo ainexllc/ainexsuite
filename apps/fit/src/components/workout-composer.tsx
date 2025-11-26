@@ -112,7 +112,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
         date: new Date(date).toISOString(),
         duration,
         exercises: exercises.filter(e => e.name.trim()),
-        feeling,
+        ...(feeling && { feeling }),
       };
 
       await addWorkout(newWorkout);
