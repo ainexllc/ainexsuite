@@ -6,7 +6,6 @@ import { WorkspaceLayout } from '@ainexsuite/ui';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { db } from '@ainexsuite/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { AdminNavigationSidebar } from './admin-navigation-sidebar';
 
 interface AdminWorkspaceLayoutProps {
   children: ReactNode;
@@ -131,9 +130,6 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
       showBackground={true}
       backgroundVariant="minimal"
       backgroundIntensity={0.3}
-      renderSidebar={({ isOpen, onClose }) => (
-        <AdminNavigationSidebar isOpen={isOpen} onClose={onClose} />
-      )}
     >
       {children}
     </WorkspaceLayout>
