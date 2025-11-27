@@ -19,6 +19,7 @@ import {
   Sparkles,
   Loader2,
   Undo2,
+  Brain,
 } from "lucide-react";
 import { clsx } from "clsx";
 import type {
@@ -331,12 +332,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     [handleInviteCollaborator],
   );
 
-  type EnhanceStyle = "professional" | "casual" | "concise";
+  type EnhanceStyle = "professional" | "casual" | "concise" | "grammar";
 
   const ENHANCE_STYLES: { id: EnhanceStyle; label: string; description: string }[] = [
     { id: "professional", label: "Professional", description: "Polished & formal tone" },
     { id: "casual", label: "Casual", description: "Friendly & conversational" },
     { id: "concise", label: "Concise", description: "Brief & to the point" },
+    { id: "grammar", label: "Clean Grammar", description: "Fix spelling & grammar" },
   ];
 
   // Handle text selection in textarea
@@ -392,6 +394,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         professional: { task: "improve", tone: "professional" },
         casual: { task: "rewrite", tone: "casual" },
         concise: { task: "simplify" },
+        grammar: { task: "grammar" },
       };
 
       const { task, tone } = taskMap[style];
@@ -966,29 +969,50 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 placeholder="Write your note…"
                 className={clsx(
                   "min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none transition-all duration-300",
-                  isEnhancing && !selectedText && "blur-sm opacity-50"
+                  isEnhancing && "blur-sm opacity-50"
                 )}
-                disabled={isEnhancing && !selectedText}
+                disabled={isEnhancing}
               />
-              {/* AI Enhancement overlay - shown when enhancing all text */}
-              {isEnhancing && !selectedText && (
+              {/* AI Enhancement overlay - shown when enhancing */}
+              {isEnhancing && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-3 rounded-2xl bg-zinc-900/90 px-6 py-4 border border-white/10 shadow-2xl">
+                  <div className="flex flex-col items-center gap-3 rounded-2xl bg-zinc-900/95 px-8 py-5 border border-[var(--color-primary)]/30 shadow-2xl">
+                    {/* Animated Brain */}
                     <div className="relative">
-                      <Sparkles className="h-8 w-8 text-[var(--color-primary)] animate-pulse" />
-                      <div className="absolute inset-0 animate-ping">
-                        <Sparkles className="h-8 w-8 text-[var(--color-primary)] opacity-30" />
+                      <div className="absolute inset-0 animate-ping opacity-20">
+                        <Brain className="h-12 w-12 text-[var(--color-primary)]" />
                       </div>
+                      <Brain className="h-12 w-12 text-[var(--color-primary)] animate-pulse" />
+                      {/* Sparkle accents around brain */}
+                      <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-[var(--color-primary)] animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <Sparkles className="absolute -bottom-1 -left-1 h-3 w-3 text-[var(--color-primary)] animate-bounce" style={{ animationDelay: "200ms" }} />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-medium text-white">AI is enhancing your text</p>
-                      <p className="text-xs text-white/50 mt-0.5">This may take a moment...</p>
+                      <p className="text-sm font-medium text-white">
+                        {selectedText ? "Enhancing selected text..." : "AI is thinking..."}
+                      </p>
+                      <p className="text-xs text-white/50 mt-0.5">
+                        {selectedText
+                          ? `Processing ${selectedText.text.length} characters`
+                          : "Enhancing your entire note"
+                        }
+                      </p>
                     </div>
-                    <div className="flex gap-1">
-                      <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "300ms" }} />
+                    {/* Animated loading bar */}
+                    <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-[var(--color-primary)] rounded-full animate-[loading_1.5s_ease-in-out_infinite]"
+                           style={{
+                             animation: "loading 1.5s ease-in-out infinite",
+                             width: "30%"
+                           }} />
                     </div>
+                    <style jsx>{`
+                      @keyframes loading {
+                        0% { transform: translateX(-100%); }
+                        50% { transform: translateX(250%); }
+                        100% { transform: translateX(-100%); }
+                      }
+                    `}</style>
                   </div>
                 </div>
               )}

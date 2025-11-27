@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { text, task, tone } = body as {
       text: string;
-      task: "improve" | "simplify" | "expand" | "rewrite";
+      task: "improve" | "simplify" | "expand" | "rewrite" | "grammar";
       tone?: "professional" | "casual" | "friendly" | "formal";
     };
 
@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       simplify: `Simplify the following text to make it easier to understand. Use plain language and maintain a ${tone || "professional"} tone.`,
       expand: `Expand the following text with more details, examples, and explanations. Maintain a ${tone || "professional"} tone.`,
       rewrite: `Rewrite the following text in a different way while keeping the same meaning. Use a ${tone || "casual"} tone.`,
+      grammar: `Fix all spelling, grammar, and punctuation errors in the following text. Keep the original meaning, tone, and style intact. Only correct errors, do not rewrite or rephrase.`,
     };
 
     const prompt = `${taskInstructions[task]}
