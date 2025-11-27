@@ -1,5 +1,10 @@
 'use client';
 
+/**
+ * AdminWorkspaceLayout - Uses shared AppNavigationSidebar from @ainexsuite/ui
+ * Same hamburger menu slide-in as all other apps in the suite
+ */
+
 import { ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui';
