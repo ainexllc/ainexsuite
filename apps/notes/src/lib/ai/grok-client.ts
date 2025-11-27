@@ -43,7 +43,7 @@ export class GrokClient {
   private model = "grok-4-1-fast-non-reasoning";
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.XAI_API_KEY || "";
+    this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.GROK_API_KEY || "";
     if (!this.apiKey) {
       throw new Error("GROK_API_KEY is not configured. Please set it in your environment variables.");
     }
