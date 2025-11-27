@@ -126,7 +126,7 @@ export function AdminShell({
 
   return (
     <div className="flex min-h-screen bg-transparent text-zinc-100 overflow-hidden relative selection:bg-white/20">
-      <AdminSidebar onSignOut={handleSignOut} />
+      <AdminSidebar onSignOut={handleSignOut} userEmail={user?.email} />
 
       <main className="flex-1 overflow-y-auto h-screen relative z-10">
         <div className="p-6 md:p-10 max-w-[1600px] mx-auto md:pt-6 pt-20">

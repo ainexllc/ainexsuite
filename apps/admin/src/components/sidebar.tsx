@@ -17,6 +17,25 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
+import { AppSwitcher } from '@ainexsuite/ui';
+import type { AppConfig } from '@ainexsuite/types';
+
+// Admin app config for the app switcher
+const ADMIN_APP_CONFIG: AppConfig = {
+  name: 'Admin',
+  slug: 'admin',
+  description: 'Manage users, settings, and configuration for the AINexSuite platform.',
+  icon: 'Settings',
+  color: 'zinc',
+  gradient: 'from-zinc-500 to-slate-600',
+  devUrl: 'http://localhost:3020',
+  prodUrl: 'https://admin.ainexsuite.com',
+  devPort: 3020,
+  category: 'admin',
+  features: ['User Management', 'App Configuration', 'Analytics', 'Settings'],
+  status: 'active',
+  allowedEmails: ['hornld25@gmail.com'],
+};
 
 interface NavItem {
   label: string;
@@ -37,9 +56,10 @@ const navItems: NavItem[] = [
 
 interface AdminSidebarProps {
   onSignOut: () => void;
+  userEmail?: string | null;
 }
 
-export function AdminSidebar({ onSignOut }: AdminSidebarProps) {
+export function AdminSidebar({ onSignOut, userEmail }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -72,18 +92,26 @@ export function AdminSidebar({ onSignOut }: AdminSidebarProps) {
           
           {/* Header */}
           <div className="px-3 py-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-white text-zinc-950 shadow-lg shadow-white/10">
-                <Command className="h-5 w-5" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-white text-zinc-950 shadow-lg shadow-white/10">
+                  <Command className="h-5 w-5" />
+                </div>
+                <div>
+                  <h1 className="font-bold text-white text-lg leading-none tracking-tight">
+                    AINEX
+                  </h1>
+                  <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                    Admin Workspace
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-bold text-white text-lg leading-none tracking-tight">
-                  AINEX
-                </h1>
-                <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                  Admin Workspace
-                </p>
-              </div>
+              {/* App Switcher */}
+              <AppSwitcher
+                currentApp={ADMIN_APP_CONFIG}
+                isLoggedIn={true}
+                userEmail={userEmail}
+              />
             </div>
           </div>
 
