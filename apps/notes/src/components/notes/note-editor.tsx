@@ -991,37 +991,29 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               )}
               {/* AI Enhancement overlay - shown when enhancing all text */}
               {isEnhancing && !selectedText && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-3 rounded-2xl bg-zinc-900/95 px-8 py-5 border border-[var(--color-primary)]/30 shadow-2xl">
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="flex flex-col items-center gap-4 rounded-2xl bg-zinc-900 px-10 py-6 border border-[var(--color-primary)]/40 shadow-2xl">
                     {/* Animated Brain */}
-                    <div className="relative">
-                      <div className="absolute inset-0 animate-ping opacity-20">
-                        <Brain className="h-12 w-12 text-[var(--color-primary)]" />
+                    <div className="relative w-16 h-16 flex items-center justify-center">
+                      <div className="absolute inset-0 animate-ping opacity-20 flex items-center justify-center">
+                        <Brain className="h-14 w-14 text-[var(--color-primary)]" />
                       </div>
-                      <Brain className="h-12 w-12 text-[var(--color-primary)] animate-pulse" />
+                      <Brain className="h-14 w-14 text-[var(--color-primary)] animate-pulse" />
                       {/* Sparkle accents around brain */}
-                      <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-[var(--color-primary)] animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <Sparkles className="absolute -bottom-1 -left-1 h-3 w-3 text-[var(--color-primary)] animate-bounce" style={{ animationDelay: "200ms" }} />
+                      <Sparkles className="absolute -top-2 -right-2 h-5 w-5 text-[var(--color-primary)] animate-bounce" />
+                      <Sparkles className="absolute -bottom-2 -left-2 h-4 w-4 text-[var(--color-primary)] animate-bounce" style={{ animationDelay: "200ms" }} />
+                      <Sparkles className="absolute top-0 -left-3 h-3 w-3 text-[var(--color-primary)] animate-bounce" style={{ animationDelay: "400ms" }} />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-medium text-white">AI is thinking...</p>
-                      <p className="text-xs text-white/50 mt-0.5">Enhancing your entire note</p>
+                      <p className="text-base font-semibold text-white">AI is thinking...</p>
+                      <p className="text-sm text-white/60 mt-1">Enhancing your entire note</p>
                     </div>
-                    {/* Animated loading bar */}
-                    <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-[var(--color-primary)] rounded-full animate-[loading_1.5s_ease-in-out_infinite]"
-                           style={{
-                             animation: "loading 1.5s ease-in-out infinite",
-                             width: "30%"
-                           }} />
+                    {/* Animated dots loading indicator */}
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
-                    <style jsx>{`
-                      @keyframes loading {
-                        0% { transform: translateX(-100%); }
-                        50% { transform: translateX(250%); }
-                        100% { transform: translateX(-100%); }
-                      }
-                    `}</style>
                   </div>
                 </div>
               )}
