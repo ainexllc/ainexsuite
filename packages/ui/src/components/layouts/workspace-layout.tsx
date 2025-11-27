@@ -126,7 +126,8 @@ export function WorkspaceLayout({
 
   // Generate default apps list if none provided
   // Use the environment-aware helper to get consistent apps config
-  const defaultApps = getNavigationApps(process.env.NODE_ENV === 'development');
+  // Pass user email for access control filtering (e.g., admin app restricted to certain users)
+  const defaultApps = getNavigationApps(process.env.NODE_ENV === 'development', user.email);
   const displayApps = apps.length > 0 ? apps : defaultApps;
 
   return (

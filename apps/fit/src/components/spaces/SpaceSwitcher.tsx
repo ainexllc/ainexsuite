@@ -17,7 +17,7 @@ export function SpaceSwitcher() {
   const [showSpaceEditor, setShowSpaceEditor] = useState(false);
 
   // Map FitSpace to SpaceItem for the shared component
-  const spaceItems: SpaceItem[] = spaces.map((space) => ({
+  const spaceItems: SpaceItem[] = spaces.map((space: { id: string; name: string; type: string }) => ({
     id: space.id,
     name: space.name,
     type: space.type as SharedSpaceType,

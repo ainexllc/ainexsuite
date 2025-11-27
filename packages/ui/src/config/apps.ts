@@ -59,6 +59,19 @@ export const SUITE_APPS = {
     description: 'Automate your daily tasks',
     color: '#06b6d4', // cyan-500
   },
+  calendar: {
+    name: 'Calendar',
+    slug: 'calendar',
+    description: 'Schedule events and appointments',
+    color: '#0ea5e9', // sky-500
+  },
+  admin: {
+    name: 'Admin',
+    slug: 'admin',
+    description: 'Manage platform settings',
+    color: '#71717a', // zinc-500
+    allowedEmails: ['hornld25@gmail.com'],
+  },
 } as const;
 
 export type AppSlug = keyof typeof SUITE_APPS;
@@ -76,7 +89,8 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     fit: 3008,
     project: 3009,
     workflow: 3010,
-    admin: 3011,
+    calendar: 3014,
+    admin: 3020,
   };
 
   if (isDev) {
