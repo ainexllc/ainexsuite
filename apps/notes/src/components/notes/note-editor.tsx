@@ -96,6 +96,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [newAttachments, setNewAttachments] = useState<AttachmentDraft[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -302,15 +303,34 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     [handleInviteCollaborator],
   );
 
-  const handleEnhanceBody = async () => {
+  type EnhanceStyle = "professional" | "casual" | "concise";
+
+  const ENHANCE_STYLES: { id: EnhanceStyle; label: string; description: string }[] = [
+    { id: "professional", label: "Professional", description: "Polished & formal tone" },
+    { id: "casual", label: "Casual", description: "Friendly & conversational" },
+    { id: "concise", label: "Concise", description: "Brief & to the point" },
+  ];
+
+  const handleEnhanceBody = async (style: EnhanceStyle) => {
     if (!body.trim() || isEnhancing) return;
+    setShowEnhanceMenu(false);
 
     try {
       setIsEnhancing(true);
+
+      // Map style to task and tone
+      const taskMap: Record<EnhanceStyle, { task: string; tone?: string }> = {
+        professional: { task: "improve", tone: "professional" },
+        casual: { task: "rewrite", tone: "casual" },
+        concise: { task: "simplify" },
+      };
+
+      const { task, tone } = taskMap[style];
+
       const response = await fetch("/api/ai/enhance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: body, task: "improve" }),
+        body: JSON.stringify({ text: body, task, tone }),
       });
 
       if (response.ok) {
@@ -862,25 +882,53 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 className="min-h-[120px] w-full resize-none bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none pr-10"
               />
               {body.trim() && (
-                <button
-                  type="button"
-                  onClick={() => void handleEnhanceBody()}
-                  disabled={isEnhancing}
-                  className={clsx(
-                    "absolute bottom-2 right-0 p-1.5 rounded-full transition-all",
-                    isEnhancing
-                      ? "text-[var(--color-primary)] cursor-wait"
-                      : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                <div className="absolute bottom-2 right-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowEnhanceMenu((prev) => !prev)}
+                    disabled={isEnhancing}
+                    className={clsx(
+                      "p-1.5 rounded-full transition-all",
+                      isEnhancing
+                        ? "text-[var(--color-primary)] cursor-wait"
+                        : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                    )}
+                    aria-label="Enhance with AI"
+                    title="Enhance with AI"
+                  >
+                    {isEnhancing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                  </button>
+                  {showEnhanceMenu && !isEnhancing && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-20"
+                        onClick={() => setShowEnhanceMenu(false)}
+                      />
+                      <div className="absolute bottom-full right-0 mb-2 z-30 w-48 rounded-xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
+                        <div className="px-3 py-2 border-b border-white/10">
+                          <p className="text-xs font-medium text-white/60">AI Enhance Style</p>
+                        </div>
+                        <div className="p-1">
+                          {ENHANCE_STYLES.map((style) => (
+                            <button
+                              key={style.id}
+                              type="button"
+                              onClick={() => void handleEnhanceBody(style.id)}
+                              className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                            >
+                              <p className="text-sm font-medium text-white">{style.label}</p>
+                              <p className="text-xs text-white/50">{style.description}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
                   )}
-                  aria-label="Enhance with AI"
-                  title="Enhance with AI"
-                >
-                  {isEnhancing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4" />
-                  )}
-                </button>
+                </div>
               )}
             </div>
           ) : (
