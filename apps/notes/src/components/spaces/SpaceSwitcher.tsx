@@ -46,7 +46,6 @@ export function SpaceSwitcher() {
         onClose={() => setShowSpaceEditor(false)}
         onSubmit={handleCreateSpace}
         spaceTypes={[
-          { value: "personal", label: "Personal", description: "Your private notes" },
           { value: "family", label: "Family", description: "Share with family members" },
           { value: "work", label: "Work", description: "Team notes and projects" },
         ]}
