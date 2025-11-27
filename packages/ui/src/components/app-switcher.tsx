@@ -9,10 +9,44 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Grid, Home, Check } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import {
+  Grid,
+  Home,
+  Check,
+  Circle,
+  FileText,
+  BookOpen,
+  CheckSquare,
+  Heart,
+  Camera,
+  GraduationCap,
+  Activity,
+  Dumbbell,
+  Layers,
+  GitBranch,
+  Calendar,
+  Settings,
+} from 'lucide-react';
 import type { AppConfig, AppSlug } from '@ainexsuite/types';
 import { APP_REGISTRY } from '@ainexsuite/types';
+
+// Map icon names to actual icon components
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Grid,
+  FileText,
+  BookOpen,
+  CheckSquare,
+  Heart,
+  Camera,
+  GraduationCap,
+  Activity,
+  Dumbbell,
+  Layers,
+  GitBranch,
+  Calendar,
+  Settings,
+  Circle,
+};
 
 // Type for login status of each app
 type LoginStatus = 'checking' | 'logged-in' | 'logged-out' | 'error';
@@ -144,10 +178,9 @@ export function AppSwitcher({
       .filter(Boolean)
   ).slice(0, 3);
 
-  // Get icon component from lucide-react
+  // Get icon component from the icon map
   const getIcon = (iconName: string) => {
-    const Icon = (LucideIcons as any)[iconName];
-    return Icon || LucideIcons.Circle;
+    return ICON_MAP[iconName] || Circle;
   };
 
   // Close on escape key
