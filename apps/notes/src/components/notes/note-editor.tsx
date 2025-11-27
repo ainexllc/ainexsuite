@@ -1386,7 +1386,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   onClick={() => setShowEnhanceMenu((prev) => !prev)}
                   disabled={isEnhancing}
                   className={clsx(
-                    "icon-button h-10 w-10 transition-all flex items-center justify-center",
+                    "transition-all flex items-center gap-1.5 rounded-full px-3 py-2",
                     isEnhancing
                       ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
                       : selectedText
@@ -1394,12 +1394,20 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         : "text-white/60 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                   )}
                   aria-label="Enhance with AI"
-                  title={selectedText ? `Enhance selected text` : "Enhance all text with AI"}
+                  title={selectedText ? `Enhance selected text (${selectedText.text.length} chars)` : "Enhance all text with AI"}
                 >
                   {isEnhancing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-xs font-medium">Enhancing...</span>
+                    </>
                   ) : (
-                    <Sparkles className="h-4 w-4" />
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      <span className="text-xs font-medium">
+                        {selectedText ? "Selected" : "All"}
+                      </span>
+                    </>
                   )}
                 </button>
               )}
