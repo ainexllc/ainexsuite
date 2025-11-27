@@ -158,17 +158,17 @@ function AdminNavCard({ href, label, icon: Icon, description, color, bg, border 
   return (
     <Link
       href={href}
-      className={`group glass-card p-4 rounded-xl border ${border} hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]`}
+      className={`group bg-zinc-800/80 p-4 rounded-xl border ${border} hover:bg-zinc-700/80 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]`}
     >
       <div className="flex items-center gap-3">
         <div className={`p-2.5 rounded-lg ${bg} ${color}`}>
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-white group-hover:text-white/90">{label}</h3>
-          <p className="text-xs text-zinc-500 truncate">{description}</p>
+          <h3 className="font-semibold text-zinc-100 group-hover:text-white">{label}</h3>
+          <p className="text-xs text-zinc-400 truncate">{description}</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-0.5 transition-all" />
+        <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
       </div>
     </Link>
   );
