@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Zap, Target, Layers } from "lucide-react";
 import { useNotes } from "@/components/providers/notes-provider";
+import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAppColors } from "@ainexsuite/theme";
 import {
   AIInsightsCard,
@@ -25,11 +26,13 @@ interface WorkspaceInsightsProps {
 
 export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceInsightsProps) {
   const { notes, loading: notesLoading } = useNotes();
+  const { currentSpaceId, currentSpace } = useSpaces();
   const { primary: primaryColor } = useAppColors();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const previousSpaceIdRef = useRef<string | null>(null);
 
   // Only analyze if we have enough notes
   const RECENT_COUNT = 5;
@@ -39,7 +42,8 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
     .slice(0, RECENT_COUNT);
 
   const hasEnoughData = recentNotes.length >= 2;
-  const STORAGE_KEY = 'ainex-notes-workspace-insights';
+  // Space-specific cache key
+  const STORAGE_KEY = `ainex-notes-workspace-insights-${currentSpaceId}`;
   const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 
   const saveToCache = (insights: InsightData) => {
@@ -95,6 +99,17 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
     }
   };
 
+  // Reset and reload when space changes
+  useEffect(() => {
+    if (previousSpaceIdRef.current !== null && previousSpaceIdRef.current !== currentSpaceId) {
+      // Space changed - reset state and load new data
+      setData(null);
+      setError(null);
+      setLastUpdated(null);
+    }
+    previousSpaceIdRef.current = currentSpaceId;
+  }, [currentSpaceId]);
+
   // Load from cache or auto-generate
   useEffect(() => {
     if (notesLoading) return;
@@ -120,7 +135,7 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
       generateInsights();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notesLoading, hasEnoughData]);
+  }, [notesLoading, hasEnoughData, currentSpaceId, STORAGE_KEY]);
 
   // Build sections for the shared component
   const sections: AIInsightsSection[] = useMemo(() => {
@@ -180,9 +195,14 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
     ? "AI features require configuration. Workspace insights will be available once set up."
     : error;
 
+  // Dynamic title based on current space
+  const insightsTitle = currentSpace?.name
+    ? `${currentSpace.name} Insights`
+    : "AI Insights";
+
   return (
     <AIInsightsCard
-      title="AI Insights"
+      title={insightsTitle}
       sections={sections}
       accentColor={primaryColor}
       variant={variant}
