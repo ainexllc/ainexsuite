@@ -1,20 +1,41 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Geist, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
 import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
-import { AdminShell } from '@/components/admin-shell';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
-const inter = Inter({
-  variable: '--font-inter',
+const geistSans = Geist({
+  variable: '--font-geist-sans',
   subsets: ['latin'],
-  display: 'swap',
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+});
+
+const kanit = Kanit({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-kanit',
+});
+
+const bebasNeue = Bebas_Neue({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-bebas-neue',
+});
+
+const leagueSpartan = League_Spartan({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-league-spartan',
 });
 
 export const metadata: Metadata = {
-  title: 'Dashboard - AINexSuite Admin',
-  description: 'Administrative control center for AINexSuite.',
+  title: 'Admin - AINexSuite',
+  description: 'Administrative control center for AINexSuite platform.',
 };
 
 export default function RootLayout({
@@ -23,16 +44,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} font-sans bg-zinc-950 text-zinc-100 antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans bg-surface-base text-white antialiased`}
       >
         <ThemeProvider>
-          <AppColorProvider appId="admin" fallbackPrimary="#ffffff" fallbackSecondary="#a1a1aa">
+          <AppColorProvider appId="admin" fallbackPrimary="#71717a" fallbackSecondary="#a1a1aa">
             <AuthProvider>
-              <AdminShell>
-                {children}
-              </AdminShell>
+              {children}
             </AuthProvider>
           </AppColorProvider>
         </ThemeProvider>
