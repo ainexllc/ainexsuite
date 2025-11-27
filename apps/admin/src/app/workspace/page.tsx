@@ -1,5 +1,6 @@
 'use client';
 
+// Admin workspace dashboard - uses shared AppNavigationSidebar via WorkspaceLayout
 import { useEffect, useState } from 'react';
 import {
   Users,
