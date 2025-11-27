@@ -54,7 +54,7 @@ export function SpaceSwitcher() {
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
         spacesLabel="Growth Spaces"
-        defaultSpaceName="My Growth"
+        defaultSpaceName="Personal"
       />
 
       <SharedSpaceEditor

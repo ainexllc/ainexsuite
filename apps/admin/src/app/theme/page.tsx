@@ -127,8 +127,8 @@ export default function ThemeManagement() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
       </div>
     );
   }
@@ -136,15 +136,15 @@ export default function ThemeManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between bg-zinc-900/40 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
-            <Paintbrush className="h-6 w-6 text-purple-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Theme Settings</h1>
-            <p className="text-sm text-zinc-400">Configure global background styles for all apps.</p>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Paintbrush className="h-6 w-6 text-indigo-400" />
+            Theme Settings
+          </h1>
+          <p className="text-zinc-400 text-sm mt-1">
+            Configure global background styles for all apps.
+          </p>
         </div>
         <button
           onClick={handleSave}
@@ -162,21 +162,21 @@ export default function ThemeManagement() {
 
       {/* Alerts */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-2 backdrop-blur-sm">
-          <AlertCircle className="h-5 w-5" />
+        <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-2 text-sm font-medium">
+          <AlertCircle className="h-4 w-4" />
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-2 backdrop-blur-sm">
-          <CheckCircle2 className="h-5 w-5" />
+        <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-2 text-sm font-medium">
+          <CheckCircle2 className="h-4 w-4" />
           {success}
         </div>
       )}
 
       {/* Background Variant Selection */}
-      <div className="bg-zinc-900/40 backdrop-blur-md p-6 rounded-2xl border border-white/5">
+      <div className="glass-card rounded-xl p-6">
         <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
           <Eye className="h-5 w-5 text-zinc-400" />
           Background Style
@@ -187,27 +187,27 @@ export default function ThemeManagement() {
             <button
               key={variant.id}
               onClick={() => setTheme((prev) => ({ ...prev, backgroundVariant: variant.id }))}
-              className={`relative group rounded-xl border-2 transition-all overflow-hidden ${
+              className={`relative group rounded-xl border-2 transition-all overflow-hidden text-left ${
                 theme.backgroundVariant === variant.id
                   ? 'border-indigo-500 ring-2 ring-indigo-500/20'
-                  : 'border-white/10 hover:border-white/20'
+                  : 'border-white/5 hover:border-white/10'
               }`}
             >
               {/* Preview */}
-              <div className="relative h-24 bg-zinc-950">
+              <div className="relative h-28 bg-zinc-950">
                 <BackgroundPreview variant={variant.id} intensity={theme.backgroundIntensity} />
               </div>
 
               {/* Label */}
-              <div className="p-3 bg-zinc-900/80 border-t border-white/5">
+              <div className="p-4 bg-zinc-900/80 border-t border-white/5">
                 <div className="text-sm font-medium text-white">{variant.name}</div>
-                <div className="text-xs text-zinc-500 mt-0.5">{variant.description}</div>
+                <div className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{variant.description}</div>
               </div>
 
               {/* Selected indicator */}
               {theme.backgroundVariant === variant.id && (
-                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-indigo-500 flex items-center justify-center">
-                  <CheckCircle2 className="h-3 w-3 text-white" />
+                <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-indigo-500 flex items-center justify-center shadow-lg">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-white" />
                 </div>
               )}
             </button>
@@ -216,48 +216,56 @@ export default function ThemeManagement() {
       </div>
 
       {/* Intensity Slider */}
-      <div className="bg-zinc-900/40 backdrop-blur-md p-6 rounded-2xl border border-white/5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Intensity</h2>
-          <span className="text-sm font-mono text-zinc-400 bg-zinc-800/50 px-2 py-1 rounded">
+      <div className="glass-card rounded-xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Intensity</h2>
+            <p className="text-sm text-zinc-400">Adjust the visibility of background effects</p>
+          </div>
+          <span className="text-sm font-mono font-medium text-white bg-zinc-800 px-3 py-1 rounded-lg">
             {Math.round(theme.backgroundIntensity * 100)}%
           </span>
         </div>
 
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={theme.backgroundIntensity * 100}
-          onChange={(e) => setTheme((prev) => ({ ...prev, backgroundIntensity: Number(e.target.value) / 100 }))}
-          className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-        />
+        <div className="relative h-2 bg-zinc-800 rounded-full overflow-hidden">
+          <div 
+            className="absolute top-0 left-0 h-full bg-indigo-500 rounded-full"
+            style={{ width: `${theme.backgroundIntensity * 100}%` }}
+          />
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={theme.backgroundIntensity * 100}
+            onChange={(e) => setTheme((prev) => ({ ...prev, backgroundIntensity: Number(e.target.value) / 100 }))}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+        </div>
 
-        <div className="flex justify-between text-xs text-zinc-500 mt-2">
+        <div className="flex justify-between text-xs text-zinc-500 mt-3 font-medium">
           <span>Subtle</span>
+          <span>Balanced</span>
           <span>Bold</span>
         </div>
       </div>
 
       {/* Live Preview */}
-      <div className="bg-zinc-900/40 backdrop-blur-md p-6 rounded-2xl border border-white/5">
+      <div className="glass-card rounded-xl p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Live Preview</h2>
 
-        <div className="relative h-48 rounded-xl bg-zinc-950 overflow-hidden border border-white/5">
+        <div className="relative h-64 rounded-xl bg-zinc-950 overflow-hidden border border-white/5 shadow-2xl">
           <BackgroundPreview variant={theme.backgroundVariant} intensity={theme.backgroundIntensity} />
 
           {/* Mock content */}
-          <div className="absolute inset-0 p-6">
-            <div className="h-4 w-32 bg-white/10 rounded mb-3" />
-            <div className="h-3 w-48 bg-white/5 rounded mb-2" />
-            <div className="h-3 w-40 bg-white/5 rounded" />
+          <div className="absolute inset-0 p-8 flex flex-col">
+            <div className="h-6 w-32 bg-white/10 rounded-lg mb-4" />
+            <div className="h-4 w-64 bg-white/5 rounded mb-2" />
+            <div className="h-4 w-48 bg-white/5 rounded mb-8" />
 
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="h-16 rounded-lg bg-white/5 border border-white/10" />
-                <div className="h-16 rounded-lg bg-white/5 border border-white/10" />
-                <div className="h-16 rounded-lg bg-white/5 border border-white/10" />
-              </div>
+            <div className="grid grid-cols-3 gap-4 mt-auto">
+              <div className="aspect-video rounded-lg bg-white/5 border border-white/10" />
+              <div className="aspect-video rounded-lg bg-white/5 border border-white/10" />
+              <div className="aspect-video rounded-lg bg-white/5 border border-white/10" />
             </div>
           </div>
         </div>

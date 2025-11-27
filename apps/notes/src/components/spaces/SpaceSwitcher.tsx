@@ -38,7 +38,7 @@ export function SpaceSwitcher() {
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
         spacesLabel="Note Spaces"
-        defaultSpaceName="My Notes"
+        defaultSpaceName="Personal"
       />
 
       <SharedSpaceEditor

@@ -50,7 +50,7 @@ export function SpaceSwitcher() {
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
         spacesLabel="Health Spaces"
-        defaultSpaceName="My Health"
+        defaultSpaceName="Personal"
       />
 
       <SharedSpaceEditor

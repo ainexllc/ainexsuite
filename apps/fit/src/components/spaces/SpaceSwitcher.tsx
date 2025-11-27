@@ -54,7 +54,7 @@ export function SpaceSwitcher() {
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
         spacesLabel="Workout Spaces"
-        defaultSpaceName="My Workouts"
+        defaultSpaceName="Personal"
       />
 
       <SharedSpaceEditor

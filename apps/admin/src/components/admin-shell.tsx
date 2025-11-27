@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { useRouter, usePathname } from 'next/navigation';
-import { ShieldAlert, Cpu, Lock } from 'lucide-react';
+import { ShieldAlert, Cpu } from 'lucide-react';
 import { db } from '@ainexsuite/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { AdminSidebar } from '@/components/sidebar';
@@ -69,27 +69,15 @@ export function AdminShell({
 
   if (loading || checkingRole) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f] relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 grid-pattern opacity-20" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]" />
-
-        <div className="flex flex-col items-center gap-6 relative z-10">
-          <div className="relative">
-            <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.3)]">
-              <Cpu className="h-10 w-10 text-cyan-400 animate-pulse" />
-            </div>
-            <div className="absolute -inset-4 rounded-3xl border border-cyan-500/20 animate-ping" />
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 relative overflow-hidden">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 bg-zinc-500/20 blur-xl rounded-full"></div>
+            <Cpu className="h-8 w-8 text-zinc-400 animate-pulse relative z-10" />
           </div>
-          <div className="text-center">
-            <h2 className="text-xl font-orbitron font-bold text-white tracking-wider mb-2">
-              AINEX CONTROL
-            </h2>
-            <p className="text-cyan-400 text-sm font-mono animate-pulse">
-              Verifying privileges...
-            </p>
-          </div>
+          <p className="text-zinc-500 text-sm font-medium animate-pulse">
+            Loading Dashboard...
+          </p>
         </div>
       </div>
     );
@@ -97,35 +85,27 @@ export function AdminShell({
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f] text-white p-4 text-center relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 grid-pattern opacity-20" />
-        <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-red-500/10 rounded-full blur-[100px]" />
-
-        <div className="relative z-10 max-w-md">
-          <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/30 mb-6 inline-block shadow-[0_0_40px_rgba(239,68,68,0.2)]">
-            <ShieldAlert className="h-16 w-16 text-red-500" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-zinc-100 p-4 text-center">
+        <div className="glass-panel p-8 rounded-2xl max-w-md w-full border border-white/5">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 rounded-full bg-red-500/10 text-red-500">
+              <ShieldAlert className="h-10 w-10" />
+            </div>
           </div>
 
-          <h1 className="text-3xl font-orbitron font-bold text-red-400 tracking-wider mb-4">
-            ACCESS DENIED
+          <h1 className="text-2xl font-semibold text-white mb-2">
+            Access Restricted
           </h1>
 
-          <div className="cyber-card p-6 mb-6">
-            <div className="flex items-center gap-3 mb-4 text-red-400">
-              <Lock className="h-5 w-5" />
-              <span className="font-mono text-sm uppercase tracking-wider">Authorization Failed</span>
-            </div>
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              You do not have administrative privileges. This area is restricted to authorized personnel only.
-            </p>
-          </div>
+          <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
+            You do not have administrative privileges. This area is restricted to authorized personnel only.
+          </p>
 
           <button
             onClick={() => router.push('/login')}
-            className="neon-button text-cyan-400 hover:text-black"
+            className="w-full py-2.5 px-4 bg-white text-zinc-950 font-medium rounded-lg hover:bg-zinc-200 transition-colors"
           >
-            <span>Sign in as Admin</span>
+            Sign in as Admin
           </button>
         </div>
       </div>
@@ -145,11 +125,11 @@ export function AdminShell({
   };
 
   return (
-    <div className="flex min-h-screen bg-transparent text-white overflow-hidden relative font-jetbrains selection:bg-cyan-500/30">
+    <div className="flex min-h-screen bg-transparent text-zinc-100 overflow-hidden relative selection:bg-white/20">
       <AdminSidebar onSignOut={handleSignOut} />
 
-      <main className="flex-1 overflow-y-auto h-screen relative z-10 scrollbar-thin">
-        <div className="p-6 md:p-8 max-w-[1800px] mx-auto md:pt-4 pt-20">
+      <main className="flex-1 overflow-y-auto h-screen relative z-10">
+        <div className="p-6 md:p-10 max-w-[1600px] mx-auto md:pt-6 pt-20">
           {children}
         </div>
       </main>

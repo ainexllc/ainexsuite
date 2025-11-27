@@ -62,7 +62,7 @@ export function SpaceSwitcher() {
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
         spacesLabel="Task Spaces"
-        defaultSpaceName="My Tasks"
+        defaultSpaceName="Personal"
       />
 
       <SharedSpaceEditor

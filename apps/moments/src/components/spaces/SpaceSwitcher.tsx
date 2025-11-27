@@ -35,7 +35,7 @@ export function SpaceSwitcher() {
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
         spacesLabel="Photo Spaces"
-        defaultSpaceName="Personal Gallery"
+        defaultSpaceName="Personal"
       />
 
       <SharedSpaceEditor

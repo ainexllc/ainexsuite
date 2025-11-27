@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { Loader2, Save, CheckCircle2, AlertCircle, Sparkles, X, Zap, Cpu, Palette } from 'lucide-react';
+import { Loader2, Save, CheckCircle2, AlertCircle, Sparkles, X, Zap, Cpu, Palette, LayoutGrid } from 'lucide-react';
 
 interface AppConfig {
   id: string;
@@ -135,176 +135,131 @@ export default function AppsManagement() {
 
   if (loading && apps.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30">
-              <Cpu className="h-8 w-8 text-cyan-400 animate-pulse" />
-            </div>
-            <div className="absolute -inset-2 rounded-3xl border border-cyan-500/20 animate-ping" />
-          </div>
-          <p className="text-cyan-400 text-sm font-mono animate-pulse">Loading modules...</p>
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 text-zinc-400 animate-spin" />
+          <p className="text-zinc-500 text-sm">Loading apps...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-4 mb-2">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-                <Palette className="h-7 w-7 text-purple-400" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-orbitron font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 tracking-wider">
-                  COLOR MATRIX
-                </h1>
-                <p className="text-zinc-500 font-mono text-sm uppercase tracking-[0.2em] mt-1">
-                  Theme Configuration System
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="px-5 py-3 bg-black/60 border border-white/10 rounded-xl flex items-center gap-3">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
-              <span className="text-sm font-mono text-zinc-400 uppercase tracking-wider">
-                <span className="text-emerald-400 font-bold">{apps.length}</span> Modules Active
-              </span>
-            </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <LayoutGrid className="h-6 w-6 text-indigo-400" />
+            Apps Configuration
+          </h1>
+          <p className="text-zinc-400 text-sm mt-1">
+            Manage theme colors and branding for all suite applications.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="px-3 py-1.5 rounded-full bg-zinc-800/50 border border-white/5 text-xs font-medium text-zinc-400 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            {apps.length} Apps Active
           </div>
         </div>
       </div>
 
       {/* Alerts */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center gap-3 backdrop-blur-sm shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-          <AlertCircle className="h-5 w-5" />
-          <span className="font-mono text-base">{error}</span>
+        <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3 text-sm font-medium">
+          <AlertCircle className="h-4 w-4" />
+          {error}
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-3 backdrop-blur-sm shadow-[0_0_20px_rgba(52,211,153,0.1)]">
-          <CheckCircle2 className="h-5 w-5" />
-          <span className="font-mono text-base">{success}</span>
+        <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-3 text-sm font-medium">
+          <CheckCircle2 className="h-4 w-4" />
+          {success}
         </div>
       )}
 
       {/* Apps Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
         {apps.map((app) => (
           <div
             key={app.id}
-            className="group relative bg-black/50 backdrop-blur-xl border border-white/10 hover:border-cyan-500/40 transition-all duration-300 rounded-2xl overflow-hidden"
+            className="glass-card rounded-xl overflow-hidden flex flex-col"
           >
-            {/* Gradient top border on hover */}
-            <div
-              className="absolute top-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ background: `linear-gradient(90deg, ${app.primary}, ${app.secondary})` }}
+            {/* Preview Strip */}
+            <div 
+              className="h-2 w-full"
+              style={{ background: `linear-gradient(to right, ${app.primary}, ${app.secondary})` }}
             />
 
-            {/* Corner decoration */}
-            <div className="absolute top-3 right-3 w-8 h-8 border-t border-r border-white/10 group-hover:border-cyan-500/30 transition-colors" />
-            <div className="absolute bottom-3 left-3 w-8 h-8 border-b border-l border-white/10 group-hover:border-cyan-500/30 transition-colors" />
-
-            <div className="p-5 space-y-5">
-              {/* Header with app name */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  {/* Color preview circle */}
-                  <div
-                    className="w-14 h-14 rounded-xl border border-white/20 shadow-lg transition-transform group-hover:scale-105"
-                    style={{
-                      background: `linear-gradient(135deg, ${app.primary} 0%, ${app.secondary} 100%)`,
-                      boxShadow: `0 0 20px ${app.primary}40`
-                    }}
-                  />
-                  <h3 className="font-orbitron font-bold text-xl text-white tracking-wide">
-                    {app.name.toUpperCase()}
+            <div className="p-5 flex-1 flex flex-col">
+              <div className="flex items-center gap-3 mb-6">
+                <div
+                  className="w-10 h-10 rounded-lg shadow-inner flex-shrink-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${app.primary} 0%, ${app.secondary} 100%)`,
+                  }}
+                />
+                <div>
+                  <h3 className="font-semibold text-white text-lg leading-tight">
+                    {app.name}
                   </h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">ID: {app.id}</p>
                 </div>
               </div>
 
               {/* Color Controls */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold font-mono">
-                    Color Config
-                  </p>
-                </div>
-
-                {/* Primary Color */}
-                <div className="relative group/input">
-                  <label className="text-[11px] text-zinc-600 uppercase tracking-wider font-mono mb-1.5 block">Primary</label>
-                  <div className="flex items-center gap-3 p-3 bg-black/60 border border-white/10 hover:border-cyan-500/30 rounded-lg transition-colors">
-                    <div
-                      className="w-8 h-8 rounded-md border border-white/20 shrink-0 shadow-inner"
-                      style={{ backgroundColor: app.primary }}
-                    />
-                    <input
-                      type="text"
-                      value={app.primary}
-                      onChange={(e) => handleColorChange(app.id, 'primary', e.target.value)}
-                      className="flex-1 bg-transparent text-base text-white font-mono focus:outline-none uppercase tracking-wide"
-                    />
-                    <input
-                      type="color"
-                      value={app.primary}
-                      onChange={(e) => handleColorChange(app.id, 'primary', e.target.value)}
-                      className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                    />
+              <div className="space-y-3 flex-1">
+                {['primary', 'secondary'].map((field) => (
+                  <div key={field} className="relative">
+                    <label className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold mb-1.5 block">
+                      {field}
+                    </label>
+                    <div className="flex items-center gap-2 p-2 bg-black/20 border border-white/5 rounded-lg focus-within:border-white/20 transition-colors">
+                      <div
+                        className="w-6 h-6 rounded border border-white/10 shrink-0"
+                        style={{ backgroundColor: app[field as keyof AppConfig] as string }}
+                      />
+                      <input
+                        type="text"
+                        value={app[field as keyof AppConfig] as string}
+                        onChange={(e) => handleColorChange(app.id, field as 'primary' | 'secondary', e.target.value)}
+                        className="flex-1 bg-transparent text-sm text-zinc-200 font-mono focus:outline-none"
+                      />
+                      <div className="relative w-6 h-6 overflow-hidden rounded cursor-pointer">
+                        <input
+                          type="color"
+                          value={app[field as keyof AppConfig] as string}
+                          onChange={(e) => handleColorChange(app.id, field as 'primary' | 'secondary', e.target.value)}
+                          className="absolute -top-2 -left-2 w-10 h-10 p-0 border-0 cursor-pointer"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                {/* Secondary Color */}
-                <div className="relative group/input">
-                  <label className="text-[11px] text-zinc-600 uppercase tracking-wider font-mono mb-1.5 block">Secondary</label>
-                  <div className="flex items-center gap-3 p-3 bg-black/60 border border-white/10 hover:border-cyan-500/30 rounded-lg transition-colors">
-                    <div
-                      className="w-8 h-8 rounded-md border border-white/20 shrink-0 shadow-inner"
-                      style={{ backgroundColor: app.secondary }}
-                    />
-                    <input
-                      type="text"
-                      value={app.secondary}
-                      onChange={(e) => handleColorChange(app.id, 'secondary', e.target.value)}
-                      className="flex-1 bg-transparent text-base text-white font-mono focus:outline-none uppercase tracking-wide"
-                    />
-                    <input
-                      type="color"
-                      value={app.secondary}
-                      onChange={(e) => handleColorChange(app.id, 'secondary', e.target.value)}
-                      className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-3">
+              <div className="flex gap-2 pt-5 mt-2 border-t border-white/5">
                 <button
                   onClick={() => { setShowAIModal(app.id); setAiDescription(''); setAiMood(''); }}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 border border-purple-500/30 hover:border-purple-500/50 rounded-lg transition-all text-sm font-bold uppercase tracking-wider group/btn"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-lg transition-colors text-xs font-medium"
                 >
-                  <Sparkles className="h-4 w-4 group-hover/btn:animate-pulse" />
-                  <span>AI Gen</span>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  AI Gen
                 </button>
                 <button
                   onClick={() => handleSave(app)}
                   disabled={saving === app.id}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/50 rounded-lg transition-all disabled:opacity-50 text-sm font-bold uppercase tracking-wider"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors disabled:opacity-50 text-xs font-medium"
                 >
                   {saving === app.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <Save className="h-4 w-4" />
+                    <Save className="h-3.5 w-3.5" />
                   )}
-                  <span>Save</span>
+                  Save
                 </button>
               </div>
             </div>
@@ -314,80 +269,69 @@ export default function AppsManagement() {
 
       {/* AI Modal */}
       {showAIModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0c0c14] border border-purple-500/40 rounded-2xl max-w-md w-full overflow-hidden shadow-[0_0_60px_rgba(168,85,247,0.2)] relative">
-            {/* Top gradient bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-purple-500 via-cyan-500 to-purple-500" />
-
-            {/* Grid Overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-
-            <div className="relative z-10 p-6">
-              {/* Modal Header */}
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="glass-panel rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-lg bg-purple-500/20 border border-purple-500/30">
-                    <Sparkles className="h-6 w-6 text-purple-400 animate-pulse" />
+                  <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                    <Sparkles className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-orbitron font-bold text-white tracking-wide">AI PALETTE</h3>
-                    <p className="text-xs text-zinc-500 font-mono uppercase tracking-wider">Neural Color Engine</p>
+                    <h3 className="text-lg font-semibold text-white">AI Palette Generator</h3>
+                    <p className="text-xs text-zinc-500">Generate themes using AI</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAIModal(null)}
-                  className="p-2 text-zinc-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-2 text-zinc-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="space-y-5">
-                {/* Target Module */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-purple-400 uppercase tracking-wider font-mono">Target Module</label>
-                  <div className="flex items-center gap-3 px-4 py-3 bg-black/60 rounded-xl border border-white/10">
-                    <div
-                      className="w-10 h-10 rounded-lg"
-                      style={{
-                        background: `linear-gradient(135deg, ${apps.find(a => a.id === showAIModal)?.primary}, ${apps.find(a => a.id === showAIModal)?.secondary})`
-                      }}
-                    />
-                    <span className="text-white font-orbitron font-bold tracking-wide text-lg">
-                      {apps.find(a => a.id === showAIModal)?.name.toUpperCase()}
+              <div className="space-y-4">
+                <div className="p-3 bg-zinc-900/50 rounded-lg border border-white/5 flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded-md shadow-sm"
+                    style={{
+                      background: `linear-gradient(135deg, ${apps.find(a => a.id === showAIModal)?.primary}, ${apps.find(a => a.id === showAIModal)?.secondary})`
+                    }}
+                  />
+                  <div>
+                    <span className="text-xs text-zinc-500 block">Target App</span>
+                    <span className="text-sm font-medium text-white">
+                      {apps.find(a => a.id === showAIModal)?.name}
                     </span>
                   </div>
                 </div>
 
-                {/* Context Parameters */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-mono">Context Parameters</label>
+                <div>
+                  <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Context / Description</label>
                   <input
                     type="text"
                     value={aiDescription}
                     onChange={(e) => setAiDescription(e.target.value)}
-                    placeholder="e.g., High-performance analytics dashboard"
-                    className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3.5 text-base text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors font-mono"
+                    placeholder="e.g., Modern analytics dashboard for finance"
+                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
                 </div>
 
-                {/* Visual Mood */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-mono">Visual Mood</label>
+                <div>
+                  <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Visual Mood</label>
                   <input
                     type="text"
                     value={aiMood}
                     onChange={(e) => setAiMood(e.target.value)}
-                    placeholder="e.g., Neon, Industrial, Calm, Energetic"
-                    className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3.5 text-base text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-colors font-mono"
+                    placeholder="e.g., Trustworthy, Energetic, Calm"
+                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
                 </div>
 
-                {/* Action Buttons */}
-                <div className="pt-4 flex gap-3">
+                <div className="pt-2 flex gap-3">
                   <button
                     onClick={() => setShowAIModal(null)}
-                    className="flex-1 px-4 py-3.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl border border-white/10 transition-colors text-base font-bold uppercase tracking-wider font-mono"
+                    className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-lg border border-white/5 transition-colors text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -397,16 +341,16 @@ export default function AppsManagement() {
                       if (app) handleGenerateColors(app);
                     }}
                     disabled={generatingColors !== null}
-                    className="flex-1 px-4 py-3.5 bg-gradient-to-r from-purple-500/30 to-cyan-500/30 hover:from-purple-500/40 hover:to-cyan-500/40 text-white border border-purple-500/50 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-base font-bold uppercase tracking-wider font-mono shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+                    className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium shadow-lg shadow-indigo-500/20"
                   >
                     {generatingColors ? (
                       <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Processing...
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating...
                       </>
                     ) : (
                       <>
-                        <Zap className="h-5 w-5" />
+                        <Zap className="h-4 w-4" />
                         Generate
                       </>
                     )}

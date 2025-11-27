@@ -50,7 +50,7 @@ export function SpaceSwitcher() {
         onSpaceChange={setCurrentSpace}
         onCreateSpace={() => setShowSpaceEditor(true)}
         spacesLabel="Workflow Spaces"
-        defaultSpaceName="My Workflows"
+        defaultSpaceName="Personal"
       />
 
       <SharedSpaceEditor
