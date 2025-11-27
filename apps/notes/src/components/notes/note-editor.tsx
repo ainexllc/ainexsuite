@@ -18,6 +18,7 @@ import {
   Share2,
   Sparkles,
   Loader2,
+  Undo2,
 } from "lucide-react";
 import { clsx } from "clsx";
 import type {
@@ -98,6 +99,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [bodyHistory, setBodyHistory] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea to fit content
@@ -108,6 +111,20 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       textarea.style.height = `${Math.max(200, textarea.scrollHeight)}px`;
     }
   }, [body]);
+
+  // Save to history before AI changes
+  const saveToHistory = useCallback(() => {
+    setBodyHistory(prev => [...prev.slice(-9), body]); // Keep last 10 states
+  }, [body]);
+
+  // Undo function
+  const handleUndo = useCallback(() => {
+    if (bodyHistory.length > 0) {
+      const previousState = bodyHistory[bodyHistory.length - 1];
+      setBodyHistory(prev => prev.slice(0, -1));
+      setBody(previousState);
+    }
+  }, [bodyHistory]);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -338,6 +355,22 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
   };
 
+  // Handle right-click context menu
+  const handleContextMenu = (e: React.MouseEvent) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = body.substring(start, end);
+
+    if (text.trim()) {
+      e.preventDefault();
+      setSelectedText({ text, start, end });
+      setContextMenuPos({ x: e.clientX, y: e.clientY });
+    }
+  };
+
   const handleEnhanceBody = async (style: EnhanceStyle) => {
     if (isEnhancing) return;
 
@@ -346,6 +379,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     if (!textToEnhance.trim()) return;
 
     setShowEnhanceMenu(false);
+    setContextMenuPos(null);
+
+    // Save current state for undo
+    saveToHistory();
 
     try {
       setIsEnhancing(true);
@@ -913,50 +950,21 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           ) : null}
 
           {mode === "text" ? (
-            <div className="relative">
-              <textarea
-                ref={textareaRef}
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                onSelect={handleTextSelect}
-                onBlur={() => {
-                  // Delay clearing selection to allow button click
-                  setTimeout(() => {
-                    if (!showEnhanceMenu) setSelectedText(null);
-                  }, 200);
-                }}
-                placeholder="Write your note…"
-                className="min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none pr-12"
-              />
-              {body.trim() && (
-                <div className="absolute top-2 right-0">
-                  <button
-                    type="button"
-                    onClick={() => setShowEnhanceMenu((prev) => !prev)}
-                    disabled={isEnhancing}
-                    className={clsx(
-                      "p-2 rounded-lg transition-all flex items-center gap-1.5",
-                      isEnhancing
-                        ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/10"
-                        : selectedText
-                          ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                          : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                    )}
-                    aria-label="Enhance with AI"
-                    title={selectedText ? `Enhance selected text` : "Enhance all text"}
-                  >
-                    {isEnhancing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        {selectedText && <span className="text-xs">Selected</span>}
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
+            <textarea
+              ref={textareaRef}
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
+              onSelect={handleTextSelect}
+              onContextMenu={handleContextMenu}
+              onBlur={() => {
+                // Delay clearing selection to allow button click
+                setTimeout(() => {
+                  if (!showEnhanceMenu && !contextMenuPos) setSelectedText(null);
+                }, 200);
+              }}
+              placeholder="Write your note…"
+              className="min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none"
+            />
           ) : (
             <div className="space-y-3">
               {checklist.map((item, idx) => (
@@ -1355,6 +1363,46 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               >
                 <Archive className="h-4 w-4" />
               </button>
+              {/* Separator */}
+              <div className="w-px h-6 bg-white/20" />
+              {/* Undo button */}
+              <button
+                type="button"
+                onClick={handleUndo}
+                disabled={bodyHistory.length === 0}
+                className={clsx(
+                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  bodyHistory.length === 0 && "opacity-30 cursor-not-allowed"
+                )}
+                aria-label="Undo"
+                title={bodyHistory.length > 0 ? `Undo (${bodyHistory.length} available)` : "Nothing to undo"}
+              >
+                <Undo2 className="h-4 w-4" />
+              </button>
+              {/* AI Enhance button */}
+              {mode === "text" && body.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setShowEnhanceMenu((prev) => !prev)}
+                  disabled={isEnhancing}
+                  className={clsx(
+                    "icon-button h-10 w-10 transition-all flex items-center justify-center",
+                    isEnhancing
+                      ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
+                      : selectedText
+                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
+                        : "text-white/60 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                  )}
+                  aria-label="Enhance with AI"
+                  title={selectedText ? `Enhance selected text` : "Enhance all text with AI"}
+                >
+                  {isEnhancing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                </button>
+              )}
             </div>
 
             <div className="flex items-center gap-3">
@@ -1459,6 +1507,43 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 >
                   <p className="text-sm font-medium text-white">{style.label}</p>
                   <p className="text-xs text-white/50">{style.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Right-click context menu for AI Enhance */}
+      {contextMenuPos && selectedText && !isEnhancing && (
+        <>
+          <div
+            className="fixed inset-0 z-[60]"
+            onClick={() => setContextMenuPos(null)}
+          />
+          <div
+            className="fixed z-[70] w-52 rounded-xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden"
+            style={{
+              left: Math.min(contextMenuPos.x, window.innerWidth - 220),
+              top: Math.min(contextMenuPos.y, window.innerHeight - 200),
+            }}
+          >
+            <div className="px-3 py-2 border-b border-white/10 bg-white/5">
+              <p className="text-xs font-semibold text-white flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-[var(--color-primary)]" />
+                AI Enhance Selected
+              </p>
+            </div>
+            <div className="p-1.5">
+              {ENHANCE_STYLES.map((style) => (
+                <button
+                  key={style.id}
+                  type="button"
+                  onClick={() => void handleEnhanceBody(style.id)}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <p className="text-sm font-medium text-white">{style.label}</p>
+                  <p className="text-[11px] text-white/50">{style.description}</p>
                 </button>
               ))}
             </div>
