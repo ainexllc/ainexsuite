@@ -99,6 +99,15 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea to fit content
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.max(200, textarea.scrollHeight)}px`;
+    }
+  }, [body]);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -917,7 +926,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   }, 200);
                 }}
                 placeholder="Write your note…"
-                className="min-h-[200px] max-h-[400px] w-full resize-y bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none pr-12"
+                className="min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none pr-12"
               />
               {body.trim() && (
                 <div className="absolute top-2 right-0">
