@@ -97,6 +97,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
+  const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -311,8 +313,29 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     { id: "concise", label: "Concise", description: "Brief & to the point" },
   ];
 
+  // Handle text selection in textarea
+  const handleTextSelect = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = body.substring(start, end);
+
+    if (text.trim()) {
+      setSelectedText({ text, start, end });
+    } else {
+      setSelectedText(null);
+    }
+  };
+
   const handleEnhanceBody = async (style: EnhanceStyle) => {
-    if (!body.trim() || isEnhancing) return;
+    if (isEnhancing) return;
+
+    // Determine what text to enhance - selected text or all
+    const textToEnhance = selectedText?.text || body;
+    if (!textToEnhance.trim()) return;
+
     setShowEnhanceMenu(false);
 
     try {
@@ -330,13 +353,21 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       const response = await fetch("/api/ai/enhance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: body, task, tone }),
+        body: JSON.stringify({ text: textToEnhance, task, tone }),
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.enhanced) {
-          setBody(data.enhanced);
+          if (selectedText) {
+            // Replace only the selected portion
+            const newBody = body.substring(0, selectedText.start) + data.enhanced + body.substring(selectedText.end);
+            setBody(newBody);
+            setSelectedText(null);
+          } else {
+            // Replace entire body
+            setBody(data.enhanced);
+          }
         }
       }
     } catch (error) {
@@ -875,59 +906,45 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           {mode === "text" ? (
             <div className="relative">
               <textarea
+                ref={textareaRef}
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
+                onSelect={handleTextSelect}
+                onBlur={() => {
+                  // Delay clearing selection to allow button click
+                  setTimeout(() => {
+                    if (!showEnhanceMenu) setSelectedText(null);
+                  }, 200);
+                }}
                 placeholder="Write your note…"
-                rows={8}
-                className="min-h-[120px] w-full resize-none bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none pr-10"
+                className="min-h-[200px] max-h-[400px] w-full resize-y bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none pr-12"
               />
               {body.trim() && (
-                <div className="absolute bottom-2 right-0">
+                <div className="absolute top-2 right-0">
                   <button
                     type="button"
                     onClick={() => setShowEnhanceMenu((prev) => !prev)}
                     disabled={isEnhancing}
                     className={clsx(
-                      "p-1.5 rounded-full transition-all",
+                      "p-2 rounded-lg transition-all flex items-center gap-1.5",
                       isEnhancing
-                        ? "text-[var(--color-primary)] cursor-wait"
-                        : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                        ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/10"
+                        : selectedText
+                          ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                          : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                     )}
                     aria-label="Enhance with AI"
-                    title="Enhance with AI"
+                    title={selectedText ? `Enhance selected text` : "Enhance all text"}
                   >
                     {isEnhancing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Sparkles className="h-4 w-4" />
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        {selectedText && <span className="text-xs">Selected</span>}
+                      </>
                     )}
                   </button>
-                  {showEnhanceMenu && !isEnhancing && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-20"
-                        onClick={() => setShowEnhanceMenu(false)}
-                      />
-                      <div className="absolute bottom-full right-0 mb-2 z-30 w-48 rounded-xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
-                        <div className="px-3 py-2 border-b border-white/10">
-                          <p className="text-xs font-medium text-white/60">AI Enhance Style</p>
-                        </div>
-                        <div className="p-1">
-                          {ENHANCE_STYLES.map((style) => (
-                            <button
-                              key={style.id}
-                              type="button"
-                              onClick={() => void handleEnhanceBody(style.id)}
-                              className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
-                            >
-                              <p className="text-sm font-medium text-white">{style.label}</p>
-                              <p className="text-xs text-white/50">{style.description}</p>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
                 </div>
               )}
             </div>
@@ -1405,6 +1422,40 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         multiple
         onChange={(event) => handleFilesSelected(event.target.files)}
       />
+
+      {/* AI Enhance Style Menu */}
+      {showEnhanceMenu && !isEnhancing && (
+        <>
+          <div
+            className="fixed inset-0 z-[60] bg-black/20"
+            onClick={() => setShowEnhanceMenu(false)}
+          />
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-64 rounded-2xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+              <p className="text-sm font-semibold text-white flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[var(--color-primary)]" />
+                AI Enhance
+              </p>
+              <p className="text-xs text-white/50 mt-0.5">
+                {selectedText ? `Enhance selected text (${selectedText.text.length} chars)` : "Enhance all text"}
+              </p>
+            </div>
+            <div className="p-2">
+              {ENHANCE_STYLES.map((style) => (
+                <button
+                  key={style.id}
+                  type="button"
+                  onClick={() => void handleEnhanceBody(style.id)}
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 transition-colors"
+                >
+                  <p className="text-sm font-medium text-white">{style.label}</p>
+                  <p className="text-xs text-white/50">{style.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 
