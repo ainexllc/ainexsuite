@@ -969,12 +969,28 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 placeholder="Write your note…"
                 className={clsx(
                   "min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none transition-all duration-300",
-                  isEnhancing && "blur-sm opacity-50"
+                  isEnhancing && !selectedText && "blur-sm opacity-50",
+                  isEnhancing && selectedText && "opacity-0"
                 )}
                 disabled={isEnhancing}
               />
-              {/* AI Enhancement overlay - shown when enhancing */}
-              {isEnhancing && (
+              {/* Text overlay for selected text enhancement - shows text with only selected portion blurred */}
+              {isEnhancing && selectedText && (
+                <div className="absolute inset-0 pointer-events-none text-sm text-white/80 whitespace-pre-wrap break-words overflow-hidden">
+                  <span>{body.substring(0, selectedText.start)}</span>
+                  <span className="relative inline">
+                    <span className="blur-sm bg-[var(--color-primary)]/20 rounded px-0.5">{body.substring(selectedText.start, selectedText.end)}</span>
+                    {/* Small floating indicator above selected text */}
+                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-zinc-900/95 px-2 py-1 rounded-full border border-[var(--color-primary)]/30 whitespace-nowrap">
+                      <Brain className="h-3 w-3 text-[var(--color-primary)] animate-pulse" />
+                      <span className="text-[10px] text-white/70">Enhancing...</span>
+                    </span>
+                  </span>
+                  <span>{body.substring(selectedText.end)}</span>
+                </div>
+              )}
+              {/* AI Enhancement overlay - shown when enhancing all text */}
+              {isEnhancing && !selectedText && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="flex flex-col items-center gap-3 rounded-2xl bg-zinc-900/95 px-8 py-5 border border-[var(--color-primary)]/30 shadow-2xl">
                     {/* Animated Brain */}
@@ -988,15 +1004,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       <Sparkles className="absolute -bottom-1 -left-1 h-3 w-3 text-[var(--color-primary)] animate-bounce" style={{ animationDelay: "200ms" }} />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-medium text-white">
-                        {selectedText ? "Enhancing selected text..." : "AI is thinking..."}
-                      </p>
-                      <p className="text-xs text-white/50 mt-0.5">
-                        {selectedText
-                          ? `Processing ${selectedText.text.length} characters`
-                          : "Enhancing your entire note"
-                        }
-                      </p>
+                      <p className="text-sm font-medium text-white">AI is thinking...</p>
+                      <p className="text-xs text-white/50 mt-0.5">Enhancing your entire note</p>
                     </div>
                     {/* Animated loading bar */}
                     <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
