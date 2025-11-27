@@ -950,21 +950,49 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           ) : null}
 
           {mode === "text" ? (
-            <textarea
-              ref={textareaRef}
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              onSelect={handleTextSelect}
-              onContextMenu={handleContextMenu}
-              onBlur={() => {
-                // Delay clearing selection to allow button click
-                setTimeout(() => {
-                  if (!showEnhanceMenu && !contextMenuPos) setSelectedText(null);
-                }, 200);
-              }}
-              placeholder="Write your note…"
-              className="min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none"
-            />
+            <div className="relative">
+              <textarea
+                ref={textareaRef}
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                onSelect={handleTextSelect}
+                onContextMenu={handleContextMenu}
+                onBlur={() => {
+                  // Delay clearing selection to allow button click
+                  setTimeout(() => {
+                    if (!showEnhanceMenu && !contextMenuPos) setSelectedText(null);
+                  }, 200);
+                }}
+                placeholder="Write your note…"
+                className={clsx(
+                  "min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none transition-all duration-300",
+                  isEnhancing && !selectedText && "blur-sm opacity-50"
+                )}
+                disabled={isEnhancing && !selectedText}
+              />
+              {/* AI Enhancement overlay - shown when enhancing all text */}
+              {isEnhancing && !selectedText && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-3 rounded-2xl bg-zinc-900/90 px-6 py-4 border border-white/10 shadow-2xl">
+                    <div className="relative">
+                      <Sparkles className="h-8 w-8 text-[var(--color-primary)] animate-pulse" />
+                      <div className="absolute inset-0 animate-ping">
+                        <Sparkles className="h-8 w-8 text-[var(--color-primary)] opacity-30" />
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-white">AI is enhancing your text</p>
+                      <p className="text-xs text-white/50 mt-0.5">This may take a moment...</p>
+                    </div>
+                    <div className="flex gap-1">
+                      <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="space-y-3">
               {checklist.map((item, idx) => (
