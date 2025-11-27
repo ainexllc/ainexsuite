@@ -191,7 +191,7 @@ export function SpaceSwitcher({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className={`absolute top-full left-0 ${getDropdownClasses()} mt-2 bg-surface-elevated border border-outline-subtle rounded-xl shadow-floating z-50 overflow-hidden`}>
+          <div className={`absolute top-full left-0 ${getDropdownClasses()} mt-2 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden`}>
             <div className="p-1">
               <div className="px-2 py-1.5 text-xs font-medium text-ink-400 uppercase">
                 {effectiveSpacesLabel}
