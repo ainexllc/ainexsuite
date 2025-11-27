@@ -104,72 +104,25 @@ export function AppSwitcher({
   }, []);
 
   /**
-   * Check login status for all apps when switcher opens
+   * Set login status for current app only
+   * Note: We removed parallel status checking for all apps as it was causing
+   * browser resource exhaustion (ERR_INSUFFICIENT_RESOURCES) with 12+ concurrent
+   * cross-origin requests. SSO will still work - we just don't show status indicators.
    */
-  const checkLoginStatuses = useCallback(async () => {
-    // Set current app as logged in if we know the user is logged in
+  const setCurrentAppStatus = useCallback(() => {
     if (isLoggedIn) {
-      setLoginStatuses(prev => ({
-        ...prev,
+      setLoginStatuses({
         [currentApp.slug]: 'logged-in'
-      }));
+      });
     }
+  }, [currentApp.slug, isLoggedIn]);
 
-    // Get all apps to check (including main)
-    const appsToCheck = [APP_REGISTRY.main, ...availableApps];
-
-    // Initialize all as checking
-    const initialStatuses: Record<string, LoginStatus> = {};
-    appsToCheck.forEach(app => {
-      // Current app status is already known
-      if (app.slug === currentApp.slug) {
-        initialStatuses[app.slug] = isLoggedIn ? 'logged-in' : 'logged-out';
-      } else {
-        initialStatuses[app.slug] = 'checking';
-      }
-    });
-    setLoginStatuses(initialStatuses);
-
-    // Check each app's session status in parallel
-    const checkPromises = appsToCheck
-      .filter(app => app.slug !== currentApp.slug) // Skip current app
-      .map(async (app) => {
-        try {
-          const baseUrl = getBaseUrl(app);
-          const response = await fetch(`${baseUrl}/api/auth/session`, {
-            method: 'GET',
-            credentials: 'include',
-            mode: 'cors',
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            return { slug: app.slug, status: data.user ? 'logged-in' : 'logged-out' as LoginStatus };
-          }
-          return { slug: app.slug, status: 'logged-out' as LoginStatus };
-        } catch {
-          // CORS or network error - can't determine status
-          return { slug: app.slug, status: 'error' as LoginStatus };
-        }
-      });
-
-    const results = await Promise.all(checkPromises);
-
-    setLoginStatuses(prev => {
-      const updated = { ...prev };
-      results.forEach(result => {
-        updated[result.slug] = result.status;
-      });
-      return updated;
-    });
-  }, [availableApps, currentApp.slug, isLoggedIn, getBaseUrl]);
-
-  // Check login statuses when the switcher opens
+  // Set current app status when the switcher opens
   useEffect(() => {
     if (isOpen) {
-      checkLoginStatuses();
+      setCurrentAppStatus();
     }
-  }, [isOpen, checkLoginStatuses]);
+  }, [isOpen, setCurrentAppStatus]);
 
   // Get recently used apps (filtered by access)
   const recentlyUsedApps = filterByAccess(
