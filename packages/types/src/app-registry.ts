@@ -14,7 +14,9 @@ export type AppSlug =
   | 'pulse'
   | 'fit'
   | 'projects'
-  | 'workflow';
+  | 'workflow'
+  | 'calendar'
+  | 'admin';
 
 export interface AppConfig {
   name: string;
@@ -26,9 +28,11 @@ export interface AppConfig {
   devUrl: string;
   prodUrl: string;
   devPort: number;
-  category: 'productivity' | 'health' | 'creative' | 'system';
+  category: 'productivity' | 'health' | 'creative' | 'system' | 'admin';
   features: string[];
   status: 'active' | 'beta' | 'coming-soon';
+  /** Email addresses that have access to this app (if restricted) */
+  allowedEmails?: string[];
 }
 
 /**
@@ -188,6 +192,35 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     category: 'productivity',
     features: ['Visual Builder', 'Automation', 'Triggers', 'Conditions'],
     status: 'active',
+  },
+  calendar: {
+    name: 'Calendar',
+    slug: 'calendar',
+    description: 'Schedule events, manage appointments, and stay organized with your calendar.',
+    icon: 'Calendar',
+    color: 'sky',
+    gradient: 'from-sky-500 to-blue-500',
+    devUrl: 'http://localhost:3014',
+    prodUrl: 'https://calendar.ainexsuite.com',
+    devPort: 3014,
+    category: 'productivity',
+    features: ['Events', 'Scheduling', 'Reminders', 'Multiple Views'],
+    status: 'active',
+  },
+  admin: {
+    name: 'Admin',
+    slug: 'admin',
+    description: 'Manage users, settings, and configuration for the AINexSuite platform.',
+    icon: 'Settings',
+    color: 'zinc',
+    gradient: 'from-zinc-500 to-slate-600',
+    devUrl: 'http://localhost:3020',
+    prodUrl: 'https://admin.ainexsuite.com',
+    devPort: 3020,
+    category: 'admin',
+    features: ['User Management', 'App Configuration', 'Analytics', 'Settings'],
+    status: 'active',
+    allowedEmails: ['hornld25@gmail.com'],
   },
 };
 

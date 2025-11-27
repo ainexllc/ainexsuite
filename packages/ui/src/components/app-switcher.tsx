@@ -25,6 +25,8 @@ export interface AppSwitcherProps {
   className?: string;
   /** Whether current user is logged in on current app */
   isLoggedIn?: boolean;
+  /** Current user's email for access control */
+  userEmail?: string | null;
 }
 
 export function AppSwitcher({
@@ -34,13 +36,28 @@ export function AppSwitcher({
   onAppClick,
   className = '',
   isLoggedIn = false,
+  userEmail = null,
 }: AppSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loginStatuses, setLoginStatuses] = useState<Record<string, LoginStatus>>({});
 
-  // Default to all apps if not provided
-  const availableApps = accessibleApps || Object.values(APP_REGISTRY).filter(
-    app => app.slug !== 'main' && app.status === 'active'
+  // Filter apps based on user access (allowedEmails)
+  const filterByAccess = (apps: AppConfig[]) => {
+    return apps.filter(app => {
+      // If app has no allowedEmails, it's accessible to everyone
+      if (!app.allowedEmails || app.allowedEmails.length === 0) {
+        return true;
+      }
+      // If app has allowedEmails, check if user's email is in the list
+      return userEmail && app.allowedEmails.includes(userEmail);
+    });
+  };
+
+  // Default to all apps if not provided, filtered by access
+  const availableApps = filterByAccess(
+    accessibleApps || Object.values(APP_REGISTRY).filter(
+      app => app.slug !== 'main' && app.status === 'active'
+    )
   );
 
   /**
@@ -120,11 +137,12 @@ export function AppSwitcher({
     }
   }, [isOpen, checkLoginStatuses]);
 
-  // Get recently used apps
-  const recentlyUsedApps = recentApps
-    .map(slug => APP_REGISTRY[slug])
-    .filter(Boolean)
-    .slice(0, 3);
+  // Get recently used apps (filtered by access)
+  const recentlyUsedApps = filterByAccess(
+    recentApps
+      .map(slug => APP_REGISTRY[slug])
+      .filter(Boolean)
+  ).slice(0, 3);
 
   // Get icon component from lucide-react
   const getIcon = (iconName: string) => {
