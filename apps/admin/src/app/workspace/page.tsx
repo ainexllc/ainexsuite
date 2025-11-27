@@ -18,8 +18,15 @@ import {
   Clock,
   Server,
   Globe,
-  Zap
+  Zap,
+  LayoutGrid,
+  FolderKanban,
+  Palette,
+  RefreshCw,
+  Settings,
+  ChevronRight
 } from 'lucide-react';
+import Link from 'next/link';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
 
@@ -133,6 +140,37 @@ function Gauge({ value, label, icon: Icon, colorClass }: { value: number; label:
         <div className="text-xs text-zinc-500 font-medium mt-1">{label}</div>
       </div>
     </div>
+  );
+}
+
+// Admin navigation links
+const adminPages = [
+  { href: '/workspace/apps', label: 'Apps', icon: LayoutGrid, description: 'Manage suite applications', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+  { href: '/workspace/users', label: 'Users', icon: Users, description: 'User management & roles', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  { href: '/workspace/feedback', label: 'Feedback', icon: MessageSquare, description: 'User feedback & reports', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  { href: '/workspace/spaces', label: 'Spaces', icon: FolderKanban, description: 'Workspace spaces config', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
+  { href: '/workspace/theme', label: 'Theme', icon: Palette, description: 'Theme & appearance', color: 'text-pink-400', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
+  { href: '/workspace/updates', label: 'Updates', icon: RefreshCw, description: 'Platform updates & changelog', color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
+  { href: '/workspace/settings', label: 'Settings', icon: Settings, description: 'System configuration', color: 'text-zinc-400', bg: 'bg-zinc-500/10', border: 'border-zinc-500/20' },
+];
+
+function AdminNavCard({ href, label, icon: Icon, description, color, bg, border }: typeof adminPages[0]) {
+  return (
+    <Link
+      href={href}
+      className={`group glass-card p-4 rounded-xl border ${border} hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`p-2.5 rounded-lg ${bg} ${color}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-white group-hover:text-white/90">{label}</h3>
+          <p className="text-xs text-zinc-500 truncate">{description}</p>
+        </div>
+        <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-0.5 transition-all" />
+      </div>
+    </Link>
   );
 }
 
@@ -332,6 +370,19 @@ export default function AdminWorkspacePage() {
           trendLabel="Uptime (last 30 days)"
         />
       </div>
+
+      {/* Admin Pages Navigation */}
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-lg font-semibold text-white">Admin Pages</h2>
+          <span className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-0.5 rounded-full">{adminPages.length} sections</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {adminPages.map((page) => (
+            <AdminNavCard key={page.href} {...page} />
+          ))}
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content Column */}
