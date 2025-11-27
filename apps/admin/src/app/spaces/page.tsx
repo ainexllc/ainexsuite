@@ -31,7 +31,7 @@ interface SpaceTypeConfig {
 }
 
 interface SpacesUIConfig {
-  dropdownStyle: 'minimal' | 'detailed' | 'compact';
+  dropdownStyle: 'minimal' | 'detailed' | 'compact' | 'modern' | 'pill' | 'block';
   showTypeIcons: boolean;
   showMemberCount: boolean;
   showCreateButton: boolean;
@@ -50,6 +50,7 @@ const APP_CONFIGS = [
   { id: 'workflow', name: 'Workflow', collection: 'workflow_spaces', color: '#10b981' },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ICON_OPTIONS = [
   { value: 'user', label: 'User', Icon: User },
   { value: 'users', label: 'Users', Icon: Users },
@@ -57,7 +58,7 @@ const ICON_OPTIONS = [
   { value: 'briefcase', label: 'Briefcase', Icon: Briefcase },
   { value: 'dumbbell', label: 'Dumbbell', Icon: Dumbbell },
   { value: 'folder', label: 'Folder', Icon: Folder },
-  { value: 'sparkles', label: 'Sparkles', Icon: Sparkles }, // Fixed import usage
+  { value: 'sparkles', label: 'Sparkles', Icon: Sparkles },
 ];
 
 const COLOR_PRESETS = [
@@ -105,6 +106,7 @@ export default function SpacesManagement() {
   const [spaces, setSpaces] = useState<SpaceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedApp, setSelectedApp] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [showTypeFilter, setShowTypeFilter] = useState(false);
@@ -230,6 +232,97 @@ export default function SpacesManagement() {
       </div>
     );
   }
+
+  // Render helper for different dropdown styles in preview
+  const renderPreviewDropdown = () => {
+    const style = uiConfig.dropdownStyle;
+    const typeConfig = spaceTypes[0]; // Use first type for preview
+    const Icon = SPACE_TYPE_ICONS[typeConfig?.icon || 'user'] || User;
+
+    // Base container with SOLID background
+    const containerBase = "flex items-center gap-2 border transition-all cursor-pointer shadow-lg";
+    const solidBg = "bg-zinc-900"; // Enforce solid background
+
+    if (style === 'minimal') {
+      return (
+        <div className={`${containerBase} ${solidBg} border-white/10 rounded-lg p-2`}>
+          {uiConfig.showTypeIcons && <Icon className="h-4 w-4 text-zinc-400" />}
+          <ChevronDown className="h-4 w-4 text-zinc-500" />
+        </div>
+      );
+    }
+
+    if (style === 'compact') {
+      return (
+        <div className={`${containerBase} ${solidBg} border-white/10 rounded-md px-3 py-1.5`}>
+          {uiConfig.showTypeIcons && <Icon className="h-3.5 w-3.5 text-zinc-400" />}
+          <span className="text-sm font-medium text-white">{uiConfig.defaultSpaceLabel}</span>
+          <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+        </div>
+      );
+    }
+
+    if (style === 'modern') {
+      return (
+        <div className={`${containerBase} ${solidBg} border-transparent rounded-2xl px-4 py-3 shadow-xl ring-1 ring-white/10`}>
+          {uiConfig.showTypeIcons && (
+            <div className="p-1.5 rounded-full bg-indigo-500/10 text-indigo-400">
+              <Icon className="h-4 w-4" />
+            </div>
+          )}
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-white leading-none">{uiConfig.defaultSpaceLabel}</span>
+            {uiConfig.showMemberCount && <span className="text-[10px] text-zinc-500 mt-0.5 font-medium">Personal Workspace</span>}
+          </div>
+          <ChevronDown className="h-4 w-4 text-zinc-500 ml-2" />
+        </div>
+      );
+    }
+
+    if (style === 'pill') {
+      return (
+        <div className={`${containerBase} ${solidBg} border-white/10 rounded-full pl-2 pr-4 py-1.5`}>
+          {uiConfig.showTypeIcons && (
+            <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center">
+              <Icon className="h-3.5 w-3.5 text-zinc-400" />
+            </div>
+          )}
+          <span className="text-sm font-medium text-white">{uiConfig.defaultSpaceLabel}</span>
+          <ChevronDown className="h-4 w-4 text-zinc-500" />
+        </div>
+      );
+    }
+
+    if (style === 'block') {
+      return (
+        <div className={`${containerBase} ${solidBg} border-b border-white/10 rounded-none px-4 py-4 w-full justify-between`}>
+          <div className="flex items-center gap-3">
+            {uiConfig.showTypeIcons && <Icon className="h-5 w-5 text-zinc-400" />}
+            <span className="text-base font-bold text-white tracking-tight">{uiConfig.defaultSpaceLabel}</span>
+          </div>
+          <ChevronDown className="h-5 w-5 text-zinc-500" />
+        </div>
+      );
+    }
+
+    // Default / Detailed
+    return (
+      <div className={`${containerBase} ${solidBg} border-white/10 rounded-xl p-3`}>
+        {uiConfig.showTypeIcons && (
+          <div className="p-2 rounded-lg" style={{ backgroundColor: typeConfig?.bgColor, color: typeConfig?.color }}>
+            <Icon className="h-4 w-4" />
+          </div>
+        )}
+        <div className="flex flex-col">
+          <p className="text-white font-medium text-sm">{uiConfig.defaultSpaceLabel}</p>
+          {uiConfig.showMemberCount && (
+            <p className="text-xs text-zinc-500">1 member</p>
+          )}
+        </div>
+        <ChevronDown className="h-4 w-4 text-zinc-500 ml-2" />
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -546,7 +639,7 @@ export default function SpacesManagement() {
               <div>
                  <h3 className="text-sm font-medium text-white mb-4">Dropdown Style</h3>
                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    {(['minimal', 'detailed', 'compact'] as const).map((style) => (
+                    {(['minimal', 'detailed', 'compact', 'modern', 'pill', 'block'] as const).map((style) => (
                       <button
                         key={style}
                         onClick={() => setUiConfig(prev => ({ ...prev, dropdownStyle: style }))}
@@ -571,6 +664,25 @@ export default function SpacesManagement() {
                     />
                  </label>
               </div>
+            </div>
+
+            {/* Live Preview */}
+            <div className="mt-8 pt-8 border-t border-white/5">
+              <h3 className="text-sm font-medium text-white mb-4">Live Preview</h3>
+              <div className="p-8 bg-black rounded-xl border border-white/10 flex items-center justify-center min-h-[160px] relative overflow-hidden">
+                {/* Grid Pattern Background for Preview */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none" 
+                     style={{ backgroundImage: 'radial-gradient(#4f4f4f 1px, transparent 1px)', backgroundSize: '20px 20px' }} 
+                />
+                
+                {/* The Preview Component */}
+                <div className="relative z-10">
+                  {renderPreviewDropdown()}
+                </div>
+              </div>
+              <p className="text-xs text-center text-zinc-500 mt-3 font-mono">
+                Style: {uiConfig.dropdownStyle} | Animations: {uiConfig.animateTransitions ? 'On' : 'Off'}
+              </p>
             </div>
           </div>
         </div>

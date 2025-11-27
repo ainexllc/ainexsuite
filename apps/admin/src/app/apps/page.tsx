@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { Loader2, Save, CheckCircle2, AlertCircle, Sparkles, X, Zap, Cpu, Palette, LayoutGrid } from 'lucide-react';
+import { Loader2, Save, CheckCircle2, AlertCircle, Sparkles, X, Zap, LayoutGrid } from 'lucide-react';
 
 interface AppConfig {
   id: string;

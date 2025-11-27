@@ -1,8 +1,9 @@
 import OpenAI from 'openai';
 import { ContentEnhancementStyle } from '@ainexsuite/types';
 import { plainText } from '@/lib/utils/text';
+import { serverEnv } from '@/env';
 
-const apiKey = process.env.XAI_API_KEY;
+const apiKey = process.env.GROK_API_KEY || serverEnv.XAI_API_KEY;
 const openai = apiKey
   ? new OpenAI({
       apiKey,
@@ -47,7 +48,7 @@ For reference, the plain text version is:
 ${textOnly}`;
 
     const message = await openai.chat.completions.create({
-      model: 'grok-beta',
+      model: 'grok-4-1-fast-non-reasoning',
       max_tokens: 800,
       temperature: 0.4,
       messages: [

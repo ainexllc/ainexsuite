@@ -17,7 +17,7 @@ const GROK_API_KEY = process.env.GROK_API_KEY;
 if (!GROK_API_KEY) {
 }
 
-const GROK_MODEL = 'grok-beta';
+const GROK_MODEL = 'grok-4-1-fast-non-reasoning';
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 14 * 1000; // 14 days in milliseconds
 
 /**

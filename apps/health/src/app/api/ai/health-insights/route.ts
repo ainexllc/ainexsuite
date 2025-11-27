@@ -42,10 +42,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const xaiKey = serverEnv.XAI_API_KEY;
+    const xaiKey = process.env.GROK_API_KEY || serverEnv.XAI_API_KEY;
     if (!xaiKey) {
       return NextResponse.json(
-        { error: 'AI API key is missing' },
+        { error: 'AI API key is missing (GROK_API_KEY)' },
         { status: 500 }
       );
     }

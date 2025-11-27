@@ -22,20 +22,18 @@ export interface OpenRouterResponse {
 
 export class OpenRouterClient {
   private apiKey: string;
-  private baseUrl = "https://openrouter.ai/api/v1";
-  // Default to Gemini Flash 1.5 for speed/cost
-  private defaultModel = "google/gemini-flash-1.5";
+  private baseUrl = "https://api.x.ai/v1";
+  // Always use Grok 4.1 Fast (non-reasoning) for all AI tasks
+  private defaultModel = "grok-4-1-fast-non-reasoning";
 
   constructor(apiKey?: string) {
-    // Fallback to process.env if serverEnv doesn't have it explicitly typed
-    this.apiKey = apiKey || process.env.OPENROUTER_API_KEY || "";
-    if (!this.apiKey && !serverEnv.XAI_API_KEY) {
-       console.warn("AI API keys are not configured.");
+    this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.XAI_API_KEY || "";
+    if (!this.apiKey) {
+       console.warn("GROK_API_KEY is not configured.");
     }
   }
 
   async createCompletion(options: OpenRouterCompletionOptions): Promise<OpenRouterResponse> {
-    let { model = this.defaultModel } = options;
     const {
       messages,
       temperature = 0.7,
@@ -43,48 +41,12 @@ export class OpenRouterClient {
       topP = 1,
     } = options;
 
-    let endpoint = `${this.baseUrl}/chat/completions`;
-    let token = this.apiKey;
-    let headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://ainexsuite.com", // Required by OpenRouter
-      "X-Title": "Journey", // Optional
-    };
+    // Always use xAI/Grok API with grok-4-1-fast-non-reasoning
+    const model = this.defaultModel;
 
-    // xAI Direct Override
-    // If the model requested is a Grok model AND we have an xAI key, go direct.
-    if ((model.includes("grok") || model.includes("x-ai")) && serverEnv.XAI_API_KEY) {
-        endpoint = "https://api.x.ai/v1/chat/completions";
-        token = serverEnv.XAI_API_KEY;
-
-        // Map model IDs to xAI Direct IDs
-        // Available models: grok-4-1-fast-non-reasoning, grok-4, grok-3, grok-3-fast
-        if (model.includes("grok-4") && model.includes("fast")) {
-            model = "grok-4-1-fast-non-reasoning"; // Latest fast non-reasoning model
-        } else if (model.includes("grok-4")) {
-            model = "grok-4"; // Full Grok 4
-        } else if (model === "x-ai/grok-3-fast" || model === "grok-3-fast") {
-            model = "grok-3-fast"; // Grok 3 fast
-        } else if (model === "grok-3" || model === "x-ai/grok-3") {
-            model = "grok-3";
-        } else if (model === "grok-beta" || model === "x-ai/grok-beta") {
-            model = "grok-3"; // grok-beta deprecated, use grok-3
-        } else if (model.startsWith("x-ai/")) {
-            // Fallback: strip prefix
-            model = model.replace("x-ai/", "");
-        }
-
-        headers = {
-            "Content-Type": "application/json",
-        };
-    } else if (model.includes("grok") || model.includes("x-ai")) {
-        // No xAI key available, fall back to default model
-        model = this.defaultModel;
-    }
-
-    if (!token) {
+    if (!this.apiKey) {
         if (process.env.NODE_ENV === "development") {
-            console.warn("AI Client: Missing API Key in development. Returning mock response.");
+            console.warn("AI Client: Missing GROK_API_KEY in development. Returning mock response.");
             return {
                 choices: [{
                     message: {
@@ -99,17 +61,16 @@ export class OpenRouterClient {
                 }]
             };
         }
-        console.error("AI Client: Missing API Key");
-        throw new Error("AI API key is missing");
+        console.error("AI Client: Missing GROK_API_KEY");
+        throw new Error("GROK_API_KEY is missing");
     }
 
-    headers["Authorization"] = `Bearer ${token}`;
-
-    // console.log(`AI Client Request: ${endpoint} [Model: ${model}]`);
-
-    const response = await fetch(endpoint, {
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${this.apiKey}`,
+      },
       body: JSON.stringify({
         model,
         messages,
@@ -129,7 +90,7 @@ export class OpenRouterClient {
     return response.json();
   }
 
-  async ask(prompt: string, systemPrompt?: string, model?: string): Promise<string> {
+  async ask(prompt: string, systemPrompt?: string): Promise<string> {
     const messages: OpenRouterMessage[] = [];
 
     if (systemPrompt) {
@@ -138,7 +99,7 @@ export class OpenRouterClient {
 
     messages.push({ role: "user", content: prompt });
 
-    const response = await this.createCompletion({ messages, model });
+    const response = await this.createCompletion({ messages });
     return response.choices[0]?.message?.content || "";
   }
 }

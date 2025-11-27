@@ -26,7 +26,6 @@ import {
   TrendingUp,
   Lightbulb,
   Trash2,
-  Filter,
   RefreshCw
 } from 'lucide-react';
 import { clsx } from 'clsx';

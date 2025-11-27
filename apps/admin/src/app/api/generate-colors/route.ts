@@ -10,10 +10,10 @@ interface ColorGenerationRequest {
 
 // Color generation using Grok via xAI API
 async function generateColorsWithGrok(appName: string, appDescription?: string, mood?: string): Promise<{ primary: string; secondary: string; provider: string }> {
-  const apiKey = process.env.XAI_API_KEY;
+  const apiKey = process.env.GROK_API_KEY;
 
   if (!apiKey) {
-    throw new Error('XAI_API_KEY not configured');
+    throw new Error('GROK_API_KEY not configured');
   }
 
   const prompt = `Generate a BRIGHT, BOLD, and VIBRANT color palette for an app called "${appName}"${appDescription ? ` which is ${appDescription}` : ''}${mood ? ` with a ${mood} mood` : ''}.

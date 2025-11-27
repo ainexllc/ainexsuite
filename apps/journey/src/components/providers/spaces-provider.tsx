@@ -70,7 +70,10 @@ export function SpacesProvider({ children }: SpacesProviderProps) {
         setUserSpaces(spaces);
         setLoading(false);
       },
-      () => {
+      (error) => {
+        console.error("SpacesProvider: Failed to load spaces", error);
+        // Still set loading to false so the app can function with personal space
+        setUserSpaces([]);
         setLoading(false);
       }
     );

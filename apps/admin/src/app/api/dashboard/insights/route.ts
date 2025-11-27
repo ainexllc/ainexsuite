@@ -14,7 +14,7 @@ interface SystemMetric {
 
 export async function POST(request: NextRequest) {
   try {
-    const grokApiKey = process.env.XAI_API_KEY;
+    const grokApiKey = process.env.GROK_API_KEY;
 
     if (!grokApiKey) {
       return NextResponse.json(

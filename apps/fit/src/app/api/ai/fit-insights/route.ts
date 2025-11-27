@@ -62,7 +62,7 @@ Return ONLY a valid JSON object with this structure:
         },
         { role: 'user', content: prompt },
       ],
-      model: 'grok-4-1-fast',
+      model: 'grok-4-1-fast-non-reasoning',
       temperature: 0.3,
     });
 
