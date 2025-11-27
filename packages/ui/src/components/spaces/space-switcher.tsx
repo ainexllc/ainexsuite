@@ -215,8 +215,8 @@ export function SpaceSwitcher({
                 <span className="truncate flex-1 text-left">{effectiveDefaultName}</span>
               </button>
 
-              {/* User's spaces (filter out personal type since we show it above) */}
-              {spaces.filter((space) => space.type !== 'personal').map((space) => {
+              {/* User's spaces (filter out virtual personal space by ID since we show it above) */}
+              {spaces.filter((space) => space.id !== 'personal').map((space) => {
                 const isActive = currentSpaceId === space.id;
                 const typeConfig = getTypeConfig(space.type);
 
