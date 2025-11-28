@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { TrendingUp, Target, Zap } from 'lucide-react';
 import {
   AIInsightsCard,
@@ -27,8 +27,19 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [storeReady, setStoreReady] = useState(false);
+  const initialCheckRef = useRef(false);
 
   const accentColor = '#6366f1'; // indigo-500 (Todo app accent)
+
+  // Wait for store to be hydrated (tasks loaded from Firestore)
+  useEffect(() => {
+    // Give the store time to hydrate from Firestore
+    const timer = setTimeout(() => {
+      setStoreReady(true);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Get recent tasks for analysis
   const recentTasks = tasks
@@ -95,11 +106,9 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
 
   // Load from cache or auto-generate
   useEffect(() => {
-    if (!hasEnoughData) return;
+    if (!storeReady) return;
 
     const cached = localStorage.getItem(STORAGE_KEY);
-    let loadedFromCache = false;
-
     if (cached) {
       try {
         const { insights, timestamp } = JSON.parse(cached);
@@ -108,18 +117,20 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
         if (age < CACHE_DURATION) {
           setData(insights);
           setLastUpdated(new Date(timestamp));
-          loadedFromCache = true;
+          return;
         }
       } catch {
         // Invalid cache, ignore
       }
     }
 
-    if (!loadedFromCache && !data && !loading && !error) {
+    // Generate if we have enough data and haven't already
+    if (hasEnoughData && !data && !loading && !error && !initialCheckRef.current) {
+      initialCheckRef.current = true;
       generateInsights();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasEnoughData]);
+  }, [storeReady, hasEnoughData]);
 
   const sections: AIInsightsSection[] = useMemo(() => {
     if (!data) return [];
@@ -155,7 +166,7 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
     return undefined;
   }, [data]);
 
-  if (!hasEnoughData) return null;
+  if (!storeReady || !hasEnoughData) return null;
 
   const errorMessage = error?.includes('API key')
     ? 'AI features require configuration. Task insights will be available once set up.'
