@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOpenRouterClient } from "@/lib/ai/openrouter-client";
 
 export const maxDuration = 60;
 
@@ -31,6 +30,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const xaiKey = process.env.XAI_API_KEY;
+    if (!xaiKey) {
+      return NextResponse.json(
+        { error: "AI API key is missing (XAI_API_KEY)" },
+        { status: 500 }
+      );
+    }
+
     // Format entries for the AI
     const entriesText = entries.map((e, i) =>
       `Entry ${i + 1} (${e.date})${e.mood ? ` [Mood: ${e.mood}]` : ''}:\nTitle: ${e.title}\n${e.content}`
@@ -38,14 +45,39 @@ export async function POST(request: NextRequest) {
 
     const userMessage = `Please analyze these ${entries.length} recent journal entries and provide insights:\n\n${entriesText}`;
 
-    // Use the existing OpenRouter client (supports xAI/Grok direct)
-    const client = getOpenRouterClient();
-    const aiResponse = await client.ask(userMessage, SYSTEM_PROMPT);
+    // Call xAI Grok directly
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${xaiKey}`,
+      },
+      body: JSON.stringify({
+        model: "grok-4-1-fast-non-reasoning",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("xAI API Error:", errorText);
+      return NextResponse.json(
+        { error: "Failed to generate insights" },
+        { status: 500 }
+      );
+    }
+
+    const data = await response.json();
+    const aiResponse = data.choices?.[0]?.message?.content || "";
 
     // Parse the JSON response from AI
     let insights;
     try {
-      // Try to extract JSON from the response (handle markdown code blocks)
       let jsonStr = aiResponse;
 
       // Remove markdown code blocks if present
@@ -53,7 +85,6 @@ export async function POST(request: NextRequest) {
       if (codeBlockMatch) {
         jsonStr = codeBlockMatch[1].trim();
       } else {
-        // Try to find raw JSON object
         const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           jsonStr = jsonMatch[0];
@@ -61,7 +92,7 @@ export async function POST(request: NextRequest) {
       }
 
       insights = JSON.parse(jsonStr);
-    } catch (parseError) {
+    } catch {
       console.error("Failed to parse AI response:", aiResponse);
       // Return fallback insights
       insights = {

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serverEnv } from '@/env';
 
 export const maxDuration = 60;
 
@@ -42,10 +41,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const xaiKey = process.env.GROK_API_KEY || serverEnv.XAI_API_KEY;
+    const xaiKey = process.env.XAI_API_KEY;
     if (!xaiKey) {
       return NextResponse.json(
-        { error: 'AI API key is missing (GROK_API_KEY)' },
+        { error: 'AI API key is missing (XAI_API_KEY)' },
         { status: 500 }
       );
     }

@@ -2,41 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 60;
 
-interface WorkoutPayload {
+interface MomentPayload {
   title: string;
+  caption?: string;
   date: string;
-  duration: number;
-  exercises: {
-    name: string;
-    sets: number;
-    totalReps: number;
-    totalWeight: number;
-  }[];
-  feeling?: string;
+  mood?: string;
+  people?: string[];
+  location?: string;
+  weather?: string;
 }
 
-const SYSTEM_PROMPT = `You are an expert fitness coach AI. You speak only valid JSON. Do not include markdown formatting or explanations.
+const SYSTEM_PROMPT = `You are a warm, nostalgic AI that analyzes captured moments and memories. You speak only valid JSON.
 
 Return ONLY valid JSON with this exact structure (no markdown, no code blocks, just raw JSON):
 {
-  "weeklyProgress": "A 1-2 sentence summary of training progress and patterns.",
-  "recommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"],
-  "nextWorkoutSuggestion": "A specific suggestion for the next workout based on patterns."
+  "highlight": "A warm 1-2 sentence highlight about the most memorable pattern or moment",
+  "topPeople": ["Person1", "Person2", "Person3"],
+  "moodTrend": "A brief description of the overall emotional trend"
 }
 
 Guidelines:
-- weeklyProgress: Summarize workout frequency, volume trends, and consistency.
-- recommendations: Provide 2-3 actionable tips to improve training (recovery, exercise selection, progression).
-- nextWorkoutSuggestion: Based on recent workouts, suggest what to focus on next (muscle groups, rest day, etc.).`;
+- highlight: Find the most meaningful pattern or standout memory from the moments
+- topPeople: Extract up to 3 most frequently mentioned people. If none, use ["Just you"]
+- moodTrend: Summarize the overall mood/emotional arc across moments
+
+Keep responses warm, personal, and celebratory of life's moments.`;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { workouts } = body as { workouts: WorkoutPayload[] };
+    const { moments } = body as { moments: MomentPayload[] };
 
-    if (!workouts || !Array.isArray(workouts) || workouts.length === 0) {
+    if (!moments || !Array.isArray(moments) || moments.length === 0) {
       return NextResponse.json(
-        { error: 'No workouts provided to analyze' },
+        { error: 'No moments provided to analyze' },
         { status: 400 }
       );
     }
@@ -49,16 +48,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const workoutsContext = workouts
-      .map(
-        (w, i) =>
-          `Workout ${i + 1} (${w.date}): "${w.title}" - ${w.duration}min, ${w.exercises.length} exercises [${w.exercises
-            .map((e) => `${e.name}: ${e.sets} sets, ${e.totalReps} reps`)
-            .join('; ')}]${w.feeling ? ` - Felt: ${w.feeling}` : ''}`
-      )
+    // Format moments for the AI
+    const momentsText = moments
+      .map((m, i) => {
+        const parts = [`Moment ${i + 1} (${m.date}): "${m.title}"`];
+        if (m.caption) parts.push(`Caption: ${m.caption}`);
+        if (m.mood) parts.push(`Mood: ${m.mood}`);
+        if (m.people?.length) parts.push(`People: ${m.people.join(', ')}`);
+        if (m.location) parts.push(`Location: ${m.location}`);
+        if (m.weather) parts.push(`Weather: ${m.weather}`);
+        return parts.join(' | ');
+      })
       .join('\n');
 
-    const userMessage = `Analyze the following recent workout data and provide fitness coaching insights:\n\n${workoutsContext}`;
+    const userMessage = `Analyze these ${moments.length} captured moments and provide insights:\n\n${momentsText}`;
 
     // Call xAI Grok directly
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userMessage },
         ],
-        temperature: 0.3,
+        temperature: 0.7,
         max_tokens: 1000,
       }),
     });
@@ -109,21 +112,22 @@ export async function POST(request: NextRequest) {
       insights = JSON.parse(jsonStr);
     } catch {
       console.error('Failed to parse AI response:', aiResponse);
-      return NextResponse.json({
-        weeklyProgress: 'Could not analyze workouts at this time.',
-        recommendations: [],
-        nextWorkoutSuggestion: 'Continue with your regular training schedule.',
-      });
+      // Return fallback insights
+      insights = {
+        highlight: "You're capturing life's beautiful moments!",
+        topPeople: ['Just you'],
+        moodTrend: 'A mix of meaningful experiences',
+      };
     }
 
     // Validate and ensure proper structure
     return NextResponse.json({
-      weeklyProgress: insights.weeklyProgress || 'Keep tracking your workouts!',
-      recommendations: Array.isArray(insights.recommendations) ? insights.recommendations.slice(0, 3) : [],
-      nextWorkoutSuggestion: insights.nextWorkoutSuggestion || 'Continue with your regular training schedule.',
+      highlight: insights.highlight || "Keep capturing those special moments!",
+      topPeople: Array.isArray(insights.topPeople) ? insights.topPeople.slice(0, 3) : ['Just you'],
+      moodTrend: insights.moodTrend || 'Varied experiences',
     });
   } catch (error) {
-    console.error('Fit Insights Error:', error);
+    console.error('Moments Insights Error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'An error occurred' },
       { status: 500 }
