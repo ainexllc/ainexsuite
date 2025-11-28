@@ -31,7 +31,7 @@ export default function WorkspacePage() {
     <WorkspaceLayout
       user={user}
       onSignOut={handleSignOut}
-      appName="Subscriptions"
+      appName="Track"
       appColor="#10b981"
       searchPlaceholder="Search subscriptions..."
     >

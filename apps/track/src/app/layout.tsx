@@ -20,7 +20,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: 'Subscriptions - AINexSuite',
+  title: 'Track - AINexSuite',
   description: 'Track and manage your recurring expenses with AI insights',
 };
 
@@ -37,7 +37,7 @@ export default function RootLayout({
       <body className="font-sans antialiased transition-colors duration-300 bg-surface-base">
         <ThemeProvider>
           <AuthProvider>
-            <AppColorProvider appId="subscriptions" fallbackPrimary="#10b981" fallbackSecondary="#34d399">
+            <AppColorProvider appId="track" fallbackPrimary="#10b981" fallbackSecondary="#34d399">
               {children}
             </AppColorProvider>
           </AuthProvider>

@@ -70,9 +70,9 @@ const legalLinks: FooterLink[] = [
   { label: 'Terms', href: '/terms' },
 ];
 
-function SubscriptionsHomePageContent() {
+function TrackHomePageContent() {
   const { user, loading, bootstrapStatus } = useAuth();
-  const { needsActivation, checking } = useAppActivation('subscriptions');
+  const { needsActivation, checking } = useAppActivation('track');
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
   const [showActivation, setShowActivation] = useState(false);
@@ -127,9 +127,9 @@ function SubscriptionsHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="SUBSCRIPTIONS" appColor="#10b981" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TRACK" appColor="#10b981" />}
         backgroundComponent={<LayeredBackground primaryColor="#10b981" secondaryColor="#34d399" variant="organic" />}
-        appName="subscriptions"
+        appName="track"
         accentColor="#10b981"
         gradientFrom="#10b981"
         gradientTo="#34d399"
@@ -162,15 +162,15 @@ function SubscriptionsHomePageContent() {
           footerText: 'Secure and private financial tracking.',
         }}
         features={{
-          sectionTitle: 'Why Subscriptions?',
+          sectionTitle: 'Why Track?',
           sectionDescription: 'Designed to help you keep more of your hard-earned money.',
           cards: featureCards,
         }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
-            appName="subscriptions"
-            appDisplayName="Subscriptions"
+            appName="track"
+            appDisplayName="Track"
             onActivated={() => window.location.reload()}
             onDifferentEmail={async () => {
               await firebaseSignOut(auth);
@@ -179,7 +179,7 @@ function SubscriptionsHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "AINex Subscriptions",
+          appDisplayName: "AINex Track",
           productLinks,
           companyLinks,
           resourceLinks,
@@ -190,6 +190,6 @@ function SubscriptionsHomePageContent() {
   );
 }
 
-export default function SubscriptionsHomePage() {
-  return <SubscriptionsHomePageContent />;
+export default function TrackHomePage() {
+  return <TrackHomePageContent />;
 }

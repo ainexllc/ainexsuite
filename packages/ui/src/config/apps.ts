@@ -72,6 +72,12 @@ export const SUITE_APPS = {
     color: '#71717a', // zinc-500
     allowedEmails: ['hornld25@gmail.com'],
   },
+  track: {
+    name: 'Track',
+    slug: 'track',
+    description: 'Manage recurring expenses',
+    color: '#10b981', // emerald-500
+  },
 } as const;
 
 export type AppSlug = keyof typeof SUITE_APPS;
@@ -91,6 +97,7 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     workflow: 3010,
     calendar: 3014,
     admin: 3020,
+    track: 3015,
   };
 
   if (isDev) {

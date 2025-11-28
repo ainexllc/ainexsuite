@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=@ainexsuite/track",
+  "installCommand": "cd ../.. && pnpm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "ignoreCommand": "cd ../.. && git diff --quiet HEAD^ HEAD -- ./apps/track ./packages ./package.json ./pnpm-lock.yaml ./turbo.json"
+}

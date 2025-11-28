@@ -23,6 +23,7 @@ const DEFAULT_APPS: AppConfig[] = [
   { id: 'health', name: 'Health', primary: '#10b981', secondary: '#34d399' },
   { id: 'projects', name: 'Project', primary: '#6366f1', secondary: '#818cf8' },
   { id: 'workflow', name: 'Workflow', primary: '#10b981', secondary: '#34d399' },
+  { id: 'track', name: 'Track', primary: '#10b981', secondary: '#34d399' },
 ];
 
 export default function AppsManagement() {

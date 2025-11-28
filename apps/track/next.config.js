@@ -9,7 +9,7 @@ const nextConfig = {
     '@ainexsuite/types',
   ],
   env: {
-    NEXT_PUBLIC_APP_NAME: 'subscriptions',
+    NEXT_PUBLIC_APP_NAME: 'track',
     NEXT_PUBLIC_MAIN_DOMAIN: 'www.ainexsuite.com',
   },
   images: {

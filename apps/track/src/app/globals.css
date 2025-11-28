@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Subscriptions App Theme - Emerald Accent Colors in HSL format */
+/* Track App Theme - Emerald Accent Colors in HSL format */
 :root {
   --app-primary: 160 84% 39%;      /* Emerald-500 #10b981 */
   --app-primary-foreground: 0 0% 100%;

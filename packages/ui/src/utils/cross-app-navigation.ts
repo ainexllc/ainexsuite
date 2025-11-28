@@ -231,6 +231,7 @@ export function getCurrentAppSlug(): AppSlug | 'main' | 'admin' | null {
     '3009': 'project',
     '3010': 'workflow',
     '3011': 'admin',
+    '3015': 'track',
   };
 
   return portMap[port] || null;

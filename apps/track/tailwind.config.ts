@@ -13,7 +13,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Subscriptions App Primary Accent - Emerald
+        // Track App Primary Accent - Emerald
         accent: {
           50: '#ecfdf5',
           100: '#d1fae5',
