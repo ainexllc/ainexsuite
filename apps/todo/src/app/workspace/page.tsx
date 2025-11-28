@@ -18,7 +18,7 @@ import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
 
 import { useTodoStore } from '@/lib/store';
 
-// ...
+type ViewType = 'list' | 'board' | 'my-day' | 'matrix';
 
 export default function TodoWorkspacePage() {
   const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();

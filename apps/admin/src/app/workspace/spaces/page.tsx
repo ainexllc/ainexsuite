@@ -6,14 +6,100 @@ import { db } from '@ainexsuite/firebase';
 import {
   Layers, Users, Search, Filter, ChevronDown, User, Heart, Briefcase,
   Dumbbell, Folder, RefreshCw, Settings, Save, Palette, Eye,
-  CheckCircle2, AlertCircle, X, LayoutGrid, Sparkles, Trash2, Edit
+  CheckCircle2, AlertCircle, X, LayoutGrid, Sparkles
 } from 'lucide-react';
 
 interface SpaceData {
-// ...
+  id: string;
+  app: string;
+  name: string;
+  type: string;
+  memberCount: number;
+  createdBy: string;
+  createdAt: string;
 }
 
-// ... (SpaceTypeConfig, SpacesUIConfig, APP_CONFIGS, ICON_OPTIONS, COLOR_PRESETS, DEFAULT_SPACE_TYPES, DEFAULT_UI_CONFIG, SPACE_TYPE_ICONS)
+interface SpaceTypeConfig {
+  id: string;
+  label: string;
+  description: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  enabled: boolean;
+}
+
+interface SpacesUIConfig {
+  dropdownStyle: 'minimal' | 'detailed' | 'compact' | 'modern' | 'pill' | 'block';
+  showTypeIcons: boolean;
+  showMemberCount: boolean;
+  showCreateButton: boolean;
+  animateTransitions: boolean;
+  defaultSpaceLabel: string;
+}
+
+const APP_CONFIGS = [
+  { id: 'notes', name: 'Notes', collection: 'notes_spaces', color: '#3b82f6' },
+  { id: 'todo', name: 'Todo', collection: 'task_spaces', color: '#f59e0b' },
+  { id: 'moments', name: 'Moments', collection: 'moments_spaces', color: '#ec4899' },
+  { id: 'grow', name: 'Grow', collection: 'grow_spaces', color: '#8b5cf6' },
+  { id: 'fit', name: 'Fit', collection: 'fit_spaces', color: '#22c55e' },
+  { id: 'pulse', name: 'Pulse', collection: 'pulse_spaces', color: '#ef4444' },
+  { id: 'projects', name: 'Projects', collection: 'project_spaces', color: '#6366f1' },
+  { id: 'workflow', name: 'Workflow', collection: 'workflow_spaces', color: '#10b981' },
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ICON_OPTIONS = [
+  { value: 'user', label: 'User', Icon: User },
+  { value: 'users', label: 'Users', Icon: Users },
+  { value: 'heart', label: 'Heart', Icon: Heart },
+  { value: 'briefcase', label: 'Briefcase', Icon: Briefcase },
+  { value: 'dumbbell', label: 'Dumbbell', Icon: Dumbbell },
+  { value: 'folder', label: 'Folder', Icon: Folder },
+  { value: 'sparkles', label: 'Sparkles', Icon: Sparkles },
+];
+
+const COLOR_PRESETS = [
+  { name: 'Cyan', color: '#06b6d4', bg: 'rgba(6,182,212,0.1)', border: 'rgba(6,182,212,0.2)' },
+  { name: 'Purple', color: '#a855f7', bg: 'rgba(168,85,247,0.1)', border: 'rgba(168,85,247,0.2)' },
+  { name: 'Pink', color: '#ec4899', bg: 'rgba(236,72,153,0.1)', border: 'rgba(236,72,153,0.2)' },
+  { name: 'Blue', color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.2)' },
+  { name: 'Orange', color: '#f97316', bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.2)' },
+  { name: 'Emerald', color: '#10b981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.2)' },
+  { name: 'Indigo', color: '#6366f1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.2)' },
+  { name: 'Rose', color: '#f43f5e', bg: 'rgba(244,63,94,0.1)', border: 'rgba(244,63,94,0.2)' },
+];
+
+const DEFAULT_SPACE_TYPES: SpaceTypeConfig[] = [
+  { id: 'personal', label: 'Personal', description: 'Your private space', icon: 'user', color: '#06b6d4', bgColor: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)', enabled: true },
+  { id: 'family', label: 'Family', description: 'Share with family members', icon: 'users', color: '#a855f7', bgColor: 'rgba(168,85,247,0.1)', borderColor: 'rgba(168,85,247,0.2)', enabled: true },
+  { id: 'work', label: 'Work', description: 'Team collaboration', icon: 'briefcase', color: '#3b82f6', bgColor: 'rgba(59,130,246,0.1)', borderColor: 'rgba(59,130,246,0.2)', enabled: true },
+  { id: 'couple', label: 'Couple', description: 'Share with your partner', icon: 'heart', color: '#ec4899', bgColor: 'rgba(236,72,153,0.1)', borderColor: 'rgba(236,72,153,0.2)', enabled: true },
+  { id: 'buddy', label: 'Buddy', description: 'Partner up with a friend', icon: 'dumbbell', color: '#f97316', bgColor: 'rgba(249,115,22,0.1)', borderColor: 'rgba(249,115,22,0.2)', enabled: true },
+  { id: 'squad', label: 'Squad', description: 'Team accountability', icon: 'users', color: '#10b981', bgColor: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.2)', enabled: true },
+  { id: 'project', label: 'Project', description: 'Dedicated project space', icon: 'folder', color: '#6366f1', bgColor: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.2)', enabled: true },
+];
+
+const DEFAULT_UI_CONFIG: SpacesUIConfig = {
+  dropdownStyle: 'detailed',
+  showTypeIcons: true,
+  showMemberCount: true,
+  showCreateButton: true,
+  animateTransitions: true,
+  defaultSpaceLabel: 'My Space',
+};
+
+const SPACE_TYPE_ICONS: Record<string, typeof User> = {
+  user: User,
+  users: Users,
+  heart: Heart,
+  briefcase: Briefcase,
+  dumbbell: Dumbbell,
+  folder: Folder,
+  sparkles: Sparkles,
+};
 
 export default function SpacesManagement() {
   const [activeTab, setActiveTab] = useState<'overview' | 'types' | 'ui'>('overview');
@@ -31,10 +117,6 @@ export default function SpacesManagement() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
-
-  const [spaceToDelete, setSpaceToDelete] = useState<SpaceData | null>(null);
-  const [spaceToEdit, setSpaceToEdit] = useState<SpaceData | null>(null);
-  const [newSpaceName, setNewSpaceName] = useState('');
 
   const fetchAllSpaces = async () => {
     setLoading(true);
@@ -70,56 +152,6 @@ export default function SpacesManagement() {
       setError('Failed to fetch spaces');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const deleteSpace = async () => {
-    if (!spaceToDelete) return;
-    setSaving(true);
-    try {
-      const appConfig = APP_CONFIGS.find(a => a.id === spaceToDelete.app);
-      if (!appConfig) throw new Error('App config not found');
-      
-      const { deleteDoc, doc } = await import('firebase/firestore');
-      await deleteDoc(doc(db, appConfig.collection, spaceToDelete.id));
-      
-      setSpaces(prev => prev.filter(s => s.id !== spaceToDelete.id || s.app !== spaceToDelete.app));
-      setSuccess('Space deleted successfully');
-      setSpaceToDelete(null);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to delete space');
-    } finally {
-      setSaving(false);
-      setTimeout(() => { setSuccess(null); setError(null); }, 3000);
-    }
-  };
-
-  const updateSpace = async () => {
-    if (!spaceToEdit || !newSpaceName.trim()) return;
-    setSaving(true);
-    try {
-      const appConfig = APP_CONFIGS.find(a => a.id === spaceToEdit.app);
-      if (!appConfig) throw new Error('App config not found');
-
-      const { updateDoc, doc } = await import('firebase/firestore');
-      await updateDoc(doc(db, appConfig.collection, spaceToEdit.id), {
-        name: newSpaceName.trim()
-      });
-
-      setSpaces(prev => prev.map(s => 
-        (s.id === spaceToEdit.id && s.app === spaceToEdit.app) 
-          ? { ...s, name: newSpaceName.trim() } 
-          : s
-      ));
-      setSuccess('Space updated successfully');
-      setSpaceToEdit(null);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to update space');
-    } finally {
-      setSaving(false);
-      setTimeout(() => { setSuccess(null); setError(null); }, 3000);
     }
   };
 
@@ -452,90 +484,11 @@ export default function SpacesManagement() {
                       <Users className="h-3.5 w-3.5" />
                       <span>{space.memberCount} members</span>
                     </div>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => { setSpaceToEdit(space); setNewSpaceName(space.name); }}
-                        className="p-1.5 hover:text-white hover:bg-white/10 rounded transition-colors"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      <button 
-                        onClick={() => setSpaceToDelete(space)}
-                        className="p-1.5 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    <span>{new Date(space.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               );
             })}
-          </div>
-        </div>
-      )}
-
-      {/* Edit Space Modal */}
-      {spaceToEdit && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass-card max-w-md w-full p-6 rounded-xl border-white/10">
-            <h3 className="text-lg font-semibold text-white mb-4">Edit Space</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-medium text-zinc-500 mb-1.5 block uppercase">Space Name</label>
-                <input
-                  type="text"
-                  value={newSpaceName}
-                  onChange={(e) => setNewSpaceName(e.target.value)}
-                  className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500/50"
-                  autoFocus
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setSpaceToEdit(null)}
-                  className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={updateSpace}
-                  disabled={saving || !newSpaceName.trim()}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Space Modal */}
-      {spaceToDelete && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass-card max-w-md w-full p-6 rounded-xl border-red-500/20">
-            <div className="flex items-center gap-3 mb-4 text-red-400">
-              <AlertCircle className="h-6 w-6" />
-              <h3 className="text-lg font-semibold text-white">Delete Space</h3>
-            </div>
-            <p className="text-sm text-zinc-400 mb-6">
-              Are you sure you want to delete <strong>{spaceToDelete.name}</strong>? This action cannot be undone and will remove all data associated with this space.
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setSpaceToDelete(null)}
-                className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={deleteSpace}
-                disabled={saving}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-              >
-                {saving ? 'Deleting...' : 'Delete Space'}
-              </button>
-            </div>
           </div>
         </div>
       )}
