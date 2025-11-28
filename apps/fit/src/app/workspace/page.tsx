@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { WorkspaceLayout, WorkspaceLoadingScreen, EmptyState, SectionHeader } from '@ainexsuite/ui';
 import { WorkoutList } from '@/components/workout-list';
 import { WorkoutEditor } from '@/components/workout-editor';
 import { WorkoutComposer } from '@/components/workout-composer';
@@ -129,24 +129,19 @@ function FitWorkspaceContent() {
 
         {/* My Workouts List */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Dumbbell className="h-5 w-5 text-orange-500" />
-              My Logs
-            </h2>
-          </div>
+          <SectionHeader
+            title="My Logs"
+            icon={<Dumbbell className="h-5 w-5" />}
+            className="mb-4"
+          />
 
           {workouts.filter((w: Workout) => w.userId === user.uid).length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-white/10 rounded-2xl bg-surface-elevated/50">
-              <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
-                <Dumbbell className="h-8 w-8 text-orange-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Start Your Fitness Journey</h3>
-              <p className="text-white/50 mb-6 text-center max-w-md">
-                Track your workouts, visualize progress, and crush your goals.
-                Click &ldquo;Log a workout...&rdquo; above to get started!
-              </p>
-            </div>
+            <EmptyState
+              title="Start Your Fitness Journey"
+              description="Track your workouts, visualize progress, and crush your goals. Click 'Log a workout...' above to get started!"
+              icon={Dumbbell}
+              variant="illustrated"
+            />
           ) : (
             <WorkoutList
               workouts={workouts.filter((w: Workout) => w.userId === user.uid)}

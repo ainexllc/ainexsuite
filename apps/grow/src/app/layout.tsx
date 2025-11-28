@@ -3,7 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
-import { AppColorProvider } from '@ainexsuite/theme';
+import { AppColorProvider, ThemeProvider } from '@ainexsuite/theme';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -30,13 +30,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} theme-dark`} data-theme="dark">
-      <body className="bg-surface-base text-ink-900 font-sans theme-dark">
-        <AuthProvider>
-          <AppColorProvider appId="grow" fallbackPrimary="#8b5cf6" fallbackSecondary="#a78bfa">
-            {children}
-          </AppColorProvider>
-        </AuthProvider>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable}`} suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#0a0a0a" />
+      </head>
+      <body className="font-sans antialiased transition-colors duration-300">
+        <ThemeProvider>
+          <AuthProvider>
+            <AppColorProvider appId="grow" fallbackPrimary="#14b8a6" fallbackSecondary="#6366f1">
+              {children}
+            </AppColorProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -285,16 +285,12 @@ function GrowWorkspaceContent() {
 
           {habits.length === 0 ? (
             <EmptyState
-              icon={<Rocket className="h-8 w-8" />}
+              icon={Rocket}
               title="Ready to grow?"
               description="Start with a few simple habits. Consistency beats intensity - even 5 minutes a day adds up!"
               action={{
                 label: 'Get AI Suggestions',
                 onClick: () => setShowAISuggester(true),
-              }}
-              secondaryAction={{
-                label: 'Browse Packs',
-                onClick: () => setShowHabitPacks(true),
               }}
             />
           ) : (

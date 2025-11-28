@@ -18,20 +18,25 @@ html {
   height: 100dvh;
 }
 
-/* Pulse App Theme Overrides - Red/Blue */
-:root.dark,
+/* Pulse App Theme - Red/Orange */
 :root {
-  /* Red 500 for Primary */
-  --theme-primary: 239 68 68;
-  --theme-primary-rgb: 239, 68, 68;
-  --theme-primary-light: 248 113 113; /* Red 400 */
-  --theme-primary-dark: 220 38 38;    /* Red 600 */
+  --app-primary: 0 84% 60%;        /* Red-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 24 95% 53%;     /* Orange-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --app-primary: 0 91% 71%;        /* Red-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 27 96% 61%;     /* Orange-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }
 
 .metric-input {
-  @apply px-3 py-2 bg-surface-elevated shadow-sm rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none;
+  @apply px-3 py-2 bg-card shadow-sm rounded-lg border border-border focus:border-ring focus:outline-none text-foreground;
 }
 
 .metric-card {
-  @apply bg-surface-card shadow-sm rounded-lg p-4;
+  @apply bg-card shadow-sm rounded-lg p-4;
 }

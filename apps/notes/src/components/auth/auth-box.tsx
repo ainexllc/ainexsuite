@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, Sparkles, User } from "lucide-react";
 
 import { useAuth } from "@/lib/auth/auth-context";
-import { useToast } from "@/components/ui/toaster";
+import { useToast } from "@ainexsuite/ui";
 import { cn } from "@/lib/utils/cn";
 
 const loginSchema = z.object({

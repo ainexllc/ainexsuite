@@ -10,8 +10,13 @@ import {
   AIInsightsBulletList,
   AIInsightsTagList,
   AIInsightsText,
+  useInsightsCollapsed,
   type AIInsightsSection,
 } from "@ainexsuite/ui";
+
+const INSIGHTS_STORAGE_KEY = "journey-insights-collapsed";
+const STORAGE_KEY = 'ainex-journey-insights';
+const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 
 interface InsightData {
   weeklyVibe: string;
@@ -31,6 +36,9 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { primary: primaryColor } = useAppColors();
 
+  // Check if insights are collapsed (skip fetching if true)
+  const isCollapsed = useInsightsCollapsed(INSIGHTS_STORAGE_KEY);
+
   // Only analyze if we have enough entries
   const RECENT_COUNT = 5;
   const validEntries = entries
@@ -38,8 +46,6 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
     .slice(0, RECENT_COUNT);
 
   const hasEnoughData = validEntries.length >= 1;
-  const STORAGE_KEY = 'ainex-journey-insights';
-  const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 
   const saveToCache = (insights: InsightData) => {
     const cacheData = {
@@ -93,9 +99,9 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
     }
   };
 
-  // Load from cache or auto-generate
+  // Load from cache or auto-generate (skip if collapsed)
   useEffect(() => {
-    if (!hasEnoughData) return;
+    if (!hasEnoughData || isCollapsed) return;
 
     const cached = localStorage.getItem(STORAGE_KEY);
     let loadedFromCache = false;
@@ -120,7 +126,7 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
       generateInsights();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasEnoughData]);
+  }, [hasEnoughData, isCollapsed]);
 
   // Build sections for the shared component
   const sections: AIInsightsSection[] = useMemo(() => {

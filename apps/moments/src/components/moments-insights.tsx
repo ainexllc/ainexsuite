@@ -8,8 +8,11 @@ import {
   AIInsightsCard,
   AIInsightsTagList,
   AIInsightsText,
+  useInsightsCollapsed,
   type AIInsightsSection,
 } from "@ainexsuite/ui";
+
+const INSIGHTS_STORAGE_KEY = "moments-insights-collapsed";
 
 interface InsightData {
   highlight: string;
@@ -29,11 +32,14 @@ export function MomentsInsights({ moments, variant = "default" }: MomentsInsight
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { primary: primaryColor } = useAppColors();
 
+  // Check if insights are collapsed (skip fetching if true)
+  const isCollapsed = useInsightsCollapsed(INSIGHTS_STORAGE_KEY);
+
   // Only analyze if we have enough moments
   const RECENT_COUNT = 10;
   const validMoments = moments.slice(0, RECENT_COUNT);
   const hasEnoughData = validMoments.length >= 2;
-  
+
   const STORAGE_KEY = 'ainex-moments-insights';
   const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 
@@ -110,9 +116,9 @@ export function MomentsInsights({ moments, variant = "default" }: MomentsInsight
     }
   };
 
-  // Load from cache or auto-generate
+  // Load from cache or auto-generate (skip if collapsed)
   useEffect(() => {
-    if (!hasEnoughData) return;
+    if (!hasEnoughData || isCollapsed) return;
 
     const cached = localStorage.getItem(STORAGE_KEY);
     let loadedFromCache = false;
@@ -136,7 +142,7 @@ export function MomentsInsights({ moments, variant = "default" }: MomentsInsight
       generateInsights();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasEnoughData]);
+  }, [hasEnoughData, isCollapsed]);
 
   // Build sections
   const sections: AIInsightsSection[] = useMemo(() => {

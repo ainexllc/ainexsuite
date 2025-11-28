@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { Fragment } from 'react';
-import { Loader2, Plus, Eye, Edit2 } from 'lucide-react';
+import { Loader2, Eye, Edit2, BookOpen } from 'lucide-react';
 import type { JournalEntry } from '@ainexsuite/types';
 import { cn } from '@/lib/utils';
 import { plainText } from '@/lib/utils/text';
 import { RichTextViewer } from '@/components/ui/rich-text-viewer';
 import { JournalCard } from '@/components/journal/journal-card';
 import { DashboardTheme } from '@/lib/dashboard-themes';
+import { EmptyState } from '@ainexsuite/ui';
 
 interface EntriesSectionProps {
   entriesToDisplay: JournalEntry[];
@@ -49,7 +50,6 @@ export function EntriesSection({
   const borderClass = theme?.border || 'border-theme-border';
   const bgSurface = theme?.bgSurface || 'bg-theme-surface';
   const accentText = theme?.accent || 'text-[#f97316]';
-  const accentBorder = theme?.id === 'obsidian' ? 'border-[#f97316]' : theme?.border || 'border-[#f97316]';
 
   return (
     <section id={id}>
@@ -72,41 +72,31 @@ export function EntriesSection({
       )}
 
       {!isLoading && emptyStateActive ? (
-        <div className={cn("flex flex-col items-center justify-center rounded-[28px] border p-12 text-center shadow-[0_20px_60px_-35px_rgba(249,115,22,0.28)]", borderClass, bgSurface)}>
-          <div className={cn("mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5", textPrimary)}>
-            <Loader2 className={cn("h-10 w-10", accentText)} />
-          </div>
-          <h3 className={cn("text-lg font-semibold", textPrimary)}>
-            {searchTerm || selectedTags.length > 0
+        <EmptyState
+          title={
+            searchTerm || selectedTags.length > 0
               ? 'No entries match your filters'
-              : 'No journal entries yet'}
-          </h3>
-          <p className={cn("mt-2 max-w-md text-sm", textSecondary)}>
-            {searchTerm || selectedTags.length > 0
+              : 'No journal entries yet'
+          }
+          description={
+            searchTerm || selectedTags.length > 0
               ? 'Try adjusting your search or removing a tag filter.'
-              : 'Start capturing moments today to build your archive.'}
-          </p>
-          {searchTerm || selectedTags.length > 0 ? (
-            <button
-              type="button"
-              onClick={onClearFilters}
-              className={cn("mt-4 rounded-full border px-4 py-2 text-sm font-semibold transition hover:bg-white/10", accentBorder, accentText)}
-            >
-              Reset filters
-            </button>
-          ) : (
-            <Link
-              href="/workspace/new"
-              className={cn("mt-4 inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold shadow-lg transition hover:-translate-y-0.5", 
-                  theme?.accentBg || 'bg-[#f97316]', 
-                  theme?.id === 'wireframe' ? 'text-white border border-white' : 'text-black'
-              )}
-            >
-              <Plus className="h-4 w-4" />
-              Create your first entry
-            </Link>
-          )}
-        </div>
+              : 'Start capturing moments today to build your archive.'
+          }
+          icon={BookOpen}
+          variant="illustrated"
+          action={
+            searchTerm || selectedTags.length > 0
+              ? {
+                  label: 'Reset filters',
+                  onClick: onClearFilters,
+                }
+              : {
+                  label: 'Create your first entry',
+                  href: '/workspace/new',
+                }
+          }
+        />
       ) : null}
 
       {!isLoading && !emptyStateActive && (

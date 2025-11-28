@@ -1316,6 +1316,9 @@ importers:
       '@ainexsuite/types':
         specifier: workspace:*
         version: link:../types
+      '@radix-ui/react-toast':
+        specifier: ^1.2.15
+        version: 1.2.15(@types/react-dom@19.2.2)(@types/react@19.2.2)(react-dom@19.2.0)(react@19.2.0)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -1325,6 +1328,9 @@ importers:
       lucide-react:
         specifier: ^0.344.0
         version: 0.344.0(react@19.2.0)
+      next-themes:
+        specifier: ^0.4.4
+        version: 0.4.6(react-dom@19.2.0)(react@19.2.0)
       react:
         specifier: ^19.1.0
         version: 19.2.0

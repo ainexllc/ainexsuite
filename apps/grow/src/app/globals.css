@@ -7,23 +7,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Grow App Theme Overrides - Purple/Teal */
-:root.dark,
+/* Grow App Theme - Teal/Indigo Accent Colors in HSL format */
 :root {
-  /* Purple 500 for Primary */
-  --theme-primary: 139 92 246;
-  --theme-primary-rgb: 139, 92, 246;
-  --theme-primary-light: 167 139 250; /* Purple 400 */
-  --theme-primary-dark: 124 58 237;   /* Purple 600 */
+  --app-primary: 168 76% 42%;      /* Teal-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 239 84% 67%;    /* Indigo-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Map standard UI accent tokens to Theme Primary */
-  --color-accent-400: 167 139 250;
-  --color-accent-500: 139 92 246;
-  --color-accent-600: 124 58 237;
-
-  /* Teal 500 for Secondary */
-  --theme-secondary: 20 184 166;
-  --theme-secondary-rgb: 20, 184, 166;
+.dark {
+  --app-primary: 170 77% 52%;      /* Teal-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 239 84% 74%;    /* Indigo-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }
 
 .progress-bar {

@@ -1,0 +1,107 @@
+StatsCard Component Structure
+==============================
+
+┌─────────────────────────────────────────────┐
+│  StatsCard (Glassmorphic Container)         │
+│  • rounded-xl border border-white/10        │
+│  • bg-white/5 backdrop-blur-md              │
+│  • hover:bg-white/10 hover:shadow-lg        │
+│                                             │
+│  ┌────────────────────────────────────────┐ │
+│  │ Header (flex justify-between)          │ │
+│  │ ┌──────────┐          ┌─────────────┐ │ │
+│  │ │ Title    │          │ Icon Bubble │ │ │
+│  │ │ (h3)     │          │ (themed bg) │ │ │
+│  │ └──────────┘          └─────────────┘ │ │
+│  └────────────────────────────────────────┘ │
+│                                             │
+│  ┌────────────────────────────────────────┐ │
+│  │ Content Area (space-y-2)               │ │
+│  │                                        │ │
+│  │  ┌───────────────┐                    │ │
+│  │  │ Value (large) │                    │ │
+│  │  │ text-3xl/4xl  │                    │ │
+│  │  └───────────────┘                    │ │
+│  │                                        │ │
+│  │  ┌──────────────────────────────────┐ │ │
+│  │  │ Subtitle (optional)              │ │ │
+│  │  │ text-sm text-white/60            │ │ │
+│  │  └──────────────────────────────────┘ │ │
+│  │                                        │ │
+│  │  ┌──────────────────────────────────┐ │ │
+│  │  │ Trend (optional)                 │ │ │
+│  │  │ +12.5% vs last week              │ │ │
+│  │  │ (green/red based on direction)   │ │ │
+│  │  └──────────────────────────────────┘ │ │
+│  └────────────────────────────────────────┘ │
+│                                             │
+│  ┌────────────────────────────────────────┐ │
+│  │ Bottom Accent (detailed variant only)  │ │
+│  │ • Gradient bar (themed color)          │ │
+│  └────────────────────────────────────────┘ │
+└─────────────────────────────────────────────┘
+
+Variants:
+─────────
+
+DEFAULT                COMPACT                DETAILED
+┌──────────────┐      ┌────────────┐         ┌────────────────┐
+│ Title   [icon]      │ Title [i]  │         │ Title    [icon] │
+│                │      │            │         │                 │
+│ 127            │      │ 42         │         │ 8.5             │
+│ Entries        │      │            │         │ Above avg       │
+│ +12.5% vs week │      └────────────┘         │ +5.2%           │
+└──────────────┘      Compact                 │ ═══════════════ │
+p-6                   p-4                      └────────────────┘
+text-3xl              text-2xl                 p-6, text-4xl
+
+Theme Integration:
+──────────────────
+
+CSS Variables:
+• --stats-accent: Dynamic color from useAppColors() or accentColor prop
+• Applied to icon background and detailed variant gradient bar
+
+Color Application:
+Icon bubble: bg-[var(--stats-accent)]/20 with text color matching accent
+Gradient bar: linear-gradient using accent color at 50% opacity
+
+Accessibility:
+──────────────
+
+• Semantic HTML structure (h3 for title, proper hierarchy)
+• Color-blind friendly (trend includes +/- symbols, not just colors)
+• Clear contrast ratios on glassmorphic backgrounds
+• Hover states for interactive feedback
+• Responsive sizing for touch targets
+
+Responsive Behavior:
+────────────────────
+
+Mobile (< 768px):
+• Single column or 2-column grid
+• Compact variant recommended for space efficiency
+
+Tablet (768px - 1024px):
+• 2-3 column grid
+• Default variant optimal
+
+Desktop (> 1024px):
+• 3-4 column grid
+• Detailed variant for featured metrics
+• Default variant for general dashboard
+
+Usage Patterns:
+───────────────
+
+Dashboard Grid:
+grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4
+
+Sidebar Stats:
+grid grid-cols-1 gap-3 (use compact variant)
+
+Hero Metrics:
+grid grid-cols-1 md:grid-cols-3 gap-6 (use detailed variant)
+
+Dense Analytics:
+grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 (use compact)

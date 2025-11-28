@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
 import type { Moment } from '@ainexsuite/types';
+import { EmptyState } from '@ainexsuite/ui';
 import { TimelineView } from '@/components/timeline-view';
 import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
@@ -186,14 +187,12 @@ function MomentsWorkspaceContent() {
             <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
           </div>
         ) : filteredMoments.length === 0 ? (
-          <div className="text-center py-20 space-y-4 rounded-2xl bg-surface-elevated border border-outline-subtle">
-            <ImageIcon className="h-16 w-16 text-text-muted mx-auto" />
-            <p className="text-text-muted">
-              {selectedTag
-                ? `No moments with tag "${selectedTag}"`
-                : 'No moments yet. Start capturing your memories!'}
-            </p>
-          </div>
+          <EmptyState
+            title={selectedTag ? `No moments with tag "${selectedTag}"` : "No moments yet"}
+            description={selectedTag ? "Try selecting a different tag or create a new moment" : "Start capturing your memories! Create your first moment above."}
+            icon={ImageIcon}
+            variant="default"
+          />
         ) : (
           <TimelineView
             moments={filteredMoments}

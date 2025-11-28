@@ -4,6 +4,7 @@ import { useTodoStore } from '../../lib/store';
 import { Task, TaskList } from '../../types/models';
 import { Plus, MoreHorizontal, Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { format } from 'date-fns';
+import { DataCard } from '@ainexsuite/ui';
 
 interface TaskBoardProps {
   onEditTask: (taskId: string) => void;
@@ -42,18 +43,17 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
           {/* Tasks Container */}
           <div className="flex-1 space-y-3 overflow-y-auto min-h-[200px]">
             {getTasksByList(list.id).map((task: Task) => (
-              <div
+              <DataCard
                 key={task.id}
-                className="group bg-[#1a1a1a] border border-white/5 hover:border-white/10 rounded-xl p-3 shadow-sm transition-all hover:shadow-md cursor-pointer"
-                onClick={() => onEditTask(task.id)}
-              >
-                <div className="flex items-start gap-3">
+                variant="compact"
+                title={task.title}
+                icon={
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleToggleComplete(task);
                     }}
-                    className={`mt-0.5 shrink-0 transition-colors ${
+                    className={`transition-colors ${
                       task.status === 'done' ? 'text-green-500' : 'text-white/20 hover:text-white/50'
                     }`}
                   >
@@ -63,37 +63,31 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
                       <Circle className="h-5 w-5" />
                     )}
                   </button>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h4 className={`text-sm font-medium text-white mb-1 truncate ${
-                      task.status === 'done' ? 'line-through text-white/40' : ''
-                    }`}>
-                      {task.title}
-                    </h4>
-                    
-                    <div className="flex items-center gap-3">
-                      {task.dueDate && (
-                        <div className={`flex items-center gap-1 text-[10px] ${
-                          new Date(task.dueDate) < new Date() && task.status !== 'done' 
-                            ? 'text-red-400' 
-                            : 'text-white/40'
-                        }`}>
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(task.dueDate), 'MMM d')}
-                        </div>
-                      )}
-                      
-                      {task.priority === 'high' && (
-                        <span className="text-[10px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">
-                          High
-                        </span>
-                      )}
-                    </div>
+                }
+                footer={
+                  <div className="flex items-center gap-3 text-xs">
+                    {task.dueDate && (
+                      <div className={`flex items-center gap-1 ${
+                        new Date(task.dueDate) < new Date() && task.status !== 'done'
+                          ? 'text-red-400'
+                          : 'text-white/40'
+                      }`}>
+                        <Calendar className="h-3 w-3" />
+                        {format(new Date(task.dueDate), 'MMM d')}
+                      </div>
+                    )}
+                    {task.priority === 'high' && (
+                      <span className="text-[10px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">
+                        High
+                      </span>
+                    )}
                   </div>
-                </div>
-              </div>
+                }
+                onClick={() => onEditTask(task.id)}
+                className={task.status === 'done' ? '[&_h3]:line-through [&_h3]:text-white/40' : ''}
+              />
             ))}
-            
+
             {/* Add Task Button (Ghost) */}
             <button
               onClick={() => {
@@ -109,7 +103,7 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
           </div>
         </div>
       ))}
-      
+
       {/* Add List Button */}
       <div className="w-80 shrink-0">
         <button className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white font-medium text-sm flex items-center justify-center gap-2 transition-colors">

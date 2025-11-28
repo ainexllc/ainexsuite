@@ -35,7 +35,6 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
   const [isFrozen, setIsFrozen] = useState(false);
   const [wager, setWager] = useState<Wager | undefined>(undefined);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   
   // Load data if editing
   useEffect(() => {
@@ -113,14 +112,9 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
   const handleDelete = async () => {
     if (!editHabitId) return;
-    setIsDeleting(true);
-    try {
-      await deleteHabit(editHabitId);
-      setShowDeleteConfirm(false);
-      onClose();
-    } finally {
-      setIsDeleting(false);
-    }
+    await deleteHabit(editHabitId);
+    setShowDeleteConfirm(false);
+    onClose();
   };
 
   if (!isOpen || !currentSpace || !user) return null;
@@ -135,7 +129,6 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         description={`"${title}" and all its completion history will be permanently deleted. This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
-        isLoading={isDeleting}
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div className="w-full max-w-2xl bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">

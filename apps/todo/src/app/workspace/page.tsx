@@ -13,7 +13,6 @@ import { TaskList } from '@/components/views/TaskList';
 import { TaskBoard } from '@/components/views/TaskBoard';
 import { MyDayView } from '@/components/views/MyDayView';
 import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 type ViewType = 'list' | 'board' | 'my-day';
 
@@ -79,7 +78,6 @@ export default function TodoWorkspacePage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <button
               onClick={() => {
                 setSelectedTaskId(undefined);

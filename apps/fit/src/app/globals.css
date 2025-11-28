@@ -7,18 +7,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Fit App Theme - Fallback to AINEX brand orange, AppColorProvider overrides with app-specific colors */
-:root.dark,
+/* Fit App Theme - Blue/Emerald */
 :root {
-  /* AINEX Brand Orange as fallback */
-  --theme-primary: 249 115 22;
-  --theme-primary-rgb: 249, 115, 22;
-  --theme-primary-light: 251 146 60; /* Orange 400 */
-  --theme-primary-dark: 234 88 12;   /* Orange 600 */
+  --app-primary: 217 91% 60%;      /* Blue-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 160 84% 39%;    /* Emerald-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Alias for AppColorProvider compatibility - orange fallback */
-  --color-primary: #f97316;
-  --color-primary-rgb: 249, 115, 22;
-  --color-secondary: #000000;
-  --color-secondary-rgb: 0, 0, 0;
+.dark {
+  --app-primary: 213 94% 68%;      /* Blue-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 160 84% 52%;    /* Emerald-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }

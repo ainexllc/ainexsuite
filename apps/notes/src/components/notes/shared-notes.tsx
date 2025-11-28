@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { Users } from "lucide-react";
+import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useAuth } from "@/lib/auth/auth-context";
 import { NoteCard } from "@/components/notes/note-card";
@@ -51,25 +53,19 @@ export function SharedNotesBoard() {
 
   if (!hasSharedContent) {
     return (
-      <div className="rounded-3xl border border-dashed border-outline-subtle/80 bg-surface-elevated/60 px-10 py-16 text-center">
-        <p className="text-base font-semibold text-ink-700">
-          No shared notes yet
-        </p>
-        <p className="mt-2 text-sm text-muted">
-          Invite collaborators from any note to see them here.
-        </p>
-      </div>
+      <EmptyState
+        title="No shared notes yet"
+        description="Invite collaborators from any note to see them here."
+        icon={Users}
+        variant="default"
+      />
     );
   }
 
   return (
     <div className="space-y-8">
       {sharedWithMe.length ? (
-        <section className="space-y-4">
-          <header className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-ink-400">
-            <span>Shared with me</span>
-            <span>{sharedWithMe.length}</span>
-          </header>
+        <ListSection title="Shared with me" count={sharedWithMe.length}>
           <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
             {sharedWithMe.map((note) => (
               <div key={note.id} className="mb-4">
@@ -77,15 +73,11 @@ export function SharedNotesBoard() {
               </div>
             ))}
           </div>
-        </section>
+        </ListSection>
       ) : null}
 
       {sharedByMe.length ? (
-        <section className="space-y-4">
-          <header className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-ink-400">
-            <span>Shared by me</span>
-            <span>{sharedByMe.length}</span>
-          </header>
+        <ListSection title="Shared by me" count={sharedByMe.length}>
           <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
             {sharedByMe.map((note) => (
               <div key={note.id} className="mb-4">
@@ -93,7 +85,7 @@ export function SharedNotesBoard() {
               </div>
             ))}
           </div>
-        </section>
+        </ListSection>
       ) : null}
     </div>
   );

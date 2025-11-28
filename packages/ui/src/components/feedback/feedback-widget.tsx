@@ -68,16 +68,16 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
       {isOpen && (
         <div 
           ref={formRef}
-          className="w-80 bg-zinc-900 border border-white/10 rounded-2xl shadow-xl p-4 animate-in slide-in-from-bottom-5 fade-in duration-200"
+          className="w-80 bg-popover border border-border rounded-2xl shadow-xl p-4 animate-in slide-in-from-bottom-5 fade-in duration-200"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-white flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-indigo-400" />
               Send Feedback
             </h3>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
-              className="text-zinc-500 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -88,8 +88,8 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
               <div className="mx-auto h-12 w-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-3">
                 <Send className="h-6 w-6" />
               </div>
-              <p className="text-white font-medium">Thank you!</p>
-              <p className="text-sm text-zinc-400 mt-1">Your feedback helps us improve.</p>
+              <p className="text-foreground font-medium">Thank you!</p>
+              <p className="text-sm text-muted-foreground mt-1">Your feedback helps us improve.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,7 +98,7 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="What's on your mind? Found a bug or have a feature idea?"
-                  className="w-full h-32 bg-zinc-800 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all"
+                  className="w-full h-32 bg-muted border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring resize-none transition-all"
                   disabled={isSubmitting}
                   autoFocus
                 />
@@ -130,7 +130,7 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
                 </Button>
               </div>
               
-              <div className="text-[10px] text-zinc-600 text-center">
+              <div className="text-[10px] text-muted-foreground text-center">
                 Submitting as {userEmail || 'Anonymous'}
               </div>
             </form>
@@ -144,7 +144,7 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
           "h-10 w-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110",
           isOpen 
             ? "bg-indigo-500 text-white rotate-90" 
-            : "bg-zinc-800 text-zinc-400 hover:text-white border border-white/10 hover:border-indigo-500/50"
+            : "bg-muted text-muted-foreground hover:text-foreground border border-border hover:border-primary/50"
         )}
         title="Send Feedback"
       >

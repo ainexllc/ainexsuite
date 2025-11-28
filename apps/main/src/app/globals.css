@@ -2,18 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Main App Theme Overrides - Sky/Cyan Primary */
-:root.dark,
+/* Main App Theme - Sky/Indigo Colors */
 :root {
-  /* Sky 500 for Primary */
-  --theme-primary: 14 165 233;
-  --theme-primary-rgb: 14, 165, 233;
-  --theme-primary-light: 56 189 248; /* Sky 400 */
-  --theme-primary-dark: 2 132 199;    /* Sky 600 */
+  --app-primary: 199 89% 48%;      /* Sky-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 239 84% 67%;    /* Indigo-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Indigo 500 for Secondary */
-  --theme-secondary: 99 102 241;
-  --theme-secondary-rgb: 99, 102, 241;
+.dark {
+  --app-primary: 198 93% 60%;      /* Sky-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 239 84% 74%;    /* Indigo-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }
 
 /* Animations */
@@ -63,9 +64,9 @@
 @layer components {
   .icon-button {
     @apply grid place-items-center rounded-full p-2
-           text-ink-500 transition-all duration-150
-           hover:bg-surface-muted hover:text-ink-700
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500;
+           text-muted-foreground transition-all duration-150
+           hover:bg-muted hover:text-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
   }
 
   .animate-fade-in {

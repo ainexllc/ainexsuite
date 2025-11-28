@@ -13,8 +13,7 @@ import {
   XCircle,
   MoreVertical,
 } from 'lucide-react';
-import { Modal, ModalButton } from '@/components/ui/Modal';
-import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { GlassModal, GlassModalContent, GlassModalFooter, ConfirmationDialog } from '@ainexsuite/ui';
 import { Habit, Completion } from '@/types/models';
 import { cn } from '@/lib/utils';
 import { getHabitStatus, getDateString } from '@/lib/date-utils';
@@ -49,7 +48,6 @@ export function HabitDetailModal({
 }: HabitDetailModalProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isFreezing, setIsFreezing] = useState(false);
 
   const habitCompletions = useMemo(() => {
@@ -87,14 +85,9 @@ export function HabitDetailModal({
   if (!habit) return null;
 
   const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await onDelete(habit.id);
-      setShowDeleteConfirm(false);
-      onClose();
-    } finally {
-      setIsDeleting(false);
-    }
+    await onDelete(habit.id);
+    setShowDeleteConfirm(false);
+    onClose();
   };
 
   const handleToggleFreeze = async () => {
@@ -131,9 +124,10 @@ export function HabitDetailModal({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size="md">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6">
+      <GlassModal isOpen={isOpen} onClose={onClose} size="md" variant="frosted">
+        <GlassModalContent>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               {habit.isFrozen && (
@@ -266,21 +260,30 @@ export function HabitDetailModal({
             ))}
           </div>
         </div>
+        </GlassModalContent>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <ModalButton variant="secondary" onClick={onClose} className="flex-1">
+        <GlassModalFooter className="justify-between">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-6 py-2 text-sm font-medium text-ink-700 dark:text-white bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors"
+          >
             Close
-          </ModalButton>
-          <ModalButton variant="primary" onClick={handleEdit} className="flex-1">
+          </button>
+          <button
+            type="button"
+            onClick={handleEdit}
+            className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors shadow-lg"
+          >
             <Edit3 className="h-4 w-4" />
             Edit
-          </ModalButton>
-        </div>
-      </Modal>
+          </button>
+        </GlassModalFooter>
+      </GlassModal>
 
       {/* Delete Confirmation */}
-      <ConfirmModal
+      <ConfirmationDialog
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDelete}
@@ -288,7 +291,6 @@ export function HabitDetailModal({
         description={`"${habit.title}" and all its completion history will be permanently deleted. This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
-        isLoading={isDeleting}
       />
     </>
   );

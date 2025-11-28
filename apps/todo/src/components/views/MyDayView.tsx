@@ -4,6 +4,7 @@ import { useTodoStore } from '../../lib/store';
 import { Task, TaskSpace } from '../../types/models';
 import { CheckCircle2, Circle, ArrowRight } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
+import { ListSection, ListItem, EmptyState } from '@ainexsuite/ui';
 
 interface MyDayViewProps {
   onEditTask: (taskId: string) => void;
@@ -54,74 +55,63 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
         if (tasks.length === 0) return null;
 
         return (
-          <div key={section}>
-            <h3 className={`text-sm font-bold uppercase tracking-wider mb-3 ${
-              section === 'Overdue' ? 'text-red-400' :
-              section === 'Today' ? 'text-accent-400' : 'text-white/50'
-            }`}>
-              {section} <span className="text-white/20 ml-1">{tasks.length}</span>
-            </h3>
-            
-            <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-              {tasks.map((task: Task) => (
-                <div
-                  key={task.id}
-                  className="group flex items-center gap-4 p-4 hover:bg-white/5 transition-colors cursor-pointer border-b border-white/5 last:border-0"
-                  onClick={() => onEditTask(task.id)}
-                >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleComplete(task);
-                    }}
-                    className={`shrink-0 transition-colors ${
-                      task.status === 'done' ? 'text-green-500' : 'text-white/20 hover:text-white/50'
-                    }`}
-                  >
-                    {task.status === 'done' ? (
-                      <CheckCircle2 className="h-5 w-5" />
-                    ) : (
-                      <Circle className="h-5 w-5" />
+          <ListSection
+            key={section}
+            title={section}
+            count={tasks.length}
+          >
+            {tasks.map((task: Task) => (
+              <ListItem
+                key={task.id}
+                variant="default"
+                title={
+                  <span className={task.status === 'done' ? 'line-through' : ''}>
+                    {task.title}
+                  </span>
+                }
+                subtitle={
+                  <div className="flex items-center gap-2 text-xs">
+                    <span>{getSpaceName(task.spaceId)}</span>
+                    {task.dueDate && (
+                      <>
+                        <span>•</span>
+                        <span className={section === 'Overdue' ? 'text-red-400' : ''}>
+                          {format(new Date(task.dueDate), 'MMM d')}
+                        </span>
+                      </>
                     )}
-                  </button>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className={`text-base font-medium ${task.status === 'done' ? 'text-white/40 line-through' : 'text-white'}`}>
-                        {task.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-white/40">
-                      <span>{getSpaceName(task.spaceId)}</span>
-                      {task.dueDate && (
-                        <>
-                          <span>•</span>
-                          <span className={section === 'Overdue' ? 'text-red-400' : ''}>
-                            {format(new Date(task.dueDate), 'MMM d')}
-                          </span>
-                        </>
-                      )}
-                    </div>
                   </div>
-
+                }
+                icon={task.status === 'done' ? CheckCircle2 : Circle}
+                trailing={
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <ArrowRight className="h-4 w-4 text-white/30" />
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                }
+                onClick={(e) => {
+                  // Check if click was on the icon (checkbox)
+                  const target = e.target as HTMLElement;
+                  const isIconClick = target.closest('svg')?.parentElement?.classList.contains('flex-shrink-0');
+
+                  if (isIconClick) {
+                    handleToggleComplete(task);
+                  } else {
+                    onEditTask(task.id);
+                  }
+                }}
+              />
+            ))}
+          </ListSection>
         );
       })}
 
       {sortedTasks.length === 0 && (
-        <div className="text-center py-20">
-          <div className="bg-white/5 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="h-8 w-8 text-green-500" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">All caught up!</h3>
-          <p className="text-white/50">No tasks assigned to you right now.</p>
-        </div>
+        <EmptyState
+          icon={CheckCircle2}
+          title="All caught up!"
+          description="No tasks assigned to you right now."
+          variant="default"
+        />
       )}
     </div>
   );

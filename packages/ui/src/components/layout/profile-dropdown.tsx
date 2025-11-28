@@ -73,36 +73,32 @@ export function ProfileDropdown({
 
   if (!isOpen) return null;
 
-  const defaultMenuItems = [
-    {
-      icon: <Settings className="h-4 w-4" />,
-      label: "Settings",
-      onClick: () => {},
-    },
-    {
-      icon: <Activity className="h-4 w-4" />,
-      label: "Activity",
-      onClick: () => {},
-    },
-    {
-      icon: <RefreshCw className="h-4 w-4" />,
-      label: "Refresh",
-      onClick: () => window.location.reload(),
-    },
-  ];
+  const items = menuItems || [];
 
-  const items = menuItems || defaultMenuItems;
+  // Better initials logic - get up to 2 letters from full name
+  const getInitials = () => {
+    if (!user) return "U";
+    if (user.displayName) {
+      return user.displayName
+        .split(" ")
+        .map((part) => part.charAt(0))
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+    }
+    return (user.email?.charAt(0) || "U").toUpperCase();
+  };
 
   return (
     <div
       ref={dropdownRef}
       className={clsx(
-        "absolute right-0 top-full mt-2 w-64 rounded-2xl bg-surface-elevated/95 backdrop-blur-2xl border border-outline-subtle/60 shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-150 z-50",
+        "absolute right-0 top-full mt-2 w-64 rounded-2xl bg-popover/95 backdrop-blur-2xl border border-border shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-150 z-50",
       )}
     >
       {/* User info */}
       {user && (
-        <div className="px-3 py-3 border-b border-outline-subtle/40">
+        <div className="px-3 py-3 border-b border-border">
           <div className="flex items-center gap-3">
             {user.photoURL ? (
               <Image
@@ -114,19 +110,17 @@ export function ProfileDropdown({
                 sizes="40px"
               />
             ) : (
-              <div className="h-10 w-10 rounded-full bg-accent-500 text-white grid place-items-center font-semibold text-sm">
-                {(user.displayName || user.email || "U")
-                  .charAt(0)
-                  .toUpperCase()}
+              <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground grid place-items-center font-semibold text-sm">
+                {getInitials()}
               </div>
             )}
             <div className="flex-1 min-w-0">
               {user.displayName && (
-                <p className="font-semibold text-sm text-ink-900 truncate">
+                <p className="font-semibold text-sm text-foreground truncate">
                   {user.displayName}
                 </p>
               )}
-              <p className="text-xs text-muted truncate">{user.email}</p>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
           </div>
         </div>
@@ -142,7 +136,7 @@ export function ProfileDropdown({
               item.onClick();
               onClose();
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink-600 hover:bg-surface-muted hover:text-ink-900 transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             {item.icon}
             <span>{item.label}</span>
@@ -151,7 +145,7 @@ export function ProfileDropdown({
 
         {/* Theme toggle */}
         {theme && (
-          <div className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-ink-600 hover:bg-surface-muted hover:text-ink-900 transition-colors">
+          <div className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
             <div className="flex items-center gap-3">
               {theme.current === "dark" ? (
                 <Moon className="h-4 w-4" />
@@ -167,14 +161,14 @@ export function ProfileDropdown({
                 theme.toggle();
               }}
               className={clsx(
-                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2",
-                theme.current === "dark" ? "bg-ink-700" : "bg-accent-500",
+                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                theme.current === "dark" ? "bg-muted" : "bg-primary",
               )}
               aria-label="Toggle theme"
             >
               <span
                 className={clsx(
-                  "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform",
+                  "inline-block h-4 w-4 transform rounded-full bg-background shadow-sm transition-transform",
                   theme.current === "dark" ? "translate-x-0.5" : "translate-x-4",
                 )}
               />
@@ -187,14 +181,14 @@ export function ProfileDropdown({
       </div>
 
       {/* Sign out */}
-      <div className="border-t border-outline-subtle/40 pt-1 pb-1 mt-1">
+      <div className="border-t border-border pt-1 pb-1 mt-1">
         <button
           type="button"
           onClick={async () => {
             await onSignOut();
             onClose();
           }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-danger hover:bg-danger/10 transition-colors"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut className="h-4 w-4" />
           <span>Sign Out</span>

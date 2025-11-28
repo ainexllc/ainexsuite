@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Loader2, Trash2, Undo, AlertTriangle } from "lucide-react";
+import { EmptyState, ConfirmationDialog } from "@ainexsuite/ui";
 import { useNotes } from "@/components/providers/notes-provider";
 import { Container } from "@/components/layout/container";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { formatRelativeTime } from "@/lib/utils/datetime";
 import type { Note } from "@/lib/types/note";
-import { Loader2, Trash2, Undo, AlertTriangle } from "lucide-react";
 
 function Skeleton() {
   return (
@@ -20,18 +20,6 @@ function Skeleton() {
           <div className="mt-3 h-4 w-3/5 rounded-full bg-surface-muted/70" />
         </div>
       ))}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl bg-surface-muted/60 px-10 py-16 text-center shadow-inner">
-      <Trash2 className="h-12 w-12 text-accent-500" aria-hidden />
-      <p className="text-base font-semibold text-ink-700">Trash is empty</p>
-      <p className="text-sm text-muted">
-        Delete notes from your workspace and they&apos;ll collect here for 30 days before being permanently removed.
-      </p>
     </div>
   );
 }
@@ -163,21 +151,20 @@ export function TrashBoard() {
           })}
         </div>
       ) : (
-        <EmptyState />
+        <EmptyState
+          title="Trash is empty"
+          description="Delete notes from your workspace and they'll collect here for 30 days before being permanently removed."
+          icon={Trash2}
+          variant="default"
+        />
       )}
 
-      <ConfirmModal
+      <ConfirmationDialog
         isOpen={Boolean(confirmDeleteId)}
-        title="Delete permanently?"
-        message="This action cannot be undone. Attachments will be removed from storage."
-        confirmLabel="Delete forever"
-        cancelLabel="Keep in trash"
-        isProcessing={Boolean(pendingDeleteId)}
-        onCancel={() => {
-          if (pendingDeleteId) {
-            return;
+        onClose={() => {
+          if (!pendingDeleteId) {
+            setConfirmDeleteId(null);
           }
-          setConfirmDeleteId(null);
         }}
         onConfirm={async () => {
           if (!confirmDeleteId) {
@@ -191,20 +178,19 @@ export function TrashBoard() {
             setPendingDeleteId(null);
           }
         }}
+        title="Delete permanently?"
+        description="This action cannot be undone. Attachments will be removed from storage."
+        confirmText="Delete forever"
+        cancelText="Keep in trash"
+        variant="danger"
       />
 
-      <ConfirmModal
+      <ConfirmationDialog
         isOpen={confirmEmptyAll}
-        title="Empty trash?"
-        message="This will permanently delete all notes in the trash, including their attachments. This action cannot be undone."
-        confirmLabel="Empty trash"
-        cancelLabel="Cancel"
-        isProcessing={emptying}
-        onCancel={() => {
-          if (emptying) {
-            return;
+        onClose={() => {
+          if (!emptying) {
+            setConfirmEmptyAll(false);
           }
-          setConfirmEmptyAll(false);
         }}
         onConfirm={async () => {
           setEmptying(true);
@@ -215,6 +201,11 @@ export function TrashBoard() {
             setEmptying(false);
           }
         }}
+        title="Empty trash?"
+        description="This will permanently delete all notes in the trash, including their attachments. This action cannot be undone."
+        confirmText="Empty trash"
+        cancelText="Cancel"
+        variant="danger"
       />
     </Container>
   );

@@ -2,12 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { NavigationPanel } from "./navigation-panel";
+import { NavigationPanel } from "@ainexsuite/ui";
 import { TopNav } from "./top-nav";
+import { LabelsSection } from "./labels-section";
+import { AppsSection } from "./apps-section";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { formatRelativeTime } from "@/lib/utils/datetime";
+import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from "@/lib/constants/navigation";
 import {
   CheckCircle2,
   ListChecks,
@@ -26,6 +30,7 @@ type ActivePanel = "notifications" | "settings" | "ai-assistant" | null;
 
 export function AppShell({ children }: AppShellProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { allNotes, pinned, others, loading } = useNotes();
   const {
     preferences,
@@ -34,6 +39,30 @@ export function AppShell({ children }: AppShellProps) {
   } = usePreferences();
   const [isNavOpen, setNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
+
+  const navSections = useMemo(
+    () => [
+      {
+        title: "Workspace",
+        items: PRIMARY_NAV_ITEMS.map((item) => ({
+          href: item.href,
+          icon: <item.icon className="h-4 w-4" />,
+          label: item.label,
+          badge: item.badge,
+        })),
+      },
+      {
+        title: "Utilities",
+        items: SECONDARY_NAV_ITEMS.map((item) => ({
+          href: item.href,
+          icon: <item.icon className="h-4 w-4" />,
+          label: item.label,
+          badge: item.badge,
+        })),
+      },
+    ],
+    [],
+  );
 
   useEffect(() => {
     if (!activePanel) {
@@ -101,7 +130,18 @@ export function AppShell({ children }: AppShellProps) {
             onClick={() => setNavOpen(false)}
           />
         )}
-        <NavigationPanel isOpen={isNavOpen} onClose={() => setNavOpen(false)} />
+        <NavigationPanel
+          isOpen={isNavOpen}
+          onClose={() => setNavOpen(false)}
+          sections={navSections}
+          pathname={pathname}
+          customContent={
+            <>
+              <AppsSection onClose={() => setNavOpen(false)} />
+              <LabelsSection onClose={() => setNavOpen(false)} />
+            </>
+          }
+        />
 
         {/* Right panel overlay */}
         {activePanel && (

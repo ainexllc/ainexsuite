@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import type { LearningGoal, LearningResource } from '@ainexsuite/types';
 import { createLearningGoal, updateLearningGoal, deleteLearningGoal } from '@/lib/learning';
-import { X, Trash2, Plus, Link as LinkIcon } from 'lucide-react';
+import { Trash2, Plus, Link as LinkIcon, X } from 'lucide-react';
+import { GlassModal, GlassModalHeader, GlassModalTitle, GlassModalContent, GlassModalFooter } from '@ainexsuite/ui';
 
 interface GoalEditorProps {
   goal: LearningGoal | null;
@@ -102,36 +103,25 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-3xl surface-card rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-surface-hover sticky top-0 surface-card">
-          <h2 className="text-xl font-semibold">
+    <GlassModal isOpen={true} onClose={onClose} size="xl" variant="frosted">
+      <GlassModalHeader onClose={onClose}>
+        <div className="flex items-center justify-between flex-1 pr-8">
+          <GlassModalTitle>
             {goal ? 'Edit Learning Goal' : 'New Learning Goal'}
-          </h2>
-
-          <div className="flex items-center gap-2">
-            {goal && (
-              <button
-                onClick={handleDelete}
-                className="p-2 hover:bg-surface-hover rounded-lg text-red-400"
-              >
-                <Trash2 className="h-5 w-5" />
-              </button>
-            )}
+          </GlassModalTitle>
+          {goal && (
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2 bg-accent-500 hover:bg-accent-600 rounded-lg font-medium disabled:opacity-50"
+              onClick={handleDelete}
+              className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg text-red-400 transition-colors"
             >
-              {saving ? 'Saving...' : 'Save'}
+              <Trash2 className="h-5 w-5" />
             </button>
-            <button onClick={onClose} className="p-2 hover:bg-surface-hover rounded-lg">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          )}
         </div>
+      </GlassModalHeader>
 
-        <div className="p-6 space-y-6">
+      <GlassModalContent>
+        <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-2">Goal Title *</label>
@@ -324,7 +314,25 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </GlassModalContent>
+
+      <GlassModalFooter className="justify-end">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-6 py-2 text-sm font-medium text-ink-700 dark:text-white bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="px-6 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+      </GlassModalFooter>
+    </GlassModal>
   );
 }

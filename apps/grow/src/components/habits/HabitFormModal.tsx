@@ -9,7 +9,7 @@ import {
   Type,
   AlignLeft,
 } from 'lucide-react';
-import { Modal, ModalFooter, ModalButton } from '@/components/ui/Modal';
+import { FormModal } from '@ainexsuite/ui';
 import { Habit, Schedule, FrequencyType } from '@/types/models';
 import { cn } from '@/lib/utils';
 
@@ -55,7 +55,7 @@ export function HabitFormModal({
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri default
   const [timesPerWeek, setTimesPerWeek] = useState(3);
   const [intervalDays, setIntervalDays] = useState(2);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ title?: string }>({});
 
   // Reset form when modal opens/closes or habit changes
@@ -100,54 +100,51 @@ export function HabitFormModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    setIsSubmitting(true);
-    try {
-      const schedule: Schedule = {
-        type: frequencyType,
-        ...(frequencyType === 'specific_days' && { daysOfWeek }),
-        ...(frequencyType === 'weekly' && { timesPerWeek }),
-        ...(frequencyType === 'interval' && { intervalDays }),
-      };
+    const schedule: Schedule = {
+      type: frequencyType,
+      ...(frequencyType === 'specific_days' && { daysOfWeek }),
+      ...(frequencyType === 'weekly' && { timesPerWeek }),
+      ...(frequencyType === 'interval' && { intervalDays }),
+    };
 
-      const habitData: Partial<Habit> = {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        schedule,
-        spaceId,
-        assigneeIds: [userId],
-      };
+    const habitData: Partial<Habit> = {
+      title: title.trim(),
+      description: description.trim() || undefined,
+      schedule,
+      spaceId,
+      assigneeIds: [userId],
+    };
 
-      if (!isEditing) {
-        // New habit defaults
-        habitData.id = `habit_${Date.now()}`;
-        habitData.currentStreak = 0;
-        habitData.bestStreak = 0;
-        habitData.isFrozen = false;
-        habitData.createdAt = new Date().toISOString();
-      }
-
-      await onSubmit(habitData);
-      onClose();
-    } catch (error) {
-      console.error('Failed to save habit:', error);
-    } finally {
-      setIsSubmitting(false);
+    if (!isEditing) {
+      // New habit defaults
+      habitData.id = `habit_${Date.now()}`;
+      habitData.currentStreak = 0;
+      habitData.bestStreak = 0;
+      habitData.isFrozen = false;
+      habitData.createdAt = new Date().toISOString();
     }
+
+    await onSubmit(habitData);
+    onClose();
   };
 
   return (
-    <Modal
+    <FormModal
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'Edit Habit' : 'Create New Habit'}
       description={isEditing ? 'Update your habit details' : 'Build a new habit to track'}
+      onSave={handleSubmit}
+      isLoading={isSubmitting}
+      disableSave={!title.trim()}
+      saveLabel={isEditing ? 'Save Changes' : 'Create Habit'}
+      accentColor="#6366f1"
       size="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Title */}
         <div>
           <label className="flex items-center gap-2 text-sm font-medium text-white/70 mb-2">
@@ -288,21 +285,7 @@ export function HabitFormModal({
             </div>
           </div>
         )}
-
-        <ModalFooter>
-          <ModalButton variant="ghost" onClick={onClose}>
-            Cancel
-          </ModalButton>
-          <ModalButton
-            type="submit"
-            variant="primary"
-            loading={isSubmitting}
-            disabled={!title.trim()}
-          >
-            {isEditing ? 'Save Changes' : 'Create Habit'}
-          </ModalButton>
-        </ModalFooter>
-      </form>
-    </Modal>
+      </div>
+    </FormModal>
   );
 }

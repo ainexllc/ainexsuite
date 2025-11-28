@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { getJournalEntry } from '@/lib/firebase/firestore';
 import { JournalView } from '@/components/journal/journal-view';
-import { useToast } from '@/lib/toast';
+import { useToast } from '@ainexsuite/ui';
 import type { JournalEntry } from '@ainexsuite/types';
 import { ArrowLeft, Edit, Loader2, Lock } from 'lucide-react';
 import Link from 'next/link';

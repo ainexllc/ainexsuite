@@ -38,14 +38,14 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-overlay/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
         className={clsx(
-          "relative z-50 w-full rounded-2xl bg-surface-elevated shadow-2xl border border-outline-subtle/60 animate-in fade-in zoom-in-95 duration-200",
+          "relative z-50 w-full rounded-2xl bg-popover text-popover-foreground shadow-2xl border border-border animate-in fade-in zoom-in-95 duration-200",
           size === "sm" && "max-w-sm",
           size === "md" && "max-w-md",
           size === "lg" && "max-w-lg",
@@ -66,7 +66,7 @@ export const ModalHeader = React.forwardRef<
   <div
     ref={ref}
     className={clsx(
-      "flex items-center justify-between border-b border-outline-subtle/40 px-6 py-4",
+      "flex items-center justify-between border-b border-border px-6 py-4",
       className,
     )}
     {...props}
@@ -76,7 +76,7 @@ export const ModalHeader = React.forwardRef<
       <button
         type="button"
         onClick={onClose}
-        className="icon-button h-8 w-8 rounded-full bg-surface-muted hover:bg-ink-200 ml-4"
+        className="icon-button h-8 w-8 rounded-full bg-muted hover:bg-muted/80 ml-4 text-foreground"
         aria-label="Close modal"
       >
         <X className="h-4 w-4" />
@@ -92,7 +92,7 @@ export const ModalTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={clsx("text-xl font-semibold text-ink-900", className)}
+    className={clsx("text-xl font-semibold text-foreground", className)}
     {...props}
   />
 ));
@@ -104,7 +104,7 @@ export const ModalDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={clsx("text-sm text-muted mt-1", className)}
+    className={clsx("text-sm text-muted-foreground mt-1", className)}
     {...props}
   />
 ));
@@ -125,7 +125,7 @@ export const ModalFooter = React.forwardRef<
   <div
     ref={ref}
     className={clsx(
-      "flex items-center justify-end gap-3 border-t border-outline-subtle/40 px-6 py-4",
+      "flex items-center justify-end gap-3 border-t border-border px-6 py-4",
       className,
     )}
     {...props}

@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { Timestamp } from 'firebase/firestore';
-import { WorkspaceLayout, SUITE_APPS, getAppUrl } from '@ainexsuite/ui';
+import { WorkspaceLayout, SUITE_APPS, getAppUrl, useToast } from '@ainexsuite/ui';
 import { useVisualStyle } from '@/lib/theme/visual-style';
-import { useToast } from '@/lib/toast';
 import {
   Loader2,
   Calendar as CalendarIcon,

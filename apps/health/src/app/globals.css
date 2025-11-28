@@ -2,18 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Track-specific overrides can live here. Shared tokens & utilities come from @ainexsuite/ui/styles. */
-
-/* Track App Theme Overrides - Teal/Orange */
-:root.dark,
+/* Health App Theme - Emerald/Teal */
 :root {
-  /* Teal 500 for Primary */
-  --theme-primary: 20 184 166;
-  --theme-primary-rgb: 20, 184, 166;
-  --theme-primary-light: 45 212 191; /* Teal 400 */
-  --theme-primary-dark: 13 148 136;  /* Teal 600 */
+  --app-primary: 160 84% 39%;      /* Emerald-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 168 76% 42%;    /* Teal-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Orange 500 for Secondary */
-  --theme-secondary: 249 115 22;
-  --theme-secondary-rgb: 249, 115, 22;
+.dark {
+  --app-primary: 160 84% 52%;      /* Emerald-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 170 77% 52%;    /* Teal-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }

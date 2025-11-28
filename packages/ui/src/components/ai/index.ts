@@ -3,6 +3,7 @@ export {
   AIInsightsBulletList,
   AIInsightsTagList,
   AIInsightsText,
+  useInsightsCollapsed,
   type AIInsightsCardProps,
   type AIInsightsSection,
   type AIInsightsBulletListProps,

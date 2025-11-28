@@ -6,7 +6,7 @@ import { useAuth } from '@ainexsuite/auth';
 import { getJournalEntry, updateJournalEntry } from '@/lib/firebase/firestore';
 import { uploadMultipleFiles, deleteFile } from '@/lib/firebase/storage';
 import { JournalForm } from '@/components/journal/journal-form';
-import { useToast } from '@/lib/toast';
+import { useToast } from '@ainexsuite/ui';
 import type { JournalEntry, JournalEntryFormData, Attachment } from '@ainexsuite/types';
 import { sentimentService } from '@/lib/ai/sentiment-service';
 import { saveSentimentAnalysis } from '@/lib/firebase/sentiment';

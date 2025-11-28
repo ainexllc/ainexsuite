@@ -2,18 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Workflow App Theme Overrides - Emerald/Indigo */
-:root.dark,
+/* Workflow App Theme - Cyan/Blue */
 :root {
-  /* Emerald 500 for Primary */
-  --theme-primary: 16 185 129;
-  --theme-primary-rgb: 16, 185, 129;
-  --theme-primary-light: 52 211 153; /* Emerald 400 */
-  --theme-primary-dark: 5 150 105;   /* Emerald 600 */
+  --app-primary: 187 92% 41%;      /* Cyan-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 217 91% 60%;    /* Blue-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Indigo 500 for Secondary */
-  --theme-secondary: 99 102 241;
-  --theme-secondary-rgb: 99, 102, 241;
+.dark {
+  --app-primary: 187 91% 52%;      /* Cyan-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 213 94% 68%;    /* Blue-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }
 
 :root {

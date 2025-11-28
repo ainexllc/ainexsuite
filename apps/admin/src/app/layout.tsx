@@ -46,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans bg-surface-base text-white antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
       >
         <ThemeProvider>
           <AppColorProvider appId="admin" fallbackPrimary="#71717a" fallbackSecondary="#a1a1aa">

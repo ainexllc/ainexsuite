@@ -1,3 +1,2 @@
-'use client';
-
-export { useTheme } from 'next-themes';
+"use client";
+export { useTheme } from "next-themes";

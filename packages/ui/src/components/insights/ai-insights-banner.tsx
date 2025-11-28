@@ -72,11 +72,11 @@ export function AIInsightsBanner({
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-white/10 bg-surface-elevated/50 backdrop-blur-sm overflow-hidden">
+    <div className="mb-6 rounded-2xl border border-border bg-card/80 dark:bg-surface-elevated/50 backdrop-blur-sm overflow-hidden shadow-lg dark:shadow-none">
       {/* Header - Always visible */}
       <button
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-3">
           <div
@@ -110,7 +110,7 @@ export function AIInsightsBanner({
       >
         <div className="px-5 pb-5">
           {error ? (
-            <div className="flex items-center gap-3 text-sm text-red-400 bg-red-500/10 rounded-lg p-3">
+            <div className="flex items-center gap-3 text-sm text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-500/10 rounded-lg p-3">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -164,7 +164,7 @@ export function InsightCard({
   color = '#8b5cf6',
 }: InsightCardProps) {
   return (
-    <div className="rounded-xl bg-white/5 border border-white/5 p-4 hover:bg-white/10 transition-colors">
+    <div className="rounded-xl bg-muted/50 border border-border p-4 hover:bg-muted/70 transition-colors">
       <div className="flex items-start gap-3">
         <div
           className="flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0"
@@ -173,14 +173,14 @@ export function InsightCard({
           <div style={{ color }}>{icon}</div>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
             {label}
           </p>
-          <div className="text-sm font-medium text-text-primary">
+          <div className="text-sm font-medium text-foreground">
             {value}
           </div>
           {subtitle && (
-            <p className="text-xs text-text-muted mt-1">{subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
       </div>

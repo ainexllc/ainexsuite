@@ -11,8 +11,11 @@ import { format, subDays, differenceInDays, parseISO } from 'date-fns';
 import {
   AIInsightsCard,
   AIInsightsText,
+  useInsightsCollapsed,
   type AIInsightsSection,
 } from '@ainexsuite/ui';
+
+const INSIGHTS_STORAGE_KEY = 'grow-insights-collapsed';
 
 interface HabitInsight {
   type: 'streak_risk' | 'momentum' | 'suggestion' | 'achievement' | 'encouragement';
@@ -31,6 +34,9 @@ export function AIInsightsBanner({ className }: AIInsightsBannerProps) {
   const { habits, completions, getCurrentSpace } = useGrowStore();
   const currentSpace = getCurrentSpace();
   const { primary: primaryColor } = useAppColors();
+
+  // Check if insights are collapsed (skip fetching if true)
+  const isCollapsed = useInsightsCollapsed(INSIGHTS_STORAGE_KEY);
 
   const [insight, setInsight] = useState<HabitInsight | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -248,16 +254,16 @@ Give me one personalized insight.`
     }
   }, [getHabitAnalytics, generateLocalInsight]);
 
-  // Initial load and periodic refresh
+  // Initial load and periodic refresh (skip if collapsed)
   useEffect(() => {
-    if (user && currentSpace && habits.length > 0 && !isDismissed) {
+    if (user && currentSpace && habits.length > 0 && !isDismissed && !isCollapsed) {
       // Only fetch if we haven't recently (5 min cooldown)
       const timeSinceRefresh = Date.now() - lastRefresh;
       if (timeSinceRefresh > 5 * 60 * 1000 || lastRefresh === 0) {
         fetchAIInsight();
       }
     }
-  }, [user, currentSpace, habits.length, isDismissed, fetchAIInsight, lastRefresh]);
+  }, [user, currentSpace, habits.length, isDismissed, isCollapsed, fetchAIInsight, lastRefresh]);
 
   // Auto-refresh insight on habit completion
   useEffect(() => {

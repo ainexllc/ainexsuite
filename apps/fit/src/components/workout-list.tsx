@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import type { Workout } from '@/types/models';
 import { format } from 'date-fns';
 import { Calendar, Clock, Dumbbell, Trash2 } from 'lucide-react';
 import { useFitStore } from '@/lib/store';
 import { useAppColors } from '@ainexsuite/theme';
+import { ConfirmationDialog } from '@ainexsuite/ui';
 
 interface WorkoutListProps {
   workouts: Workout[];
@@ -17,39 +18,12 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
   const { deleteWorkout } = useFitStore();
   const { primary } = useAppColors();
   const [workoutToDelete, setWorkoutToDelete] = useState<Workout | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
 
   const handleDelete = async () => {
     if (!workoutToDelete) return;
     await deleteWorkout(workoutToDelete.id);
     setWorkoutToDelete(null);
   };
-
-  // Handle click outside modal
-  useEffect(() => {
-    if (!workoutToDelete) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!modalRef.current) return;
-      if (modalRef.current.contains(event.target as Node)) return;
-      setWorkoutToDelete(null);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [workoutToDelete]);
-
-  // Handle escape key
-  useEffect(() => {
-    if (!workoutToDelete) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setWorkoutToDelete(null);
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [workoutToDelete]);
 
   return (
     <>
@@ -136,36 +110,17 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
         })}
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {workoutToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div
-            ref={modalRef}
-            className="w-full max-w-md rounded-2xl shadow-2xl bg-[#121212] border border-white/10 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">Delete Workout</h3>
-            <p className="text-white/60 mb-6">
-              Are you sure you want to delete &ldquo;{workoutToDelete.title}&rdquo;? This action cannot be undone.
-            </p>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setWorkoutToDelete(null)}
-                className="px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-sm font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={!!workoutToDelete}
+        onClose={() => setWorkoutToDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Workout"
+        description={`Are you sure you want to delete "${workoutToDelete?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </>
   );
 }

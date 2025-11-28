@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { AlarmClock, Clock4, MoreHorizontal, X } from "lucide-react";
 import { clsx } from "clsx";
+import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { useReminders } from "@/components/providers/reminders-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import {
@@ -127,15 +128,12 @@ export function ReminderList() {
 
   if (!entries.length) {
     return (
-      <div className="rounded-3xl border border-dashed border-outline-subtle/70 bg-surface-elevated/60 px-8 py-12 text-center">
-        <AlarmClock className="mx-auto h-10 w-10 text-accent-500" aria-hidden />
-        <p className="mt-3 text-base font-semibold text-ink-700">
-          No reminders scheduled
-        </p>
-        <p className="mt-1 text-sm text-muted">
-          Set a reminder from any note to have it appear here.
-        </p>
-      </div>
+      <EmptyState
+        title="No reminders scheduled"
+        description="Set a reminder from any note to have it appear here."
+        icon={AlarmClock}
+        variant="default"
+      />
     );
   }
 
@@ -144,12 +142,7 @@ export function ReminderList() {
     items: typeof entries,
     emptyLabel: string,
   ) => (
-    <section className="space-y-3">
-      <header className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-ink-400">
-        <span>{label}</span>
-        {items.length > 0 && <span>{items.length}</span>}
-      </header>
-
+    <ListSection title={label} count={items.length}>
       {items.length ? (
         <ul className="space-y-3">
           {items.map(({ reminder, note, timestamp, title }) => {
@@ -233,11 +226,12 @@ export function ReminderList() {
           })}
         </ul>
       ) : (
-        <div className="rounded-2xl border border-dashed border-outline-subtle/60 bg-surface-muted/50 px-4 py-6 text-center text-sm text-muted">
-          {emptyLabel}
-        </div>
+        <EmptyState
+          title={emptyLabel}
+          variant="minimal"
+        />
       )}
-    </section>
+    </ListSection>
   );
 
   return (

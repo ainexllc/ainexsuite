@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { FileText } from "lucide-react";
+import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { NoteComposer } from "@/components/notes/note-composer";
 import { NoteCard } from "@/components/notes/note-card";
 import { ViewToggle } from "@/components/notes/view-toggle";
@@ -17,20 +19,6 @@ function NotesSkeleton() {
           className="mb-4 h-40 break-inside-avoid rounded-3xl bg-surface-muted/80 shadow-inner animate-pulse"
         />
       ))}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl bg-surface-muted/60 px-10 py-16 text-center shadow-inner">
-      <p className="text-base font-semibold text-ink-700">
-        Notes you add will appear here
-      </p>
-      <p className="text-sm text-muted">
-        Create text notes, checklists, and attach images. Pin important items to
-        keep them at the top.
-      </p>
     </div>
   );
 }
@@ -70,11 +58,7 @@ export function NoteBoard() {
       ) : hasNotes ? (
         <div className="space-y-10">
           {pinned.length ? (
-            <section className="space-y-4">
-              <header className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-ink-400">
-                <span>Pinned</span>
-                <span>{pinned.length}</span>
-              </header>
+            <ListSection title="Pinned" count={pinned.length}>
               <div className={viewMode === "list" ? "space-y-2" : masonryClasses}>
                 {pinned.map((note) => (
                   <div key={note.id} className={viewMode === "list" ? "" : "mb-4 break-inside-avoid"}>
@@ -82,17 +66,11 @@ export function NoteBoard() {
                   </div>
                 ))}
               </div>
-            </section>
+            </ListSection>
           ) : null}
 
           {others.length ? (
-            <section className="space-y-4">
-              {pinned.length ? (
-                <header className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-ink-400">
-                  <span>All Notes</span>
-                  <span>{others.length}</span>
-                </header>
-              ) : null}
+            <ListSection title="All Notes" count={pinned.length ? others.length : undefined}>
               <div className={viewMode === "list" ? "space-y-2" : masonryClasses}>
                 {others.map((note) => (
                   <div key={note.id} className={viewMode === "list" ? "" : "mb-4 break-inside-avoid"}>
@@ -100,20 +78,23 @@ export function NoteBoard() {
                   </div>
                 ))}
               </div>
-            </section>
+            </ListSection>
           ) : null}
         </div>
       ) : notes.length === 0 && searchQuery.trim() ? (
-        <div className="rounded-3xl bg-surface-muted/60 px-8 py-12 text-center shadow-inner">
-          <p className="text-base font-semibold text-ink-700">
-            No notes found
-          </p>
-          <p className="mt-2 text-sm text-muted">
-            Try a different keyword or remove filters to see more notes.
-          </p>
-        </div>
+        <EmptyState
+          title="No notes found"
+          description="Try a different keyword or remove filters to see more notes."
+          icon={FileText}
+          variant="default"
+        />
       ) : (
-        <EmptyState />
+        <EmptyState
+          title="Notes you add will appear here"
+          description="Create text notes, checklists, and attach images. Pin important items to keep them at the top."
+          icon={FileText}
+          variant="default"
+        />
       )}
     </Container>
   );

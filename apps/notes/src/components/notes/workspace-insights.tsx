@@ -10,8 +10,11 @@ import {
   AIInsightsBulletList,
   AIInsightsTagList,
   AIInsightsText,
+  useInsightsCollapsed,
   type AIInsightsSection,
 } from "@ainexsuite/ui";
+
+const INSIGHTS_STORAGE_KEY = "notes-insights-collapsed";
 
 interface InsightData {
   weeklyFocus: string;
@@ -28,6 +31,10 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
   const { notes, loading: notesLoading } = useNotes();
   const { currentSpaceId, currentSpace } = useSpaces();
   const { primary: primaryColor } = useAppColors();
+
+  // Check if insights are collapsed (skip fetching if true)
+  const isCollapsed = useInsightsCollapsed(INSIGHTS_STORAGE_KEY);
+
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -110,9 +117,9 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
     previousSpaceIdRef.current = currentSpaceId;
   }, [currentSpaceId]);
 
-  // Load from cache or auto-generate
+  // Load from cache or auto-generate (skip if collapsed)
   useEffect(() => {
-    if (notesLoading) return;
+    if (notesLoading || isCollapsed) return;
 
     const cached = localStorage.getItem(STORAGE_KEY);
     if (cached) {
@@ -135,7 +142,7 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
       generateInsights();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notesLoading, hasEnoughData, currentSpaceId, STORAGE_KEY]);
+  }, [notesLoading, hasEnoughData, currentSpaceId, isCollapsed, STORAGE_KEY]);
 
   // Build sections for the shared component
   const sections: AIInsightsSection[] = useMemo(() => {

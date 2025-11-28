@@ -49,6 +49,49 @@ const notePalette = {
 const sharedTheme = {
   extend: {
     colors: {
+      // HSL-based theme system colors
+      border: "hsl(var(--border))",
+      input: "hsl(var(--input))",
+      ring: "hsl(var(--ring))",
+      background: "hsl(var(--background))",
+      foreground: "hsl(var(--foreground))",
+      primary: {
+        DEFAULT: "hsl(var(--primary))",
+        foreground: "hsl(var(--primary-foreground))",
+      },
+      secondary: {
+        DEFAULT: "hsl(var(--secondary))",
+        foreground: "hsl(var(--secondary-foreground))",
+      },
+      destructive: {
+        DEFAULT: "hsl(var(--destructive))",
+        foreground: "hsl(var(--destructive-foreground))",
+      },
+      muted: {
+        DEFAULT: "hsl(var(--muted))",
+        foreground: "hsl(var(--muted-foreground))",
+      },
+      accent: {
+        DEFAULT: "hsl(var(--accent))",
+        foreground: "hsl(var(--accent-foreground))",
+      },
+      popover: {
+        DEFAULT: "hsl(var(--popover))",
+        foreground: "hsl(var(--popover-foreground))",
+      },
+      card: {
+        DEFAULT: "hsl(var(--card))",
+        foreground: "hsl(var(--card-foreground))",
+      },
+      "app-primary": {
+        DEFAULT: "hsl(var(--app-primary))",
+        foreground: "hsl(var(--app-primary-foreground))",
+      },
+      "app-secondary": {
+        DEFAULT: "hsl(var(--app-secondary))",
+        foreground: "hsl(var(--app-secondary-foreground))",
+      },
+      // Legacy RGB-based colors (preserved for backward compatibility)
       surface: {
         DEFAULT: withOpacityValue('--color-surface-base'),
         base: withOpacityValue('--color-surface-base'),
@@ -63,33 +106,6 @@ const sharedTheme = {
         subtle: withOpacityValue('--color-outline-subtle'),
         base: withOpacityValue('--color-outline-base'),
         strong: withOpacityValue('--color-outline-strong'),
-      },
-      accent: {
-        DEFAULT: withOpacityValue('--color-accent-500'),
-        50: withOpacityValue('--color-accent-50'),
-        100: withOpacityValue('--color-accent-100'),
-        200: withOpacityValue('--color-accent-200'),
-        300: withOpacityValue('--color-accent-300'),
-        400: withOpacityValue('--color-accent-400'),
-        500: withOpacityValue('--color-accent-500'),
-        600: withOpacityValue('--color-accent-600'),
-        700: withOpacityValue('--color-accent-700'),
-        800: withOpacityValue('--color-accent-800'),
-        900: withOpacityValue('--color-accent-900'),
-      },
-      primary: {
-        DEFAULT: withOpacityValue('--color-accent-500'),
-        50: withOpacityValue('--color-accent-50'),
-        100: withOpacityValue('--color-accent-100'),
-        200: withOpacityValue('--color-accent-200'),
-        300: withOpacityValue('--color-accent-300'),
-        400: withOpacityValue('--color-accent-400'),
-        500: withOpacityValue('--color-accent-500'),
-        600: withOpacityValue('--color-accent-600'),
-        700: withOpacityValue('--color-accent-700'),
-        800: withOpacityValue('--color-accent-800'),
-        900: withOpacityValue('--color-accent-900'),
-        foreground: withOpacityValue('--color-ink-900'),
       },
       ink: {
         50: withOpacityValue('--color-ink-50'),
@@ -154,9 +170,14 @@ const sharedTheme = {
       'note-board-xl': 'var(--note-board-max-width-xl)',
     },
     borderRadius: {
-      sm: 'var(--radius-sm)',
-      md: 'var(--radius-md)',
-      lg: 'var(--radius-lg)',
+      // HSL-based theme system radius
+      lg: "var(--radius)",
+      md: "calc(var(--radius) - 2px)",
+      sm: "calc(var(--radius) - 4px)",
+      // Legacy radius values (preserved for backward compatibility)
+      'legacy-sm': 'var(--radius-sm)',
+      'legacy-md': 'var(--radius-md)',
+      'legacy-lg': 'var(--radius-lg)',
       xl: 'var(--radius-xl)',
       '3xl': '1.5rem',
     },
@@ -184,6 +205,7 @@ const sharedTheme = {
 
 /** @type {import('tailwindcss').Config} */
 const config = {
+  darkMode: ["class"],
   content: [],
   safelist: noteColorSafelist,
   theme: sharedTheme,

@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Menu,
-  ChevronDown,
-  Sparkles,
-} from "lucide-react";
-import { clsx } from "clsx";
-import Image from "next/image";
+import { Settings, Activity, RefreshCw } from "lucide-react";
 import { useAuth } from "@ainexsuite/auth";
-import { useTheme } from "@/components/providers/theme-provider";
+import { useTheme } from "@ainexsuite/theme";
 import { LogoWordmark } from "@/components/branding/logo-wordmark";
-import { ProfileDropdown } from "./profile-dropdown";
+import {
+  TopNav as SharedTopNav,
+  TopNavProfileButton,
+  TopNavAiButton,
+  ProfileDropdown,
+} from "@ainexsuite/ui";
 
 type TopNavProps = {
   onMenuClick?: () => void;
@@ -28,106 +27,59 @@ export function TopNav({
   onOpenActivity,
   onOpenAiAssistant,
 }: TopNavProps) {
-  const { user, loading: authLoading } = useAuth();
-  const { theme } = useTheme();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [isProfileOpen, setProfileOpen] = useState(false);
 
-
-  const initials = user?.displayName
-    ? user.displayName
-        .split(" ")
-        .map((part) => part.charAt(0))
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
-    : user?.email?.charAt(0).toUpperCase() ?? "NN";
-
-  const navBackgroundClass =
-    theme === "dark"
-      ? "bg-[#050507]/95"
-      : "bg-white/92 border-b border-outline-subtle/60";
+  const menuItems = [
+    onOpenSettings && {
+      icon: <Settings className="h-4 w-4" />,
+      label: "Settings",
+      onClick: onOpenSettings,
+    },
+    onOpenActivity && {
+      icon: <Activity className="h-4 w-4" />,
+      label: "Activity",
+      onClick: onOpenActivity,
+    },
+    onRefresh && {
+      icon: <RefreshCw className="h-4 w-4" />,
+      label: "Refresh",
+      onClick: onRefresh,
+    },
+  ].filter(Boolean) as Array<{ icon: React.ReactNode; label: string; onClick: () => void }>;
 
   return (
-    <header
-      className={clsx(
-        "fixed inset-x-0 top-0 z-30 backdrop-blur-2xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_16px_-4px_rgba(249,115,22,0.3)] transition-colors",
-        navBackgroundClass,
-      )}
-    >
-      <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center px-4 sm:px-6 cq-nav">
-        {/* Left: Hamburger + Logo (tightly grouped) */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onMenuClick}
-            className="icon-button h-10 w-10 rounded-full bg-surface-muted/80 shadow-sm transition hover:bg-surface-muted"
-            aria-label="Toggle navigation"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <div className="hidden sm:block">
-            <LogoWordmark href="/" iconSize={48} />
-          </div>
-        </div>
-
-        {/* Right: Actions (right-justified) */}
-        <div className="ml-auto flex items-center gap-2 top-nav-actions">
-          {onOpenAiAssistant && (
-            <button
-              type="button"
-              onClick={() => onOpenAiAssistant()}
-              className="icon-button h-9 w-9 rounded-full bg-purple-100 text-purple-600 shadow-sm transition hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
-              aria-label="AI Assistant"
-            >
-              <Sparkles className="h-4 w-4" />
-            </button>
-          )}
-
-          {user && !authLoading ? (
+    <SharedTopNav
+      logo={<LogoWordmark href="/" iconSize={48} />}
+      onMenuClick={onMenuClick}
+      theme={theme as "light" | "dark" | undefined}
+      accentColor="59,130,246" // Blue accent for Notes
+      actions={
+        <>
+          {onOpenAiAssistant && <TopNavAiButton onClick={onOpenAiAssistant} />}
+          {user && !authLoading && (
             <div className="relative">
-              <button
-                type="button"
-                className="flex items-center gap-2 h-9 rounded-full bg-surface-muted/80 text-ink-700 shadow-sm transition hover:bg-surface-muted px-2"
-                aria-label="Profile menu"
+              <TopNavProfileButton
+                user={user}
                 onClick={() => setProfileOpen((prev) => !prev)}
-              >
-                {user?.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt={user.displayName ?? user.email ?? "Account"}
-                    width={28}
-                    height={28}
-                    className="rounded-full object-cover"
-                    sizes="28px"
-                  />
-                ) : (
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-500 text-xs font-semibold text-white">
-                    {initials}
-                  </span>
-                )}
-                <ChevronDown className="h-3.5 w-3.5 text-ink-500" />
-              </button>
+                loading={authLoading}
+              />
               <ProfileDropdown
                 isOpen={isProfileOpen}
                 onClose={() => setProfileOpen(false)}
-                onOpenSettings={() => {
-                  setProfileOpen(false);
-                  onOpenSettings?.();
+                user={user}
+                theme={{
+                  current: theme as "light" | "dark",
+                  toggle: () => setTheme(theme === "dark" ? "light" : "dark"),
                 }}
-                onOpenActivity={() => {
-                  setProfileOpen(false);
-                  onOpenActivity?.();
-                }}
-                onRefresh={() => {
-                  setProfileOpen(false);
-                  onRefresh?.();
-                }}
+                menuItems={menuItems}
+                onSignOut={() => signOut()}
               />
             </div>
-          ) : null}
-        </div>
-      </div>
-    </header>
+          )}
+        </>
+      }
+    />
   );
 }

@@ -3,8 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Kanit, Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
-import { AppColorProvider } from '@ainexsuite/theme';
-import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { AppColorProvider, ThemeProvider } from '@ainexsuite/theme';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 

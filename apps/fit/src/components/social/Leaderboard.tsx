@@ -3,6 +3,7 @@
 import { Trophy, Medal } from 'lucide-react';
 import { useFitStore } from '../../lib/store';
 import { Member, Workout } from '../../types/models';
+import { SectionHeader } from '@ainexsuite/ui';
 
 export function Leaderboard() {
   const { workouts, getCurrentSpace } = useFitStore();
@@ -25,10 +26,11 @@ export function Leaderboard() {
 
   return (
     <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 space-y-4">
-      <div className="flex items-center gap-2 text-orange-400 font-bold uppercase text-xs tracking-wider">
-        <Trophy className="h-4 w-4" />
-        Leaderboard
-      </div>
+      <SectionHeader
+        title="Leaderboard"
+        icon={<Trophy className="h-4 w-4" />}
+        variant="small"
+      />
 
       <div className="space-y-3">
         {stats.map((stat: Member & { totalWorkouts: number; totalDuration: number }, index: number) => (

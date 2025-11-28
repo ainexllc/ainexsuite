@@ -17,7 +17,7 @@ import { useSpaces } from "@/components/providers/spaces-provider";
 import { uploadMultipleFiles } from "@/lib/firebase/storage";
 import { moodConfig, getMoodColor } from "@/lib/utils/mood";
 import type { MoodType } from "@ainexsuite/types";
-import { useToast } from "@/lib/toast";
+import { useToast } from "@ainexsuite/ui";
 
 type AttachmentDraft = {
   id: string;

@@ -4,7 +4,7 @@ import { getMoodIcon, getMoodLabel } from '@/lib/utils/mood';
 import { cn } from '@/lib/utils';
 import { deleteJournalEntry } from '@/lib/firebase/firestore';
 import { deleteAllEntryFiles } from '@/lib/firebase/storage';
-import { useToast } from '@/lib/toast';
+import { useToast } from '@ainexsuite/ui';
 import { useRouter } from 'next/navigation';
 import { Paperclip, Trash2, Edit, Link as LinkIcon, Lock, Unlock } from 'lucide-react';
 import { useState } from 'react';

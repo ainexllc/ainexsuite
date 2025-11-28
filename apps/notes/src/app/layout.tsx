@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ThemeProvider, AppColorProvider } from "@ainexsuite/theme";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@ainexsuite/ui";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -47,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans bg-surface-base text-ink-900 antialiased transition-colors duration-300`}
+        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
       >
         <ThemeProvider>
           <AppColorProvider appId="notes" fallbackPrimary="#3b82f6" fallbackSecondary="#60a5fa">

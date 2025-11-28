@@ -2,8 +2,10 @@
 export {
   TopNav,
   TopNavProfileButton,
+  TopNavAiButton,
   type TopNavProps,
   type TopNavProfileButtonProps,
+  type TopNavAiButtonProps,
 } from "./layout/top-nav";
 
 export {
@@ -24,6 +26,21 @@ export {
   type NavItem,
   type NavSection,
 } from "./layout/navigation-panel";
+
+export {
+  Sidebar,
+  SidebarHeader,
+  SidebarSection,
+  SidebarItem,
+  SidebarFooter,
+  useSidebarCollapsed,
+  type SidebarProps,
+  type SidebarPosition,
+  type SidebarHeaderProps,
+  type SidebarSectionProps,
+  type SidebarItemProps,
+  type SidebarFooterProps,
+} from "./layout/sidebar";
 
 export {
   ActivityPanel,
@@ -90,6 +107,11 @@ export {
   type SearchBarProps,
 } from "./navigation/search-bar";
 
+export {
+  SearchInput,
+  type SearchInputProps,
+} from "./search";
+
 export { AtmosphericGlows } from "./layouts/atmospheric-glows";
 export { WorkspaceHeader } from "./layouts/workspace-header";
 // WorkspacePageHeader hidden - may be used later (see _workspace-page-header.tsx)
@@ -111,9 +133,66 @@ export { AinexStudiosLogo, type AinexStudiosLogoProps } from "./branding/ainex-s
 // Core UI Components
 export * from './feedback/feedback-widget';
 export * from './buttons/button';
+export { LoadingButton, type LoadingButtonProps } from './buttons/loading-button';
 export * from './cards/card';
+export * from './cards/stats-card';
+export { DataCard, type DataCardProps, type DataCardVariant } from './cards/data-card';
 
-export { Input, Textarea, FormField, type InputProps, type TextareaProps, type FormFieldProps } from "./forms";
+// Header Components
+export {
+  PageHeader,
+  SectionHeader,
+  ContentHeader,
+  type PageHeaderProps,
+  type SectionHeaderProps,
+  type ContentHeaderProps,
+  type Breadcrumb,
+} from './headers';
+
+// List Components
+export {
+  ListSection,
+  ListItem,
+  EmptyState,
+  ListSkeleton,
+  type ListSectionProps,
+  type ListItemProps,
+  type EmptyStateProps,
+  type ListSkeletonProps,
+} from './lists';
+
+// Loading Components
+export {
+  Spinner,
+  LoadingOverlay,
+  LoadingDots,
+  PageLoading,
+  LoadingSkeleton,
+  type SpinnerProps,
+  type SpinnerSize,
+  type LoadingOverlayProps,
+  type LoadingDotsProps,
+  type LoadingDotsSize,
+  type PageLoadingProps,
+  type LoadingSkeletonProps,
+  type SkeletonVariant,
+} from './loading';
+
+// Form Components
+export {
+  Input,
+  Textarea,
+  FormField,
+  TagInput,
+  Tag,
+  TagList,
+  type InputProps,
+  type TextareaProps,
+  type FormFieldProps,
+  type TagInputProps,
+  type TagProps,
+  type TagListProps,
+} from "./forms";
 
 export {
   Modal,
@@ -139,6 +218,18 @@ export {
   ConfirmationDialog,
   type ConfirmationDialogProps,
 } from "./confirmation-dialog";
+
+// Modal Variants - Specialized modal components for common use cases
+export {
+  FilterModal,
+  FormModal,
+  AlertModal,
+  type FilterModalProps,
+  type FilterTab,
+  type FormModalProps,
+  type AlertModalProps,
+  type AlertType,
+} from "./modal/index";
 
 export {
   Table,
@@ -184,6 +275,7 @@ export {
   AIInsightsBulletList,
   AIInsightsTagList,
   AIInsightsText,
+  useInsightsCollapsed,
   type AIInsightsCardProps,
   type AIInsightsSection,
   type AIInsightsBulletListProps,
@@ -210,3 +302,61 @@ export {
   type SpaceItem,
   type SpaceTypeOption,
 } from "./spaces";
+
+// Toast/Notification Components
+export {
+  Toast,
+  ToastAction,
+  ToastClose,
+  ToastDescription,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport,
+  Toaster,
+  useToast,
+  toast,
+  type ToastProps,
+  type ToastActionElement,
+  type ToastVariant,
+  type ToasterProps,
+  type ToastData,
+  type ToastInput,
+} from "./toast";
+
+// Control Components
+export {
+  ViewToggle,
+  SegmentedControl,
+  type ViewToggleProps,
+  type ViewToggleOption,
+  type ViewToggleSize,
+  type ViewToggleVariant,
+  type SegmentedControlProps,
+  type SegmentedControlOption,
+} from "./controls";
+
+// Progress Components
+export {
+  ProgressBar,
+  ProgressRing,
+  ProgressSteps,
+  StreakProgress,
+  type ProgressBarProps,
+  type ProgressRingProps,
+  type ProgressStepsProps,
+  type Step,
+  type StreakProgressProps,
+} from "./progress";
+
+// Avatar Components
+export {
+  Avatar,
+  AvatarGroup,
+  UserDisplay,
+  type AvatarProps,
+  type AvatarGroupProps,
+  type UserDisplayProps,
+} from "./avatar";
+
+// Theme Components
+export { ThemeSwitcher } from "./theme";

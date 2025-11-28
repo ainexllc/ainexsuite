@@ -9,7 +9,6 @@ import {
   ZoomOut,
   Maximize2,
 } from 'lucide-react';
-import { ThemeSwitcher } from '../ThemeSwitcher';
 
 interface ToolbarProps {
   onUndo: () => void;
@@ -158,11 +157,6 @@ export function Toolbar({
         title="Fit View"
         icon={<Maximize2 className="h-4 w-4" />}
       />
-
-      <ToolbarDivider />
-
-      {/* Theme Switcher */}
-      <ThemeSwitcher />
     </div>
   );
 }

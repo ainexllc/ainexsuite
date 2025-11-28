@@ -55,16 +55,17 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Projects App Theme Overrides - Blue/Cyan Primary */
-:root.dark,
+/* Projects App Theme - Indigo/Violet */
 :root {
-  /* Sky 500 for Primary */
-  --theme-primary: 14 165 233;
-  --theme-primary-rgb: 14, 165, 233;
-  --theme-primary-light: 56 189 248; /* Sky 400 */
-  --theme-primary-dark: 2 132 199;    /* Sky 600 */
+  --app-primary: 239 84% 67%;      /* Indigo-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 258 90% 66%;    /* Violet-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Indigo 500 for Secondary */
-  --theme-secondary: 99 102 241;
-  --theme-secondary-rgb: 99, 102, 241;
+.dark {
+  --app-primary: 239 84% 74%;      /* Indigo-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 258 90% 73%;    /* Violet-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }

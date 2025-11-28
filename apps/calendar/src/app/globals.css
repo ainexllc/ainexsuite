@@ -55,16 +55,17 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Calendar App Theme Overrides - Violet/Purple Primary */
-:root.dark,
+/* Calendar App Theme - Cyan/Indigo */
 :root {
-  /* Violet 500 for Primary */
-  --theme-primary: 139 92 246;
-  --theme-primary-rgb: 139, 92, 246;
-  --theme-primary-light: 167 139 250; /* Violet 400 */
-  --theme-primary-dark: 124 58 237;   /* Violet 600 */
+  --app-primary: 187 92% 41%;      /* Cyan-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 239 84% 67%;    /* Indigo-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Purple 500 for Secondary */
-  --theme-secondary: 168 85 247;
-  --theme-secondary-rgb: 168, 85, 247;
+.dark {
+  --app-primary: 187 91% 52%;      /* Cyan-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 239 84% 74%;    /* Indigo-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }

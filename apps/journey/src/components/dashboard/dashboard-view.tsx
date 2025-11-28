@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '@ainexsuite/auth';
-import { useToast } from '@/lib/toast';
+import { useToast } from '@ainexsuite/ui';
 import { getUserJournalEntries, getOnThisDayEntries } from '@/lib/firebase/firestore';
 import type { JournalEntry, MoodType } from '@ainexsuite/types';
 import { FilterModal } from '@/components/journal/filter-modal';

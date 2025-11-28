@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { getMonth, getDate } from 'date-fns';
 import { Sparkles, CalendarClock } from 'lucide-react';
+import { SectionHeader } from '@ainexsuite/ui';
 import { useMomentsStore } from '@/lib/store';
 import Image from 'next/image';
 import type { Moment } from '@ainexsuite/types';
@@ -34,17 +35,15 @@ export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="bg-amber-500/20 p-2 rounded-lg">
-          <CalendarClock className="h-5 w-5 text-amber-500" />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-text-primary">On This Day</h3>
-          <p className="text-xs text-text-muted">Relive memories from years past</p>
-        </div>
-      </div>
+      <SectionHeader
+        title="On This Day"
+        subtitle="Relive memories from years past"
+        icon={<CalendarClock className="h-5 w-5" />}
+        accentColor="#f59e0b"
+        variant="default"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         {flashbacks.slice(0, 3).map((moment) => {
           const yearsAgo = new Date().getFullYear() - new Date(moment.date).getFullYear();
           return (

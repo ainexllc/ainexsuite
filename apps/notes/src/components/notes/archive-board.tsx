@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import { Archive } from "lucide-react";
+import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { NoteCard } from "@/components/notes/note-card";
 import { useNotes } from "@/components/providers/notes-provider";
 import { Container } from "@/components/layout/container";
-import { Archive } from "lucide-react";
 
 function NotesSkeleton() {
   return (
@@ -15,20 +16,6 @@ function NotesSkeleton() {
           className="mb-4 h-40 break-inside-avoid rounded-3xl bg-surface-muted/80 shadow-inner animate-pulse"
         />
       ))}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-3xl bg-surface-muted/60 px-10 py-16 text-center shadow-inner">
-      <Archive className="h-12 w-12 text-accent-500" aria-hidden />
-      <p className="text-base font-semibold text-ink-700">
-        No archived notes yet
-      </p>
-      <p className="text-sm text-muted">
-        Archive notes from your workspace to keep them out of sight but easily recoverable.
-      </p>
     </div>
   );
 }
@@ -72,11 +59,7 @@ export function ArchiveBoard() {
       ) : hasNotes ? (
         <div className="space-y-10">
           {archivedNotes.pinned.length > 0 && (
-            <section className="space-y-4">
-              <header className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-ink-400">
-                <span>Pinned</span>
-                <span>{archivedNotes.pinned.length}</span>
-              </header>
+            <ListSection title="Pinned" count={archivedNotes.pinned.length}>
               <div className="note-board-columns">
                 {archivedNotes.pinned.map((note) => (
                   <div key={note.id} className="mb-4">
@@ -84,17 +67,14 @@ export function ArchiveBoard() {
                   </div>
                 ))}
               </div>
-            </section>
+            </ListSection>
           )}
 
           {archivedNotes.others.length > 0 && (
-            <section className="space-y-4">
-              {archivedNotes.pinned.length > 0 && (
-                <header className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-ink-400">
-                  <span>All Notes</span>
-                  <span>{archivedNotes.others.length}</span>
-                </header>
-              )}
+            <ListSection
+              title="All Notes"
+              count={archivedNotes.pinned.length > 0 ? archivedNotes.others.length : undefined}
+            >
               <div className="note-board-columns">
                 {archivedNotes.others.map((note) => (
                   <div key={note.id} className="mb-4">
@@ -102,11 +82,16 @@ export function ArchiveBoard() {
                   </div>
                 ))}
               </div>
-            </section>
+            </ListSection>
           )}
         </div>
       ) : (
-        <EmptyState />
+        <EmptyState
+          title="No archived notes yet"
+          description="Archive notes from your workspace to keep them out of sight but easily recoverable."
+          icon={Archive}
+          variant="default"
+        />
       )}
     </Container>
   );

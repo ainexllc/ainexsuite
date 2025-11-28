@@ -25,7 +25,6 @@ import {
   ArrowLeftRight,
   ArrowUpDown,
   Wrench,
-  SunMedium,
   Shapes,
   Keyboard,
   KanbanSquare,
@@ -37,7 +36,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { ThemeSwitcher } from '../ThemeSwitcher';
 
 interface ShapeTemplateProps {
   type: string;
@@ -457,15 +455,6 @@ export function ShapePalette({
             </button>
           ))}
         </div>
-      </PaletteSection>
-
-      <PaletteSection
-        title="Theme"
-        icon={<SunMedium className="h-3.5 w-3.5 text-white/50" />}
-        storageId="workflow-section-theme"
-        isCollapsed={isCollapsed}
-      >
-        <ThemeSwitcher />
       </PaletteSection>
 
       <PaletteSection

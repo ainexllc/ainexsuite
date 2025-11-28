@@ -75,9 +75,9 @@ export function GlassModal({
   };
 
   const variantClasses = {
-    default: "bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10",
-    elevated: "bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/30 dark:border-white/20 shadow-2xl shadow-black/20",
-    frosted: "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-3xl border border-white/40 dark:border-white/30 shadow-xl",
+    default: "bg-popover/95 backdrop-blur-xl border border-border text-popover-foreground",
+    elevated: "bg-popover/90 backdrop-blur-2xl border border-border shadow-2xl shadow-black/20 text-popover-foreground",
+    frosted: "bg-popover/80 backdrop-blur-3xl border border-border shadow-xl text-popover-foreground",
   };
 
   const content = (
@@ -89,7 +89,7 @@ export function GlassModal({
     >
       {/* Backdrop with blur */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+        className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
         onClick={closeOnBackdropClick ? onClose : undefined}
         aria-hidden="true"
       />
@@ -110,7 +110,7 @@ export function GlassModal({
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-ink-500 dark:text-white/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-ink-700 dark:hover:text-white"
+            className="absolute right-4 top-4 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />
@@ -133,7 +133,7 @@ export const GlassModalHeader = React.forwardRef<
   <div
     ref={ref}
     className={clsx(
-      "relative flex items-start justify-between gap-4 px-6 py-5 border-b border-black/5 dark:border-white/10",
+      "relative flex items-start justify-between gap-4 px-6 py-5 border-b border-border",
       className
     )}
     {...props}
@@ -143,7 +143,7 @@ export const GlassModalHeader = React.forwardRef<
       <button
         type="button"
         onClick={onClose}
-        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-500 dark:text-white/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-ink-700 dark:hover:text-white"
+        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         aria-label="Close modal"
       >
         <X className="h-4 w-4" />
@@ -160,7 +160,7 @@ export const GlassModalTitle = React.forwardRef<
   <h2
     ref={ref}
     className={clsx(
-      "text-xl font-semibold text-ink-900 dark:text-white leading-tight",
+      "text-xl font-semibold text-foreground leading-tight",
       className
     )}
     {...props}
@@ -175,7 +175,7 @@ export const GlassModalDescription = React.forwardRef<
   <p
     ref={ref}
     className={clsx(
-      "text-sm text-ink-600 dark:text-white/70 mt-1",
+      "text-sm text-muted-foreground mt-1",
       className
     )}
     {...props}
@@ -202,7 +202,7 @@ export const GlassModalFooter = React.forwardRef<
   <div
     ref={ref}
     className={clsx(
-      "flex items-center justify-end gap-3 border-t border-black/5 dark:border-white/10 px-6 py-4",
+      "flex items-center justify-end gap-3 border-t border-border px-6 py-4",
       className
     )}
     {...props}

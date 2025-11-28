@@ -39,13 +39,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <AuthProvider>
-          <ThemeProvider>
+        <ThemeProvider>
+          <AuthProvider>
             <AppColorProvider appId="projects" fallbackPrimary="#6366f1" fallbackSecondary="#818cf8">
               {children}
             </AppColorProvider>
-          </ThemeProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

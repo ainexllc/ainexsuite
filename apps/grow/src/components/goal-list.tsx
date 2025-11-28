@@ -4,6 +4,7 @@ import type { LearningGoal } from '@ainexsuite/types';
 import { format } from 'date-fns';
 import { Calendar, Book, CheckCircle2, Circle, Edit } from 'lucide-react';
 import { updateLearningGoal } from '@/lib/learning';
+import { ListSection } from '@ainexsuite/ui';
 
 interface GoalListProps {
   goals: LearningGoal[];
@@ -27,8 +28,7 @@ export function GoalList({ goals, onEdit, onUpdate }: GoalListProps) {
   return (
     <div className="space-y-8">
       {activeGoals.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Active Goals</h2>
+        <ListSection title="Active Goals" count={activeGoals.length}>
           <div className="grid gap-4">
             {activeGoals.map((goal) => (
               <GoalCard
@@ -39,12 +39,11 @@ export function GoalList({ goals, onEdit, onUpdate }: GoalListProps) {
               />
             ))}
           </div>
-        </div>
+        </ListSection>
       )}
 
       {completedGoals.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4">Completed Goals</h2>
+        <ListSection title="Completed Goals" count={completedGoals.length}>
           <div className="grid gap-4">
             {completedGoals.map((goal) => (
               <GoalCard
@@ -55,7 +54,7 @@ export function GoalList({ goals, onEdit, onUpdate }: GoalListProps) {
               />
             ))}
           </div>
-        </div>
+        </ListSection>
       )}
     </div>
   );

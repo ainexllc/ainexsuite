@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { clsx } from "clsx";
-import { useTheme } from "@/components/providers/theme-provider";
+import { useTheme } from "@ainexsuite/theme";
 
 type LogoWordmarkProps = {
   href?: string;

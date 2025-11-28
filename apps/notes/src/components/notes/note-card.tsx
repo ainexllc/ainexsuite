@@ -12,13 +12,13 @@ import {
   Users,
 } from "lucide-react";
 import { clsx } from "clsx";
+import { ConfirmationDialog } from "@ainexsuite/ui";
 import type { Note } from "@/lib/types/note";
 import type { ViewMode } from "@/lib/types/settings";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { NoteEditor } from "@/components/notes/note-editor";
 import { useLabels } from "@/components/providers/labels-provider";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
 
 type NoteCardProps = {
   note: Note;
@@ -283,15 +283,15 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
       {isEditing ? (
         <NoteEditor note={note} onClose={() => setIsEditing(false)} />
       ) : null}
-      <ConfirmModal
+      <ConfirmationDialog
         isOpen={showDeleteConfirm}
-        title="Delete this note?"
-        message="This will move the note to the Trash. You can restore it from there within the next 30 days."
-        confirmLabel="Delete note"
-        cancelLabel="Keep note"
-        isProcessing={isDeleting}
-        onCancel={handleCancelDelete}
+        onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
+        title="Delete this note?"
+        description="This will move the note to the Trash. You can restore it from there within the next 30 days."
+        confirmText="Delete note"
+        cancelText="Keep note"
+        variant="danger"
       />
     </>
   );

@@ -3,3 +3,4 @@ export * from './textarea';
 export * from './select';
 export * from './checkbox';
 export * from './form-field';
+export * from './tag-input';

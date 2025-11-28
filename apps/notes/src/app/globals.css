@@ -2,21 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Notes App Theme Overrides - Blue/Indigo */
-:root.dark,
+/* Notes App Theme - Yellow/Indigo */
 :root {
-  /* Blue 500 for Primary */
-  --theme-primary: 59 130 246;
-  --theme-primary-rgb: 59, 130, 246;
-  --theme-primary-light: 96 165 250; /* Blue 400 */
-  --theme-primary-dark: 37 99 235;   /* Blue 600 */
+  --app-primary: 48 96% 53%;       /* Yellow-500 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 239 84% 67%;    /* Indigo-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
 
-  /* Indigo 500 for Secondary */
-  --theme-secondary: 99 102 241;
-  --theme-secondary-rgb: 99, 102, 241;
-
-  /* Sync Accent with Primary */
-  --color-accent-500: 59 130 246;
+.dark {
+  --app-primary: 48 96% 61%;       /* Yellow-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 239 84% 74%;    /* Indigo-400 */
+  --app-secondary-foreground: 0 0% 0%;
 }
 
 /* Animation utilities matching Main app */
