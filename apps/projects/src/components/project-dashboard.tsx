@@ -9,9 +9,9 @@ interface ProjectDashboardProps {
 export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
   // Mock data for visual demonstration
   const recentProjects = [
-    { id: 1, title: 'Q4 Marketing Strategy', updated: '2h ago', color: 'bg-blue-500' },
-    { id: 2, title: 'Website Redesign', updated: '1d ago', color: 'bg-purple-500' },
-    { id: 3, title: 'Mobile App Launch', updated: '3d ago', color: 'bg-green-500' },
+    { id: 1, title: 'Q4 Marketing Strategy', updated: '2h ago', color: 'bg-primary-500' },
+    { id: 2, title: 'Website Redesign', updated: '1d ago', color: 'bg-secondary-500' },
+    { id: 3, title: 'Mobile App Launch', updated: '3d ago', color: 'bg-accent-500' },
   ];
 
   return (
@@ -21,11 +21,11 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
         {/* Call to Action: Whiteboard */}
         <button
           onClick={onOpenWhiteboard}
-          className="group relative overflow-hidden rounded-2xl border border-dashed border-border bg-foreground/5 p-8 text-left transition-all hover:border-cyan-500/50 hover:bg-cyan-500/5"
+          className="group relative overflow-hidden rounded-2xl border border-dashed border-border bg-foreground/5 p-8 text-left transition-all hover:border-primary-500/50 hover:bg-primary-500/5"
         >
           <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="rounded-full bg-cyan-500/10 p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Presentation className="h-8 w-8 text-cyan-400" />
+            <div className="rounded-full bg-primary-500/10 p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
+              <Presentation className="h-8 w-8 text-primary-400" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-foreground mb-2">Planning Whiteboard</h3>
@@ -39,8 +39,8 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
         {/* Create New Project (Placeholder) */}
         <button className="group relative overflow-hidden rounded-2xl border border-border bg-surface-card p-8 text-left transition-all hover:bg-surface-elevated hover:border-border md:col-span-2">
           <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="rounded-full bg-purple-500/10 p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Plus className="h-8 w-8 text-purple-400" />
+            <div className="rounded-full bg-secondary-500/10 p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
+              <Plus className="h-8 w-8 text-secondary-400" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-foreground mb-2">New Project</h3>
@@ -59,7 +59,7 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
             <Clock className="h-4 w-4 text-muted-foreground" />
             Recent Projects
           </h3>
-          <button className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+          <button className="text-sm text-primary-400 hover:text-primary-300 transition-colors">
             View All
           </button>
         </div>

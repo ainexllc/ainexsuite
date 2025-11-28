@@ -81,8 +81,8 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-          <p className="text-zinc-500 text-sm">Loading Admin Console...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground text-sm">Loading Admin Console...</p>
         </div>
       </div>
     );
@@ -108,7 +108,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
             Access Restricted
           </h1>
 
-          <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
+          <p className="text-muted-foreground text-sm mb-8 leading-relaxed">
             You do not have administrative privileges. This area is restricted to authorized personnel only.
           </p>
 
@@ -117,7 +117,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
               const isDev = process.env.NODE_ENV === 'development';
               window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexsuite.com';
             }}
-            className="w-full py-2.5 px-4 bg-white text-zinc-950 font-medium rounded-lg hover:bg-zinc-200 transition-colors"
+            className="w-full py-2.5 px-4 bg-white text-black font-medium rounded-lg hover:bg-white/90 transition-colors"
           >
             Return to Suite Hub
           </button>

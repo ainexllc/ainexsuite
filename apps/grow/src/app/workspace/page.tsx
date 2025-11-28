@@ -21,7 +21,7 @@ import { NotificationToast } from '@/components/gamification/NotificationToast';
 import { HabitSuggester } from '@/components/ai/HabitSuggester';
 import { AIInsightsBanner } from '@/components/ai/AIInsightsBanner';
 import { WelcomeFlow } from '@/components/onboarding/WelcomeFlow';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { EmptyState } from '@ainexsuite/ui';
 import { BottomNav } from '@/components/mobile/BottomNav';
 
 // Analytics Components

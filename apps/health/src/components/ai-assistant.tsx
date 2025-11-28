@@ -38,7 +38,7 @@ Be supportive, encouraging, and focused on holistic wellness.`,
         onClick={() => setIsOpen(!isOpen)}
         type="button"
         className={cn(
-          'fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
+          'fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
           isOpen && 'rotate-180'
         )}
       >
@@ -49,7 +49,7 @@ Be supportive, encouraging, and focused on holistic wellness.`,
         <div className="fixed bottom-24 right-8 w-96 h-[500px] bg-surface-elevated border border-outline-subtle rounded-2xl shadow-2xl flex flex-col z-50">
           <div className="p-4 border-b border-outline-subtle">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
               <div>
@@ -82,7 +82,7 @@ Be supportive, encouraging, and focused on holistic wellness.`,
                     className={cn(
                       'max-w-[80%] px-4 py-2 rounded-xl',
                       message.role === 'user'
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-surface-muted text-ink-900'
                     )}
                   >
@@ -96,9 +96,9 @@ Be supportive, encouraging, and focused on holistic wellness.`,
               <div className="flex justify-start">
                 <div className="bg-surface-muted px-4 py-2 rounded-xl">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-100" />
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-200" />
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-100" />
+                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-200" />
                   </div>
                 </div>
               </div>
@@ -119,13 +119,13 @@ Be supportive, encouraging, and focused on holistic wellness.`,
                   }
                 }}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-surface-muted rounded-xl border border-outline-subtle focus:border-emerald-500 focus:outline-none disabled:opacity-50 text-ink-900"
+                className="flex-1 px-4 py-2 bg-surface-muted rounded-xl border border-outline-subtle focus:border-primary focus:outline-none disabled:opacity-50 text-ink-900"
               />
               <button
                 onClick={handleSend}
                 type="button"
                 disabled={!input.trim() || loading}
-                className="p-2 bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors disabled:opacity-50 text-white"
+                className="p-2 bg-primary hover:bg-primary/90 rounded-xl transition-colors disabled:opacity-50 text-white"
               >
                 <Send className="h-5 w-5" />
               </button>

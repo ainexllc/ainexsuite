@@ -130,6 +130,7 @@ export { WorkspaceBackground } from "./backgrounds/workspace-background";
 
 // Branding Components
 export { AinexStudiosLogo, type AinexStudiosLogoProps } from "./branding/ainex-studios-logo";
+export { LogoWordmark, type LogoWordmarkProps } from "./branding/logo-wordmark";
 
 // Core UI Components
 export * from './feedback/feedback-widget';

@@ -223,7 +223,7 @@ export default function FeedbackPage() {
   if (loading) {
     return (
       <div className="flex justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -236,7 +236,7 @@ export default function FeedbackPage() {
             <MessageSquare className="h-6 w-6 text-indigo-400" />
             Feedback Inbox
           </h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Review and manage user feedback from all apps.
           </p>
         </div>
@@ -249,23 +249,23 @@ export default function FeedbackPage() {
             <Sparkles className="h-4 w-4" />
           </div>
           {insightsLoading ? (
-            <div className="flex items-center gap-2 text-zinc-500">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">Analyzing feedback...</span>
             </div>
           ) : insightsError ? (
             <p className="text-sm text-red-400">{insightsError}</p>
           ) : insights ? (
-            <p className="text-sm text-zinc-300 leading-relaxed flex-1">
+            <p className="text-sm text-foreground/90 leading-relaxed flex-1">
               {insights.summary}
             </p>
           ) : (
-            <p className="text-sm text-zinc-500">No insights available</p>
+            <p className="text-sm text-muted-foreground">No insights available</p>
           )}
           <button
             onClick={fetchInsights}
             disabled={insightsLoading}
-            className="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors shrink-0"
+            className="p-2 text-muted-foreground hover:text-white hover:bg-white/5 rounded-lg transition-colors shrink-0"
             title="Refresh Analysis"
           >
             <RefreshCw className={clsx("h-4 w-4", insightsLoading && "animate-spin")} />
@@ -283,8 +283,8 @@ export default function FeedbackPage() {
               className={clsx(
                 "px-4 py-2 rounded-md text-sm font-medium capitalize transition-all",
                 filter === f
-                  ? "bg-zinc-800 text-white shadow-sm"
-                  : "text-zinc-400 hover:text-white hover:bg-white/5"
+                  ? "bg-surface-elevated text-white shadow-sm"
+                  : "text-muted-foreground hover:text-white hover:bg-white/5"
               )}
             >
               {f}
@@ -295,7 +295,7 @@ export default function FeedbackPage() {
         {/* Bulk Actions */}
         {selectedItems.size > 0 && (
           <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-            <span className="text-sm text-zinc-400">{selectedItems.size} selected</span>
+            <span className="text-sm text-muted-foreground">{selectedItems.size} selected</span>
             <button
               onClick={handleBulkDelete}
               className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-colors border border-red-500/20"
@@ -316,13 +316,13 @@ export default function FeedbackPage() {
              />
           </div>
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search feedback..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900/50 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors"
+              className="w-full bg-surface-elevated/50 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
             />
           </div>
         </div>
@@ -332,9 +332,9 @@ export default function FeedbackPage() {
       <div className="space-y-3">
         {filteredFeedback.length === 0 ? (
           <div className="glass-card rounded-xl p-12 text-center">
-            <Inbox className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
-            <p className="text-zinc-500 font-medium">No feedback found</p>
-            <p className="text-zinc-600 text-sm mt-1">Try adjusting your filters</p>
+            <Inbox className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground font-medium">No feedback found</p>
+            <p className="text-muted-foreground text-sm mt-1">Try adjusting your filters</p>
           </div>
         ) : (
           paginatedFeedback.map((item) => (
@@ -362,21 +362,21 @@ export default function FeedbackPage() {
                       "text-xs font-medium px-2 py-0.5 rounded border",
                       item.appId === 'admin' ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" :
                       item.appId === 'notes' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
-                      "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+                      "bg-muted/10 text-muted-foreground border-border/50"
                     )}>
                       {item.appId}
                     </span>
-                    <span className="text-xs text-zinc-500">{item.path}</span>
+                    <span className="text-xs text-muted-foreground">{item.path}</span>
                     {item.status === 'new' && (
                       <span className="h-2 w-2 rounded-full bg-indigo-500" />
                     )}
                   </div>
                   
-                  <p className="text-sm text-zinc-200 leading-relaxed mb-3">
+                  <p className="text-sm text-foreground leading-relaxed mb-3">
                     {item.message}
                   </p>
                   
-                  <div className="flex items-center gap-3 text-xs text-zinc-500">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span>{item.authorEmail || 'Anonymous'}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
@@ -393,7 +393,7 @@ export default function FeedbackPage() {
                       "p-2 rounded-lg transition-colors",
                       item.promoted 
                         ? "text-yellow-400 bg-yellow-400/10 hover:bg-yellow-400/20" 
-                        : "text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/10"
+                        : "text-muted-foreground hover:text-yellow-400 hover:bg-yellow-400/10"
                     )}
                     title={item.promoted ? "Remove from Great Ideas" : "Promote to Great Ideas"}
                   >
@@ -414,7 +414,7 @@ export default function FeedbackPage() {
                       "p-2 rounded-lg transition-colors",
                       item.status === 'archived'
                         ? "text-indigo-400 hover:bg-indigo-500/10"
-                        : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                        : "text-muted-foreground hover:bg-surface-elevated hover:text-white"
                     )}
                     title={item.status === 'archived' ? "Move to Inbox" : "Archive"}
                   >
@@ -422,7 +422,7 @@ export default function FeedbackPage() {
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
                     title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -437,7 +437,7 @@ export default function FeedbackPage() {
       {/* Pagination */}
       {filteredFeedback.length > itemsPerPage && (
         <div className="flex items-center justify-between pt-4 border-t border-white/5">
-          <div className="text-sm text-zinc-500">
+          <div className="text-sm text-muted-foreground">
             Showing {startIndex + 1}-{Math.min(endIndex, filteredFeedback.length)} of {filteredFeedback.length}
           </div>
 
@@ -445,14 +445,14 @@ export default function FeedbackPage() {
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded-lg hover:bg-white/5 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded-lg hover:bg-white/5 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -472,11 +472,11 @@ export default function FeedbackPage() {
                 <h3 className="text-lg font-semibold text-white">
                   {itemToDelete === 'bulk' ? `Delete ${selectedItems.size} Items` : 'Delete Feedback'}
                 </h3>
-                <p className="text-sm text-zinc-400">This action cannot be undone.</p>
+                <p className="text-sm text-muted-foreground">This action cannot be undone.</p>
               </div>
             </div>
             
-            <p className="text-zinc-300 text-sm mb-6 leading-relaxed">
+            <p className="text-foreground/90 text-sm mb-6 leading-relaxed">
               {itemToDelete === 'bulk' 
                 ? `Are you sure you want to permanently delete these ${selectedItems.size} feedback items? They will be removed from all views and analytics.`
                 : "Are you sure you want to permanently delete this feedback item? It will be removed from all views and analytics."
@@ -486,7 +486,7 @@ export default function FeedbackPage() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setItemToDelete(null)}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-foreground/90 hover:text-white hover:bg-white/5 transition-colors"
                 disabled={isDeleting}
               >
                 Cancel

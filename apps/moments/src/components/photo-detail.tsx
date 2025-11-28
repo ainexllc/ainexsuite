@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import { X, MapPin, Calendar, Edit, Smile, MessageCircle, Send } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
+import { useAppColors } from '@ainexsuite/theme';
 import { toggleReaction, addComment, deleteComment } from '@/lib/moments';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +25,7 @@ const EMOJIS = [
 
 export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDetailProps) {
   const { user } = useAuth();
+  const { primary: primaryColor, secondary: secondaryColor } = useAppColors();
   const [moment, setMoment] = useState<Moment>(initialMoment);
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -190,10 +192,15 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
                     disabled={!user}
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all hover:scale-105 active:scale-95",
-                      hasReacted 
-                        ? "bg-accent-500/20 text-accent-600 border border-accent-500/30" 
+                      hasReacted
+                        ? "border"
                         : "bg-surface-elevated hover:bg-surface-hover border border-transparent"
                     )}
+                    style={hasReacted ? {
+                      backgroundColor: `${primaryColor}33`,
+                      color: primaryColor,
+                      borderColor: `${primaryColor}4d`
+                    } : undefined}
                     title={emoji.label}
                   >
                     <span>{emoji.icon}</span>
@@ -215,7 +222,12 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
               <div className="space-y-4">
                 {moment.comments.sort((a, b) => a.timestamp - b.timestamp).map((comment) => (
                   <div key={comment.id} className="flex gap-3 group">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${secondaryColor}, ${primaryColor})`
+                      }}
+                    >
                       {/* Placeholder avatar until we have user profiles linked */}
                       U
                     </div>
@@ -230,7 +242,10 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
                         {user && comment.uid === user.uid && (
                           <button
                             onClick={() => handleDeleteComment(comment)}
-                            className="text-[10px] text-red-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                            style={{ color: '#ef4444' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#dc2626'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#ef4444'}
                           >
                             Delete
                           </button>
@@ -257,7 +272,10 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder={user ? "Write a comment..." : "Sign in to comment"}
                   disabled={!user || isSubmitting}
-                  className="w-full bg-surface-elevated border border-outline-subtle rounded-xl px-4 py-3 pr-10 text-sm focus:outline-none focus:border-accent-500 resize-none min-h-[44px] max-h-32"
+                  className="w-full bg-surface-elevated border border-outline-subtle rounded-xl px-4 py-3 pr-10 text-sm focus:outline-none resize-none min-h-[44px] max-h-32"
+                  style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
+                  onFocus={(e) => e.target.style.borderColor = primaryColor}
+                  onBlur={(e) => e.target.style.borderColor = ''}
                   rows={1}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -266,12 +284,23 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
                     }
                   }}
                 />
-                <Smile className="absolute right-3 bottom-3 h-5 w-5 text-ink-400 cursor-pointer hover:text-accent-500 transition-colors" />
+                <Smile
+                  className="absolute right-3 bottom-3 h-5 w-5 text-ink-400 cursor-pointer transition-colors"
+                  style={{ color: primaryColor }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                />
               </div>
               <button
                 type="submit"
                 disabled={!user || !commentText.trim() || isSubmitting}
-                className="p-3 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:hover:bg-accent-500 text-foreground rounded-xl transition-all shadow-lg shadow-accent-500/20"
+                className="p-3 disabled:opacity-50 text-foreground rounded-xl transition-all shadow-lg"
+                style={{
+                  backgroundColor: primaryColor,
+                  boxShadow: `0 10px 15px -3px ${primaryColor}33`
+                }}
+                onMouseEnter={(e) => !user || !commentText.trim() || isSubmitting ? null : e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 {isSubmitting ? (
                   <div className="h-5 w-5 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />

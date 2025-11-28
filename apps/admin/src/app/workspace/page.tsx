@@ -84,7 +84,7 @@ function StatCard({
   return (
     <div className="glass-card p-6 rounded-xl relative overflow-hidden group">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2.5 rounded-lg bg-foreground/5 border border-border text-zinc-400 group-hover:text-foreground group-hover:bg-foreground/10 transition-colors">
+        <div className="p-2.5 rounded-lg bg-foreground/5 border border-border text-muted-foreground group-hover:text-foreground group-hover:bg-foreground/10 transition-colors">
           <Icon className="w-5 h-5" />
         </div>
         {trend && (
@@ -97,12 +97,12 @@ function StatCard({
 
       <div className="space-y-1">
         <h3 className="text-3xl font-bold text-foreground tracking-tight">{value}</h3>
-        <p className="text-sm text-zinc-500 font-medium">{title}</p>
+        <p className="text-sm text-muted-foreground font-medium">{title}</p>
       </div>
 
       {trendLabel && (
         <div className="mt-4 pt-4 border-t border-border">
-          <p className="text-xs text-zinc-500">{trendLabel}</p>
+          <p className="text-xs text-muted-foreground">{trendLabel}</p>
         </div>
       )}
     </div>
@@ -125,7 +125,7 @@ function Gauge({ value, label, icon: Icon, colorClass }: { value: number; label:
             stroke="currentColor"
             strokeWidth="6"
             fill="transparent"
-            className="text-zinc-800"
+            className="text-muted"
           />
           <circle
             cx="40"
@@ -141,13 +141,13 @@ function Gauge({ value, label, icon: Icon, colorClass }: { value: number; label:
           />
         </svg>
 
-        <div className="absolute inset-0 flex items-center justify-center text-zinc-100">
+        <div className="absolute inset-0 flex items-center justify-center text-foreground">
           <Icon className="w-5 h-5" />
         </div>
       </div>
       <div className="text-center">
         <div className="text-lg font-bold text-foreground leading-none">{value}%</div>
-        <div className="text-xs text-zinc-500 font-medium mt-1">{label}</div>
+        <div className="text-xs text-muted-foreground font-medium mt-1">{label}</div>
       </div>
     </div>
   );
@@ -161,24 +161,24 @@ const adminPages = [
   { href: '/workspace/spaces', label: 'Spaces', icon: FolderKanban, description: 'Workspace spaces config', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
   { href: '/workspace/theme', label: 'Theme', icon: Palette, description: 'Theme & appearance', color: 'text-pink-400', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
   { href: '/workspace/updates', label: 'Updates', icon: RefreshCw, description: 'Platform updates & changelog', color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
-  { href: '/workspace/settings', label: 'Settings', icon: Settings, description: 'System configuration', color: 'text-zinc-400', bg: 'bg-zinc-500/10', border: 'border-zinc-500/20' },
+  { href: '/workspace/settings', label: 'Settings', icon: Settings, description: 'System configuration', color: 'text-muted-foreground', bg: 'bg-muted/10', border: 'border-border/50' },
 ];
 
 function AdminNavCard({ href, label, icon: Icon, description, color, bg, border }: typeof adminPages[0]) {
   return (
     <Link
       href={href}
-      className={`group bg-zinc-800/80 p-4 rounded-xl border ${border} hover:bg-zinc-700/80 hover:border-border transition-all hover:scale-[1.02] active:scale-[0.98]`}
+      className={`group bg-surface-elevated/80 p-4 rounded-xl border ${border} hover:bg-surface-elevated hover:border-border transition-all hover:scale-[1.02] active:scale-[0.98]`}
     >
       <div className="flex items-center gap-3">
         <div className={`p-2.5 rounded-lg ${bg} ${color}`}>
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-zinc-100 group-hover:text-foreground">{label}</h3>
-          <p className="text-xs text-zinc-400 truncate">{description}</p>
+          <h3 className="font-semibold text-foreground group-hover:text-foreground">{label}</h3>
+          <p className="text-xs text-muted-foreground truncate">{description}</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground/90 group-hover:translate-x-0.5 transition-all" />
       </div>
     </Link>
   );
@@ -187,7 +187,7 @@ function AdminNavCard({ href, label, icon: Icon, description, color, bg, border 
 function CommitRow({ commit, onClick, expanded }: { commit: CommitActivity; onClick: () => void; expanded: boolean }) {
   const lower = commit.message.toLowerCase();
   let type = 'chore';
-  let color = 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
+  let color = 'bg-muted/10 text-muted-foreground border-border/50';
 
   if (lower.startsWith('feat')) { type = 'feat'; color = 'bg-blue-500/10 text-blue-400 border-blue-500/20'; }
   else if (lower.startsWith('fix')) { type = 'fix'; color = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'; }
@@ -202,17 +202,17 @@ function CommitRow({ commit, onClick, expanded }: { commit: CommitActivity; onCl
         <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${color}`}>
           {type}
         </div>
-        <p className="text-sm text-zinc-300 font-medium truncate flex-1 group-hover:text-foreground transition-colors">
+        <p className="text-sm text-foreground/90 font-medium truncate flex-1 group-hover:text-foreground transition-colors">
           {commit.message}
         </p>
-        <span className="text-xs font-mono text-zinc-600 group-hover:text-zinc-500">
+        <span className="text-xs font-mono text-muted-foreground group-hover:text-muted-foreground">
           {commit.sha.substring(0, 7)}
         </span>
       </div>
 
       {expanded && commit.body && (
         <div className="mt-3 pl-2 border-l-2 border-border ml-1">
-          <pre className="text-xs text-zinc-400 font-mono whitespace-pre-wrap leading-relaxed">
+          <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed">
             {commit.body}
           </pre>
           <div className="mt-2 flex items-center gap-2">
@@ -225,8 +225,8 @@ function CommitRow({ commit, onClick, expanded }: { commit: CommitActivity; onCl
             >
               View on GitHub <ExternalLink className="w-3 h-3" />
             </a>
-            <span className="text-xs text-zinc-600">•</span>
-            <span className="text-xs text-zinc-500">{new Date(commit.timestamp).toLocaleString()}</span>
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-xs text-muted-foreground">{new Date(commit.timestamp).toLocaleString()}</span>
           </div>
         </div>
       )}
@@ -350,10 +350,10 @@ export default function AdminWorkspacePage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Overview</h1>
-          <p className="text-zinc-400 mt-1">Platform metrics and system health</p>
+          <p className="text-muted-foreground mt-1">Platform metrics and system health</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="glass-card px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-medium text-zinc-400">
+          <div className="glass-card px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <Clock className="w-3.5 h-3.5" />
             <span>{new Date().toLocaleDateString()}</span>
           </div>
@@ -400,7 +400,7 @@ export default function AdminWorkspacePage() {
       <section>
         <div className="flex items-center gap-3 mb-4">
           <h2 className="text-lg font-semibold text-foreground">Admin Pages</h2>
-          <span className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-0.5 rounded-full">{adminPages.length} sections</span>
+          <span className="text-xs text-muted-foreground bg-surface-elevated/50 px-2 py-0.5 rounded-full">{adminPages.length} sections</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {adminPages.map((page) => (
@@ -433,9 +433,9 @@ export default function AdminWorkspacePage() {
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-zinc-200 leading-relaxed">{item.message}</p>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
-                        <span className="uppercase tracking-wider font-medium text-zinc-400">{item.appId}</span>
+                      <p className="text-sm text-foreground leading-relaxed">{item.message}</p>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                        <span className="uppercase tracking-wider font-medium text-muted-foreground">{item.appId}</span>
                         <span>•</span>
                         <span>{item.authorEmail || 'Anonymous'}</span>
                       </div>
@@ -461,24 +461,24 @@ export default function AdminWorkspacePage() {
               </div>
 
               {insightsLoading ? (
-                <div className="flex flex-col items-center py-12 text-zinc-500 gap-3">
+                <div className="flex flex-col items-center py-12 text-muted-foreground gap-3">
                   <Loader2 className="w-6 h-6 animate-spin" />
                   <span className="text-sm">Analyzing platform data...</span>
                 </div>
               ) : insights ? (
                 <div className="space-y-6">
-                  <div className="p-4 rounded-lg bg-zinc-950/50 border border-border">
-                    <p className="text-zinc-300 leading-relaxed text-balance">
+                  <div className="p-4 rounded-lg bg-surface-base/50 border border-border">
+                    <p className="text-foreground/90 leading-relaxed text-balance">
                       {insights.summary}
                     </p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Highlights</h3>
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Highlights</h3>
                       <ul className="space-y-2">
                         {insights.highlights.map((h, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                          <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
                             <span className="mt-1.5 w-1 h-1 rounded-full bg-emerald-400 shrink-0" />
                             <span>{h}</span>
                           </li>
@@ -486,10 +486,10 @@ export default function AdminWorkspacePage() {
                       </ul>
                     </div>
                     <div className="space-y-3">
-                      <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Recommendations</h3>
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Recommendations</h3>
                       <ul className="space-y-2">
                         {insights.recommendations.map((r, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                          <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
                             <span className="mt-1.5 w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
                             <span>{r}</span>
                           </li>
@@ -499,7 +499,7 @@ export default function AdminWorkspacePage() {
                   </div>
                 </div>
               ) : (
-                <div className="py-8 text-center text-zinc-500 text-sm">
+                <div className="py-8 text-center text-muted-foreground text-sm">
                   No insights available at this time.
                 </div>
               )}
@@ -510,12 +510,12 @@ export default function AdminWorkspacePage() {
           <section className="glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-foreground/5 border border-border text-zinc-400">
+                <div className="p-2 rounded-lg bg-foreground/5 border border-border text-muted-foreground">
                   <GitCommit className="w-5 h-5" />
                 </div>
                 <h2 className="text-lg font-semibold text-foreground">Development Activity</h2>
               </div>
-              <span className="text-xs font-medium text-zinc-500 bg-zinc-900 px-2 py-1 rounded border border-border">
+              <span className="text-xs font-medium text-muted-foreground bg-surface-elevated px-2 py-1 rounded border border-border">
                 {commits.length} Events
               </span>
             </div>
@@ -546,7 +546,7 @@ export default function AdminWorkspacePage() {
           {/* System Status Panel */}
           <section className="glass-card rounded-xl p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-foreground/5 border border-border text-zinc-400">
+              <div className="p-2 rounded-lg bg-foreground/5 border border-border text-muted-foreground">
                 <Server className="w-5 h-5" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">System Vitals</h2>
@@ -560,13 +560,13 @@ export default function AdminWorkspacePage() {
 
             <div className="mt-6 space-y-3">
               <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-foreground/5">
-                <span className="text-zinc-400 flex items-center gap-2">
+                <span className="text-muted-foreground flex items-center gap-2">
                   <Globe className="w-4 h-4" /> Region
                 </span>
                 <span className="text-foreground font-mono">us-east-1</span>
               </div>
               <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-foreground/5">
-                <span className="text-zinc-400 flex items-center gap-2">
+                <span className="text-muted-foreground flex items-center gap-2">
                   <Zap className="w-4 h-4" /> Latency
                 </span>
                 <span className="text-emerald-400 font-mono">24ms</span>
@@ -575,21 +575,21 @@ export default function AdminWorkspacePage() {
           </section>
 
           {/* Deployment Info */}
-          <section className="glass-card rounded-xl p-6 bg-gradient-to-b from-zinc-900/40 to-zinc-950/40">
-             <h3 className="text-sm font-semibold text-zinc-300 mb-4 uppercase tracking-wider">
+          <section className="glass-card rounded-xl p-6 bg-gradient-to-b from-surface-elevated/40 to-surface-base/40">
+             <h3 className="text-sm font-semibold text-foreground/90 mb-4 uppercase tracking-wider">
                Deployment Info
              </h3>
              <div className="space-y-4">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-zinc-500">Version</span>
-                  <span className="text-zinc-200 font-mono">v2.4.0-beta</span>
+                  <span className="text-muted-foreground">Version</span>
+                  <span className="text-foreground font-mono">v2.4.0-beta</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-zinc-500">Build</span>
-                  <span className="text-zinc-200 font-mono">8f2a1c9</span>
+                  <span className="text-muted-foreground">Build</span>
+                  <span className="text-foreground font-mono">8f2a1c9</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-zinc-500">Environment</span>
+                  <span className="text-muted-foreground">Environment</span>
                   <span className="text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded text-xs border border-blue-500/20">
                     PRODUCTION
                   </span>

@@ -23,7 +23,7 @@ interface HealthCheckinFormProps {
 }
 
 const moodOptions: { value: MoodType; icon: typeof Smile; label: string; color: string }[] = [
-  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-emerald-500' },
+  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-primary' },
   { value: 'happy', icon: Smile, label: 'Good', color: 'text-green-500' },
   { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
   { value: 'stressed', icon: Frown, label: 'Bad', color: 'text-orange-500' },
@@ -104,7 +104,7 @@ export function HealthCheckinForm({
       {/* Weight */}
       <div className="space-y-2">
         <label className="flex items-center gap-2 text-sm font-medium text-ink-700">
-          <Scale className="h-4 w-4 text-emerald-500" />
+          <Scale className="h-4 w-4 text-primary" />
           Weight (lbs)
         </label>
         <input
@@ -115,7 +115,7 @@ export function HealthCheckinForm({
             updateField('weight', e.target.value ? parseFloat(e.target.value) : null)
           }
           placeholder="Enter weight"
-          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-emerald-500 text-ink-900"
+          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-primary text-ink-900"
         />
       </div>
 
@@ -135,7 +135,7 @@ export function HealthCheckinForm({
             updateField('sleep', e.target.value ? parseFloat(e.target.value) : null)
           }
           placeholder="Hours of sleep"
-          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-emerald-500 text-ink-900"
+          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-primary text-ink-900"
         />
       </div>
 
@@ -154,7 +154,7 @@ export function HealthCheckinForm({
             updateField('water', e.target.value ? parseInt(e.target.value) : null)
           }
           placeholder="Glasses of water"
-          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-emerald-500 text-ink-900"
+          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-primary text-ink-900"
         />
       </div>
 
@@ -172,7 +172,7 @@ export function HealthCheckinForm({
               onClick={() => updateField('energy', level)}
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                 formData.energy === level
-                  ? 'bg-emerald-500 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-surface-muted text-ink-600 hover:bg-surface-hover'
               }`}
             >
@@ -196,7 +196,7 @@ export function HealthCheckinForm({
               onClick={() => updateField('mood', value)}
               className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-colors ${
                 formData.mood === value
-                  ? 'bg-emerald-500/10 border-2 border-emerald-500'
+                  ? 'bg-primary/10 border-2 border-primary'
                   : 'bg-surface-muted border-2 border-transparent hover:bg-surface-hover'
               }`}
             >
@@ -222,7 +222,7 @@ export function HealthCheckinForm({
             updateField('heartRate', e.target.value ? parseInt(e.target.value) : null)
           }
           placeholder="Enter heart rate"
-          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-emerald-500 text-ink-900"
+          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-primary text-ink-900"
         />
       </div>
 
@@ -234,7 +234,7 @@ export function HealthCheckinForm({
           onChange={(e) => updateField('notes', e.target.value)}
           placeholder="How are you feeling today? Any symptoms or observations?"
           rows={3}
-          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-emerald-500 text-ink-900 resize-none"
+          className="w-full px-4 py-3 rounded-xl bg-surface-muted border border-outline-subtle focus:outline-none focus:ring-2 focus:ring-primary text-ink-900 resize-none"
         />
       </div>
 
@@ -242,7 +242,7 @@ export function HealthCheckinForm({
       <button
         type="submit"
         disabled={saving}
-        className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
       >
         <Save className="h-5 w-5" />
         {saving ? 'Saving...' : existingMetric ? 'Update Check-in' : 'Save Check-in'}

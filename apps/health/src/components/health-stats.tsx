@@ -38,7 +38,7 @@ function StatCard({
 }: StatCardProps) {
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
   const trendColor =
-    trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-ink-400';
+    trend === 'up' ? 'text-primary' : trend === 'down' ? 'text-red-500' : 'text-ink-400';
 
   return (
     <div className="bg-surface-elevated rounded-2xl p-4 border border-outline-subtle">
@@ -86,7 +86,7 @@ export function HealthStats({ metrics }: HealthStatsProps) {
       <div className="grid grid-cols-2 gap-3">
         <StatCard
           icon={Scale}
-          iconColor="bg-emerald-500/10 text-emerald-500"
+          iconColor="bg-primary/10 text-primary"
           label="Weight"
           value={latestMetric?.weight}
           unit="lbs"
@@ -131,7 +131,7 @@ export function HealthStats({ metrics }: HealthStatsProps) {
         />
         <StatCard
           icon={TrendingUp}
-          iconColor="bg-emerald-500/10 text-emerald-500"
+          iconColor="bg-primary/10 text-primary"
           label="Check-in Streak"
           value={checkInStreak}
           unit="days"
@@ -184,14 +184,14 @@ function AverageRow({
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
         <span className="text-ink-600">{label}</span>
-        <span className={isOnTrack ? 'text-emerald-500' : 'text-amber-500'}>
+        <span className={isOnTrack ? 'text-primary' : 'text-amber-500'}>
           {value.toFixed(1)} {unit}
         </span>
       </div>
       <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${
-            isOnTrack ? 'bg-emerald-500' : 'bg-amber-500'
+            isOnTrack ? 'bg-primary' : 'bg-amber-500'
           }`}
           style={{ width: `${percentage}%` }}
         />

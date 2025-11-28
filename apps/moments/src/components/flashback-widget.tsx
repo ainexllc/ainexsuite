@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { getMonth, getDate } from 'date-fns';
 import { Sparkles, CalendarClock } from 'lucide-react';
 import { SectionHeader } from '@ainexsuite/ui';
+import { useAppColors } from '@ainexsuite/theme';
 import { useMomentsStore } from '@/lib/store';
 import Image from 'next/image';
 import type { Moment } from '@ainexsuite/types';
@@ -14,6 +15,7 @@ interface FlashbackWidgetProps {
 
 export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
   const { moments } = useMomentsStore();
+  const { secondary: secondaryColor } = useAppColors();
 
   const flashbacks = useMemo(() => {
     const today = new Date();
@@ -39,7 +41,7 @@ export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
         title="On This Day"
         subtitle="Relive memories from years past"
         icon={<CalendarClock className="h-5 w-5" />}
-        accentColor="#f59e0b"
+        accentColor={secondaryColor}
         variant="default"
       />
 
@@ -47,10 +49,13 @@ export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
         {flashbacks.slice(0, 3).map((moment) => {
           const yearsAgo = new Date().getFullYear() - new Date(moment.date).getFullYear();
           return (
-            <div 
+            <div
               key={moment.id}
               onClick={() => onDetail(moment)}
-              className="group relative aspect-[16/9] rounded-xl overflow-hidden cursor-pointer border border-outline-subtle hover:border-amber-500/50 transition-all shadow-sm hover:shadow-lg"
+              className="group relative aspect-[16/9] rounded-xl overflow-hidden cursor-pointer border border-outline-subtle transition-all shadow-sm hover:shadow-lg"
+              style={{
+                borderColor: `${secondaryColor}50`
+              }}
             >
               <Image
                 src={moment.photoUrl}
@@ -62,7 +67,10 @@ export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
 
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/90 text-background text-[10px] font-bold uppercase tracking-wider">
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-background text-[10px] font-bold uppercase tracking-wider"
+                    style={{ backgroundColor: `${secondaryColor}e6` }}
+                  >
                     <Sparkles className="h-3 w-3" />
                     {yearsAgo} {yearsAgo === 1 ? 'Year' : 'Years'} Ago
                   </span>

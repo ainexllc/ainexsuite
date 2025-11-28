@@ -127,10 +127,10 @@ export function EventModal({
       <form onSubmit={handleSubmit}>
         <ModalContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-ink-700 dark:text-ink-200">
+            <label className="text-sm font-medium text-foreground">
               Title
             </label>
-            <Input 
+            <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Event title"
@@ -141,10 +141,10 @@ export function EventModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-ink-700 dark:text-ink-200">
+              <label className="text-sm font-medium text-foreground">
                 Start
               </label>
-              <Input 
+              <Input
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -152,10 +152,10 @@ export function EventModal({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-ink-700 dark:text-ink-200">
+              <label className="text-sm font-medium text-foreground">
                 End
               </label>
-              <Input 
+              <Input
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
@@ -166,13 +166,13 @@ export function EventModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-               <label className="text-sm font-medium text-ink-700 dark:text-ink-200">
+               <label className="text-sm font-medium text-foreground">
                   Type
                </label>
                <select
                   value={type}
                   onChange={(e) => setType(e.target.value as EventType)}
-                  className="flex h-10 w-full rounded-lg border border-outline-subtle bg-white px-3 py-2 text-sm dark:bg-surface-elevated dark:border-outline-subtle/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+                  className="flex h-10 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
                >
                   <option value="event">Event</option>
                   <option value="task">Task</option>
@@ -180,13 +180,13 @@ export function EventModal({
                </select>
             </div>
             <div className="space-y-2">
-               <label className="text-sm font-medium text-ink-700 dark:text-ink-200">
+               <label className="text-sm font-medium text-foreground">
                   Repeat
                </label>
                <select
                   value={recurrenceFreq}
                   onChange={(e) => setRecurrenceFreq(e.target.value as RecurrenceFrequency | 'none')}
-                  className="flex h-10 w-full rounded-lg border border-outline-subtle bg-white px-3 py-2 text-sm dark:bg-surface-elevated dark:border-outline-subtle/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+                  className="flex h-10 w-full rounded-lg border border-border bg-surface-base px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
                >
                   <option value="none">Does not repeat</option>
                   <option value="daily">Daily</option>
@@ -198,10 +198,10 @@ export function EventModal({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-ink-700 dark:text-ink-200">
+            <label className="text-sm font-medium text-foreground">
               Description
             </label>
-            <Textarea 
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add description..."

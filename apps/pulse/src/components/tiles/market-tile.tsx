@@ -21,14 +21,14 @@ export function MarketTile({ id = 'market', onRemove, isDraggable = true }: Mark
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="font-mono text-sm font-bold">BTC</span>
-          <div className="flex items-center text-green-400 text-xs gap-1">
+          <div className="flex items-center text-success text-xs gap-1">
             <TrendingUp className="w-3 h-3" />
             <span>+2.4%</span>
           </div>
         </div>
         <div className="flex items-center justify-between">
           <span className="font-mono text-sm font-bold">ETH</span>
-          <div className="flex items-center text-red-400 text-xs gap-1">
+          <div className="flex items-center text-destructive text-xs gap-1">
             <TrendingDown className="w-3 h-3" />
             <span>-0.8%</span>
           </div>

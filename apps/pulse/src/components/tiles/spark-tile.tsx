@@ -19,10 +19,10 @@ export function SparkTile({ id = 'spark', onRemove, isDraggable = true }: SparkT
       className="min-w-[200px]"
     >
       <div className="flex items-start gap-3">
-        <div className="p-2 rounded-lg bg-orange-500/20 text-orange-400 shrink-0">
+        <div className="p-2 rounded-lg bg-primary/20 text-primary shrink-0">
           <Lightbulb className="w-4 h-4" />
         </div>
-        <div className="text-sm italic text-white/80 leading-snug">
+        <div className="text-sm italic text-foreground/80 leading-snug">
           &ldquo;What is one thing you learned today?&rdquo;
         </div>
       </div>

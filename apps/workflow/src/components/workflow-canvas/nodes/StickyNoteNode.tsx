@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useState } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 
 interface StickyNoteNodeData extends Record<string, unknown> {
   label?: string;
@@ -13,7 +13,7 @@ interface StickyNoteNodeData extends Record<string, unknown> {
 export type StickyNoteNodeType = Node<StickyNoteNodeData, 'sticky-note'>;
 
 function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
-  const { theme } = useTheme();
+  const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || '#713f12';
   const noteBg = (data.bgColor as string) || 'rgba(252, 211, 77, 0.9)';
   const [label, setLabel] = useState((data.label as string) || 'Quick note...');

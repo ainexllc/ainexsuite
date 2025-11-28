@@ -38,8 +38,8 @@ export default function RootLayout({
           <AuthProvider>
             <AppColorProvider appId="journey" fallbackPrimary="#f97316" fallbackSecondary="#fb923c">
               {children}
+              <Toaster />
             </AppColorProvider>
-            <Toaster />
           </AuthProvider>
         </ThemeProvider>
       </body>

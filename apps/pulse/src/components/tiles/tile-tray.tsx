@@ -37,9 +37,9 @@ function ConfirmationModal({
 
   return (
     <div className="absolute inset-0 z-[60] flex items-center justify-center p-4 bg-background/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#1a1a1a] border border-border rounded-xl shadow-2xl w-full max-w-xs p-4 space-y-4 transform animate-in zoom-in-95 duration-200">
+      <div className="bg-surface-elevated border border-border rounded-xl shadow-2xl w-full max-w-xs p-4 space-y-4 transform animate-in zoom-in-95 duration-200">
         <div className="flex items-start gap-3">
-          <div className={`p-2 rounded-full ${isDestructive ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+          <div className={`p-2 rounded-full ${isDestructive ? 'bg-destructive/10 text-destructive' : 'bg-warning/10 text-warning'}`}>
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div className="flex-1">
@@ -62,8 +62,8 @@ function ConfirmationModal({
             }}
             className={`px-3 py-1.5 text-xs font-medium text-foreground rounded-lg transition-colors shadow-lg ${
               isDestructive
-                ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
-                : 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/20'
+                ? 'bg-destructive hover:bg-destructive/90 shadow-destructive/20'
+                : 'bg-primary hover:bg-primary/90 shadow-primary/20'
             }`}
           >
             Confirm
@@ -75,8 +75,8 @@ function ConfirmationModal({
 }
 
 function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
-  const baseColor = isActive ? 'bg-accent-500' : 'bg-foreground/40 group-hover:bg-foreground/60';
-  const borderColor = isActive ? 'border-accent-500' : 'border-border';
+  const baseColor = isActive ? 'bg-primary' : 'bg-foreground/40 group-hover:bg-foreground/60';
+  const borderColor = isActive ? 'border-primary' : 'border-border';
   const containerClass = `w-12 h-9 rounded flex gap-0.5 p-0.5 border ${borderColor} transition-colors`;
 
   if (id === 'classic') {
@@ -501,7 +501,7 @@ export function TileTray({
                     <button
                       onClick={() => onToggleShowTiles(!showTiles)}
                       className={`relative w-11 h-6 rounded-full transition-colors ${
-                        showTiles ? 'bg-indigo-500' : 'bg-foreground/10'
+                        showTiles ? 'bg-primary' : 'bg-foreground/10'
                       }`}
                     >
                       <div
@@ -514,8 +514,8 @@ export function TileTray({
                 </div>
               )}
 
-              <div className="p-3 bg-indigo-500/10 rounded-lg border border-indigo-500/20 mb-2">
-                  <div className="flex items-center gap-2 text-indigo-200 text-xs font-medium">
+              <div className="p-3 bg-primary/10 rounded-lg border border-primary/20 mb-2">
+                  <div className="flex items-center gap-2 text-primary text-xs font-medium">
                       <Grid className="w-4 h-4" />
                       <span>Drag to place, or click to auto-fill</span>
                   </div>
@@ -555,7 +555,7 @@ export function TileTray({
                           onClick={() => onSelectLayout(layout.id)}
                           className={`group flex items-center gap-4 p-3 rounded-xl border transition-all text-left ${
                               activeLayoutId === layout.id
-                                  ? 'bg-foreground/10 border-accent-500 ring-1 ring-accent-500/50'
+                                  ? 'bg-foreground/10 border-primary ring-1 ring-primary/50'
                                   : 'bg-foreground/5 border-border hover:bg-foreground/10 hover:border-border-hover'
                           }`}
                       >
@@ -630,7 +630,7 @@ export function TileTray({
                             key={img.fullPath}
                             className={`relative group aspect-square rounded-lg overflow-hidden border transition-all cursor-pointer ${
                               currentBackground === img.url
-                                ? 'border-accent-500 ring-1 ring-accent-500/50'
+                                ? 'border-primary ring-1 ring-primary/50'
                                 : 'border-border hover:border-border-hover'
                             }`}
                             onClick={() => onSelectBackground(img.url)}
@@ -647,13 +647,13 @@ export function TileTray({
                             <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <button
                                 onClick={(e) => confirmDeleteImage(img.fullPath, e)}
-                                className="p-1.5 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-foreground rounded-full transition-colors"
+                                className="p-1.5 bg-destructive/20 text-destructive hover:bg-destructive hover:text-foreground rounded-full transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                               {currentBackground === img.url && (
-                                <div className="absolute top-1 right-1 p-0.5 bg-accent-500 rounded-full">
+                                <div className="absolute top-1 right-1 p-0.5 bg-primary rounded-full">
                                   <Check className="w-2.5 h-2.5 text-foreground" />
                                 </div>
                               )}
@@ -667,19 +667,19 @@ export function TileTray({
                   {/* AI Generator */}
                   <details className="group bg-foreground/5 rounded-xl border border-border overflow-hidden">
                       <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-foreground/5 transition-colors">
-                          <div className="flex items-center gap-2 text-indigo-400">
+                          <div className="flex items-center gap-2 text-primary">
                               <Sparkles className="w-4 h-4" />
                               <span className="text-xs font-semibold uppercase tracking-wider">AI Generator</span>
                           </div>
                           <div className="text-muted-foreground group-open:rotate-180 transition-transform">▼</div>
                       </summary>
 
-                      <div className="p-4 pt-0 space-y-3 bg-gradient-to-b from-indigo-500/10 to-purple-500/10">
+                      <div className="p-4 pt-0 space-y-3 bg-gradient-to-b from-primary/10 to-secondary/10">
                           <textarea
                               value={prompt}
                               onChange={(e) => setPrompt(e.target.value)}
                               placeholder="Describe your dream background... (e.g., 'Cyberpunk city at night', 'Peaceful zen garden')"
-                              className="w-full px-3 py-2 bg-background/30 border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-indigo-500/50 resize-none h-20"
+                              className="w-full px-3 py-2 bg-background/30 border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 resize-none h-20"
                               onKeyDown={(e) => {
                               if (e.key === 'Enter' && !e.shiftKey) {
                                   e.preventDefault();
@@ -694,7 +694,7 @@ export function TileTray({
                               className={`w-full py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                               isGenerating || !prompt.trim()
                                   ? 'bg-foreground/5 text-muted-foreground cursor-not-allowed'
-                                  : 'bg-indigo-500 hover:bg-indigo-600 text-foreground shadow-lg shadow-indigo-500/20'
+                                  : 'bg-primary hover:bg-primary/90 text-foreground shadow-lg shadow-primary/20'
                               }`}
                           >
                               {isGenerating ? (
@@ -725,7 +725,7 @@ export function TileTray({
                                   </button>
                                   <button
                                       onClick={handleSaveGeneratedImage}
-                                      className="px-3 py-1.5 bg-indigo-500 text-foreground text-xs font-medium rounded-full hover:bg-indigo-600 transition-all flex items-center gap-1"
+                                      className="px-3 py-1.5 bg-primary text-foreground text-xs font-medium rounded-full hover:bg-primary/90 transition-all flex items-center gap-1"
                                   >
                                       {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
                                       Save & Use
@@ -744,8 +744,8 @@ export function TileTray({
                       key={bg.id}
                       onClick={() => onSelectBackground(bg.value)}
                       className={`group relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                          currentBackground === bg.value 
-                          ? 'border-accent-500 ring-2 ring-accent-500/20' 
+                          currentBackground === bg.value
+                          ? 'border-primary ring-2 ring-primary/20'
                           : 'border-transparent hover:border-white/20'
                       }`}
                       style={{ position: 'relative' }}
@@ -766,8 +766,8 @@ export function TileTray({
 
                       {/* Selected Overlay */}
                       {currentBackground === bg.value && (
-                          <div className="absolute inset-0 bg-accent-500/20 flex items-center justify-center z-10">
-                          <div className="w-2 h-2 rounded-full bg-accent-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center z-10">
+                          <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--color-primary-rgb),0.5)]" />
                           </div>
                       )}
 
@@ -809,7 +809,7 @@ export function TileTray({
                               step="10"
                               value={backgroundDim}
                               onChange={(e) => onSelectDim(Number(e.target.value))}
-                              className="w-full h-1.5 bg-foreground/10 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                              className="w-full h-1.5 bg-foreground/10 rounded-lg appearance-none cursor-pointer accent-primary"
                               />
                           </div>
                       )}
@@ -839,7 +839,7 @@ export function TileTray({
                               className={`
                                   flex flex-col items-center justify-center gap-1 p-2 rounded-lg border transition-all min-h-[60px]
                                   ${activeEffect === effect.id
-                                      ? 'bg-accent-500/20 border-accent-500 text-foreground'
+                                      ? 'bg-primary/20 border-primary text-foreground'
                                       : 'bg-foreground/5 border-border hover:bg-foreground/10 hover:border-border-hover text-muted-foreground hover:text-foreground'
                                   }
                               `}
@@ -863,7 +863,7 @@ export function TileTray({
                     <button
                       onClick={() => onToggleShowClock(!showClock)}
                       className={`relative w-11 h-6 rounded-full transition-colors ${
-                        showClock ? 'bg-indigo-500' : 'bg-foreground/10'
+                        showClock ? 'bg-primary' : 'bg-foreground/10'
                       }`}
                     >
                       <div
@@ -889,12 +889,12 @@ export function TileTray({
                           onClick={() => onSelectClockStyle(style.id as ClockStyle)}
                           className={`group flex items-center gap-4 p-3 rounded-xl border transition-all text-left ${
                               clockStyle === style.id
-                                  ? 'bg-foreground/10 border-accent-500 ring-1 ring-accent-500/50'
+                                  ? 'bg-foreground/10 border-primary ring-1 ring-primary/50'
                                   : 'bg-foreground/5 border-border hover:bg-foreground/10 hover:border-border-hover'
                           }`}
                       >
                           {/* Preview Icon/Graphic */}
-                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${clockStyle === style.id ? 'bg-accent-500/20 text-accent-500' : 'bg-foreground/5 text-muted-foreground'}`}>
+                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${clockStyle === style.id ? 'bg-primary/20 text-primary' : 'bg-foreground/5 text-muted-foreground'}`}>
                               {style.id === 'digital' && <span className="font-mono font-bold text-xs">12:00</span>}
                               {style.id === 'neon' && <span className="font-bold text-xs" style={{ textShadow: '0 0 5px currentColor' }}>12:00</span>}
                               {style.id === 'flip' && (

@@ -228,7 +228,7 @@ export default function SpacesManagement() {
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-zinc-400" />
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -241,13 +241,13 @@ export default function SpacesManagement() {
 
     // Base container with SOLID background
     const containerBase = "flex items-center gap-2 border transition-all cursor-pointer shadow-lg";
-    const solidBg = "bg-zinc-900"; // Enforce solid background
+    const solidBg = "bg-surface-elevated"; // Enforce solid background
 
     if (style === 'minimal') {
       return (
         <div className={`${containerBase} ${solidBg} border-border rounded-lg p-2`}>
-          {uiConfig.showTypeIcons && <Icon className="h-4 w-4 text-zinc-400" />}
-          <ChevronDown className="h-4 w-4 text-zinc-500" />
+          {uiConfig.showTypeIcons && <Icon className="h-4 w-4 text-muted-foreground" />}
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </div>
       );
     }
@@ -255,9 +255,9 @@ export default function SpacesManagement() {
     if (style === 'compact') {
       return (
         <div className={`${containerBase} ${solidBg} border-border rounded-md px-3 py-1.5`}>
-          {uiConfig.showTypeIcons && <Icon className="h-3.5 w-3.5 text-zinc-400" />}
+          {uiConfig.showTypeIcons && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
           <span className="text-sm font-medium text-foreground">{uiConfig.defaultSpaceLabel}</span>
-          <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
       );
     }
@@ -272,9 +272,9 @@ export default function SpacesManagement() {
           )}
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-foreground leading-none">{uiConfig.defaultSpaceLabel}</span>
-            {uiConfig.showMemberCount && <span className="text-[10px] text-zinc-500 mt-0.5 font-medium">Personal Workspace</span>}
+            {uiConfig.showMemberCount && <span className="text-[10px] text-muted-foreground mt-0.5 font-medium">Personal Workspace</span>}
           </div>
-          <ChevronDown className="h-4 w-4 text-zinc-500 ml-2" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground ml-2" />
         </div>
       );
     }
@@ -283,12 +283,12 @@ export default function SpacesManagement() {
       return (
         <div className={`${containerBase} ${solidBg} border-border rounded-full pl-2 pr-4 py-1.5`}>
           {uiConfig.showTypeIcons && (
-            <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center">
-              <Icon className="h-3.5 w-3.5 text-zinc-400" />
+            <div className="w-6 h-6 rounded-full bg-surface-elevated flex items-center justify-center">
+              <Icon className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
           )}
           <span className="text-sm font-medium text-foreground">{uiConfig.defaultSpaceLabel}</span>
-          <ChevronDown className="h-4 w-4 text-zinc-500" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </div>
       );
     }
@@ -297,10 +297,10 @@ export default function SpacesManagement() {
       return (
         <div className={`${containerBase} ${solidBg} border-b border-border rounded-none px-4 py-4 w-full justify-between`}>
           <div className="flex items-center gap-3">
-            {uiConfig.showTypeIcons && <Icon className="h-5 w-5 text-zinc-400" />}
+            {uiConfig.showTypeIcons && <Icon className="h-5 w-5 text-muted-foreground" />}
             <span className="text-base font-bold text-foreground tracking-tight">{uiConfig.defaultSpaceLabel}</span>
           </div>
-          <ChevronDown className="h-5 w-5 text-zinc-500" />
+          <ChevronDown className="h-5 w-5 text-muted-foreground" />
         </div>
       );
     }
@@ -316,10 +316,10 @@ export default function SpacesManagement() {
         <div className="flex flex-col">
           <p className="text-foreground font-medium text-sm">{uiConfig.defaultSpaceLabel}</p>
           {uiConfig.showMemberCount && (
-            <p className="text-xs text-zinc-500">1 member</p>
+            <p className="text-xs text-muted-foreground">1 member</p>
           )}
         </div>
-        <ChevronDown className="h-4 w-4 text-zinc-500 ml-2" />
+        <ChevronDown className="h-4 w-4 text-muted-foreground ml-2" />
       </div>
     );
   };
@@ -332,13 +332,13 @@ export default function SpacesManagement() {
             <LayoutGrid className="h-6 w-6 text-indigo-400" />
             Space Management
           </h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Configure workspace types and view all active spaces.
           </p>
         </div>
         <button
           onClick={fetchAllSpaces}
-          className="flex items-center gap-2 px-4 py-2 bg-foreground/5 hover:bg-foreground/10 border border-border rounded-lg text-sm font-medium text-zinc-300 hover:text-foreground transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-foreground/5 hover:bg-foreground/10 border border-border rounded-lg text-sm font-medium text-foreground/90 hover:text-foreground transition-colors"
         >
           <RefreshCw className="h-4 w-4" />
           Refresh Data
@@ -346,7 +346,7 @@ export default function SpacesManagement() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-zinc-900/50 border border-border rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-surface-elevated/50 border border-border rounded-lg w-fit">
         {[
           { id: 'overview', label: 'Overview', icon: Layers },
           { id: 'types', label: 'Space Types', icon: Palette },
@@ -357,8 +357,8 @@ export default function SpacesManagement() {
             onClick={() => setActiveTab(tab.id as 'overview' | 'types' | 'ui')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
               activeTab === tab.id
-                ? 'bg-zinc-800 text-foreground shadow-sm'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-surface-elevated text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground/90'
             }`}
           >
             <tab.icon className="h-4 w-4" />
@@ -387,21 +387,21 @@ export default function SpacesManagement() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Total Spaces</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Total Spaces</p>
               <p className="text-2xl font-bold text-foreground">{totalSpaces}</p>
             </div>
             <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Total Members</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Total Members</p>
               <p className="text-2xl font-bold text-foreground">{totalMembers}</p>
             </div>
             <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Active Apps</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Active Apps</p>
               <p className="text-2xl font-bold text-foreground">
                 {spacesByApp.filter((a) => a.count > 0).length}
               </p>
             </div>
             <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Types Used</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Types Used</p>
               <p className="text-2xl font-bold text-foreground">{usedSpaceTypes.length}</p>
             </div>
           </div>
@@ -409,31 +409,31 @@ export default function SpacesManagement() {
           {/* Search & Filter */}
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search spaces..."
-                className="w-full pl-9 pr-4 py-2.5 bg-zinc-900/50 border border-border rounded-lg text-sm text-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
+                className="w-full pl-9 pr-4 py-2.5 bg-surface-elevated/50 border border-border rounded-lg text-sm text-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
               />
             </div>
             <div className="relative">
               <button
                 onClick={() => setShowTypeFilter(!showTypeFilter)}
-                className="px-4 py-2.5 bg-zinc-900/50 border border-border rounded-lg flex items-center gap-2 text-sm text-zinc-300 hover:text-foreground transition-colors min-w-[160px] justify-between"
+                className="px-4 py-2.5 bg-surface-elevated/50 border border-border rounded-lg flex items-center gap-2 text-sm text-foreground/90 hover:text-foreground transition-colors min-w-[160px] justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-zinc-500" />
+                  <Filter className="h-4 w-4 text-muted-foreground" />
                   <span>{selectedType ? selectedType.charAt(0).toUpperCase() + selectedType.slice(1) : 'All Types'}</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-zinc-500" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
               {showTypeFilter && (
-                <div className="absolute top-full mt-1 right-0 bg-zinc-900 border border-border rounded-lg shadow-xl z-20 min-w-[160px] py-1">
+                <div className="absolute top-full mt-1 right-0 bg-surface-elevated border border-border rounded-lg shadow-xl z-20 min-w-[160px] py-1">
                   <button
                     onClick={() => { setSelectedType(null); setShowTypeFilter(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-foreground/5 text-zinc-300 hover:text-foreground"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-foreground/5 text-foreground/90 hover:text-foreground"
                   >
                     All Types
                   </button>
@@ -441,7 +441,7 @@ export default function SpacesManagement() {
                     <button
                       key={type}
                       onClick={() => { setSelectedType(type); setShowTypeFilter(false); }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-foreground/5 text-zinc-300 hover:text-foreground capitalize"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-foreground/5 text-foreground/90 hover:text-foreground capitalize"
                     >
                       {type}
                     </button>
@@ -474,12 +474,12 @@ export default function SpacesManagement() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground">{space.name}</h3>
-                        <p className="text-xs text-zinc-500">{app?.name}</p>
+                        <p className="text-xs text-muted-foreground">{app?.name}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-zinc-500 mt-auto pt-4 border-t border-border">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-4 border-t border-border">
                     <div className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5" />
                       <span>{space.memberCount} members</span>
@@ -528,19 +528,19 @@ export default function SpacesManagement() {
                       </div>
                       <div>
                         <h3 className="font-medium text-foreground">{type.label}</h3>
-                        <p className="text-xs text-zinc-500">{type.description}</p>
+                        <p className="text-xs text-muted-foreground">{type.description}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                        <button
                         onClick={() => updateSpaceType(type.id, { enabled: !type.enabled })}
-                        className={`text-xs px-2 py-1 rounded border ${type.enabled ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-zinc-500/10 border-zinc-500/20 text-zinc-400'}`}
+                        className={`text-xs px-2 py-1 rounded border ${type.enabled ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-muted/10 border-border/50 text-muted-foreground'}`}
                       >
                         {type.enabled ? 'Active' : 'Disabled'}
                       </button>
                       <button
                         onClick={() => setEditingType(isEditing ? null : type.id)}
-                        className="p-1.5 text-zinc-400 hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
                       >
                         {isEditing ? <X className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
                       </button>
@@ -551,7 +551,7 @@ export default function SpacesManagement() {
                     <div className="space-y-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-xs font-medium text-zinc-500 mb-1.5 block">Label</label>
+                          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Label</label>
                           <input
                             type="text"
                             value={type.label}
@@ -560,7 +560,7 @@ export default function SpacesManagement() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-zinc-500 mb-1.5 block">Description</label>
+                          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Description</label>
                           <input
                             type="text"
                             value={type.description}
@@ -571,7 +571,7 @@ export default function SpacesManagement() {
                       </div>
                       
                       <div>
-                        <label className="text-xs font-medium text-zinc-500 mb-1.5 block">Color Theme</label>
+                        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Color Theme</label>
                          <div className="flex flex-wrap gap-2">
                             {COLOR_PRESETS.map((preset) => (
                               <button
@@ -624,7 +624,7 @@ export default function SpacesManagement() {
                     { key: 'animateTransitions', label: 'Animate Transitions' },
                   ].map((opt) => (
                     <label key={opt.key} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
-                      <span className="text-sm text-zinc-300">{opt.label}</span>
+                      <span className="text-sm text-foreground/90">{opt.label}</span>
                       <input
                         type="checkbox"
                         checked={uiConfig[opt.key as keyof SpacesUIConfig] as boolean}
@@ -646,7 +646,7 @@ export default function SpacesManagement() {
                         className={`p-2 rounded-lg text-xs font-medium border transition-all capitalize ${
                           uiConfig.dropdownStyle === style
                             ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                            : 'bg-zinc-900/50 border-white/10 text-zinc-500 hover:text-zinc-300'
+                            : 'bg-surface-elevated/50 border-white/10 text-muted-foreground hover:text-foreground/90'
                         }`}
                       >
                         {style}
@@ -655,7 +655,7 @@ export default function SpacesManagement() {
                  </div>
 
                  <label className="block">
-                    <span className="text-sm font-medium text-zinc-400 mb-2 block">Default Space Label</span>
+                    <span className="text-sm font-medium text-muted-foreground mb-2 block">Default Space Label</span>
                     <input
                       type="text"
                       value={uiConfig.defaultSpaceLabel}
@@ -680,7 +680,7 @@ export default function SpacesManagement() {
                   {renderPreviewDropdown()}
                 </div>
               </div>
-              <p className="text-xs text-center text-zinc-500 mt-3 font-mono">
+              <p className="text-xs text-center text-muted-foreground mt-3 font-mono">
                 Style: {uiConfig.dropdownStyle} | Animations: {uiConfig.animateTransitions ? 'On' : 'Off'}
               </p>
             </div>

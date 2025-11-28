@@ -156,7 +156,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
 
               <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl bg-surface-muted/40 p-4 min-h-[300px]">
                 {messages.length === 0 ? (
-                  <div className="rounded-xl bg-white/60 px-4 py-3 shadow-sm">
+                  <div className="rounded-xl bg-surface/60 px-4 py-3 shadow-sm">
                     <p className="text-sm font-medium text-ink-700">
                       💡 Suggested prompts
                     </p>
@@ -188,8 +188,8 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                       className={clsx(
                         "flex w-full flex-col gap-1 rounded-xl px-4 py-3 text-sm shadow-sm",
                         msg.role === 'user'
-                          ? "ml-auto max-w-[85%] bg-accent-500 text-white"
-                          : "mr-auto max-w-[90%] bg-white text-ink-800"
+                          ? "ml-auto max-w-[85%] bg-accent-500 text-foreground"
+                          : "mr-auto max-w-[90%] bg-surface text-ink-800"
                       )}
                     >
                       <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -214,7 +214,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                     onChange={handleInputChange}
                     placeholder={isListening ? "Listening..." : "Ask me anything..."}
                     className={clsx(
-                      "flex-1 rounded-xl border bg-white px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none disabled:opacity-50 pr-10",
+                      "flex-1 rounded-xl border bg-surface px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none disabled:opacity-50 pr-10",
                       isListening ? "border-red-400 ring-2 ring-red-100" : "border-outline-subtle"
                     )}
                     disabled={loading}
@@ -238,7 +238,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
                   <button
                     type="submit"
                     disabled={loading || (!input.trim() && !transcript)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-white shadow-sm transition hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-foreground shadow-sm transition hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send message"
                   >
                     <Send className="h-4 w-4" />

@@ -54,7 +54,7 @@ export function TopNav({
       logo={<LogoWordmark href="/" iconSize={48} />}
       onMenuClick={onMenuClick}
       theme={theme as "light" | "dark" | undefined}
-      accentColor="59,130,246" // Blue accent for Notes
+      accentColor="234,179,8" // Yellow accent for Notes (#eab308)
       actions={
         <>
           {onOpenAiAssistant && <TopNavAiButton onClick={onOpenAiAssistant} />}

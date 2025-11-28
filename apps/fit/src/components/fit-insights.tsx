@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Zap, Target, TrendingUp } from 'lucide-react';
 import { useFitStore } from '@/lib/store';
 import { useAuth } from '@ainexsuite/auth';
+import { useAppColors } from '@ainexsuite/theme';
 import {
   AIInsightsCard,
   AIInsightsBulletList,
@@ -24,13 +25,12 @@ interface FitInsightsProps {
 
 export function FitInsights({ variant = 'default', onExpand }: FitInsightsProps) {
   const { user } = useAuth();
+  const { primary } = useAppColors();
   const { workouts } = useFitStore();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  const accentColor = '#f97316'; // orange-500
 
   // Only analyze user's own workouts
   const userWorkouts = workouts.filter(w => w.userId === user?.uid);
@@ -144,12 +144,12 @@ export function FitInsights({ variant = 'default', onExpand }: FitInsightsProps)
         content: (
           <AIInsightsBulletList
             items={data.recommendations}
-            accentColor={accentColor}
+            accentColor={primary}
           />
         ),
       },
     ];
-  }, [data]);
+  }, [data, primary]);
 
   const condensedSummary = useMemo(() => {
     if (!data) return undefined;
@@ -171,9 +171,9 @@ export function FitInsights({ variant = 'default', onExpand }: FitInsightsProps)
         <div className="flex items-center gap-3">
           <div
             className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${accentColor}20` }}
+            style={{ backgroundColor: `${primary}20` }}
           >
-            <Zap className="h-4 w-4" style={{ color: accentColor }} />
+            <Zap className="h-4 w-4" style={{ color: primary }} />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">AI Coach</p>
@@ -190,7 +190,7 @@ export function FitInsights({ variant = 'default', onExpand }: FitInsightsProps)
     <AIInsightsCard
       title="AI Coach"
       sections={sections}
-      accentColor={accentColor}
+      accentColor={primary}
       variant={variant}
       isLoading={loading}
       loadingMessage="Analyzing your workouts..."

@@ -5,6 +5,7 @@ import type { LearningGoal, LearningResource } from '@ainexsuite/types';
 import { createLearningGoal, updateLearningGoal, deleteLearningGoal } from '@/lib/learning';
 import { Trash2, Plus, Link as LinkIcon, X } from 'lucide-react';
 import { GlassModal, GlassModalHeader, GlassModalTitle, GlassModalContent, GlassModalFooter } from '@ainexsuite/ui';
+import { useAppColors } from '@ainexsuite/theme';
 
 interface GoalEditorProps {
   goal: LearningGoal | null;
@@ -15,6 +16,7 @@ interface GoalEditorProps {
 const RESOURCE_TYPES: LearningResource['type'][] = ['article', 'video', 'course', 'book', 'tutorial'];
 
 export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
+  const { primary } = useAppColors();
   const [title, setTitle] = useState(goal?.title || '');
   const [description, setDescription] = useState(goal?.description || '');
   const [category, setCategory] = useState(goal?.category || '');
@@ -112,7 +114,7 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
           {goal && (
             <button
               onClick={handleDelete}
-              className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg text-red-400 transition-colors"
+              className="p-2 surface-hover rounded-lg text-destructive transition-colors"
             >
               <Trash2 className="h-5 w-5" />
             </button>
@@ -228,7 +230,7 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
                     className="px-3 py-1 surface-elevated rounded-full text-sm flex items-center gap-2"
                   >
                     {skill}
-                    <button onClick={() => handleRemoveSkill(skill)} className="hover:text-red-400">
+                    <button onClick={() => handleRemoveSkill(skill)} className="hover:text-destructive">
                       <X className="h-3 w-3" />
                     </button>
                   </span>
@@ -242,7 +244,8 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
               <label className="block text-sm font-medium">Learning Resources</label>
               <button
                 onClick={handleAddResource}
-                className="px-3 py-1 bg-accent-500 hover:bg-accent-600 rounded-lg text-sm font-medium flex items-center gap-1"
+                className="px-3 py-1 rounded-lg text-sm font-medium flex items-center gap-1"
+                style={{ backgroundColor: primary }}
               >
                 <Plus className="h-4 w-4" />
                 Add Resource
@@ -280,7 +283,7 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
 
                       <button
                         onClick={() => handleRemoveResource(index)}
-                        className="p-1 hover:text-red-400"
+                        className="p-1 hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -328,7 +331,8 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-2 text-sm font-medium text-white rounded-lg transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: primary }}
         >
           {saving ? 'Saving...' : 'Save'}
         </button>

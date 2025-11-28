@@ -67,9 +67,9 @@ export function WeekView({
 
   const eventTypeStyles: Record<string, string> = {
     event: "bg-accent-500/20 text-accent-200 border-accent-500/30 hover:bg-accent-500/30",
-    task: "bg-emerald-500/20 text-emerald-200 border-emerald-500/30 hover:bg-emerald-500/30",
-    reminder: "bg-amber-500/20 text-amber-200 border-amber-500/30 hover:bg-amber-500/30",
-    holiday: "bg-rose-500/20 text-rose-200 border-rose-500/30 hover:bg-rose-500/30"
+    task: "bg-surface-success/20 text-success border-surface-success/30 hover:bg-surface-success/30",
+    reminder: "bg-surface-warning/20 text-warning border-surface-warning/30 hover:bg-surface-warning/30",
+    holiday: "bg-surface-error/20 text-error border-surface-error/30 hover:bg-surface-error/30"
   };
 
   return (

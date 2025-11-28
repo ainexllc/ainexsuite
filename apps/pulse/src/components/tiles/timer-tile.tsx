@@ -143,8 +143,8 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
                 onClick={toggleTimer}
                 className={`p-2 rounded-full transition-all ${
                     isActive
-                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                        : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                        ? 'bg-destructive/20 text-destructive hover:bg-destructive/30'
+                        : 'bg-success/20 text-success hover:bg-success/30'
                 }`}
             >
                 {isActive ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}

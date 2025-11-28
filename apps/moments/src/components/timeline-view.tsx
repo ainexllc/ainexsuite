@@ -2,6 +2,7 @@
 
 import type { Moment } from '@ainexsuite/types';
 import { SectionHeader } from '@ainexsuite/ui';
+import { useAppColors } from '@ainexsuite/theme';
 import { groupMomentsByDate } from '@/lib/timeline-utils';
 import { PhotoGrid } from './photo-grid';
 
@@ -13,6 +14,7 @@ interface TimelineViewProps {
 
 export function TimelineView({ moments, onDetail, onEdit }: TimelineViewProps) {
   const groups = groupMomentsByDate(moments);
+  const { primary: primaryColor } = useAppColors();
 
   return (
     <div className="space-y-12">
@@ -23,7 +25,7 @@ export function TimelineView({ moments, onDetail, onEdit }: TimelineViewProps) {
               title={group.title}
               count={`${group.moments.length} photos`}
               variant="large"
-              accentColor="#ec4899"
+              accentColor={primaryColor}
               divider
             />
           </div>

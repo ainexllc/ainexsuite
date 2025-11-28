@@ -19,12 +19,12 @@ export function FocusTile({ id = 'focus', onRemove, isDraggable = true }: FocusT
       className="min-w-[200px]"
     >
       <div className="flex items-center gap-3">
-        <button className="shrink-0 text-white/20 hover:text-green-400 transition-colors">
+        <button className="shrink-0 text-muted-foreground hover:text-success transition-colors">
           <CheckCircle2 className="w-5 h-5" />
         </button>
         <div>
           <div className="font-medium line-clamp-1">Review Q3 Goals</div>
-          <div className="text-xs text-white/50 mt-0.5">High Priority</div>
+          <div className="text-xs text-muted-foreground mt-0.5">High Priority</div>
         </div>
       </div>
     </TileBase>

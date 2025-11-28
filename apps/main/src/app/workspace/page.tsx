@@ -8,7 +8,6 @@ import { useAuth } from '@ainexsuite/auth';
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
-import { useVisualStyle } from '@/lib/theme/visual-style';
 import {
   Loader2,
   StickyNote,
@@ -58,7 +57,6 @@ const apps = Object.entries(SUITE_APPS).map(([slug, config]) => ({
 export default function WorkspacePage() {
   const { user, loading, signOut, bootstrapStatus, ssoInProgress } = useAuth();
   const router = useRouter();
-  const { selectedVariant } = useVisualStyle();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
 
@@ -117,31 +115,16 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-white">
-      <div className={`pointer-events-none absolute inset-0 -z-10 ${selectedVariant.heroAtmosphere}`} />
-      {/* Theme-aware atmospheric glows */}
-      <div
-        className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full blur-[150px]"
-        style={{
-          backgroundColor: selectedVariant.id === 'ember-glow'
-            ? 'rgba(249, 115, 22, 0.4)'
-            : 'rgba(56, 189, 248, 0.35)'
-        }}
-      />
-      <div
-        className="pointer-events-none absolute top-1/3 right-[-12%] h-[460px] w-[460px] rounded-full blur-[160px]"
-        style={{
-          backgroundColor: selectedVariant.id === 'ember-glow'
-            ? 'rgba(234, 88, 12, 0.3)'
-            : 'rgba(14, 165, 233, 0.25)'
-        }}
-      />
+    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-background text-foreground">
+      {/* Atmospheric glows */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#f97316]/40 blur-[150px]" />
+      <div className="pointer-events-none absolute top-1/3 right-[-12%] h-[460px] w-[460px] rounded-full bg-[#ea580c]/30 blur-[160px]" />
 
       <WorkspaceLayout
         user={user}
         onSignOut={handleSignOut}
         appName="Suite"
-        appColor={selectedVariant.id === 'ember-glow' ? '#f97316' : '#38bdf8'}
+        appColor="#f97316"
         showBackground={false}
         apps={apps}
         onSettingsClick={() => setActivePanel('settings')}

@@ -212,12 +212,12 @@ export default function UpdatesPage() {
             <Sparkles className="h-6 w-6 text-indigo-400" />
             System Updates
           </h1>
-          <p className="text-zinc-400 text-sm">Manage &quot;What&apos;s New&quot; items shown across all apps.</p>
+          <p className="text-muted-foreground text-sm">Manage &quot;What&apos;s New&quot; items shown across all apps.</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-lg transition-colors border border-white/5 text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-foreground/90 hover:text-white rounded-lg transition-colors border border-white/5 text-sm font-medium"
           >
             <Eye className="h-4 w-4" />
             {showPreview ? 'Hide' : 'Show'} Preview
@@ -233,7 +233,7 @@ export default function UpdatesPage() {
             className={clsx(
               "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium",
               isCreating && !editingId
-                ? "bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10"
+                ? "bg-surface-elevated hover:bg-surface-elevated text-white border border-white/10"
                 : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20"
             )}
           >
@@ -259,7 +259,7 @@ export default function UpdatesPage() {
             {editingId && (
               <button
                 onClick={handleCancelEdit}
-                className="text-sm text-zinc-400 hover:text-white transition-colors"
+                className="text-sm text-muted-foreground hover:text-white transition-colors"
               >
                 Cancel Edit
               </button>
@@ -268,7 +268,7 @@ export default function UpdatesPage() {
           <form onSubmit={(e) => handleCreate(e, false)} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
                   Title <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -276,14 +276,14 @@ export default function UpdatesPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Pulse Dashboard 2.0"
-                  className="w-full px-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                  className="w-full px-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                   required
                   maxLength={60}
                 />
-                <p className="text-xs text-zinc-600 mt-1">{title.length}/60 characters</p>
+                <p className="text-xs text-muted-foreground mt-1">{title.length}/60 characters</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
                   Type <span className="text-red-400">*</span>
                 </label>
                 <select
@@ -299,7 +299,7 @@ export default function UpdatesPage() {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
                 Description <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -307,18 +307,18 @@ export default function UpdatesPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief description of what's new or changed. Keep it concise and user-friendly."
                 rows={3}
-                className="w-full px-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
+                className="w-full px-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
                 required
                 maxLength={200}
               />
-              <p className="text-xs text-zinc-600 mt-1">{description.length}/200 characters</p>
+              <p className="text-xs text-muted-foreground mt-1">{description.length}/200 characters</p>
             </div>
             <div className="flex justify-end gap-3 pt-2 border-t border-white/5">
               {editingId && (
                 <button
                   type="button"
                   onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-zinc-800 text-zinc-300 hover:text-white font-medium rounded-lg hover:bg-zinc-700 transition-colors border border-white/5 text-sm"
+                  className="px-4 py-2 bg-surface-elevated text-foreground/90 hover:text-white font-medium rounded-lg hover:bg-surface-elevated transition-colors border border-white/5 text-sm"
                 >
                   Cancel
                 </button>
@@ -327,7 +327,7 @@ export default function UpdatesPage() {
                 <button
                   type="button"
                   onClick={(e) => handleCreate(e as unknown as React.FormEvent, true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-300 hover:text-white font-medium rounded-lg hover:bg-zinc-700 transition-colors border border-white/5 text-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-surface-elevated text-foreground/90 hover:text-white font-medium rounded-lg hover:bg-surface-elevated transition-colors border border-white/5 text-sm"
                 >
                   <FileText className="h-4 w-4" />
                   Save as Draft
@@ -347,11 +347,11 @@ export default function UpdatesPage() {
 
       {showPreview && (
         <div className="glass-card p-6 rounded-xl">
-          <h3 className="text-sm font-semibold text-zinc-400 mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
             <Eye className="h-4 w-4" />
             Sidebar Preview
           </h3>
-          <div className="space-y-3 max-w-md bg-zinc-950 p-4 rounded-lg border border-white/5">
+          <div className="space-y-3 max-w-md bg-surface-base p-4 rounded-lg border border-white/5">
             {publishedUpdates.slice(0, 5).map((update) => (
               <div key={update.id} className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/5">
                 <div className={clsx("p-1.5 rounded-lg border flex-shrink-0", getTypeColor(update.type))}>
@@ -359,12 +359,12 @@ export default function UpdatesPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-medium text-white leading-snug">{update.title}</h4>
-                  <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{update.description}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{update.description}</p>
                 </div>
               </div>
             ))}
             {publishedUpdates.length === 0 && (
-              <p className="text-xs text-zinc-600 text-center py-4">No published updates to preview yet</p>
+              <p className="text-xs text-muted-foreground text-center py-4">No published updates to preview yet</p>
             )}
           </div>
         </div>
@@ -378,7 +378,7 @@ export default function UpdatesPage() {
             "px-4 py-2 text-sm font-medium rounded-lg transition-all",
             activeTab === 'all'
               ? "bg-white/10 text-white shadow-sm"
-              : "text-zinc-400 hover:text-white hover:bg-white/5"
+              : "text-muted-foreground hover:text-white hover:bg-white/5"
           )}
         >
           All ({updates.length})
@@ -389,7 +389,7 @@ export default function UpdatesPage() {
             "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2",
             activeTab === 'published'
               ? "bg-emerald-500/20 text-emerald-400 shadow-sm"
-              : "text-zinc-400 hover:text-white hover:bg-white/5"
+              : "text-muted-foreground hover:text-white hover:bg-white/5"
           )}
         >
           <Send className="h-3.5 w-3.5" />
@@ -401,7 +401,7 @@ export default function UpdatesPage() {
             "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2",
             activeTab === 'drafts'
               ? "bg-amber-500/20 text-amber-400 shadow-sm"
-              : "text-zinc-400 hover:text-white hover:bg-white/5"
+              : "text-muted-foreground hover:text-white hover:bg-white/5"
           )}
         >
           <FileText className="h-3.5 w-3.5" />
@@ -412,11 +412,11 @@ export default function UpdatesPage() {
       <div className="space-y-3">
         {loading ? (
           <div className="flex justify-center py-12">
-             <div className="h-8 w-8 animate-spin text-zinc-500 border-2 border-current border-t-transparent rounded-full" />
+             <div className="h-8 w-8 animate-spin text-muted-foreground border-2 border-current border-t-transparent rounded-full" />
           </div>
         ) : filteredUpdates.length === 0 ? (
           <div className="text-center py-12 glass-card rounded-xl">
-            <p className="text-zinc-500">
+            <p className="text-muted-foreground">
               {activeTab === 'drafts' ? 'No drafts yet.' : activeTab === 'published' ? 'No published updates yet.' : 'No updates yet.'}
             </p>
           </div>
@@ -442,8 +442,8 @@ export default function UpdatesPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-zinc-400 line-clamp-2">{update.description}</p>
-                  <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
+                  <p className="text-sm text-muted-foreground line-clamp-2">{update.description}</p>
+                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                     <span className={clsx(
                       "font-medium px-2 py-0.5 rounded-md border",
                       getTypeColor(update.type)
@@ -465,7 +465,7 @@ export default function UpdatesPage() {
                   {update.status === 'draft' ? (
                     <button
                       onClick={() => handlePublish(update.id)}
-                      className="p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                      className="p-2 text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
                       title="Publish Update"
                     >
                       <Send className="h-4 w-4" />
@@ -473,7 +473,7 @@ export default function UpdatesPage() {
                   ) : (
                     <button
                       onClick={() => handleUnpublish(update.id)}
-                      className="p-2 text-zinc-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
+                      className="p-2 text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
                       title="Unpublish Update"
                     >
                       <FileText className="h-4 w-4" />
@@ -481,14 +481,14 @@ export default function UpdatesPage() {
                   )}
                   <button
                     onClick={() => handleEdit(update)}
-                    className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-2 text-muted-foreground hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                     title="Edit Update"
                   >
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(update.id)}
-                    className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                     title="Delete Update"
                   >
                     <Trash2 className="h-4 w-4" />

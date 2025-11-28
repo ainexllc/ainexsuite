@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 
 interface SwimlaneNodeData extends Record<string, unknown> {
   label?: string;
@@ -15,7 +15,7 @@ interface SwimlaneNodeData extends Record<string, unknown> {
 export type SwimlaneNodeType = Node<SwimlaneNodeData, 'swimlane'>;
 
 function SwimlaneNode({ data, selected }: NodeProps<SwimlaneNodeType>) {
-  const { theme } = useTheme();
+  const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const shellBg = (data.bgColor as string) || 'rgba(10, 10, 10, 0.5)';
   const orientation = data.orientation === 'vertical' ? 'vertical' : 'horizontal';

@@ -41,8 +41,8 @@ export function Leaderboard() {
                   {stat.displayName.slice(0, 2).toUpperCase()}
                 </div>
                 {index === 0 && (
-                  <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
-                    <Medal className="h-2 w-2 text-black" />
+                  <div className="absolute -top-1 -right-1 bg-accent rounded-full p-0.5">
+                    <Medal className="h-2 w-2 text-accent-foreground" />
                   </div>
                 )}
               </div>

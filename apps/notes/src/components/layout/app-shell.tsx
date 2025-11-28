@@ -112,7 +112,7 @@ export function AppShell({ children }: AppShellProps) {
           onOpenAiAssistant={() => togglePanel("ai-assistant")}
           onOpenActivity={() => togglePanel("notifications")}
         />
-        <div className="pointer-events-none fixed inset-x-0 top-16 z-20 h-3 bg-gradient-to-b from-orange-400/45 via-orange-400/15 to-transparent blur-md" />
+        <div className="pointer-events-none fixed inset-x-0 top-16 z-20 h-3 bg-gradient-to-b from-accent-500/45 via-accent-500/15 to-transparent blur-md" />
 
         <main className="flex-1 overflow-x-hidden pt-16">
           <div className="centered-shell">

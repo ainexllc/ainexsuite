@@ -138,8 +138,8 @@ export default function AppsManagement() {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 text-zinc-400 animate-spin" />
-          <p className="text-zinc-500 text-sm">Loading apps...</p>
+          <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading apps...</p>
         </div>
       </div>
     );
@@ -154,12 +154,12 @@ export default function AppsManagement() {
             <LayoutGrid className="h-6 w-6 text-indigo-400" />
             Apps Configuration
           </h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Manage theme colors and branding for all suite applications.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 rounded-full bg-zinc-800/50 border border-white/5 text-xs font-medium text-zinc-400 flex items-center gap-2">
+          <div className="px-3 py-1.5 rounded-full bg-surface-elevated/50 border border-white/5 text-xs font-medium text-muted-foreground flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {apps.length} Apps Active
           </div>
@@ -206,7 +206,7 @@ export default function AppsManagement() {
                   <h3 className="font-semibold text-white text-lg leading-tight">
                     {app.name}
                   </h3>
-                  <p className="text-xs text-zinc-500 mt-0.5">ID: {app.id}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">ID: {app.id}</p>
                 </div>
               </div>
 
@@ -214,7 +214,7 @@ export default function AppsManagement() {
               <div className="space-y-3 flex-1">
                 {['primary', 'secondary'].map((field) => (
                   <div key={field} className="relative">
-                    <label className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold mb-1.5 block">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-1.5 block">
                       {field}
                     </label>
                     <div className="flex items-center gap-2 p-2 bg-black/20 border border-white/5 rounded-lg focus-within:border-white/20 transition-colors">
@@ -226,7 +226,7 @@ export default function AppsManagement() {
                         type="text"
                         value={app[field as keyof AppConfig] as string}
                         onChange={(e) => handleColorChange(app.id, field as 'primary' | 'secondary', e.target.value)}
-                        className="flex-1 bg-transparent text-sm text-zinc-200 font-mono focus:outline-none"
+                        className="flex-1 bg-transparent text-sm text-foreground font-mono focus:outline-none"
                       />
                       <div className="relative w-6 h-6 overflow-hidden rounded cursor-pointer">
                         <input
@@ -245,7 +245,7 @@ export default function AppsManagement() {
               <div className="flex gap-2 pt-5 mt-2 border-t border-white/5">
                 <button
                   onClick={() => { setShowAIModal(app.id); setAiDescription(''); setAiMood(''); }}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-lg transition-colors text-xs font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-foreground/90 hover:text-white rounded-lg transition-colors text-xs font-medium"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   AI Gen
@@ -253,7 +253,7 @@ export default function AppsManagement() {
                 <button
                   onClick={() => handleSave(app)}
                   disabled={saving === app.id}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-zinc-950 hover:bg-zinc-200 rounded-lg transition-colors disabled:opacity-50 text-xs font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-black hover:bg-white/90 rounded-lg transition-colors disabled:opacity-50 text-xs font-medium"
                 >
                   {saving === app.id ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -280,19 +280,19 @@ export default function AppsManagement() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white">AI Palette Generator</h3>
-                    <p className="text-xs text-zinc-500">Generate themes using AI</p>
+                    <p className="text-xs text-muted-foreground">Generate themes using AI</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAIModal(null)}
-                  className="p-2 text-zinc-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                  className="p-2 text-muted-foreground hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="space-y-4">
-                <div className="p-3 bg-zinc-900/50 rounded-lg border border-white/5 flex items-center gap-3">
+                <div className="p-3 bg-surface-elevated/50 rounded-lg border border-white/5 flex items-center gap-3">
                   <div
                     className="w-8 h-8 rounded-md shadow-sm"
                     style={{
@@ -300,7 +300,7 @@ export default function AppsManagement() {
                     }}
                   />
                   <div>
-                    <span className="text-xs text-zinc-500 block">Target App</span>
+                    <span className="text-xs text-muted-foreground block">Target App</span>
                     <span className="text-sm font-medium text-white">
                       {apps.find(a => a.id === showAIModal)?.name}
                     </span>
@@ -308,31 +308,31 @@ export default function AppsManagement() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Context / Description</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Context / Description</label>
                   <input
                     type="text"
                     value={aiDescription}
                     onChange={(e) => setAiDescription(e.target.value)}
                     placeholder="e.g., Modern analytics dashboard for finance"
-                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
+                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Visual Mood</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Visual Mood</label>
                   <input
                     type="text"
                     value={aiMood}
                     onChange={(e) => setAiMood(e.target.value)}
                     placeholder="e.g., Trustworthy, Energetic, Calm"
-                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
+                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
                   />
                 </div>
 
                 <div className="pt-2 flex gap-3">
                   <button
                     onClick={() => setShowAIModal(null)}
-                    className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-lg border border-white/5 transition-colors text-sm font-medium"
+                    className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-white rounded-lg border border-white/5 transition-colors text-sm font-medium"
                   >
                     Cancel
                   </button>

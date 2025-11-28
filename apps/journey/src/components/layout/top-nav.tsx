@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useAuth } from "@ainexsuite/auth";
 import { useTheme } from "@ainexsuite/theme";
-import { LogoWordmark } from "@/components/branding/logo-wordmark";
 import {
+  LogoWordmark,
   TopNav as SharedTopNav,
   TopNavProfileButton,
   TopNavAiButton,
@@ -26,7 +26,7 @@ export function TopNav({
 
   return (
     <SharedTopNav
-      logo={<LogoWordmark href="/" iconSize={48} />}
+      logo={<LogoWordmark iconSize={48} asLink />}
       onMenuClick={onMenuClick}
       theme={theme === "dark" ? "dark" : "light"}
       accentColor="147,51,234" // Purple accent for Journey

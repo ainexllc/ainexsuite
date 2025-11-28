@@ -164,7 +164,7 @@ export function WeatherTile({
       <div className="flex flex-col gap-4">
         {/* Weather Display */}
         <div className="flex items-center gap-4">
-          <div className="p-2 rounded-lg bg-blue-500/20">
+          <div className="p-2 rounded-lg bg-primary/20">
             {loading ? (
               <div className="text-3xl animate-pulse">🌡️</div>
             ) : (
@@ -178,7 +178,7 @@ export function WeatherTile({
                 <div className="h-4 bg-white/10 rounded animate-pulse w-32"></div>
               </div>
             ) : error ? (
-              <div className="text-sm text-red-400">{error}</div>
+              <div className="text-sm text-destructive">{error}</div>
             ) : weather ? (
               <>
                 <div className="text-2xl font-bold">{weather.temperature}°</div>
@@ -199,7 +199,7 @@ export function WeatherTile({
           </button>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded transition-colors"
             aria-label="Settings"
           >
             <Settings className="w-4 h-4" />
@@ -226,7 +226,7 @@ export function WeatherTile({
                   value={inputZipcode}
                   onChange={(e) => handleInputChange(e.target.value)}
                   placeholder="e.g., San Diego, CA"
-                  className="w-full px-3 py-2.5 text-sm bg-foreground/5 border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-blue-400/50 focus:bg-foreground/10 focus:ring-1 focus:ring-blue-400/30 transition-all duration-200"
+                  className="w-full px-3 py-2.5 text-sm bg-foreground/5 border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-foreground/10 focus:ring-1 focus:ring-primary/30 transition-all duration-200"
                   autoComplete="off"
                 />
                 {inputZipcode && (
@@ -246,7 +246,7 @@ export function WeatherTile({
               <button
                 onClick={handleSaveZipcode}
                 disabled={!inputZipcode.trim()}
-                className="px-4 py-2.5 text-xs font-semibold bg-blue-500/30 hover:bg-blue-500/50 disabled:bg-foreground/10 disabled:text-muted-foreground border border-blue-500/50 disabled:border-border rounded-lg text-foreground transition-all duration-200 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-xs font-semibold bg-primary/30 hover:bg-primary/50 disabled:bg-foreground/10 disabled:text-muted-foreground border border-primary/50 disabled:border-border rounded-lg text-foreground transition-all duration-200 disabled:cursor-not-allowed"
               >
                 Save
               </button>
@@ -281,7 +281,7 @@ export function WeatherTile({
                     {isLoadingSuggestions ? (
                       <div className="px-4 py-6 text-center">
                         <div className="inline-block">
-                          <div className="w-5 h-5 border-2 border-border border-t-blue-400 rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 border-border border-t-primary rounded-full animate-spin" />
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">Searching locations...</p>
                       </div>

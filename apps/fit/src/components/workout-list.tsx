@@ -99,7 +99,7 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
                     e.stopPropagation();
                     setWorkoutToDelete(workout);
                   }}
-                  className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-red-400 hover:bg-red-500/20 rounded-full transition-colors"
+                  className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/20 rounded-full transition-colors"
                   title="Delete workout"
                 >
                   <Trash2 className="h-4 w-4" />

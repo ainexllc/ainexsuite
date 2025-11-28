@@ -77,20 +77,20 @@ function AdminLoginPageContent() {
 
   if (authLoading || (user && isAdminChecking)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-          <p className="text-sm text-zinc-500 font-medium">{loadingMessage}</p>
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground font-medium">{loadingMessage}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-surface-base p-4 relative overflow-hidden">
       {/* Ambient Background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-white/5 rounded-full blur-[100px] pointer-events-none" />
-      
+
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-3 rounded-xl bg-white text-black mb-6 shadow-xl shadow-white/10">
@@ -99,7 +99,7 @@ function AdminLoginPageContent() {
           <h1 className="text-2xl font-semibold text-white tracking-tight">
             AINEX Admin
           </h1>
-          <p className="text-zinc-500 text-sm mt-2">
+          <p className="text-muted-foreground text-sm mt-2">
             Sign in to access the control center
           </p>
         </div>
@@ -114,7 +114,7 @@ function AdminLoginPageContent() {
           <button
             onClick={handleGoogleSignIn}
             disabled={signInLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {signInLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -141,8 +141,8 @@ function AdminLoginPageContent() {
             <span>Continue with Google</span>
           </button>
         </div>
-        
-        <p className="text-center text-xs text-zinc-600 mt-8">
+
+        <p className="text-center text-xs text-muted-foreground mt-8">
           Protected by AINEX Identity
         </p>
       </div>
@@ -152,7 +152,7 @@ function AdminLoginPageContent() {
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-surface-base" />}>
       <AdminLoginPageContent />
     </Suspense>
   );

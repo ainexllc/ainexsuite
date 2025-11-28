@@ -22,7 +22,7 @@ interface HealthCheckinComposerProps {
 }
 
 const moodOptions: { value: MoodType; icon: typeof Smile; label: string; color: string }[] = [
-  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-emerald-500' },
+  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-primary' },
   { value: 'happy', icon: Smile, label: 'Good', color: 'text-green-500' },
   { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
   { value: 'stressed', icon: Frown, label: 'Bad', color: 'text-orange-500' },
@@ -142,7 +142,7 @@ export function HealthCheckinComposer({
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 backdrop-blur-sm"
+          className="flex w-full items-center rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary backdrop-blur-sm"
           onClick={() => setExpanded(true)}
         >
           <span>{existingMetric ? 'Update today\'s check-in...' : 'Check in today...'}</span>
@@ -168,7 +168,7 @@ export function HealthCheckinComposer({
               {/* Weight */}
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Scale className="h-3.5 w-3.5 text-emerald-500" />
+                  <Scale className="h-3.5 w-3.5 text-primary" />
                   Weight (lbs)
                 </label>
                 <input
@@ -179,7 +179,7 @@ export function HealthCheckinComposer({
                     updateField('weight', e.target.value ? parseFloat(e.target.value) : null)
                   }
                   placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
+                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -199,7 +199,7 @@ export function HealthCheckinComposer({
                     updateField('sleep', e.target.value ? parseFloat(e.target.value) : null)
                   }
                   placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
+                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export function HealthCheckinComposer({
                     updateField('water', e.target.value ? parseInt(e.target.value) : null)
                   }
                   placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
+                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -237,7 +237,7 @@ export function HealthCheckinComposer({
                     updateField('heartRate', e.target.value ? parseInt(e.target.value) : null)
                   }
                   placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
+                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
                 />
               </div>
             </div>
@@ -257,7 +257,7 @@ export function HealthCheckinComposer({
                     className={clsx(
                       'flex-1 py-2 rounded-lg text-sm font-medium transition-colors',
                       formData.energy === level
-                        ? 'bg-emerald-500 text-foreground'
+                        ? 'bg-primary text-foreground'
                         : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground/70'
                     )}
                   >
@@ -282,7 +282,7 @@ export function HealthCheckinComposer({
                     className={clsx(
                       'flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-colors',
                       formData.mood === value
-                        ? 'bg-emerald-500/20 border-2 border-emerald-500'
+                        ? 'bg-primary/20 border-2 border-primary'
                         : 'bg-foreground/5 border-2 border-transparent hover:bg-foreground/10'
                     )}
                   >
@@ -301,7 +301,7 @@ export function HealthCheckinComposer({
                 onChange={(e) => updateField('notes', e.target.value)}
                 placeholder="How are you feeling today? Any symptoms or observations?"
                 rows={2}
-                className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground resize-none"
+                className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground resize-none"
               />
             </div>
 
@@ -318,7 +318,7 @@ export function HealthCheckinComposer({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting || !hasContent}
-                className="rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-foreground shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-emerald-500 flex items-center gap-2"
+                className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-primary flex items-center gap-2"
               >
                 {isSubmitting ? (
                   <>

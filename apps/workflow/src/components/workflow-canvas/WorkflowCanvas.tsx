@@ -41,7 +41,6 @@ import { ShapePalette } from './ShapePalette';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useTheme } from '@/contexts/ThemeContext';
 
 // Define nodeTypes outside component to prevent re-creation
 const nodeTypes = {
@@ -158,8 +157,30 @@ function WorkflowCanvasInner() {
   const [showClearModal, setShowClearModal] = useState(false);
   const [editingEdge, setEditingEdge] = useState<string | null>(null);
   const { user } = useAuth();
-  const { theme } = useTheme();
-  const prevThemeIdRef = useRef(theme.id);
+
+  // Get theme colors from CSS variables set by AppColorProvider
+  const [themePrimary, setThemePrimary] = useState('#06b6d4');
+  const [themePrimaryRgb, setThemePrimaryRgb] = useState('6, 182, 212');
+  const [themePrimaryLight, setThemePrimaryLight] = useState('#22d3ee');
+
+  useEffect(() => {
+    const updateThemeColors = () => {
+      const primary = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary').trim() || '#06b6d4';
+      const primaryRgb = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary-rgb').trim() || '6, 182, 212';
+      const primaryLight = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary-light').trim() || '#22d3ee';
+      setThemePrimary(primary);
+      setThemePrimaryRgb(primaryRgb);
+      setThemePrimaryLight(primaryLight);
+    };
+
+    updateThemeColors();
+
+    // Watch for CSS variable changes
+    const observer = new MutationObserver(updateThemeColors);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Track if we have selected edges
   const hasSelectedEdges = useMemo(() => edges.some(e => e.selected), [edges]);
@@ -170,11 +191,11 @@ function WorkflowCanvasInner() {
     if (selectedNodes.length === 0) return null;
 
     // If all selected nodes have the same color, return it
-    const firstColor = (selectedNodes[0].data as { color?: string }).color || theme.primary;
-    const allSameColor = selectedNodes.every((n) => ((n.data as { color?: string }).color || theme.primary) === firstColor);
+    const firstColor = (selectedNodes[0].data as { color?: string }).color || themePrimary;
+    const allSameColor = selectedNodes.every((n) => ((n.data as { color?: string }).color || themePrimary) === firstColor);
 
     return allSameColor ? firstColor : null;
-  }, [nodes, theme.primary]);
+  }, [nodes, themePrimary]);
 
   // Undo/Redo hook
   const {
@@ -230,7 +251,7 @@ function WorkflowCanvasInner() {
       type: MarkerType.ArrowClosed,
       width: 16,
       height: 16,
-      color: theme.primary,
+      color: themePrimary,
     };
 
     // Always return both properties, set to undefined if not needed
@@ -239,7 +260,7 @@ function WorkflowCanvasInner() {
       markerEnd: (direction === 'end' || direction === 'both') ? markerConfig : undefined,
       markerStart: (direction === 'start' || direction === 'both') ? markerConfig : undefined,
     };
-  }, [theme.primary]);
+  }, [themePrimary]);
 
   // Helper to get stroke dash array based on line style
   const getStrokeDashArray = useCallback((style: 'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted') => {
@@ -275,13 +296,13 @@ function WorkflowCanvasInner() {
       type: edgeType as Edge['type'],
       animated: isAnimatedStyle(lineStyle), // Animate based on style prefix
       style: {
-        stroke: theme.primary,
+        stroke: themePrimary,
         strokeWidth: 2,
         strokeDasharray: getStrokeDashArray(lineStyle),
       },
       ...getMarkerConfig(arrowType),
     }),
-    [theme.primary, edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]
+    [themePrimary, edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]
   );
 
   // Load workflow from Firestore (only on mount/user change)
@@ -350,7 +371,7 @@ function WorkflowCanvasInner() {
               animated: isAnimatedStyle(savedLineStyle),
               style: {
                 ...edge.style,
-                stroke: theme.primary,
+                stroke: themePrimary,
                 strokeWidth: 2,
                 strokeDasharray: getStrokeDashArray(savedLineStyle),
               },
@@ -373,17 +394,12 @@ function WorkflowCanvasInner() {
 
   // Update edges when theme, edge type, arrow type, or line style changes
   useEffect(() => {
-    // Only update if theme actually changed (not on initial render)
-    if (prevThemeIdRef.current !== theme.id) {
-      prevThemeIdRef.current = theme.id;
-    }
-
     // If there are selected edges, only update those
     // Otherwise update all edges
     setEdgesState((eds) =>
       eds.map((edge) => {
-        // Skip non-selected edges if there are selected edges and we're not changing theme
-        const shouldUpdate = !hasSelectedEdges || edge.selected || prevThemeIdRef.current !== theme.id;
+        // Skip non-selected edges if there are selected edges
+        const shouldUpdate = !hasSelectedEdges || edge.selected;
 
         if (!shouldUpdate) {
           return edge;
@@ -394,7 +410,7 @@ function WorkflowCanvasInner() {
           type: edgeType as Edge['type'],
           animated: isAnimatedStyle(lineStyle),
           style: {
-            stroke: theme.primary,
+            stroke: themePrimary,
             strokeWidth: 2,
             strokeDasharray: getStrokeDashArray(lineStyle),
           },
@@ -402,7 +418,7 @@ function WorkflowCanvasInner() {
         };
       })
     );
-  }, [theme.id, theme.primary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]); // Run when any edge style changes
+  }, [themePrimary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]); // Run when any edge style changes
 
   // Periodic edge validation - clean up orphaned edges when nodes change
   // Only trigger on nodes changes, not edges changes, to avoid interfering with edge creation
@@ -750,7 +766,7 @@ function WorkflowCanvasInner() {
           type: edgeType as Edge['type'],
           animated,
           style: {
-            stroke: theme.primary,
+            stroke: themePrimary,
             strokeWidth: 2,
             strokeDasharray,
           },
@@ -768,7 +784,7 @@ function WorkflowCanvasInner() {
       takeSnapshot,
       edgeType,
       lineStyle,
-      theme.primary,
+      themePrimary,
       getMarkerConfig,
       getStrokeDashArray,
       isAnimatedStyle,
@@ -850,14 +866,14 @@ function WorkflowCanvasInner() {
   // Dynamic theme styles for React Flow
   const themeStyles = useMemo(() => `
     .react-flow-dark {
-      --xy-edge-stroke: ${theme.primary};
-      --xy-edge-stroke-selected: ${theme.primaryLight};
-      --xy-handle: ${theme.primary};
-      --xy-node-border: rgba(${theme.primaryRgb}, 0.3);
-      --xy-node-border-selected: ${theme.primary};
-      --xy-node-boxshadow-selected: 0 0 0 2px rgba(${theme.primaryRgb}, 0.5);
+      --xy-edge-stroke: ${themePrimary};
+      --xy-edge-stroke-selected: ${themePrimaryLight};
+      --xy-handle: ${themePrimary};
+      --xy-node-border: rgba(${themePrimaryRgb}, 0.3);
+      --xy-node-border-selected: ${themePrimary};
+      --xy-node-boxshadow-selected: 0 0 0 2px rgba(${themePrimaryRgb}, 0.5);
     }
-  `, [theme]);
+  `, [themePrimary, themePrimaryLight, themePrimaryRgb]);
 
   return (
     <div className="flex h-full w-full">
@@ -919,14 +935,14 @@ function WorkflowCanvasInner() {
           edgesReconnectable={true}
           edgeTypes={edgeTypes}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme.primary} />
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={themePrimary} />
           <Controls />
           <MiniMap
-            nodeColor={theme.primary}
+            nodeColor={themePrimary}
             maskColor="rgba(0, 0, 0, 0.6)"
             style={{
               background: 'rgba(15, 15, 15, 0.9)',
-              border: `1px solid rgba(${theme.primaryRgb}, 0.2)`,
+              border: `1px solid rgba(${themePrimaryRgb}, 0.2)`,
             }}
           />
 
@@ -976,7 +992,7 @@ function WorkflowCanvasInner() {
                       className="nodrag nopan px-2 py-1 text-xs rounded border-2 outline-none"
                       style={{
                         backgroundColor: 'rgba(10, 10, 10, 0.95)',
-                        borderColor: theme.primary,
+                        borderColor: themePrimary,
                         color: '#fff',
                         minWidth: '100px',
                       }}
@@ -1010,7 +1026,7 @@ function WorkflowCanvasInner() {
                       pointerEvents: 'all',
                       padding: '4px 8px',
                       backgroundColor: 'rgba(10, 10, 10, 0.85)',
-                      border: `1px solid rgba(${theme.primaryRgb}, 0.3)`,
+                      border: `1px solid rgba(${themePrimaryRgb}, 0.3)`,
                       borderRadius: '4px',
                       fontSize: '12px',
                       color: '#fff',

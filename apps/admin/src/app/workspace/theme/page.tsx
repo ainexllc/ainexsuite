@@ -128,7 +128,7 @@ export default function ThemeManagement() {
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -142,7 +142,7 @@ export default function ThemeManagement() {
             <Paintbrush className="h-6 w-6 text-indigo-400" />
             Theme Settings
           </h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Configure global background styles for all apps.
           </p>
         </div>
@@ -178,7 +178,7 @@ export default function ThemeManagement() {
       {/* Background Variant Selection */}
       <div className="glass-card rounded-xl p-6">
         <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Eye className="h-5 w-5 text-zinc-400" />
+          <Eye className="h-5 w-5 text-muted-foreground" />
           Background Style
         </h2>
 
@@ -194,14 +194,14 @@ export default function ThemeManagement() {
               }`}
             >
               {/* Preview */}
-              <div className="relative h-28 bg-zinc-950">
+              <div className="relative h-28 bg-surface-base">
                 <BackgroundPreview variant={variant.id} intensity={theme.backgroundIntensity} />
               </div>
 
               {/* Label */}
-              <div className="p-4 bg-zinc-900/80 border-t border-white/5">
+              <div className="p-4 bg-surface-elevated/80 border-t border-white/5">
                 <div className="text-sm font-medium text-white">{variant.name}</div>
-                <div className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{variant.description}</div>
+                <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{variant.description}</div>
               </div>
 
               {/* Selected indicator */}
@@ -220,14 +220,14 @@ export default function ThemeManagement() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-lg font-semibold text-white">Intensity</h2>
-            <p className="text-sm text-zinc-400">Adjust the visibility of background effects</p>
+            <p className="text-sm text-muted-foreground">Adjust the visibility of background effects</p>
           </div>
-          <span className="text-sm font-mono font-medium text-white bg-zinc-800 px-3 py-1 rounded-lg">
+          <span className="text-sm font-mono font-medium text-white bg-surface-elevated px-3 py-1 rounded-lg">
             {Math.round(theme.backgroundIntensity * 100)}%
           </span>
         </div>
 
-        <div className="relative h-2 bg-zinc-800 rounded-full overflow-hidden">
+        <div className="relative h-2 bg-surface-elevated rounded-full overflow-hidden">
           <div 
             className="absolute top-0 left-0 h-full bg-indigo-500 rounded-full"
             style={{ width: `${theme.backgroundIntensity * 100}%` }}
@@ -242,7 +242,7 @@ export default function ThemeManagement() {
           />
         </div>
 
-        <div className="flex justify-between text-xs text-zinc-500 mt-3 font-medium">
+        <div className="flex justify-between text-xs text-muted-foreground mt-3 font-medium">
           <span>Subtle</span>
           <span>Balanced</span>
           <span>Bold</span>
@@ -253,7 +253,7 @@ export default function ThemeManagement() {
       <div className="glass-card rounded-xl p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Live Preview</h2>
 
-        <div className="relative h-64 rounded-xl bg-zinc-950 overflow-hidden border border-white/5 shadow-2xl">
+        <div className="relative h-64 rounded-xl bg-surface-base overflow-hidden border border-white/5 shadow-2xl">
           <BackgroundPreview variant={theme.backgroundVariant} intensity={theme.backgroundIntensity} />
 
           {/* Mock content */}

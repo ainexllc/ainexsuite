@@ -123,16 +123,16 @@ function HealthHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-emerald-500/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-primary/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-emerald-500" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-primary" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}

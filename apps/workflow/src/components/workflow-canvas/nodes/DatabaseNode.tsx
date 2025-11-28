@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useState } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 
 interface DatabaseNodeData extends Record<string, unknown> {
   label?: string;
@@ -13,7 +13,7 @@ interface DatabaseNodeData extends Record<string, unknown> {
 export type DatabaseNodeType = Node<DatabaseNodeData, 'database'>;
 
 function DatabaseNode({ data, selected }: NodeProps<DatabaseNodeType>) {
-  const { theme } = useTheme();
+  const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const nodeBgColor = (data.bgColor as string) || 'rgba(10, 10, 10, 0.8)';
   const [label, setLabel] = useState((data.label as string) || 'Database');

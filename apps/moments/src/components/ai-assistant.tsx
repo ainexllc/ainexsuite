@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useGrokAssistant } from '@ainexsuite/ai';
+import { useAppColors } from '@ainexsuite/theme';
 import { Sparkles, X, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
+  const { primary: primaryColor, secondary: secondaryColor } = useAppColors();
 
   const { messages, sendMessage, loading } = useGrokAssistant({
     appName: 'moments',
@@ -36,9 +38,12 @@ Be creative, nostalgic, and help users cherish their precious memories.`,
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
+          'fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center z-50',
           isOpen && 'rotate-180'
         )}
+        style={{
+          background: `linear-gradient(to bottom right, ${secondaryColor}, ${primaryColor})`
+        }}
       >
         {isOpen ? <X className="h-6 w-6 text-white" /> : <Sparkles className="h-6 w-6 text-white" />}
       </button>
@@ -47,7 +52,12 @@ Be creative, nostalgic, and help users cherish their precious memories.`,
         <div className="fixed bottom-24 right-8 w-96 h-[500px] surface-elevated border border-surface-hover rounded-lg shadow-2xl flex flex-col z-50">
           <div className="p-4 border-b border-surface-hover">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(to bottom right, ${secondaryColor}, ${primaryColor})`
+                }}
+              >
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
               <div>
@@ -79,9 +89,10 @@ Be creative, nostalgic, and help users cherish their precious memories.`,
                     className={cn(
                       'max-w-[80%] px-4 py-2 rounded-lg',
                       message.role === 'user'
-                        ? 'bg-accent-500 text-white'
+                        ? 'text-white'
                         : 'surface-card'
                     )}
+                    style={message.role === 'user' ? { backgroundColor: primaryColor } : undefined}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   </div>
@@ -93,9 +104,9 @@ Be creative, nostalgic, and help users cherish their precious memories.`,
               <div className="flex justify-start">
                 <div className="surface-card px-4 py-2 rounded-lg">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-accent-500 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-accent-500 rounded-full animate-bounce delay-100" />
-                    <div className="w-2 h-2 bg-accent-500 rounded-full animate-bounce delay-200" />
+                    <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: primaryColor }} />
+                    <div className="w-2 h-2 rounded-full animate-bounce delay-100" style={{ backgroundColor: primaryColor }} />
+                    <div className="w-2 h-2 rounded-full animate-bounce delay-200" style={{ backgroundColor: primaryColor }} />
                   </div>
                 </div>
               </div>
@@ -116,12 +127,18 @@ Be creative, nostalgic, and help users cherish their precious memories.`,
                   }
                 }}
                 disabled={loading}
-                className="flex-1 px-3 py-2 surface-card rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none disabled:opacity-50"
+                className="flex-1 px-3 py-2 surface-card rounded-lg border border-surface-hover focus:outline-none disabled:opacity-50"
+                style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
+                onFocus={(e) => e.target.style.borderColor = primaryColor}
+                onBlur={(e) => e.target.style.borderColor = ''}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="p-2 bg-accent-500 hover:bg-accent-600 rounded-lg transition-colors disabled:opacity-50"
+                className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                style={{ backgroundColor: primaryColor }}
+                onMouseEnter={(e) => !input.trim() || loading ? null : e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 <Send className="h-5 w-5" />
               </button>

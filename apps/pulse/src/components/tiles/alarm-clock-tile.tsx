@@ -203,9 +203,9 @@ export function AlarmClockTile({
           {/* Alarm Icon with Status */}
           <div className="relative">
             {isAlarmSet ? (
-              <Bell className={`w-8 h-8 ${isSnoozed ? 'text-yellow-400' : 'text-green-400'}`} />
+              <Bell className={`w-8 h-8 ${isSnoozed ? 'text-warning' : 'text-success'}`} />
             ) : (
-              <BellOff className="w-8 h-8 text-white/40" />
+              <BellOff className="w-8 h-8 text-muted-foreground" />
             )}
           </div>
 
@@ -216,7 +216,7 @@ export function AlarmClockTile({
               value={alarmTime}
               onChange={(e) => setAlarmTime(e.target.value)}
               disabled={isAlarmSet}
-              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-center text-lg font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-center text-lg font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             />
 
             {/* Time Until Alarm */}
@@ -239,7 +239,7 @@ export function AlarmClockTile({
                 if (sound) setSelectedSound(sound);
               }}
               disabled={isAlarmSet}
-              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {ALARM_SOUNDS.map((sound) => (
                 <option key={sound.id} value={sound.id}>
@@ -255,7 +255,7 @@ export function AlarmClockTile({
               <button
                 onClick={handleSetAlarm}
                 disabled={!alarmTime}
-                className="flex-1 py-2 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center justify-center gap-2"
+                className="flex-1 py-2 rounded-lg bg-success/20 text-success hover:bg-success/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center justify-center gap-2"
               >
                 <Bell className="w-4 h-4" />
                 Set Alarm
@@ -263,7 +263,7 @@ export function AlarmClockTile({
             ) : (
               <button
                 onClick={handleCancelAlarm}
-                className="flex-1 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                className="flex-1 py-2 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors font-medium text-sm flex items-center justify-center gap-2"
               >
                 <X className="w-4 h-4" />
                 Cancel
@@ -295,16 +295,16 @@ export function AlarmClockTile({
         size="md"
         closeOnBackdropClick={false}
         closeOnEscape={false}
-        className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border-2 border-red-500/50"
+        className="bg-gradient-to-br from-destructive/20 to-warning/20 border-2 border-destructive/50"
       >
         <GlassModalContent className="relative py-8">
           {/* Pulsing Background Effect */}
-          <div className="absolute inset-0 bg-red-500/10 rounded-3xl animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 bg-destructive/10 rounded-3xl animate-pulse pointer-events-none" />
 
           {/* Bouncing Alarm Icon */}
           <div className="relative flex justify-center mb-6">
             <div className="animate-bounce">
-              <Bell className="w-24 h-24 text-red-400 drop-shadow-[0_0_20px_rgba(248,113,113,0.8)]" />
+              <Bell className="w-24 h-24 text-destructive drop-shadow-[0_0_20px_rgba(var(--color-destructive-rgb),0.8)]" />
             </div>
           </div>
 
@@ -317,7 +317,7 @@ export function AlarmClockTile({
               {alarmTime}
             </p>
             {isSnoozed && (
-              <p className="text-yellow-400 text-sm mt-2">
+              <p className="text-warning text-sm mt-2">
                 (Snoozed alarm)
               </p>
             )}
@@ -327,7 +327,7 @@ export function AlarmClockTile({
           <div className="relative flex flex-col gap-3">
             <button
               onClick={handleStopAlarm}
-              className="w-full py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-lg transition-all shadow-lg shadow-red-500/50 hover:scale-105 active:scale-95"
+              className="w-full py-4 rounded-xl bg-destructive hover:bg-destructive/90 text-white font-bold text-lg transition-all shadow-lg shadow-destructive/50 hover:scale-105 active:scale-95"
             >
               Stop Alarm
             </button>
@@ -341,8 +341,8 @@ export function AlarmClockTile({
 
           {/* Animated Rings */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-4 border-red-400/30 rounded-full animate-ping" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-orange-400/20 rounded-full animate-ping" style={{ animationDelay: '0.3s' }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-4 border-destructive/30 rounded-full animate-ping" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-4 border-warning/20 rounded-full animate-ping" style={{ animationDelay: '0.3s' }} />
           </div>
         </GlassModalContent>
       </GlassModal>

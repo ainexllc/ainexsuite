@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Workout, Exercise } from '@/types/models';
 import { X, Trash2, Plus } from 'lucide-react';
+import { useAppColors } from '@ainexsuite/theme';
 
 interface WorkoutEditorProps {
   workout: Workout | null;
@@ -11,6 +12,7 @@ interface WorkoutEditorProps {
 }
 
 export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) {
+  const { primary } = useAppColors();
   const [title, setTitle] = useState(workout?.title || '');
   const [date, setDate] = useState(
     workout?.date ? new Date(workout.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
@@ -88,7 +90,8 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium disabled:opacity-50 transition-colors"
+              style={{ backgroundColor: primary }}
+              className="px-4 py-2 hover:opacity-90 text-white rounded-lg font-medium disabled:opacity-50 transition-all"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
@@ -107,7 +110,8 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
                 placeholder="e.g., Upper Body Strength"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-2 bg-foreground/5 rounded-lg border border-border focus:border-orange-500 focus:outline-none text-foreground"
+                style={{ '--focus-color': primary } as React.CSSProperties}
+                className="w-full px-3 py-2 bg-foreground/5 rounded-lg border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground"
                 autoFocus
               />
             </div>
@@ -118,7 +122,8 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 bg-foreground/5 rounded-lg border border-border focus:border-orange-500 focus:outline-none text-foreground"
+                style={{ '--focus-color': primary } as React.CSSProperties}
+                className="w-full px-3 py-2 bg-foreground/5 rounded-lg border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground"
               />
             </div>
 
@@ -128,7 +133,8 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
                 type="number"
                 value={duration}
                 onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 bg-foreground/5 rounded-lg border border-border focus:border-orange-500 focus:outline-none text-foreground"
+                style={{ '--focus-color': primary } as React.CSSProperties}
+                className="w-full px-3 py-2 bg-foreground/5 rounded-lg border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground"
               />
             </div>
           </div>
@@ -157,11 +163,12 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
                         onChange={(e) =>
                           handleUpdateExercise(idx, { name: e.target.value })
                         }
-                        className="flex-1 px-3 py-2 bg-background/20 rounded-lg border border-border focus:border-orange-500 focus:outline-none text-foreground placeholder:text-muted-foreground"
+                        style={{ '--focus-color': primary } as React.CSSProperties}
+                        className="flex-1 px-3 py-2 bg-background/20 rounded-lg border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground placeholder:text-muted-foreground"
                       />
                       <button
                         onClick={() => handleRemoveExercise(idx)}
-                        className="p-2 text-muted-foreground hover:text-red-400 transition-colors"
+                        className="p-2 text-muted-foreground hover:text-destructive transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -186,7 +193,8 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
                               updated[idx].sets[setIdx].reps = parseInt(e.target.value) || 0;
                               setExercises(updated);
                             }}
-                            className="w-full px-2 py-1 bg-background/20 rounded border border-border focus:border-orange-500 focus:outline-none text-foreground"
+                            style={{ '--focus-color': primary } as React.CSSProperties}
+                            className="w-full px-2 py-1 bg-background/20 rounded border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground"
                           />
                         </div>
                         <div>
@@ -200,7 +208,8 @@ export function WorkoutEditor({ workout, onClose, onSave }: WorkoutEditorProps) 
                               updated[idx].sets[setIdx].weight = parseFloat(e.target.value) || 0;
                               setExercises(updated);
                             }}
-                            className="w-full px-2 py-1 bg-background/20 rounded border border-border focus:border-orange-500 focus:outline-none text-foreground"
+                            style={{ '--focus-color': primary } as React.CSSProperties}
+                            className="w-full px-2 py-1 bg-background/20 rounded border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground"
                           />
                         </div>
                       </div>

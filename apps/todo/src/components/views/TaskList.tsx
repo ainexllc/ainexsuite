@@ -40,7 +40,7 @@ export function TaskList({ onEditTask }: TaskListProps) {
                   {task.title}
                 </span>
                 {task.priority === 'high' && (
-                  <Flag className="h-3 w-3 text-red-400 fill-red-400/20" />
+                  <Flag className="h-3 w-3 text-priority-high fill-priority-high/20" />
                 )}
               </div>
             }
@@ -49,7 +49,7 @@ export function TaskList({ onEditTask }: TaskListProps) {
             trailing={
               <div className="flex items-center gap-3">
                 {date && (
-                  <div className={`text-xs ${isOverdue ? 'text-red-400' : 'text-muted-foreground'}`}>
+                  <div className={`text-xs ${isOverdue ? 'text-priority-urgent' : 'text-muted-foreground'}`}>
                     {format(date, 'MMM d')}
                   </div>
                 )}

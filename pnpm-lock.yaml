@@ -63,6 +63,9 @@ importers:
       '@ainexsuite/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@ainexsuite/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@ainexsuite/firebase':
         specifier: workspace:*
         version: link:../../packages/firebase

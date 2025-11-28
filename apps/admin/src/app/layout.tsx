@@ -49,11 +49,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
       >
         <ThemeProvider>
-          <AppColorProvider appId="admin" fallbackPrimary="#71717a" fallbackSecondary="#a1a1aa">
-            <AuthProvider>
+          <AuthProvider>
+            <AppColorProvider appId="admin" fallbackPrimary="#71717a" fallbackSecondary="#a1a1aa">
               {children}
-            </AuthProvider>
-          </AppColorProvider>
+            </AppColorProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

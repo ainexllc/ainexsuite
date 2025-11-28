@@ -26,7 +26,7 @@ export function UserMenu({ user }: UserMenuProps) {
         className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-surface-muted transition-colors"
       >
         {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-white font-semibold">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center text-foreground font-semibold">
           {user.displayName?.[0]?.toUpperCase() || 'U'}
         </div>
 

@@ -3,7 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
-import { ThemeProvider } from '@ainexsuite/theme';
+import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -28,7 +28,9 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <AuthProvider>
-            {children}
+            <AppColorProvider appId="fit" fallbackPrimary="#3b82f6" fallbackSecondary="#60a5fa">
+              {children}
+            </AppColorProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

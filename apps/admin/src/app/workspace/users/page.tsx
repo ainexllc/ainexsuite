@@ -12,7 +12,7 @@ export default function UsersPage() {
             <Users className="h-6 w-6 text-indigo-400" />
             User Management
           </h1>
-          <p className="text-zinc-400 text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             View, search, and manage user permissions across the suite.
           </p>
         </div>

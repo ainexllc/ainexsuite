@@ -1,6 +1,6 @@
 'use client';
 
-import { CanvasWaveBackground } from './canvas-wave-background';
+import { CanvasWaveBackground } from '@ainexsuite/ui/components';
 
 /**
  * Layered background combining canvas wave animation with gradient effects

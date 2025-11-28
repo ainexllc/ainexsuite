@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 
 interface DiamondNodeData extends Record<string, unknown> {
   label: string;
@@ -13,7 +13,7 @@ interface DiamondNodeData extends Record<string, unknown> {
 export type DiamondNodeType = Node<DiamondNodeData, 'diamond'>;
 
 function DiamondNode({ data, selected }: NodeProps<DiamondNodeType>) {
-  const { theme } = useTheme();
+  const theme = useWorkflowTheme();
   const nodeColor = data.color || theme.primary;
   const nodeBgColor = data.bgColor || 'rgba(10, 10, 10, 0.7)';
   const [label, setLabel] = useState(data.label || 'Decision');

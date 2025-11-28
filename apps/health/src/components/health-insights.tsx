@@ -9,6 +9,7 @@ import {
   AIInsightsText,
 } from '@ainexsuite/ui';
 import type { AIInsightsSection } from '@ainexsuite/ui';
+import { useAppColors } from '@ainexsuite/theme';
 
 interface InsightData {
   weeklyTrend: string;
@@ -27,8 +28,7 @@ export function HealthInsights({ metrics, variant = 'default', onExpand }: Healt
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  const accentColor = '#10b981'; // emerald-500
+  const { primary: accentColor } = useAppColors();
 
   // Get recent metrics for analysis
   const recentMetrics = metrics

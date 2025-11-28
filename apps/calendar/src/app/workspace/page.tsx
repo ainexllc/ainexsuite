@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { Timestamp } from 'firebase/firestore';
 import { WorkspaceLayout, SUITE_APPS, getAppUrl, useToast } from '@ainexsuite/ui';
-import { useVisualStyle } from '@/lib/theme/visual-style';
 import {
   Loader2,
   Calendar as CalendarIcon,
@@ -64,7 +63,6 @@ const apps = Object.entries(SUITE_APPS).map(([slug, config]) => ({
 export default function WorkspacePage() {
   const { user, loading, signOut, ssoInProgress } = useAuth();
   const router = useRouter();
-  const { selectedVariant } = useVisualStyle();
   const { toast } = useToast();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -291,7 +289,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-foreground">
-      <div className={`pointer-events-none absolute inset-0 -z-10 ${selectedVariant.heroAtmosphere}`} />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-accent-500/10 via-transparent to-accent-600/5" />
 
       <WorkspaceLayout
         user={user}

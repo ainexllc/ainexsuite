@@ -220,9 +220,9 @@ function MainHomePageContent() {
           </div>
           {loadingMessage && (
             <div className="space-y-2">
-              <p className="text-lg font-medium text-white">{loadingMessage}</p>
+              <p className="text-lg font-medium text-foreground">{loadingMessage}</p>
               {user && !isFromLogout && (
-                <p className="text-sm text-white/60 flex items-center justify-center gap-2">
+                <p className="text-sm text-foreground/60 flex items-center justify-center gap-2">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
                   Redirecting to your workspace
                 </p>
@@ -302,7 +302,7 @@ export default function MainHomePage() {
               </div>
               <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
             </div>
-            <p className="text-lg font-medium text-white">Loading...</p>
+            <p className="text-lg font-medium text-foreground">Loading...</p>
           </div>
         </div>
       }

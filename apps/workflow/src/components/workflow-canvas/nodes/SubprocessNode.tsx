@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 
 interface SubprocessNodeData extends Record<string, unknown> {
   label?: string;
@@ -14,7 +14,7 @@ interface SubprocessNodeData extends Record<string, unknown> {
 export type SubprocessNodeType = Node<SubprocessNodeData, 'subprocess'>;
 
 function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
-  const { theme } = useTheme();
+  const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const nodeBgColor = (data.bgColor as string) || 'rgba(10, 10, 10, 0.7)';
   const [label, setLabel] = useState((data.label as string) || 'Subprocess');

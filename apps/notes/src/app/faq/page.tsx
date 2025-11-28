@@ -61,13 +61,13 @@ export default function NotesFAQPage() {
     <FooterPageLayout maxWidth="medium">
       <div className="space-y-12">
         <section className="text-center space-y-4">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-accent-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-accent-300">
             FAQ
           </span>
           <h1 className="text-4xl font-semibold text-white sm:text-5xl">Notes FAQ</h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Everything you need to know about capturing, organizing, and sharing knowledge with Notes. Still curious? Email{' '}
-            <a href="mailto:notes@ainexsuite.com" className="text-blue-300 hover:underline">
+            <a href="mailto:notes@ainexsuite.com" className="text-accent-300 hover:underline">
               notes@ainexsuite.com
             </a>
             .
@@ -84,7 +84,7 @@ export default function NotesFAQPage() {
                 setOpenQuestion(null);
               }}
               className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                activeCategory === category ? 'bg-blue-500 text-white' : 'bg-zinc-800/80 text-white/70 hover:bg-zinc-700/80'
+                activeCategory === category ? 'bg-accent-500 text-white' : 'bg-zinc-800/80 text-white/70 hover:bg-zinc-700/80'
               }`}
             >
               {category}
@@ -106,9 +106,9 @@ export default function NotesFAQPage() {
                 >
                   <span className="text-lg font-semibold text-white">{item.question}</span>
                   {isOpen ? (
-                    <ChevronUp className="h-5 w-5 text-blue-300 flex-shrink-0" />
+                    <ChevronUp className="h-5 w-5 text-accent-300 flex-shrink-0" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-blue-300 flex-shrink-0" />
+                    <ChevronDown className="h-5 w-5 text-accent-300 flex-shrink-0" />
                   )}
                 </button>
                 {isOpen && <p className="mt-4 text-sm text-white/70 leading-relaxed">{item.answer}</p>}

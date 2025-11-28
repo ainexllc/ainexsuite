@@ -65,7 +65,7 @@ export default function NotesFeaturesPage() {
     <FooterPageLayout maxWidth="wide">
       <div className="space-y-16">
         <section className="text-center space-y-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-blue-300">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-accent-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-accent-300">
             Notes Features
           </span>
           <h1 className="text-4xl font-semibold text-white sm:text-5xl lg:text-6xl">
@@ -81,7 +81,7 @@ export default function NotesFeaturesPage() {
             const Icon = feature.icon;
             return (
               <div key={feature.title} className="rounded-3xl border border-white/10 bg-zinc-800/80 p-6 shadow-lg transition hover:-translate-y-1">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300 mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-500/10 text-accent-300 mb-4">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
@@ -99,28 +99,28 @@ export default function NotesFeaturesPage() {
             </p>
             <ul className="space-y-4 text-white/70">
               <li className="flex items-start gap-3">
-                <PenSquare className="h-5 w-5 text-blue-300 mt-1" />
+                <PenSquare className="h-5 w-5 text-accent-300 mt-1" />
                 <span>
                   <strong className="text-white">Markdown & rich text:</strong> Mix quick bullets, code snippets, or rich embeds without losing flow.
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <Search className="h-5 w-5 text-blue-300 mt-1" />
+                <Search className="h-5 w-5 text-accent-300 mt-1" />
                 <span>
                   <strong className="text-white">Instant retrieval:</strong> Search by concept, tone, or people—AI understands what you meant even if you forgot the exact words.
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <Share2 className="h-5 w-5 text-blue-300 mt-1" />
+                <Share2 className="h-5 w-5 text-accent-300 mt-1" />
                 <span>
                   <strong className="text-white">Publish-ready exports:</strong> Turn notes into docs, slides, or shareable recaps with one click.
                 </span>
               </li>
             </ul>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-8 shadow-lg space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-accent-500/10 to-accent-600/10 p-8 shadow-lg space-y-6">
             <div className="flex items-center gap-3 rounded-full border border-white/10 bg-zinc-800/70 px-4 py-2 text-sm text-white/70">
-              <Sparkles className="h-5 w-5 text-blue-300" />
+              <Sparkles className="h-5 w-5 text-accent-300" />
               AI summary ready
             </div>
             <div className="space-y-4">
@@ -160,7 +160,7 @@ export default function NotesFeaturesPage() {
         <section className="grid gap-8 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-zinc-800/80 p-8 shadow-lg space-y-6">
             <div className="flex items-center gap-3">
-              <Laptop className="h-6 w-6 text-blue-300" />
+              <Laptop className="h-6 w-6 text-accent-300" />
               <span className="text-sm font-semibold uppercase tracking-wide text-white/60">Integrations</span>
             </div>
             <h2 className="text-3xl font-semibold text-white">Connected to your knowledge stack</h2>
@@ -180,15 +180,15 @@ export default function NotesFeaturesPage() {
             <h2 className="text-2xl font-semibold text-white">Why note-takers choose AINex Notes</h2>
             <ul className="space-y-4 text-white/70">
               <li className="flex items-start gap-3">
-                <StickyNote className="h-5 w-5 text-blue-300 mt-1" />
+                <StickyNote className="h-5 w-5 text-accent-300 mt-1" />
                 <span>Capture in any format without worrying about structure—let AI tag and organize later.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Search className="h-5 w-5 text-blue-300 mt-1" />
+                <Search className="h-5 w-5 text-accent-300 mt-1" />
                 <span>Find ideas even when you barely remember the wording. Semantic search knows the context.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Share2 className="h-5 w-5 text-blue-300 mt-1" />
+                <Share2 className="h-5 w-5 text-accent-300 mt-1" />
                 <span>Turn notes into polished outputs—docs, decks, summaries—with zero copy-paste time.</span>
               </li>
             </ul>

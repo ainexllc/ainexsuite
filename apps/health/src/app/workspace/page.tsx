@@ -126,7 +126,7 @@ function HealthWorkspaceContent() {
 
         {/* Today's Status Card */}
         {todayMetric && (
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-foreground">
+          <div className="bg-gradient-to-br from-primary to-secondary rounded-2xl p-6 text-foreground">
             <div className="flex items-center gap-3 mb-4">
               <Calendar className="h-6 w-6" />
               <h2 className="text-lg font-semibold">Today&apos;s Check-in</h2>
@@ -163,7 +163,7 @@ function HealthWorkspaceContent() {
         {/* Empty State */}
         {!todayMetric && metrics.length === 0 && (
           <div className="text-center py-12 rounded-2xl bg-foreground/5 border border-border">
-            <Activity className="h-16 w-16 mx-auto mb-4 text-emerald-500/50" />
+            <Activity className="h-16 w-16 mx-auto mb-4 text-primary/50" />
             <p className="text-foreground/70 mb-2">No health data yet</p>
             <p className="text-muted-foreground text-sm">
               Click above to start tracking your wellness journey

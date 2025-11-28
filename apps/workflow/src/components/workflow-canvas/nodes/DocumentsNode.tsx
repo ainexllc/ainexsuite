@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useState } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 
 interface DocumentsNodeData extends Record<string, unknown> {
   label?: string;
@@ -13,7 +13,7 @@ interface DocumentsNodeData extends Record<string, unknown> {
 export type DocumentsNodeType = Node<DocumentsNodeData, 'documents'>;
 
 function DocumentsNode({ data, selected }: NodeProps<DocumentsNodeType>) {
-  const { theme } = useTheme();
+  const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const nodeBgColor = (data.bgColor as string) || 'rgba(10, 10, 10, 0.75)';
   const [label, setLabel] = useState((data.label as string) || 'Documents');

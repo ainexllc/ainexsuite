@@ -35,7 +35,30 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+
+// Hook to get theme colors from CSS variables
+function useThemeColors() {
+  const [themePrimary, setThemePrimary] = useState('#06b6d4');
+  const [themePrimaryRgb, setThemePrimaryRgb] = useState('6, 182, 212');
+
+  useEffect(() => {
+    const updateColors = () => {
+      const primary = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary').trim() || '#06b6d4';
+      const primaryRgb = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary-rgb').trim() || '6, 182, 212';
+      setThemePrimary(primary);
+      setThemePrimaryRgb(primaryRgb);
+    };
+
+    updateColors();
+
+    const observer = new MutationObserver(updateColors);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return { primary: themePrimary, primaryRgb: themePrimaryRgb };
+}
 
 interface ShapeTemplateProps {
   type: string;
@@ -45,7 +68,7 @@ interface ShapeTemplateProps {
 }
 
 function ShapeTemplate({ type, label, icon: Icon, onDragStart }: ShapeTemplateProps) {
-  const { theme } = useTheme();
+  const theme = useThemeColors();
 
   return (
     <div
@@ -96,7 +119,7 @@ function ToolButton({
   icon,
   variant = 'default',
 }: ToolButtonProps) {
-  const { theme } = useTheme();
+  const theme = useThemeColors();
 
   return (
     <button
@@ -258,7 +281,7 @@ export function ShapePalette({
   onAlignNodes,
   onDistributeNodes,
 }: ShapePaletteProps) {
-  const { theme } = useTheme();
+  const theme = useThemeColors();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const shapes = [

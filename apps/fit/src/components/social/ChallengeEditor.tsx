@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, Trophy, Save } from 'lucide-react';
+import { useAppColors } from '@ainexsuite/theme';
 import { useFitStore } from '../../lib/store';
 import { Challenge } from '../../types/models';
 import { addDays, format } from 'date-fns';
@@ -12,6 +13,7 @@ interface ChallengeEditorProps {
 }
 
 export function ChallengeEditor({ isOpen, onClose }: ChallengeEditorProps) {
+  const { primary } = useAppColors();
   const { getCurrentSpace, addChallenge } = useFitStore();
   const currentSpace = getCurrentSpace();
 
@@ -55,7 +57,13 @@ export function ChallengeEditor({ isOpen, onClose }: ChallengeEditorProps) {
         {/* Header */}
         <div className="p-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400">
+            <div
+              style={{
+                backgroundColor: `${primary}20`,
+                color: `${primary}cc`
+              }}
+              className="p-2 rounded-lg"
+            >
               <Trophy className="h-5 w-5" />
             </div>
             <h3 className="text-lg font-bold text-foreground">New Challenge</h3>
@@ -76,7 +84,8 @@ export function ChallengeEditor({ isOpen, onClose }: ChallengeEditorProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Summer Shred"
-              className="w-full bg-foreground/5 border border-border rounded-xl px-3 py-2 text-foreground focus:outline-none focus:border-orange-500"
+              style={{ '--focus-color': primary } as React.CSSProperties}
+              className="w-full bg-foreground/5 border border-border rounded-xl px-3 py-2 text-foreground focus:outline-none focus:border-[var(--focus-color)]"
               required
             />
           </div>
@@ -90,9 +99,10 @@ export function ChallengeEditor({ isOpen, onClose }: ChallengeEditorProps) {
                   key={m}
                   type="button"
                   onClick={() => setMetric(m as Challenge['metric'])}
+                  style={metric === m ? { backgroundColor: primary, borderColor: primary } : {}}
                   className={`px-3 py-2 rounded-lg text-xs capitalize transition-colors border ${
                     metric === m
-                      ? 'bg-orange-500 text-white border-orange-500'
+                      ? 'text-white'
                       : 'bg-foreground/5 text-muted-foreground border-border hover:bg-foreground/10'
                   }`}
                 >
@@ -111,7 +121,8 @@ export function ChallengeEditor({ isOpen, onClose }: ChallengeEditorProps) {
                 min="1"
                 value={target}
                 onChange={(e) => setTarget(Number(e.target.value))}
-                className="w-full bg-foreground/5 border border-border rounded-xl px-3 py-2 text-foreground focus:outline-none focus:border-orange-500"
+                style={{ '--focus-color': primary } as React.CSSProperties}
+                className="w-full bg-foreground/5 border border-border rounded-xl px-3 py-2 text-foreground focus:outline-none focus:border-[var(--focus-color)]"
               />
             </div>
             <div>
@@ -133,7 +144,11 @@ export function ChallengeEditor({ isOpen, onClose }: ChallengeEditorProps) {
 
           <button
             type="submit"
-            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-orange-500/20"
+            style={{
+              backgroundColor: primary,
+              boxShadow: `0 10px 15px -3px ${primary}33`
+            }}
+            className="w-full py-3 hover:opacity-90 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg"
           >
             <Save className="h-4 w-4" />
             Start Challenge

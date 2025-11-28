@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Calendar, Clock, Plus, X, Loader2, Trash2, Smile } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
+import { useAppColors } from '@ainexsuite/theme';
 import { useFitStore } from '@/lib/store';
 import type { Workout, Exercise, ExerciseSet } from '@/types/models';
 
@@ -20,6 +21,7 @@ const FEELING_OPTIONS: { value: Workout['feeling']; emoji: string; label: string
 
 export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
   const { user } = useAuth();
+  const { primary } = useAppColors();
   const { getCurrentSpace, addWorkout } = useFitStore();
   const currentSpace = getCurrentSpace();
 
@@ -150,7 +152,8 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 backdrop-blur-sm"
+          style={{ '--focus-ring-color': primary } as React.CSSProperties}
+          className="flex w-full items-center rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] backdrop-blur-sm"
           onClick={() => setExpanded(true)}
         >
           <span>Log a workout...</span>
@@ -179,7 +182,8 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-orange-500"
+                  style={{ '--focus-color': primary } as React.CSSProperties}
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-[var(--focus-color)]"
                 />
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
@@ -189,7 +193,8 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
                   placeholder="Duration"
-                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-orange-500"
+                  style={{ '--focus-color': primary } as React.CSSProperties}
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[var(--focus-color)]"
                 />
                 <span className="text-sm text-muted-foreground">min</span>
               </div>
@@ -206,12 +211,13 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                         placeholder="Exercise name"
                         value={exercise.name}
                         onChange={(e) => handleUpdateExercise(idx, { name: e.target.value })}
-                        className="flex-1 px-3 py-2 bg-background/20 rounded-lg border border-border focus:border-orange-500 focus:outline-none text-foreground placeholder:text-muted-foreground text-sm"
+                        style={{ '--focus-color': primary } as React.CSSProperties}
+                        className="flex-1 px-3 py-2 bg-background/20 rounded-lg border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground placeholder:text-muted-foreground text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveExercise(idx)}
-                        className="p-2 text-muted-foreground hover:text-red-400 transition-colors"
+                        className="p-2 text-muted-foreground hover:text-destructive transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -227,7 +233,8 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                                 type="number"
                                 value={set.reps || ''}
                                 onChange={(e) => handleUpdateSet(idx, setIdx, { reps: parseInt(e.target.value) || 0 })}
-                                className="w-full px-2 py-1.5 bg-background/20 rounded border border-border focus:border-orange-500 focus:outline-none text-foreground text-sm"
+                                style={{ '--focus-color': primary } as React.CSSProperties}
+                                className="w-full px-2 py-1.5 bg-background/20 rounded border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground text-sm"
                               />
                             </div>
                             <div>
@@ -237,7 +244,8 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                                 step="0.5"
                                 value={set.weight || ''}
                                 onChange={(e) => handleUpdateSet(idx, setIdx, { weight: parseFloat(e.target.value) || 0 })}
-                                className="w-full px-2 py-1.5 bg-background/20 rounded border border-border focus:border-orange-500 focus:outline-none text-foreground text-sm"
+                                style={{ '--focus-color': primary } as React.CSSProperties}
+                                className="w-full px-2 py-1.5 bg-background/20 rounded border border-border focus:border-[var(--focus-color)] focus:outline-none text-foreground text-sm"
                               />
                             </div>
                           </div>
@@ -260,13 +268,20 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
             {/* Feeling Badge */}
             {feeling && (
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/20 px-3 py-1 text-sm font-medium text-orange-300">
+                <span
+                  style={{
+                    backgroundColor: `${primary}20`,
+                    color: `${primary}cc`
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
+                >
                   {FEELING_OPTIONS.find(f => f.value === feeling)?.emoji}
                   {FEELING_OPTIONS.find(f => f.value === feeling)?.label}
                   <button
                     type="button"
                     onClick={() => setFeeling(undefined)}
-                    className="text-orange-300/60 hover:text-orange-300 ml-1"
+                    style={{ color: `${primary}99` }}
+                    className="hover:opacity-100 ml-1"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -289,9 +304,13 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                 <div className="relative">
                   <button
                     type="button"
+                    style={showFeelingPicker ? {
+                      color: primary,
+                      backgroundColor: `${primary}1a`
+                    } : {}}
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showFeelingPicker ? "text-orange-500 bg-orange-500/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                      !showFeelingPicker && "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
                     onClick={() => setShowFeelingPicker(!showFeelingPicker)}
                     title="How do you feel?"
@@ -309,9 +328,13 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                             setFeeling(option.value);
                             setShowFeelingPicker(false);
                           }}
+                          style={feeling === option.value ? {
+                            backgroundColor: `${primary}20`,
+                            color: `${primary}cc`
+                          } : {}}
                           className={clsx(
                             "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
-                            feeling === option.value ? "bg-orange-500/20 text-orange-300" : "hover:bg-foreground/10 text-muted-foreground"
+                            feeling !== option.value && "hover:bg-foreground/10 text-muted-foreground"
                           )}
                         >
                           <span className="text-xl">{option.emoji}</span>
@@ -335,7 +358,11 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !title.trim()}
-                  className="rounded-full bg-orange-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-900/20 transition hover:bg-orange-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-orange-500 flex items-center gap-2"
+                  style={{
+                    backgroundColor: primary,
+                    boxShadow: `0 10px 15px -3px ${primary}33`
+                  }}
+                  className="rounded-full px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

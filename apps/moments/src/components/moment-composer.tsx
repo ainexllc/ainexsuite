@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, MapPin, Calendar, Tag, X, Loader2, Smile, Users, Cloud } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
+import { useAppColors } from '@ainexsuite/theme';
 import { createMoment, uploadPhoto } from '@/lib/moments';
 import { useMomentsStore } from '@/lib/store';
 
@@ -26,6 +27,7 @@ const WEATHER_OPTIONS = ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Windy', 'Foggy'];
 export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps) {
   const { user } = useAuth();
   const { fetchMoments } = useMomentsStore();
+  const { primary: primaryColor } = useAppColors();
   const [expanded, setExpanded] = useState(false);
   const [caption, setCaption] = useState('');
   const [location, setLocation] = useState('');
@@ -173,7 +175,8 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 backdrop-blur-sm"
+          className="flex w-full items-center justify-between rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border focus-visible:outline-none focus-visible:ring-2 backdrop-blur-sm"
+          style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
           onClick={() => setExpanded(true)}
         >
           <span>Capture a moment...</span>
@@ -243,7 +246,10 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-pink-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none"
+                  style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
+                  onFocus={(e) => e.target.style.borderColor = primaryColor}
+                  onBlur={(e) => e.target.style.borderColor = ''}
                 />
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
@@ -253,7 +259,10 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Add location..."
-                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-pink-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
+                  onFocus={(e) => e.target.style.borderColor = primaryColor}
+                  onBlur={(e) => e.target.style.borderColor = ''}
                 />
               </div>
             </div>
@@ -265,7 +274,10 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                 <select
                   value={weather}
                   onChange={(e) => setWeather(e.target.value)}
-                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-pink-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none"
+                  style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
+                  onFocus={(e) => e.target.style.borderColor = primaryColor}
+                  onBlur={(e) => e.target.style.borderColor = ''}
                 >
                   <option value="" className="text-background">Weather...</option>
                   {WEATHER_OPTIONS.map(w => (
@@ -284,8 +296,13 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                       onClick={() => setMood(mood === m.label ? '' : m.label)}
                       className={clsx(
                         "p-1.5 rounded-lg text-lg transition-colors hover:bg-foreground/10",
-                        mood === m.label ? "bg-pink-500/20 ring-1 ring-pink-500" : "opacity-60 hover:opacity-100"
+                        mood === m.label ? "ring-1" : "opacity-60 hover:opacity-100"
                       )}
+                      style={mood === m.label ? {
+                        backgroundColor: `${primaryColor}33`,
+                        borderColor: primaryColor,
+                        '--tw-ring-color': primaryColor
+                      } as React.CSSProperties : undefined}
                       title={m.label}
                     >
                       {m.emoji}
@@ -301,14 +318,18 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                 {people.map((person) => (
                   <span
                     key={person}
-                    className="inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-2.5 py-1 text-xs font-medium text-blue-300"
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
+                    style={{
+                      backgroundColor: `${primaryColor}33`,
+                      color: primaryColor
+                    }}
                   >
                     <Users className="h-3 w-3" />
                     {person}
                     <button
                       type="button"
                       onClick={() => handleRemovePerson(person)}
-                      className="text-blue-300/60 hover:text-blue-300 ml-0.5"
+                      className="ml-0.5 opacity-60 hover:opacity-100"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -317,13 +338,17 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 rounded-full bg-pink-500/20 px-2.5 py-1 text-xs font-medium text-pink-300"
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
+                    style={{
+                      backgroundColor: `${primaryColor}33`,
+                      color: primaryColor
+                    }}
                   >
                     #{tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="text-pink-300/60 hover:text-pink-300 ml-0.5"
+                      className="ml-0.5 opacity-60 hover:opacity-100"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -350,8 +375,12 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showPeopleInput ? "text-blue-400 bg-blue-500/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                      showPeopleInput ? "" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
+                    style={showPeopleInput ? {
+                      color: primaryColor,
+                      backgroundColor: `${primaryColor}1a`
+                    } : undefined}
                     onClick={() => {
                       setShowPeopleInput(!showPeopleInput);
                       setShowTagInput(false);
@@ -374,12 +403,20 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                             }
                           }}
                           placeholder="Who's with you?"
-                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-blue-500"
+                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                          style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
+                          onFocus={(e) => e.target.style.borderColor = primaryColor}
+                          onBlur={(e) => e.target.style.borderColor = ''}
                           autoFocus
                         />
                         <button
                           onClick={handleAddPerson}
-                          className="px-3 py-1.5 bg-blue-500 text-foreground rounded-lg text-xs font-medium hover:bg-blue-600"
+                          className="px-3 py-1.5 text-foreground rounded-lg text-xs font-medium transition-colors"
+                          style={{
+                            backgroundColor: primaryColor,
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                         >
                           Add
                         </button>
@@ -394,8 +431,12 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showTagInput ? "text-pink-500 bg-pink-500/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                      showTagInput ? "" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
+                    style={showTagInput ? {
+                      color: primaryColor,
+                      backgroundColor: `${primaryColor}1a`
+                    } : undefined}
                     onClick={() => {
                       setShowTagInput(!showTagInput);
                       setShowPeopleInput(false);
@@ -418,12 +459,20 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                             }
                           }}
                           placeholder="Add a tag..."
-                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-pink-500"
+                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                          style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
+                          onFocus={(e) => e.target.style.borderColor = primaryColor}
+                          onBlur={(e) => e.target.style.borderColor = ''}
                           autoFocus
                         />
                         <button
                           onClick={handleAddTag}
-                          className="px-3 py-1.5 bg-pink-500 text-foreground rounded-lg text-xs font-medium hover:bg-pink-600"
+                          className="px-3 py-1.5 text-foreground rounded-lg text-xs font-medium transition-colors"
+                          style={{
+                            backgroundColor: primaryColor,
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                         >
                           Add
                         </button>
@@ -445,7 +494,13 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !photoFile}
-                  className="rounded-full bg-pink-500 px-6 py-2 text-sm font-semibold text-foreground shadow-lg shadow-pink-900/20 transition hover:bg-pink-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-pink-500 flex items-center gap-2"
+                  className="rounded-full px-6 py-2 text-sm font-semibold text-foreground shadow-lg transition hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center gap-2"
+                  style={{
+                    backgroundColor: primaryColor,
+                    boxShadow: `0 10px 15px -3px ${primaryColor}33`
+                  }}
+                  onMouseEnter={(e) => !isSubmitting && !photoFile ? null : e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   {isSubmitting ? (
                     <>
