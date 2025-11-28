@@ -158,11 +158,33 @@ export function FitInsights({ variant = 'default', onExpand }: FitInsightsProps)
     return undefined;
   }, [data]);
 
-  if (!user || !hasEnoughData) return null;
+  if (!user) return null;
 
   const errorMessage = error?.includes('API key')
     ? 'AI features require configuration.'
     : error;
+
+  // Show prompt to add more data if not enough
+  if (!hasEnoughData) {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ backgroundColor: `${accentColor}20` }}
+          >
+            <Zap className="h-4 w-4" style={{ color: accentColor }} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white">AI Coach</p>
+            <p className="text-xs text-white/50">
+              Log at least 2 workouts to unlock AI-powered fitness insights
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AIInsightsCard

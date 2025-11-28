@@ -337,9 +337,31 @@ Give me one personalized insight.`
     ];
   }, [insight, primaryColor, getInsightIcon]);
 
-  // Don't render if no habits
-  if (!currentSpace || habits.length === 0) {
+  // Don't render if no space
+  if (!currentSpace) {
     return null;
+  }
+
+  // Show prompt to add more habits if not enough
+  if (habits.length < 2) {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ backgroundColor: `${primaryColor}20` }}
+          >
+            <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white">AI Habit Coach</p>
+            <p className="text-xs text-white/50">
+              Add at least 2 habits to unlock AI-powered growth insights
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Show minimal refresh button if dismissed

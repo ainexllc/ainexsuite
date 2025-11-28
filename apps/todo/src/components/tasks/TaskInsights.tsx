@@ -166,11 +166,34 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
     return undefined;
   }, [data]);
 
-  if (!storeReady || !hasEnoughData) return null;
+  // Don't render anything until store is ready
+  if (!storeReady) return null;
 
   const errorMessage = error?.includes('API key')
     ? 'AI features require configuration. Task insights will be available once set up.'
     : error;
+
+  // Show prompt to add more tasks if not enough data
+  if (!hasEnoughData) {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ backgroundColor: `${accentColor}20` }}
+          >
+            <Zap className="h-4 w-4" style={{ color: accentColor }} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white">AI Productivity Coach</p>
+            <p className="text-xs text-white/50">
+              Add at least 2 tasks to unlock AI-powered productivity insights
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AIInsightsCard

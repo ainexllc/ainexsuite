@@ -188,7 +188,7 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
     return undefined;
   }, [data]);
 
-  if (notesLoading || !hasEnoughData) return null;
+  if (notesLoading) return null;
 
   // Format error message
   const errorMessage = error?.includes("API key")
@@ -199,6 +199,28 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
   const insightsTitle = currentSpace?.name
     ? `${currentSpace.name} Insights`
     : "AI Insights";
+
+  // Show prompt to add more data if not enough
+  if (!hasEnoughData) {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ backgroundColor: `${primaryColor}20` }}
+          >
+            <Zap className="h-4 w-4" style={{ color: primaryColor }} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white">{insightsTitle}</p>
+            <p className="text-xs text-white/50">
+              Create at least 2 notes to unlock AI-powered workspace insights
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AIInsightsCard
