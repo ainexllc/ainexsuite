@@ -54,7 +54,7 @@ interface AIInsights {
 export default function FeedbackPage() {
   const [feedback, setFeedback] = useState<FeedbackDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'new' | 'archived'>('all');
+  const [filter, setFilter] = useState<'inbox' | 'new' | 'archived'>('inbox');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -152,6 +152,10 @@ export default function FeedbackPage() {
     }
   };
 
+  const handleDelete = (id: string) => {
+    setItemToDelete(id);
+  };
+
   const handlePromote = async (id: string, currentPromoted?: boolean) => {
     try {
       await updateDoc(doc(db, 'feedback', id), {
@@ -165,6 +169,7 @@ export default function FeedbackPage() {
   const filteredFeedback = feedback.filter(item => {
     if (filter === 'new' && item.status !== 'new') return false;
     if (filter === 'archived' && item.status !== 'archived') return false;
+    if (filter === 'inbox' && item.status === 'archived') return false;
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -279,12 +284,12 @@ export default function FeedbackPage() {
       </div>
 
       {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="glass-card rounded-lg p-1 flex gap-1 w-fit">
-          {(['all', 'new', 'archived'] as const).map((f) => (
+          {(['inbox', 'new', 'archived'] as const).map((f) => (
             <button
               key={f}
-              onClick={() => setFilter(f)}
+              onClick={() => { setFilter(f); setSelectedItems(new Set()); }}
               className={clsx(
                 "px-4 py-2 rounded-md text-sm font-medium capitalize transition-all",
                 filter === f
@@ -297,15 +302,39 @@ export default function FeedbackPage() {
           ))}
         </div>
 
-        <div className="relative flex-1 max-w-md ml-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search feedback..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-900/50 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors"
-          />
+        {/* Bulk Actions */}
+        {selectedItems.size > 0 && (
+          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+            <span className="text-sm text-zinc-400">{selectedItems.size} selected</span>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-colors border border-red-500/20"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </button>
+          </div>
+        )}
+
+        <div className="relative flex-1 max-w-md ml-auto flex gap-2">
+          <div className="flex items-center justify-center px-3">
+             <input
+                type="checkbox"
+                checked={filteredFeedback.length > 0 && selectedItems.size === filteredFeedback.length}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500/50"
+             />
+          </div>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Search feedback..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-zinc-900/50 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/50 transition-colors"
+            />
+          </div>
         </div>
       </div>
 
@@ -322,11 +351,21 @@ export default function FeedbackPage() {
             <div 
               key={item.id}
               className={clsx(
-                "glass-card rounded-xl p-5 transition-all hover:border-white/20 group",
-                item.status === 'new' && "bg-indigo-500/5 border-indigo-500/20"
+                "glass-card rounded-xl p-5 transition-all hover:border-white/20 group flex gap-4 items-start",
+                item.status === 'new' && "bg-indigo-500/5 border-indigo-500/20",
+                selectedItems.has(item.id) && "bg-white/5 border-indigo-500/30"
               )}
             >
-              <div className="flex flex-col md:flex-row gap-4">
+              <div className="pt-1">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.has(item.id)}
+                  onChange={() => toggleSelect(item.id)}
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-4 flex-1">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <span className={clsx(
@@ -357,7 +396,7 @@ export default function FeedbackPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2">
+                <div className="flex items-center gap-2 self-end">
                   <button
                     onClick={() => handlePromote(item.id, item.promoted)}
                     className={clsx(
@@ -379,19 +418,22 @@ export default function FeedbackPage() {
                       <CheckCircle2 className="h-4 w-4" />
                     </button>
                   )}
-                  {item.status !== 'archived' && (
-                    <button
-                      onClick={() => handleStatusUpdate(item.id, 'archived')}
-                      className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
-                      title="Archive"
-                    >
-                      <Archive className="h-4 w-4" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleStatusUpdate(item.id, item.status === 'archived' ? 'read' : 'archived')}
+                    className={clsx(
+                      "p-2 rounded-lg transition-colors",
+                      item.status === 'archived'
+                        ? "text-indigo-400 hover:bg-indigo-500/10"
+                        : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                    )}
+                    title={item.status === 'archived' ? "Move to Inbox" : "Archive"}
+                  >
+                    {item.status === 'archived' ? <Inbox className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+                  </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
-                    title="Delete Permanently"
+                    className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -437,13 +479,18 @@ export default function FeedbackPage() {
                 <Trash2 className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Delete Feedback</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  {itemToDelete === 'bulk' ? `Delete ${selectedItems.size} Items` : 'Delete Feedback'}
+                </h3>
                 <p className="text-sm text-zinc-400">This action cannot be undone.</p>
               </div>
             </div>
             
             <p className="text-zinc-300 text-sm mb-6 leading-relaxed">
-              Are you sure you want to permanently delete this feedback item? It will be removed from all views and analytics.
+              {itemToDelete === 'bulk' 
+                ? `Are you sure you want to permanently delete these ${selectedItems.size} feedback items? They will be removed from all views and analytics.`
+                : "Are you sure you want to permanently delete this feedback item? It will be removed from all views and analytics."
+              }
             </p>
 
             <div className="flex gap-3 justify-end">

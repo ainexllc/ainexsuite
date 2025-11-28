@@ -97,7 +97,7 @@ function GrowHomePageContent() {
       setLoadingMessage('Welcome back! Redirecting you to your habit dashboard…');
     } else if (user && needsActivation) {
       setLoadingMessage('');
-      setShowActivation(true);
+      // setShowActivation(true);
     } else {
       setLoadingMessage('');
     }
