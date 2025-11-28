@@ -8,6 +8,7 @@ import { Plus, LayoutGrid, List, Calendar } from 'lucide-react';
 // Components
 import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
+import { TaskInsights } from '@/components/tasks/TaskInsights';
 import { TaskList } from '@/components/views/TaskList';
 import { TaskBoard } from '@/components/views/TaskBoard';
 import { MyDayView } from '@/components/views/MyDayView';
@@ -42,10 +43,12 @@ export default function TodoWorkspacePage() {
     >
       <TodoFirestoreSync />
 
-      <div className="max-w-7xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* AI Insights Banner - Full Width at Top */}
+        <TaskInsights variant="sidebar" />
 
         {/* Header with Controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 w-full sm:w-auto">
             <SpaceSwitcher />
 
@@ -91,23 +94,19 @@ export default function TodoWorkspacePage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="min-h-[60vh]">
           {view === 'list' && (
-            <div className="h-full overflow-y-auto pr-2">
-              <TaskList onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
-            </div>
+            <TaskList onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
           )}
 
           {view === 'board' && (
-            <div className="h-full overflow-x-auto overflow-y-hidden">
+            <div className="overflow-x-auto">
               <TaskBoard onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
             </div>
           )}
 
           {view === 'my-day' && (
-            <div className="h-full overflow-y-auto pr-2">
-              <MyDayView onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
-            </div>
+            <MyDayView onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
           )}
         </div>
       </div>
