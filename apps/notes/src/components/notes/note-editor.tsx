@@ -733,8 +733,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
   }, [checklist]);
 
-  const noteColorConfig = NOTE_COLORS.find((c) => c.id === color);
-  const footerClass = noteColorConfig?.footerClass || "bg-white/5";
   const canUseSms = Boolean(preferences.smsNumber?.trim());
 
   useEffect(() => {
@@ -1335,7 +1333,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         </div>
 
         {/* Bottom toolbar - anchored to bottom with color */}
-        <div className={clsx("flex-shrink-0 rounded-b-3xl px-6 py-4", footerClass)}>
+        <div className="flex-shrink-0 rounded-b-lg px-6 py-4 bg-zinc-100 dark:bg-zinc-800/80">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <button
