@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { createJournalEntry, getJournalEntry } from '@/lib/firebase/firestore';
@@ -11,9 +11,8 @@ import type { JournalEntryFormData } from '@ainexsuite/types';
 import { sentimentService } from '@/lib/ai/sentiment-service';
 import { saveSentimentAnalysis } from '@/lib/firebase/sentiment';
 import { markPromptAsCompleted } from '@/lib/firebase/prompts';
-import { ArrowLeft, Sparkles, Lightbulb, Feather, Paperclip, Target } from 'lucide-react';
+import { ArrowLeft, Sparkles, Lightbulb, Target } from 'lucide-react';
 import Link from 'next/link';
-import { plainText } from '@/lib/utils/text';
 import { cn } from '@/lib/utils';
 
 const FOCUS_PROMPTS = [
@@ -83,11 +82,6 @@ export default function NewJournalPage() {
   const [promptText, setPromptText] = useState<string | null>(null);
   const [promptId, setPromptId] = useState<string | null>(null);
   const [isFocusMode, setIsFocusMode] = useState(false);
-  const [contentMetrics, setContentMetrics] = useState({
-    wordCount: 0,
-    charCount: 0,
-    readingMinutes: 0,
-  });
   const formRef = useRef<JournalFormHandle>(null);
   const isMountedRef = useRef(true);
 
@@ -108,30 +102,7 @@ export default function NewJournalPage() {
     }
   }, [searchParams]);
 
-  const handleContentChange = useCallback((content: string) => {
-    const text = plainText(content);
-    const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
-    const chars = text.length;
-    const readingMinutes = words === 0 ? 0 : Math.max(1, Math.round(words / 180));
-
-    setContentMetrics((prev) => {
-      if (
-        prev.wordCount === words &&
-        prev.charCount === chars &&
-        prev.readingMinutes === readingMinutes
-      ) {
-        return prev;
-      }
-      return { wordCount: words, charCount: chars, readingMinutes };
-    });
-  }, []);
-
-  useEffect(() => {
-    if (promptText) {
-      handleContentChange(`**${promptText}**`);
-    }
-  }, [promptText, handleContentChange]);
-
+  
   const handleSubmit = async (data: JournalEntryFormData, files: File[]) => {
     if (!user) return;
 
@@ -250,121 +221,62 @@ export default function NewJournalPage() {
         </div>
       </header>
 
-      <div
-        className={cn(
-          'grid gap-6 transition-all',
-          isFocusMode
-            ? 'max-w-3xl mx-auto'
-            : 'lg:grid-cols-[minmax(0,2fr)_minmax(0,0.85fr)]',
+      <div className="max-w-3xl mx-auto space-y-6">
+        {promptText && (
+          <div className="rounded-2xl border border-white/10 bg-zinc-800/90 p-6 shadow-sm">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#f97316]/10 text-[#f97316]">
+                <Sparkles className="h-5 w-5" />
+              </span>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/60">
+                  Reflection Prompt
+                </p>
+                <p className="text-sm leading-relaxed text-white">
+                  {promptText}
+                </p>
+              </div>
+            </div>
+          </div>
         )}
-      >
-        <div className="space-y-6">
-          {promptText && (
-            <div className="rounded-2xl border border-white/10 bg-zinc-800/90 p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#f97316]/10 text-[#f97316]">
-                  <Sparkles className="h-5 w-5" />
-                </span>
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-white/60">
-                    Reflection Prompt
-                  </p>
-                  <p className="text-sm leading-relaxed text-white">
-                    {promptText}
+
+        <div className="rounded-3xl border border-white/10 bg-zinc-800/90 p-6 shadow-sm">
+          <JournalForm
+            initialData={promptText ? { content: `**${promptText}**\n\n` } : undefined}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            ref={formRef}
+          />
+
+          {isFocusMode && (
+            <div className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-zinc-800/90 p-5 shadow-sm">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold text-white">Focus templates</h2>
+                  <p className="text-xs text-white/60">
+                    Drop in a structured starter to keep the words moving.
                   </p>
                 </div>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {FOCUS_PROMPTS.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => handleApplyFocusPrompt(template.id)}
+                    className="flex flex-1 min-w-[180px] max-w-[220px] flex-col gap-2 rounded-xl border border-white/10 bg-zinc-700/60 p-3 text-left shadow-sm transition hover:border-[#f97316]/60 hover:shadow-md"
+                  >
+                    <span className="text-sm font-semibold text-white">{template.title}</span>
+                    <span className="text-xs text-white/60">{template.description}</span>
+                    <span className="text-[11px] uppercase tracking-wide text-[#f97316]">
+                      Insert template
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           )}
-
-          <div className="rounded-3xl border border-white/10 bg-zinc-800/90 p-6 shadow-sm">
-            <JournalForm
-              initialData={promptText ? { content: `**${promptText}**\n\n` } : undefined}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-              onContentChange={handleContentChange}
-              ref={formRef}
-            />
-
-            {isFocusMode && (
-              <div className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-zinc-800/90 p-5 shadow-sm">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="text-sm font-semibold text-white">Focus templates</h2>
-                    <p className="text-xs text-white/60">
-                      Drop in a structured starter to keep the words moving.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {FOCUS_PROMPTS.map((template) => (
-                    <button
-                      key={template.id}
-                      type="button"
-                      onClick={() => handleApplyFocusPrompt(template.id)}
-                      className="flex flex-1 min-w-[180px] max-w-[220px] flex-col gap-2 rounded-xl border border-white/10 bg-zinc-700/60 p-3 text-left shadow-sm transition hover:border-[#f97316]/60 hover:shadow-md"
-                    >
-                      <span className="text-sm font-semibold text-white">{template.title}</span>
-                      <span className="text-xs text-white/60">{template.description}</span>
-                      <span className="text-[11px] uppercase tracking-wide text-[#f97316]">
-                        Insert template
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
-
-        {!isFocusMode && (
-          <aside className="space-y-6">
-            <div className="rounded-2xl border border-white/10 bg-zinc-800/80 p-5 shadow-sm backdrop-blur">
-              <div className="flex items-center gap-3">
-                <Target className="h-5 w-5 text-[#f97316]" />
-                <h2 className="text-sm font-semibold text-white">Session stats</h2>
-              </div>
-              <dl className="mt-4 grid grid-cols-3 gap-3 text-center text-sm">
-                <div className="rounded-xl border border-white/10 bg-zinc-700/60 p-3">
-                  <dt className="text-xs uppercase tracking-wide text-white/60">Words</dt>
-                  <dd className="mt-1 text-lg font-semibold text-white">{contentMetrics.wordCount}</dd>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-zinc-700/60 p-3">
-                  <dt className="text-xs uppercase tracking-wide text-white/60">Characters</dt>
-                  <dd className="mt-1 text-lg font-semibold text-white">{contentMetrics.charCount}</dd>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-zinc-700/60 p-3">
-                  <dt className="text-xs uppercase tracking-wide text-white/60">Read time</dt>
-                  <dd className="mt-1 text-lg font-semibold text-white">
-                    {contentMetrics.readingMinutes ? `${contentMetrics.readingMinutes} min` : '—'}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-zinc-800/80 p-5 shadow-sm backdrop-blur">
-              <div className="flex items-center gap-3">
-                <Feather className="h-5 w-5 text-[#f97316]" />
-                <h2 className="text-sm font-semibold text-white">Writing cues</h2>
-              </div>
-              <ul className="mt-4 space-y-3 text-sm text-white/60">
-                <li>• Start with one moment you can still feel or see clearly.</li>
-                <li>• Describe the emotion in your body before naming it in your mind.</li>
-                <li>• Close with a small intention or takeaway, even if it feels unfinished.</li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-zinc-800/80 p-5 shadow-sm backdrop-blur">
-              <div className="flex items-center gap-3">
-                <Paperclip className="h-5 w-5 text-[#f97316]" />
-                <h2 className="text-sm font-semibold text-white">Attachments</h2>
-              </div>
-              <p className="mt-3 text-sm text-white/60">
-                Add photos, PDFs, or voice notes. Everything is encrypted in transit and stored with your account.
-              </p>
-            </div>
-          </aside>
-        )}
       </div>
     </div>
   );

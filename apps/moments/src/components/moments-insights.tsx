@@ -195,6 +195,8 @@ export function MomentsInsights({ moments, variant = "default" }: MomentsInsight
       lastUpdated={lastUpdated}
       onRefresh={generateInsights}
       refreshDisabled={loading}
+      collapsible
+      storageKey="moments-insights-collapsed"
     />
   );
 }

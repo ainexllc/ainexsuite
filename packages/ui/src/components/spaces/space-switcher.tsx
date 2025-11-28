@@ -197,26 +197,8 @@ export function SpaceSwitcher({
                 {effectiveSpacesLabel}
               </div>
 
-              {/* Personal space (virtual) */}
-              <button
-                onClick={() => handleSelectSpace('personal')}
-                className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm ${transitionClass} ${
-                  currentSpaceId === 'personal' || !currentSpaceId
-                    ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
-                    : 'text-ink-600 hover:bg-surface-hover hover:text-ink-900'
-                }`}
-                style={currentSpaceId === 'personal' || !currentSpaceId ? getTypeStyle('personal', true) : {}}
-              >
-                {showTypeIcons && (
-                  <div className="flex-shrink-0">
-                    {getIcon('personal')}
-                  </div>
-                )}
-                <span className="truncate flex-1 text-left">{effectiveDefaultName}</span>
-              </button>
-
-              {/* User's spaces (filter out virtual personal space by ID since we show it above) */}
-              {spaces.filter((space) => space.id !== 'personal').map((space) => {
+              {/* User's spaces */}
+              {spaces.map((space) => {
                 const isActive = currentSpaceId === space.id;
                 const typeConfig = getTypeConfig(space.type);
 

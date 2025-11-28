@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Sparkles, RefreshCw, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -41,6 +41,12 @@ export interface AIInsightsCardProps {
   children?: ReactNode;
   /** Summary text for condensed variant (shows first item if not provided) */
   condensedSummary?: string;
+  /** Enable collapsible behavior (default: false) */
+  collapsible?: boolean;
+  /** Default collapsed state (default: false - shows expanded) */
+  defaultCollapsed?: boolean;
+  /** Storage key for persisting collapsed state (e.g., "journey-insights-collapsed") */
+  storageKey?: string;
 }
 
 /**
@@ -63,9 +69,68 @@ export function AIInsightsCard({
   className,
   children,
   condensedSummary,
+  collapsible = false,
+  defaultCollapsed = false,
+  storageKey,
 }: AIInsightsCardProps) {
   const isSidebar = variant === "sidebar";
   const isCondensed = variant === "condensed";
+
+  // Collapsible state with localStorage persistence
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+
+  // Load collapsed state from localStorage on mount
+  useEffect(() => {
+    if (collapsible && storageKey) {
+      const stored = localStorage.getItem(storageKey);
+      if (stored !== null) {
+        setIsCollapsed(stored === 'true');
+      }
+    }
+  }, [collapsible, storageKey]);
+
+  // Toggle collapsed state
+  const toggleCollapsed = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    if (storageKey) {
+      localStorage.setItem(storageKey, String(newState));
+    }
+  };
+
+  // Collapsed state: show minimal header bar that can be expanded
+  if (collapsible && isCollapsed) {
+    return (
+      <div className={cn("animate-in fade-in duration-300", className)}>
+        <button
+          onClick={toggleCollapsed}
+          className="w-full relative overflow-hidden rounded-xl border backdrop-blur-xl px-4 py-3 text-left transition-all hover:border-opacity-70 active:scale-[0.995]"
+          style={{
+            borderColor: `${accentColor}33`,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="flex-shrink-0 rounded-lg p-2"
+              style={{ backgroundColor: `${accentColor}20` }}
+            >
+              <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-medium text-white">{title}</span>
+              {lastUpdated && (
+                <span className="ml-2 text-xs text-white/40">
+                  {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              )}
+            </div>
+            <ChevronDown className="h-4 w-4 text-white/40 flex-shrink-0" />
+          </div>
+        </button>
+      </div>
+    );
+  }
 
   // Condensed variant: compact horizontal layout
   if (isCondensed) {
@@ -173,7 +238,16 @@ export function AIInsightsCard({
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
               </button>
             )}
-            {onExpand && isSidebar && (
+            {collapsible && (
+              <button
+                onClick={toggleCollapsed}
+                className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                title="Collapse"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </button>
+            )}
+            {onExpand && isSidebar && !collapsible && (
               <button
                 onClick={onExpand}
                 className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-colors"

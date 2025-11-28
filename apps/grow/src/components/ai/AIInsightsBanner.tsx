@@ -394,6 +394,8 @@ Give me one personalized insight.`
       onDismiss={handleDismiss}
       refreshDisabled={isLoading}
       className={className}
+      collapsible
+      storageKey="grow-insights-collapsed"
     />
   );
 }

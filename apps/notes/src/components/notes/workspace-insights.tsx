@@ -236,6 +236,8 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
       refreshDisabled={loading}
       onExpand={onExpand}
       condensedSummary={condensedSummary}
+      collapsible
+      storageKey="notes-insights-collapsed"
     />
   );
 }
