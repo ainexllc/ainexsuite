@@ -7,21 +7,42 @@ import {
   query,
   where,
   getDocs,
-  getDoc
+  getDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import type { Space, SpaceType } from '@ainexsuite/types';
 
 const SPACES_COLLECTION = 'moments_spaces';
 
 /**
- * Get all spaces a user is a member of
+ * Subscribe to real-time updates for spaces where user is a member
+ */
+export function subscribeToSpaces(
+  userId: string,
+  callback: (spaces: Space[]) => void
+): () => void {
+  const q = query(
+    collection(db, SPACES_COLLECTION),
+    where('memberUids', 'array-contains', userId)
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const spaces = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Space[];
+
+    // Sort by createdAt
+    spaces.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+    callback(spaces);
+  });
+}
+
+/**
+ * Get all spaces a user is a member of (one-time fetch)
  */
 export async function getUserSpaces(userId: string): Promise<Space[]> {
-  // Query spaces where user is in members array
-  // Note: This requires a composite index on members.uid if checking specific fields
-  // For now, we'll fetch all spaces where user is owner or we might need a better query structure
-  // or store member IDs in a separate array field 'memberUids' for simpler querying
-  
   const q = query(
     collection(db, SPACES_COLLECTION),
     where('memberUids', 'array-contains', userId)

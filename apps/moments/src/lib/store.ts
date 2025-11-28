@@ -9,18 +9,19 @@ interface MomentsState {
   spaces: Space[];
   currentSpaceId: string | null;
   isLoadingSpaces: boolean;
-  
+
   // Moments
   moments: Moment[];
   isLoadingMoments: boolean;
-  
+
   // Actions
+  setSpaces: (spaces: Space[]) => void;
   fetchSpaces: (userId: string) => Promise<void>;
   setCurrentSpace: (spaceId: string) => void;
   addSpace: (userId: string, name: string, type: Space['type'], pin?: string) => Promise<void>;
   joinByPin: (pin: string, userId?: string) => Promise<Space | null>; // userId optional for guest access
   fetchMoments: (spaceId?: string) => Promise<void>;
-  
+
   // Guest Mode
   guestAccessSpace: Space | null;
   setGuestSpace: (space: Space | null) => void;
@@ -35,6 +36,16 @@ export const useMomentsStore = create<MomentsState>()(
       moments: [],
       isLoadingMoments: false,
       guestAccessSpace: null,
+
+      setSpaces: (spaces) => {
+        const currentId = get().currentSpaceId;
+        let nextId = currentId;
+        // Set default space if none selected or current no longer exists
+        if (spaces.length > 0 && (!currentId || !spaces.find(s => s.id === currentId))) {
+          nextId = spaces[0].id;
+        }
+        set({ spaces, currentSpaceId: nextId, isLoadingSpaces: false });
+      },
 
       fetchSpaces: async (userId: string) => {
         set({ isLoadingSpaces: true });
