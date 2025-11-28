@@ -14,6 +14,7 @@ import { AlarmClockTile } from './tiles/alarm-clock-tile';
 import { ClockService, ClockStyle } from '@/lib/clock-settings';
 import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
 import { BackgroundEffects, EffectType } from './background-effects';
+import { usePulseStore } from '@/lib/store';
 
 type TimeFormat = '12h' | '24h';
 
@@ -125,6 +126,7 @@ const FlipDigit = ({ digit }: { digit: string }) => {
 
 export function DigitalClock() {
   const { user } = useAuth();
+  const { currentSpaceId } = usePulseStore();
   const [time, setTime] = useState<Date | null>(null);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
@@ -191,12 +193,23 @@ export function DigitalClock() {
     };
   }, []);
 
-  // Sync with Firestore on load and changes
+  // Sync with Firestore on load and changes - keyed by space
   useEffect(() => {
     if (!user) return;
 
-    // Subscribe to real-time updates
-    const unsubscribe = ClockService.subscribeToSettings(user.uid, (settings) => {
+    // Reset to defaults when space changes (before loading new settings)
+    setTiles(DEFAULT_TILES);
+    setBackgroundImage(null);
+    setBackgroundEffect('none');
+    setBackgroundDim(50);
+    setClockStyle('digital');
+    setTimeFormat(getSystemTimeFormat());
+    setActiveLayoutId(DEFAULT_LAYOUT.id);
+    setShowClock(true);
+    setShowTiles(true);
+
+    // Subscribe to real-time updates for current space
+    const unsubscribe = ClockService.subscribeToSettings(user.uid, currentSpaceId || undefined, (settings) => {
       if (settings) {
         setTiles(settings.tiles || DEFAULT_TILES);
         setBackgroundImage(settings.backgroundImage);
@@ -228,7 +241,7 @@ export function DigitalClock() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, currentSpaceId]);
 
   const updateSettings = async (
     newTiles: Record<string, string | null>,
@@ -281,7 +294,7 @@ export function DigitalClock() {
         clockStyle: newClockStyle || clockStyle,
         showClock: typeof newShowClock === 'boolean' ? newShowClock : showClock,
         showTiles: typeof newShowTiles === 'boolean' ? newShowTiles : showTiles
-      });
+      }, currentSpaceId || undefined);
     } catch (error) {
       console.error('Failed to save clock settings:', error);
     }
@@ -301,7 +314,7 @@ export function DigitalClock() {
         clockStyle,
         showClock,
         showTiles
-      }).catch(e => console.error(e));
+      }, currentSpaceId || undefined).catch(e => console.error(e));
     }
   };
 

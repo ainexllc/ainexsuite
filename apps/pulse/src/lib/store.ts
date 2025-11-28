@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PulseSpace } from '../types/models';
+import { SpaceService } from './space-service';
 
 interface PulseState {
   // State
@@ -13,6 +14,8 @@ interface PulseState {
   // Actions
   setCurrentSpace: (spaceId: string) => void;
   addSpace: (space: PulseSpace) => Promise<void>;
+  updateSpace: (spaceId: string, data: Partial<PulseSpace>) => Promise<void>;
+  deleteSpace: (spaceId: string) => Promise<void>;
 
   // Getters
   getCurrentSpace: () => PulseSpace | undefined;
@@ -36,8 +39,31 @@ export const usePulseStore = create<PulseState>()(
       setCurrentSpace: (spaceId) => set({ currentSpaceId: spaceId }),
 
       addSpace: async (space) => {
+        // Optimistically update local state
         set((state) => ({ spaces: [...state.spaces, space], currentSpaceId: space.id }));
-        // TODO: Add Firebase service call when needed
+        // Persist to Firestore
+        await SpaceService.createSpace(space);
+      },
+
+      updateSpace: async (spaceId, data) => {
+        // Optimistically update local state
+        set((state) => ({
+          spaces: state.spaces.map(s => s.id === spaceId ? { ...s, ...data } : s)
+        }));
+        // Persist to Firestore
+        await SpaceService.updateSpace(spaceId, data);
+      },
+
+      deleteSpace: async (spaceId) => {
+        const { spaces, currentSpaceId } = get();
+        // Optimistically update local state
+        const newSpaces = spaces.filter(s => s.id !== spaceId);
+        const newCurrentId = currentSpaceId === spaceId
+          ? (newSpaces[0]?.id || '')
+          : currentSpaceId;
+        set({ spaces: newSpaces, currentSpaceId: newCurrentId });
+        // Persist to Firestore
+        await SpaceService.deleteSpace(spaceId);
       },
 
       getCurrentSpace: () => {
