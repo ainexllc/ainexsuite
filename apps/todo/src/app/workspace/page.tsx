@@ -9,13 +9,15 @@ import { Plus, LayoutGrid, List, Calendar } from 'lucide-react';
 import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
 import { TaskInsights } from '@/components/tasks/TaskInsights';
+import { SmartTaskInput } from '@/components/tasks/SmartTaskInput';
 import { TaskList } from '@/components/views/TaskList';
 import { TaskBoard } from '@/components/views/TaskBoard';
 import { MyDayView } from '@/components/views/MyDayView';
+import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
 import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
-type ViewType = 'list' | 'board' | 'my-day';
+type ViewType = 'list' | 'board' | 'my-day' | 'matrix';
 
 export default function TodoWorkspacePage() {
   const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
@@ -75,6 +77,18 @@ export default function TodoWorkspacePage() {
               >
                 <Calendar className="h-4 w-4" />
               </button>
+              <button
+                onClick={() => setView('matrix')}
+                className={`p-1.5 rounded transition-colors ${view === 'matrix' ? 'bg-accent-500/10 text-accent-500' : 'text-ink-600 hover:text-ink-800'}`}
+                title="Eisenhower Matrix"
+              >
+                <div className="h-4 w-4 grid grid-cols-2 gap-0.5">
+                  <div className="bg-current opacity-70 rounded-[1px]" />
+                  <div className="bg-current opacity-40 rounded-[1px]" />
+                  <div className="bg-current opacity-40 rounded-[1px]" />
+                  <div className="bg-current opacity-20 rounded-[1px]" />
+                </div>
+              </button>
             </div>
           </div>
 
@@ -93,6 +107,11 @@ export default function TodoWorkspacePage() {
           </div>
         </div>
 
+        {/* Smart Input */}
+        <div className="max-w-2xl mx-auto w-full">
+          <SmartTaskInput />
+        </div>
+
         {/* Content Area */}
         <div className="min-h-[60vh]">
           {view === 'list' && (
@@ -107,6 +126,10 @@ export default function TodoWorkspacePage() {
 
           {view === 'my-day' && (
             <MyDayView onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
+          )}
+
+          {view === 'matrix' && (
+            <EisenhowerMatrix onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
           )}
         </div>
       </div>
