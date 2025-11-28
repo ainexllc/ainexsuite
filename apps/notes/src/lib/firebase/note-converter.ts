@@ -20,6 +20,7 @@ export const noteConverter: FirestoreDataConverter<Note> = {
       createdAt,
       updatedAt,
       reminderAt,
+      noteDate,
       sharedWith,
       sharedWithUserIds,
       deletedAt,
@@ -38,6 +39,7 @@ export const noteConverter: FirestoreDataConverter<Note> = {
     return {
       ...rest,
       reminderAt: reminderAt ? Timestamp.fromDate(reminderAt) : null,
+      noteDate: noteDate ? Timestamp.fromDate(noteDate) : null,
       createdAt: createdAt ? Timestamp.fromDate(createdAt) : serverTimestamp(),
       updatedAt: updatedAt ? Timestamp.fromDate(updatedAt) : serverTimestamp(),
       sharedWith: collaboratorDocs,
@@ -72,6 +74,7 @@ export const noteConverter: FirestoreDataConverter<Note> = {
         })) ?? [],
       reminderAt: toOptionalDate(data.reminderAt),
       reminderId: data.reminderId ?? null,
+      noteDate: toOptionalDate(data.noteDate),
       createdAt: toDate(data.createdAt),
       updatedAt: toDate(data.updatedAt),
       deletedAt: toOptionalDate(data.deletedAt),
@@ -82,10 +85,11 @@ export const noteConverter: FirestoreDataConverter<Note> = {
 export function createNotePayload(
   ownerId: string,
   overrides: Partial<
-    Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "sharedWith" | "deletedAt">
+    Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "noteDate" | "sharedWith" | "deletedAt">
   > & {
     type: NoteDoc["type"];
     reminderAt?: Date | null;
+    noteDate?: Date | null;
     deletedAt?: Date | null;
     sharedWith?: NoteCollaborator[];
     spaceId?: string;
@@ -109,6 +113,9 @@ export function createNotePayload(
       ? Timestamp.fromDate(overrides.reminderAt)
       : null,
     reminderId: overrides.reminderId ?? null,
+    noteDate: overrides.noteDate
+      ? Timestamp.fromDate(overrides.noteDate)
+      : null,
     attachments: overrides.attachments ?? [],
     sharedWith:
       overrides.sharedWith?.map((collaborator) => ({

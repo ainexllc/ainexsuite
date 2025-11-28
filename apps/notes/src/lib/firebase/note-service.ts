@@ -104,6 +104,7 @@ export async function createNote(
     labelIds?: string[];
     reminderAt?: Date | null;
     reminderId?: string | null;
+    noteDate?: Date | null;
     spaceId?: string;
   },
 ) {
@@ -161,6 +162,12 @@ export async function updateNote(
 
   if (updates.reminderId !== undefined) {
     payload.reminderId = updates.reminderId ?? null;
+  }
+
+  if (updates.noteDate !== undefined) {
+    payload.noteDate = updates.noteDate
+      ? Timestamp.fromDate(updates.noteDate)
+      : null;
   }
 
   if (updates.attachments !== undefined) {

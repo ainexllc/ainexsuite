@@ -7,6 +7,8 @@ import {
   CheckSquare,
   Image as ImageIcon,
   CalendarClock,
+  Calendar,
+  Calculator,
   Palette,
   Pin,
   PinOff,
@@ -24,6 +26,8 @@ import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { useLabels } from "@/components/providers/labels-provider";
 import { QUICK_CAPTURE_EVENT } from "@/lib/constants/events";
 import { useReminders } from "@/components/providers/reminders-provider";
+import { InlineCalendar } from "@/components/notes/inline-calendar";
+import { InlineCalculator } from "@/components/notes/inline-calculator";
 import type { ReminderFrequency } from "@/lib/types/reminder";
 import type { ReminderChannel } from "@/lib/types/settings";
 import {
@@ -76,6 +80,9 @@ export function NoteComposer() {
   );
   const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>("once");
   const [customCron, setCustomCron] = useState("");
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [noteDate, setNoteDate] = useState<Date | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLDivElement | null>(null);
@@ -165,6 +172,9 @@ export function NoteComposer() {
     setReminderChannels([...preferences.reminderChannels]);
     setReminderFrequency("once");
     setCustomCron("");
+    setShowCalendar(false);
+    setShowCalculator(false);
+    setNoteDate(null);
   }, [preferences.reminderChannels]);
 
   const handleReminderToggle = () => {
@@ -219,6 +229,14 @@ export function NoteComposer() {
     }
   };
 
+  const handleCalculatorInsert = useCallback((result: string) => {
+    setBody((prev) => {
+      const newBody = prev ? `${prev} ${result}` : result;
+      return newBody;
+    });
+    setShowCalculator(false);
+  }, []);
+
   const handleSubmit = useCallback(async () => {
     if (isSubmitting) {
       return;
@@ -246,6 +264,7 @@ export function NoteComposer() {
         archived,
         labelIds: selectedLabelIds,
         reminderAt: fireAt ?? null,
+        noteDate: noteDate ?? undefined,
         attachments: attachments.map((item) => item.file),
       });
 
@@ -293,6 +312,7 @@ export function NoteComposer() {
     archived,
     selectedLabelIds,
     attachments,
+    noteDate,
     createReminder,
     reminderFrequency,
     customCron,
@@ -797,6 +817,8 @@ export function NoteComposer() {
                     onClick={() => {
                       setShowPalette((prev) => !prev);
                       setShowLabelPicker(false);
+                      setShowCalendar(false);
+                      setShowCalculator(false);
                     }}
                     aria-label="Choose color"
                   >
@@ -832,6 +854,8 @@ export function NoteComposer() {
                   onClick={() => {
                     setShowLabelPicker((prev) => !prev);
                     setShowPalette(false);
+                    setShowCalendar(false);
+                    setShowCalculator(false);
                   }}
                   aria-label="Manage labels"
                 >
@@ -859,6 +883,8 @@ export function NoteComposer() {
                     });
                     setShowPalette(false);
                     setShowLabelPicker(false);
+                    setShowCalendar(false);
+                    setShowCalculator(false);
                   }}
                   aria-label="Set reminder"
                 >
@@ -866,6 +892,68 @@ export function NoteComposer() {
                     className={clsx("h-5 w-5", reminderEnabled && "fill-current")}
                   />
                 </button>
+                <div className="relative">
+                  <button
+                    type="button"
+                    className={clsx(
+                      "p-2 rounded-full transition-colors",
+                      showCalendar
+                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                        : noteDate
+                          ? "text-[var(--color-primary)]"
+                          : "text-white/50 hover:text-white hover:bg-white/10"
+                    )}
+                    onClick={() => {
+                      setShowCalendar((prev) => !prev);
+                      setShowPalette(false);
+                      setShowLabelPicker(false);
+                      setReminderPanelOpen(false);
+                      setShowCalculator(false);
+                    }}
+                    aria-label="Set date"
+                  >
+                    <Calendar className="h-5 w-5" />
+                  </button>
+                  {showCalendar && (
+                    <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
+                      <InlineCalendar
+                        value={noteDate}
+                        onChange={(date) => setNoteDate(date)}
+                        onClose={() => setShowCalendar(false)}
+                      />
+                    </div>
+                  )}
+                </div>
+                {/* Calculator */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    className={clsx(
+                      "p-2 rounded-full transition-colors",
+                      showCalculator
+                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                        : "text-white/50 hover:text-white hover:bg-white/10"
+                    )}
+                    onClick={() => {
+                      setShowCalculator((prev) => !prev);
+                      setShowPalette(false);
+                      setShowLabelPicker(false);
+                      setShowCalendar(false);
+                      setReminderPanelOpen(false);
+                    }}
+                    aria-label="Calculator"
+                  >
+                    <Calculator className="h-5 w-5" />
+                  </button>
+                  {showCalculator && (
+                    <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
+                      <InlineCalculator
+                        onInsert={handleCalculatorInsert}
+                        onClose={() => setShowCalculator(false)}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-3">

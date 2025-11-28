@@ -15,6 +15,8 @@ import {
   X,
   BellRing,
   CalendarClock,
+  Calendar,
+  Calculator,
   Share2,
   Sparkles,
   Loader2,
@@ -44,6 +46,8 @@ import {
   formatDateTimeLocalInput,
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
+import { InlineCalendar } from "./inline-calendar";
+import { InlineCalculator } from "./inline-calculator";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
   if (a.length !== b.length) {
@@ -126,6 +130,14 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       setBody(previousState);
     }
   }, [bodyHistory]);
+
+  const handleCalculatorInsert = useCallback((result: string) => {
+    setBody((prev) => {
+      const newBody = prev ? `${prev} ${result}` : result;
+      return newBody;
+    });
+    setShowCalculator(false);
+  }, []);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -169,6 +181,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [reminderPrimed, setReminderPrimed] = useState(false);
   const [reminderPanelOpen, setReminderPanelOpen] = useState(false);
   const [sharePanelOpen, setSharePanelOpen] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [noteDate, setNoteDate] = useState<Date | null>(note.noteDate ?? null);
   const [collaborators, setCollaborators] = useState<NoteCollaborator[]>(note.sharedWith);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<CollaboratorRole>("viewer");
@@ -473,6 +488,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       reminderChannelsChanged ||
       reminderFrequencyChanged ||
       reminderCronChanged;
+    const noteDateChanged =
+      (noteDate === null && note.noteDate !== null && note.noteDate !== undefined) ||
+      (noteDate !== null && note.noteDate === null) ||
+      (noteDate !== null && note.noteDate !== null && note.noteDate !== undefined &&
+        noteDate.getTime() !== note.noteDate.getTime());
 
     if (
       !titleChanged &&
@@ -485,7 +505,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       !attachmentsAdded &&
       !labelsChanged &&
       !modeChanged &&
-      !reminderChanged
+      !reminderChanged &&
+      !noteDateChanged
     ) {
       onClose();
       return;
@@ -529,6 +550,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
       if (labelsChanged) {
         updates.labelIds = selectedLabelIds;
+      }
+
+      if (noteDateChanged) {
+        updates.noteDate = noteDate;
       }
 
       if (Object.keys(updates).length) {
@@ -625,6 +650,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     checklistChanged,
     selectedLabelIds,
     note.labelIds,
+    noteDate,
+    note.noteDate,
     updateNote,
     note.id,
     togglePin,
@@ -1361,6 +1388,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   onClick={() => {
                     setShowPalette((prev) => !prev);
                     setShowLabelPicker(false);
+                    setShowCalendar(false);
+                    setShowCalculator(false);
                   }}
                   className={clsx(
                     "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
@@ -1396,6 +1425,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 onClick={() => {
                   setShowLabelPicker((prev) => !prev);
                   setShowPalette(false);
+                  setShowCalendar(false);
+                  setShowCalculator(false);
                 }}
                 className={clsx(
                   "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
@@ -1416,6 +1447,63 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               >
                 <Archive className="h-4 w-4" />
               </button>
+              {/* Calendar date picker */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCalendar((prev) => !prev);
+                    setShowPalette(false);
+                    setShowLabelPicker(false);
+                    setShowCalculator(false);
+                  }}
+                  className={clsx(
+                    "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                    (showCalendar || noteDate) && "bg-white/20 text-white",
+                  )}
+                  aria-label="Set date"
+                  title={noteDate ? `Date: ${noteDate.toLocaleDateString()}` : "Add a date"}
+                >
+                  <Calendar className="h-4 w-4" />
+                </button>
+                {showCalendar && (
+                  <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
+                    <InlineCalendar
+                      value={noteDate}
+                      onChange={(date) => setNoteDate(date)}
+                      onClose={() => setShowCalendar(false)}
+                    />
+                  </div>
+                )}
+              </div>
+              {/* Calculator */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCalculator((prev) => !prev);
+                    setShowPalette(false);
+                    setShowLabelPicker(false);
+                    setShowCalendar(false);
+                  }}
+                  className={clsx(
+                    "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                    showCalculator && "bg-white/20 text-white",
+                  )}
+                  aria-label="Calculator"
+                  title="Open calculator"
+                >
+                  <Calculator className="h-4 w-4" />
+                </button>
+                {showCalculator && (
+                  <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
+                    <InlineCalculator
+                      onInsert={handleCalculatorInsert}
+                      onClose={() => setShowCalculator(false)}
+                    />
+                  </div>
+                )}
+              </div>
               {/* Separator */}
               <div className="w-px h-6 bg-white/20" />
               {/* Undo button */}

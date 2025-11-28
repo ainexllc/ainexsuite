@@ -102,6 +102,7 @@ export type NoteDoc = {
   labelIds: string[];
   reminderAt?: Timestamp | null;
   reminderId?: string | null;
+  noteDate?: Timestamp | null; // Associated date for the note (not a reminder)
   createdAt: Timestamp;
   updatedAt: Timestamp;
   deletedAt?: Timestamp | null;
@@ -112,12 +113,13 @@ export type NoteDoc = {
   height?: number;
 };
 
-export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "sharedWith" | "deletedAt"> & {
+export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "noteDate" | "sharedWith" | "deletedAt"> & {
   id: string;
   createdAt: Date;
   updatedAt: Date;
   reminderAt?: Date | null;
   reminderId?: string | null;
+  noteDate?: Date | null;
   deletedAt?: Date | null;
   sharedWith: NoteCollaborator[];
 };
@@ -131,6 +133,7 @@ export type NoteDraft = {
   pattern?: NotePattern;
   reminderAt?: Date | null;
   reminderId?: string | null;
+  noteDate?: Date | null;
   labelIds?: string[];
   attachments?: NoteAttachment[];
   sharedWith?: NoteCollaborator[];

@@ -39,6 +39,7 @@ type CreateNoteInput = {
   labelIds?: string[];
   reminderAt?: Date | null;
   reminderId?: string | null;
+  noteDate?: Date | null;
   attachments?: File[];
   spaceId?: string;
 };
