@@ -113,81 +113,78 @@ function HealthWorkspaceContent() {
       searchPlaceholder="Search health data..."
       appName="Health"
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Composer - Notes/Journal style */}
-            <HealthCheckinComposer
-              existingMetric={todayMetric}
-              date={getTodayDate()}
-              onSave={handleSaveCheckin}
-            />
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* AI Insights Banner - Full Width at Top */}
+        <HealthInsights metrics={metrics} variant="sidebar" />
 
-            {/* Today's Status Card */}
-            {todayMetric && (
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
-                <div className="flex items-center gap-3 mb-4">
-                  <Calendar className="h-6 w-6" />
-                  <h2 className="text-lg font-semibold">Today&apos;s Check-in</h2>
+        {/* Composer - Notes/Journal style */}
+        <HealthCheckinComposer
+          existingMetric={todayMetric}
+          date={getTodayDate()}
+          onSave={handleSaveCheckin}
+        />
+
+        {/* Today's Status Card */}
+        {todayMetric && (
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
+            <div className="flex items-center gap-3 mb-4">
+              <Calendar className="h-6 w-6" />
+              <h2 className="text-lg font-semibold">Today&apos;s Check-in</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {todayMetric.weight && (
+                <div>
+                  <p className="text-white/70 text-sm">Weight</p>
+                  <p className="text-xl font-bold">{todayMetric.weight} lbs</p>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {todayMetric.weight && (
-                    <div>
-                      <p className="text-white/70 text-sm">Weight</p>
-                      <p className="text-xl font-bold">{todayMetric.weight} lbs</p>
-                    </div>
-                  )}
-                  {todayMetric.sleep && (
-                    <div>
-                      <p className="text-white/70 text-sm">Sleep</p>
-                      <p className="text-xl font-bold">{todayMetric.sleep} hrs</p>
-                    </div>
-                  )}
-                  {todayMetric.water && (
-                    <div>
-                      <p className="text-white/70 text-sm">Water</p>
-                      <p className="text-xl font-bold">{todayMetric.water} glasses</p>
-                    </div>
-                  )}
-                  {todayMetric.energy && (
-                    <div>
-                      <p className="text-white/70 text-sm">Energy</p>
-                      <p className="text-xl font-bold">{todayMetric.energy}/10</p>
-                    </div>
-                  )}
+              )}
+              {todayMetric.sleep && (
+                <div>
+                  <p className="text-white/70 text-sm">Sleep</p>
+                  <p className="text-xl font-bold">{todayMetric.sleep} hrs</p>
                 </div>
-              </div>
-            )}
-
-            {/* Empty State */}
-            {!todayMetric && metrics.length === 0 && (
-              <div className="text-center py-12 rounded-2xl bg-white/5 border border-white/10">
-                <Activity className="h-16 w-16 mx-auto mb-4 text-emerald-500/50" />
-                <p className="text-white/70 mb-2">No health data yet</p>
-                <p className="text-white/50 text-sm">
-                  Click above to start tracking your wellness journey
-                </p>
-              </div>
-            )}
-
-            {/* Health History */}
-            {metrics.length > 0 && (
-              <HealthHistory
-                metrics={metrics}
-                onEdit={setEditingMetric}
-                onDelete={handleDeleteMetric}
-              />
-            )}
+              )}
+              {todayMetric.water && (
+                <div>
+                  <p className="text-white/70 text-sm">Water</p>
+                  <p className="text-xl font-bold">{todayMetric.water} glasses</p>
+                </div>
+              )}
+              {todayMetric.energy && (
+                <div>
+                  <p className="text-white/70 text-sm">Energy</p>
+                  <p className="text-xl font-bold">{todayMetric.energy}/10</p>
+                </div>
+              )}
+            </div>
           </div>
+        )}
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <HealthInsights metrics={metrics} variant="sidebar" />
-            <HealthStats metrics={metrics} />
-            <FitIntegrationWidget />
+        {/* Empty State */}
+        {!todayMetric && metrics.length === 0 && (
+          <div className="text-center py-12 rounded-2xl bg-white/5 border border-white/10">
+            <Activity className="h-16 w-16 mx-auto mb-4 text-emerald-500/50" />
+            <p className="text-white/70 mb-2">No health data yet</p>
+            <p className="text-white/50 text-sm">
+              Click above to start tracking your wellness journey
+            </p>
           </div>
+        )}
+
+        {/* Stats and Integration - Side by Side on larger screens */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <HealthStats metrics={metrics} />
+          <FitIntegrationWidget />
         </div>
+
+        {/* Health History */}
+        {metrics.length > 0 && (
+          <HealthHistory
+            metrics={metrics}
+            onEdit={setEditingMetric}
+            onDelete={handleDeleteMetric}
+          />
+        )}
       </div>
 
       <AIAssistant />

@@ -30,7 +30,6 @@ function FitWorkspaceContent() {
   const [showEditor, setShowEditor] = useState(false);
   const [showChallengeEditor, setShowChallengeEditor] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
-  const [mobileInsightsExpanded, setMobileInsightsExpanded] = useState(false);
 
 
   const handleUpdate = async () => {
@@ -92,24 +91,12 @@ function FitWorkspaceContent() {
     >
       <FitFirestoreSync />
 
-      <div className="max-w-7xl mx-auto">
-        {/* Mobile: Condensed AI Insights at top (hidden on xl+) */}
-        <div className="xl:hidden mb-4">
-          {mobileInsightsExpanded ? (
-            <FitInsights
-              variant="sidebar"
-              onExpand={() => setMobileInsightsExpanded(false)}
-            />
-          ) : (
-            <FitInsights
-              variant="condensed"
-              onExpand={() => setMobileInsightsExpanded(true)}
-            />
-          )}
-        </div>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* AI Insights Banner - Full Width at Top */}
+        <FitInsights variant="sidebar" />
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 w-full sm:w-auto">
             <SpaceSwitcher />
           </div>
@@ -127,55 +114,49 @@ function FitWorkspaceContent() {
           </div>
         </div>
 
-        <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
-          {/* Main Content */}
-          <div className="space-y-8">
-            {/* Workout Composer - Entry point like Notes */}
-            <WorkoutComposer onWorkoutCreated={handleUpdate} />
+        {/* Workout Composer - Entry point like Notes */}
+        <WorkoutComposer onWorkoutCreated={handleUpdate} />
 
-            {/* Squad Feed (only if not personal) */}
-            {currentSpace?.type !== 'personal' && (
-              <SharedWorkoutFeed />
-            )}
+        {/* Squad Feed (only if not personal) */}
+        {currentSpace?.type !== 'personal' && (
+          <SharedWorkoutFeed />
+        )}
 
-            {/* My Workouts List */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Dumbbell className="h-5 w-5 text-orange-500" />
-                  My Logs
-                </h2>
+        {/* Leaderboard - Full Width */}
+        {currentSpace?.type !== 'personal' && (
+          <Leaderboard />
+        )}
+
+        {/* My Workouts List */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <Dumbbell className="h-5 w-5 text-orange-500" />
+              My Logs
+            </h2>
+          </div>
+
+          {workouts.filter((w: Workout) => w.userId === user.uid).length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-white/10 rounded-2xl bg-surface-elevated/50">
+              <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
+                <Dumbbell className="h-8 w-8 text-orange-500" />
               </div>
-
-              {workouts.filter((w: Workout) => w.userId === user.uid).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-white/10 rounded-2xl bg-surface-elevated/50">
-                  <div className="h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4">
-                    <Dumbbell className="h-8 w-8 text-orange-500" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Start Your Fitness Journey</h3>
-                  <p className="text-white/50 mb-6 text-center max-w-md">
-                    Track your workouts, visualize progress, and crush your goals.
-                    Click &ldquo;Log a workout...&rdquo; above to get started!
-                  </p>
-                </div>
-              ) : (
-                <WorkoutList
-                  workouts={workouts.filter((w: Workout) => w.userId === user.uid)}
-                  onEdit={(workout) => {
-                    setSelectedWorkout(workout);
-                    setShowEditor(true);
-                  }}
-                  onUpdate={handleUpdate}
-                />
-              )}
+              <h3 className="text-xl font-semibold text-white mb-2">Start Your Fitness Journey</h3>
+              <p className="text-white/50 mb-6 text-center max-w-md">
+                Track your workouts, visualize progress, and crush your goals.
+                Click &ldquo;Log a workout...&rdquo; above to get started!
+              </p>
             </div>
-          </div>
-
-          {/* Sidebar - AI Insights + Leaderboard */}
-          <div className="sticky top-28 hidden h-fit flex-col gap-6 xl:flex">
-            <FitInsights variant="sidebar" />
-            <Leaderboard />
-          </div>
+          ) : (
+            <WorkoutList
+              workouts={workouts.filter((w: Workout) => w.userId === user.uid)}
+              onEdit={(workout) => {
+                setSelectedWorkout(workout);
+                setShowEditor(true);
+              }}
+              onUpdate={handleUpdate}
+            />
+          )}
         </div>
       </div>
 

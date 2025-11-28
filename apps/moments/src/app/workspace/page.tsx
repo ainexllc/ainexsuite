@@ -82,194 +82,128 @@ function MomentsWorkspaceContent() {
       searchPlaceholder="Search moments..."
       appName="Moments"
     >
-      <div className="max-w-7xl mx-auto">
-        {/* Two-column layout like Journey */}
-        <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
-          {/* Left Column: Main Content */}
-          <div className="space-y-6">
-            {/* Composer - Entry point like Journey */}
-            <MomentComposer
-              spaceId={currentSpaceId || undefined}
-              onMomentCreated={handleUpdate}
-            />
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* AI Insights Banner - Full Width at Top */}
+        <MomentsInsights moments={moments} variant="sidebar" />
 
-            {/* Space Controls & Filters */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <SpaceSwitcher />
-                
-                {/* View Options - Always Available */}
+        {/* Composer - Entry point like Journey */}
+        <MomentComposer
+          spaceId={currentSpaceId || undefined}
+          onMomentCreated={handleUpdate}
+        />
+
+        {/* Space Controls & Filters */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <SpaceSwitcher />
+
+            {/* View Options - Always Available */}
+            <button
+              onClick={() => setShowFlipbook(true)}
+              className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+              title="View as Flipbook"
+              disabled={filteredMoments.length === 0}
+            >
+              <Book className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setShowSlideshow(true)}
+              className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+              title="Play Slideshow"
+              disabled={filteredMoments.length === 0}
+            >
+              <Play className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setShowGame(true)}
+              className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+              title="Play Trivia"
+              disabled={filteredMoments.length === 0}
+            >
+              <Gamepad2 className="h-5 w-5" />
+            </button>
+
+            {/* Space Specific Controls */}
+            {currentSpace && (
+              <>
+                <div className="w-px h-6 bg-outline-subtle mx-1" />
                 <button
-                  onClick={() => setShowFlipbook(true)}
+                  onClick={() => setShowSettings(true)}
                   className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                  title="View as Flipbook"
-                  disabled={filteredMoments.length === 0}
+                  title="Share Space"
                 >
-                  <Book className="h-5 w-5" />
+                  <Share2 className="h-5 w-5" />
                 </button>
                 <button
-                  onClick={() => setShowSlideshow(true)}
+                  onClick={() => setShowSettings(true)}
                   className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                  title="Play Slideshow"
-                  disabled={filteredMoments.length === 0}
+                  title="Space Settings"
                 >
-                  <Play className="h-5 w-5" />
+                  <Settings className="h-5 w-5" />
                 </button>
-                <button
-                  onClick={() => setShowGame(true)}
-                  className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                  title="Play Trivia"
-                  disabled={filteredMoments.length === 0}
-                >
-                  <Gamepad2 className="h-5 w-5" />
-                </button>
-
-                {/* Space Specific Controls */}
-                {currentSpace && (
-                  <>
-                    <div className="w-px h-6 bg-outline-subtle mx-1" />
-                    <button
-                      onClick={() => setShowSettings(true)}
-                      className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                      title="Share Space"
-                    >
-                      <Share2 className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => setShowSettings(true)}
-                      className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                      title="Space Settings"
-                    >
-                      <Settings className="h-5 w-5" />
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Tag Filter */}
-              {allTags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedTag(null)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      !selectedTag
-                        ? 'bg-pink-500 text-white'
-                        : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
-                    }`}
-                  >
-                    All
-                  </button>
-                  {allTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => setSelectedTag(tag)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                        selectedTag === tag
-                          ? 'bg-pink-500 text-white'
-                          : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
-                      }`}
-                    >
-                      #{tag}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Mobile: Flashback shown inline */}
-            {!selectedTag && !isLoadingMoments && moments.length > 0 && (
-              <div className="xl:hidden">
-                <FlashbackWidget onDetail={setDetailMoment} />
-              </div>
-            )}
-
-            {/* Moments Content */}
-            {isLoadingMoments ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
-              </div>
-            ) : filteredMoments.length === 0 ? (
-              <div className="text-center py-20 space-y-4 rounded-2xl bg-surface-elevated border border-outline-subtle">
-                <ImageIcon className="h-16 w-16 text-text-muted mx-auto" />
-                <p className="text-text-muted">
-                  {selectedTag
-                    ? `No moments with tag "${selectedTag}"`
-                    : 'No moments yet. Start capturing your memories!'}
-                </p>
-              </div>
-            ) : (
-              <TimelineView
-                moments={filteredMoments}
-                onEdit={(moment) => {
-                  setSelectedMoment(moment);
-                  setShowEditor(true);
-                }}
-                onDetail={(moment) => setDetailMoment(moment)}
-              />
+              </>
             )}
           </div>
 
-          {/* Right Column: Sidebar (visible on xl screens) */}
-          <div className="sticky top-28 hidden h-fit flex-col gap-6 xl:flex">
-            {!selectedTag && !isLoadingMoments && moments.length > 0 && (
-              <FlashbackWidget onDetail={setDetailMoment} />
-            )}
-
-            {/* AI Insights */}
-            <MomentsInsights moments={moments} variant="sidebar" />
-
-            {/* Quick Actions */}
-            <div className="rounded-2xl bg-surface-elevated border border-outline-subtle p-5">
-              <h3 className="text-sm font-semibold text-text-primary mb-4">Quick Actions</h3>
-              <div className="space-y-2">
+          {/* Tag Filter */}
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedTag(null)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  !selectedTag
+                    ? 'bg-pink-500 text-white'
+                    : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
+                }`}
+              >
+                All
+              </button>
+              {allTags.map((tag) => (
                 <button
-                  onClick={() => setShowFlipbook(true)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
-                  disabled={filteredMoments.length === 0}
+                  key={tag}
+                  onClick={() => setSelectedTag(tag)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    selectedTag === tag
+                      ? 'bg-pink-500 text-white'
+                      : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
+                  }`}
                 >
-                  <Book className="h-4 w-4 text-pink-500" />
-                  View Flipbook
+                  #{tag}
                 </button>
-                <button
-                  onClick={() => setShowSlideshow(true)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
-                  disabled={filteredMoments.length === 0}
-                >
-                  <Play className="h-4 w-4 text-pink-500" />
-                  Play Slideshow
-                </button>
-                <button
-                  onClick={() => setShowGame(true)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
-                  disabled={filteredMoments.length === 0}
-                >
-                  <Gamepad2 className="h-4 w-4 text-pink-500" />
-                  Memory Trivia
-                </button>
-                
-                {currentSpace && (
-                  <>
-                    <div className="h-px bg-outline-subtle my-2" />
-                    <button
-                      onClick={() => setShowSettings(true)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
-                    >
-                      <Share2 className="h-4 w-4 text-pink-500" />
-                      Share Space
-                    </button>
-                    <button
-                      onClick={() => setShowSettings(true)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors"
-                    >
-                      <Settings className="h-4 w-4 text-pink-500" />
-                      Space Settings
-                    </button>
-                  </>
-                )}
-              </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
+
+        {/* Flashback Widget - Full Width */}
+        {!selectedTag && !isLoadingMoments && moments.length > 0 && (
+          <FlashbackWidget onDetail={setDetailMoment} />
+        )}
+
+        {/* Moments Content */}
+        {isLoadingMoments ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+          </div>
+        ) : filteredMoments.length === 0 ? (
+          <div className="text-center py-20 space-y-4 rounded-2xl bg-surface-elevated border border-outline-subtle">
+            <ImageIcon className="h-16 w-16 text-text-muted mx-auto" />
+            <p className="text-text-muted">
+              {selectedTag
+                ? `No moments with tag "${selectedTag}"`
+                : 'No moments yet. Start capturing your memories!'}
+            </p>
+          </div>
+        ) : (
+          <TimelineView
+            moments={filteredMoments}
+            onEdit={(moment) => {
+              setSelectedMoment(moment);
+              setShowEditor(true);
+            }}
+            onDetail={(moment) => setDetailMoment(moment)}
+          />
+        )}
       </div>
 
       {/* Modals */}

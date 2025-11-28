@@ -249,17 +249,6 @@ export default function AdminWorkspacePage() {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [promotedItems, setPromotedItems] = useState<PromotedFeedback[]>([]);
 
-  useEffect(() => {
-    const fetchPromoted = async () => {
-      try {
-        const q = collection(db, 'feedback');
-        const snapshot = await getCountFromServer(q); // Re-using import, but need getDocs for data
-        // We need actual data, not just count.
-      } catch (e) {
-        console.error(e);
-      }
-    };
-  }, []);
 
   // Better approach: combine fetches or add new effect
   useEffect(() => {

@@ -52,18 +52,15 @@ interface WorkspaceLayoutProps {
   showBackground?: boolean;
   /**
    * Background style variant
-   * - 'glow': Soft radial glow from top
-   * - 'aurora': Northern lights style with multiple subtle layers
+   * - 'dots': Dot matrix pattern (default - professional and modern)
    * - 'minimal': Very subtle, single gradient
    * - 'grid': Subtle grid pattern with accent color highlights
-   * - 'dots': Dot matrix pattern
-   * - 'mesh': Multi-point mesh gradient with noise
-   * @default 'grid'
+   * @default 'dots'
    */
   backgroundVariant?: 'glow' | 'aurora' | 'minimal' | 'grid' | 'dots' | 'mesh';
   /**
    * Background gradient intensity (0.0 - 1.0)
-   * @default 0.15
+   * @default 0.2
    */
   backgroundIntensity?: number;
   /**
@@ -112,8 +109,9 @@ export function WorkspaceLayout({
   const appTheme = useAppTheme();
 
   // Use global theme settings if available, otherwise fall back to props/defaults
-  const backgroundVariant = propBackgroundVariant ?? appTheme.backgroundVariant ?? 'grid';
-  const backgroundIntensity = propBackgroundIntensity ?? appTheme.backgroundIntensity ?? 0.5;
+  // Default to 'dots' for a professional, modern look
+  const backgroundVariant = propBackgroundVariant ?? appTheme.backgroundVariant ?? 'dots';
+  const backgroundIntensity = propBackgroundIntensity ?? appTheme.backgroundIntensity ?? 0.2;
 
   // Auto-hide navigation hook
   const {

@@ -191,6 +191,12 @@ export {
   type AIInsightsTextProps,
 } from "./ai";
 
+// AI Insights Banner (Full-width collapsible banner for workspace pages)
+export {
+  AIInsightsBanner,
+  InsightCard,
+} from "./insights/ai-insights-banner";
+
 // Existing Components
 export { Footer } from "./footer";
 export { Paywall } from "./paywall";

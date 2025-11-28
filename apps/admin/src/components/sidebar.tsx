@@ -44,7 +44,7 @@ interface AdminSidebarProps {
   };
 }
 
-export function AdminSidebar({ isOpen, onClose, onSignOut, user }: AdminSidebarProps) {
+export function AdminSidebar({ isOpen, onClose, onSignOut, user: _user }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 

@@ -5,7 +5,7 @@ import { OnThisDayCard } from '@/components/dashboard/on-this-day-card';
 import { usePersonalizedWelcome } from '@/hooks/usePersonalizedWelcome';
 import { getUserSettings, UserSettings } from '@/lib/firebase/settings';
 import { cn } from '@/lib/utils';
-import { getTheme, DashboardTheme } from '@/lib/dashboard-themes';
+import { getTheme } from '@/lib/dashboard-themes';
 import { JournalComposer } from '@/components/journal/journal-composer';
 import { JournalInsights } from '@/components/journal/journal-insights';
 import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
@@ -16,40 +16,6 @@ interface DashboardStats {
   cadence: number;
   averageWords: number;
   mostCommonMood: { label: string; description: string };
-}
-
-interface OverviewProps {
-  stats: DashboardStats;
-  wroteToday: boolean;
-  onThisDayEntries: JournalEntry[];
-  entries: JournalEntry[];
-  theme: DashboardTheme;
-}
-
-function LargeScreenOverview({
-  onThisDayEntries,
-  entries,
-  theme,
-}: OverviewProps) {
-  return (
-    <div className="sticky top-28 hidden h-fit flex-col gap-6 xl:flex">
-      <JournalInsights entries={entries} variant="sidebar" />
-      {onThisDayEntries.length > 0 && <OnThisDayCard entries={onThisDayEntries} theme={theme} />}
-    </div>
-  );
-}
-
-function MobileOverview({
-  onThisDayEntries,
-  entries,
-  theme,
-}: OverviewProps) {
-  return (
-    <div className="space-y-4 xl:hidden">
-      <JournalInsights entries={entries} variant="sidebar" />
-      {onThisDayEntries.length > 0 && <OnThisDayCard entries={onThisDayEntries} theme={theme} />}
-    </div>
-  );
 }
 
 interface NotebookLiteDashboardProps {
@@ -95,9 +61,9 @@ export function NotebookLiteDashboard({
   page,
   onPageChange,
   onEntryUpdated,
-  latestEntry,
+  latestEntry: _latestEntry,
   latestDraft: _latestDraft,
-  stats,
+  stats: _stats,
   isLoadingEntries,
   onThisDayEntries,
   currentThemeId = 'obsidian',
@@ -114,18 +80,9 @@ export function NotebookLiteDashboard({
     }
   }, [userId]);
 
-  const wroteToday = useMemo(() => {
-    if (!latestEntry) return false;
-    const created = new Date(latestEntry.createdAt);
-    const today = new Date();
-    return created.getFullYear() === today.getFullYear()
-      && created.getMonth() === today.getMonth()
-      && created.getDate() === today.getDate();
-  }, [latestEntry]);
-
   // Get personalized welcome message based on recent entries
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { isLoading: isLoadingWelcome } = usePersonalizedWelcome({
+  const { isLoading: _isLoadingWelcome } = usePersonalizedWelcome({
     userName: userDisplayName ?? null,
     recentEntries: entries.filter((entry) => !entry.isDraft),
     enabled: entries.length > 0 && settings?.privacy?.personalizedWelcome === true,
@@ -133,47 +90,38 @@ export function NotebookLiteDashboard({
 
   return (
     <div className={cn("transition-colors duration-500 min-h-screen", theme.font)}>
-      <div className="space-y-12 pb-20 max-w-7xl mx-auto">
-        <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start xl:gap-8">
-          <div className="space-y-6">
-            {/* Space Switcher above journal composer */}
-            <div className="flex items-center gap-4">
-              <SpaceSwitcher />
-            </div>
-            <JournalComposer onEntryCreated={onEntryUpdated} />
+      <div className="space-y-6 pb-20 max-w-7xl mx-auto">
+        {/* AI Insights Banner - Full Width at Top */}
+        <JournalInsights entries={entries} variant="sidebar" />
 
-            <MobileOverview
-              stats={stats}
-              wroteToday={wroteToday}
-              onThisDayEntries={onThisDayEntries}
-              entries={entries}
-              theme={theme}
-            />
-
-            <EntriesSection
-              layoutVariant="list"
-              entriesToDisplay={paginatedEntries}
-              totalEntries={totalEntries}
-              searchTerm={searchTerm}
-              selectedTags={selectedTags}
-              onClearFilters={onClearFilters}
-              onEntryUpdated={onEntryUpdated}
-              page={page}
-              totalPages={totalPages}
-              onPageChange={onPageChange}
-              isLoading={isLoadingEntries}
-              theme={theme}
-            />
-          </div>
-
-          <LargeScreenOverview
-            stats={stats}
-            wroteToday={wroteToday}
-            onThisDayEntries={onThisDayEntries}
-            entries={entries}
-            theme={theme}
-          />
+        {/* Space Switcher */}
+        <div className="flex items-center gap-4">
+          <SpaceSwitcher />
         </div>
+
+        {/* Journal Composer */}
+        <JournalComposer onEntryCreated={onEntryUpdated} />
+
+        {/* On This Day - Full Width */}
+        {onThisDayEntries.length > 0 && (
+          <OnThisDayCard entries={onThisDayEntries} theme={theme} />
+        )}
+
+        {/* Entries Section - Full Width */}
+        <EntriesSection
+          layoutVariant="list"
+          entriesToDisplay={paginatedEntries}
+          totalEntries={totalEntries}
+          searchTerm={searchTerm}
+          selectedTags={selectedTags}
+          onClearFilters={onClearFilters}
+          onEntryUpdated={onEntryUpdated}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          isLoading={isLoadingEntries}
+          theme={theme}
+        />
       </div>
     </div>
   );
