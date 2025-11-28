@@ -28,9 +28,10 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
     return spaces.find((s: TaskSpace) => s.id === spaceId)?.name || 'Unknown Space';
   };
 
-  const getTaskSection = (dateStr?: string) => {
-    if (!dateStr) return 'No Date';
-    const date = new Date(dateStr);
+  const getTaskSection = (task: Task) => {
+    if (task.status === 'done') return 'Completed';
+    if (!task.dueDate) return 'No Date';
+    const date = new Date(task.dueDate);
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
     if (isPast(date)) return 'Overdue';
@@ -39,25 +40,27 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
 
   // Group by section
   const groupedTasks = sortedTasks.reduce((acc, task) => {
-    const section = getTaskSection(task.dueDate);
+    const section = getTaskSection(task);
     if (!acc[section]) acc[section] = [];
     acc[section].push(task);
     return acc;
   }, {} as Record<string, Task[]>);
 
-  const sections = ['Overdue', 'Today', 'Tomorrow', 'Upcoming', 'No Date'];
+  const sections = ['Overdue', 'Today', 'Tomorrow', 'Upcoming', 'No Date', 'Completed'];
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       {sections.map(section => {
         const tasks = groupedTasks[section] || [];
-        if (tasks.length === 0) return null;
+        if (tasks.length === 0 && section !== 'Completed') return null;
+        if (section === 'Completed' && tasks.length === 0) return null; // Hide if empty
 
         return (
           <div key={section}>
             <h3 className={`text-sm font-bold uppercase tracking-wider mb-3 ${
               section === 'Overdue' ? 'text-red-400' :
-              section === 'Today' ? 'text-accent-400' : 'text-white/50'
+              section === 'Today' ? 'text-accent-400' : 
+              section === 'Completed' ? 'text-green-400' : 'text-white/50'
             }`}>
               {section} <span className="text-white/20 ml-1">{tasks.length}</span>
             </h3>
