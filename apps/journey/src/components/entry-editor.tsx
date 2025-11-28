@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import type { JournalEntry, MoodType } from '@ainexsuite/types';
 import { createJournalEntry, updateJournalEntry } from '@/lib/firebase/firestore';
-import { X, Smile, Meh, Frown, Heart, Zap, type LucideIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface EntryEditorProps {
@@ -16,17 +16,16 @@ interface EntryEditorProps {
 
 type MoodOption = {
   value: MoodType;
-  icon: LucideIcon;
   label: string;
   color: string;
 };
 
 const MOODS: MoodOption[] = [
-  { value: 'excited', icon: Heart, label: 'Amazing', color: 'bg-mood-amazing' },
-  { value: 'happy', icon: Smile, label: 'Good', color: 'bg-mood-good' },
-  { value: 'neutral', icon: Meh, label: 'Okay', color: 'bg-mood-okay' },
-  { value: 'sad', icon: Frown, label: 'Bad', color: 'bg-mood-bad' },
-  { value: 'frustrated', icon: Zap, label: 'Terrible', color: 'bg-mood-terrible' },
+  { value: 'excited', label: 'Amazing', color: 'bg-mood-amazing' },
+  { value: 'happy', label: 'Good', color: 'bg-mood-good' },
+  { value: 'neutral', label: 'Okay', color: 'bg-mood-okay' },
+  { value: 'sad', label: 'Bad', color: 'bg-mood-bad' },
+  { value: 'frustrated', label: 'Terrible', color: 'bg-mood-terrible' },
 ];
 
 export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditorProps) {
@@ -99,18 +98,16 @@ export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditor
             <label className="block text-sm font-medium mb-2">How are you feeling?</label>
             <div className="flex gap-2">
               {MOODS.map((m) => {
-                const Icon = m.icon;
                 return (
                   <button
                     key={m.value}
                     onClick={() => setMood(m.value)}
-                    className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                    className={`flex-1 flex items-center justify-center p-4 rounded-lg border-2 transition-all ${
                       mood === m.value
                         ? `${m.color} border-white text-white`
                         : 'surface-elevated border-surface-hover hover:border-accent-500'
                     }`}
                   >
-                    <Icon className="h-6 w-6" />
                     <span className="text-sm font-medium">{m.label}</span>
                   </button>
                 );
