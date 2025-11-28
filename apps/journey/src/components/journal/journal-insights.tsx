@@ -210,8 +210,6 @@ export function JournalInsights({ entries, variant = "default" }: JournalInsight
       lastUpdated={lastUpdated}
       onRefresh={generateInsights}
       refreshDisabled={loading}
-      collapsible
-      storageKey="journey-insights-collapsed"
     />
   );
 }

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const apiKey = process.env.XAI_API_KEY;
+    const apiKey = process.env.GROK_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: 'AI API key configuration missing' },
@@ -51,7 +51,7 @@ Keep each insight concise (under 100 characters for trend/focus, under 80 chars 
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'grok-3-fast',
+        model: 'grok-4-1-fast-non-reasoning',
         messages: [
           {
             role: 'system',

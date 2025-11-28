@@ -29,9 +29,10 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
     return spaces.find((s: TaskSpace) => s.id === spaceId)?.name || 'Unknown Space';
   };
 
-  const getTaskSection = (dateStr?: string) => {
-    if (!dateStr) return 'No Date';
-    const date = new Date(dateStr);
+  const getTaskSection = (task: Task) => {
+    if (task.status === 'done') return 'Completed';
+    if (!task.dueDate) return 'No Date';
+    const date = new Date(task.dueDate);
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
     if (isPast(date)) return 'Overdue';
@@ -40,19 +41,20 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
 
   // Group by section
   const groupedTasks = sortedTasks.reduce((acc, task) => {
-    const section = getTaskSection(task.dueDate);
+    const section = getTaskSection(task);
     if (!acc[section]) acc[section] = [];
     acc[section].push(task);
     return acc;
   }, {} as Record<string, Task[]>);
 
-  const sections = ['Overdue', 'Today', 'Tomorrow', 'Upcoming', 'No Date'];
+  const sections = ['Overdue', 'Today', 'Tomorrow', 'Upcoming', 'No Date', 'Completed'];
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       {sections.map(section => {
         const tasks = groupedTasks[section] || [];
-        if (tasks.length === 0) return null;
+        if (tasks.length === 0 && section !== 'Completed') return null;
+        if (section === 'Completed' && tasks.length === 0) return null; // Hide if empty
 
         return (
           <ListSection
@@ -85,7 +87,7 @@ export function MyDayView({ onEditTask }: MyDayViewProps) {
                 icon={task.status === 'done' ? CheckCircle2 : Circle}
                 trailing={
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ArrowRight className="h-4 w-4 text-white/30" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                 }
                 onClick={(e) => {

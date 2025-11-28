@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { TrendingUp, Target, Zap } from 'lucide-react';
+import { TrendingUp, Target, Zap, Trophy } from 'lucide-react';
 import {
   AIInsightsCard,
   AIInsightsBulletList,
@@ -9,6 +9,7 @@ import {
 } from '@ainexsuite/ui';
 import type { AIInsightsSection } from '@ainexsuite/ui';
 import { useTodoStore } from '@/lib/store';
+import { Task } from '@/types/models';
 
 interface InsightData {
   productivityTrend: string;
@@ -40,6 +41,35 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  // Calculate Productivity Score
+  const productivityScore = useMemo(() => {
+    if (!tasks || tasks.length === 0) return 0;
+
+    let score = 0;
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    tasks.forEach((task: Task) => {
+      if (task.status === 'done') {
+        const completedAt = new Date(task.updatedAt); // Assuming updatedAt is completion time for completed tasks
+        if (completedAt > sevenDaysAgo) {
+          score += 10;
+          if (task.priority === 'high') score += 5;
+        }
+      }
+      
+      // Penalty for overdue incomplete tasks
+      if (task.status !== 'done' && task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        if (dueDate < now && dueDate.getDate() !== now.getDate()) {
+          score -= 5;
+        }
+      }
+    });
+
+    return Math.max(0, score);
+  }, [tasks]);
 
   // Get recent tasks for analysis
   const recentTasks = tasks
@@ -133,31 +163,47 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
   }, [storeReady, hasEnoughData]);
 
   const sections: AIInsightsSection[] = useMemo(() => {
-    if (!data) return [];
+    const items: AIInsightsSection[] = [];
 
-    return [
-      {
-        icon: <TrendingUp className="h-3.5 w-3.5" />,
-        label: 'Productivity',
-        content: <AIInsightsText>{data.productivityTrend}</AIInsightsText>,
-      },
-      {
-        icon: <Target className="h-3.5 w-3.5" />,
-        label: 'Focus Area',
-        content: <AIInsightsText>{data.focusArea}</AIInsightsText>,
-      },
-      {
-        icon: <Zap className="h-3.5 w-3.5" />,
-        label: 'Tips',
-        content: (
-          <AIInsightsBulletList
-            items={data.recommendations}
-            accentColor={accentColor}
-          />
-        ),
-      },
-    ];
-  }, [data]);
+    // Always show Score if we have data, even if AI failed
+    items.push({
+      icon: <Trophy className="h-3.5 w-3.5" />,
+      label: 'Productivity Score',
+      content: (
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-accent-500">{productivityScore}</span>
+          <span className="text-xs text-muted">points this week</span>
+        </div>
+      ),
+    });
+
+    if (data) {
+      items.push(
+        {
+          icon: <TrendingUp className="h-3.5 w-3.5" />,
+          label: 'Productivity',
+          content: <AIInsightsText>{data.productivityTrend}</AIInsightsText>,
+        },
+        {
+          icon: <Target className="h-3.5 w-3.5" />,
+          label: 'Focus Area',
+          content: <AIInsightsText>{data.focusArea}</AIInsightsText>,
+        },
+        {
+          icon: <Zap className="h-3.5 w-3.5" />,
+          label: 'Tips',
+          content: (
+            <AIInsightsBulletList
+              items={data.recommendations}
+              accentColor={accentColor}
+            />
+          ),
+        }
+      );
+    }
+
+    return items;
+  }, [data, productivityScore]);
 
   const condensedSummary = useMemo(() => {
     if (!data) return undefined;
