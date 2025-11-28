@@ -22,9 +22,7 @@ export async function POST(request: NextRequest) {
     if (!feedbackItems || feedbackItems.length === 0) {
       return NextResponse.json({
         insights: {
-          summary: 'No feedback available to analyze yet.',
-          trends: [],
-          actionItems: []
+          summary: 'No feedback available to analyze yet.'
         }
       });
     }
@@ -47,11 +45,11 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: 'You are an AI assistant analyzing user feedback for a software product suite. Provide concise, actionable insights in JSON format with: summary (2-3 sentences), trends (array of 3-4 key patterns), and actionItems (array of 2-3 specific recommendations).'
+            content: 'You are an AI assistant analyzing user feedback for a software product suite. Provide a single concise paragraph (2-3 sentences) summarizing the key themes and overall sentiment from the feedback.'
           },
           {
             role: 'user',
-            content: `Analyze this recent user feedback and provide insights:\n\n${feedbackSummary}\n\nProvide your analysis in this exact JSON format:\n{\n  "summary": "...",\n  "trends": ["...", "...", "..."],\n  "actionItems": ["...", "...", "..."]\n}`
+            content: `Analyze this recent user feedback and provide a brief summary paragraph:\n\n${feedbackSummary}\n\nProvide your analysis in this exact JSON format:\n{\n  "summary": "Your 2-3 sentence summary here..."\n}`
           }
         ],
         model: 'grok-4-1-fast-non-reasoning',
@@ -83,11 +81,9 @@ export async function POST(request: NextRequest) {
       }
     } catch (parseError) {
       console.error('Failed to parse Grok response:', grokMessage);
-      // Fallback insights
+      // Fallback insights - use the raw response as summary
       insights = {
-        summary: grokMessage.substring(0, 200) || 'Unable to generate insights at this time.',
-        trends: ['Check feedback patterns manually'],
-        actionItems: ['Review individual feedback items']
+        summary: grokMessage.substring(0, 300) || 'Unable to generate insights at this time.'
       };
     }
 

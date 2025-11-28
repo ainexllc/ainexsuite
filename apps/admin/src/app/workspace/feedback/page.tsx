@@ -23,8 +23,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  TrendingUp,
-  Lightbulb,
   Trash2,
   RefreshCw,
   Star
@@ -47,14 +45,12 @@ interface FeedbackDoc {
 
 interface AIInsights {
   summary: string;
-  trends: string[];
-  actionItems: string[];
 }
 
 export default function FeedbackPage() {
   const [feedback, setFeedback] = useState<FeedbackDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'inbox' | 'new' | 'archived'>('inbox');
+  const [filter, setFilter] = useState<'all' | 'new' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -65,6 +61,7 @@ export default function FeedbackPage() {
 
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const fetchInsights = async () => {
     try {
@@ -138,24 +135,6 @@ export default function FeedbackPage() {
     setItemToDelete(id);
   };
 
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-    
-    setIsDeleting(true);
-    try {
-      await deleteDoc(doc(db, 'feedback', itemToDelete));
-      setItemToDelete(null);
-    } catch (error) {
-      console.error('Failed to delete feedback:', error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    setItemToDelete(id);
-  };
-
   const handlePromote = async (id: string, currentPromoted?: boolean) => {
     try {
       await updateDoc(doc(db, 'feedback', id), {
@@ -167,9 +146,10 @@ export default function FeedbackPage() {
   };
 
   const filteredFeedback = feedback.filter(item => {
+    // "all" shows everything except archived
+    if (filter === 'all' && item.status === 'archived') return false;
     if (filter === 'new' && item.status !== 'new') return false;
     if (filter === 'archived' && item.status !== 'archived') return false;
-    if (filter === 'inbox' && item.status === 'archived') return false;
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -186,6 +166,55 @@ export default function FeedbackPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedFeedback = filteredFeedback.slice(startIndex, endIndex);
+
+  const toggleSelect = (id: string) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === filteredFeedback.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(filteredFeedback.map(item => item.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedItems.size > 0) {
+      setItemToDelete('bulk');
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      if (itemToDelete === 'bulk') {
+        // Delete all selected items
+        const deletePromises = Array.from(selectedItems).map(id =>
+          deleteDoc(doc(db, 'feedback', id))
+        );
+        await Promise.all(deletePromises);
+        setSelectedItems(new Set());
+      } else {
+        await deleteDoc(doc(db, 'feedback', itemToDelete));
+      }
+      setItemToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete feedback:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -214,79 +243,40 @@ export default function FeedbackPage() {
       </div>
 
       {/* AI Insights Panel */}
-      <div className="glass-panel rounded-xl p-6 overflow-hidden relative">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <Sparkles className="h-5 w-5" />
+      <div className="glass-panel rounded-xl p-4 overflow-hidden relative">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <div>
-            <h2 className="text-lg font-semibold text-white">Feedback Analysis</h2>
-            <p className="text-xs text-zinc-500">Automated insights from recent feedback</p>
-          </div>
+          {insightsLoading ? (
+            <div className="flex items-center gap-2 text-zinc-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Analyzing feedback...</span>
+            </div>
+          ) : insightsError ? (
+            <p className="text-sm text-red-400">{insightsError}</p>
+          ) : insights ? (
+            <p className="text-sm text-zinc-300 leading-relaxed flex-1">
+              {insights.summary}
+            </p>
+          ) : (
+            <p className="text-sm text-zinc-500">No insights available</p>
+          )}
           <button
             onClick={fetchInsights}
             disabled={insightsLoading}
-            className="ml-auto p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors shrink-0"
             title="Refresh Analysis"
           >
             <RefreshCw className={clsx("h-4 w-4", insightsLoading && "animate-spin")} />
           </button>
         </div>
-
-        {insightsLoading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-zinc-500 mb-3" />
-            <span className="text-sm text-zinc-500">Analyzing patterns...</span>
-          </div>
-        ) : insightsError ? (
-          <div className="text-center py-8 text-red-400 text-sm">
-            {insightsError}
-          </div>
-        ) : insights ? (
-          <div className="space-y-6">
-            <div className="p-4 rounded-lg bg-zinc-900/50 border border-white/5">
-              <p className="text-sm text-zinc-300 leading-relaxed">
-                {insights.summary}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                  <TrendingUp className="h-3 w-3" /> Key Trends
-                </h3>
-                <ul className="space-y-2">
-                  {insights.trends.map((trend, i) => (
-                    <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                      <span className="text-indigo-400 mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-400 block shrink-0" />
-                      <span>{trend}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                  <Lightbulb className="h-3 w-3" /> Action Items
-                </h3>
-                <ul className="space-y-2">
-                  {insights.actionItems.map((item, i) => (
-                    <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                      <span className="text-emerald-400 mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400 block shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </div>
 
       {/* Filters & Search */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="glass-card rounded-lg p-1 flex gap-1 w-fit">
-          {(['inbox', 'new', 'archived'] as const).map((f) => (
+          {(['all', 'new', 'archived'] as const).map((f) => (
             <button
               key={f}
               onClick={() => { setFilter(f); setSelectedItems(new Set()); }}

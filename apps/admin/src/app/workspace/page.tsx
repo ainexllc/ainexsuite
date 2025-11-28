@@ -249,8 +249,6 @@ export default function AdminWorkspacePage() {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [promotedItems, setPromotedItems] = useState<PromotedFeedback[]>([]);
 
-
-  // Better approach: combine fetches or add new effect
   useEffect(() => {
     const fetchPromoted = async () => {
       try {

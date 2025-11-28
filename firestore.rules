@@ -313,7 +313,7 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
       allow create: if isAuthenticated();
       allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
-      allow update: if isAdmin();
+      allow update, delete: if isAdmin();
     }
 
 
