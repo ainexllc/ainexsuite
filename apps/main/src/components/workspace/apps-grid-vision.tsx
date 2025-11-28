@@ -4,7 +4,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Lock } from 'lucide-react';
-import Link from 'next/link';
 
 // Define the App type based on what we have in the page
 export interface VisionApp {
@@ -27,12 +26,12 @@ export function AppsGridVision({ apps }: AppsGridVisionProps) {
     <div className="relative min-h-[400px] rounded-3xl overflow-hidden w-full">
       {/* Background with Atmosphere - mimicking the mockup's style but integrating with the page's dark theme */}
       <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-3xl"></div>
-      
+
       {/* Content Container */}
       <div className="relative z-10 p-8 md:p-12">
         <div className="flex flex-wrap gap-8 justify-center">
           {apps.map((app) => (
-            <Link href={app.url} key={app.slug} className="no-underline">
+            <a href={app.url} key={app.slug} className="no-underline">
               <motion.div 
                 whileHover={{ scale: 1.1, y: -5 }}
                 whileTap={{ scale: 0.95 }}
@@ -65,7 +64,7 @@ export function AppsGridVision({ apps }: AppsGridVisionProps) {
                   {app.name}
                 </span>
               </motion.div>
-            </Link>
+            </a>
           ))}
         </div>
       </div>

@@ -70,8 +70,8 @@ export function TopNav({
                 onClose={() => setProfileOpen(false)}
                 user={user}
                 theme={{
-                  current: theme as "light" | "dark",
-                  toggle: () => setTheme(theme === "dark" ? "light" : "dark"),
+                  current: theme as "light" | "dark" | "system",
+                  setTheme: setTheme,
                 }}
                 menuItems={menuItems}
                 onSignOut={() => signOut()}

@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef, useEffect, type ReactNode } from "react";
-import { Settings, Moon, Sun, RefreshCw, LogOut, Activity } from "lucide-react";
+import { Moon, Sun, Monitor, LogOut } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";
+
+export type ThemeValue = "light" | "dark" | "system";
 
 export type ProfileDropdownProps = {
   /** Whether dropdown is open */
@@ -16,10 +18,10 @@ export type ProfileDropdownProps = {
     email?: string | null;
     photoURL?: string | null;
   } | null;
-  /** Theme configuration (optional) */
+  /** Theme configuration (optional) - supports Light/Dark/System */
   theme?: {
-    current: "light" | "dark";
-    toggle: () => void;
+    current: ThemeValue;
+    setTheme: (theme: ThemeValue) => void;
   };
   /** Menu items configuration */
   menuItems?: Array<{
@@ -143,36 +145,43 @@ export function ProfileDropdown({
           </button>
         ))}
 
-        {/* Theme toggle */}
+        {/* Theme selector - Light/Dark/System */}
         {theme && (
-          <div className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-            <div className="flex items-center gap-3">
+          <div className="px-3 py-2">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
               {theme.current === "dark" ? (
                 <Moon className="h-4 w-4" />
+              ) : theme.current === "system" ? (
+                <Monitor className="h-4 w-4" />
               ) : (
                 <Sun className="h-4 w-4" />
               )}
               <span>Theme</span>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                theme.toggle();
-              }}
-              className={clsx(
-                "relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                theme.current === "dark" ? "bg-muted" : "bg-primary",
-              )}
-              aria-label="Toggle theme"
-            >
-              <span
-                className={clsx(
-                  "inline-block h-4 w-4 transform rounded-full bg-background shadow-sm transition-transform",
-                  theme.current === "dark" ? "translate-x-0.5" : "translate-x-4",
-                )}
-              />
-            </button>
+            <div className="flex gap-1 p-1 bg-muted rounded-lg">
+              {(["light", "dark", "system"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    theme.setTheme(mode);
+                  }}
+                  className={clsx(
+                    "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
+                    theme.current === mode
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label={`Set ${mode} theme`}
+                >
+                  {mode === "light" && <Sun className="h-3 w-3" />}
+                  {mode === "dark" && <Moon className="h-3 w-3" />}
+                  {mode === "system" && <Monitor className="h-3 w-3" />}
+                  <span className="capitalize">{mode}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

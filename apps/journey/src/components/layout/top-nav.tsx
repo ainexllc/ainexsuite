@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@ainexsuite/auth";
+import { useTheme } from "@ainexsuite/theme";
 import { LogoWordmark } from "@/components/branding/logo-wordmark";
 import {
   TopNav as SharedTopNav,
@@ -20,13 +21,14 @@ export function TopNav({
   onOpenAiAssistant,
 }: TopNavProps) {
   const { user, loading: authLoading, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [isProfileOpen, setProfileOpen] = useState(false);
 
   return (
     <SharedTopNav
       logo={<LogoWordmark href="/" iconSize={48} />}
       onMenuClick={onMenuClick}
-      theme="light" // Journey uses light theme
+      theme={theme === "dark" ? "dark" : "light"}
       accentColor="147,51,234" // Purple accent for Journey
       actions={
         <>
@@ -42,6 +44,10 @@ export function TopNav({
                 isOpen={isProfileOpen}
                 onClose={() => setProfileOpen(false)}
                 user={user}
+                theme={{
+                  current: theme as "light" | "dark" | "system",
+                  setTheme: setTheme,
+                }}
                 onSignOut={() => signOut()}
               />
             </div>

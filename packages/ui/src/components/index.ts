@@ -11,6 +11,7 @@ export {
 export {
   ProfileDropdown,
   type ProfileDropdownProps,
+  type ThemeValue,
 } from "./layout/profile-dropdown";
 
 export {

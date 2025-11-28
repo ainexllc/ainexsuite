@@ -6,12 +6,18 @@ import {
   LogOut,
   Zap,
   Moon,
+  Sun,
+  Monitor,
   Bell,
   CreditCard,
   Sparkles
 } from 'lucide-react';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 import { useSystemUpdates } from '../../hooks/use-system-updates';
+import { clsx } from 'clsx';
+
+type ThemeValue = 'light' | 'dark' | 'system';
 
 export interface ProfileSidebarProps {
   isOpen: boolean;
@@ -48,6 +54,7 @@ export function ProfileSidebar({
   onSettingsClick,
 }: ProfileSidebarProps) {
   const { updates, loading: updatesLoading } = useSystemUpdates();
+  const { theme, setTheme } = useTheme();
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -142,19 +149,46 @@ export function ProfileSidebar({
               <p className="text-xs text-white/40">Resets in 12 days</p>
             </div>
 
+            {/* Theme Selector */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Appearance</h4>
+              <div className="flex items-center gap-3 text-white/70 mb-2">
+                {theme === 'dark' ? (
+                  <Moon className="h-4 w-4" />
+                ) : theme === 'system' ? (
+                  <Monitor className="h-4 w-4" />
+                ) : (
+                  <Sun className="h-4 w-4" />
+                )}
+                <span className="text-sm font-medium">Theme</span>
+              </div>
+              <div className="flex gap-1 p-1 bg-white/10 rounded-xl">
+                {(['light', 'dark', 'system'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setTheme(mode)}
+                    className={clsx(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                      theme === mode
+                        ? "bg-white/20 text-white shadow-sm"
+                        : "text-white/50 hover:text-white/80"
+                    )}
+                    aria-label={`Set ${mode} theme`}
+                  >
+                    {mode === 'light' && <Sun className="h-3.5 w-3.5" />}
+                    {mode === 'dark' && <Moon className="h-3.5 w-3.5" />}
+                    {mode === 'system' && <Monitor className="h-3.5 w-3.5" />}
+                    <span className="capitalize">{mode}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Quick Settings */}
             <div className="space-y-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Quick Settings</h4>
               <div className="space-y-1">
-                <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors group">
-                  <div className="flex items-center gap-3 text-white/70 group-hover:text-white">
-                    <Moon className="h-4 w-4" />
-                    <span className="text-sm font-medium">Dark Mode</span>
-                  </div>
-                  <div className="h-5 w-9 rounded-full bg-purple-600 p-1 flex justify-end">
-                    <div className="h-3 w-3 rounded-full bg-white" />
-                  </div>
-                </button>
                 <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors group">
                   <div className="flex items-center gap-3 text-white/70 group-hover:text-white">
                     <Bell className="h-4 w-4" />

@@ -91,7 +91,8 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
       setEntries(fetchedEntries);
       setOnThisDayEntries(onThisDay);
       setLoadingMessage('Loaded successfully!');
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to load journal entries:', err);
       setError('Failed to load journal entries. Please try refreshing the page.');
       toast({
         title: 'Error',
@@ -101,22 +102,27 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
     } finally {
       setLoading(false);
     }
-  }, [user, currentSpaceId, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, currentSpaceId]);
 
   useEffect(() => {
-    if (user) {
-      setLoadingMessage('Loading your journal entries...');
-      // Add timeout to prevent infinite loading
-      const timeoutId = setTimeout(() => {
-        setLoading(false);
-        setEntries([]);
-      }, 10000); // 10 second timeout
-
-      void loadEntries().finally(() => clearTimeout(timeoutId));
-    } else {
+    if (!user?.uid) {
       setLoading(false);
+      return;
     }
-  }, [user, dateFilter, currentSpaceId, loadEntries]);
+
+    setLoadingMessage('Loading your journal entries...');
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setEntries([]);
+    }, 10000); // 10 second timeout
+
+    void loadEntries().finally(() => clearTimeout(timeoutId));
+
+    return () => clearTimeout(timeoutId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, dateFilter, currentSpaceId]);
 
   const filteredEntries = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
