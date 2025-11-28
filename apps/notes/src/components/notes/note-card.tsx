@@ -5,6 +5,7 @@
 import { useMemo, useState } from "react";
 import {
   Archive,
+  Circle,
   Palette,
   Pin,
   PinOff,
@@ -43,7 +44,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
   }, [note.labelIds, labelMap]);
 
   const noteColorConfig = NOTE_COLORS.find((c) => c.id === note.color);
-  const footerClass = noteColorConfig?.footerClass || "bg-white/5";
+  const iconClass = noteColorConfig?.iconClass || "text-zinc-400 dark:text-zinc-500";
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -103,7 +104,13 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     <>
       <article
         className={clsx(
-          "group relative cursor-pointer overflow-hidden rounded-3xl border border-border bg-background/60 backdrop-blur-xl transition-all duration-300 hover:border-border/80 hover:shadow-2xl",
+          // Zinc-First: Solid backgrounds, no muddy transparency
+          "group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-200",
+          // Light: white bg, zinc-200 border | Dark: zinc-900 bg, zinc-800 border
+          "bg-white dark:bg-zinc-900",
+          "border border-zinc-200 dark:border-zinc-800",
+          // Hover: subtle background shift
+          "hover:bg-zinc-50 dark:hover:bg-zinc-800/80",
           viewMode === "list"
             ? "flex items-start gap-4 px-5 py-3"
             : "break-inside-avoid px-6 py-6",
@@ -212,11 +219,9 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             ) : null}
           </div>
 
-          <footer className={clsx(
-            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-3xl",
-            footerClass
-          )}>
+          <footer className="mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-lg bg-zinc-100 dark:bg-zinc-800/80">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+              <Circle className={clsx("h-3.5 w-3.5 fill-current", iconClass)} />
               {note.sharedWithUserIds?.length ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
                   <Users className="h-3 w-3" />
