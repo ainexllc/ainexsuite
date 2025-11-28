@@ -24,7 +24,9 @@ import {
   Palette,
   RefreshCw,
   Settings,
-  ChevronRight
+  ChevronRight,
+  Star,
+  Lightbulb
 } from 'lucide-react';
 import Link from 'next/link';
 import { collection, getCountFromServer } from 'firebase/firestore';
@@ -54,6 +56,14 @@ interface DashboardInsights {
   summary: string;
   highlights: string[];
   recommendations: string[];
+}
+
+interface PromotedFeedback {
+  id: string;
+  message: string;
+  authorEmail?: string;
+  appId: string;
+  promoted: boolean;
 }
 
 // --- Components ---
@@ -237,6 +247,34 @@ export default function AdminWorkspacePage() {
   const [expandedCommits, setExpandedCommits] = useState<Set<string>>(new Set());
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
+  const [promotedItems, setPromotedItems] = useState<PromotedFeedback[]>([]);
+
+  useEffect(() => {
+    const fetchPromoted = async () => {
+      try {
+        const q = collection(db, 'feedback');
+        const snapshot = await getCountFromServer(q); // Re-using import, but need getDocs for data
+        // We need actual data, not just count.
+      } catch (e) {
+        console.error(e);
+      }
+    };
+  }, []);
+
+  // Better approach: combine fetches or add new effect
+  useEffect(() => {
+    const fetchPromoted = async () => {
+      try {
+        const { getDocs, query, where, limit } = await import('firebase/firestore');
+        const q = query(collection(db, 'feedback'), where('promoted', '==', true), limit(5));
+        const snapshot = await getDocs(q);
+        setPromotedItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PromotedFeedback)));
+      } catch (e) {
+        console.error("Error fetching promoted items", e);
+      }
+    };
+    fetchPromoted();
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -387,6 +425,39 @@ export default function AdminWorkspacePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content Column */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Great Ideas / Promoted Feedback */}
+          {promotedItems.length > 0 && (
+            <section className="glass-card rounded-xl p-6 border border-yellow-500/20 bg-yellow-500/5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400">
+                  <Lightbulb className="w-5 h-5" />
+                </div>
+                <h2 className="text-lg font-semibold text-white">Great Ideas</h2>
+                <span className="text-xs font-medium text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
+                  Promoted Feedback
+                </span>
+              </div>
+              
+              <div className="grid gap-3">
+                {promotedItems.map(item => (
+                  <div key={item.id} className="p-4 rounded-lg bg-black/20 border border-white/5 flex gap-4 hover:bg-black/30 transition-colors">
+                    <div className="pt-1">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-zinc-200 leading-relaxed">{item.message}</p>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-zinc-500">
+                        <span className="uppercase tracking-wider font-medium text-zinc-400">{item.appId}</span>
+                        <span>•</span>
+                        <span>{item.authorEmail || 'Anonymous'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* AI Insights */}
           <section className="glass-card rounded-xl p-6 border border-indigo-500/20 relative overflow-hidden">

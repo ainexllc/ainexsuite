@@ -26,7 +26,8 @@ import {
   TrendingUp,
   Lightbulb,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Star
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Loader2 } from 'lucide-react';
@@ -40,6 +41,7 @@ interface FeedbackDoc {
   appId: string;
   path: string;
   status: 'new' | 'read' | 'archived';
+  promoted?: boolean;
   createdAt: Timestamp;
 }
 
@@ -60,6 +62,9 @@ export default function FeedbackPage() {
   const [insights, setInsights] = useState<AIInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [insightsError, setInsightsError] = useState<string | null>(null);
+
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchInsights = async () => {
     try {
@@ -129,16 +134,31 @@ export default function FeedbackPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to permanently delete this feedback item?')) {
-      return;
-    }
+  const handleDelete = (id: string) => {
+    setItemToDelete(id);
+  };
 
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, 'feedback', id));
+      await deleteDoc(doc(db, 'feedback', itemToDelete));
+      setItemToDelete(null);
     } catch (error) {
       console.error('Failed to delete feedback:', error);
-      alert('Failed to delete feedback item. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handlePromote = async (id: string, currentPromoted?: boolean) => {
+    try {
+      await updateDoc(doc(db, 'feedback', id), {
+        promoted: !currentPromoted
+      });
+    } catch (error) {
+      console.error('Failed to toggle promote status:', error);
     }
   };
 
@@ -337,7 +357,19 @@ export default function FeedbackPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-start gap-2">
+                  <button
+                    onClick={() => handlePromote(item.id, item.promoted)}
+                    className={clsx(
+                      "p-2 rounded-lg transition-colors",
+                      item.promoted 
+                        ? "text-yellow-400 bg-yellow-400/10 hover:bg-yellow-400/20" 
+                        : "text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/10"
+                    )}
+                    title={item.promoted ? "Remove from Great Ideas" : "Promote to Great Ideas"}
+                  >
+                    <Star className={clsx("h-4 w-4", item.promoted && "fill-current")} />
+                  </button>
                   {item.status === 'new' && (
                     <button
                       onClick={() => handleStatusUpdate(item.id, 'read')}
@@ -347,7 +379,7 @@ export default function FeedbackPage() {
                       <CheckCircle2 className="h-4 w-4" />
                     </button>
                   )}
-                  {item.status !== 'archived' ? (
+                  {item.status !== 'archived' && (
                     <button
                       onClick={() => handleStatusUpdate(item.id, 'archived')}
                       className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
@@ -355,15 +387,14 @@ export default function FeedbackPage() {
                     >
                       <Archive className="h-4 w-4" />
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
-                      title="Delete Permanently"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
                   )}
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="Delete Permanently"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -393,6 +424,54 @@ export default function FeedbackPage() {
             >
               <ChevronRight className="h-4 w-4" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {itemToDelete && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="glass-card max-w-md w-full p-6 rounded-xl shadow-2xl border-red-500/20 scale-100 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 rounded-full bg-red-500/10 text-red-500">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Delete Feedback</h3>
+                <p className="text-sm text-zinc-400">This action cannot be undone.</p>
+              </div>
+            </div>
+            
+            <p className="text-zinc-300 text-sm mb-6 leading-relaxed">
+              Are you sure you want to permanently delete this feedback item? It will be removed from all views and analytics.
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setItemToDelete(null)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/5 transition-colors"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 shadow-lg shadow-red-900/20"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    Delete Permanently
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
