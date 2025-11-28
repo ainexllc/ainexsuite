@@ -269,7 +269,7 @@ export function AppShell({ children }: AppShellProps) {
                   </header>
 
                   <div className="flex-1 space-y-3 overflow-y-auto rounded-2xl bg-surface-muted/40 p-4">
-                    <div className="rounded-xl bg-white/60 px-4 py-3 shadow-sm dark:bg-surface-elevated/60">
+                    <div className="rounded-xl bg-foreground/60 px-4 py-3 shadow-sm dark:bg-surface-elevated/60">
                       <p className="text-sm font-medium text-ink-700">
                         💡 Suggested prompts
                       </p>
@@ -292,11 +292,11 @@ export function AppShell({ children }: AppShellProps) {
                       <input
                         type="text"
                         placeholder="Ask me anything..."
-                        className="flex-1 rounded-xl border border-outline-subtle bg-white px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none dark:bg-surface-elevated"
+                        className="flex-1 rounded-xl border border-outline-subtle bg-foreground px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none dark:bg-surface-elevated"
                       />
                       <button
                         type="button"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-white shadow-sm transition hover:bg-accent-400"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500 text-foreground shadow-sm transition hover:bg-accent-400"
                         aria-label="Send message"
                       >
                         <Send className="h-4 w-4" />

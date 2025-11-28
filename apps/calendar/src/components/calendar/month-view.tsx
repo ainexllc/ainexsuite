@@ -87,11 +87,11 @@ export function MonthView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface-elevated/5 rounded-xl border border-white/10 overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-elevated/5 rounded-xl border border-border overflow-hidden">
       {/* Weekday Headers */}
-      <div className="grid grid-cols-7 border-b border-white/10 bg-surface-elevated/10">
+      <div className="grid grid-cols-7 border-b border-border bg-surface-elevated/10">
         {weekDays.map((day) => (
-          <div key={day} className="py-3 text-center text-sm font-semibold text-white/60 uppercase tracking-wider">
+          <div key={day} className="py-3 text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             {day}
           </div>
         ))}
@@ -111,9 +111,9 @@ export function MonthView({
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, day)}
               className={cn(
-                "min-h-[100px] p-2 border-b border-r border-white/10 transition-colors hover:bg-white/5 flex flex-col gap-1",
-                !isCurrentMonth && "bg-black/20 text-white/30",
-                isCurrentMonth && "bg-transparent text-white",
+                "min-h-[100px] p-2 border-b border-r border-border transition-colors hover:bg-foreground/5 flex flex-col gap-1",
+                !isCurrentMonth && "bg-background/20 text-muted-foreground/60",
+                isCurrentMonth && "bg-transparent text-foreground",
                 // Remove right border for last column
                 (dayIdx + 1) % 7 === 0 && "border-r-0"
               )}
@@ -122,7 +122,7 @@ export function MonthView({
                 <span
                   className={cn(
                     "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full pointer-events-none",
-                    isDayToday && "bg-accent-500 text-white",
+                    isDayToday && "bg-accent-500 text-foreground",
                     !isDayToday && "text-inherit"
                   )}
                 >

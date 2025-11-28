@@ -89,7 +89,7 @@ export function GlassModal({
     >
       {/* Backdrop with blur */}
       <div
-        className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+        className="fixed inset-0 bg-background/40 dark:bg-background/60 backdrop-blur-md animate-in fade-in duration-300"
         onClick={closeOnBackdropClick ? onClose : undefined}
         aria-hidden="true"
       />

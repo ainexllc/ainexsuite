@@ -100,7 +100,7 @@ export function AppActivationBox({
       <div className="absolute inset-0 -translate-y-6 rounded-3xl bg-gradient-to-tr from-[#f97316]/15 via-transparent to-[#6366f1]/20 blur-2xl" />
 
       {/* Card */}
-      <div className="relative w-full overflow-hidden rounded-3xl border border-[#f97316]/20 bg-[#050505]/90 p-8 text-white shadow-[0_25px_80px_-25px_rgba(249,115,22,0.35)] backdrop-blur-xl">
+      <div className="relative w-full overflow-hidden rounded-3xl border border-[#f97316]/20 bg-background/90 p-8 text-foreground shadow-[0_25px_80px_-25px_rgba(249,115,22,0.35)] backdrop-blur-xl">
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div className="space-y-2">
@@ -110,10 +110,10 @@ export function AppActivationBox({
               </svg>
               SSO Account
             </span>
-            <h2 className="text-3xl font-semibold text-white">
+            <h2 className="text-3xl font-semibold text-foreground">
               Activate {appDisplayName}?
             </h2>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-muted-foreground">
               Use your AiNex account to access {appDisplayName}
             </p>
           </div>
@@ -124,7 +124,7 @@ export function AppActivationBox({
 
         {/* User Info */}
         {user && (
-          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-border bg-foreground/5 p-4">
             {user.photoURL ? (
               <img
                 src={user.photoURL}
@@ -132,15 +132,15 @@ export function AppActivationBox({
                 className="h-12 w-12 rounded-full"
               />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f97316] text-white font-semibold">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f97316] text-foreground font-semibold">
                 {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-white truncate">
+              <div className="font-medium text-foreground truncate">
                 {user.displayName || 'User'}
               </div>
-              <div className="text-sm text-white/60 truncate">{user.email}</div>
+              <div className="text-sm text-muted-foreground truncate">{user.email}</div>
             </div>
           </div>
         )}
@@ -157,7 +157,7 @@ export function AppActivationBox({
           <button
             onClick={handleActivate}
             disabled={activating}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#f97316] text-white font-semibold hover:bg-[#ea6a0f] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#f97316] text-foreground font-semibold hover:bg-[#ea6a0f] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {activating ? (
               <>
@@ -180,14 +180,14 @@ export function AppActivationBox({
           <button
             onClick={handleDifferentEmail}
             disabled={activating}
-            className="w-full rounded-2xl border border-white/15 bg-transparent px-5 py-3 text-sm font-medium text-white/70 transition hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-2xl border border-border bg-transparent px-5 py-3 text-sm font-medium text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
           >
             Use a different email
           </button>
         </div>
 
         {/* Info Text */}
-        <p className="mt-4 text-xs text-white/50 text-center">
+        <p className="mt-4 text-xs text-muted-foreground text-center">
           By activating, you consent to using this app with your AiNex account
         </p>
       </div>

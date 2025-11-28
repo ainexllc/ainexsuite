@@ -24,7 +24,7 @@ function DocumentsNode({ data, selected }: NodeProps<DocumentsNodeType>) {
     background: nodeColor,
     width: 8,
     height: 8,
-    border: '2px solid #fff',
+    border: '2px solid var(--foreground)',
     borderRadius: '50%',
     zIndex: 10,
     opacity: isHovered || selected ? 1 : 0.4,
@@ -57,11 +57,11 @@ function DocumentsNode({ data, selected }: NodeProps<DocumentsNodeType>) {
         {[0, 1, 2].map((layer) => (
           <div
             key={layer}
-            className="absolute inset-0 rounded-lg border bg-white/5"
+            className="absolute inset-0 rounded-lg border bg-foreground/5"
             style={{
               transform: `translate(${layer * 6}px, ${layer * -6}px)`,
-              borderColor: layer === 2 ? (selected ? nodeColor : `${nodeColor}50`) : 'rgba(255,255,255,0.1)',
-              backgroundColor: layer === 2 ? nodeBgColor : 'rgba(0,0,0,0.2)',
+              borderColor: layer === 2 ? (selected ? nodeColor : `${nodeColor}50`) : 'rgba(var(--border-rgb, 255, 255, 255), 0.1)',
+              backgroundColor: layer === 2 ? nodeBgColor : 'rgba(var(--background-rgb, 0, 0, 0), 0.2)',
               boxShadow: layer === 2 && selected ? `0 0 0 2px ${nodeColor}40` : 'none',
             }}
           >
@@ -70,7 +70,7 @@ function DocumentsNode({ data, selected }: NodeProps<DocumentsNodeType>) {
                 {[1, 2, 3].map((line) => (
                   <div
                     key={line}
-                    className="h-2 rounded bg-white/10"
+                    className="h-2 rounded bg-foreground/10"
                     style={{ width: `${60 + line * 10}%` }}
                   />
                 ))}
@@ -89,11 +89,11 @@ function DocumentsNode({ data, selected }: NodeProps<DocumentsNodeType>) {
               onBlur={stopEditing}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full rounded bg-black/40 px-2 py-1 text-center text-white outline-none"
+              className="w-full rounded bg-background/40 px-2 py-1 text-center text-foreground outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <p className="rounded bg-black/30 px-3 py-1 text-center text-sm text-white">
+            <p className="rounded bg-background/30 px-3 py-1 text-center text-sm text-foreground">
               {label}
             </p>
           )}

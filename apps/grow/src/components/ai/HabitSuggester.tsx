@@ -277,22 +277,22 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-xl bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+      <div className="w-full max-w-xl bg-foreground border border-border rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-white" />
+              <Sparkles className="h-4 w-4 text-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">AI Habit Suggester</h2>
-              <p className="text-xs text-white/50">Get personalized habit recommendations</p>
+              <h2 className="text-lg font-semibold text-foreground">AI Habit Suggester</h2>
+              <p className="text-xs text-muted-foreground">Get personalized habit recommendations</p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -303,7 +303,7 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
           {step === 'goals' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                   <Target className="h-4 w-4 text-indigo-400" />
                   What do you want to improve?
                 </h3>
@@ -315,8 +315,8 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
                       className={cn(
                         'flex items-center gap-2 p-3 rounded-xl border text-left transition-all',
                         selectedGoals.includes(goal.id)
-                          ? 'bg-indigo-500/20 border-indigo-500/50 text-white'
-                          : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
+                          ? 'bg-indigo-500/20 border-indigo-500/50 text-foreground'
+                          : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/10 hover:text-foreground'
                       )}
                     >
                       <span className="text-xl">{goal.icon}</span>
@@ -327,7 +327,7 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
               </div>
 
               <div>
-                <label className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+                <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                   <Lightbulb className="h-4 w-4 text-yellow-400" />
                   Or describe your own goal
                 </label>
@@ -336,7 +336,7 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
                   value={customGoal}
                   onChange={(e) => setCustomGoal(e.target.value)}
                   placeholder="e.g., I want to learn guitar, sleep better..."
-                  className="w-full mt-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  className="w-full mt-2 px-4 py-3 rounded-xl bg-foreground/5 border border-border text-foreground placeholder-foreground/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                 />
               </div>
 
@@ -349,7 +349,7 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
           {step === 'suggestions' && (
             <div className="space-y-3">
               {suggestions.length === 0 ? (
-                <p className="text-center text-white/50 py-8">No suggestions available</p>
+                <p className="text-center text-muted-foreground py-8">No suggestions available</p>
               ) : (
                 suggestions.map((suggestion, index) => {
                   const isAdded = addedHabits.has(suggestion.title);
@@ -360,20 +360,20 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
                         'p-4 rounded-xl border transition-all',
                         isAdded
                           ? 'bg-emerald-500/10 border-emerald-500/30'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                          : 'bg-foreground/5 border-border hover:bg-foreground/10'
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-sm font-medium text-white truncate">
+                            <h4 className="text-sm font-medium text-foreground truncate">
                               {suggestion.title}
                             </h4>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 flex-shrink-0">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-foreground/10 text-muted-foreground flex-shrink-0">
                               {suggestion.category}
                             </span>
                           </div>
-                          <p className="text-xs text-white/50 mb-2">{suggestion.description}</p>
+                          <p className="text-xs text-muted-foreground mb-2">{suggestion.description}</p>
                           <p className="text-xs text-indigo-300/70 italic">
                             💡 {suggestion.tip}
                           </p>
@@ -407,10 +407,10 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-white/10 bg-white/5 flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-t border-border bg-foreground/5 flex-shrink-0">
           {step === 'goals' ? (
             <>
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-foreground/40">
                 {selectedGoals.length} goal{selectedGoals.length !== 1 ? 's' : ''} selected
               </p>
               <button
@@ -419,8 +419,8 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
                 className={cn(
                   'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all',
                   !isLoading && (selectedGoals.length > 0 || customGoal.trim())
-                    ? 'bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white shadow-lg shadow-purple-500/20'
-                    : 'bg-white/10 text-white/30 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-foreground shadow-lg shadow-purple-500/20'
+                    : 'bg-foreground/10 text-foreground/30 cursor-not-allowed'
                 )}
               >
                 {isLoading ? (
@@ -440,14 +440,14 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
             <>
               <button
                 onClick={handleBack}
-                className="flex items-center gap-1 px-4 py-2 text-sm text-white/60 hover:text-white transition-colors"
+                className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <RefreshCw className="h-4 w-4" />
                 Try Different Goals
               </button>
               <button
                 onClick={handleClose}
-                className="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition-all"
+                className="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-foreground text-sm font-medium transition-all"
               >
                 Done
               </button>

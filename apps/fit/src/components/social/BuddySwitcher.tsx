@@ -51,28 +51,28 @@ export function BuddySwitcher() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors w-full"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-foreground/10 transition-colors w-full"
       >
         <div className="h-8 w-8 rounded-md bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white">
           {currentSpace ? getIcon(currentSpace.type) : <User className="h-4 w-4" />}
         </div>
         <div className="flex-1 text-left">
-          <p className="text-sm font-medium text-white leading-none">
+          <p className="text-sm font-medium text-foreground leading-none">
             {currentSpace?.name || 'My Workouts'}
           </p>
-          <p className="text-xs text-white/50 capitalize">
+          <p className="text-xs text-muted-foreground capitalize">
             {currentSpace?.type || 'Personal'}
           </p>
         </div>
-        <ChevronDown className="h-4 w-4 text-white/50" />
+        <ChevronDown className="h-4 w-4 text-muted-foreground" />
       </button>
 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 w-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden">
+          <div className="absolute top-full left-0 w-full mt-2 bg-background/95 border border-border rounded-xl shadow-xl z-20 overflow-hidden">
             <div className="p-1">
-              <div className="px-2 py-1.5 text-xs font-medium text-white/40 uppercase">
+              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase">
                 Workout Spaces
               </div>
               {spaces.map((space: FitSpace) => (
@@ -83,9 +83,9 @@ export function BuddySwitcher() {
                     setIsOpen(false);
                   }}
                   className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm transition-colors ${
-                    currentSpaceId === space.id 
-                      ? 'bg-white/10 text-white' 
-                      : 'text-white/70 hover:bg-white/5 hover:text-white'
+                    currentSpaceId === space.id
+                      ? 'bg-foreground/10 text-foreground'
+                      : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
                   }`}
                 >
                   {getIcon(space.type)}
@@ -93,11 +93,11 @@ export function BuddySwitcher() {
                 </button>
               ))}
             </div>
-            
-            <div className="border-t border-white/10 p-1">
+
+            <div className="border-t border-border p-1">
               <button
                 onClick={handleCreateSpace}
-                className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-orange-400 hover:bg-white/5 transition-colors"
+                className="flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-orange-400 hover:bg-foreground/5 transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 Create New Space

@@ -38,12 +38,12 @@ function PaywallModal({
   if (!isBlocked) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="mx-4 max-w-md rounded-xl bg-white p-8 shadow-2xl dark:bg-gray-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+      <div className="mx-4 max-w-md rounded-xl bg-background p-8 shadow-2xl border border-border">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
             <svg
-              className="h-8 w-8 text-orange-600 dark:text-orange-400"
+              className="h-8 w-8 text-orange-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -56,49 +56,49 @@ function PaywallModal({
               />
             </svg>
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
             Subscription Required
           </h2>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-muted-foreground">
             Your trial has expired. Upgrade to continue using {appName}.
           </p>
         </div>
 
-        <div className="mb-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-700/50">
+        <div className="mb-6 rounded-lg bg-muted p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Current Tier:</span>
-            <span className="font-semibold capitalize text-gray-900 dark:text-white">
+            <span className="text-muted-foreground">Current Tier:</span>
+            <span className="font-semibold capitalize text-foreground">
               {tier}
             </span>
           </div>
           {daysRemaining > 0 ? (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Trial Days Left:</span>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="text-muted-foreground">Trial Days Left:</span>
+              <span className="font-semibold text-foreground">
                 {daysRemaining}
               </span>
             </div>
           ) : (
-            <div className="text-sm text-red-600 dark:text-red-400">Trial Expired</div>
+            <div className="text-sm text-red-600">Trial Expired</div>
           )}
         </div>
 
         <div className="space-y-3">
           <button
             onClick={onUpgrade}
-            className="w-full rounded-lg bg-orange-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600"
+            className="w-full rounded-lg bg-orange-600 px-4 py-3 font-semibold text-foreground transition-colors hover:bg-orange-700"
           >
             Upgrade to Pro
           </button>
           <button
             onClick={() => window.location.href = '/'}
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="w-full rounded-lg border border-border px-4 py-3 font-semibold text-foreground transition-colors hover:bg-muted"
           >
             Back to Dashboard
           </button>
         </div>
 
-        <p className="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-4 text-center text-xs text-muted-foreground">
           Questions? Contact support@ainexsuite.com
         </p>
       </div>
@@ -113,8 +113,8 @@ function LoadingState() {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-orange-200 border-t-orange-600 dark:border-orange-900 dark:border-t-orange-400" />
-        <p className="text-gray-600 dark:text-gray-400">Checking subscription...</p>
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-orange-200 border-t-orange-600" />
+        <p className="text-muted-foreground">Checking subscription...</p>
       </div>
     </div>
   );

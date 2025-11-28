@@ -58,19 +58,19 @@ export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-              
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/90 text-black text-[10px] font-bold uppercase tracking-wider">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/90 text-background text-[10px] font-bold uppercase tracking-wider">
                     <Sparkles className="h-3 w-3" />
                     {yearsAgo} {yearsAgo === 1 ? 'Year' : 'Years'} Ago
                   </span>
-                  <span className="text-xs text-white/80 font-medium">
+                  <span className="text-xs text-foreground/80 font-medium">
                     {new Date(moment.date).getFullYear()}
                   </span>
                 </div>
-                <h4 className="text-white font-medium truncate">{moment.title || moment.caption}</h4>
+                <h4 className="text-foreground font-medium truncate">{moment.title || moment.caption}</h4>
               </div>
             </div>
           );

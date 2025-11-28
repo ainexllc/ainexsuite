@@ -57,17 +57,17 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#121212] flex flex-col items-center justify-center overflow-hidden perspective-1000">
+    <div className="fixed inset-0 z-[100] bg-surface-base flex flex-col items-center justify-center overflow-hidden perspective-1000">
       {/* Controls Header */}
-      <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
-        <div className="text-white font-serif italic text-xl">
+      <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-center bg-gradient-to-b from-background/50 to-transparent">
+        <div className="text-foreground font-serif italic text-xl">
           Memory Book
         </div>
         <div className="flex gap-4">
-          <button onClick={toggleFullscreen} className="text-white/70 hover:text-white transition-colors">
+          <button onClick={toggleFullscreen} className="text-foreground/70 hover:text-foreground transition-colors">
             {isFullscreen ? <Minimize2 className="h-6 w-6" /> : <Maximize2 className="h-6 w-6" />}
           </button>
-          <button onClick={onClose} className="text-white/70 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-foreground/70 hover:text-foreground transition-colors">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -78,14 +78,14 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
         <div className="relative w-full h-full flex items-center justify-center transform-style-3d transition-transform duration-700">
           
           {/* Left Click Area */}
-          <div 
-            className="absolute left-0 top-0 bottom-0 w-1/2 z-50 cursor-w-resize hover:bg-white/5 transition-colors"
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1/2 z-50 cursor-w-resize hover:bg-foreground/5 transition-colors"
             onClick={handlePrev}
           />
-          
+
           {/* Right Click Area */}
-          <div 
-            className="absolute right-0 top-0 bottom-0 w-1/2 z-50 cursor-e-resize hover:bg-white/5 transition-colors"
+          <div
+            className="absolute right-0 top-0 bottom-0 w-1/2 z-50 cursor-e-resize hover:bg-foreground/5 transition-colors"
             onClick={handleNext}
           />
 
@@ -108,7 +108,7 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
             return (
               <div
                 key={moment.id}
-                className={`absolute top-[5%] bottom-[5%] w-[45%] bg-white rounded-r-lg shadow-2xl overflow-hidden origin-left transition-all duration-700 ease-in-out border-l border-gray-300`}
+                className={`absolute top-[5%] bottom-[5%] w-[45%] bg-foreground rounded-r-lg shadow-2xl overflow-hidden origin-left transition-all duration-700 ease-in-out border-l border-border`}
                 style={{
                   left: '50%',
                   zIndex: isFlipped ? index : totalPages - index,
@@ -120,7 +120,7 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
               >
                 {/* Front Face (Image + Info) */}
                 <div className="absolute inset-0 bg-[#f5f5f0] flex flex-col">
-                  <div className="relative flex-1 m-4 border-4 border-white shadow-inner bg-gray-100 overflow-hidden">
+                  <div className="relative flex-1 m-4 border-4 border-foreground shadow-inner bg-gray-100 overflow-hidden">
                     <Image
                       src={moment.photoUrl}
                       alt={moment.title}
@@ -167,29 +167,29 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
           
           {/* Simple instruction if empty */}
           {moments.length === 0 && (
-            <div className="text-white/50">No moments to display</div>
+            <div className="text-muted-foreground">No moments to display</div>
           )}
         </div>
       </div>
       
       {/* Navigation Bar */}
       <div className="absolute bottom-8 flex items-center gap-8 z-50">
-        <button 
+        <button
           onClick={handlePrev}
           disabled={currentPage === 0}
-          className="p-4 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white transition-all backdrop-blur-sm"
+          className="p-4 rounded-full bg-foreground/10 hover:bg-foreground/20 disabled:opacity-30 text-foreground transition-all backdrop-blur-sm"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
-        
-        <div className="text-white/50 font-mono">
+
+        <div className="text-muted-foreground font-mono">
           {currentPage + 1} / {totalPages}
         </div>
-        
-        <button 
+
+        <button
           onClick={handleNext}
           disabled={currentPage === totalPages - 1}
-          className="p-4 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white transition-all backdrop-blur-sm"
+          className="p-4 rounded-full bg-foreground/10 hover:bg-foreground/20 disabled:opacity-30 text-foreground transition-all backdrop-blur-sm"
         >
           <ChevronRight className="h-6 w-6" />
         </button>

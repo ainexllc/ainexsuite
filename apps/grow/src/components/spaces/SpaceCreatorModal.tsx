@@ -147,23 +147,23 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div
-        className="w-full max-w-lg bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-lg bg-foreground border border-border rounded-2xl shadow-2xl overflow-hidden"
         role="dialog"
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-indigo-400" />
-            <h2 id="modal-title" className="text-lg font-semibold text-white">
+            <h2 id="modal-title" className="text-lg font-semibold text-foreground">
               {step === 'type' ? 'Create New Space' : 'Name Your Space'}
             </h2>
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -174,7 +174,7 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
         <div className="p-4">
           {step === 'type' ? (
             <div className="space-y-3">
-              <p className="text-sm text-white/60 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Choose how you want to track your habits:
               </p>
 
@@ -184,7 +184,7 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                   <button
                     key={spaceType.type}
                     onClick={() => handleSelectType(spaceType.type)}
-                    className="w-full p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all text-left group"
+                    className="w-full p-4 rounded-xl border border-border bg-foreground/5 hover:bg-foreground/10 hover:border-border transition-all text-left group"
                   >
                     <div className="flex items-start gap-4">
                       <div
@@ -193,20 +193,20 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                           spaceType.color
                         )}
                       >
-                        <Icon className="h-6 w-6 text-white" />
+                        <Icon className="h-6 w-6 text-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-medium text-white group-hover:text-white">
+                        <h3 className="text-base font-medium text-foreground group-hover:text-foreground">
                           {spaceType.title}
                         </h3>
-                        <p className="text-sm text-white/50 mt-0.5">
+                        <p className="text-sm text-muted-foreground mt-0.5">
                           {spaceType.description}
                         </p>
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {spaceType.features.map((feature) => (
                             <span
                               key={feature}
-                              className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/60"
+                              className="text-[10px] px-2 py-0.5 rounded-full bg-foreground/10 text-muted-foreground"
                             >
                               {feature}
                             </span>
@@ -222,7 +222,7 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
             <div className="space-y-4">
               {/* Selected type preview */}
               {selectedType && (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-foreground/5 border border-border">
                   {(() => {
                     const typeInfo = spaceTypes.find((t) => t.type === selectedType);
                     if (!typeInfo) return null;
@@ -235,11 +235,11 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                             typeInfo.color
                           )}
                         >
-                          <Icon className="h-5 w-5 text-white" />
+                          <Icon className="h-5 w-5 text-foreground" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">{typeInfo.title}</p>
-                          <p className="text-xs text-white/50">{typeInfo.description}</p>
+                          <p className="text-sm font-medium text-foreground">{typeInfo.title}</p>
+                          <p className="text-xs text-muted-foreground">{typeInfo.description}</p>
                         </div>
                       </>
                     );
@@ -251,7 +251,7 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
               <div>
                 <label
                   htmlFor="space-name"
-                  className="block text-sm font-medium text-white/70 mb-2"
+                  className="block text-sm font-medium text-muted-foreground mb-2"
                 >
                   Space Name
                 </label>
@@ -263,9 +263,9 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                   placeholder="Enter a name..."
                   maxLength={50}
                   autoFocus
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
+                  className="w-full px-4 py-3 rounded-xl bg-foreground/5 border border-border text-foreground placeholder-foreground/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
                 />
-                <p className="text-xs text-white/30 mt-1.5">
+                <p className="text-xs text-foreground/30 mt-1.5">
                   {spaceName.length}/50 characters
                 </p>
               </div>
@@ -290,12 +290,12 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-white/10 bg-white/5">
+        <div className="flex items-center justify-between p-4 border-t border-border bg-foreground/5">
           {step === 'details' ? (
             <>
               <button
                 onClick={handleBack}
-                className="px-4 py-2 text-sm text-white/60 hover:text-white transition-colors"
+                className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Back
               </button>
@@ -305,13 +305,13 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                 className={cn(
                   'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all',
                   spaceName.trim() && !isCreating
-                    ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                    : 'bg-white/10 text-white/30 cursor-not-allowed'
+                    ? 'bg-indigo-500 hover:bg-indigo-600 text-foreground shadow-lg shadow-indigo-500/20'
+                    : 'bg-foreground/10 text-foreground/30 cursor-not-allowed'
                 )}
               >
                 {isCreating ? (
                   <>
-                    <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="h-4 w-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
                     Creating...
                   </>
                 ) : (
@@ -324,7 +324,7 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
             </>
           ) : (
             <div className="w-full text-center">
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-foreground/40">
                 Select a space type to continue
               </p>
             </div>

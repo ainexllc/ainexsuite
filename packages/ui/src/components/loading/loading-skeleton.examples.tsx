@@ -97,7 +97,7 @@ export function LoadingSkeletonExamples() {
         {/* Profile Card */}
         <div className="mb-6">
           <p className="mb-2 text-sm text-ink-600">Profile Card</p>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div className="rounded-2xl border border-border bg-surface-elevated/60 p-6">
             <div className="flex items-center gap-4">
               <LoadingSkeleton variant="avatar" width={64} height={64} />
               <div className="flex-1 space-y-3">
@@ -111,7 +111,7 @@ export function LoadingSkeletonExamples() {
         {/* Article Preview */}
         <div className="mb-6">
           <p className="mb-2 text-sm text-ink-600">Article Preview</p>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div className="rounded-2xl border border-border bg-surface-elevated/60 p-6">
             <LoadingSkeleton variant="rect" height="200px" className="mb-4" />
             <LoadingSkeleton variant="text" width="80%" className="mb-3" />
             <LoadingSkeleton variant="text" lines={3} />
@@ -123,7 +123,7 @@ export function LoadingSkeletonExamples() {
           <p className="mb-2 text-sm text-ink-600">Comment List</p>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div key={i} className="rounded-2xl border border-border bg-surface-elevated/60 p-4">
                 <div className="flex gap-3">
                   <LoadingSkeleton variant="avatar" width={40} height={40} />
                   <div className="flex-1 space-y-2">
@@ -179,7 +179,7 @@ export function LoadingSkeletonExamples() {
 
 export function ProfileCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div className="rounded-2xl border border-border bg-surface-elevated/60 p-6">
       <div className="flex items-center gap-4">
         <LoadingSkeleton variant="avatar" width={64} height={64} />
         <div className="flex-1 space-y-3">
@@ -197,7 +197,7 @@ export function ProfileCardSkeleton() {
 
 export function BlogPostSkeleton() {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <article className="rounded-2xl border border-border bg-surface-elevated/60 p-6">
       {/* Featured Image */}
       <LoadingSkeleton variant="card" height="300px" className="mb-6" />
 
@@ -221,7 +221,7 @@ export function DashboardCardsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <div key={i} className="rounded-2xl border border-border bg-surface-elevated/60 p-6">
           <div className="mb-4 flex items-center justify-between">
             <LoadingSkeleton variant="text" width="100px" />
             <LoadingSkeleton variant="circle" width={40} height={40} />
@@ -238,7 +238,7 @@ export function TableRowsSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 rounded-lg border border-white/10 bg-white/5 p-4">
+        <div key={i} className="flex items-center gap-4 rounded-lg border border-border bg-surface-elevated/60 p-4">
           <LoadingSkeleton variant="circle" width={40} height={40} />
           <LoadingSkeleton variant="text" width="30%" />
           <LoadingSkeleton variant="text" width="20%" />

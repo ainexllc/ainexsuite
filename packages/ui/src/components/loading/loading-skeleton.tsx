@@ -107,7 +107,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, LoadingSkeletonP
     const finalHeight = height !== undefined ? (typeof height === 'number' ? `${height}px` : height) : defaults.height;
 
     const baseStyles = cn(
-      'bg-white/10 backdrop-blur-sm',
+      'bg-foreground/10 backdrop-blur-sm',
       animate && 'animate-pulse',
       'relative overflow-hidden',
       variantStyles[variant],
@@ -137,7 +137,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, LoadingSkeletonP
             >
               {animate && (
                 <div
-                  className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-foreground/20 to-transparent"
                   style={{
                     animation: 'shimmer 2s infinite',
                   }}
@@ -167,7 +167,7 @@ export const LoadingSkeleton = React.forwardRef<HTMLDivElement, LoadingSkeletonP
       >
         {animate && (
           <div
-            className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-foreground/20 to-transparent"
             style={{
               animation: 'shimmer 2s infinite',
             }}

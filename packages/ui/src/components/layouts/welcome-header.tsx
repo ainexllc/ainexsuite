@@ -74,10 +74,10 @@ export const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({
 
   return (
     <div className={`mb-12 ${className}`}>
-      <h2 className="text-3xl font-bold text-white mb-2">
+      <h2 className="text-3xl font-bold text-foreground mb-2">
         Welcome back, {firstName}! {emoji}
       </h2>
-      <p className="text-lg text-white/70">
+      <p className="text-lg text-muted-foreground">
         {subtitle || defaultSubtitle}
       </p>
     </div>

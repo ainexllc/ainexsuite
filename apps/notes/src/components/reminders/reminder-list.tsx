@@ -154,7 +154,7 @@ export function ReminderList() {
             return (
               <li
                 key={reminder.id}
-                className="rounded-3xl border border-outline-subtle/70 bg-white/80 p-4 shadow-sm"
+                className="rounded-3xl border border-outline-subtle/70 bg-foreground/80 p-4 shadow-sm"
               >
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>

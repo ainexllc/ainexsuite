@@ -216,13 +216,13 @@ export function AlarmClockTile({
               value={alarmTime}
               onChange={(e) => setAlarmTime(e.target.value)}
               disabled={isAlarmSet}
-              className="w-full bg-white/10 rounded-lg px-3 py-2 text-center text-lg font-mono text-white focus:outline-none focus:ring-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-center text-lg font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
 
             {/* Time Until Alarm */}
             {isAlarmSet && timeUntilAlarm && (
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-xs text-white/60">
+                <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
                   <span>{isSnoozed ? 'Snoozed: ' : 'Rings '}{timeUntilAlarm}</span>
                 </div>
@@ -239,7 +239,7 @@ export function AlarmClockTile({
                 if (sound) setSelectedSound(sound);
               }}
               disabled={isAlarmSet}
-              className="w-full bg-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {ALARM_SOUNDS.map((sound) => (
                 <option key={sound.id} value={sound.id}>
@@ -278,7 +278,7 @@ export function AlarmClockTile({
                 playAlarmSound();
                 setTimeout(stopAlarmSound, 1000);
               }}
-              className="text-xs text-white/40 hover:text-white/60 transition-colors flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-foreground/60 transition-colors flex items-center gap-1"
             >
               <Volume2 className="w-3 h-3" />
               Test Sound
@@ -310,10 +310,10 @@ export function AlarmClockTile({
 
           {/* Alarm Message */}
           <div className="relative text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">
+            <h2 className="text-3xl font-bold text-foreground mb-2">
               Alarm!
             </h2>
-            <p className="text-white/70 text-lg font-medium">
+            <p className="text-foreground/70 text-lg font-medium">
               {alarmTime}
             </p>
             {isSnoozed && (
@@ -333,7 +333,7 @@ export function AlarmClockTile({
             </button>
             <button
               onClick={handleSnooze}
-              className="w-full py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-lg transition-all border border-white/20 hover:scale-105 active:scale-95"
+              className="w-full py-4 rounded-xl bg-foreground/10 hover:bg-foreground/20 text-foreground font-medium text-lg transition-all border border-border hover:scale-105 active:scale-95"
             >
               Snooze (5 min)
             </button>

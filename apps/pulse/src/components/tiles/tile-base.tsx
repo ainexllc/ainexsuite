@@ -41,30 +41,30 @@ export function TileBase({
   };
 
   return (
-    <div 
+    <div
       draggable={isDraggable}
       onDragStart={handleDragStart}
       onTouchStart={handleTouchStart}
-      className={`group relative bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm select-none touch-none flex flex-col h-full ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
+      className={`group relative bg-foreground/5 hover:bg-foreground/10 border border-border rounded-xl p-4 transition-all duration-200 backdrop-blur-sm select-none touch-none flex flex-col h-full ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
     >
       <div className="flex items-center justify-between mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-2">
           {isDraggable && <GripVertical className="w-3 h-3" />}
-          <span className="text-xs font-medium uppercase tracking-wider text-white/70">{title}</span>
+          <span className="text-xs font-medium uppercase tracking-wider text-foreground/70">{title}</span>
         </div>
         {onRemove && (
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               onRemove();
             }}
-            className="text-white/40 hover:text-red-400 transition-colors"
+            className="text-muted-foreground hover:text-red-400 transition-colors"
           >
             <X className="w-3 h-3" />
           </button>
         )}
       </div>
-      <div className="text-sm text-white/90 flex-1 overflow-visible">
+      <div className="text-sm text-foreground/90 flex-1 overflow-visible">
         {children}
       </div>
     </div>

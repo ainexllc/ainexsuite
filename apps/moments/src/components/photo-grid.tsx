@@ -56,13 +56,13 @@ export function PhotoGrid({ moments, onDetail, onEdit }: PhotoGridProps) {
                 {moment.tags.slice(0, 3).map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 bg-white/20 rounded text-xs"
+                    className="px-2 py-0.5 bg-foreground/20 rounded text-xs"
                   >
                     {tag}
                   </span>
                 ))}
                 {moment.tags.length > 3 && (
-                  <span className="px-2 py-0.5 bg-white/20 rounded text-xs">
+                  <span className="px-2 py-0.5 bg-foreground/20 rounded text-xs">
                     +{moment.tags.length - 3}
                   </span>
                 )}
@@ -76,7 +76,7 @@ export function PhotoGrid({ moments, onDetail, onEdit }: PhotoGridProps) {
                   event.stopPropagation();
                   onEdit(moment);
                 }}
-                className="mt-3 px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded text-xs font-medium transition-colors"
+                className="mt-3 px-3 py-1.5 bg-foreground/15 hover:bg-foreground/25 rounded text-xs font-medium transition-colors"
               >
                 Edit Moment
               </button>

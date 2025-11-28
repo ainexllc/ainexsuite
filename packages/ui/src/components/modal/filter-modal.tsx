@@ -124,11 +124,11 @@ export function FilterModal({
             <Filter className="w-5 h-5" style={{ color: accentColor }} />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-ink-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-foreground">
               {title}
             </h2>
             {description && (
-              <p className="text-sm text-ink-600 dark:text-white/60 mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {description}
               </p>
             )}
@@ -138,7 +138,7 @@ export function FilterModal({
 
       {/* Tabs */}
       {tabs && tabs.length > 0 && (
-        <div className="flex gap-1 p-2 bg-black/5 dark:bg-white/5 border-b border-black/5 dark:border-white/10">
+        <div className="flex gap-1 p-2 bg-background/5 border-b border-border">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -150,8 +150,8 @@ export function FilterModal({
                 className={clsx(
                   "flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all",
                   isActive
-                    ? "text-white shadow-lg"
-                    : "text-ink-600 dark:text-white/70 hover:text-ink-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
+                    ? "text-foreground shadow-lg"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 style={
                   isActive
@@ -169,8 +169,8 @@ export function FilterModal({
                     className={clsx(
                       "text-xs px-2 py-0.5 rounded-full",
                       isActive
-                        ? "bg-white/20 text-white"
-                        : "bg-black/10 dark:bg-white/10 text-ink-600 dark:text-white/60"
+                        ? "bg-foreground/20 text-foreground"
+                        : "bg-muted text-muted-foreground"
                     )}
                   >
                     {tab.count}
@@ -193,7 +193,7 @@ export function FilterModal({
           type="button"
           onClick={onReset}
           disabled={disableReset}
-          className="px-4 py-2 text-sm font-medium text-ink-600 dark:text-white/70 hover:text-ink-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {resetLabel}
         </button>
@@ -202,14 +202,14 @@ export function FilterModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2 text-sm font-medium text-ink-700 dark:text-white bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 rounded-lg transition-colors"
+            className="px-6 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleApply}
-            className="px-6 py-2 text-sm font-medium text-white rounded-lg transition-colors shadow-lg"
+            className="px-6 py-2 text-sm font-medium text-foreground rounded-lg transition-colors shadow-lg"
             style={{
               backgroundColor: accentColor,
               boxShadow: `0 4px 14px -2px ${accentColor}40`,

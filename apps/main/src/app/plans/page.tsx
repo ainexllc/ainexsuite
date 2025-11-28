@@ -320,7 +320,7 @@ export default function PlansPage() {
         {/* Main Pricing Grid - 3 Columns */}
         <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
           {/* Column 1: Build Your Bundle */}
-          <div className="flex flex-col rounded-3xl border border-white/10 bg-zinc-900/50 overflow-hidden hover:border-white/20 transition-all duration-300">
+          <div className="flex flex-col rounded-3xl border border-border bg-zinc-900/50 overflow-hidden hover:border-border transition-all duration-300">
             <div className="p-8 flex-1 flex flex-col">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-12 w-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
@@ -334,32 +334,32 @@ export default function PlansPage() {
 
               <div className="space-y-6 flex-1">
                 {/* Toggle Switch */}
-                <div className="bg-black/40 p-1 rounded-xl flex text-sm font-medium relative">
+                <div className="bg-background/40 p-1 rounded-xl flex text-sm font-medium relative">
                   <button
                     onClick={() => setCustomMode('single-app')}
-                    className={`flex-1 py-2.5 rounded-lg transition-all duration-200 ${customTierMode === 'single-app' ? 'bg-zinc-700 text-white shadow-lg' : 'text-white/50 hover:text-white'}`}
+                    className={`flex-1 py-2.5 rounded-lg transition-all duration-200 ${customTierMode === 'single-app' ? 'bg-zinc-700 text-foreground shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     1 App
                   </button>
                   <button
                     onClick={() => setCustomMode('three-apps')}
-                    className={`flex-1 py-2.5 rounded-lg transition-all duration-200 ${customTierMode === 'three-apps' ? 'bg-zinc-700 text-white shadow-lg' : 'text-white/50 hover:text-white'}`}
+                    className={`flex-1 py-2.5 rounded-lg transition-all duration-200 ${customTierMode === 'three-apps' ? 'bg-zinc-700 text-foreground shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     3 Apps
                   </button>
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-white">{customTier.price}</span>
-                  <span className="text-white/50 text-sm font-medium">/ month</span>
+                  <span className="text-4xl font-bold text-foreground">{customTier.price}</span>
+                  <span className="text-muted-foreground text-sm font-medium">/ month</span>
                 </div>
-                
-                <p className="text-sm text-white/70">{customTier.description}</p>
+
+                <p className="text-sm text-muted-foreground">{customTier.description}</p>
 
                 {/* App Selection */}
-                <div className="space-y-3 pt-4 border-t border-white/5">
+                <div className="space-y-3 pt-4 border-t border-border">
                    <div className="flex items-center justify-between text-xs uppercase tracking-wider font-semibold">
-                      <span className="text-white/50">Select {customTier.appCount} {customTier.appCount === 1 ? 'App' : 'Apps'}</span>
+                      <span className="text-muted-foreground">Select {customTier.appCount} {customTier.appCount === 1 ? 'App' : 'Apps'}</span>
                       <span className="text-[#f97316]">{selectedApps.length}/{customTier.appCount}</span>
                    </div>
                    <div className="grid grid-cols-2 gap-2">
@@ -370,10 +370,10 @@ export default function PlansPage() {
                           className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border text-left flex items-center gap-2 ${
                             selectedApps.includes(app.name)
                               ? 'bg-[#f97316]/10 text-[#f97316] border-[#f97316]/40'
-                              : 'bg-white/5 text-white/60 border-transparent hover:bg-white/10 hover:text-white'
+                              : 'bg-foreground/5 text-muted-foreground border-transparent hover:bg-foreground/10 hover:text-foreground'
                           }`}
                         >
-                          <div className={`w-2 h-2 rounded-full ${selectedApps.includes(app.name) ? 'bg-[#f97316]' : 'bg-white/20'}`} />
+                          <div className={`w-2 h-2 rounded-full ${selectedApps.includes(app.name) ? 'bg-[#f97316]' : 'bg-foreground/20'}`} />
                           {app.label}
                         </button>
                       ))}
@@ -381,15 +381,15 @@ export default function PlansPage() {
                 </div>
 
                 <ul className="space-y-3 pt-4">
-                  <li className="flex items-center gap-3 text-sm text-white/70">
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <CheckCircle2 className="h-4 w-4 text-blue-400" />
                     <span>{customTierMode === 'single-app' ? '200' : '500'} AI queries/mo</span>
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-white/70">
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <CheckCircle2 className="h-4 w-4 text-blue-400" />
                     <span>Basic AI insights</span>
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-white/70">
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <CheckCircle2 className="h-4 w-4 text-blue-400" />
                     <span>Community support</span>
                   </li>
@@ -399,7 +399,7 @@ export default function PlansPage() {
               <button
                 onClick={() => handleCheckout(customTier)}
                 disabled={loading === customTier.tier || selectedApps.length === 0}
-                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-white/10 hover:bg-white/20 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-foreground/10 hover:bg-foreground/20 text-foreground transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                  {loading === customTier.tier ? 'Loading...' : customTier.cta}
               </button>
@@ -428,30 +428,30 @@ export default function PlansPage() {
 
               <div className="space-y-6 flex-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold text-white">{proTier.price}</span>
-                  <span className="text-white/50 text-sm font-medium">/ month</span>
+                  <span className="text-5xl font-bold text-foreground">{proTier.price}</span>
+                  <span className="text-muted-foreground text-sm font-medium">/ month</span>
                 </div>
-                
-                <p className="text-sm text-white/80 font-medium leading-relaxed">
+
+                <p className="text-sm text-foreground/80 font-medium leading-relaxed">
                    Access to all 8 apps. The complete operating system for your life.
                 </p>
 
                 <div className="p-4 rounded-xl bg-[#f97316]/10 border border-[#f97316]/20">
                    <p className="text-xs font-bold text-[#f97316] uppercase tracking-wide mb-2">Everything in Bundle, plus:</p>
                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3 text-sm text-white">
+                      <li className="flex items-center gap-3 text-sm text-foreground">
                         <Check className="h-4 w-4 text-[#f97316]" />
                         <span>All 8 Apps Included</span>
                       </li>
-                      <li className="flex items-center gap-3 text-sm text-white">
+                      <li className="flex items-center gap-3 text-sm text-foreground">
                         <Check className="h-4 w-4 text-[#f97316]" />
                         <span>2,000 AI queries/mo</span>
                       </li>
-                      <li className="flex items-center gap-3 text-sm text-white">
+                      <li className="flex items-center gap-3 text-sm text-foreground">
                         <Check className="h-4 w-4 text-[#f97316]" />
                         <span>Advanced AI Insights</span>
                       </li>
-                      <li className="flex items-center gap-3 text-sm text-white">
+                      <li className="flex items-center gap-3 text-sm text-foreground">
                         <Check className="h-4 w-4 text-[#f97316]" />
                         <span>Unlimited Data Retention</span>
                       </li>
@@ -462,7 +462,7 @@ export default function PlansPage() {
               <button
                 onClick={() => handleCheckout(proTier)}
                 disabled={loading === proTier.tier}
-                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-[#f97316] to-[#ea6a0f] hover:shadow-lg hover:shadow-[#f97316]/40 text-white transition-all flex items-center justify-center gap-2 group"
+                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-[#f97316] to-[#ea6a0f] hover:shadow-lg hover:shadow-[#f97316]/40 text-foreground transition-all flex items-center justify-center gap-2 group"
               >
                  {loading === proTier.tier ? 'Loading...' : (
                     <>
@@ -471,12 +471,12 @@ export default function PlansPage() {
                     </>
                  )}
               </button>
-              <p className="text-center text-xs text-white/40 mt-3">30-day free trial, cancel anytime</p>
+              <p className="text-center text-xs text-muted-foreground mt-3">30-day free trial, cancel anytime</p>
             </div>
           </div>
 
           {/* Column 3: Premium */}
-          <div className="flex flex-col rounded-3xl border border-white/10 bg-zinc-900/50 overflow-hidden hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300">
+          <div className="flex flex-col rounded-3xl border border-border bg-zinc-900/50 overflow-hidden hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300">
             <div className="p-8 flex-1 flex flex-col">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-12 w-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
@@ -490,28 +490,28 @@ export default function PlansPage() {
 
               <div className="space-y-6 flex-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-white">{premiumTier.price}</span>
-                  <span className="text-white/50 text-sm font-medium">/ month</span>
+                  <span className="text-4xl font-bold text-foreground">{premiumTier.price}</span>
+                  <span className="text-muted-foreground text-sm font-medium">/ month</span>
                 </div>
-                
-                <p className="text-sm text-white/70">{premiumTier.description}</p>
 
-                <div className="pt-4 border-t border-white/5">
+                <p className="text-sm text-muted-foreground">{premiumTier.description}</p>
+
+                <div className="pt-4 border-t border-border">
                    <p className="text-xs font-bold text-purple-400 uppercase tracking-wide mb-4">Ultimate Power</p>
                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3 text-sm text-white/70">
+                      <li className="flex items-center gap-3 text-sm text-muted-foreground">
                         <CheckCircle2 className="h-4 w-4 text-purple-400" />
                         <span>10,000+ AI queries/mo</span>
                       </li>
-                      <li className="flex items-center gap-3 text-sm text-white/70">
+                      <li className="flex items-center gap-3 text-sm text-muted-foreground">
                         <CheckCircle2 className="h-4 w-4 text-purple-400" />
                         <span>Priority Feature Access</span>
                       </li>
-                      <li className="flex items-center gap-3 text-sm text-white/70">
+                      <li className="flex items-center gap-3 text-sm text-muted-foreground">
                         <CheckCircle2 className="h-4 w-4 text-purple-400" />
                         <span>Dedicated Support</span>
                       </li>
-                      <li className="flex items-center gap-3 text-sm text-white/70">
+                      <li className="flex items-center gap-3 text-sm text-muted-foreground">
                         <CheckCircle2 className="h-4 w-4 text-purple-400" />
                         <span>Personalized Recommendations</span>
                       </li>
@@ -522,7 +522,7 @@ export default function PlansPage() {
               <button
                 onClick={() => handleCheckout(premiumTier)}
                 disabled={loading === premiumTier.tier}
-                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-white transition-all"
+                className="w-full mt-8 py-4 rounded-xl font-bold text-sm bg-zinc-800 hover:bg-zinc-700 border border-border text-foreground transition-all"
               >
                  {loading === premiumTier.tier ? 'Loading...' : 'Upgrade to Premium'}
               </button>
@@ -531,14 +531,14 @@ export default function PlansPage() {
         </div>
 
         {/* Feature Table */}
-        <div className="space-y-8 pt-12 border-t border-white/5">
+        <div className="space-y-8 pt-12 border-t border-border">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
               Compare Features
             </h2>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-2 overflow-x-auto">
+          <div className="rounded-2xl border border-border bg-zinc-900/40 p-2 overflow-x-auto">
              {/* 
                 Simplified Table: We map columns manually to match our new 3-col layout + Trial 
                 But using the existing pricingTiers array is fine if we just hide the "Trial" column or show it differently.
@@ -546,10 +546,10 @@ export default function PlansPage() {
              */}
             <table className="w-full min-w-[800px]">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-4 pl-6 pr-4 text-white/40 font-medium text-sm uppercase tracking-wider w-1/4">Features</th>
+                <tr className="border-b border-border">
+                  <th className="text-left py-4 pl-6 pr-4 text-muted-foreground font-medium text-sm uppercase tracking-wider w-1/4">Features</th>
                   {pricingTiers.map((tier) => (
-                    <th key={tier.tier} className="py-4 px-4 text-center text-white font-bold text-sm uppercase tracking-wider">
+                    <th key={tier.tier} className="py-4 px-4 text-center text-foreground font-bold text-sm uppercase tracking-wider">
                       {tier.name}
                     </th>
                   ))}
@@ -566,9 +566,9 @@ export default function PlansPage() {
                     {category.features.map((feature) => (
                       <tr
                         key={feature.name}
-                        className="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                        className="hover:bg-foreground/5 transition-colors border-b border-border last:border-0"
                       >
-                        <td className="py-4 pl-6 pr-4 text-sm text-white/80 font-medium">{feature.name}</td>
+                        <td className="py-4 pl-6 pr-4 text-sm text-foreground/80 font-medium">{feature.name}</td>
                         {pricingTiers.map((tier) => (
                           <td key={tier.tier} className="py-4 px-4 text-center">
                             <div className="flex justify-center items-center">
@@ -586,24 +586,24 @@ export default function PlansPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-800/40 to-zinc-900/60 p-8 lg:p-12">
+        <div className="rounded-2xl border border-border bg-gradient-to-br from-zinc-800/40 to-zinc-900/60 p-8 lg:p-12">
           <div className="text-center space-y-3 mb-12">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
               Frequently Asked Questions
             </h2>
-            <p className="text-white/60 max-w-2xl mx-auto">
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               Everything you need to know about our plans and subscriptions.
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 max-w-5xl mx-auto">
             <div className="group">
-              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+              <div className="p-6 rounded-xl border border-border hover:border-[#f97316]/20 bg-foreground/2 hover:bg-[#f97316]/5 transition">
                 <div className="flex items-start gap-3 mb-3">
                   <Shield className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                  <h3 className="text-base font-semibold text-white">Do I need a credit card for the free trial?</h3>
+                  <h3 className="text-base font-semibold text-foreground">Do I need a credit card for the free trial?</h3>
                 </div>
-                <p className="text-sm text-white/70">
+                <p className="text-sm text-muted-foreground">
                   No! Sign up for your 30-day free trial with just an email. No credit card required.
                   Upgrade anytime if you want to continue after the trial ends.
                 </p>
@@ -611,12 +611,12 @@ export default function PlansPage() {
             </div>
 
             <div className="group">
-              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+              <div className="p-6 rounded-xl border border-border hover:border-[#f97316]/20 bg-foreground/2 hover:bg-[#f97316]/5 transition">
                 <div className="flex items-start gap-3 mb-3">
                   <Clock className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                  <h3 className="text-base font-semibold text-white">What happens after my free trial ends?</h3>
+                  <h3 className="text-base font-semibold text-foreground">What happens after my free trial ends?</h3>
                 </div>
-                <p className="text-sm text-white/70">
+                <p className="text-sm text-muted-foreground">
                   Your data is preserved for 30 days. You can upgrade to any paid plan to keep your
                   account active, or cancel anytime. Your data won&apos;t be deleted immediately.
                 </p>
@@ -624,12 +624,12 @@ export default function PlansPage() {
             </div>
 
             <div className="group">
-              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+              <div className="p-6 rounded-xl border border-border hover:border-[#f97316]/20 bg-foreground/2 hover:bg-[#f97316]/5 transition">
                 <div className="flex items-start gap-3 mb-3">
                   <Package className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                  <h3 className="text-base font-semibold text-white">Can I change my apps later?</h3>
+                  <h3 className="text-base font-semibold text-foreground">Can I change my apps later?</h3>
                 </div>
-                <p className="text-sm text-white/70">
+                <p className="text-sm text-muted-foreground">
                   Yes! For Single App and 3-App Bundle plans, you can change your selected apps anytime
                   from your account settings. Upgrade to Pro or Premium for access to all 8 apps.
                 </p>
@@ -637,12 +637,12 @@ export default function PlansPage() {
             </div>
 
             <div className="group">
-              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+              <div className="p-6 rounded-xl border border-border hover:border-[#f97316]/20 bg-foreground/2 hover:bg-[#f97316]/5 transition">
                 <div className="flex items-start gap-3 mb-3">
                   <CreditCard className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                  <h3 className="text-base font-semibold text-white">What payment methods do you accept?</h3>
+                  <h3 className="text-base font-semibold text-foreground">What payment methods do you accept?</h3>
                 </div>
-                <p className="text-sm text-white/70">
+                <p className="text-sm text-muted-foreground">
                   We accept all major credit cards (Visa, Mastercard, Amex, Discover).
                   All payments are processed securely through Stripe.
                 </p>
@@ -650,12 +650,12 @@ export default function PlansPage() {
             </div>
 
             <div className="group">
-              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+              <div className="p-6 rounded-xl border border-border hover:border-[#f97316]/20 bg-foreground/2 hover:bg-[#f97316]/5 transition">
                 <div className="flex items-start gap-3 mb-3">
                   <Check className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                  <h3 className="text-base font-semibold text-white">Can I cancel anytime?</h3>
+                  <h3 className="text-base font-semibold text-foreground">Can I cancel anytime?</h3>
                 </div>
-                <p className="text-sm text-white/70">
+                <p className="text-sm text-muted-foreground">
                   Absolutely. Cancel anytime from your account settings, no questions asked.
                   You&apos;ll keep access until the end of your current billing cycle.
                 </p>
@@ -663,12 +663,12 @@ export default function PlansPage() {
             </div>
 
             <div className="group">
-              <div className="p-6 rounded-xl border border-white/10 hover:border-[#f97316]/20 bg-white/2 hover:bg-[#f97316]/5 transition">
+              <div className="p-6 rounded-xl border border-border hover:border-[#f97316]/20 bg-foreground/2 hover:bg-[#f97316]/5 transition">
                 <div className="flex items-start gap-3 mb-3">
                   <ZapIcon className="h-5 w-5 text-[#f97316] flex-shrink-0 mt-0.5" />
-                  <h3 className="text-base font-semibold text-white">What&apos;s included in each subscription tier?</h3>
+                  <h3 className="text-base font-semibold text-foreground">What&apos;s included in each subscription tier?</h3>
                 </div>
-                <p className="text-sm text-white/70">
+                <p className="text-sm text-muted-foreground">
                   Free Trial: All 8 apps, 200 queries/month. Single App: 1 app, 200 queries/month.
                   3-App Bundle: 3 apps, 500 queries/month. Pro: All 8 apps, 2,000 queries/month.
                   Premium: All 8 apps, 10,000+ queries/month.
@@ -681,10 +681,10 @@ export default function PlansPage() {
         {/* Final CTA */}
         <div className="text-center space-y-8 py-12 px-6">
           <div className="space-y-4">
-            <h2 className="text-4xl sm:text-5xl font-bold text-white">
+            <h2 className="text-4xl sm:text-5xl font-bold text-foreground">
               Start Your Journey
             </h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Join thousands of users transforming their lives with AINexSuite.
             </p>
           </div>
@@ -697,7 +697,7 @@ export default function PlansPage() {
                   router.push('/?signup=true');
                 }
               }}
-              className="inline-flex items-center justify-center px-10 py-4 rounded-xl bg-white text-black font-bold text-lg uppercase tracking-wide hover:bg-white/90 transition-all duration-300 group gap-2 shadow-xl shadow-white/10"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-xl bg-foreground text-background font-bold text-lg uppercase tracking-wide hover:bg-foreground/90 transition-all duration-300 group gap-2 shadow-xl shadow-foreground/10"
             >
               Get Started Free
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition" />

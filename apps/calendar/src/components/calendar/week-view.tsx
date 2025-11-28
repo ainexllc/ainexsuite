@@ -73,25 +73,25 @@ export function WeekView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface-elevated/5 rounded-xl border border-white/10 overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-elevated/5 rounded-xl border border-border overflow-hidden">
       {/* Header Row */}
-      <div className="flex border-b border-white/10 bg-surface-elevated/10">
-        <div className="w-16 border-r border-white/10 flex-shrink-0"></div> {/* Time gutter */}
+      <div className="flex border-b border-border bg-surface-elevated/10">
+        <div className="w-16 border-r border-border flex-shrink-0"></div> {/* Time gutter */}
         <div className="flex-1 grid grid-cols-7">
           {days.map((day) => (
-            <div 
-              key={day.toString()} 
+            <div
+              key={day.toString()}
               className={cn(
-                "py-3 text-center border-r border-white/10 last:border-r-0",
-                isToday(day) ? "bg-white/5" : ""
+                "py-3 text-center border-r border-border last:border-r-0",
+                isToday(day) ? "bg-foreground/5" : ""
               )}
             >
-              <div className="text-xs font-semibold text-white/60 uppercase tracking-wider">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {format(day, 'EEE')}
               </div>
               <div className={cn(
                 "text-xl font-bold mt-1 w-8 h-8 flex items-center justify-center rounded-full mx-auto",
-                isToday(day) ? "bg-accent-500 text-white" : "text-white"
+                isToday(day) ? "bg-accent-500 text-foreground" : "text-foreground"
               )}>
                 {format(day, 'd')}
               </div>
@@ -103,16 +103,16 @@ export function WeekView({
       {/* Scrollable Grid */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin relative">
         <div className="flex min-h-[1440px]"> {/* 24 hours * 60px */}
-          
+
           {/* Time Axis */}
-          <div className="w-16 border-r border-white/10 flex-shrink-0 bg-surface-elevated/5">
+          <div className="w-16 border-r border-border flex-shrink-0 bg-surface-elevated/5">
             {hours.map((hour) => (
               <div key={hour} className="h-[60px] relative">
-                <span className="absolute -top-2.5 right-2 text-xs text-white/40 font-medium">
+                <span className="absolute -top-2.5 right-2 text-xs text-muted-foreground/80 font-medium">
                   {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                 </span>
                 {/* Small tick mark */}
-                <div className="absolute top-0 right-0 w-1.5 h-[1px] bg-white/10"></div>
+                <div className="absolute top-0 right-0 w-1.5 h-[1px] bg-border"></div>
               </div>
             ))}
           </div>
@@ -121,29 +121,29 @@ export function WeekView({
           <div className="flex-1 grid grid-cols-7 relative">
             {/* Horizontal Hour Lines */}
             {hours.map((hour) => (
-               <div 
-                 key={`line-${hour}`} 
-                 className="absolute left-0 right-0 border-t border-white/5 pointer-events-none"
+               <div
+                 key={`line-${hour}`}
+                 className="absolute left-0 right-0 border-t border-border/50 pointer-events-none"
                  style={{ top: `${hour * 60}px` }}
                ></div>
             ))}
 
             {days.map((day, _index) => {
               const dayEvents = getEventsForDay(day);
-              
+
               return (
-                <div 
-                  key={day.toString()} 
+                <div
+                  key={day.toString()}
                   className={cn(
-                    "relative h-full border-r border-white/10 last:border-r-0 group",
-                    isToday(day) ? "bg-white/5" : ""
+                    "relative h-full border-r border-border last:border-r-0 group",
+                    isToday(day) ? "bg-foreground/5" : ""
                   )}
                 >
                   {/* Clickable time slots (invisible overlays) */}
                   {hours.map((hour) => (
                     <div
                       key={`slot-${hour}`}
-                      className="h-[60px] w-full hover:bg-white/5 cursor-pointer"
+                      className="h-[60px] w-full hover:bg-foreground/5 cursor-pointer"
                       onClick={() => {
                         const clickedTime = setMinutes(setHours(day, hour), 0);
                         onTimeSlotClick(clickedTime);

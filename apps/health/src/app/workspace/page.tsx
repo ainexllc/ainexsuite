@@ -126,7 +126,7 @@ function HealthWorkspaceContent() {
 
         {/* Today's Status Card */}
         {todayMetric && (
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-foreground">
             <div className="flex items-center gap-3 mb-4">
               <Calendar className="h-6 w-6" />
               <h2 className="text-lg font-semibold">Today&apos;s Check-in</h2>
@@ -134,25 +134,25 @@ function HealthWorkspaceContent() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {todayMetric.weight && (
                 <div>
-                  <p className="text-white/70 text-sm">Weight</p>
+                  <p className="text-foreground/70 text-sm">Weight</p>
                   <p className="text-xl font-bold">{todayMetric.weight} lbs</p>
                 </div>
               )}
               {todayMetric.sleep && (
                 <div>
-                  <p className="text-white/70 text-sm">Sleep</p>
+                  <p className="text-foreground/70 text-sm">Sleep</p>
                   <p className="text-xl font-bold">{todayMetric.sleep} hrs</p>
                 </div>
               )}
               {todayMetric.water && (
                 <div>
-                  <p className="text-white/70 text-sm">Water</p>
+                  <p className="text-foreground/70 text-sm">Water</p>
                   <p className="text-xl font-bold">{todayMetric.water} glasses</p>
                 </div>
               )}
               {todayMetric.energy && (
                 <div>
-                  <p className="text-white/70 text-sm">Energy</p>
+                  <p className="text-foreground/70 text-sm">Energy</p>
                   <p className="text-xl font-bold">{todayMetric.energy}/10</p>
                 </div>
               )}
@@ -162,10 +162,10 @@ function HealthWorkspaceContent() {
 
         {/* Empty State */}
         {!todayMetric && metrics.length === 0 && (
-          <div className="text-center py-12 rounded-2xl bg-white/5 border border-white/10">
+          <div className="text-center py-12 rounded-2xl bg-foreground/5 border border-border">
             <Activity className="h-16 w-16 mx-auto mb-4 text-emerald-500/50" />
-            <p className="text-white/70 mb-2">No health data yet</p>
-            <p className="text-white/50 text-sm">
+            <p className="text-foreground/70 mb-2">No health data yet</p>
+            <p className="text-muted-foreground text-sm">
               Click above to start tracking your wellness journey
             </p>
           </div>

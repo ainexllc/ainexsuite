@@ -150,7 +150,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 backdrop-blur-sm"
+          className="flex w-full items-center rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 backdrop-blur-sm"
           onClick={() => setExpanded(true)}
         >
           <span>Log a workout...</span>
@@ -158,7 +158,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
       ) : (
         <div
           ref={composerRef}
-          className="w-full rounded-2xl shadow-xl bg-[#121212] border border-white/10 backdrop-blur-xl transition-all overflow-hidden"
+          className="w-full rounded-2xl shadow-xl bg-background/95 border border-border backdrop-blur-xl transition-all overflow-hidden"
         >
           <div className="flex flex-col gap-4 px-5 py-4">
             {/* Title */}
@@ -167,31 +167,31 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Workout name (e.g., Upper Body, Leg Day)"
-              className="w-full bg-transparent text-lg font-semibold text-white placeholder:text-white/30 focus:outline-none"
+              className="w-full bg-transparent text-lg font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
               autoFocus
             />
 
             {/* Date & Duration Row */}
             <div className="flex flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                <Calendar className="h-4 w-4 text-white/40" />
+                <Calendar className="h-4 w-4 text-muted-foreground" />
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-orange-500"
                 />
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                <Clock className="h-4 w-4 text-white/40" />
+                <Clock className="h-4 w-4 text-muted-foreground" />
                 <input
                   type="number"
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
                   placeholder="Duration"
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-orange-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-orange-500"
                 />
-                <span className="text-sm text-white/40">min</span>
+                <span className="text-sm text-muted-foreground">min</span>
               </div>
             </div>
 
@@ -199,19 +199,19 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
             {exercises.length > 0 && (
               <div className="space-y-3">
                 {exercises.map((exercise, idx) => (
-                  <div key={exercise.id} className="bg-white/5 border border-white/5 p-3 rounded-xl space-y-2">
+                  <div key={exercise.id} className="bg-foreground/5 border border-border p-3 rounded-xl space-y-2">
                     <div className="flex gap-2">
                       <input
                         type="text"
                         placeholder="Exercise name"
                         value={exercise.name}
                         onChange={(e) => handleUpdateExercise(idx, { name: e.target.value })}
-                        className="flex-1 px-3 py-2 bg-black/20 rounded-lg border border-white/10 focus:border-orange-500 focus:outline-none text-white placeholder:text-white/30 text-sm"
+                        className="flex-1 px-3 py-2 bg-background/20 rounded-lg border border-border focus:border-orange-500 focus:outline-none text-foreground placeholder:text-muted-foreground text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => handleRemoveExercise(idx)}
-                        className="p-2 text-white/30 hover:text-red-400 transition-colors"
+                        className="p-2 text-muted-foreground hover:text-red-400 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -222,22 +222,22 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                         {exercise.sets.map((set, setIdx) => (
                           <div key={set.id} className="grid grid-cols-2 gap-2 text-sm">
                             <div>
-                              <label className="block text-[10px] text-white/40 mb-1 uppercase">Reps</label>
+                              <label className="block text-[10px] text-muted-foreground mb-1 uppercase">Reps</label>
                               <input
                                 type="number"
                                 value={set.reps || ''}
                                 onChange={(e) => handleUpdateSet(idx, setIdx, { reps: parseInt(e.target.value) || 0 })}
-                                className="w-full px-2 py-1.5 bg-black/20 rounded border border-white/10 focus:border-orange-500 focus:outline-none text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-background/20 rounded border border-border focus:border-orange-500 focus:outline-none text-foreground text-sm"
                               />
                             </div>
                             <div>
-                              <label className="block text-[10px] text-white/40 mb-1 uppercase">Weight (kg)</label>
+                              <label className="block text-[10px] text-muted-foreground mb-1 uppercase">Weight (kg)</label>
                               <input
                                 type="number"
                                 step="0.5"
                                 value={set.weight || ''}
                                 onChange={(e) => handleUpdateSet(idx, setIdx, { weight: parseFloat(e.target.value) || 0 })}
-                                className="w-full px-2 py-1.5 bg-black/20 rounded border border-white/10 focus:border-orange-500 focus:outline-none text-white text-sm"
+                                className="w-full px-2 py-1.5 bg-background/20 rounded border border-border focus:border-orange-500 focus:outline-none text-foreground text-sm"
                               />
                             </div>
                           </div>
@@ -248,7 +248,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                     <button
                       type="button"
                       onClick={() => handleAddSet(idx)}
-                      className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors"
+                      className="px-3 py-1 text-xs bg-foreground/5 hover:bg-foreground/10 rounded text-muted-foreground hover:text-foreground transition-colors"
                     >
                       + Add Set
                     </button>
@@ -275,11 +275,11 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
             )}
 
             {/* Action Bar */}
-            <div className="flex items-center justify-between gap-2 pt-3 border-t border-white/10">
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-border">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
                   onClick={handleAddExercise}
                   title="Add exercise"
                 >
@@ -291,7 +291,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showFeelingPicker ? "text-orange-500 bg-orange-500/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                      showFeelingPicker ? "text-orange-500 bg-orange-500/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
                     onClick={() => setShowFeelingPicker(!showFeelingPicker)}
                     title="How do you feel?"
@@ -300,7 +300,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                   </button>
 
                   {showFeelingPicker && (
-                    <div className="absolute bottom-12 left-0 z-30 flex gap-2 rounded-xl bg-[#1a1a1a] border border-white/10 p-3 shadow-2xl">
+                    <div className="absolute bottom-12 left-0 z-30 flex gap-2 rounded-xl bg-background/95 border border-border p-3 shadow-2xl">
                       {FEELING_OPTIONS.map((option) => (
                         <button
                           key={option.value}
@@ -311,7 +311,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
                           }}
                           className={clsx(
                             "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
-                            feeling === option.value ? "bg-orange-500/20 text-orange-300" : "hover:bg-white/10 text-white/70"
+                            feeling === option.value ? "bg-orange-500/20 text-orange-300" : "hover:bg-foreground/10 text-muted-foreground"
                           )}
                         >
                           <span className="text-xl">{option.emoji}</span>
@@ -326,7 +326,7 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-sm font-medium text-white/50 hover:text-white transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   onClick={resetState}
                 >
                   Cancel

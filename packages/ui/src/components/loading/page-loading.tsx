@@ -103,7 +103,7 @@ export const PageLoading = React.forwardRef<HTMLDivElement, PageLoadingProps>(
                 <div className="animate-pulse">{logo}</div>
               ) : (
                 // Default logo placeholder
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-surface-elevated/60 backdrop-blur-md">
                   <div className="h-8 w-8 rounded-lg bg-accent-500/50" />
                 </div>
               )}
@@ -111,7 +111,7 @@ export const PageLoading = React.forwardRef<HTMLDivElement, PageLoadingProps>(
           )}
 
           {/* Spinner and message */}
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-surface-elevated/60 px-8 py-6 shadow-lg backdrop-blur-md">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface-elevated/60 px-8 py-6 shadow-lg backdrop-blur-md">
             <Spinner size="lg" color="accent" />
             {message && (
               <p className="text-sm font-medium text-ink-700">{message}</p>

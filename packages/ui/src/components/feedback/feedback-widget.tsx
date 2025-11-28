@@ -142,8 +142,8 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
         onClick={() => setIsOpen(!isOpen)}
         className={clsx(
           "h-10 w-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110",
-          isOpen 
-            ? "bg-indigo-500 text-white rotate-90" 
+          isOpen
+            ? "bg-indigo-500 text-foreground rotate-90"
             : "bg-muted text-muted-foreground hover:text-foreground border border-border hover:border-primary/50"
         )}
         title="Send Feedback"

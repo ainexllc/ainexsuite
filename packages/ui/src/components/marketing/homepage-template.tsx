@@ -241,14 +241,14 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
   const accentColor = props.accentColor || '#f97316';
 
   return (
-    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-white">
+    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-foreground">
       {/* Background placeholder - component will be passed from parent */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         {props.backgroundComponent}
       </div>
 
       {/* Header */}
-      <header className="relative z-50 border-b border-white/10 bg-[#050505]/90 backdrop-blur-sm">
+      <header className="relative z-50 border-b border-border bg-[#050505]/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8">
           <Link href="/" className="flex items-center">
             {props.logo}
@@ -258,18 +258,18 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
               <a
                 key={item.href}
                 href={item.href}
-                className="text-sm text-white/60 transition hover:text-white"
+                className="text-sm text-muted-foreground transition hover:text-foreground"
               >
                 {item.label}
               </a>
             ))}
-            <div className="w-px h-5 bg-white/10" />
+            <div className="w-px h-5 bg-border" />
             <button
               onClick={() => {
                 setIsSignUp(false);
                 setShowEmailModal(true);
               }}
-              className="text-sm text-white/80 hover:text-white transition-colors font-medium"
+              className="text-sm text-foreground/80 hover:text-foreground transition-colors font-medium"
             >
               Sign In
             </button>
@@ -278,7 +278,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                 setIsSignUp(true);
                 setShowEmailModal(true);
               }}
-              className="px-5 py-2 text-white text-sm font-semibold rounded-lg transition-all hover:brightness-90 flex items-center gap-2"
+              className="px-5 py-2 text-foreground text-sm font-semibold rounded-lg transition-all hover:brightness-90 flex items-center gap-2"
               style={{ backgroundColor: accentColor }}
             >
               Sign Up
@@ -288,7 +288,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white transition hover:bg-white/5 md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground transition hover:bg-foreground/5 md:hidden"
             aria-label="Toggle navigation"
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -297,25 +297,25 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
         {isMobileMenuOpen && (
           <div className="absolute inset-x-0 top-full mt-2 px-6 pb-6 md:hidden z-40">
-            <nav className="space-y-3 rounded-3xl border border-white/5 bg-[#0b0b0b]/90 p-6 text-sm font-medium text-white/70">
+            <nav className="space-y-3 rounded-3xl border border-border/50 bg-[#0b0b0b]/90 p-6 text-sm font-medium text-muted-foreground">
               {props.navLinks.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block rounded-2xl px-4 py-3 transition hover:bg-white/5 hover:text-white"
+                  className="block rounded-2xl px-4 py-3 transition hover:bg-foreground/5 hover:text-foreground"
                 >
                   {item.label}
                 </a>
               ))}
-              <div className="pt-3 border-t border-white/10 space-y-3">
+              <div className="pt-3 border-t border-border space-y-3">
                 <button
                   onClick={() => {
                     setIsSignUp(false);
                     setShowEmailModal(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left rounded-2xl px-4 py-3 transition hover:bg-white/5 hover:text-white"
+                  className="block w-full text-left rounded-2xl px-4 py-3 transition hover:bg-foreground/5 hover:text-foreground"
                 >
                   Sign In
                 </button>
@@ -325,7 +325,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                     setShowEmailModal(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="block w-full px-4 py-3 text-white rounded-2xl font-semibold transition-all hover:brightness-90"
+                  className="block w-full px-4 py-3 text-foreground rounded-2xl font-semibold transition-all hover:brightness-90"
                   style={{ backgroundColor: accentColor }}
                 >
                   Sign Up
@@ -342,7 +342,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         <section className="relative overflow-hidden pb-20">
           <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
             <div className="space-y-8">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-800/70 px-4 py-1 text-xs font-medium uppercase tracking-wide text-white/60">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <HeroBadgeIcon className="h-3.5 w-3.5" />
                 {props.hero.badge.text}
               </span>
@@ -356,13 +356,13 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                   {props.hero.headline}
                 </span>
                 <br />
-                <span className="text-white">{props.hero.subheadline}</span>
+                <span className="text-foreground">{props.hero.subheadline}</span>
               </h1>
-              <p className="text-lg text-white/70 sm:text-xl max-w-2xl mx-auto">
+              <p className="text-lg text-muted-foreground sm:text-xl max-w-2xl mx-auto">
                 {props.hero.description}
               </p>
 
-              <div className="grid gap-4 rounded-3xl border border-white/10 bg-zinc-800/80 p-5 backdrop-blur sm:grid-cols-2 max-w-2xl mx-auto">
+              <div className="grid gap-4 rounded-3xl border border-border bg-card/80 p-5 backdrop-blur sm:grid-cols-2 max-w-2xl mx-auto">
                 {props.hero.highlights.map((highlight) => {
                   const HighlightIcon = highlight.icon;
                   return (
@@ -374,8 +374,8 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                         <HighlightIcon className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-white">{highlight.title}</p>
-                        <p className="text-xs text-white/60">{highlight.description}</p>
+                        <p className="text-sm font-semibold text-foreground">{highlight.title}</p>
+                        <p className="text-xs text-muted-foreground">{highlight.description}</p>
                       </div>
                     </div>
                   );
@@ -383,7 +383,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
               </div>
 
               {props.demoSteps && props.demoSteps.length > 0 && (
-                <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 max-w-2xl mx-auto">
+                <div className="flex items-center gap-3 rounded-full border border-border bg-foreground/5 px-4 py-2 text-sm text-muted-foreground max-w-2xl mx-auto">
                   <Sparkles className="h-4 w-4 flex-shrink-0" style={{ color: accentColor }} />
                   <div className="overflow-hidden">
                     <div key={props.demoSteps[activeDemo].text} className="transition-opacity duration-300" aria-live="polite">
@@ -398,19 +398,19 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
           {/* Email/Password Modal */}
           {showEmailModal && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4" onClick={() => setShowEmailModal(false)}>
-              <div className="bg-[#1a1a1a] rounded-2xl border border-white/10 p-8 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-[#1a1a1a] rounded-2xl border border-border p-8 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-start justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">
+                    <h2 className="text-2xl font-bold text-foreground mb-2">
                       {isSignUp ? props.login.signUpTitle : props.login.signInTitle}
                     </h2>
-                    <p className="text-white/60">
+                    <p className="text-muted-foreground">
                       {isSignUp ? props.login.signUpDescription : props.login.signInDescription}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowEmailModal(false)}
-                    className="text-white/60 hover:text-white transition-colors"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -424,36 +424,36 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
                 <form onSubmit={handleEmailAuth} className="space-y-4 mb-4">
                   <div>
-                    <label className="block text-xs font-medium text-white/70 mb-2">
+                    <label className="block text-xs font-medium text-muted-foreground mb-2">
                       Email
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
                         autoComplete="email"
-                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
+                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-border bg-foreground/5 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-white/70 mb-2">
+                    <label className="block text-xs font-medium text-muted-foreground mb-2">
                       Password
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
                         autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-white/15 bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
+                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-border bg-foreground/5 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition"
                         required
                       />
                     </div>
@@ -462,7 +462,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                   <button
                     type="submit"
                     disabled={signInLoading}
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-white font-semibold transition-all hover:brightness-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-foreground font-semibold transition-all hover:brightness-90 disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ backgroundColor: accentColor }}
                   >
                     {signInLoading ? (
@@ -476,10 +476,10 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
+                    <div className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="px-2 bg-[#1a1a1a] text-white/60">or</span>
+                    <span className="px-2 bg-[#1a1a1a] text-muted-foreground">or</span>
                   </div>
                 </div>
 
@@ -487,17 +487,17 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                   type="button"
                   onClick={handleGoogleAuth}
                   disabled={signInLoading}
-                  className="flex w-full items-center justify-center gap-3 rounded-lg border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-foreground/10 px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-foreground/20 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {signInLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-white" />
+                    <Loader2 className="h-5 w-5 animate-spin text-foreground" />
                   ) : (
                     <Chrome className="h-5 w-5 text-[#f97316]" />
                   )}
                   Continue with Google
                 </button>
 
-                <div className="mt-6 text-center text-sm text-white/60">
+                <div className="mt-6 text-center text-sm text-muted-foreground">
                   {isSignUp ? 'Already have an account?' : 'Need an account?'}{' '}
                   <button
                     type="button"
@@ -512,7 +512,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                   </button>
                 </div>
 
-                <p className="text-xs text-white/50 text-center mt-6">
+                <p className="text-xs text-muted-foreground text-center mt-6">
                   By continuing, you agree to our Terms of Service and Privacy Policy
                 </p>
               </div>
@@ -524,10 +524,10 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         {props.apps && (
           <section className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center mb-16">
-              <h2 className="text-3xl font-semibold text-white sm:text-4xl">
+              <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
                 {props.apps.sectionTitle}
               </h2>
-              <p className="mt-3 text-lg text-white/70">
+              <p className="mt-3 text-lg text-muted-foreground">
                 {props.apps.sectionDescription}
               </p>
             </div>
@@ -539,7 +539,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                   <Link
                     key={app.name}
                     href={app.href}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-6 transition-all hover:border-white/20 hover:shadow-xl hover:shadow-black/20"
+                    className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-foreground/5 to-foreground/[0.02] p-6 transition-all hover:border-border/80 hover:shadow-xl hover:shadow-black/20"
                   >
                     <div
                       className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100"
@@ -554,10 +554,10 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                       >
                         <AppIcon className="h-6 w-6" style={{ color: app.color }} />
                       </div>
-                      <h3 className="text-lg font-semibold text-white mb-2">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
                         {app.name}
                       </h3>
-                      <p className="text-sm text-white/60 leading-relaxed">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         {app.description}
                       </p>
                       <div className="mt-4 flex items-center text-sm font-medium" style={{ color: app.color }}>
@@ -583,7 +583,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
         <section id="features" className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           {props.features.videoUrl && (
             <div className="mx-auto max-w-5xl -mt-8">
-              <div className="relative aspect-video overflow-hidden rounded-3xl border border-white/10 bg-zinc-800/80 shadow-lg">
+              <div className="relative aspect-video overflow-hidden rounded-3xl border border-border bg-card/80 shadow-lg">
                 <iframe
                   className="absolute inset-0 h-full w-full"
                   src={props.features.videoUrl}
@@ -597,8 +597,8 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
           )}
 
           <div className="mx-auto mt-16 max-w-3xl text-center">
-            <h2 className="text-3xl font-semibold text-white sm:text-4xl">{props.features.sectionTitle}</h2>
-            <p className="mt-3 text-lg text-white/70">
+            <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">{props.features.sectionTitle}</h2>
+            <p className="mt-3 text-lg text-muted-foreground">
               {props.features.sectionDescription}
             </p>
           </div>
@@ -609,7 +609,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
               return (
                 <div
                   key={feature.title}
-                  className="rounded-3xl border border-white/10 bg-zinc-800/90 p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                  className="rounded-3xl border border-border bg-card/90 p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <div
                     className="flex h-12 w-12 items-center justify-center rounded-xl"
@@ -617,8 +617,8 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                   >
                     {Icon && <Icon className="h-7 w-7" />}
                   </div>
-                  <h3 className="mt-5 text-xl font-semibold text-white">{feature.title}</h3>
-                  <p className="mt-3 text-sm text-white/60">{feature.description}</p>
+                  <h3 className="mt-5 text-xl font-semibold text-foreground">{feature.title}</h3>
+                  <p className="mt-3 text-sm text-muted-foreground">{feature.description}</p>
                 </div>
               );
             })}
@@ -627,36 +627,36 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
         {/* AI Power Section */}
         {props.aiPower && (
-          <section id="ai-power" className="relative overflow-hidden border-y border-white/5 py-20">
+          <section id="ai-power" className="relative overflow-hidden border-y border-border/50 py-20">
             <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col gap-10 lg:flex-row lg:items-center">
                 <div className="flex-1 space-y-6">
-                  <h2 className="text-3xl font-semibold text-white sm:text-4xl">{props.aiPower.title}</h2>
-                  <p className="text-lg text-white/70">
+                  <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">{props.aiPower.title}</h2>
+                  <p className="text-lg text-muted-foreground">
                     {props.aiPower.description}
                   </p>
-                  <ul className="space-y-4 text-white/70">
+                  <ul className="space-y-4 text-muted-foreground">
                     {props.aiPower.highlights.map((item) => (
-                      <li key={item.title} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-zinc-800/80 p-4">
+                      <li key={item.title} className="flex items-start gap-3 rounded-2xl border border-border bg-card/80 p-4">
                         <span className="text-xl">{item.emoji}</span>
                         <div>
-                          <p className="font-semibold text-white">{item.title}</p>
-                          <p className="text-sm text-white/60">{item.description}</p>
+                          <p className="font-semibold text-foreground">{item.title}</p>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
                         </div>
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div className="flex-1">
-                  <div className="rounded-3xl border border-white/10 bg-zinc-800/80 p-6 shadow-lg">
-                    <div className="flex items-center gap-3 rounded-full border border-white/10 bg-zinc-700/60 px-4 py-2 text-sm text-white/60">
+                  <div className="rounded-3xl border border-border bg-card/80 p-6 shadow-lg">
+                    <div className="flex items-center gap-3 rounded-full border border-border bg-card/60 px-4 py-2 text-sm text-muted-foreground">
                       <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
                       {props.aiPower.demoCard.title}
                     </div>
-                    <div className="mt-6 space-y-4 text-sm text-white/70">
-                      <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+                    <div className="mt-6 space-y-4 text-sm text-muted-foreground">
+                      <div className="rounded-2xl border border-border bg-background/40 p-4">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-white">{props.aiPower.demoCard.subtitle}</span>
+                          <span className="font-semibold text-foreground">{props.aiPower.demoCard.subtitle}</span>
                           <span
                             className="inline-flex items-center gap-2 text-xs"
                             style={{ color: accentColor }}
@@ -665,22 +665,22 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
                             AI Powered
                           </span>
                         </div>
-                        <p className="mt-2 text-white/60">
+                        <p className="mt-2 text-muted-foreground">
                           Smart insights and automation working behind the scenes.
                         </p>
                       </div>
                       <div
-                        className="rounded-2xl border border-white/5 p-4"
+                        className="rounded-2xl border border-border/50 p-4"
                         style={{
                           background: `linear-gradient(to right, ${accentColor}1A, transparent, #6366f133)`
                         }}
                       >
-                        <p className="text-xs uppercase tracking-[0.2em] text-white/40">Quick Access</p>
+                        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Quick Access</p>
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
                           {props.aiPower.demoCard.items.map((item) => (
                             <div
                               key={item}
-                              className="rounded-xl border border-white/10 bg-zinc-700/60 px-4 py-3 text-sm font-medium text-white"
+                              className="rounded-xl border border-border bg-card/60 px-4 py-3 text-sm font-medium text-foreground"
                             >
                               {item}
                             </div>

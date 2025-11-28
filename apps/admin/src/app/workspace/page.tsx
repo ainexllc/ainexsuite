@@ -84,7 +84,7 @@ function StatCard({
   return (
     <div className="glass-card p-6 rounded-xl relative overflow-hidden group">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-zinc-400 group-hover:text-white group-hover:bg-white/10 transition-colors">
+        <div className="p-2.5 rounded-lg bg-foreground/5 border border-border text-zinc-400 group-hover:text-foreground group-hover:bg-foreground/10 transition-colors">
           <Icon className="w-5 h-5" />
         </div>
         {trend && (
@@ -96,12 +96,12 @@ function StatCard({
       </div>
 
       <div className="space-y-1">
-        <h3 className="text-3xl font-bold text-white tracking-tight">{value}</h3>
+        <h3 className="text-3xl font-bold text-foreground tracking-tight">{value}</h3>
         <p className="text-sm text-zinc-500 font-medium">{title}</p>
       </div>
 
       {trendLabel && (
-        <div className="mt-4 pt-4 border-t border-white/5">
+        <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-zinc-500">{trendLabel}</p>
         </div>
       )}
@@ -146,7 +146,7 @@ function Gauge({ value, label, icon: Icon, colorClass }: { value: number; label:
         </div>
       </div>
       <div className="text-center">
-        <div className="text-lg font-bold text-white leading-none">{value}%</div>
+        <div className="text-lg font-bold text-foreground leading-none">{value}%</div>
         <div className="text-xs text-zinc-500 font-medium mt-1">{label}</div>
       </div>
     </div>
@@ -168,14 +168,14 @@ function AdminNavCard({ href, label, icon: Icon, description, color, bg, border 
   return (
     <Link
       href={href}
-      className={`group bg-zinc-800/80 p-4 rounded-xl border ${border} hover:bg-zinc-700/80 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]`}
+      className={`group bg-zinc-800/80 p-4 rounded-xl border ${border} hover:bg-zinc-700/80 hover:border-border transition-all hover:scale-[1.02] active:scale-[0.98]`}
     >
       <div className="flex items-center gap-3">
         <div className={`p-2.5 rounded-lg ${bg} ${color}`}>
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-zinc-100 group-hover:text-white">{label}</h3>
+          <h3 className="font-semibold text-zinc-100 group-hover:text-foreground">{label}</h3>
           <p className="text-xs text-zinc-400 truncate">{description}</p>
         </div>
         <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
@@ -196,13 +196,13 @@ function CommitRow({ commit, onClick, expanded }: { commit: CommitActivity; onCl
   return (
     <div
       onClick={onClick}
-      className={`group p-3 rounded-lg border border-transparent hover:bg-white/5 hover:border-white/5 transition-all cursor-pointer ${expanded ? 'bg-white/5 border-white/5' : ''}`}
+      className={`group p-3 rounded-lg border border-transparent hover:bg-foreground/5 hover:border-border transition-all cursor-pointer ${expanded ? 'bg-foreground/5 border-border' : ''}`}
     >
       <div className="flex items-center gap-3">
         <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${color}`}>
           {type}
         </div>
-        <p className="text-sm text-zinc-300 font-medium truncate flex-1 group-hover:text-white transition-colors">
+        <p className="text-sm text-zinc-300 font-medium truncate flex-1 group-hover:text-foreground transition-colors">
           {commit.message}
         </p>
         <span className="text-xs font-mono text-zinc-600 group-hover:text-zinc-500">
@@ -211,7 +211,7 @@ function CommitRow({ commit, onClick, expanded }: { commit: CommitActivity; onCl
       </div>
 
       {expanded && commit.body && (
-        <div className="mt-3 pl-2 border-l-2 border-white/10 ml-1">
+        <div className="mt-3 pl-2 border-l-2 border-border ml-1">
           <pre className="text-xs text-zinc-400 font-mono whitespace-pre-wrap leading-relaxed">
             {commit.body}
           </pre>
@@ -349,7 +349,7 @@ export default function AdminWorkspacePage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Overview</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Overview</h1>
           <p className="text-zinc-400 mt-1">Platform metrics and system health</p>
         </div>
         <div className="flex items-center gap-3">
@@ -399,7 +399,7 @@ export default function AdminWorkspacePage() {
       {/* Admin Pages Navigation */}
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-lg font-semibold text-white">Admin Pages</h2>
+          <h2 className="text-lg font-semibold text-foreground">Admin Pages</h2>
           <span className="text-xs text-zinc-500 bg-zinc-800/50 px-2 py-0.5 rounded-full">{adminPages.length} sections</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -420,7 +420,7 @@ export default function AdminWorkspacePage() {
                 <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400">
                   <Lightbulb className="w-5 h-5" />
                 </div>
-                <h2 className="text-lg font-semibold text-white">Great Ideas</h2>
+                <h2 className="text-lg font-semibold text-foreground">Great Ideas</h2>
                 <span className="text-xs font-medium text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
                   Promoted Feedback
                 </span>
@@ -428,7 +428,7 @@ export default function AdminWorkspacePage() {
               
               <div className="grid gap-3">
                 {promotedItems.map(item => (
-                  <div key={item.id} className="p-4 rounded-lg bg-black/20 border border-white/5 flex gap-4 hover:bg-black/30 transition-colors">
+                  <div key={item.id} className="p-4 rounded-lg bg-background/20 border border-border flex gap-4 hover:bg-background/30 transition-colors">
                     <div className="pt-1">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     </div>
@@ -457,7 +457,7 @@ export default function AdminWorkspacePage() {
                 <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                   <Sparkles className="w-5 h-5" />
                 </div>
-                <h2 className="text-lg font-semibold text-white">AI Insights</h2>
+                <h2 className="text-lg font-semibold text-foreground">AI Insights</h2>
               </div>
 
               {insightsLoading ? (
@@ -467,7 +467,7 @@ export default function AdminWorkspacePage() {
                 </div>
               ) : insights ? (
                 <div className="space-y-6">
-                  <div className="p-4 rounded-lg bg-zinc-950/50 border border-white/5">
+                  <div className="p-4 rounded-lg bg-zinc-950/50 border border-border">
                     <p className="text-zinc-300 leading-relaxed text-balance">
                       {insights.summary}
                     </p>
@@ -510,12 +510,12 @@ export default function AdminWorkspacePage() {
           <section className="glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400">
+                <div className="p-2 rounded-lg bg-foreground/5 border border-border text-zinc-400">
                   <GitCommit className="w-5 h-5" />
                 </div>
-                <h2 className="text-lg font-semibold text-white">Development Activity</h2>
+                <h2 className="text-lg font-semibold text-foreground">Development Activity</h2>
               </div>
-              <span className="text-xs font-medium text-zinc-500 bg-zinc-900 px-2 py-1 rounded border border-white/5">
+              <span className="text-xs font-medium text-zinc-500 bg-zinc-900 px-2 py-1 rounded border border-border">
                 {commits.length} Events
               </span>
             </div>
@@ -524,7 +524,7 @@ export default function AdminWorkspacePage() {
               {commitsLoading ? (
                 <div className="space-y-3">
                   {[1,2,3].map(i => (
-                    <div key={i} className="h-10 bg-white/5 rounded animate-pulse" />
+                    <div key={i} className="h-10 bg-foreground/5 rounded animate-pulse" />
                   ))}
                 </div>
               ) : (
@@ -546,10 +546,10 @@ export default function AdminWorkspacePage() {
           {/* System Status Panel */}
           <section className="glass-card rounded-xl p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400">
+              <div className="p-2 rounded-lg bg-foreground/5 border border-border text-zinc-400">
                 <Server className="w-5 h-5" />
               </div>
-              <h2 className="text-lg font-semibold text-white">System Vitals</h2>
+              <h2 className="text-lg font-semibold text-foreground">System Vitals</h2>
             </div>
 
             <div className="grid grid-cols-3 gap-4 py-4">
@@ -559,13 +559,13 @@ export default function AdminWorkspacePage() {
             </div>
 
             <div className="mt-6 space-y-3">
-              <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-white/5">
+              <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-foreground/5">
                 <span className="text-zinc-400 flex items-center gap-2">
                   <Globe className="w-4 h-4" /> Region
                 </span>
-                <span className="text-white font-mono">us-east-1</span>
+                <span className="text-foreground font-mono">us-east-1</span>
               </div>
-              <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-white/5">
+              <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-foreground/5">
                 <span className="text-zinc-400 flex items-center gap-2">
                   <Zap className="w-4 h-4" /> Latency
                 </span>

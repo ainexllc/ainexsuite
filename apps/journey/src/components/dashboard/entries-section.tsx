@@ -151,7 +151,7 @@ export function EntriesSection({
                       </Link>
                       <Link
                         href={`/workspace/${entry.id}`}
-                        className={cn("rounded-full border p-2 transition hover:bg-white/5", borderClass, textPrimary)}
+                        className={cn("rounded-full border p-2 transition hover:bg-foreground/5", borderClass, textPrimary)}
                         title="Edit entry"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -181,7 +181,7 @@ export function EntriesSection({
             type="button"
             disabled={page === 0}
             onClick={() => onPageChange(Math.max(0, page - 1))}
-            className={cn("rounded-full px-3 py-1 text-sm font-semibold transition hover:bg-white/5 disabled:opacity-40", textSecondary)}
+            className={cn("rounded-full px-3 py-1 text-sm font-semibold transition hover:bg-foreground/5 disabled:opacity-40", textSecondary)}
           >
             Previous
           </button>
@@ -192,7 +192,7 @@ export function EntriesSection({
             type="button"
             disabled={page >= totalPages - 1}
             onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-            className={cn("rounded-full px-3 py-1 text-sm font-semibold transition hover:bg-white/5 disabled:opacity-40", textSecondary)}
+            className={cn("rounded-full px-3 py-1 text-sm font-semibold transition hover:bg-foreground/5 disabled:opacity-40", textSecondary)}
           >
             Next
           </button>

@@ -62,13 +62,13 @@ export function ProgressBarLabelPositions() {
     <div className="space-y-6">
       {/* Outside */}
       <div>
-        <p className="text-sm text-white/50 mb-2">Outside Label</p>
+        <p className="text-sm text-muted-foreground mb-2">Outside Label</p>
         <ProgressBar value={65} showLabel labelPosition="outside" />
       </div>
 
       {/* Inside */}
       <div>
-        <p className="text-sm text-white/50 mb-2">Inside Label</p>
+        <p className="text-sm text-muted-foreground mb-2">Inside Label</p>
         <ProgressBar value={75} showLabel labelPosition="inside" size="lg" />
       </div>
     </div>
@@ -98,7 +98,7 @@ export function ProgressRingCustomContent() {
       <ProgressRing value={100} size={150} showValue={false}>
         <div className="text-center">
           <Trophy className="h-8 w-8 text-yellow-400 mx-auto mb-1" />
-          <p className="text-sm font-medium text-white">Complete!</p>
+          <p className="text-sm font-medium text-foreground">Complete!</p>
         </div>
       </ProgressRing>
 
@@ -106,8 +106,8 @@ export function ProgressRingCustomContent() {
       <ProgressRing value={70} size={150} showValue={false}>
         <div className="text-center">
           <Flame className="h-8 w-8 text-orange-400 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-white">7</p>
-          <p className="text-xs text-white/50">day streak</p>
+          <p className="text-2xl font-bold text-foreground">7</p>
+          <p className="text-xs text-muted-foreground">day streak</p>
         </div>
       </ProgressRing>
     </div>
@@ -306,29 +306,29 @@ export function StreakProgressCustomIcons() {
 export function GoalTrackerExample() {
   return (
     <div className="surface-card rounded-2xl p-6 space-y-4">
-      <h3 className="text-lg font-semibold text-white mb-4">Learning Goals</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-4">Learning Goals</h3>
 
       <div className="space-y-4">
         <div>
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className="text-white">JavaScript Mastery</span>
-            <span className="text-white/50">45/100 hours</span>
+            <span className="text-foreground">JavaScript Mastery</span>
+            <span className="text-muted-foreground">45/100 hours</span>
           </div>
           <ProgressBar value={45} variant="gradient" />
         </div>
 
         <div>
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className="text-white">TypeScript Advanced</span>
-            <span className="text-white/50">78/100 hours</span>
+            <span className="text-foreground">TypeScript Advanced</span>
+            <span className="text-muted-foreground">78/100 hours</span>
           </div>
           <ProgressBar value={78} variant="gradient" />
         </div>
 
         <div>
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className="text-white">React Patterns</span>
-            <span className="text-white/50">62/100 hours</span>
+            <span className="text-foreground">React Patterns</span>
+            <span className="text-muted-foreground">62/100 hours</span>
           </div>
           <ProgressBar value={62} variant="gradient" />
         </div>
@@ -342,17 +342,17 @@ export function DashboardStatsExample() {
     <div className="grid grid-cols-3 gap-4">
       <div className="surface-card rounded-2xl p-6 flex flex-col items-center">
         <ProgressRing value={85} size={120} color="#10b981" />
-        <p className="text-sm text-white/70 mt-4">Completion Rate</p>
+        <p className="text-sm text-muted-foreground mt-4">Completion Rate</p>
       </div>
 
       <div className="surface-card rounded-2xl p-6 flex flex-col items-center">
         <ProgressRing value={72} size={120} color="#f59e0b" />
-        <p className="text-sm text-white/70 mt-4">Weekly Progress</p>
+        <p className="text-sm text-muted-foreground mt-4">Weekly Progress</p>
       </div>
 
       <div className="surface-card rounded-2xl p-6 flex flex-col items-center">
         <ProgressRing value={91} size={120} color="#3b82f6" />
-        <p className="text-sm text-white/70 mt-4">Accuracy Score</p>
+        <p className="text-sm text-muted-foreground mt-4">Accuracy Score</p>
       </div>
     </div>
   );
@@ -394,7 +394,7 @@ export function OnboardingFlowExample() {
 
   return (
     <div className="surface-card rounded-2xl p-8">
-      <h2 className="text-2xl font-bold text-white mb-8">Setup Your Account</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-8">Setup Your Account</h2>
       <ProgressSteps steps={steps} size="lg" />
     </div>
   );

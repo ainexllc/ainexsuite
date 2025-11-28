@@ -234,11 +234,11 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] backdrop-blur-sm"
+          className="flex w-full items-center justify-between rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] backdrop-blur-sm"
           onClick={() => setExpanded(true)}
         >
           <span>Write a journal entry...</span>
-          <span className="flex items-center gap-3 text-white/30">
+          <span className="flex items-center gap-3 text-muted-foreground">
             <PenLine className="h-5 w-5" />
             <ImageIcon className="h-5 w-5" />
           </span>
@@ -246,7 +246,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
       ) : (
         <div
           ref={composerRef}
-          className="w-full rounded-2xl shadow-xl bg-[#121212] border border-white/10 backdrop-blur-xl transition-all"
+          className="w-full rounded-2xl shadow-xl bg-background border border-border backdrop-blur-xl transition-all"
         >
           <div className="flex flex-col gap-3 px-5 py-4">
             <div className="flex items-start gap-3">
@@ -254,7 +254,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Title"
-                className="w-full bg-transparent text-lg font-semibold text-white placeholder:text-white/30 focus:outline-none"
+                className="w-full bg-transparent text-lg font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
                 autoFocus
                 ref={titleInputRef}
               />
@@ -286,7 +286,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
               }}
               placeholder="What's on your mind?..."
               rows={attachments.length ? 3 : 5}
-              className="min-h-[120px] w-full resize-none bg-transparent text-base text-white/90 placeholder:text-white/30 focus:outline-none leading-relaxed"
+              className="min-h-[120px] w-full resize-none bg-transparent text-base text-foreground/90 placeholder:text-muted-foreground focus:outline-none leading-relaxed"
             />
 
             {tags.length > 0 && (
@@ -294,13 +294,13 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs font-medium text-white/70"
+                    className="inline-flex items-center gap-1 rounded-full bg-foreground/10 px-2 py-1 text-xs font-medium text-muted-foreground"
                   >
                     #{tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="text-white/40 hover:text-white ml-1"
+                      className="text-muted-foreground hover:text-foreground ml-1"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -314,7 +314,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                 {attachments.map((attachment) => (
                   <figure
                     key={attachment.id}
-                    className="relative overflow-hidden rounded-xl border border-white/10 bg-black/20"
+                    className="relative overflow-hidden rounded-xl border border-border bg-background/20"
                   >
                     <img
                       src={attachment.preview}
@@ -324,7 +324,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                     <button
                       type="button"
                       onClick={() => handleRemoveAttachment(attachment.id)}
-                      className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm"
+                      className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-background/60 text-foreground hover:bg-background/80 backdrop-blur-sm"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -333,11 +333,11 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                   title="Add image"
                 >
@@ -349,7 +349,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showMoodPicker ? "text-[#f97316] bg-[#f97316]/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                      showMoodPicker ? "text-[#f97316] bg-[#f97316]/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
                     onClick={() => {
                       setShowMoodPicker(!showMoodPicker);
@@ -359,9 +359,9 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                   >
                     <Smile className="h-5 w-5" />
                   </button>
-                  
+
                   {showMoodPicker && (
-                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl grid grid-cols-4 gap-2">
+                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-background border border-border shadow-2xl grid grid-cols-4 gap-2">
                       {(Object.keys(moodConfig) as MoodType[]).map((m) => {
                         const Icon = moodConfig[m].icon;
                         return (
@@ -373,8 +373,8 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                               setShowMoodPicker(false);
                             }}
                             className={clsx(
-                              "flex flex-col items-center justify-center p-2 rounded-lg hover:bg-white/10 transition-colors gap-1",
-                              mood === m && "bg-white/10"
+                              "flex flex-col items-center justify-center p-2 rounded-lg hover:bg-foreground/10 transition-colors gap-1",
+                              mood === m && "bg-foreground/10"
                             )}
                             title={moodConfig[m].label}
                           >
@@ -391,7 +391,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showTagInput ? "text-[#f97316] bg-[#f97316]/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                      showTagInput ? "text-[#f97316] bg-[#f97316]/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
                     onClick={() => {
                       setShowTagInput(!showTagInput);
@@ -407,7 +407,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                   </button>
 
                   {showTagInput && (
-                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl">
+                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-background border border-border shadow-2xl">
                       <div className="flex gap-2">
                         <input
                           id="tag-input"
@@ -420,7 +420,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                             }
                           }}
                           placeholder="Add a tag..."
-                          className="flex-1 bg-black/20 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#f97316]"
+                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#f97316]"
                         />
                         <button
                           onClick={handleAddTag}
@@ -432,7 +432,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                       {tags.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {tags.map(tag => (
-                            <span key={tag} className="text-xs text-white/60">#{tag}</span>
+                            <span key={tag} className="text-xs text-muted-foreground">#{tag}</span>
                           ))}
                         </div>
                       )}
@@ -444,7 +444,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-sm font-medium text-white/50 hover:text-white transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   onClick={resetState}
                 >
                   Close
@@ -452,7 +452,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                 <button
                   type="button"
                   onClick={() => void handleSubmit()}
-                  className="rounded-full bg-[#f97316] px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-orange-900/20 transition hover:bg-[#ea580c] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-[#f97316]"
+                  className="rounded-full bg-[#f97316] px-6 py-2 text-sm font-semibold text-foreground shadow-lg shadow-orange-900/20 transition hover:bg-[#ea580c] hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-[#f97316]"
                   disabled={isSubmitting || !hasContent}
                 >
                   {isSubmitting ? "Saving..." : "Save Entry"}

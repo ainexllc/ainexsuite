@@ -58,7 +58,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
           type="button"
           onClick={generateInsights}
           disabled={(!title && !content)}
-          className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 disabled:opacity-50 disabled:hover:bg-white/5 disabled:hover:text-white/70 transition-all"
+          className="group inline-flex items-center gap-2 rounded-full border border-border bg-foreground/5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground hover:border-border/80 disabled:opacity-50 disabled:hover:bg-foreground/5 disabled:hover:text-muted-foreground transition-all"
         >
           <Sparkles className="h-3.5 w-3.5 text-accent-400 transition-transform group-hover:scale-110" />
           Generate AI Insights
@@ -68,11 +68,11 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm backdrop-blur-sm">
+    <div className="rounded-xl border border-border bg-foreground/5 p-4 text-sm backdrop-blur-sm">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-accent-400 font-semibold">
           <Sparkles className="h-4 w-4" />
-          <h3 className="text-white">AI Insights</h3>
+          <h3 className="text-foreground">AI Insights</h3>
         </div>
         <div className="flex gap-2">
            {data && (
@@ -80,7 +80,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
               type="button"
               onClick={generateInsights}
               disabled={loading}
-              className="p-1 text-white/40 hover:text-white transition-colors rounded-full hover:bg-white/10"
+              className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-foreground/10"
               title="Regenerate"
             >
               <RefreshCw className={clsx("h-3.5 w-3.5", loading && "animate-spin")} />
@@ -90,7 +90,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-3 py-2 text-white/50">
+        <div className="flex items-center gap-3 py-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin text-accent-400" />
           <span>Analyzing your note...</span>
         </div>
@@ -100,11 +100,11 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
         <div className="space-y-4">
           {/* Summary */}
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-medium text-white/50 uppercase tracking-wide">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
               <FileText className="h-3 w-3" />
               <span>Summary</span>
             </div>
-            <p className="text-white/80 leading-relaxed pl-5">
+            <p className="text-foreground/80 leading-relaxed pl-5">
               {data.summary}
             </p>
           </div>
@@ -112,13 +112,13 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
           {/* Action Items */}
           {data.actionItems.length > 0 && (
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-medium text-white/50 uppercase tracking-wide">
+              <div className="flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 <div className="flex items-center gap-2">
                   <ListTodo className="h-3 w-3" />
                   <span>Suggested Actions</span>
                 </div>
                 {onAddChecklistItems && (
-                  <button 
+                  <button
                     onClick={() => onAddChecklistItems(data.actionItems)}
                     className="flex items-center gap-1 text-[10px] text-accent-400 hover:text-accent-300 hover:underline"
                   >
@@ -128,7 +128,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
               </div>
               <ul className="space-y-1 pl-5">
                 {data.actionItems.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-white/80">
+                  <li key={i} className="flex items-start gap-2 text-foreground/80">
                     <span className="mt-1.5 h-1 w-1 rounded-full bg-accent-400 shrink-0" />
                     <span>{item}</span>
                   </li>
@@ -140,13 +140,13 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
           {/* Tags */}
           {data.tags.length > 0 && (
             <div className="space-y-1.5">
-               <div className="flex items-center justify-between text-xs font-medium text-white/50 uppercase tracking-wide">
+               <div className="flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 <div className="flex items-center gap-2">
                   <Tags className="h-3 w-3" />
                   <span>Suggested Tags</span>
                 </div>
                 {onAddTags && (
-                  <button 
+                  <button
                     onClick={() => onAddTags(data.tags)}
                     className="flex items-center gap-1 text-[10px] text-accent-400 hover:text-accent-300 hover:underline"
                   >
@@ -156,9 +156,9 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
               </div>
               <div className="flex flex-wrap gap-2 pl-5">
                 {data.tags.map((tag, i) => (
-                  <span 
-                    key={i} 
-                    className="inline-flex items-center rounded-md bg-white/10 border border-white/10 px-2 py-1 text-xs text-white/80"
+                  <span
+                    key={i}
+                    className="inline-flex items-center rounded-md bg-foreground/10 border border-border px-2 py-1 text-xs text-foreground/80"
                   >
                     #{tag}
                   </span>

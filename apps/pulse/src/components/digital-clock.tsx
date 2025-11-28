@@ -74,21 +74,21 @@ const FlipDigit = ({ digit }: { digit: string }) => {
   }, [digit, current]);
 
   if (digit === ':' || digit === ' ') {
-    return <div className="text-3xl md:text-5xl font-mono font-bold text-white/50 mx-0.5">{digit}</div>;
+    return <div className="text-3xl md:text-5xl font-mono font-bold text-foreground/50 mx-0.5">{digit}</div>;
   }
 
   return (
     <div className="relative w-10 h-14 md:w-16 md:h-24 bg-[#222] rounded-lg shadow-xl mx-0.5 perspective-1000">
       {/* Static Top (Next) */}
-      <div className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-black/20 z-0">
-        <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
+      <div className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-background/20 z-0">
+        <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-foreground">
           {current}
         </div>
       </div>
-      
+
       {/* Static Bottom (Prev) */}
       <div className="absolute top-1/2 left-0 right-0 bottom-0 overflow-hidden rounded-b-lg bg-[#282828] z-0">
-        <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
+        <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-foreground">
           {prev}
         </div>
       </div>
@@ -97,29 +97,29 @@ const FlipDigit = ({ digit }: { digit: string }) => {
       {flipping && (
         <>
           {/* Flipping Top (Prev -> moves down) */}
-          <div 
-            className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-black/20 z-20 origin-bottom animate-flip-top"
+          <div
+            className="absolute inset-0 h-1/2 overflow-hidden rounded-t-lg bg-[#333] border-b border-background/20 z-20 origin-bottom animate-flip-top"
             style={{ animationDuration: '0.6s', animationFillMode: 'forwards', transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
           >
-            <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
+            <div className="absolute top-0 left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-foreground">
               {prev}
             </div>
           </div>
 
           {/* Flipping Bottom (Next -> moves up) */}
-          <div 
+          <div
             className="absolute top-1/2 left-0 right-0 bottom-0 overflow-hidden rounded-b-lg bg-[#282828] z-20 origin-top animate-flip-bottom"
             style={{ animationDuration: '0.6s', animationFillMode: 'forwards', transformStyle: 'preserve-3d', backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
           >
-            <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-white">
+            <div className="absolute -top-[100%] left-0 right-0 h-[200%] flex items-center justify-center text-3xl md:text-6xl font-bold text-foreground">
               {current}
             </div>
           </div>
         </>
       )}
-      
+
       {/* Middle Line */}
-      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-black/40 z-30 transform -translate-y-1/2 shadow-sm" />
+      <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-background/40 z-30 transform -translate-y-1/2 shadow-sm" />
     </div>
   );
 };
@@ -553,12 +553,12 @@ export function DigitalClock() {
   };
 
   const renderEmptySlot = () => (
-    <button 
+    <button
         onClick={() => setIsTrayOpen(true)}
         className="w-full h-full flex items-center justify-center group cursor-pointer outline-none"
         aria-label="Add widget"
     >
-        <div className="text-white/10 group-hover:text-white/40 transition-all duration-300 transform group-hover:scale-110 group-active:scale-95 p-4 rounded-full group-hover:bg-white/5">
+        <div className="text-foreground/10 group-hover:text-foreground/40 transition-all duration-300 transform group-hover:scale-110 group-active:scale-95 p-4 rounded-full group-hover:bg-foreground/5">
              <Plus className="w-8 h-8" />
         </div>
     </button>
@@ -626,46 +626,46 @@ export function DigitalClock() {
         const seconds = time.getSeconds();
         const minutes = time.getMinutes();
         const hours = time.getHours();
-        
+
         const secondDeg = (seconds / 60) * 360;
         const minuteDeg = ((minutes * 60 + seconds) / 3600) * 360;
         const hourDeg = ((hours % 12 * 3600 + minutes * 60 + seconds) / 43200) * 360;
 
         return (
-            <div className="relative w-48 h-48 rounded-full border-4 border-white/20 bg-black/40 backdrop-blur-sm shadow-2xl flex items-center justify-center">
+            <div className="relative w-48 h-48 rounded-full border-4 border-border bg-background/40 backdrop-blur-sm shadow-2xl flex items-center justify-center">
                 {/* Markers */}
                 {[...Array(12)].map((_, i) => (
-                    <div 
-                        key={i} 
+                    <div
+                        key={i}
                         className={`absolute w-full h-full flex justify-center pt-2`}
-                        style={{ 
+                        style={{
                             transform: `rotate(${i * 30}deg)`,
                         }}
                     >
-                        <div className={`w-1 bg-white/50 ${i % 3 === 0 ? 'h-4' : 'h-2'}`} />
+                        <div className={`w-1 bg-foreground/50 ${i % 3 === 0 ? 'h-4' : 'h-2'}`} />
                     </div>
                 ))}
-                
+
                 {/* Hour Hand */}
-                <div 
-                    className="absolute w-1.5 bg-white h-12 rounded-full origin-bottom bottom-1/2 left-[calc(50%-3px)]"
+                <div
+                    className="absolute w-1.5 bg-foreground h-12 rounded-full origin-bottom bottom-1/2 left-[calc(50%-3px)]"
                     style={{ transform: `rotate(${hourDeg}deg)` }}
                 />
-                
+
                 {/* Minute Hand */}
-                <div 
-                    className="absolute w-1 bg-white/80 h-16 rounded-full origin-bottom bottom-1/2 left-[calc(50%-2px)]"
+                <div
+                    className="absolute w-1 bg-foreground/80 h-16 rounded-full origin-bottom bottom-1/2 left-[calc(50%-2px)]"
                     style={{ transform: `rotate(${minuteDeg}deg)` }}
                 />
-                
+
                 {/* Second Hand */}
-                <div 
+                <div
                     className="absolute w-0.5 bg-red-500 h-20 rounded-full origin-bottom bottom-1/2 left-[calc(50%-1px)]"
                     style={{ transform: `rotate(${secondDeg}deg)` }}
                 />
-                
+
                 {/* Center Dot */}
-                <div className="absolute w-3 h-3 bg-white rounded-full shadow-md z-10" />
+                <div className="absolute w-3 h-3 bg-foreground rounded-full shadow-md z-10" />
             </div>
         );
     }
@@ -684,7 +684,7 @@ export function DigitalClock() {
 
     // Default Digital
     return (
-        <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg text-white">
+        <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg text-foreground">
             {getFormattedTime()}
         </div>
     );
@@ -720,8 +720,8 @@ export function DigitalClock() {
                     onDrop={(e) => handleDrop(e, isRight ? 'left-1' : 'right-1')}
                     className={`
                         min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative
-                        ${tiles[isRight ? 'left-1' : 'right-1'] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'}
-                        ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                        ${tiles[isRight ? 'left-1' : 'right-1'] ? 'border-transparent' : 'border-border hover:border-border-hover bg-foreground/5'}
+                        ${isTrayOpen ? 'animate-pulse border-border-hover' : ''}
                     `}
                 >
                      {tiles[isRight ? 'left-1' : 'right-1'] ? (
@@ -747,8 +747,8 @@ export function DigitalClock() {
                     onDrop={(e) => handleDrop(e, slotId)}
                     className={`
                         min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative
-                        ${tiles[slotId] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'}
-                        ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                        ${tiles[slotId] ? 'border-transparent' : 'border-border hover:border-border-hover bg-foreground/5'}
+                        ${isTrayOpen ? 'animate-pulse border-border-hover' : ''}
                     `}
                 >
                     {tiles[slotId] ? (
@@ -862,8 +862,8 @@ export function DigitalClock() {
                         className={`
                             min-h-[120px] rounded-xl border-2 border-dashed transition-colors flex items-center justify-center relative
                             ${slot.className}
-                            ${tiles[slot.id] ? 'border-transparent' : 'border-white/5 hover:border-white/20 bg-white/5'}
-                            ${isTrayOpen ? 'animate-pulse border-white/20' : ''}
+                            ${tiles[slot.id] ? 'border-transparent' : 'border-border hover:border-border-hover bg-foreground/5'}
+                            ${isTrayOpen ? 'animate-pulse border-border-hover' : ''}
                         `}
                         >
                         {tiles[slot.id] ? (

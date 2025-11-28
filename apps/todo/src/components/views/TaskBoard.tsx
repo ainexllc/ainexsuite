@@ -48,7 +48,7 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
                   </span>
                 </h3>
               </div>
-              <div className="flex-1 space-y-3 overflow-y-auto min-h-[200px]">
+              <div className="flex-1 space-y-3 overflow-y-auto min-h-[200px] pb-2">
                 {columnTasks.map(task => (
                   <TaskCard key={task.id} task={task} onEditTask={onEditTask} onToggleComplete={handleToggleComplete} />
                 ))}
@@ -76,7 +76,7 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
             </button>
           </div>
 
-          <div className="flex-1 space-y-3 overflow-y-auto min-h-[200px]">
+          <div className="flex-1 space-y-3 overflow-y-auto min-h-[200px] pb-2">
             {getTasksByList(list.id).map((task: Task) => (
               <DataCard
                 key={task.id}
@@ -125,7 +125,7 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
 
             {/* Add Task Button (Ghost) */}
             <button
-              className="w-full py-2 rounded-xl border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-border/80 text-sm flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-2 rounded-xl border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/20 text-sm flex items-center justify-center gap-2 transition-colors"
             >
               <Plus className="h-4 w-4" /> Add Task
             </button>
@@ -135,7 +135,7 @@ export function TaskBoard({ onEditTask }: TaskBoardProps) {
 
       {/* Add List Button */}
       <div className="w-80 shrink-0">
-        <button className="w-full py-3 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground font-medium text-sm flex items-center justify-center gap-2 transition-colors">
+        <button className="w-full py-3 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground font-medium text-sm flex items-center justify-center gap-2 transition-colors">
           <Plus className="h-4 w-4" /> Add Section
         </button>
       </div>

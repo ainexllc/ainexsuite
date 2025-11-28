@@ -35,7 +35,7 @@ export function Paywall({ message, daysRemaining, onUpgrade }: PaywallProps) {
           <div className="relative">
             <div className="absolute inset-0 bg-accent-500/20 rounded-full blur-xl" />
             <div className="relative bg-accent-500 rounded-full p-4">
-              <Sparkles className="h-8 w-8 text-white" />
+              <Sparkles className="h-8 w-8 text-foreground" />
             </div>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function Paywall({ message, daysRemaining, onUpgrade }: PaywallProps) {
         {/* CTA Button */}
         <button
           onClick={handleUpgrade}
-          className="w-full bg-accent-500 hover:bg-accent-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          className="w-full bg-accent-500 hover:bg-accent-600 text-foreground font-semibold py-3 px-6 rounded-lg transition-colors"
         >
           Upgrade to Suite
         </button>

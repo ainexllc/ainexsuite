@@ -38,7 +38,7 @@ function SwimlaneNode({ data, selected }: NodeProps<SwimlaneNodeType>) {
     background: nodeColor,
     width: 8,
     height: 8,
-    border: '2px solid #fff',
+    border: '2px solid var(--foreground)',
     borderRadius: '50%',
     zIndex: 10,
     opacity: isHovered || selected ? 1 : 0.4,
@@ -85,13 +85,13 @@ function SwimlaneNode({ data, selected }: NodeProps<SwimlaneNodeType>) {
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full bg-transparent text-white outline-none"
+              className="w-full bg-transparent text-foreground outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <span className="text-white">{label}</span>
+            <span className="text-foreground">{label}</span>
           )}
-          <span className="text-white/50 text-[10px]">
+          <span className="text-muted-foreground text-[10px]">
             {orientation === 'horizontal' ? 'Horizontal' : 'Vertical'}
           </span>
         </div>
@@ -110,11 +110,11 @@ function SwimlaneNode({ data, selected }: NodeProps<SwimlaneNodeType>) {
                 key={`lane-${index}`}
                 className="relative flex-1"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
+                  background: 'rgba(var(--foreground-rgb, 255, 255, 255), 0.02)',
                   ...dividerStyle,
                 }}
               >
-                <span className="absolute right-2 top-2 text-[9px] uppercase text-white/30">
+                <span className="absolute right-2 top-2 text-[9px] uppercase text-muted-foreground opacity-50">
                   Lane {index + 1}
                 </span>
               </div>

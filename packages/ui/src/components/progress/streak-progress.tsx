@@ -90,8 +90,8 @@ export function StreakProgress({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-white/10',
-        'bg-white/5 backdrop-blur-sm transition-all duration-300',
+        'relative overflow-hidden rounded-2xl border border-border',
+        'bg-foreground/5 backdrop-blur-sm transition-all duration-300',
         containerPadding[size],
         isComplete && celebrateOnComplete && 'animate-pulse',
         className
@@ -124,8 +124,8 @@ export function StreakProgress({
 
             {/* Label */}
             <div>
-              <h3 className={cn('font-semibold text-white', textSize[size])}>{label}</h3>
-              <p className="text-xs text-white/50">
+              <h3 className={cn('font-semibold text-foreground', textSize[size])}>{label}</h3>
+              <p className="text-xs text-muted-foreground">
                 {current}/{target} {unit || ''}
               </p>
             </div>
@@ -133,15 +133,15 @@ export function StreakProgress({
 
           {/* Current value display */}
           <div className="text-right">
-            <div className={cn('font-bold text-white', valueSize[size])}>{current}</div>
+            <div className={cn('font-bold text-foreground', valueSize[size])}>{current}</div>
             {showPercentage && (
-              <div className="text-xs text-white/50">{Math.round(percentage)}%</div>
+              <div className="text-xs text-muted-foreground">{Math.round(percentage)}%</div>
             )}
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className={cn('relative w-full rounded-full overflow-hidden bg-black/40', barHeight[size])}>
+        <div className={cn('relative w-full rounded-full overflow-hidden bg-background/40', barHeight[size])}>
           <div
             className="h-full transition-all duration-500 ease-out relative"
             style={{

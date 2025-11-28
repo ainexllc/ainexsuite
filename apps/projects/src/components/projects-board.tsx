@@ -9,7 +9,7 @@ import { Whiteboard } from './whiteboard/Whiteboard';
  */
 export function ProjectsBoard() {
   return (
-    <div className="h-full w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur overflow-hidden">
+    <div className="h-full w-full rounded-xl border border-border bg-foreground/5 backdrop-blur overflow-hidden">
       <Whiteboard />
     </div>
   );

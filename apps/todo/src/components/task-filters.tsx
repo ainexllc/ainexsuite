@@ -36,7 +36,7 @@ const VIEW_OPTIONS: { value: ViewFilter; label: string; icon?: string }[] = [
 ];
 
 const PRIORITY_OPTIONS: { value: Priority | 'all'; label: string; color: string }[] = [
-  { value: 'all', label: 'All Priorities', color: 'text-ink-800' },
+  { value: 'all', label: 'All Priorities', color: 'text-foreground' },
   { value: 'urgent', label: 'Urgent', color: 'text-priority-urgent' },
   { value: 'high', label: 'High', color: 'text-priority-high' },
   { value: 'medium', label: 'Medium', color: 'text-priority-medium' },
@@ -85,7 +85,7 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
       <div className="flex items-center gap-3">
         {/* Search Input */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-600" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search tasks..."
@@ -98,7 +98,7 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
               onClick={() => updateFilter('searchQuery', '')}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-hover rounded"
             >
-              <X className="h-4 w-4 text-ink-600" />
+              <X className="h-4 w-4 text-muted-foreground" />
             </button>
           )}
         </div>
@@ -116,7 +116,7 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
           <SlidersHorizontal className="h-4 w-4" />
           Filters
           {hasActiveFilters && (
-            <span className="px-1.5 py-0.5 bg-accent-500 text-white text-xs rounded-full">
+            <span className="px-1.5 py-0.5 bg-accent-500 text-foreground text-xs rounded-full">
               {[
                 filters.searchQuery,
                 filters.priorityFilter !== 'all',
@@ -137,7 +137,7 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all',
               filters.viewFilter === option.value
-                ? 'bg-accent-500 text-white shadow-sm'
+                ? 'bg-accent-500 text-foreground shadow-sm'
                 : 'surface-card hover:surface-hover'
             )}
           >
@@ -154,7 +154,7 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
       {showAdvancedFilters && (
         <div className="surface-card rounded-lg p-4 border border-surface-hover space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-ink-800">Advanced Filters</h3>
+            <h3 className="font-semibold text-foreground">Advanced Filters</h3>
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}

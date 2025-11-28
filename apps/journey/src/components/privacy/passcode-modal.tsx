@@ -38,10 +38,10 @@ export function PasscodeModal({ isOpen, onClose, onSubmit, mode, title }: Passco
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900 p-6">
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
-        <p className="mt-2 text-sm text-white/60">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-zinc-900 p-6">
+        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           {mode === 'setup'
             ? 'Create a 4-digit passcode to protect your private entries'
             : 'Enter your passcode to unlock private entries'}
@@ -55,7 +55,7 @@ export function PasscodeModal({ isOpen, onClose, onSubmit, mode, title }: Passco
             value={passcode}
             onChange={(e) => setPasscode(e.target.value)}
             placeholder="Enter 4-digit code"
-            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-lg font-semibold tracking-widest text-white placeholder-white/40 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50"
+            className="w-full rounded-lg border border-border bg-foreground/5 px-4 py-3 text-center text-lg font-semibold tracking-widest text-foreground placeholder-muted-foreground focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/50"
             autoFocus
           />
           {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
@@ -63,7 +63,7 @@ export function PasscodeModal({ isOpen, onClose, onSubmit, mode, title }: Passco
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/5"
+              className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-foreground/5"
               disabled={isSubmitting}
             >
               Cancel
@@ -71,7 +71,7 @@ export function PasscodeModal({ isOpen, onClose, onSubmit, mode, title }: Passco
             <button
               type="submit"
               disabled={passcode.length !== 4 || isSubmitting}
-              className="flex-1 rounded-lg bg-[#f97316] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[#ff8a3d] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-lg bg-[#f97316] px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-[#ff8a3d] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? 'Processing...' : mode === 'setup' ? 'Set Passcode' : 'Unlock'}
             </button>

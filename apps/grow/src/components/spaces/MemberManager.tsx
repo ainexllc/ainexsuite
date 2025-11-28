@@ -101,11 +101,11 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md max-h-[90vh] bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-          <h3 className="text-lg font-semibold text-white">Manage Members</h3>
-          <button onClick={onClose} className="text-white/50 hover:text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md max-h-[90vh] bg-foreground border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
+          <h3 className="text-lg font-semibold text-foreground">Manage Members</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -113,18 +113,18 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
         <div className="p-4 space-y-6 overflow-y-auto flex-1">
           {/* Invite Section */}
           <div>
-            <label className="block text-xs font-medium text-white/70 mb-2">
+            <label className="block text-xs font-medium text-muted-foreground mb-2">
               Invite New Member
             </label>
             <form onSubmit={handleInvite} className="flex gap-2">
               <div className="relative flex-1">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-foreground/40" />
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="email@example.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-foreground/5 border border-border rounded-lg py-2 pl-9 pr-4 text-sm text-foreground focus:outline-none focus:border-indigo-500"
                   required
                 />
               </div>
@@ -140,22 +140,22 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
 
           {/* Members List */}
           <div>
-            <h4 className="text-xs font-medium text-white/70 mb-3">
+            <h4 className="text-xs font-medium text-muted-foreground mb-3">
               Current Members ({currentSpace.members.length})
             </h4>
             <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
               {currentSpace.members.map((member: Member) => (
-                <div 
-                  key={member.uid} 
-                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5"
+                <div
+                  key={member.uid}
+                  className="flex items-center justify-between p-3 rounded-lg bg-foreground/5 border border-border"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-xs font-bold text-white">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-xs font-bold text-foreground">
                       {member.displayName.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{member.displayName}</p>
-                      <p className="text-xs text-white/50 capitalize">{member.role}</p>
+                      <p className="text-sm font-medium text-foreground">{member.displayName}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
                     </div>
                   </div>
 
@@ -168,7 +168,7 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
                           'p-1.5 transition-colors',
                           member.ageGroup === 'child'
                             ? 'text-pink-400'
-                            : 'text-white/30 hover:text-blue-400'
+                            : 'text-foreground/30 hover:text-blue-400'
                         )}
                         title={member.ageGroup === 'child' ? 'Child (tap to make adult)' : 'Adult (tap to make child)'}
                       >
@@ -184,7 +184,7 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
                     {member.role !== 'admin' && canManage && (
                       <button
                         onClick={() => handleRoleChange(member.uid, 'admin')}
-                        className="p-1.5 text-white/30 hover:text-amber-400 transition-colors"
+                        className="p-1.5 text-foreground/30 hover:text-amber-400 transition-colors"
                         title="Make Admin"
                       >
                         <Crown className="h-4 w-4" />
@@ -195,7 +195,7 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
                     {canManage && member.uid !== user.uid && (
                       <button
                         onClick={() => handleRemoveMember(member.uid)}
-                        className="p-1.5 text-white/30 hover:text-red-400 transition-colors"
+                        className="p-1.5 text-foreground/30 hover:text-red-400 transition-colors"
                         title="Remove Member"
                       >
                         <UserMinus className="h-4 w-4" />
@@ -209,8 +209,8 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
 
           {/* Squad Permission Policy (Squad spaces only) */}
           {currentSpace.type === 'squad' && canManage && (
-            <div className="pt-4 border-t border-white/10">
-              <h4 className="text-xs font-medium text-white/70 mb-3">
+            <div className="pt-4 border-t border-border">
+              <h4 className="text-xs font-medium text-muted-foreground mb-3">
                 Habit Creation Policy
               </h4>
               <div className="flex gap-2">
@@ -219,8 +219,8 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
                   className={cn(
                     'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     (currentSpace.habitCreationPolicy || 'admin_only') === 'admin_only'
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      ? 'bg-indigo-500 text-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
                   )}
                 >
                   Admins Only
@@ -230,14 +230,14 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
                   className={cn(
                     'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     currentSpace.habitCreationPolicy === 'anyone'
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      ? 'bg-indigo-500 text-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
                   )}
                 >
                   All Members
                 </button>
               </div>
-              <p className="text-xs text-white/40 mt-2">
+              <p className="text-xs text-foreground/40 mt-2">
                 {(currentSpace.habitCreationPolicy || 'admin_only') === 'admin_only'
                   ? 'Only admins can create new habits'
                   : 'Any member can create new habits'}
@@ -247,8 +247,8 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
 
           {/* Family space info */}
           {currentSpace.type === 'family' && (
-            <div className="pt-4 border-t border-white/10">
-              <p className="text-xs text-white/40">
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-foreground/40">
                 <User className="h-3 w-3 inline mr-1" />
                 Adults can create habits.
                 <Baby className="h-3 w-3 inline mx-1" />
@@ -259,39 +259,39 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
 
           {/* Family Dashboard Link (Family spaces only) */}
           {currentSpace.type === 'family' && canManage && (
-            <div className="pt-4 border-t border-white/10">
+            <div className="pt-4 border-t border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Monitor className="h-4 w-4 text-amber-400" />
-                <h4 className="text-xs font-medium text-white/70">
+                <h4 className="text-xs font-medium text-muted-foreground">
                   Family Dashboard
                 </h4>
               </div>
-              <p className="text-xs text-white/40 mb-3">
+              <p className="text-xs text-foreground/40 mb-3">
                 Get a shareable link for a wall-mounted touchscreen display. Anyone with this link can complete habits.
               </p>
 
               {currentSpace.dashboardToken ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/10">
-                    <Link className="h-4 w-4 text-white/40 flex-shrink-0" />
-                    <span className="text-xs text-white/60 truncate flex-1">
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-foreground/5 border border-border">
+                    <Link className="h-4 w-4 text-foreground/40 flex-shrink-0" />
+                    <span className="text-xs text-muted-foreground truncate flex-1">
                       {getDashboardUrl()?.slice(0, 50)}...
                     </span>
                     <button
                       onClick={copyDashboardLink}
-                      className="p-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                      className="p-1.5 rounded bg-foreground/10 hover:bg-foreground/20 transition-colors"
                       title="Copy link"
                     >
                       {copied ? (
                         <Check className="h-3.5 w-3.5 text-emerald-400" />
                       ) : (
-                        <Copy className="h-3.5 w-3.5 text-white/60" />
+                        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
                     </button>
                   </div>
                   <button
                     onClick={generateDashboardToken}
-                    className="flex items-center gap-2 text-xs text-white/40 hover:text-white/60 transition-colors"
+                    className="flex items-center gap-2 text-xs text-foreground/40 hover:text-muted-foreground transition-colors"
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
                     Generate new link (invalidates old link)

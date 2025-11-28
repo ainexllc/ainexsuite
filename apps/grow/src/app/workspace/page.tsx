@@ -239,10 +239,10 @@ function GrowWorkspaceContent() {
             ) : (
               <div
                 onClick={() => setShowQuestEditor(true)}
-                className="border border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
+                className="border border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-center bg-foreground/5 hover:bg-foreground/10 transition-colors cursor-pointer group"
               >
-                <Crown className="h-8 w-8 text-white/20 group-hover:text-yellow-400/50 mb-2 transition-colors" />
-                <p className="text-sm text-white/50 group-hover:text-white/70">No active quests. Start a team challenge!</p>
+                <Crown className="h-8 w-8 text-foreground/20 group-hover:text-yellow-400/50 mb-2 transition-colors" />
+                <p className="text-sm text-muted-foreground group-hover:text-muted-foreground">No active quests. Start a team challenge!</p>
               </div>
             )}
           </div>
@@ -269,8 +269,8 @@ function GrowWorkspaceContent() {
               ))}
             </div>
             {habits.filter((h: Habit) => h.wager?.isActive).length === 0 && (
-              <div className="p-4 rounded-xl bg-white/5 border border-dashed border-white/10 text-center">
-                <p className="text-xs text-white/40">No active bets. Spice things up!</p>
+              <div className="p-4 rounded-xl bg-foreground/5 border border-dashed border-border text-center">
+                <p className="text-xs text-foreground/40">No active bets. Spice things up!</p>
               </div>
             )}
           </div>
@@ -382,11 +382,11 @@ function GrowWorkspaceContent() {
       />
 
         {showHabitPacks && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-2xl bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+            <div className="w-full max-w-2xl bg-foreground border border-border rounded-2xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-white">Habit Packs</h3>
-                <button onClick={() => setShowHabitPacks(false)} className="text-white/50 hover:text-white">
+                <h3 className="text-xl font-bold text-foreground">Habit Packs</h3>
+                <button onClick={() => setShowHabitPacks(false)} className="text-muted-foreground hover:text-foreground">
                   <Plus className="h-6 w-6 rotate-45" />
                 </button>
               </div>

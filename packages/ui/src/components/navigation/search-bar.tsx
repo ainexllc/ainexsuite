@@ -56,21 +56,21 @@ export function SearchBar({
 
   return (
     <div
-      className={`mx-4 flex flex-1 items-center gap-2 rounded-full bg-white/5 px-3 py-1 shadow-sm transition hover:bg-white/10 max-w-2xl h-9 ${className}`}
+      className={`mx-4 flex flex-1 items-center gap-2 rounded-full bg-foreground/5 px-3 py-1 shadow-sm transition hover:bg-foreground/10 max-w-2xl h-9 ${className}`}
     >
-      <Search className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+      <Search className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden />
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
         placeholder={placeholder}
-        className="w-full bg-transparent text-sm text-white placeholder:text-white/50 focus:outline-none"
+        className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
       />
       {value && (
         <button
           type="button"
-          className="flex h-6 w-6 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white/70 shrink-0"
+          className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/10 hover:text-foreground/70 shrink-0"
           aria-label="Clear search"
           onClick={handleClear}
         >

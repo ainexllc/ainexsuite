@@ -117,20 +117,20 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
   };
 
   return (
-    <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-background/95 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <button
         onClick={onClose}
-        className="fixed top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors z-50"
+        className="fixed top-4 right-4 p-2 bg-foreground/10 hover:bg-foreground/20 rounded-lg transition-colors z-50"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-foreground" />
       </button>
 
       {onEdit && (
         <button
           onClick={onEdit}
-          className="fixed top-4 right-20 p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors z-50"
+          className="fixed top-4 right-20 p-2 bg-foreground/10 hover:bg-foreground/20 rounded-lg transition-colors z-50"
         >
-          <Edit className="h-6 w-6 text-white" />
+          <Edit className="h-6 w-6 text-foreground" />
         </button>
       )}
 
@@ -215,7 +215,7 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
               <div className="space-y-4">
                 {moment.comments.sort((a, b) => a.timestamp - b.timestamp).map((comment) => (
                   <div key={comment.id} className="flex gap-3 group">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0">
                       {/* Placeholder avatar until we have user profiles linked */}
                       U
                     </div>
@@ -271,10 +271,10 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
               <button
                 type="submit"
                 disabled={!user || !commentText.trim() || isSubmitting}
-                className="p-3 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:hover:bg-accent-500 text-white rounded-xl transition-all shadow-lg shadow-accent-500/20"
+                className="p-3 bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:hover:bg-accent-500 text-foreground rounded-xl transition-all shadow-lg shadow-accent-500/20"
               >
                 {isSubmitting ? (
-                  <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="h-5 w-5 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
                 ) : (
                   <Send className="h-5 w-5" />
                 )}

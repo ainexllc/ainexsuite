@@ -210,7 +210,7 @@ export function DashboardView({ dateFilter }: { dateFilter?: string }) {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
-          <p className="text-sm text-white/70">{loadingMessage}</p>
+          <p className="text-sm text-muted-foreground">{loadingMessage}</p>
         </div>
       </div>
     );

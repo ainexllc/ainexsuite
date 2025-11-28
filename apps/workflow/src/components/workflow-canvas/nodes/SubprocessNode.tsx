@@ -27,7 +27,7 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
     background: nodeColor,
     width: 8,
     height: 8,
-    border: '2px solid #fff',
+    border: '2px solid var(--foreground)',
     borderRadius: '50%',
     zIndex: 10,
     opacity: isHovered || selected ? 1 : 0.4,
@@ -66,7 +66,7 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
           boxShadow: selected ? `0 0 0 2px ${nodeColor}50` : 'inset 0 0 0 1px rgba(255,255,255,0.05)',
         }}
       >
-        <div className="flex items-center justify-between text-xs uppercase tracking-wide text-white/60">
+        <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground">
           <div onDoubleClick={() => setIsEditingLabel(true)} className="flex-1">
             {isEditingLabel ? (
               <input
@@ -75,20 +75,20 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
                 onBlur={stopEditingLabel}
                 onKeyDown={handleKeyDown}
                 autoFocus
-                className="w-full bg-transparent text-white outline-none"
+                className="w-full bg-transparent text-foreground outline-none"
                 style={{ fontFamily: 'inherit' }}
               />
             ) : (
-              <span className="text-white">{label}</span>
+              <span className="text-foreground">{label}</span>
             )}
           </div>
-          <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] text-white/60">
+          <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
             Nested Flow
           </span>
         </div>
 
         <div
-          className="mt-3 flex-1 rounded-lg border border-dashed border-white/20 bg-black/20 p-3 text-sm text-white/80"
+          className="mt-3 flex-1 rounded-lg border border-dashed border-border bg-background/20 p-3 text-sm text-muted-foreground"
           onDoubleClick={() => setIsEditingDetail(true)}
         >
           {isEditingDetail ? (
@@ -98,11 +98,11 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
               onBlur={stopEditingDetail}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="h-full w-full resize-none bg-transparent text-white outline-none"
+              className="h-full w-full resize-none bg-transparent text-foreground outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <p className="whitespace-pre-wrap leading-relaxed text-white/80">{detail}</p>
+            <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{detail}</p>
           )}
         </div>
       </div>

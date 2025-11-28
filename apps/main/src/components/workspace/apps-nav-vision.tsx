@@ -26,9 +26,9 @@ interface AppsNavVisionProps {
 
 export function AppsNavVision({ apps, className }: AppsNavVisionProps) {
   return (
-    <div className={clsx("w-full rounded-xl border border-white/10 bg-black/20 backdrop-blur-xl overflow-hidden", className)}>
+    <div className={clsx("w-full rounded-xl border border-border bg-background/20 backdrop-blur-xl overflow-hidden", className)}>
       {/* Horizontal scrollable container */}
-      <div className="flex items-center gap-3 px-4 py-4 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="flex items-center gap-3 px-4 py-4 overflow-x-auto scrollbar-thin scrollbar-thumb-foreground/10 scrollbar-track-transparent">
         {apps.map((app) => {
           const accentColor = app.primaryColor || app.color || '#8b5cf6';
 
@@ -46,20 +46,20 @@ export function AppsNavVision({ apps, className }: AppsNavVisionProps) {
               } as React.CSSProperties}
             >
               {/* Background & Border Effects */}
-              <div className="absolute inset-0 bg-white/5 border border-white/10 rounded-xl transition-all duration-300 group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_20px_-5px_var(--accent-glow)]" />
+              <div className="absolute inset-0 bg-foreground/5 border border-border rounded-xl transition-all duration-300 group-hover:bg-[var(--accent-dim)] group-hover:border-[var(--accent-glow)] group-hover:shadow-[0_0_20px_-5px_var(--accent-glow)]" />
 
               {/* Icon Container */}
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-black/40 border border-white/10 transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] flex-shrink-0"
+                className="relative z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-background/40 border border-border transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] flex-shrink-0"
                 style={{ color: accentColor }}
               >
-                <app.icon className="h-4.5 w-4.5 transition-all duration-300 group-hover:text-black" />
+                <app.icon className="h-4.5 w-4.5 transition-all duration-300 group-hover:text-background" />
               </motion.div>
 
               {/* App Name */}
-              <span className="relative z-10 text-sm font-medium text-white/70 transition-colors duration-300 group-hover:text-white truncate">
+              <span className="relative z-10 text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground truncate">
                 {app.name}
               </span>
             </Link>

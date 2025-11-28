@@ -89,7 +89,7 @@ export const LoadingOverlay = React.forwardRef<HTMLDivElement, LoadingOverlayPro
         )}
         {...props}
       >
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-surface-elevated/80 px-8 py-6 shadow-lg backdrop-blur-md">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface-elevated/80 px-8 py-6 shadow-lg backdrop-blur-md">
           <Spinner size={spinnerSize} color={spinnerColor} />
           {message && (
             <p className="text-sm font-medium text-ink-700">{message}</p>

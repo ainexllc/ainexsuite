@@ -88,7 +88,7 @@ export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: Slidesho
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center overflow-hidden">
       {/* Background Blur Layer */}
       <div className="absolute inset-0 z-0 opacity-30 blur-3xl transform scale-110">
         <Image
@@ -124,15 +124,15 @@ export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: Slidesho
       >
         {/* Top Bar */}
         <div className="flex justify-between items-start">
-          <div className="text-white drop-shadow-md">
+          <div className="text-foreground drop-shadow-md">
             <h2 className="text-2xl font-bold">{currentMoment.title || format(new Date(currentMoment.date), 'MMMM d, yyyy')}</h2>
             {currentMoment.location && (
-              <p className="text-white/80 text-sm">{currentMoment.location}</p>
+              <p className="text-foreground/80 text-sm">{currentMoment.location}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-sm transition-colors"
+            className="p-2 bg-background/20 hover:bg-background/40 text-foreground rounded-full backdrop-blur-sm transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
@@ -140,12 +140,12 @@ export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: Slidesho
 
         {/* Center Navigation (Invisible areas) */}
         <div className="absolute inset-y-0 left-0 w-1/4 flex items-center justify-start pl-4" onClick={handlePrev}>
-          <button className="p-3 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-sm transition-all hover:scale-110">
+          <button className="p-3 bg-background/20 hover:bg-background/40 text-foreground rounded-full backdrop-blur-sm transition-all hover:scale-110">
             <ChevronLeft className="h-8 w-8" />
           </button>
         </div>
         <div className="absolute inset-y-0 right-0 w-1/4 flex items-center justify-end pr-4" onClick={handleNext}>
-          <button className="p-3 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-sm transition-all hover:scale-110">
+          <button className="p-3 bg-background/20 hover:bg-background/40 text-foreground rounded-full backdrop-blur-sm transition-all hover:scale-110">
             <ChevronRight className="h-8 w-8" />
           </button>
         </div>
@@ -153,19 +153,19 @@ export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: Slidesho
         {/* Bottom Control Bar */}
         <div className="flex flex-col items-center gap-4 pb-8">
           {currentMoment.caption && (
-            <p className="text-white text-center text-lg font-medium drop-shadow-md max-w-2xl bg-black/30 backdrop-blur-md px-6 py-2 rounded-xl">
+            <p className="text-foreground text-center text-lg font-medium drop-shadow-md max-w-2xl bg-background/30 backdrop-blur-md px-6 py-2 rounded-xl">
               {currentMoment.caption}
             </p>
           )}
-          
-          <div className="flex items-center gap-6 bg-black/40 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
-            <span className="text-white/70 text-xs font-mono w-12 text-right">
+
+          <div className="flex items-center gap-6 bg-background/40 backdrop-blur-md px-6 py-3 rounded-full border border-border">
+            <span className="text-foreground/70 text-xs font-mono w-12 text-right">
               {currentIndex + 1} / {moments.length}
             </span>
-            
+
             <button
               onClick={togglePlay}
-              className="p-3 bg-white text-black rounded-full hover:scale-105 transition-transform"
+              className="p-3 bg-foreground text-background rounded-full hover:scale-105 transition-transform"
             >
               {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
             </button>
@@ -178,7 +178,7 @@ export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: Slidesho
                   document.exitFullscreen();
                 }
               }}
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-foreground/70 hover:text-foreground transition-colors"
             >
               <Maximize2 className="h-5 w-5" />
             </button>

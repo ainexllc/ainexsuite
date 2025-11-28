@@ -118,7 +118,7 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
           // Base styles
           'w-full',
           // Sticky positioning
-          sticky && 'sticky top-0 z-20 backdrop-blur-md bg-black/20 border-b border-white/10',
+          sticky && 'sticky top-0 z-20 backdrop-blur-md bg-background/20 border-b border-border',
           className
         )}
         style={themeStyles}
@@ -136,19 +136,19 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
                       {crumb.href && !isLast ? (
                         <Link
                           href={crumb.href}
-                          className="text-white/60 hover:text-white transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {crumb.label}
                         </Link>
                       ) : (
                         <span className={cn(
-                          isLast ? 'text-white font-medium' : 'text-white/60'
+                          isLast ? 'text-foreground font-medium' : 'text-muted-foreground'
                         )}>
                           {crumb.label}
                         </span>
                       )}
                       {!isLast && (
-                        <ChevronRight className="h-4 w-4 text-white/40" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       )}
                     </li>
                   );
@@ -165,10 +165,10 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
               {backHref && (
                 <Link
                   href={backHref}
-                  className="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                  className="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-lg bg-foreground/5 hover:bg-foreground/10 transition-colors"
                   aria-label="Go back"
                 >
-                  <ArrowLeft className="h-5 w-5 text-white/70" />
+                  <ArrowLeft className="h-5 w-5 text-muted-foreground" />
                 </Link>
               )}
 
@@ -188,13 +188,13 @@ export const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
               {/* Title and subtitle */}
               <div className="min-w-0 flex-1">
                 <h1 className={cn(
-                  'font-bold text-white',
+                  'font-bold text-foreground',
                   titleSizes[size]
                 )}>
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="mt-1 text-sm md:text-base text-white/60">
+                  <p className="mt-1 text-sm md:text-base text-muted-foreground">
                     {subtitle}
                   </p>
                 )}

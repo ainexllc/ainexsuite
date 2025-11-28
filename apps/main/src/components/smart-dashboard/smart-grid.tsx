@@ -75,7 +75,7 @@ export function SmartGrid() {
 
   return (
     <div className="mb-10">
-      <h3 className="text-lg font-semibold text-white mb-4 px-1">
+      <h3 className="text-lg font-semibold text-foreground mb-4 px-1">
         Daily Briefing
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -142,9 +142,9 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
     >
-      <Link 
+      <Link
         href={data.actionUrl || '#'}
-        className="group block relative h-full overflow-hidden rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300"
+        className="group block relative h-full overflow-hidden rounded-xl border border-border bg-foreground/[0.02] hover:bg-foreground/[0.04] transition-all duration-300"
       >
         <div className="p-4 flex flex-col h-full">
           <div className="flex items-start justify-between mb-3">
@@ -162,7 +162,7 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
                   key={i}
                   onClick={(e) => handleAction(e, action)}
                   disabled={isCompleting}
-                  className="p-1.5 rounded-full bg-white/10 hover:bg-green-500/20 hover:text-green-400 transition-colors disabled:opacity-50"
+                  className="p-1.5 rounded-full bg-foreground/10 hover:bg-green-500/20 hover:text-green-400 transition-colors disabled:opacity-50"
                   title={action.label}
                 >
                   {action.type === 'complete' ? <CheckCircle className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -170,12 +170,12 @@ function InsightCard({ data, index }: { data: InsightCardData; index: number }) 
               ))}
             </div>
           </div>
-          
+
           <div className="mt-auto">
-            <h4 className="font-medium text-white group-hover:text-accent-400 transition-colors line-clamp-1">
+            <h4 className="font-medium text-foreground group-hover:text-accent-400 transition-colors line-clamp-1">
               {data.title}
             </h4>
-            <div className="mt-1 flex items-center justify-between text-xs text-white/50">
+            <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
               <span>{data.subtitle}</span>
               <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
             </div>

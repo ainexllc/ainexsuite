@@ -54,7 +54,7 @@ export function AinexStudiosLogo({
   const content = (
     <>
       <div
-        className={clsx('font-brand font-black tracking-tight text-white leading-none', config.ainex)}
+        className={clsx('font-brand font-black tracking-tight text-foreground leading-none', config.ainex)}
         style={{ letterSpacing: '-0.015em' }}
       >
         <span className="text-[#f97316]">A</span>

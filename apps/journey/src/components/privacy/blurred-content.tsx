@@ -26,12 +26,12 @@ export function BlurredContent({ isLocked, onClick, className, children }: Blurr
       </div>
 
       {/* Overlay with lock icon */}
-      <div className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm">
+      <div className="absolute inset-0 flex items-center justify-center bg-foreground/10 backdrop-blur-sm">
         <div className="flex flex-col items-center gap-1 p-3">
           <div className="p-2 bg-zinc-800 rounded-full shadow-lg">
             <Lock className="w-5 h-5 text-[#f97316]" />
           </div>
-          <p className="text-xs text-white/60">
+          <p className="text-xs text-muted-foreground">
             Click to unlock
           </p>
         </div>

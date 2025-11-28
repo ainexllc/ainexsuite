@@ -15,7 +15,7 @@ export interface ProfileSectionProps {
 
 export function ProfileSection({ user, onClose }: ProfileSectionProps) {
   return (
-    <div className="p-4 border-b border-white/10">
+    <div className="p-4 border-b border-border">
       {/* Profile Photo & Info */}
       <div className="flex items-start gap-3">
         {/* Profile Photo */}
@@ -26,11 +26,11 @@ export function ProfileSection({ user, onClose }: ProfileSectionProps) {
               alt={user.displayName ?? user.email ?? 'Profile'}
               width={56}
               height={56}
-              className="rounded-full object-cover ring-2 ring-white/10"
+              className="rounded-full object-cover ring-2 ring-border"
               sizes="56px"
             />
           ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-lg font-bold text-white ring-2 ring-white/10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-lg font-bold text-white ring-2 ring-border">
               {user.displayName
                 ? user.displayName
                     .split(' ')
@@ -44,26 +44,26 @@ export function ProfileSection({ user, onClose }: ProfileSectionProps) {
 
           {/* Edit overlay on hover */}
           <button
-            className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 flex items-center justify-center rounded-full bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label="Edit profile photo"
           >
-            <User className="h-5 w-5 text-white" />
+            <User className="h-5 w-5 text-foreground" />
           </button>
         </div>
 
         {/* User Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-white truncate">
+          <h3 className="text-base font-semibold text-foreground truncate">
             {user.displayName || 'User'}
           </h3>
-          <p className="text-sm text-white/60 truncate">{user.email}</p>
+          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
 
           {/* Action Buttons */}
           <div className="flex gap-2 mt-2">
             <Link
               href="/profile/edit"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/70 bg-white/5 rounded-lg hover:bg-white/10 transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground bg-foreground/5 rounded-lg hover:bg-foreground/10 transition"
             >
               <User className="h-3 w-3" />
               Edit Profile
@@ -71,7 +71,7 @@ export function ProfileSection({ user, onClose }: ProfileSectionProps) {
             <Link
               href="/settings"
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white/70 bg-white/5 rounded-lg hover:bg-white/10 transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground bg-foreground/5 rounded-lg hover:bg-foreground/10 transition"
             >
               <Settings className="h-3 w-3" />
               Settings

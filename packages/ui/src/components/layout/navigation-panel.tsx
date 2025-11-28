@@ -133,7 +133,7 @@ function NavSection({
                 </span>
               </span>
               {item.badge && (
-                <span className="ml-auto inline-flex items-center rounded-full bg-ink-900/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <span className="ml-auto inline-flex items-center rounded-full bg-ink-900/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground">
                   {item.badge}
                 </span>
               )}

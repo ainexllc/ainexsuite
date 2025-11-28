@@ -182,9 +182,9 @@ export function WeatherTile({
             ) : weather ? (
               <>
                 <div className="text-2xl font-bold">{weather.temperature}°</div>
-                <div className="text-xs text-white/50">{weather.location} • {weather.condition}</div>
+                <div className="text-xs text-muted-foreground">{weather.location} • {weather.condition}</div>
                 {weather.humidity !== undefined && (
-                  <div className="text-xs text-white/40 mt-1">💧 {weather.humidity}% humidity</div>
+                  <div className="text-xs text-muted-foreground/80 mt-1">💧 {weather.humidity}% humidity</div>
                 )}
               </>
             ) : null}
@@ -208,12 +208,12 @@ export function WeatherTile({
 
         {/* Settings Panel */}
         {showSettings && (
-          <div className="border-t border-white/10 pt-4 space-y-3 animate-in fade-in duration-200">
+          <div className="border-t border-border pt-4 space-y-3 animate-in fade-in duration-200">
             <div className="space-y-2">
-              <label className="text-xs text-white/60 font-semibold uppercase tracking-wider block">
+              <label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">
                 📍 Location
               </label>
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-muted-foreground/80">
                 Search by city, state, or zipcode
               </p>
             </div>
@@ -226,7 +226,7 @@ export function WeatherTile({
                   value={inputZipcode}
                   onChange={(e) => handleInputChange(e.target.value)}
                   placeholder="e.g., San Diego, CA"
-                  className="w-full px-3 py-2.5 text-sm bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-blue-400/50 focus:bg-white/10 focus:ring-1 focus:ring-blue-400/30 transition-all duration-200"
+                  className="w-full px-3 py-2.5 text-sm bg-foreground/5 border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-blue-400/50 focus:bg-foreground/10 focus:ring-1 focus:ring-blue-400/30 transition-all duration-200"
                   autoComplete="off"
                 />
                 {inputZipcode && (
@@ -236,7 +236,7 @@ export function WeatherTile({
                       setSuggestions([]);
                       setShowSuggestions(false);
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors"
                     aria-label="Clear input"
                   >
                     ✕
@@ -246,7 +246,7 @@ export function WeatherTile({
               <button
                 onClick={handleSaveZipcode}
                 disabled={!inputZipcode.trim()}
-                className="px-4 py-2.5 text-xs font-semibold bg-blue-500/30 hover:bg-blue-500/50 disabled:bg-white/10 disabled:text-white/30 border border-blue-500/50 disabled:border-white/20 rounded-lg text-white transition-all duration-200 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-xs font-semibold bg-blue-500/30 hover:bg-blue-500/50 disabled:bg-foreground/10 disabled:text-muted-foreground border border-blue-500/50 disabled:border-border rounded-lg text-foreground transition-all duration-200 disabled:cursor-not-allowed"
               >
                 Save
               </button>
@@ -256,21 +256,21 @@ export function WeatherTile({
                 <>
                   {/* Mobile: Full-screen overlay modal */}
                   <div
-                    className="fixed inset-0 md:hidden bg-black/60 backdrop-blur-sm z-50 animate-in fade-in duration-200"
+                    className="fixed inset-0 md:hidden bg-background/60 backdrop-blur-sm z-50 animate-in fade-in duration-200"
                     onClick={() => setShowSuggestions(false)}
                   />
 
                   {/* Suggestions Container */}
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-gradient-to-b from-black/80 to-black border border-white/20 rounded-xl max-h-56 overflow-y-auto z-[9999] shadow-2xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-gradient-to-b from-background/80 to-background border border-border rounded-xl max-h-56 overflow-y-auto z-[9999] shadow-2xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-200">
                     {/* Mobile Header */}
-                    <div className="sticky top-0 bg-black/90 border-b border-white/10 px-4 py-3 md:hidden backdrop-blur-sm">
+                    <div className="sticky top-0 bg-background/90 border-b border-border px-4 py-3 md:hidden backdrop-blur-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/70 font-semibold uppercase tracking-wider">
+                        <span className="text-xs text-foreground/70 font-semibold uppercase tracking-wider">
                           🔍 Results
                         </span>
                         <button
                           onClick={() => setShowSuggestions(false)}
-                          className="text-white/50 hover:text-white/80 transition-colors"
+                          className="text-muted-foreground hover:text-foreground/80 transition-colors"
                           aria-label="Close suggestions"
                         >
                           ✕
@@ -281,30 +281,30 @@ export function WeatherTile({
                     {isLoadingSuggestions ? (
                       <div className="px-4 py-6 text-center">
                         <div className="inline-block">
-                          <div className="w-5 h-5 border-2 border-white/20 border-t-blue-400 rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 border-border border-t-blue-400 rounded-full animate-spin" />
                         </div>
-                        <p className="text-xs text-white/50 mt-2">Searching locations...</p>
+                        <p className="text-xs text-muted-foreground mt-2">Searching locations...</p>
                       </div>
                     ) : suggestions.length > 0 ? (
-                      <div className="divide-y divide-white/10">
+                      <div className="divide-y divide-border">
                         {suggestions.map((suggestion, index) => (
                           <button
                             key={index}
                             onClick={() => handleSelectSuggestion(suggestion)}
-                            className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all duration-150 group flex items-center justify-between"
+                            className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-foreground/10 active:bg-foreground/20 transition-all duration-150 group flex items-center justify-between"
                           >
                             <span className="flex items-center gap-2">
-                              <span className="text-white/40 group-hover:text-white/60">📍</span>
+                              <span className="text-muted-foreground group-hover:text-foreground/60">📍</span>
                               <span>{suggestion.name}</span>
                             </span>
-                            <span className="text-white/20 group-hover:text-white/40 transition-colors">→</span>
+                            <span className="text-foreground/20 group-hover:text-foreground/40 transition-colors">→</span>
                           </button>
                         ))}
                       </div>
                     ) : (
                       <div className="px-4 py-6 text-center">
-                        <p className="text-xs text-white/50">No locations found</p>
-                        <p className="text-xs text-white/30 mt-1">Try a different search</p>
+                        <p className="text-xs text-muted-foreground">No locations found</p>
+                        <p className="text-xs text-muted-foreground/80 mt-1">Try a different search</p>
                       </div>
                     )}
                   </div>

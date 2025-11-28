@@ -149,7 +149,7 @@ export function Avatar({
         ) : (
           <div
             className={clsx(
-              "flex h-full w-full items-center justify-center font-semibold text-white",
+              "flex h-full w-full items-center justify-center font-semibold text-foreground",
               // Glassmorphism fallback background
               !fallback && "bg-gradient-to-br from-[rgb(var(--color-accent-500))] to-[rgb(var(--color-accent-600))]"
             )}

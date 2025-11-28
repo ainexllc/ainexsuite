@@ -20,7 +20,7 @@ export interface ConnectedAppsProps {
 export function ConnectedApps({ apps, accessibleApps = [], onClose }: ConnectedAppsProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold text-white/70 uppercase tracking-wider">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         Your Apps ({accessibleApps.length}/{apps.length})
       </h3>
 
@@ -36,16 +36,16 @@ export function ConnectedApps({ apps, accessibleApps = [], onClose }: ConnectedA
               onClick={onClose}
               className={`group relative flex items-center gap-2 p-3 rounded-lg border transition ${
                 hasAccess
-                  ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
-                  : 'bg-white/[0.02] border-white/5 opacity-60 cursor-not-allowed'
+                  ? 'bg-foreground/5 border-border hover:bg-foreground/10 hover:border-foreground/20'
+                  : 'bg-foreground/[0.02] border-border/50 opacity-60 cursor-not-allowed'
               }`}
             >
               {/* App Icon/Color Indicator */}
               <div
                 className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0"
                 style={{
-                  backgroundColor: hasAccess ? `${app.color}20` : 'rgba(255,255,255,0.05)',
-                  color: hasAccess ? app.color : 'rgba(255,255,255,0.3)',
+                  backgroundColor: hasAccess ? `${app.color}20` : 'hsl(var(--foreground) / 0.05)',
+                  color: hasAccess ? app.color : 'hsl(var(--foreground) / 0.3)',
                 }}
               >
                 {IconComponent ? (
@@ -60,7 +60,7 @@ export function ConnectedApps({ apps, accessibleApps = [], onClose }: ConnectedA
               {/* App Name */}
               <div className="flex-1 min-w-0">
                 <p className={`text-sm font-medium truncate ${
-                  hasAccess ? 'text-white' : 'text-white/40'
+                  hasAccess ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {app.name}
                 </p>
@@ -68,15 +68,15 @@ export function ConnectedApps({ apps, accessibleApps = [], onClose }: ConnectedA
 
               {/* Status Indicator */}
               {hasAccess ? (
-                <ExternalLink className="h-3 w-3 text-white/40 group-hover:text-white/60 transition flex-shrink-0" />
+                <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-foreground/60 transition flex-shrink-0" />
               ) : (
-                <Lock className="h-3 w-3 text-white/30 flex-shrink-0" />
+                <Lock className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
               )}
 
               {/* Locked Overlay */}
               {!hasAccess && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition">
-                  <span className="text-xs font-medium text-white">Upgrade</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-lg opacity-0 group-hover:opacity-100 transition">
+                  <span className="text-xs font-medium text-foreground">Upgrade</span>
                 </div>
               )}
             </Link>

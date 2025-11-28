@@ -185,14 +185,14 @@ export function AuthBox({
 
   return (
     <>
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-800/80 p-8 shadow-lg backdrop-blur">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-background/80 p-8 shadow-lg backdrop-blur">
         {logoContent && (
           <div className="mb-8 flex justify-center">
             {logoContent}
           </div>
         )}
 
-        <div className="mb-6 flex gap-2 rounded-lg bg-zinc-700/50 p-1">
+        <div className="mb-6 flex gap-2 rounded-lg bg-muted/50 p-1">
           <button
             onClick={() => {
               setAuthTab('signin');
@@ -201,8 +201,8 @@ export function AuthBox({
             className={clsx(
               'flex-1 rounded-md py-2 px-3 text-sm font-medium transition-all',
               authTab === 'signin'
-                ? 'bg-white/10 text-white'
-                : 'text-white/60 hover:text-white'
+                ? 'bg-foreground/10 text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             Sign In
@@ -215,8 +215,8 @@ export function AuthBox({
             className={clsx(
               'flex-1 rounded-md py-2 px-3 text-sm font-medium transition-all',
               authTab === 'signup'
-                ? 'bg-white/10 text-white'
-                : 'text-white/60 hover:text-white'
+                ? 'bg-foreground/10 text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             Sign Up
@@ -231,60 +231,48 @@ export function AuthBox({
           )}
 
           <div>
-            <label className="block text-xs font-medium text-white/70 mb-2">
+            <label className="block text-xs font-medium text-muted-foreground mb-2">
               Email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all"
+              className="w-full rounded-lg border border-border bg-foreground/5 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-border focus:bg-foreground/10 focus:outline-none transition-all"
               placeholder="you@example.com"
               disabled={loading}
               required
-              style={{
-                WebkitBoxShadow: '0 0 0 1000px transparent inset',
-                WebkitTextFillColor: 'white',
-              }}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-white/70 mb-2">
+            <label className="block text-xs font-medium text-muted-foreground mb-2">
               Password
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all"
+              className="w-full rounded-lg border border-border bg-foreground/5 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-border focus:bg-foreground/10 focus:outline-none transition-all"
               placeholder="••••••••"
               disabled={loading}
               required
-              style={{
-                WebkitBoxShadow: '0 0 0 1000px transparent inset',
-                WebkitTextFillColor: 'white',
-              }}
             />
           </div>
 
           {authTab === 'signup' && (
             <div>
-              <label className="block text-xs font-medium text-white/70 mb-2">
+              <label className="block text-xs font-medium text-muted-foreground mb-2">
                 Confirm Password
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:bg-white/10 focus:outline-none transition-all"
+                className="w-full rounded-lg border border-border bg-foreground/5 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-border focus:bg-foreground/10 focus:outline-none transition-all"
                 placeholder="••••••••"
                 disabled={loading}
                 required
-                style={{
-                  WebkitBoxShadow: '0 0 0 1000px transparent inset',
-                  WebkitTextFillColor: 'white',
-                }}
               />
             </div>
           )}
@@ -293,22 +281,22 @@ export function AuthBox({
             type="submit"
             disabled={loading}
             style={{ backgroundColor: accentColor }}
-            className="w-full rounded-lg py-2.5 px-4 text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
+            className="w-full rounded-lg py-2.5 px-4 text-sm font-medium text-foreground transition-all hover:opacity-90 disabled:opacity-50"
           >
             {loading ? 'Loading...' : authTab === 'signin' ? 'Sign In' : 'Sign Up'}
           </button>
         </form>
 
         <div className="my-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-white/10" />
-          <span className="text-xs text-white/50">Or continue with</span>
-          <div className="h-px flex-1 bg-white/10" />
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">Or continue with</span>
+          <div className="h-px flex-1 bg-border" />
         </div>
 
         <button
           onClick={handleGoogleAuth}
           disabled={loading}
-          className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 px-4 text-sm font-medium text-white transition-all hover:bg-white/10 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full rounded-lg border border-border bg-foreground/5 py-2.5 px-4 text-sm font-medium text-foreground transition-all hover:bg-foreground/10 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="currentColor"/>
@@ -322,35 +310,35 @@ export function AuthBox({
 
       {/* Existing Account Modal */}
       {showExistingAccountModal && existingAccount && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-800 rounded-2xl border border-white/10 p-8 max-w-md w-full shadow-xl">
-            <h2 className="text-xl font-semibold text-white mb-2">
+        <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-2xl border border-border p-8 max-w-md w-full shadow-xl">
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               Account Found
             </h2>
-            <p className="text-white/70 mb-6">
-              We found an existing account for <span className="font-medium text-white">{existingAccount.email}</span>.
+            <p className="text-muted-foreground mb-6">
+              We found an existing account for <span className="font-medium text-foreground">{existingAccount.email}</span>.
             </p>
 
-            <div className="bg-white/5 rounded-lg p-4 mb-6 border border-white/10">
-              <p className="text-sm text-white/60 mb-2">Primary App</p>
-              <p className="text-white font-medium capitalize">{existingAccount.primaryApp}</p>
+            <div className="bg-foreground/5 rounded-lg p-4 mb-6 border border-border">
+              <p className="text-sm text-muted-foreground mb-2">Primary App</p>
+              <p className="text-foreground font-medium capitalize">{existingAccount.primaryApp}</p>
             </div>
 
-            <p className="text-sm text-white/70 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               Would you like to use your existing account to access {appName}, or create a new account?
             </p>
 
             <div className="flex gap-3">
               <button
                 onClick={handleCreateNewAccount}
-                className="flex-1 rounded-lg border border-white/10 bg-white/5 py-2.5 px-4 text-sm font-medium text-white transition-all hover:bg-white/10"
+                className="flex-1 rounded-lg border border-border bg-foreground/5 py-2.5 px-4 text-sm font-medium text-foreground transition-all hover:bg-foreground/10"
               >
                 Create New
               </button>
               <button
                 onClick={handleUseExistingAccount}
                 style={{ backgroundColor: accentColor }}
-                className="flex-1 rounded-lg py-2.5 px-4 text-sm font-medium text-white transition-all hover:opacity-90"
+                className="flex-1 rounded-lg py-2.5 px-4 text-sm font-medium text-foreground transition-all hover:opacity-90"
               >
                 Use Existing
               </button>

@@ -140,10 +140,10 @@ export function Sidebar({
   const baseClasses = clsx(
     "flex h-full flex-col transition-all duration-300",
     glass && "backdrop-blur-xl",
-    glass ? "bg-black/40" : "bg-surface-base/90",
+    glass ? "bg-background/40" : "bg-surface-base/90",
     position === "left" && "border-r",
     position === "right" && "border-l",
-    glass ? "border-white/10" : "border-outline-subtle/60",
+    glass ? "border-border" : "border-outline-subtle/60",
     className,
   );
 
@@ -151,7 +151,7 @@ export function Sidebar({
     "hidden lg:flex h-[calc(100vh-4rem)] shrink-0",
     position === "left" && "border-r",
     position === "right" && "border-l",
-    glass ? "border-white/10 bg-black/40" : "border-outline-subtle/60 bg-surface-base/85",
+    glass ? "border-border bg-background/40" : "border-outline-subtle/60 bg-surface-base/85",
     glass && "backdrop-blur-xl",
     "transition-all duration-300",
   );
@@ -180,7 +180,7 @@ export function Sidebar({
         <div className="flex h-full flex-col">
           {/* Collapse Toggle */}
           {showCollapseToggle && onToggle && (
-            <div className="flex items-center justify-end px-3 py-2 border-b border-white/10">
+            <div className="flex items-center justify-end px-3 py-2 border-b border-border">
               <button
                 type="button"
                 className="icon-button"
@@ -225,7 +225,7 @@ export function Sidebar({
             glass ? "bg-surface-elevated/95 backdrop-blur-2xl" : "bg-surface-elevated",
             position === "left" && "border-r",
             position === "right" && "border-l",
-            glass ? "border-white/10" : "border-outline-subtle/60",
+            glass ? "border-border" : "border-outline-subtle/60",
             "shadow-2xl",
           )}
           style={{ width: widthValue }}
@@ -282,7 +282,7 @@ export function SidebarHeader({
     return (
       <div
         className={clsx(
-          "flex items-center justify-between border-b border-white/10 px-5 py-4",
+          "flex items-center justify-between border-b border-border px-5 py-4",
           className,
         )}
       >
@@ -294,7 +294,7 @@ export function SidebarHeader({
   return (
     <div
       className={clsx(
-        "flex items-center justify-between border-b border-white/10 px-5 py-4",
+        "flex items-center justify-between border-b border-border px-5 py-4",
         className,
       )}
     >
@@ -460,7 +460,7 @@ export function SidebarItem({
         </span>
       )}
       {!collapsible && badge !== undefined && (
-        <span className="inline-flex items-center rounded-full bg-ink-900/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+        <span className="inline-flex items-center rounded-full bg-ink-900/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground">
           {badge}
         </span>
       )}
@@ -520,7 +520,7 @@ export function SidebarFooter({ className, children }: SidebarFooterProps) {
   return (
     <div
       className={clsx(
-        "border-t border-white/10 px-4 py-4 mt-auto",
+        "border-t border-border px-4 py-4 mt-auto",
         className,
       )}
     >

@@ -52,7 +52,7 @@ export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-1">
         <Sparkles className="h-4 w-4 text-yellow-400" />
-        <h3 className="text-xs font-semibold text-white/70 uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           What&apos;s New
         </h3>
       </div>
@@ -71,15 +71,15 @@ export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
           return (
             <div
               key={update.id}
-              className="relative rounded-lg bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-3"
+              className="relative rounded-lg bg-gradient-to-br from-foreground/5 to-foreground/[0.02] border border-border p-3"
             >
               {/* Dismiss Button */}
               <button
                 onClick={() => handleDismiss(update.id)}
-                className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 transition"
+                className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded hover:bg-foreground/10 transition"
                 aria-label="Dismiss"
               >
-                <X className="h-3 w-3 text-white/40" />
+                <X className="h-3 w-3 text-muted-foreground" />
               </button>
 
               {/* Badge */}
@@ -92,15 +92,15 @@ export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
               )}
 
               {/* Content */}
-              <h4 className="text-sm font-semibold text-white pr-6 mb-1">
+              <h4 className="text-sm font-semibold text-foreground pr-6 mb-1">
                 {update.title}
               </h4>
-              <p className="text-xs text-white/60 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {update.description}
               </p>
 
               {/* Date */}
-              <p className="text-[10px] text-white/40 mt-2">
+              <p className="text-[10px] text-muted-foreground/70 mt-2">
                 {new Date(update.date).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',

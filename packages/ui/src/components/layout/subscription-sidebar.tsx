@@ -61,23 +61,23 @@ export function SubscriptionSidebar({
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-30 bg-background/40 backdrop-blur-sm"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed right-0 top-0 h-full w-[360px] bg-black/20 backdrop-blur-3xl border-l border-white/10 transition-transform duration-300 ease-out z-40 overflow-y-auto ${
+        className={`fixed right-0 top-0 h-full w-[360px] bg-background/20 backdrop-blur-3xl border-l border-border transition-transform duration-300 ease-out z-40 overflow-y-auto ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-white/10 bg-black/20 backdrop-blur-xl">
-          <h2 className="text-lg font-semibold text-white">Profile</h2>
+        <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-border bg-background/20 backdrop-blur-xl">
+          <h2 className="text-lg font-semibold text-foreground">Profile</h2>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition hover:bg-white/10"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground/5 transition hover:bg-foreground/10"
             aria-label="Close sidebar"
           >
             <X className="h-4 w-4" />
@@ -90,7 +90,7 @@ export function SubscriptionSidebar({
           <ProfileSection user={user} onClose={onClose} />
 
           {/* Divider */}
-          <div className="border-t border-white/10" />
+          <div className="border-t border-border" />
 
           {/* Trial Status Card */}
           {isTrialActive && (
@@ -191,7 +191,7 @@ export function SubscriptionSidebar({
         </div>
 
         {/* Footer - Sign Out Button */}
-        <div className="sticky bottom-0 p-4 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+        <div className="sticky bottom-0 p-4 border-t border-border bg-background/40 backdrop-blur-xl">
           <button
             onClick={() => {
               onSignOut();

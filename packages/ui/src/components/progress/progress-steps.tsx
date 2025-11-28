@@ -87,8 +87,8 @@ export function ProgressSteps({
                     'rounded-full border-2 flex items-center justify-center transition-all duration-300',
                     circleSize[size],
                     {
-                      'border-white/20 bg-white/5': !step.completed && !step.active,
-                      'bg-white/10': step.active && !step.completed,
+                      'border-border bg-foreground/5': !step.completed && !step.active,
+                      'bg-foreground/10': step.active && !step.completed,
                     }
                   )}
                   style={{
@@ -97,12 +97,12 @@ export function ProgressSteps({
                   }}
                 >
                   {step.completed ? (
-                    <Check className={cn('text-white', iconSize[size])} />
+                    <Check className={cn('text-foreground', iconSize[size])} />
                   ) : (
                     <span
                       className={cn(
                         'font-semibold',
-                        step.active ? 'text-white' : 'text-white/50',
+                        step.active ? 'text-foreground' : 'text-muted-foreground',
                         size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base'
                       )}
                     >
@@ -115,11 +115,11 @@ export function ProgressSteps({
                 {!isLast && orientation === 'horizontal' && (
                   <div
                     className={cn(
-                      'h-0.5 transition-all duration-300',
+                      'h-0.5 transition-all duration-300 bg-border',
                       size === 'sm' ? 'w-12' : size === 'md' ? 'w-16' : 'w-20'
                     )}
                     style={{
-                      backgroundColor: step.completed ? accentColor : 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: step.completed ? accentColor : undefined,
                       marginLeft: size === 'sm' ? '0.25rem' : size === 'md' ? '0.5rem' : '0.75rem',
                       marginRight: size === 'sm' ? '0.25rem' : size === 'md' ? '0.5rem' : '0.75rem',
                     }}
@@ -129,9 +129,9 @@ export function ProgressSteps({
                 {/* Vertical connector line */}
                 {!isLast && orientation === 'vertical' && (
                   <div
-                    className="absolute top-full w-0.5 h-8 transition-all duration-300"
+                    className="absolute top-full w-0.5 h-8 transition-all duration-300 bg-border"
                     style={{
-                      backgroundColor: step.completed ? accentColor : 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: step.completed ? accentColor : undefined,
                       left: '50%',
                       transform: 'translateX(-50%)',
                     }}
@@ -146,13 +146,13 @@ export function ProgressSteps({
                     className={cn(
                       'font-medium transition-colors',
                       textSize[size],
-                      step.active || step.completed ? 'text-white' : 'text-white/50'
+                      step.active || step.completed ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
                     {step.label}
                   </div>
                   {step.description && (
-                    <div className={cn('text-white/40 mt-0.5', descriptionSize[size])}>
+                    <div className={cn('text-muted-foreground/70 mt-0.5', descriptionSize[size])}>
                       {step.description}
                     </div>
                   )}
@@ -163,13 +163,13 @@ export function ProgressSteps({
                     className={cn(
                       'font-medium transition-colors',
                       textSize[size],
-                      step.active || step.completed ? 'text-white' : 'text-white/50'
+                      step.active || step.completed ? 'text-foreground' : 'text-muted-foreground'
                     )}
                   >
                     {step.label}
                   </div>
                   {step.description && (
-                    <div className={cn('text-white/40 mt-0.5', descriptionSize[size])}>
+                    <div className={cn('text-muted-foreground/70 mt-0.5', descriptionSize[size])}>
                       {step.description}
                     </div>
                   )}

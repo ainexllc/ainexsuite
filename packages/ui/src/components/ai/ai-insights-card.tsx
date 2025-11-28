@@ -121,7 +121,7 @@ export function AIInsightsCard({
       <div className={cn("animate-in fade-in duration-300", className)}>
         <button
           onClick={toggleCollapsed}
-          className="w-full relative overflow-hidden rounded-xl border backdrop-blur-xl px-4 py-3 text-left transition-all hover:border-opacity-70 active:scale-[0.995] bg-white/80 dark:bg-card/60 shadow-lg dark:shadow-none"
+          className="w-full relative overflow-hidden rounded-xl border backdrop-blur-xl px-4 py-3 text-left transition-all hover:border-opacity-70 active:scale-[0.995] bg-foreground/80 dark:bg-card/60 shadow-lg dark:shadow-none"
           style={{
             borderColor: `${accentColor}33`,
           }}
@@ -154,7 +154,7 @@ export function AIInsightsCard({
       <div className={cn("animate-in fade-in slide-in-from-top-2 duration-300", className)}>
         <button
           onClick={onExpand}
-          className="w-full relative overflow-hidden rounded-xl border backdrop-blur-xl p-3 text-left transition-all hover:border-opacity-70 active:scale-[0.99] bg-white/80 dark:bg-card/60 shadow-lg dark:shadow-none"
+          className="w-full relative overflow-hidden rounded-xl border backdrop-blur-xl p-3 text-left transition-all hover:border-opacity-70 active:scale-[0.99] bg-foreground/80 dark:bg-card/60 shadow-lg dark:shadow-none"
           style={{
             borderColor: `${accentColor}33`,
             boxShadow: `inset 0 0 60px -20px ${accentColor}40`
@@ -220,7 +220,7 @@ export function AIInsightsCard({
     >
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border-2 backdrop-blur-xl bg-white/80 dark:bg-card/80 shadow-lg dark:shadow-none",
+          "relative overflow-hidden rounded-2xl border-2 backdrop-blur-xl bg-foreground/80 dark:bg-card/80 shadow-lg dark:shadow-none",
           isSidebar ? "p-4" : "p-6"
         )}
         style={{
@@ -246,7 +246,7 @@ export function AIInsightsCard({
               <button
                 onClick={onRefresh}
                 disabled={isLoading || refreshDisabled}
-                className="p-2 text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-background/5 dark:hover:bg-foreground/10 rounded-full transition-colors disabled:opacity-50"
                 title="Refresh Insights"
               >
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
@@ -255,7 +255,7 @@ export function AIInsightsCard({
             {collapsible && (
               <button
                 onClick={toggleCollapsed}
-                className="p-2 text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-background/5 dark:hover:bg-foreground/10 rounded-full transition-colors"
                 title="Collapse"
               >
                 <ChevronUp className="h-4 w-4" />
@@ -264,7 +264,7 @@ export function AIInsightsCard({
             {onExpand && isSidebar && !collapsible && (
               <button
                 onClick={onExpand}
-                className="p-2 text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-background/5 dark:hover:bg-foreground/10 rounded-full transition-colors"
                 title="Collapse"
               >
                 <ChevronUp className="h-4 w-4" />
@@ -273,7 +273,7 @@ export function AIInsightsCard({
             {onDismiss && (
               <button
                 onClick={onDismiss}
-                className="p-2 text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-background/5 dark:hover:bg-foreground/10 rounded-full transition-colors"
                 title="Dismiss"
               >
                 <X className="h-4 w-4" />
@@ -390,7 +390,7 @@ export function AIInsightsTagList({ tags }: AIInsightsTagListProps) {
       {tags.map((tag, i) => (
         <span
           key={i}
-          className="inline-flex items-center rounded-md bg-gray-100 dark:bg-white/10 px-2.5 py-1 text-xs text-text-primary ring-1 ring-inset ring-gray-200 dark:ring-white/10"
+          className="inline-flex items-center rounded-md bg-gray-100 dark:bg-foreground/10 px-2.5 py-1 text-xs text-text-primary ring-1 ring-inset ring-gray-200 dark:ring-border"
         >
           {tag}
         </span>

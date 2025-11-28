@@ -25,7 +25,7 @@ export function AppsGridVision({ apps }: AppsGridVisionProps) {
   return (
     <div className="relative min-h-[400px] rounded-3xl overflow-hidden w-full">
       {/* Background with Atmosphere - mimicking the mockup's style but integrating with the page's dark theme */}
-      <div className="absolute inset-0 bg-white/[0.02] border border-white/5 rounded-3xl"></div>
+      <div className="absolute inset-0 bg-foreground/[0.02] border border-border rounded-3xl"></div>
 
       {/* Content Container */}
       <div className="relative z-10 p-8 md:p-12">
@@ -38,8 +38,8 @@ export function AppsGridVision({ apps }: AppsGridVisionProps) {
                 className="group flex flex-col items-center gap-3 cursor-pointer"
               >
                 <div className={clsx(
-                  "relative w-[88px] h-[88px] rounded-full flex items-center justify-center shadow-2xl border border-white/10 transition-all duration-300",
-                  "bg-white/5 backdrop-blur-md group-hover:bg-white/10",
+                  "relative w-[88px] h-[88px] rounded-full flex items-center justify-center shadow-2xl border border-border transition-all duration-300",
+                  "bg-foreground/5 backdrop-blur-md group-hover:bg-foreground/10",
                   !app.isInstalled && "opacity-90 saturate-50"
                 )}>
                   {/* Inner Gradient Sphere */}
@@ -47,19 +47,19 @@ export function AppsGridVision({ apps }: AppsGridVisionProps) {
                     "w-16 h-16 rounded-full flex items-center justify-center shadow-inner bg-gradient-to-br",
                     app.color
                   )}>
-                     <app.icon className="w-8 h-8 text-white drop-shadow-md" />
+                     <app.icon className="w-8 h-8 text-foreground drop-shadow-md" />
                   </div>
                   
                   {/* Locked Indicator */}
                   {!app.isInstalled && app.isLocked && (
-                    <div className="absolute -top-1 -right-1 w-8 h-8 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/10 shadow-lg">
-                      <Lock className="w-4 h-4 text-white" />
+                    <div className="absolute -top-1 -right-1 w-8 h-8 bg-foreground/10 backdrop-blur-xl rounded-full flex items-center justify-center border border-border shadow-lg">
+                      <Lock className="w-4 h-4 text-foreground" />
                     </div>
                   )}
                 </div>
                 <span className={clsx(
                   "text-sm font-medium drop-shadow-md tracking-wide transition-colors",
-                  app.isInstalled ? "text-white" : "text-white/60 group-hover:text-white"
+                  app.isInstalled ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                 )}>
                   {app.name}
                 </span>

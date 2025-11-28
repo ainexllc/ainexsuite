@@ -113,7 +113,7 @@ export function FilterModal({
       accentColor="#f97316"
     >
       {displayTags.length === 0 ? (
-        <div className="text-center py-8 text-white/60">
+        <div className="text-center py-8 text-muted-foreground">
           No tags in this category
         </div>
       ) : (
@@ -128,7 +128,7 @@ export function FilterModal({
                   "flex items-center justify-between px-4 py-2.5 rounded-lg border-2 transition-all",
                   isSelected
                     ? "border-[#f97316] bg-[#f97316]/20 text-[#f97316]"
-                    : "border-white/10 hover:border-white/20 text-white/80 hover:text-white"
+                    : "border-border hover:border-border/80 text-foreground/80 hover:text-foreground"
                 )}
               >
                 <span className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export function FilterModal({
                   "text-xs px-1.5 py-0.5 rounded",
                   isSelected
                     ? "bg-[#f97316]/30 text-[#f97316]"
-                    : "bg-white/10 text-white/60"
+                    : "bg-foreground/10 text-muted-foreground"
                 )}>
                   {count}
                 </span>

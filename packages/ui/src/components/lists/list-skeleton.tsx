@@ -55,7 +55,7 @@ export const ListSkeleton = React.forwardRef<HTMLDivElement, ListSkeletonProps>(
           <div
             key={index}
             className={cn(
-              'rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm',
+              'rounded-2xl border border-border bg-foreground/5 backdrop-blur-sm',
               variantStyles[variant],
               'animate-pulse',
               'relative overflow-hidden'
@@ -63,7 +63,7 @@ export const ListSkeleton = React.forwardRef<HTMLDivElement, ListSkeletonProps>(
           >
             {/* Shimmer overlay effect */}
             <div
-              className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent"
+              className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-foreground/10 to-transparent"
               style={{
                 animation: 'shimmer 2s infinite',
               }}
@@ -73,24 +73,24 @@ export const ListSkeleton = React.forwardRef<HTMLDivElement, ListSkeletonProps>(
             <div className={cn('flex items-center gap-3', variant === 'default' ? 'p-4' : 'p-3')}>
               {/* Icon placeholder */}
               <div className={cn(
-                'rounded-full bg-white/10',
+                'rounded-full bg-foreground/10',
                 variant === 'default' ? 'h-10 w-10' : 'h-8 w-8'
               )} />
 
               {/* Text placeholders */}
               <div className="flex-1 space-y-2">
                 <div className={cn(
-                  'rounded-full bg-white/10',
+                  'rounded-full bg-foreground/10',
                   variant === 'default' ? 'h-4 w-3/4' : 'h-3 w-2/3'
                 )} />
                 {variant === 'default' && (
-                  <div className="h-3 w-1/2 rounded-full bg-white/5" />
+                  <div className="h-3 w-1/2 rounded-full bg-foreground/5" />
                 )}
               </div>
 
               {/* Trailing placeholder */}
               <div className={cn(
-                'rounded-full bg-white/10',
+                'rounded-full bg-foreground/10',
                 variant === 'default' ? 'h-6 w-16' : 'h-5 w-12'
               )} />
             </div>

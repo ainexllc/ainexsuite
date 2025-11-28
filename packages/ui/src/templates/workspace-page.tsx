@@ -130,7 +130,7 @@ export function WorkspacePage({
               <button
                 type="button"
                 onClick={() => handleNavToggle(!isNavOpen)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 shadow-sm transition hover:bg-white/10"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground/5 shadow-sm transition hover:bg-foreground/10"
                 aria-label="Toggle navigation"
               >
                 <Menu className="h-5 w-5" />
@@ -142,19 +142,19 @@ export function WorkspacePage({
             </div>
 
             {/* Center: Search bar */}
-            <div className="mx-4 flex flex-1 items-center gap-2 rounded-full bg-white/5 px-3 py-1 shadow-sm transition hover:bg-white/10 max-w-2xl h-9">
-              <Search className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+            <div className="mx-4 flex flex-1 items-center gap-2 rounded-full bg-foreground/5 px-3 py-1 shadow-sm transition hover:bg-foreground/10 max-w-2xl h-9">
+              <Search className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full bg-transparent text-sm text-white placeholder:text-white/50 focus:outline-none"
+                className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
               {searchQuery && (
                 <button
                   type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white/70 shrink-0"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/10 hover:text-foreground/70 shrink-0"
                   aria-label="Clear search"
                   onClick={() => setSearchQuery('')}
                 >
@@ -182,7 +182,7 @@ export function WorkspacePage({
               {/* Profile Sidebar Toggle */}
               <button
                 type="button"
-                className="flex items-center gap-2 h-9 rounded-full bg-white/5 text-white/70 shadow-sm transition hover:bg-white/10 px-2"
+                className="flex items-center gap-2 h-9 rounded-full bg-foreground/5 text-muted-foreground shadow-sm transition hover:bg-foreground/10 px-2"
                 aria-label="Profile menu"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
@@ -197,7 +197,7 @@ export function WorkspacePage({
                   />
                 ) : (
                   <span
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white"
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-foreground"
                     style={{ backgroundColor: appColor }}
                   >
                     {user.displayName
@@ -210,7 +210,7 @@ export function WorkspacePage({
                       : (user.email?.charAt(0).toUpperCase() ?? 'U')}
                   </span>
                 )}
-                <ChevronDown className="h-3.5 w-3.5 text-white/50" />
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             </div>
           </div>

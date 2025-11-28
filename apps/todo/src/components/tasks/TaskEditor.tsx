@@ -131,20 +131,20 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         <ModalContent className="space-y-6">
           {/* Title Input */}
           <div>
-            <label className="block text-sm font-medium text-ink-900 mb-2">Task Title *</label>
+            <label className="block text-sm font-medium text-foreground mb-2">Task Title *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title..."
-              className="w-full bg-surface-card border border-outline-subtle rounded-lg px-4 py-3 text-base text-ink-900 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent-500"
+              className="w-full bg-surface-card border border-outline-subtle rounded-lg px-4 py-3 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent-500"
               autoFocus
               required
             />
           </div>
           {/* List/Status Selector */}
           <div>
-            <label className="block text-sm font-medium text-ink-900 mb-2">List</label>
+            <label className="block text-sm font-medium text-foreground mb-2">List</label>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {currentSpace.lists.map((list: TaskList) => (
                 <button
@@ -153,8 +153,8 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                   onClick={() => setListId(list.id)}
                   className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
                     listId === list.id
-                      ? 'bg-accent-500 text-white'
-                      : 'bg-surface-card border border-outline-subtle text-ink-600 hover:bg-surface-elevated'
+                      ? 'bg-accent-500 text-foreground'
+                      : 'bg-surface-card border border-outline-subtle text-muted-foreground hover:bg-surface-elevated'
                   }`}
                 >
                   {list.title}
@@ -167,7 +167,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           <div className="grid grid-cols-2 gap-4">
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-ink-900 mb-2 flex items-center gap-1">
+              <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-1">
                 <Flag className="h-4 w-4" /> Priority
               </label>
               <div className="flex gap-2">
@@ -181,7 +181,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                         ? p === 'high'
                           ? 'bg-red-500/20 text-red-500 border-2 border-red-500/50'
                           : 'bg-accent-500/20 text-accent-500 border-2 border-accent-500/50'
-                        : 'bg-surface-card border-2 border-outline-subtle text-ink-600 hover:bg-surface-elevated'
+                        : 'bg-surface-card border-2 border-outline-subtle text-muted-foreground hover:bg-surface-elevated'
                     }`}
                   >
                     {p}
@@ -192,21 +192,21 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
             {/* Due Date */}
             <div>
-              <label className="block text-sm font-medium text-ink-900 mb-2 flex items-center gap-1">
+              <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-1">
                 <Calendar className="h-4 w-4" /> Due Date
               </label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-surface-card border border-outline-subtle rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
+                className="w-full bg-surface-card border border-outline-subtle rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent-500"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-ink-900 mb-2">Description</label>
+            <label className="block text-sm font-medium text-foreground mb-2">Description</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -217,7 +217,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
           {/* Assignees */}
           <div>
-            <label className="block text-sm font-medium text-ink-900 mb-2 flex items-center gap-1">
+            <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-1">
               <Users className="h-4 w-4" /> Assignees
             </label>
             <div className="flex flex-wrap gap-2">
@@ -235,10 +235,10 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                   className={`flex items-center gap-2 px-3 py-2 rounded-full border-2 text-sm transition-all ${
                     assignees.includes(member.uid)
                       ? 'bg-accent-500/20 border-accent-500/50 text-accent-500'
-                      : 'bg-surface-card border-outline-subtle text-ink-600 hover:bg-surface-elevated'
+                      : 'bg-surface-card border-outline-subtle text-muted-foreground hover:bg-surface-elevated'
                   }`}
                 >
-                  <div className="h-5 w-5 rounded-full bg-surface-elevated flex items-center justify-center text-xs text-ink-900 font-medium">
+                  <div className="h-5 w-5 rounded-full bg-surface-elevated flex items-center justify-center text-xs text-foreground font-medium">
                     {member.displayName.slice(0, 1).toUpperCase()}
                   </div>
                   {member.displayName}

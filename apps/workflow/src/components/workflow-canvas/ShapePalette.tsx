@@ -53,16 +53,16 @@ function ShapeTemplate({ type, label, icon: Icon, onDragStart }: ShapeTemplatePr
       onDragStart={(event) => onDragStart(event, type)}
       className="group flex cursor-grab flex-col items-center gap-1.5 rounded border p-2 transition-all active:cursor-grabbing"
       style={{
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderColor: 'rgba(var(--border-rgb, 255, 255, 255), 0.1)',
+        backgroundColor: 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = `rgba(${theme.primaryRgb}, 0.5)`;
-        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        e.currentTarget.style.backgroundColor = 'rgba(var(--foreground-rgb, 255, 255, 255), 0.1)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+        e.currentTarget.style.borderColor = 'rgba(var(--border-rgb, 255, 255, 255), 0.1)';
+        e.currentTarget.style.backgroundColor = 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)';
       }}
     >
       <div
@@ -74,7 +74,7 @@ function ShapeTemplate({ type, label, icon: Icon, onDragStart }: ShapeTemplatePr
       >
         <Icon className="h-5 w-5" />
       </div>
-      <span className="text-[10px] font-medium text-white/70 group-hover:text-white">
+      <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground">
         {label}
       </span>
     </div>
@@ -110,12 +110,12 @@ function ToolButton({
       `}
       style={{
         backgroundColor: disabled
-          ? 'rgba(255, 255, 255, 0.05)'
+          ? 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)'
           : variant === 'danger'
             ? 'rgba(239, 68, 68, 0.1)'
             : `rgba(${theme.primaryRgb}, 0.1)`,
         border: disabled
-          ? '1px solid rgba(255, 255, 255, 0.1)'
+          ? '1px solid rgba(var(--border-rgb, 255, 255, 255), 0.1)'
           : variant === 'danger'
             ? '1px solid rgba(239, 68, 68, 0.3)'
             : `1px solid rgba(${theme.primaryRgb}, 0.3)`,
@@ -168,7 +168,7 @@ function PaletteSection({
       <div
         className={`
           flex justify-center rounded-lg border px-2 py-3 transition-all
-          ${highlight ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}
+          ${highlight ? 'border-border bg-foreground/10' : 'border-border bg-foreground/5'}
         `}
         title={title}
       >
@@ -181,19 +181,19 @@ function PaletteSection({
     <div
       className={`
         rounded-lg border px-3 py-2 transition-all
-        ${highlight ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}
+        ${highlight ? 'border-border bg-foreground/10' : 'border-border bg-foreground/5'}
       `}
     >
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-white/60"
+        className="flex w-full items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
       >
         <span className="flex items-center gap-1.5">
           {icon}
           <span>{title}</span>
         </span>
-        <span className="text-white/40">{isOpen ? '-' : '+'}</span>
+        <span className="text-muted-foreground opacity-60">{isOpen ? '-' : '+'}</span>
       </button>
       {isOpen && <div className="mt-2 flex flex-col gap-2">{children}</div>}
     </div>
@@ -290,14 +290,14 @@ export function ShapePalette({
 
   return (
     <div
-      className={`workflow-tool-menu flex h-full flex-col gap-3 overflow-y-auto border-r border-white/10 bg-[#050505] p-3 transition-all duration-300 ease-in-out ${
+      className={`workflow-tool-menu flex h-full flex-col gap-3 overflow-y-auto border-r border-border bg-background p-3 transition-all duration-300 ease-in-out ${
         isCollapsed ? 'w-16' : 'w-64'
       }`}
     >
       <div className="flex justify-end">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="rounded p-1 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+          className="rounded p-1 hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
           title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -306,7 +306,7 @@ export function ShapePalette({
 
       <PaletteSection
         title="Tools"
-        icon={<Wrench className="h-3.5 w-3.5 text-white/50" />}
+        icon={<Wrench className="h-3.5 w-3.5 text-muted-foreground" />}
         defaultOpen
         storageId="workflow-section-tools"
         isCollapsed={isCollapsed}
@@ -357,7 +357,7 @@ export function ShapePalette({
 
       <PaletteSection
         title="Shapes"
-        icon={<Shapes className="h-3.5 w-3.5 text-white/50" />}
+        icon={<Shapes className="h-3.5 w-3.5 text-muted-foreground" />}
         defaultOpen
         storageId="workflow-section-shapes"
         isCollapsed={isCollapsed}
@@ -377,7 +377,7 @@ export function ShapePalette({
 
       <PaletteSection
         title="Connectors"
-        icon={<Workflow className="h-3.5 w-3.5 text-white/50" />}
+        icon={<Workflow className="h-3.5 w-3.5 text-muted-foreground" />}
         storageId="workflow-section-connectors"
         defaultOpen
         isCollapsed={isCollapsed}
@@ -392,9 +392,9 @@ export function ShapePalette({
                 ${edgeType === type ? 'font-medium' : 'hover:bg-white/10'}
               `}
               style={{
-                backgroundColor: edgeType === type ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
-                border: edgeType === type ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(255, 255, 255, 0.1)',
-                color: edgeType === type ? theme.primary : 'rgba(255, 255, 255, 0.7)',
+                backgroundColor: edgeType === type ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)',
+                border: edgeType === type ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(var(--border-rgb, 255, 255, 255), 0.1)',
+                color: edgeType === type ? theme.primary : 'var(--muted-foreground)',
               }}
             >
               {type === 'default' ? 'Bezier' : type}
@@ -418,9 +418,9 @@ export function ShapePalette({
                 ${arrowType === type ? 'font-medium' : 'hover:bg-white/10'}
               `}
               style={{
-                backgroundColor: arrowType === type ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
-                border: arrowType === type ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(255, 255, 255, 0.1)',
-                color: arrowType === type ? theme.primary : 'rgba(255, 255, 255, 0.7)',
+                backgroundColor: arrowType === type ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)',
+                border: arrowType === type ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(var(--border-rgb, 255, 255, 255), 0.1)',
+                color: arrowType === type ? theme.primary : 'var(--muted-foreground)',
               }}
             >
               <span className="font-mono text-xs leading-none">{symbol}</span>
@@ -446,9 +446,9 @@ export function ShapePalette({
                 ${lineStyle === style ? 'font-medium' : 'hover:bg-white/10'}
               `}
               style={{
-                backgroundColor: lineStyle === style ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
-                border: lineStyle === style ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(255, 255, 255, 0.1)',
-                color: lineStyle === style ? theme.primary : 'rgba(255, 255, 255, 0.7)',
+                backgroundColor: lineStyle === style ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)',
+                border: lineStyle === style ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(var(--border-rgb, 255, 255, 255), 0.1)',
+                color: lineStyle === style ? theme.primary : 'var(--muted-foreground)',
               }}
             >
               <span className="font-mono text-sm leading-none tracking-wider">{preview}</span>
@@ -459,7 +459,7 @@ export function ShapePalette({
 
       <PaletteSection
         title="Node Style"
-        icon={<Palette className="h-3.5 w-3.5 text-white/50" />}
+        icon={<Palette className="h-3.5 w-3.5 text-muted-foreground" />}
         highlight={selectedCount > 0}
         defaultOpen
         storageId="workflow-section-node-style"
@@ -467,7 +467,7 @@ export function ShapePalette({
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-white/50">
+            <label className="text-[10px] text-muted-foreground">
               {selectedCount > 0 ? `Color (${selectedCount} selected)` : 'Node Color'}
             </label>
             <div className="grid grid-cols-6 gap-1.5">
@@ -505,7 +505,7 @@ export function ShapePalette({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-white/50">
+            <label className="text-[10px] text-muted-foreground">
               {selectedCount > 0 ? `Background (${selectedCount} selected)` : 'Background Color'}
             </label>
             <div className="grid grid-cols-6 gap-1.5">
@@ -518,7 +518,7 @@ export function ShapePalette({
                   className="relative h-8 w-8 overflow-hidden rounded border-2 transition-all hover:scale-110"
                   style={{
                     backgroundColor: bgColor,
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    borderColor: 'rgba(var(--foreground-rgb, 255, 255, 255), 0.3)',
                   }}
                   disabled={selectedCount === 0}
                 >
@@ -540,7 +540,7 @@ export function ShapePalette({
 
       <PaletteSection
         title="Alignment"
-        icon={<Grid3x3 className="h-3.5 w-3.5 text-white/50" />}
+        icon={<Grid3x3 className="h-3.5 w-3.5 text-muted-foreground" />}
         highlight={selectedCount >= 2}
         storageId="workflow-section-alignment"
         isCollapsed={isCollapsed}
@@ -553,9 +553,9 @@ export function ShapePalette({
             ${snapToGrid ? 'font-medium' : 'hover:bg-white/10'}
           `}
           style={{
-            backgroundColor: snapToGrid ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(255, 255, 255, 0.05)',
-            border: snapToGrid ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(255, 255, 255, 0.1)',
-            color: snapToGrid ? theme.primary : 'rgba(255, 255, 255, 0.7)',
+            backgroundColor: snapToGrid ? `rgba(${theme.primaryRgb}, 0.2)` : 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)',
+            border: snapToGrid ? `1px solid rgba(${theme.primaryRgb}, 0.5)` : '1px solid rgba(var(--border-rgb, 255, 255, 255), 0.1)',
+            color: snapToGrid ? theme.primary : 'var(--muted-foreground)',
           }}
         >
           <Grid3x3 className="h-3.5 w-3.5" />
@@ -563,7 +563,7 @@ export function ShapePalette({
         </button>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[10px] text-white/50">
+          <label className="text-[10px] text-muted-foreground">
             {selectedCount >= 2 ? `Align (${selectedCount} selected)` : 'Align Nodes'}
           </label>
           <div className="grid grid-cols-3 gap-1.5">
@@ -606,7 +606,7 @@ export function ShapePalette({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-white/50">
+            <label className="text-[10px] text-muted-foreground">
               {selectedCount >= 3 ? `Distribute (${selectedCount} selected)` : 'Distribute Evenly'}
             </label>
             <div className="grid grid-cols-2 gap-1.5">
@@ -620,9 +620,9 @@ export function ShapePalette({
                   ${selectedCount < 3 ? 'cursor-not-allowed opacity-30' : 'hover:opacity-80'}
                 `}
                 style={{
-                  backgroundColor: selectedCount < 3 ? 'rgba(255, 255, 255, 0.05)' : `rgba(${theme.primaryRgb}, 0.1)`,
-                  border: selectedCount < 3 ? '1px solid rgba(255, 255, 255, 0.1)' : `1px solid rgba(${theme.primaryRgb}, 0.3)`,
-                  color: selectedCount < 3 ? 'rgba(255, 255, 255, 0.3)' : theme.primary,
+                  backgroundColor: selectedCount < 3 ? 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)' : `rgba(${theme.primaryRgb}, 0.1)`,
+                  border: selectedCount < 3 ? '1px solid rgba(var(--border-rgb, 255, 255, 255), 0.1)' : `1px solid rgba(${theme.primaryRgb}, 0.3)`,
+                  color: selectedCount < 3 ? 'var(--muted-foreground)' : theme.primary,
                 }}
               >
                 <ArrowLeftRight className="h-3 w-3" />
@@ -638,9 +638,9 @@ export function ShapePalette({
                   ${selectedCount < 3 ? 'cursor-not-allowed opacity-30' : 'hover:opacity-80'}
                 `}
                 style={{
-                  backgroundColor: selectedCount < 3 ? 'rgba(255, 255, 255, 0.05)' : `rgba(${theme.primaryRgb}, 0.1)`,
-                  border: selectedCount < 3 ? '1px solid rgba(255, 255, 255, 0.1)' : `1px solid rgba(${theme.primaryRgb}, 0.3)`,
-                  color: selectedCount < 3 ? 'rgba(255, 255, 255, 0.3)' : theme.primary,
+                  backgroundColor: selectedCount < 3 ? 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)' : `rgba(${theme.primaryRgb}, 0.1)`,
+                  border: selectedCount < 3 ? '1px solid rgba(var(--border-rgb, 255, 255, 255), 0.1)' : `1px solid rgba(${theme.primaryRgb}, 0.3)`,
+                  color: selectedCount < 3 ? 'var(--muted-foreground)' : theme.primary,
                 }}
               >
                 <ArrowUpDown className="h-3 w-3" />
@@ -653,19 +653,19 @@ export function ShapePalette({
 
       <PaletteSection
         title="Shortcuts"
-        icon={<Keyboard className="h-3.5 w-3.5 text-white/50" />}
+        icon={<Keyboard className="h-3.5 w-3.5 text-muted-foreground" />}
         storageId="workflow-section-shortcuts"
         isCollapsed={isCollapsed}
       >
-        <div className="flex flex-col gap-1 text-[10px] text-white/50">
+        <div className="flex flex-col gap-1 text-[10px] text-muted-foreground">
           <div>
-            <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">Del</kbd> Delete
+            <kbd className="rounded bg-foreground/10 px-1 py-0.5 text-[9px]">Del</kbd> Delete
           </div>
           <div>
-            <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">⌘Z</kbd> Undo
+            <kbd className="rounded bg-foreground/10 px-1 py-0.5 text-[9px]">⌘Z</kbd> Undo
           </div>
           <div>
-            <kbd className="rounded bg-white/10 px-1 py-0.5 text-[9px]">Space</kbd> Pan
+            <kbd className="rounded bg-foreground/10 px-1 py-0.5 text-[9px]">Space</kbd> Pan
           </div>
         </div>
       </PaletteSection>

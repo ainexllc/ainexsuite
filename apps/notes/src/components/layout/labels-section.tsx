@@ -120,7 +120,7 @@ export function LabelsSection({ onClose }: LabelsSectionProps) {
               >
                 <span
                   className={clsx(
-                    "grid h-8 w-8 place-items-center rounded-lg bg-white/10",
+                    "grid h-8 w-8 place-items-center rounded-lg bg-foreground/10",
                   )}
                 >
                   <span

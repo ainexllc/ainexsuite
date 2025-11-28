@@ -40,7 +40,7 @@ export function AppLoginStatus({ status, size = 'sm', className = '' }: AppLogin
         className={`${sizeClasses} rounded-full bg-emerald-500 flex items-center justify-center ${className}`}
         title="Logged in"
       >
-        <Check className={`${checkSizeClasses} text-white`} strokeWidth={3} />
+        <Check className={`${checkSizeClasses} text-foreground`} strokeWidth={3} />
       </div>
     );
   }
@@ -74,10 +74,10 @@ export function AppLoginStatusBadge({ status, className = '' }: Omit<AppLoginSta
   if (status === 'logged-in') {
     return (
       <div
-        className={`absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-black/50 flex items-center justify-center ${className}`}
+        className={`absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-background/50 flex items-center justify-center ${className}`}
         title="Logged in"
       >
-        <Check className="h-2 w-2 text-white" strokeWidth={3} />
+        <Check className="h-2 w-2 text-foreground" strokeWidth={3} />
       </div>
     );
   }
@@ -85,7 +85,7 @@ export function AppLoginStatusBadge({ status, className = '' }: Omit<AppLoginSta
   if (status === 'logged-out') {
     return (
       <div
-        className={`absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-zinc-600 ring-2 ring-black/50 ${className}`}
+        className={`absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-zinc-600 ring-2 ring-background/50 ${className}`}
         title="Not logged in"
       />
     );

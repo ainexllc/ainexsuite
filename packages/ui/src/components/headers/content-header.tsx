@@ -96,7 +96,7 @@ export const ContentHeader = React.forwardRef<HTMLDivElement, ContentHeaderProps
         ref={ref}
         className={cn(
           'px-4 py-3',
-          divider && 'border-b border-white/10',
+          divider && 'border-b border-border',
           className
         )}
         style={themeStyles}
@@ -121,11 +121,11 @@ export const ContentHeader = React.forwardRef<HTMLDivElement, ContentHeaderProps
 
             {/* Title and subtitle */}
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-semibold text-white">
+              <h3 className="text-sm font-semibold text-foreground">
                 {title}
               </h3>
               {subtitle && (
-                <p className="mt-0.5 text-xs text-white/60">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {subtitle}
                 </p>
               )}

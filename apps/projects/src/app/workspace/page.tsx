@@ -36,7 +36,7 @@ export default function WorkspacePage() {
           {viewMode === 'whiteboard' ? (
             <button
               onClick={() => setViewMode('dashboard')}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated border border-white/10 hover:bg-surface-hover transition-colors text-sm font-medium text-text-secondary"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-elevated border border-border hover:bg-surface-hover transition-colors text-sm font-medium text-text-secondary"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard

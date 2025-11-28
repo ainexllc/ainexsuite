@@ -88,12 +88,12 @@ export function SmartTaskInput() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Add a task... (e.g., 'Review report tomorrow #urgent')"
-          className="flex-1 bg-transparent border-none outline-none text-ink-900 placeholder:text-muted px-2"
+          className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted px-2"
         />
         <button
           type="submit"
           disabled={!input.trim() || isProcessing}
-          className="p-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 bg-accent-500 hover:bg-accent-600 text-foreground rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ArrowRight className="h-4 w-4" />
         </button>

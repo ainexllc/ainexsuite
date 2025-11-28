@@ -34,13 +34,13 @@ export function SSOHandler({ onComplete }: SSOHandlerProps = {}) {
   if (isAuthenticating) {
     return (
       <div
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/50 backdrop-blur-sm"
         role="status"
         aria-live="polite"
       >
-        <div className="flex flex-col items-center gap-3 px-6 py-4 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-white/10">
+        <div className="flex flex-col items-center gap-3 px-6 py-4 bg-card rounded-2xl shadow-2xl border border-border">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-          <p className="text-sm font-medium text-ink-700 dark:text-white/90">
+          <p className="text-sm font-medium text-foreground">
             Signing you in...
           </p>
         </div>

@@ -105,24 +105,24 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
       <div
         ref={modalRef}
-        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl bg-[#121212] border border-white/10"
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl bg-[#121212] border border-border"
       >
         <div className="flex flex-col gap-5 px-5 py-5">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-white">Edit Check-in</h3>
-              <p className="text-sm text-white/40">{formattedDate}</p>
+              <h3 className="text-lg font-semibold text-foreground">Edit Check-in</h3>
+              <p className="text-sm text-muted-foreground">{formattedDate}</p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-foreground/10 rounded-lg transition-colors"
             >
-              <X className="h-5 w-5 text-white/50" />
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
           </div>
 
@@ -130,7 +130,7 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* Weight */}
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-white/50">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Scale className="h-3.5 w-3.5 text-emerald-500" />
                 Weight (lbs)
               </label>
@@ -142,13 +142,13 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
                   updateField('weight', e.target.value ? parseFloat(e.target.value) : null)
                 }
                 placeholder="—"
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-emerald-500 text-white text-sm placeholder:text-white/30"
+                className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
               />
             </div>
 
             {/* Sleep */}
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-white/50">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Moon className="h-3.5 w-3.5 text-indigo-500" />
                 Sleep (hrs)
               </label>
@@ -162,13 +162,13 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
                   updateField('sleep', e.target.value ? parseFloat(e.target.value) : null)
                 }
                 placeholder="—"
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-emerald-500 text-white text-sm placeholder:text-white/30"
+                className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
               />
             </div>
 
             {/* Water */}
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-white/50">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Droplets className="h-3.5 w-3.5 text-blue-500" />
                 Water (glasses)
               </label>
@@ -181,13 +181,13 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
                   updateField('water', e.target.value ? parseInt(e.target.value) : null)
                 }
                 placeholder="—"
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-emerald-500 text-white text-sm placeholder:text-white/30"
+                className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
               />
             </div>
 
             {/* Heart Rate */}
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-white/50">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Heart className="h-3.5 w-3.5 text-red-500" />
                 Heart Rate
               </label>
@@ -200,14 +200,14 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
                   updateField('heartRate', e.target.value ? parseInt(e.target.value) : null)
                 }
                 placeholder="—"
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-emerald-500 text-white text-sm placeholder:text-white/30"
+                className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground"
               />
             </div>
           </div>
 
           {/* Energy Level */}
           <div className="space-y-2">
-            <label className="flex items-center gap-1.5 text-xs font-medium text-white/50">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Activity className="h-3.5 w-3.5 text-amber-500" />
               Energy Level
             </label>
@@ -220,8 +220,8 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
                   className={clsx(
                     'flex-1 py-2 rounded-lg text-sm font-medium transition-colors',
                     formData.energy === level
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70'
+                      ? 'bg-emerald-500 text-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground/70'
                   )}
                 >
                   {level}
@@ -232,7 +232,7 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
 
           {/* Mood */}
           <div className="space-y-2">
-            <label className="flex items-center gap-1.5 text-xs font-medium text-white/50">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Heart className="h-3.5 w-3.5 text-pink-500" />
               How are you feeling?
             </label>
@@ -246,11 +246,11 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
                     'flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-colors',
                     formData.mood === value
                       ? 'bg-emerald-500/20 border-2 border-emerald-500'
-                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                      : 'bg-foreground/5 border-2 border-transparent hover:bg-foreground/10'
                   )}
                 >
                   <Icon className={clsx('h-5 w-5', color)} />
-                  <span className="text-xs text-white/60">{label}</span>
+                  <span className="text-xs text-muted-foreground">{label}</span>
                 </button>
               ))}
             </div>
@@ -258,21 +258,21 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
 
           {/* Notes */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-white/50">Notes (optional)</label>
+            <label className="text-xs font-medium text-muted-foreground">Notes (optional)</label>
             <textarea
               value={formData.notes}
               onChange={(e) => updateField('notes', e.target.value)}
               placeholder="How are you feeling today? Any symptoms or observations?"
               rows={2}
-              className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-emerald-500 text-white text-sm placeholder:text-white/30 resize-none"
+              className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-emerald-500 text-foreground text-sm placeholder:text-muted-foreground resize-none"
             />
           </div>
 
           {/* Action Bar */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
             <button
               type="button"
-              className="text-sm font-medium text-white/50 hover:text-white transition-colors"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               onClick={onClose}
             >
               Cancel
@@ -281,7 +281,7 @@ export function HealthEditModal({ metric, onSave, onClose }: HealthEditModalProp
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-emerald-500 flex items-center gap-2"
+              className="rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-foreground shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-emerald-500 flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

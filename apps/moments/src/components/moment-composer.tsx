@@ -173,11 +173,11 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 backdrop-blur-sm"
+          className="flex w-full items-center justify-between rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 backdrop-blur-sm"
           onClick={() => setExpanded(true)}
         >
           <span>Capture a moment...</span>
-          <span className="flex items-center gap-3 text-white/30">
+          <span className="flex items-center gap-3 text-muted-foreground">
             <Camera className="h-5 w-5" />
             <MapPin className="h-5 w-5" />
           </span>
@@ -185,13 +185,13 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
       ) : (
         <div
           ref={composerRef}
-          className="w-full rounded-2xl shadow-xl bg-[#121212] border border-white/10 backdrop-blur-xl transition-all overflow-hidden"
+          className="w-full rounded-2xl shadow-xl bg-surface-card border border-border backdrop-blur-xl transition-all overflow-hidden"
         >
           {/* Photo Preview/Upload Area */}
           <div
             className={clsx(
               "relative cursor-pointer transition-all",
-              photoPreview ? "h-64" : "h-40 flex items-center justify-center bg-white/5 hover:bg-white/10"
+              photoPreview ? "h-64" : "h-40 flex items-center justify-center bg-foreground/5 hover:bg-foreground/10"
             )}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -211,13 +211,13 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                     setPhotoFile(null);
                     setPhotoPreview(null);
                   }}
-                  className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm"
+                  className="absolute top-3 right-3 p-2 rounded-full bg-background/60 text-foreground hover:bg-background/80 backdrop-blur-sm"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </>
             ) : (
-              <div className="flex flex-col items-center gap-2 text-white/40">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <Camera className="h-10 w-10" />
                 <span className="text-sm">Click to add a photo</span>
               </div>
@@ -232,28 +232,28 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Write a caption..."
               rows={2}
-              className="w-full resize-none bg-transparent text-base text-white/90 placeholder:text-white/30 focus:outline-none leading-relaxed"
+              className="w-full resize-none bg-transparent text-base text-foreground/90 placeholder:text-muted-foreground focus:outline-none leading-relaxed"
             />
 
             {/* Meta Row 1: Date & Location */}
             <div className="flex flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                <Calendar className="h-4 w-4 text-white/40" />
+                <Calendar className="h-4 w-4 text-muted-foreground" />
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-pink-500"
                 />
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                <MapPin className="h-4 w-4 text-white/40" />
+                <MapPin className="h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Add location..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-pink-500"
                 />
               </div>
             </div>
@@ -261,21 +261,21 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
             {/* Meta Row 2: Weather & Mood */}
             <div className="flex flex-wrap gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                <Cloud className="h-4 w-4 text-white/40" />
+                <Cloud className="h-4 w-4 text-muted-foreground" />
                 <select
                   value={weather}
                   onChange={(e) => setWeather(e.target.value)}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500"
+                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-pink-500"
                 >
-                  <option value="" className="text-black">Weather...</option>
+                  <option value="" className="text-background">Weather...</option>
                   {WEATHER_OPTIONS.map(w => (
-                    <option key={w} value={w} className="text-black">{w}</option>
+                    <option key={w} value={w} className="text-background">{w}</option>
                   ))}
                 </select>
               </div>
-              
+
               <div className="flex items-center gap-2 flex-[2] min-w-[200px] overflow-x-auto pb-1">
-                <Smile className="h-4 w-4 text-white/40 shrink-0" />
+                <Smile className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex items-center gap-1">
                   {MOODS.map((m) => (
                     <button
@@ -283,7 +283,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                       type="button"
                       onClick={() => setMood(mood === m.label ? '' : m.label)}
                       className={clsx(
-                        "p-1.5 rounded-lg text-lg transition-colors hover:bg-white/10",
+                        "p-1.5 rounded-lg text-lg transition-colors hover:bg-foreground/10",
                         mood === m.label ? "bg-pink-500/20 ring-1 ring-pink-500" : "opacity-60 hover:opacity-100"
                       )}
                       title={m.label}
@@ -333,11 +333,11 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
             )}
 
             {/* Action Bar */}
-            <div className="flex items-center justify-between gap-2 pt-3 border-t border-white/10">
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-border">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                   title="Change photo"
                 >
@@ -350,7 +350,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showPeopleInput ? "text-blue-400 bg-blue-500/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                      showPeopleInput ? "text-blue-400 bg-blue-500/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
                     onClick={() => {
                       setShowPeopleInput(!showPeopleInput);
@@ -362,7 +362,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   </button>
 
                   {showPeopleInput && (
-                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl">
+                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-surface-elevated border border-border shadow-2xl">
                       <div className="flex gap-2">
                         <input
                           value={peopleInput}
@@ -374,12 +374,12 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                             }
                           }}
                           placeholder="Who's with you?"
-                          className="flex-1 bg-black/20 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-blue-500"
+                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-blue-500"
                           autoFocus
                         />
                         <button
                           onClick={handleAddPerson}
-                          className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600"
+                          className="px-3 py-1.5 bg-blue-500 text-foreground rounded-lg text-xs font-medium hover:bg-blue-600"
                         >
                           Add
                         </button>
@@ -394,7 +394,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showTagInput ? "text-pink-500 bg-pink-500/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                      showTagInput ? "text-pink-500 bg-pink-500/10" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
                     )}
                     onClick={() => {
                       setShowTagInput(!showTagInput);
@@ -406,7 +406,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   </button>
 
                   {showTagInput && (
-                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-2xl">
+                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-surface-elevated border border-border shadow-2xl">
                       <div className="flex gap-2">
                         <input
                           value={tagInput}
@@ -418,12 +418,12 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                             }
                           }}
                           placeholder="Add a tag..."
-                          className="flex-1 bg-black/20 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500"
+                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-pink-500"
                           autoFocus
                         />
                         <button
                           onClick={handleAddTag}
-                          className="px-3 py-1.5 bg-pink-500 text-white rounded-lg text-xs font-medium hover:bg-pink-600"
+                          className="px-3 py-1.5 bg-pink-500 text-foreground rounded-lg text-xs font-medium hover:bg-pink-600"
                         >
                           Add
                         </button>
@@ -436,7 +436,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-sm font-medium text-white/50 hover:text-white transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   onClick={resetState}
                 >
                   Cancel
@@ -445,7 +445,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !photoFile}
-                  className="rounded-full bg-pink-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-pink-900/20 transition hover:bg-pink-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-pink-500 flex items-center gap-2"
+                  className="rounded-full bg-pink-500 px-6 py-2 text-sm font-semibold text-foreground shadow-lg shadow-pink-900/20 transition hover:bg-pink-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-pink-500 flex items-center gap-2"
                 >
                   {isSubmitting ? (
                     <>

@@ -25,7 +25,7 @@ export function Leaderboard() {
   }).sort((a: { totalWorkouts: number }, b: { totalWorkouts: number }) => b.totalWorkouts - a.totalWorkouts);
 
   return (
-    <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 space-y-4">
+    <div className="bg-background/60 border border-border rounded-xl p-4 space-y-4">
       <SectionHeader
         title="Leaderboard"
         icon={<Trophy className="h-4 w-4" />}
@@ -37,7 +37,7 @@ export function Leaderboard() {
           <div key={stat.uid} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-white font-bold">
+                <div className="h-8 w-8 rounded-full bg-foreground/10 flex items-center justify-center text-xs text-foreground font-bold">
                   {stat.displayName.slice(0, 2).toUpperCase()}
                 </div>
                 {index === 0 && (
@@ -47,13 +47,13 @@ export function Leaderboard() {
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium text-white">{stat.displayName}</p>
-                <p className="text-[10px] text-white/40">{stat.totalDuration} mins total</p>
+                <p className="text-sm font-medium text-foreground">{stat.displayName}</p>
+                <p className="text-[10px] text-muted-foreground">{stat.totalDuration} mins total</p>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-sm font-bold text-white">
+            <div className="flex items-center gap-1 text-sm font-bold text-foreground">
               {stat.totalWorkouts}
-              <span className="text-xs font-normal text-white/40">workouts</span>
+              <span className="text-xs font-normal text-muted-foreground">workouts</span>
             </div>
           </div>
         ))}

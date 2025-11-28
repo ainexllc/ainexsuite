@@ -120,7 +120,7 @@ export function MarketingSlideshow({
 
   return (
     <div
-      className="relative w-full rounded-xl overflow-hidden border border-white/10 bg-black/20 backdrop-blur-xl"
+      className="relative w-full rounded-xl overflow-hidden border border-border bg-background/20 backdrop-blur-xl"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -158,7 +158,7 @@ export function MarketingSlideshow({
               <div className="flex items-center gap-6 max-w-4xl">
                 {/* Icon */}
                 <div
-                  className="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm"
+                  className="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-2xl border border-border bg-foreground/10 backdrop-blur-sm"
                   style={{
                     boxShadow: `0 0 40px ${slide.gradient.from}40`,
                   }}
@@ -171,10 +171,10 @@ export function MarketingSlideshow({
 
                 {/* Text Content */}
                 <div className="flex-1 space-y-3">
-                  <h2 className="text-3xl font-bold text-white tracking-tight">
+                  <h2 className="text-3xl font-bold text-foreground tracking-tight">
                     {slide.title}
                   </h2>
-                  <p className="text-base text-white/70 max-w-2xl leading-relaxed">
+                  <p className="text-base text-muted-foreground max-w-2xl leading-relaxed">
                     {slide.description}
                   </p>
 
@@ -207,8 +207,8 @@ export function MarketingSlideshow({
               onClick={() => goToSlide(index)}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 index === currentSlide
-                  ? 'w-8 bg-white'
-                  : 'w-1.5 bg-white/30 hover:bg-white/50'
+                  ? 'w-8 bg-foreground'
+                  : 'w-1.5 bg-foreground/30 hover:bg-foreground/50'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -219,14 +219,14 @@ export function MarketingSlideshow({
         <div className="flex items-center gap-2">
           <button
             onClick={goToPrevious}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground/10 border border-border text-muted-foreground hover:bg-foreground/20 hover:text-foreground transition-all duration-300"
             aria-label="Previous slide"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={goToNext}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white/70 hover:bg-white/20 hover:text-white transition-all duration-300"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground/10 border border-border text-muted-foreground hover:bg-foreground/20 hover:text-foreground transition-all duration-300"
             aria-label="Next slide"
           >
             <ChevronRight className="w-4 h-4" />

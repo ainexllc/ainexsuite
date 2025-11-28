@@ -77,7 +77,7 @@ export function HeatmapCalendar({ completions, weeks = 12 }: HeatmapCalendarProp
 
   // Get color intensity based on count
   const getColor = (count: number) => {
-    if (count === 0) return 'bg-white/5';
+    if (count === 0) return 'bg-foreground/5';
     const intensity = count / maxCount;
     if (intensity <= 0.25) return 'bg-indigo-900/50';
     if (intensity <= 0.5) return 'bg-indigo-700/70';
@@ -88,8 +88,8 @@ export function HeatmapCalendar({ completions, weeks = 12 }: HeatmapCalendarProp
   const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 
   return (
-    <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-5">
-      <h3 className="text-sm font-bold text-white mb-4">Activity Heatmap</h3>
+    <div className="bg-foreground border border-border rounded-xl p-5">
+      <h3 className="text-sm font-bold text-foreground mb-4">Activity Heatmap</h3>
 
       <div className="flex gap-1">
         {/* Day labels */}
@@ -97,7 +97,7 @@ export function HeatmapCalendar({ completions, weeks = 12 }: HeatmapCalendarProp
           {dayLabels.map((label, i) => (
             <div
               key={i}
-              className="h-[13px] text-[9px] text-white/30 flex items-center"
+              className="h-[13px] text-[9px] text-foreground/30 flex items-center"
             >
               {label}
             </div>
@@ -111,7 +111,7 @@ export function HeatmapCalendar({ completions, weeks = 12 }: HeatmapCalendarProp
             {monthLabels.map((month, i) => (
               <div
                 key={i}
-                className="absolute text-[9px] text-white/40"
+                className="absolute text-[9px] text-foreground/40"
                 style={{ left: `${month.weekIndex * 16}px` }}
               >
                 {month.label}
@@ -133,8 +133,8 @@ export function HeatmapCalendar({ completions, weeks = 12 }: HeatmapCalendarProp
                       className={cn(
                         'w-[13px] h-[13px] rounded-sm transition-all',
                         isFuture ? 'bg-transparent' : getColor(day.count),
-                        isToday && 'ring-1 ring-white/50',
-                        !isFuture && 'hover:ring-1 hover:ring-white/30 cursor-pointer'
+                        isToday && 'ring-1 ring-foreground/50',
+                        !isFuture && 'hover:ring-1 hover:ring-foreground/30 cursor-pointer'
                       )}
                       title={
                         isFuture
@@ -152,15 +152,15 @@ export function HeatmapCalendar({ completions, weeks = 12 }: HeatmapCalendarProp
 
       {/* Legend */}
       <div className="flex items-center justify-end gap-2 mt-4">
-        <span className="text-[9px] text-white/30">Less</span>
+        <span className="text-[9px] text-foreground/30">Less</span>
         <div className="flex gap-[2px]">
-          <div className="w-[10px] h-[10px] rounded-sm bg-white/5" />
+          <div className="w-[10px] h-[10px] rounded-sm bg-foreground/5" />
           <div className="w-[10px] h-[10px] rounded-sm bg-indigo-900/50" />
           <div className="w-[10px] h-[10px] rounded-sm bg-indigo-700/70" />
           <div className="w-[10px] h-[10px] rounded-sm bg-indigo-500" />
           <div className="w-[10px] h-[10px] rounded-sm bg-indigo-400" />
         </div>
-        <span className="text-[9px] text-white/30">More</span>
+        <span className="text-[9px] text-foreground/30">More</span>
       </div>
     </div>
   );

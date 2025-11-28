@@ -27,8 +27,8 @@ export function FooterPageLayout({
   backLink = '/',
 }: FooterPageLayoutProps) {
   return (
-    <div className="dark min-h-screen overflow-x-hidden bg-[#050505] text-white">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#050505]/95 backdrop-blur-sm">
+    <div className="dark min-h-screen overflow-x-hidden bg-[#050505] text-foreground">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-[#050505]/95 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8">
           {showLogoWordmark && (
             <Link href={backLink} className="flex items-center">
@@ -37,7 +37,7 @@ export function FooterPageLayout({
           )}
           <Link
             href={backLink}
-            className="flex items-center gap-2 text-sm text-white/60 transition hover:text-white"
+            className="flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home

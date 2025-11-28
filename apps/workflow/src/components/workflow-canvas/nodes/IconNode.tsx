@@ -27,7 +27,7 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
     background: nodeColor,
     width: 8,
     height: 8,
-    border: '2px solid #fff',
+    border: '2px solid var(--foreground)',
     borderRadius: '50%',
     zIndex: 10,
     opacity: isHovered || selected ? 1 : 0.4,
@@ -69,7 +69,7 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
         <div
           className="flex h-16 w-16 items-center justify-center rounded-2xl text-4xl shadow-inner"
           style={{
-            backgroundColor: `rgba(255, 255, 255, 0.08)`,
+            backgroundColor: `rgba(var(--foreground-rgb, 255, 255, 255), 0.08)`,
             border: `1px solid ${nodeColor}40`,
           }}
           onDoubleClick={() => setIsEditingEmoji(true)}
@@ -81,7 +81,7 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
               onBlur={stopEditingEmoji}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full bg-transparent text-center text-3xl text-white outline-none"
+              className="w-full bg-transparent text-center text-3xl text-foreground outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
@@ -96,11 +96,11 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
               onBlur={stopEditingLabel}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full bg-transparent text-white outline-none"
+              className="w-full bg-transparent text-foreground outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <p className="text-sm text-white">{label}</p>
+            <p className="text-sm text-foreground">{label}</p>
           )}
         </div>
       </div>

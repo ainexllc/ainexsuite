@@ -122,7 +122,7 @@ export const SectionHeader = React.forwardRef<HTMLDivElement, SectionHeaderProps
         className={cn(
           'w-full',
           config.container,
-          divider && 'border-b border-white/10 pb-3 mb-3',
+          divider && 'border-b border-border pb-3 mb-3',
           className
         )}
         style={themeStyles}
@@ -149,7 +149,7 @@ export const SectionHeader = React.forwardRef<HTMLDivElement, SectionHeaderProps
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h2 className={cn(
-                  'text-white',
+                  'text-foreground',
                   config.title
                 )}>
                   {title}
@@ -172,7 +172,7 @@ export const SectionHeader = React.forwardRef<HTMLDivElement, SectionHeaderProps
               </div>
               {subtitle && (
                 <p className={cn(
-                  'mt-0.5 text-white/60',
+                  'mt-0.5 text-muted-foreground',
                   config.subtitle
                 )}>
                   {subtitle}

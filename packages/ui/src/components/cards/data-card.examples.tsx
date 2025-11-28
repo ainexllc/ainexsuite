@@ -24,7 +24,7 @@ export function DefaultCardExample() {
         </span>
       }
       footer={
-        <div className="flex items-center justify-between w-full text-xs text-white/50">
+        <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
@@ -39,10 +39,10 @@ export function DefaultCardExample() {
       }
     >
       <div className="space-y-2 mt-3">
-        <p className="text-sm text-white/70">
+        <p className="text-sm text-muted-foreground">
           Full body strength training with focus on compound movements.
         </p>
-        <div className="text-sm text-white/50">
+        <div className="text-sm text-muted-foreground">
           3 exercises • 12 total sets • 180 reps
         </div>
       </div>
@@ -84,11 +84,11 @@ export function HighlightedCardExample() {
       }
       footer={
         <div className="w-full">
-          <div className="flex justify-between text-xs text-white/60 mb-1">
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
             <span>Progress</span>
             <span>15 / 30</span>
           </div>
-          <div className="h-2 w-full bg-black/40 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-background/40 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500"
               style={{ width: '50%' }}
@@ -97,7 +97,7 @@ export function HighlightedCardExample() {
         </div>
       }
     >
-      <p className="text-white/80 italic">
+      <p className="text-foreground/80 italic">
         &quot;I will exercise for 30 consecutive days&quot;
       </p>
     </DataCard>
@@ -116,7 +116,7 @@ export function InteractiveCardExample() {
       icon={<Dumbbell className="h-5 w-5" />}
       onClick={() => console.log('Starting new workout...')}
     >
-      <p className="text-sm text-white/70">
+      <p className="text-sm text-muted-foreground">
         Track your exercises, sets, and reps in real-time
       </p>
     </DataCard>
@@ -136,7 +136,7 @@ export function LinkCardExample() {
       href="/workouts/history"
       accentColor="#3b82f6" // Blue
     >
-      <p className="text-sm text-white/70">
+      <p className="text-sm text-muted-foreground">
         Browse through all your completed workouts
       </p>
     </DataCard>
@@ -156,16 +156,16 @@ export function CustomFooterExample() {
       accentColor="#8b5cf6" // Purple
       footer={
         <div className="flex items-center justify-between w-full">
-          <span className="text-xs text-white/50">
+          <span className="text-xs text-muted-foreground">
             Available on Pro plan
           </span>
-          <button className="px-3 py-1 text-xs font-semibold bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors">
+          <button className="px-3 py-1 text-xs font-semibold bg-purple-500 hover:bg-purple-600 text-foreground rounded-lg transition-colors">
             Upgrade
           </button>
         </div>
       }
     >
-      <ul className="space-y-1 text-sm text-white/70">
+      <ul className="space-y-1 text-sm text-muted-foreground">
         <li>• Advanced workout analytics</li>
         <li>• Progress predictions</li>
         <li>• Custom goals tracking</li>
@@ -183,7 +183,7 @@ export function MinimalCardExample() {
       variant="default"
       title="Simple Note"
     >
-      <p className="text-sm text-white/70">
+      <p className="text-sm text-muted-foreground">
         This is a minimal card with just a title and content.
       </p>
     </DataCard>
@@ -211,7 +211,7 @@ export function CardGridExample() {
           icon={<Dumbbell className="h-5 w-5" />}
           onClick={() => console.log(`Selected: ${workout.title}`)}
         >
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-muted-foreground">
             Click to view details
           </p>
         </DataCard>
@@ -230,8 +230,8 @@ export function LoadingCardExample() {
       title="Loading Workout..."
     >
       <div className="space-y-2">
-        <div className="h-4 bg-white/10 rounded animate-pulse" />
-        <div className="h-4 bg-white/10 rounded animate-pulse w-3/4" />
+        <div className="h-4 bg-foreground/10 rounded animate-pulse" />
+        <div className="h-4 bg-foreground/10 rounded animate-pulse w-3/4" />
       </div>
     </DataCard>
   );
@@ -253,12 +253,12 @@ export function ErrorCardExample() {
         </span>
       }
       footer={
-        <button className="px-3 py-1 text-xs font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+        <button className="px-3 py-1 text-xs font-semibold bg-red-500 hover:bg-red-600 text-foreground rounded-lg transition-colors">
           Retry
         </button>
       }
     >
-      <p className="text-sm text-white/70">
+      <p className="text-sm text-muted-foreground">
         Unable to fetch workout data. Please try again.
       </p>
     </DataCard>

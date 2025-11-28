@@ -70,14 +70,14 @@ export function ProfileSidebar({
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-30 bg-background/40 backdrop-blur-sm"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed right-0 top-0 h-full w-[360px] bg-black/60 backdrop-blur-xl border-l border-white/10 transition-transform duration-300 ease-out z-40 shadow-2xl overflow-hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed right-0 top-0 h-full w-[360px] bg-background/60 backdrop-blur-xl border-l border-border transition-transform duration-300 ease-out z-40 shadow-2xl overflow-hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
       >
         {/* Glow Effects */}
@@ -86,11 +86,11 @@ export function ProfileSidebar({
 
         <div className="relative z-10 flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <h2 className="text-lg font-semibold text-white">Profile</h2>
+          <div className="flex items-center justify-between p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground">Profile</h2>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 transition hover:bg-white/10"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground/5 transition hover:bg-foreground/10"
               aria-label="Close sidebar"
             >
               <X className="h-4 w-4" />
@@ -102,7 +102,7 @@ export function ProfileSidebar({
             
             {/* User Identity */}
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-white/5 shadow-xl">
+              <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-foreground/5 shadow-xl">
                 {user.photoURL ? (
                   <Image
                     src={user.photoURL}
@@ -111,7 +111,7 @@ export function ProfileSidebar({
                     className="object-cover"
                   />
                 ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-2xl font-bold text-white">
+                  <div className="h-full w-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-2xl font-bold text-foreground">
                     {user.displayName
                       ? user.displayName
                         .split(' ')
@@ -123,12 +123,12 @@ export function ProfileSidebar({
                   </div>
                 )}
                 {/* Status Indicator */}
-                <div className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-black" />
+                <div className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-background" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-white">{user.displayName || 'User'}</h3>
-                <p className="text-sm text-white/50">{user.email}</p>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/70 border border-white/5">
+                <h3 className="text-xl font-semibold text-foreground">{user.displayName || 'User'}</h3>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-3 py-1 text-xs font-medium text-muted-foreground border border-border">
                   <CreditCard className="h-3 w-3" />
                   <span className="capitalize">{user.subscriptionTier || 'Free'} Plan</span>
                 </div>
@@ -138,21 +138,21 @@ export function ProfileSidebar({
             {/* AI Usage */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-2">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Zap className="h-3 w-3" /> AI Credits
                 </h4>
-                <span className="text-xs text-white/70">750 / 1000</span>
+                <span className="text-xs text-muted-foreground">750 / 1000</span>
               </div>
-              <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+              <div className="h-2 w-full rounded-full bg-foreground/10 overflow-hidden">
                 <div className="h-full w-[75%] bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
               </div>
-              <p className="text-xs text-white/40">Resets in 12 days</p>
+              <p className="text-xs text-muted-foreground">Resets in 12 days</p>
             </div>
 
             {/* Theme Selector */}
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Appearance</h4>
-              <div className="flex items-center gap-3 text-white/70 mb-2">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Appearance</h4>
+              <div className="flex items-center gap-3 text-muted-foreground mb-2">
                 {theme === 'dark' ? (
                   <Moon className="h-4 w-4" />
                 ) : theme === 'system' ? (
@@ -162,7 +162,7 @@ export function ProfileSidebar({
                 )}
                 <span className="text-sm font-medium">Theme</span>
               </div>
-              <div className="flex gap-1 p-1 bg-white/10 rounded-xl">
+              <div className="flex gap-1 p-1 bg-foreground/10 rounded-xl">
                 {(['light', 'dark', 'system'] as const).map((mode) => (
                   <button
                     key={mode}
@@ -171,8 +171,8 @@ export function ProfileSidebar({
                     className={clsx(
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",
                       theme === mode
-                        ? "bg-white/20 text-white shadow-sm"
-                        : "text-white/50 hover:text-white/80"
+                        ? "bg-foreground/20 text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                     aria-label={`Set ${mode} theme`}
                   >
@@ -187,15 +187,15 @@ export function ProfileSidebar({
 
             {/* Quick Settings */}
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Quick Settings</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quick Settings</h4>
               <div className="space-y-1">
-                <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors group">
-                  <div className="flex items-center gap-3 text-white/70 group-hover:text-white">
+                <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-foreground/5 transition-colors group">
+                  <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground">
                     <Bell className="h-4 w-4" />
                     <span className="text-sm font-medium">Focus Mode</span>
                   </div>
-                  <div className="h-5 w-9 rounded-full bg-white/20 p-1 flex justify-start">
-                    <div className="h-3 w-3 rounded-full bg-white/50" />
+                  <div className="h-5 w-9 rounded-full bg-foreground/20 p-1 flex justify-start">
+                    <div className="h-3 w-3 rounded-full bg-foreground/50" />
                   </div>
                 </button>
               </div>
@@ -203,28 +203,28 @@ export function ProfileSidebar({
 
             {/* Latest Updates */}
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-2">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Sparkles className="h-3 w-3" /> What&apos;s New
               </h4>
               <div className="space-y-1">
                 {updatesLoading ? (
-                  <p className="text-xs text-white/30 px-2">Loading updates...</p>
+                  <p className="text-xs text-muted-foreground px-2">Loading updates...</p>
                 ) : updates.length > 0 ? (
                   updates.map((update) => (
-                    <div 
-                      key={update.id} 
-                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group"
+                    <div
+                      key={update.id}
+                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-foreground/5 transition-colors cursor-pointer group"
                     >
                       <div className={`mt-1.5 h-1.5 w-1.5 rounded-full group-hover:scale-150 transition-transform ${getTypeColor(update.type)}`} />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{update.title}</p>
-                        <p className="text-xs text-white/40 group-hover:text-white/60 transition-colors line-clamp-1">{update.description}</p>
+                        <p className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">{update.title}</p>
+                        <p className="text-xs text-muted-foreground group-hover:text-foreground/60 transition-colors line-clamp-1">{update.description}</p>
                       </div>
-                      <span className="text-[10px] text-white/30 whitespace-nowrap mt-0.5">{getRelativeTime(update.date)}</span>
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap mt-0.5">{getRelativeTime(update.date)}</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-white/30 px-2">No recent updates</p>
+                  <p className="text-xs text-muted-foreground px-2">No recent updates</p>
                 )}
               </div>
             </div>
@@ -232,18 +232,18 @@ export function ProfileSidebar({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t border-white/10 space-y-2 bg-black/20">
+          <div className="p-6 border-t border-border space-y-2 bg-background/20">
             <button
               onClick={() => {
                 onClose();
                 onSettingsClick?.();
               }}
-              className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white border border-transparent hover:border-white/10"
+              className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground border border-transparent hover:border-border"
             >
               <Settings className="h-4 w-4" />
               Settings
             </button>
-            
+
              <button
               onClick={() => {
                  onClose();

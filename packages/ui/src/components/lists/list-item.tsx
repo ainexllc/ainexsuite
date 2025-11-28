@@ -58,7 +58,7 @@ export interface ListItemProps extends Omit<React.HTMLAttributes<HTMLDivElement>
  * A flexible list item component with support for icons, subtitles, trailing content,
  * links, selection states, and multiple visual variants.
  *
- * Uses glassmorphism styling with bg-white/5 and border-white/10 for consistency.
+ * Uses glassmorphism styling with theme-aware colors for consistency.
  *
  * @example
  * ```tsx
@@ -107,15 +107,15 @@ export const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(
     const baseStyles = cn(
       'rounded-2xl border transition-all duration-200',
       // Glassmorphism styling
-      'bg-white/5 backdrop-blur-sm',
+      'bg-foreground/5 backdrop-blur-sm',
       // Border states
-      selected ? 'border-white/30' : 'border-white/10',
+      selected ? 'border-border' : 'border-border',
       // Interactive states
       isInteractive && !disabled && 'cursor-pointer',
-      isInteractive && !disabled && 'hover:bg-white/10 hover:border-white/20',
+      isInteractive && !disabled && 'hover:bg-foreground/10 hover:border-border',
       isInteractive && !disabled && 'active:scale-[0.98]',
       // Selected state
-      selected && 'bg-white/10 shadow-lg',
+      selected && 'bg-foreground/10 shadow-lg',
       // Disabled state
       disabled && 'opacity-50 cursor-not-allowed',
       className
@@ -133,7 +133,7 @@ export const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(
           <div className="flex-shrink-0 pt-0.5">
             <Icon
               className={cn(
-                'text-white/60',
+                'text-muted-foreground',
                 variant === 'compact' ? 'h-4 w-4' : 'h-5 w-5'
               )}
               aria-hidden
@@ -143,14 +143,14 @@ export const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(
 
         <div className="flex-1 min-w-0">
           <div className={cn(
-            'font-medium text-white/90',
+            'font-medium text-foreground',
             variant === 'compact' ? 'text-sm' : 'text-base'
           )}>
             {title}
           </div>
           {subtitle && (
             <div className={cn(
-              'text-white/50 mt-1',
+              'text-muted-foreground mt-1',
               variant === 'compact' ? 'text-xs' : 'text-sm'
             )}>
               {subtitle}

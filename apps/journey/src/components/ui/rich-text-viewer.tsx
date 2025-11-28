@@ -12,17 +12,17 @@ export function RichTextViewer({ content, className }: RichTextViewerProps) {
     <div
       className={cn(
         "prose prose-sm sm:prose max-w-none",
-        "prose-headings:text-white",
-        "prose-p:text-white/90",
+        "prose-headings:text-foreground",
+        "prose-p:text-foreground/90",
         "prose-a:text-[#f97316] hover:prose-a:text-[#ea580c]",
-        "prose-strong:text-white",
-        "prose-ul:text-white/90",
-        "prose-ol:text-white/90",
-        "prose-blockquote:text-white/60",
-        "prose-blockquote:border-white/20",
-        "prose-code:text-white",
-        "prose-code:bg-white/10",
-        "prose-pre:bg-white/10",
+        "prose-strong:text-foreground",
+        "prose-ul:text-foreground/90",
+        "prose-ol:text-foreground/90",
+        "prose-blockquote:text-muted-foreground",
+        "prose-blockquote:border-border",
+        "prose-code:text-foreground",
+        "prose-code:bg-foreground/10",
+        "prose-pre:bg-foreground/10",
         "prose-img:rounded-lg prose-img:shadow-md",
         className
       )}

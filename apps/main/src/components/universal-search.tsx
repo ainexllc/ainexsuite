@@ -180,7 +180,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-[20vh]"
+      className="fixed inset-0 bg-background/60 backdrop-blur-sm z-50 flex items-start justify-center pt-[20vh]"
       onClick={onClose}
     >
       <div
@@ -253,7 +253,7 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
                    <Search className="h-8 w-8 text-ink-500 mb-2" />
                    <span className="text-xs text-ink-500">Find</span>
                  </div>
-                 <div className="h-12 w-px bg-white/10" />
+                 <div className="h-12 w-px bg-border" />
                  <div className="flex flex-col items-center">
                    <span className="text-xs text-purple-400">Create</span>
                  </div>

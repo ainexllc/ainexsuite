@@ -78,7 +78,7 @@ export function SuiteNavigation({
           )}
 
           <div className="hidden sm:flex items-center gap-2">
-            <span className="text-lg font-semibold text-white">
+            <span className="text-lg font-semibold text-foreground">
               {currentApp.name}
             </span>
           </div>
@@ -86,20 +86,20 @@ export function SuiteNavigation({
 
         {/* Center: Search bar */}
         {showSearch && (
-          <div className="mx-4 flex flex-1 items-center gap-2 rounded-full bg-white/5 px-3 py-1 shadow-sm transition hover:bg-white/10 max-w-2xl h-9">
-            <Search className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+          <div className="mx-4 flex flex-1 items-center gap-2 rounded-full bg-foreground/5 px-3 py-1 shadow-sm transition hover:bg-foreground/10 max-w-2xl h-9">
+            <Search className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
               onFocus={onSearchFocus}
               placeholder={searchPlaceholder}
-              className="w-full bg-transparent text-sm text-white placeholder:text-white/50 focus:outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             {searchQuery && (
               <button
                 type="button"
-                className="flex h-6 w-6 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white/70 shrink-0"
+                className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-foreground/10 hover:text-foreground/70 shrink-0"
                 aria-label="Clear search"
                 onClick={handleClearSearch}
               >
@@ -119,7 +119,7 @@ export function SuiteNavigation({
             <button
               type="button"
               onClick={onAIAssistantClick}
-              className="flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-all bg-white/10 hover:bg-white/20 text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-all bg-foreground/10 hover:bg-foreground/20 text-foreground"
               aria-label="AI Assistant"
             >
               <Sparkles className="h-4 w-4" />
@@ -130,7 +130,7 @@ export function SuiteNavigation({
           {user && onProfileClick && (
             <button
               type="button"
-              className="flex items-center gap-2 h-9 rounded-full bg-white/5 text-white/70 shadow-sm transition hover:bg-white/10 px-2"
+              className="flex items-center gap-2 h-9 rounded-full bg-foreground/5 text-muted-foreground shadow-sm transition hover:bg-foreground/10 px-2"
               aria-label="Profile menu"
               onClick={onProfileClick}
             >
@@ -144,7 +144,7 @@ export function SuiteNavigation({
                   sizes="28px"
                 />
               ) : (
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-foreground">
                   {user.displayName
                     ? user.displayName
                         .split(' ')
@@ -155,7 +155,7 @@ export function SuiteNavigation({
                     : (user.email?.charAt(0).toUpperCase() ?? 'U')}
                 </span>
               )}
-              <ChevronDown className="h-3.5 w-3.5 text-white/50" />
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
           )}
         </div>

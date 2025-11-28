@@ -38,7 +38,7 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 bg-background/60 dark:bg-background/80 backdrop-blur-sm"
         onClick={onClose}
       />
 

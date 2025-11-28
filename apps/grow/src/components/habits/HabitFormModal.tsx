@@ -147,7 +147,7 @@ export function HabitFormModal({
       <div className="space-y-6">
         {/* Title */}
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-white/70 mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
             <Type className="h-4 w-4" />
             Habit Name
           </label>
@@ -157,9 +157,9 @@ export function HabitFormModal({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Morning Meditation"
             className={cn(
-              'w-full bg-white/5 border rounded-xl px-4 py-3 text-white placeholder:text-white/30',
+              'w-full bg-foreground/5 border rounded-xl px-4 py-3 text-foreground placeholder:text-foreground/30',
               'focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500',
-              errors.title ? 'border-red-500' : 'border-white/10'
+              errors.title ? 'border-red-500' : 'border-border'
             )}
             autoFocus
           />
@@ -170,23 +170,23 @@ export function HabitFormModal({
 
         {/* Description */}
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-white/70 mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
             <AlignLeft className="h-4 w-4" />
             Description
-            <span className="text-white/30 font-normal">(optional)</span>
+            <span className="text-foreground/30 font-normal">(optional)</span>
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Why is this habit important to you?"
             rows={2}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none"
+            className="w-full bg-foreground/5 border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 resize-none"
           />
         </div>
 
         {/* Frequency Type */}
         <div>
-          <label className="text-sm font-medium text-white/70 mb-3 block">
+          <label className="text-sm font-medium text-muted-foreground mb-3 block">
             How often?
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -202,14 +202,14 @@ export function HabitFormModal({
                     'relative p-4 rounded-xl border text-left transition-all',
                     isSelected
                       ? 'bg-indigo-500/10 border-indigo-500/50 ring-1 ring-indigo-500/30'
-                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                      : 'bg-foreground/5 border-border hover:border-border'
                   )}
                 >
-                  <Icon className={cn('h-5 w-5 mb-2', isSelected ? 'text-indigo-400' : 'text-white/40')} />
-                  <p className={cn('text-sm font-medium', isSelected ? 'text-white' : 'text-white/70')}>
+                  <Icon className={cn('h-5 w-5 mb-2', isSelected ? 'text-indigo-400' : 'text-foreground/40')} />
+                  <p className={cn('text-sm font-medium', isSelected ? 'text-foreground' : 'text-muted-foreground')}>
                     {option.label}
                   </p>
-                  <p className="text-xs text-white/40">{option.description}</p>
+                  <p className="text-xs text-foreground/40">{option.description}</p>
                 </button>
               );
             })}
@@ -219,7 +219,7 @@ export function HabitFormModal({
         {/* Specific Days Selection */}
         {frequencyType === 'specific_days' && (
           <div>
-            <label className="text-sm font-medium text-white/70 mb-3 block">
+            <label className="text-sm font-medium text-muted-foreground mb-3 block">
               Which days?
             </label>
             <div className="flex gap-2">
@@ -231,8 +231,8 @@ export function HabitFormModal({
                   className={cn(
                     'flex-1 py-3 rounded-xl text-sm font-medium transition-all',
                     daysOfWeek.includes(day.value)
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-white/5 text-white/50 hover:bg-white/10'
+                      ? 'bg-indigo-500 text-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
                   )}
                 >
                   {day.label}
@@ -245,7 +245,7 @@ export function HabitFormModal({
         {/* Weekly Times */}
         {frequencyType === 'weekly' && (
           <div>
-            <label className="text-sm font-medium text-white/70 mb-3 block">
+            <label className="text-sm font-medium text-muted-foreground mb-3 block">
               Times per week
             </label>
             <div className="flex items-center gap-4">
@@ -267,7 +267,7 @@ export function HabitFormModal({
         {/* Interval Days */}
         {frequencyType === 'interval' && (
           <div>
-            <label className="text-sm font-medium text-white/70 mb-3 block">
+            <label className="text-sm font-medium text-muted-foreground mb-3 block">
               Every how many days?
             </label>
             <div className="flex items-center gap-4">

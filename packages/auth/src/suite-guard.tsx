@@ -93,10 +93,10 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
       return <LoadingComponent message="Checking access..." />;
     }
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-base">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-4 border-accent-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-ink-600">Checking access...</p>
+          <p className="text-muted-foreground">Checking access...</p>
         </div>
       </div>
     );
@@ -123,10 +123,10 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
     }
     // Fallback if no PaywallComponent provided
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-base p-4">
-        <div className="max-w-md w-full bg-surface-card rounded-2xl shadow-xl border border-outline-base p-8 text-center">
-          <h2 className="text-2xl font-bold text-ink-900 mb-4">Suite Access Required</h2>
-          <p className="text-ink-600 mb-6">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-background rounded-2xl shadow-xl border border-border p-8 text-center">
+          <h2 className="text-2xl font-bold text-foreground mb-4">Suite Access Required</h2>
+          <p className="text-muted-foreground mb-6">
             You need Suite access to use multiple apps. Your 30-day trial has expired.
           </p>
           <button
@@ -135,7 +135,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
               const suiteUrl = isDev ? 'http://localhost:3010' : 'https://www.ainexsuite.com';
               window.location.href = suiteUrl;
             }}
-            className="w-full bg-accent-500 hover:bg-accent-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="w-full bg-accent-500 hover:bg-accent-600 text-foreground font-semibold py-3 px-6 rounded-lg transition-colors"
           >
             Upgrade to Suite
           </button>

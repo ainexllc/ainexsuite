@@ -24,7 +24,7 @@ function DatabaseNode({ data, selected }: NodeProps<DatabaseNodeType>) {
     background: nodeColor,
     width: 8,
     height: 8,
-    border: '2px solid #fff',
+    border: '2px solid var(--foreground)',
     borderRadius: '50%',
     zIndex: 10,
     opacity: isHovered || selected ? 1 : 0.4,
@@ -109,11 +109,11 @@ function DatabaseNode({ data, selected }: NodeProps<DatabaseNodeType>) {
               onBlur={stopEditing}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full rounded bg-black/40 px-2 py-1 text-center text-white outline-none"
+              className="w-full rounded bg-background/40 px-2 py-1 text-center text-foreground outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <span className="rounded bg-black/30 px-3 py-1 text-sm text-white">
+            <span className="rounded bg-background/30 px-3 py-1 text-sm text-foreground">
               {label}
             </span>
           )}

@@ -91,15 +91,15 @@ export const ListSection = React.forwardRef<HTMLElement, ListSectionProps>(
         <div className="flex items-center gap-2 flex-1">
           {collapsible && (
             isExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-white/40" aria-hidden />
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             )
           )}
-          {Icon && <Icon className="h-4 w-4 text-white/60" aria-hidden />}
+          {Icon && <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />}
           <span className="font-semibold tracking-wide">{title}</span>
           {typeof count === 'number' && (
-            <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-white/10 text-[11px] font-bold text-white/70">
+            <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-foreground/10 text-[11px] font-bold text-foreground/70">
               {count}
             </span>
           )}
@@ -112,8 +112,8 @@ export const ListSection = React.forwardRef<HTMLElement, ListSectionProps>(
       <section ref={ref} className={cn('space-y-3', className)} {...props}>
         <header
           className={cn(
-            'flex items-center justify-between text-xs uppercase text-white/50',
-            collapsible && 'cursor-pointer select-none hover:text-white/70 transition-colors'
+            'flex items-center justify-between text-xs uppercase text-muted-foreground',
+            collapsible && 'cursor-pointer select-none hover:text-foreground/70 transition-colors'
           )}
           onClick={toggleExpanded}
           role={collapsible ? 'button' : undefined}

@@ -38,7 +38,7 @@ export function SpaceSettingsModal({ space, onClose }: SpaceSettingsModalProps) 
   const joinLink = typeof window !== 'undefined' ? `${window.location.origin}/join` : '';
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-md bg-surface-elevated rounded-xl shadow-2xl border border-outline-subtle overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-outline-subtle">
           <h2 className="text-lg font-semibold text-text-primary">Space Settings</h2>
@@ -112,7 +112,7 @@ export function SpaceSettingsModal({ space, onClose }: SpaceSettingsModalProps) 
           <button
             onClick={handleSave}
             disabled={saving || !name.trim()}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-foreground rounded-lg text-sm font-medium disabled:opacity-50"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Changes

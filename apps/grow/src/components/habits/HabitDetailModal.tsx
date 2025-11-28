@@ -142,9 +142,9 @@ export function HabitDetailModal({
                 </span>
               )}
             </div>
-            <h2 className="text-xl font-bold text-white">{habit.title}</h2>
+            <h2 className="text-xl font-bold text-foreground">{habit.title}</h2>
             {habit.description && (
-              <p className="text-sm text-white/50 mt-1">{habit.description}</p>
+              <p className="text-sm text-muted-foreground mt-1">{habit.description}</p>
             )}
           </div>
 
@@ -152,7 +152,7 @@ export function HabitDetailModal({
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70 transition-colors"
+              className="p-2 rounded-lg hover:bg-foreground/5 text-foreground/40 hover:text-muted-foreground transition-colors"
             >
               <MoreVertical className="h-5 w-5" />
             </button>
@@ -163,10 +163,10 @@ export function HabitDetailModal({
                   className="fixed inset-0 z-10"
                   onClick={() => setShowMenu(false)}
                 />
-                <div className="absolute right-0 top-full mt-1 z-20 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden">
+                <div className="absolute right-0 top-full mt-1 z-20 w-48 bg-foreground border border-border rounded-xl shadow-xl overflow-hidden">
                   <button
                     onClick={handleEdit}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors"
                   >
                     <Edit3 className="h-4 w-4" />
                     Edit Habit
@@ -174,7 +174,7 @@ export function HabitDetailModal({
                   <button
                     onClick={handleToggleFreeze}
                     disabled={isFreezing}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors disabled:opacity-50"
                   >
                     {habit.isFrozen ? (
                       <>
@@ -188,7 +188,7 @@ export function HabitDetailModal({
                       </>
                     )}
                   </button>
-                  <div className="border-t border-white/5" />
+                  <div className="border-t border-border" />
                   <button
                     onClick={() => {
                       setShowMenu(false);
@@ -207,35 +207,35 @@ export function HabitDetailModal({
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white/5 rounded-xl p-4 text-center">
+          <div className="bg-foreground/5 rounded-xl p-4 text-center">
             <Flame className="h-5 w-5 text-orange-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{habit.currentStreak}</p>
-            <p className="text-xs text-white/40">Current Streak</p>
+            <p className="text-2xl font-bold text-foreground">{habit.currentStreak}</p>
+            <p className="text-xs text-foreground/40">Current Streak</p>
           </div>
-          <div className="bg-white/5 rounded-xl p-4 text-center">
+          <div className="bg-foreground/5 rounded-xl p-4 text-center">
             <Trophy className="h-5 w-5 text-amber-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{habit.bestStreak}</p>
-            <p className="text-xs text-white/40">Best Streak</p>
+            <p className="text-2xl font-bold text-foreground">{habit.bestStreak}</p>
+            <p className="text-xs text-foreground/40">Best Streak</p>
           </div>
-          <div className="bg-white/5 rounded-xl p-4 text-center">
+          <div className="bg-foreground/5 rounded-xl p-4 text-center">
             <CheckCircle2 className="h-5 w-5 text-emerald-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{habitCompletions.length}</p>
-            <p className="text-xs text-white/40">Total Done</p>
+            <p className="text-2xl font-bold text-foreground">{habitCompletions.length}</p>
+            <p className="text-xs text-foreground/40">Total Done</p>
           </div>
         </div>
 
         {/* Schedule */}
-        <div className="bg-white/5 rounded-xl p-4 mb-6">
+        <div className="bg-foreground/5 rounded-xl p-4 mb-6">
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="h-4 w-4 text-indigo-400" />
-            <span className="text-sm font-medium text-white">Schedule</span>
+            <span className="text-sm font-medium text-foreground">Schedule</span>
           </div>
-          <p className="text-sm text-white/60">{getScheduleDescription()}</p>
+          <p className="text-sm text-muted-foreground">{getScheduleDescription()}</p>
         </div>
 
         {/* Last 7 Days */}
         <div className="mb-6">
-          <p className="text-xs font-medium text-white/40 uppercase tracking-wider mb-3">
+          <p className="text-xs font-medium text-foreground/40 uppercase tracking-wider mb-3">
             Last 7 Days
           </p>
           <div className="flex gap-2">
@@ -246,16 +246,16 @@ export function HabitDetailModal({
                     'h-10 w-full rounded-lg flex items-center justify-center mb-1',
                     day.completed
                       ? 'bg-emerald-500/20'
-                      : 'bg-white/5'
+                      : 'bg-foreground/5'
                   )}
                 >
                   {day.completed ? (
                     <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-white/20" />
+                    <XCircle className="h-5 w-5 text-foreground/20" />
                   )}
                 </div>
-                <p className="text-[10px] text-white/40">{day.dayName}</p>
+                <p className="text-[10px] text-foreground/40">{day.dayName}</p>
               </div>
             ))}
           </div>

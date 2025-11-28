@@ -167,7 +167,7 @@ export function FitInsights({ variant = 'default', onExpand }: FitInsightsProps)
   // Show prompt to add more data if not enough
   if (!hasEnoughData) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+      <div className="rounded-2xl border border-border bg-foreground/5 p-4">
         <div className="flex items-center gap-3">
           <div
             className="flex h-8 w-8 items-center justify-center rounded-lg"
@@ -176,8 +176,8 @@ export function FitInsights({ variant = 'default', onExpand }: FitInsightsProps)
             <Zap className="h-4 w-4" style={{ color: accentColor }} />
           </div>
           <div>
-            <p className="text-sm font-medium text-white">AI Coach</p>
-            <p className="text-xs text-white/50">
+            <p className="text-sm font-medium text-foreground">AI Coach</p>
+            <p className="text-xs text-muted-foreground">
               Log at least 2 workouts to unlock AI-powered fitness insights
             </p>
           </div>

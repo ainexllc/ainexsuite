@@ -63,8 +63,9 @@ export function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255, 255, 255, 0.1)"
+          stroke="currentColor"
           strokeWidth={strokeWidth}
+          className="text-border"
         />
 
         {/* Progress circle */}
@@ -90,7 +91,7 @@ export function ProgressRing({
         {children || (
           showValue && (
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">{displayValue}%</div>
+              <div className="text-2xl font-bold text-foreground">{displayValue}%</div>
             </div>
           )
         )}

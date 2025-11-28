@@ -24,7 +24,7 @@ function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
     background: theme.primary,
     width: 8,
     height: 8,
-    border: '2px solid #fff',
+    border: '2px solid var(--foreground)',
     borderRadius: '50%',
     zIndex: 10,
     opacity: isHovered || selected ? 1 : 0.4,
@@ -62,7 +62,7 @@ function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
         }}
         onDoubleClick={() => setIsEditing(true)}
       >
-        <div className="absolute right-0 top-0 h-8 w-8 rounded-bl-full bg-white/50" />
+        <div className="absolute right-0 top-0 h-8 w-8 rounded-bl-full bg-foreground/50" />
         {isEditing ? (
           <textarea
             value={label}
@@ -70,11 +70,11 @@ function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
             onBlur={stopEditing}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="h-full w-full resize-none bg-transparent text-black outline-none"
+            className="h-full w-full resize-none bg-transparent text-background outline-none"
             style={{ fontFamily: 'inherit' }}
           />
         ) : (
-          <p className="whitespace-pre-wrap break-words text-black">
+          <p className="whitespace-pre-wrap break-words text-background">
             {label}
           </p>
         )}

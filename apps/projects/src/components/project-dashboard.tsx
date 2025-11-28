@@ -21,15 +21,15 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
         {/* Call to Action: Whiteboard */}
         <button
           onClick={onOpenWhiteboard}
-          className="group relative overflow-hidden rounded-2xl border border-dashed border-white/20 bg-white/5 p-8 text-left transition-all hover:border-cyan-500/50 hover:bg-cyan-500/5"
+          className="group relative overflow-hidden rounded-2xl border border-dashed border-border bg-foreground/5 p-8 text-left transition-all hover:border-cyan-500/50 hover:bg-cyan-500/5"
         >
           <div className="relative z-10 flex flex-col h-full justify-between">
             <div className="rounded-full bg-cyan-500/10 p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
               <Presentation className="h-8 w-8 text-cyan-400" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Planning Whiteboard</h3>
-              <p className="text-sm text-white/60">
+              <h3 className="text-xl font-bold text-foreground mb-2">Planning Whiteboard</h3>
+              <p className="text-sm text-muted-foreground">
                 Brainstorm ideas, create sticky notes, and map out flows on an infinite canvas.
               </p>
             </div>
@@ -37,14 +37,14 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
         </button>
 
         {/* Create New Project (Placeholder) */}
-        <button className="group relative overflow-hidden rounded-2xl border border-white/10 bg-surface-card p-8 text-left transition-all hover:bg-surface-elevated hover:border-white/20 md:col-span-2">
+        <button className="group relative overflow-hidden rounded-2xl border border-border bg-surface-card p-8 text-left transition-all hover:bg-surface-elevated hover:border-border md:col-span-2">
           <div className="relative z-10 flex flex-col h-full justify-between">
             <div className="rounded-full bg-purple-500/10 p-3 w-fit mb-4 group-hover:scale-110 transition-transform duration-300">
               <Plus className="h-8 w-8 text-purple-400" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">New Project</h3>
-              <p className="text-sm text-white/60">
+              <h3 className="text-xl font-bold text-foreground mb-2">New Project</h3>
+              <p className="text-sm text-muted-foreground">
                 Start a new structured project with tasks, timelines, and milestones.
               </p>
             </div>
@@ -55,8 +55,8 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
       {/* Recent Projects Grid */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Clock className="h-4 w-4 text-white/40" />
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
             Recent Projects
           </h3>
           <button className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
@@ -68,16 +68,16 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
           {recentProjects.map((project) => (
             <div
               key={project.id}
-              className="group flex items-center gap-4 rounded-xl border border-white/5 bg-surface-card p-4 transition-all hover:bg-surface-elevated hover:border-white/10 cursor-pointer"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-surface-card p-4 transition-all hover:bg-surface-elevated hover:border-border cursor-pointer"
             >
               <div className={`h-10 w-10 rounded-lg ${project.color} flex items-center justify-center shadow-lg opacity-80 group-hover:opacity-100 transition-opacity`}>
-                <Folder className="h-5 w-5 text-white" />
+                <Folder className="h-5 w-5 text-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-white truncate">{project.title}</h4>
-                <p className="text-xs text-white/40">Updated {project.updated}</p>
+                <h4 className="font-medium text-foreground truncate">{project.title}</h4>
+                <p className="text-xs text-muted-foreground">Updated {project.updated}</p>
               </div>
-              <button className="text-white/20 hover:text-white transition-colors p-1">
+              <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
                 <MoreVertical className="h-4 w-4" />
               </button>
             </div>
@@ -85,12 +85,12 @@ export function ProjectDashboard({ onOpenWhiteboard }: ProjectDashboardProps) {
           
           {/* Empty slots filler */}
           {[1, 2, 3].map((i) => (
-            <div key={`empty-${i}`} className="hidden lg:block rounded-xl border border-white/5 bg-white/[0.02] p-4 opacity-50">
+            <div key={`empty-${i}`} className="hidden lg:block rounded-xl border border-border bg-background/20 p-4 opacity-50">
                <div className="flex items-center gap-4">
-                 <div className="h-10 w-10 rounded-lg bg-white/5" />
+                 <div className="h-10 w-10 rounded-lg bg-foreground/5" />
                  <div className="space-y-2 flex-1">
-                   <div className="h-4 w-24 bg-white/5 rounded" />
-                   <div className="h-3 w-16 bg-white/5 rounded" />
+                   <div className="h-4 w-24 bg-foreground/5 rounded" />
+                   <div className="h-3 w-16 bg-foreground/5 rounded" />
                  </div>
                </div>
             </div>

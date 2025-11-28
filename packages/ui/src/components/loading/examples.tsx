@@ -53,7 +53,7 @@ export function LoadingExamples() {
           </div>
 
           <div className="space-y-2 rounded bg-ink-900 p-4">
-            <p className="text-sm text-white">White</p>
+            <p className="text-sm text-foreground">White</p>
             <Spinner color="white" />
           </div>
         </div>
@@ -171,7 +171,7 @@ export function LoadingExamples() {
         <div className="space-y-4">
           <div className="rounded-lg bg-surface-elevated p-4">
             <p className="mb-2 text-sm font-medium text-ink-700">Conditional rendering</p>
-            <pre className="overflow-x-auto rounded bg-ink-900 p-3 text-xs text-white">
+            <pre className="overflow-x-auto rounded bg-ink-900 p-3 text-xs text-foreground">
 {`{isLoading ? (
   <Spinner />
 ) : (
@@ -182,7 +182,7 @@ export function LoadingExamples() {
 
           <div className="rounded-lg bg-surface-elevated p-4">
             <p className="mb-2 text-sm font-medium text-ink-700">Button loading state</p>
-            <pre className="overflow-x-auto rounded bg-ink-900 p-3 text-xs text-white">
+            <pre className="overflow-x-auto rounded bg-ink-900 p-3 text-xs text-foreground">
 {`<button disabled={isProcessing}>
   {isProcessing ? (
     <>
@@ -198,7 +198,7 @@ export function LoadingExamples() {
 
           <div className="rounded-lg bg-surface-elevated p-4">
             <p className="mb-2 text-sm font-medium text-ink-700">Page with overlay</p>
-            <pre className="overflow-x-auto rounded bg-ink-900 p-3 text-xs text-white">
+            <pre className="overflow-x-auto rounded bg-ink-900 p-3 text-xs text-foreground">
 {`<div className="relative">
   <YourPageContent />
   <LoadingOverlay

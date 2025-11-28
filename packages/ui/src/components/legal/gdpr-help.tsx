@@ -15,25 +15,25 @@ export function GDPRHelp() {
     <FooterPageLayout maxWidth="medium">
       <div className="space-y-12">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-semibold text-white sm:text-5xl">
+          <h1 className="text-4xl font-semibold text-foreground sm:text-5xl">
             GDPR Compliance
           </h1>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Your data protection rights under the General Data Protection Regulation
           </p>
-          <p className="text-sm text-white/60">
+          <p className="text-sm text-muted-foreground">
             Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-zinc-800/80 p-8 shadow-lg">
+        <div className="rounded-3xl border border-border bg-card/80 p-8 shadow-lg">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f97316]/10 text-[#f97316] flex-shrink-0">
               <Shield className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-semibold text-white mb-3">Our Commitment to Your Privacy</h2>
-              <p className="text-white/70 leading-relaxed">
+              <h2 className="text-2xl font-semibold text-foreground mb-3">Our Commitment to Your Privacy</h2>
+              <p className="text-muted-foreground leading-relaxed">
                 At AINexSuite, we are committed to protecting your personal data and respecting your privacy rights.
                 This page explains how we comply with the General Data Protection Regulation (GDPR) and what rights
                 you have regarding your personal information.
@@ -44,8 +44,8 @@ export function GDPRHelp() {
 
         <div className="space-y-6">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold text-white mb-4">Your Data Protection Rights</h2>
-            <p className="text-white/70 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-semibold text-foreground mb-4">Your Data Protection Rights</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               Under GDPR, you have the following rights regarding your personal data:
             </p>
           </div>
@@ -53,26 +53,26 @@ export function GDPRHelp() {
             {userRights.map((right) => {
               const Icon = right.icon;
               return (
-                <div key={right.title} className="rounded-3xl border border-white/10 bg-zinc-800/80 p-6 shadow-lg">
+                <div key={right.title} className="rounded-3xl border border-border bg-card/80 p-6 shadow-lg">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f97316]/10 text-[#f97316] mb-4">
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">{right.title}</h3>
-                  <p className="text-sm text-white/70">{right.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{right.title}</h3>
+                  <p className="text-sm text-muted-foreground">{right.description}</p>
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 p-8 shadow-lg text-center">
-          <h2 className="text-2xl font-semibold text-white mb-4">Questions or Concerns?</h2>
-          <p className="text-white/70 mb-6 max-w-2xl mx-auto">
+        <div className="rounded-3xl border border-border bg-gradient-to-br from-card/80 to-background/80 p-8 shadow-lg text-center">
+          <h2 className="text-2xl font-semibold text-foreground mb-4">Questions or Concerns?</h2>
+          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
             If you have questions about our GDPR compliance or wish to file a complaint, please contact us.
           </p>
           <a
             href="mailto:privacy@ainexsuite.com"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-[#f97316] text-white font-semibold hover:bg-[#ea6a0f] transition-colors"
+            className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-[#f97316] text-foreground font-semibold hover:bg-[#ea6a0f] transition-colors"
           >
             Contact Data Protection Officer
           </a>

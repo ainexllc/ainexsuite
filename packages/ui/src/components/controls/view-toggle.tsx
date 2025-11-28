@@ -118,21 +118,21 @@ export function ViewToggle<T extends string = string>({
   // Variant classes
   const variantClasses = {
     default:
-      "bg-black/40 backdrop-blur-sm border border-white/10 shadow-sm rounded-full",
+      "bg-background/40 backdrop-blur-sm border border-border shadow-sm rounded-full",
     pills: "bg-surface-card border border-surface-hover rounded-lg",
     tabs: "bg-transparent border-b border-surface-hover",
   };
 
   const getButtonClasses = (isSelected: boolean, hasLabel: boolean) => {
     const baseClasses =
-      "inline-flex items-center justify-center transition-all font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-white/20 relative z-10";
+      "inline-flex items-center justify-center transition-all font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-accent-500/50 relative z-10";
 
     const variantButtonClasses = {
       default: clsx(
         "rounded-full",
         isSelected
-          ? "text-white"
-          : "text-white/60 hover:bg-white/10 hover:text-white"
+          ? "text-foreground"
+          : "text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
       ),
       pills: clsx(
         "rounded",

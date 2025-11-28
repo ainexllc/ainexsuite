@@ -49,14 +49,14 @@ export function UsageMeter({ queriesUsed, queriesLimit, tierName }: UsageMeterPr
         <Sparkles className={`h-5 w-5 ${styles.text} mt-0.5 flex-shrink-0`} />
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-white">AI Queries</h3>
+            <h3 className="text-sm font-semibold text-foreground">AI Queries</h3>
             <span className={`text-xs font-medium ${styles.text}`}>
               {queriesUsed.toLocaleString()} / {queriesLimit.toLocaleString()}
             </span>
           </div>
 
           {/* Progress Bar */}
-          <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className="relative h-2 bg-foreground/10 rounded-full overflow-hidden">
             <div
               className={`absolute inset-y-0 left-0 ${styles.bar} rounded-full transition-all duration-300`}
               style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -64,7 +64,7 @@ export function UsageMeter({ queriesUsed, queriesLimit, tierName }: UsageMeterPr
           </div>
 
           {/* Status Text */}
-          <p className="text-xs text-white/60 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             {percentage >= 90
               ? 'Almost at your limit!'
               : percentage >= 70

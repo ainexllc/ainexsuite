@@ -290,9 +290,9 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-white">
+    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-foreground">
       <div className={`pointer-events-none absolute inset-0 -z-10 ${selectedVariant.heroAtmosphere}`} />
-      
+
       <WorkspaceLayout
         user={user}
         onSignOut={handleSignOut}
@@ -303,7 +303,7 @@ export default function WorkspacePage() {
       >
         <div className="h-[calc(100vh-80px)] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
           <div className="flex items-center justify-between mb-6">
-             <CalendarHeader 
+             <CalendarHeader
                 currentDate={currentDate}
                 view={view}
                 onViewChange={setView}
@@ -311,9 +311,9 @@ export default function WorkspacePage() {
                 onNextMonth={handleNext}
                 onToday={handleToday}
              />
-             <button 
+             <button
                onClick={handleNewEventClick}
-               className="flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition-colors"
+               className="flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-foreground rounded-lg font-medium transition-colors"
              >
                 <span className="text-xl leading-none pb-0.5">+</span>
                 <span>New Event</span>

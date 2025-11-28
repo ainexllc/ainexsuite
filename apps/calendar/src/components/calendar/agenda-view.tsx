@@ -49,7 +49,7 @@ export function AgendaView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface-elevated/5 rounded-xl border border-white/10 overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-elevated/5 rounded-xl border border-border overflow-hidden">
       <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
         <div className="max-w-3xl mx-auto space-y-8">
           {days.map((day) => {
@@ -60,25 +60,25 @@ export function AgendaView({
 
             return (
               <div key={day.toString()} className="space-y-3">
-                <div className="flex items-center gap-3 sticky top-0 bg-[#0a0a0a] py-2 z-10">
+                <div className="flex items-center gap-3 sticky top-0 bg-background py-2 z-10">
                   <div className={cn(
                     "text-2xl font-bold w-12 text-center leading-none",
-                    isDayToday ? "text-accent-500" : "text-white/80"
+                    isDayToday ? "text-accent-500" : "text-foreground/80"
                   )}>
                     {format(day, 'd')}
                   </div>
                   <div className="flex flex-col">
                     <div className={cn(
                       "text-sm font-medium uppercase tracking-wider",
-                      isDayToday ? "text-accent-500" : "text-white/50"
+                      isDayToday ? "text-accent-500" : "text-muted-foreground"
                     )}>
                       {isDayToday ? 'Today' : format(day, 'EEEE')}
                     </div>
-                    <div className="text-xs text-white/30 font-medium">
+                    <div className="text-xs text-muted-foreground/60 font-medium">
                       {format(day, 'MMMM yyyy')}
                     </div>
                   </div>
-                  <div className="h-[1px] flex-1 bg-white/10 ml-4"></div>
+                  <div className="h-[1px] flex-1 bg-border ml-4"></div>
                 </div>
 
                 <div className="space-y-2 pl-16">
@@ -90,15 +90,15 @@ export function AgendaView({
                       <div
                         key={event.id}
                         onClick={() => onEventClick(event)}
-                        className="group flex items-center gap-4 p-3 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/10 transition-all cursor-pointer"
+                        className="group flex items-center gap-4 p-3 rounded-xl border border-border/50 bg-foreground/5 hover:bg-foreground/10 hover:border-border transition-all cursor-pointer"
                       >
                         <div className={cn("p-2 rounded-lg", colorClass)}>
                           <Icon className="w-4 h-4" />
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-white truncate">
+                            <h4 className="font-medium text-foreground truncate">
                               {event.title}
                             </h4>
                             {event.type !== 'event' && (
@@ -111,13 +111,13 @@ export function AgendaView({
                             )}
                           </div>
                           {event.description && (
-                            <p className="text-sm text-white/50 truncate mt-0.5">
+                            <p className="text-sm text-muted-foreground truncate mt-0.5">
                               {event.description}
                             </p>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2 text-sm text-white/40 font-medium whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground/80 font-medium whitespace-nowrap">
                           <Clock className="w-3.5 h-3.5" />
                           {event.allDay ? (
                             <span>All Day</span>
@@ -138,11 +138,11 @@ export function AgendaView({
           {/* Empty State if no events in next 14 days */}
           {events.filter(e => isAfter(e.startTime.toDate(), startOfDay(currentDate))).length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                <CalendarIcon className="w-8 h-8 text-white/20" />
+              <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center mb-4">
+                <CalendarIcon className="w-8 h-8 text-muted-foreground/40" />
               </div>
-              <h3 className="text-xl font-medium text-white mb-2">No upcoming events</h3>
-              <p className="text-white/50 max-w-sm">
+              <h3 className="text-xl font-medium text-foreground mb-2">No upcoming events</h3>
+              <p className="text-muted-foreground max-w-sm">
                 You don&apos;t have any events scheduled for the next 14 days. Click &quot;New Event&quot; to add something to your agenda.
               </p>
             </div>

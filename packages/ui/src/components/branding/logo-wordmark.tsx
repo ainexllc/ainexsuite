@@ -19,7 +19,7 @@ export function LogoWordmark({
       className={clsx('flex items-center', className)}
     >
       <div
-        className="font-brand font-black tracking-tight text-white leading-none"
+        className="font-brand font-black tracking-tight text-foreground leading-none"
         style={{
           fontSize: `${iconSize}px`,
           letterSpacing: '-0.015em'

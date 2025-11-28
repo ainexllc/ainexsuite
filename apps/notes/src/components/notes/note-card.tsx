@@ -103,7 +103,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     <>
       <article
         className={clsx(
-          "group relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-black/60 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl",
+          "group relative cursor-pointer overflow-hidden rounded-3xl border border-border bg-background/60 backdrop-blur-xl transition-all duration-300 hover:border-border/80 hover:shadow-2xl",
           viewMode === "list"
             ? "flex items-start gap-4 px-5 py-3"
             : "break-inside-avoid px-6 py-6",
@@ -117,7 +117,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             type="button"
             onClick={handlePin}
             className={clsx(
-              "absolute right-0 top-0 hidden rounded-full bg-white/10 p-2 text-white shadow-sm transition hover:bg-white/20 group-hover:flex",
+              "absolute right-0 top-0 hidden rounded-full bg-foreground/10 p-2 text-foreground shadow-sm transition hover:bg-foreground/20 group-hover:flex",
               note.pinned && "text-accent-400 flex",
             )}
             aria-label={note.pinned ? "Unpin note" : "Pin note"}
@@ -137,7 +137,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             }}
           >
             {note.title ? (
-              <h3 className="pr-8 text-base font-semibold text-white">
+              <h3 className="pr-8 text-base font-semibold text-foreground">
                 {note.title}
               </h3>
             ) : null}
@@ -149,21 +149,21 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                     key={item.id}
                     className={clsx(
                       "flex items-start gap-2 text-sm",
-                      item.completed ? "text-white/40 line-through" : "text-white/80",
+                      item.completed ? "text-muted-foreground line-through" : "text-foreground/80",
                     )}
                   >
-                    <span className={clsx("mt-1 h-2 w-2 rounded-full", item.completed ? "bg-white/20" : "bg-accent-500")} />
+                    <span className={clsx("mt-1 h-2 w-2 rounded-full", item.completed ? "bg-foreground/20" : "bg-accent-500")} />
                     <span>{item.text}</span>
                   </li>
                 ))}
                 {note.checklist.length > 6 ? (
-                  <li className="text-xs text-white/40">
+                  <li className="text-xs text-muted-foreground">
                     +{note.checklist.length - 6} more
                   </li>
                 ) : null}
               </ul>
             ) : note.body ? (
-              <p className="mt-3 whitespace-pre-wrap text-sm text-white/70 leading-relaxed">
+              <p className="mt-3 whitespace-pre-wrap text-sm text-foreground/70 leading-relaxed">
                 {note.body}
               </p>
             ) : null}
@@ -173,7 +173,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                 {note.attachments.slice(0, 4).map((attachment) => (
                   <figure
                     key={attachment.id}
-                    className="overflow-hidden rounded-2xl bg-white/10 shadow-sm border border-white/5"
+                    className="overflow-hidden rounded-2xl bg-foreground/10 shadow-sm border border-border"
                   >
                     <img
                       src={attachment.downloadURL}
@@ -183,7 +183,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                   </figure>
                 ))}
                 {note.attachments.length > 4 ? (
-                  <div className="grid place-items-center rounded-2xl bg-white/10 p-4 text-xs font-medium text-white/60">
+                  <div className="grid place-items-center rounded-2xl bg-foreground/10 p-4 text-xs font-medium text-muted-foreground">
                     +{note.attachments.length - 4} more
                   </div>
                 ) : null}
@@ -195,13 +195,13 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                 {noteLabels.map((label) => (
                   <span
                     key={label.id}
-                    className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80 border border-white/5"
+                    className="inline-flex items-center gap-2 rounded-full bg-foreground/10 px-3 py-1 text-xs font-medium text-foreground/80 border border-border"
                   >
                     <span
                       className={clsx(
                         "h-2 w-2 rounded-full",
                         label.color === "default"
-                          ? "bg-white/40"
+                          ? "bg-muted-foreground"
                           : `bg-${label.color}`,
                       )}
                     />
@@ -216,9 +216,9 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-3xl",
             footerClass
           )}>
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-white/40">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-muted-foreground">
               {note.sharedWithUserIds?.length ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/80">
+                <span className="inline-flex items-center gap-1 rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
                   <Users className="h-3 w-3" />
                   {note.sharedWithUserIds.length}
                 </span>
@@ -229,7 +229,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
               <button
                 type="button"
                 onClick={handleArchive}
-                className="icon-button h-8 w-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-full"
+                className="icon-button h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full"
                 aria-label={note.archived ? "Unarchive note" : "Archive note"}
               >
                 <Archive className="h-4 w-4" />
@@ -239,8 +239,8 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                   type="button"
                   onClick={handleOpenPalette}
                   className={clsx(
-                    "icon-button h-8 w-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10",
-                    showPalette && "bg-white/20 text-white",
+                    "icon-button h-8 w-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10",
+                    showPalette && "bg-foreground/20 text-foreground",
                   )}
                   aria-label="Change color"
                 >
@@ -248,7 +248,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                 </button>
                 {showPalette ? (
                   <div
-                    className="absolute bottom-10 right-0 z-30 flex gap-2 rounded-2xl bg-[#1a1a1a]/95 p-3 shadow-2xl backdrop-blur-xl border border-white/10"
+                    className="absolute bottom-10 right-0 z-30 flex gap-2 rounded-2xl bg-background/95 p-3 shadow-2xl backdrop-blur-xl border border-border"
                     onClick={(event) => event.stopPropagation()}
                   >
                     {NOTE_COLORS.map((option) => (
@@ -258,7 +258,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                         className={clsx(
                           "h-6 w-6 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
                           option.swatchClass,
-                          option.id === note.color && "ring-2 ring-white",
+                          option.id === note.color && "ring-2 ring-foreground",
                         )}
                         onClick={(event) => handleColorSelect(event, option.id)}
                         aria-label={`Set color ${option.label}`}

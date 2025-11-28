@@ -102,7 +102,7 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
 
   if (moments.length < 3) {
     return (
-      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-background/90 flex items-center justify-center z-50 p-4">
         <div className="bg-surface-card p-8 rounded-2xl max-w-md text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-amber-500 mx-auto" />
           <h2 className="text-xl font-bold">Not Enough Moments</h2>
@@ -122,16 +122,16 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
 
   if (gameState === 'intro') {
     return (
-      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-background/90 flex items-center justify-center z-50 p-4">
         <div className="bg-surface-card p-8 rounded-2xl max-w-md text-center space-y-6 border border-outline-subtle shadow-2xl relative overflow-hidden">
           {/* Decorative background */}
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500" />
-          
+
           <div className="relative">
             <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full" />
             <Trophy className="h-16 w-16 text-amber-500 mx-auto relative z-10" />
           </div>
-          
+
           <div>
             <h2 className="text-2xl font-bold mb-2">Memory Trivia</h2>
             <p className="text-ink-600">
@@ -142,7 +142,7 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setGameState('playing')}
-              className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-bold shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95"
+              className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-foreground rounded-xl font-bold shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95"
             >
               Start Game
             </button>
@@ -160,10 +160,10 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
 
   if (gameState === 'finished') {
     return (
-      <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-background/90 flex items-center justify-center z-50 p-4">
         <div className="bg-surface-card p-8 rounded-2xl max-w-md text-center space-y-6 border border-outline-subtle shadow-2xl">
           <Trophy className="h-16 w-16 text-amber-500 mx-auto" />
-          
+
           <div>
             <h2 className="text-3xl font-bold mb-2">Game Over!</h2>
             <p className="text-xl text-ink-600">
@@ -173,7 +173,7 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
 
           <div className="p-4 bg-surface-elevated rounded-xl">
             <p className="text-sm text-ink-600 italic">
-              {score === questions.length ? "Incredible! You're a true historian!" : 
+              {score === questions.length ? "Incredible! You're a true historian!" :
                score > questions.length / 2 ? "Great job! You know your stuff." :
                "Nice try! Time to browse the album more often."}
             </p>
@@ -187,7 +187,7 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
                 setGameState('playing');
                 // Reshuffle/regenerate logic would go here ideally
               }}
-              className="flex-1 py-2 bg-primary text-white rounded-lg font-medium"
+              className="flex-1 py-2 bg-primary text-foreground rounded-lg font-medium"
             >
               Play Again
             </button>
@@ -206,29 +206,29 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
   const currentQ = questions[currentIndex];
 
   return (
-    <div className="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-50 p-4">
-      <button 
+    <div className="fixed inset-0 bg-background/95 flex flex-col items-center justify-center z-50 p-4">
+      <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white"
+        className="absolute top-4 right-4 p-2 bg-foreground/10 hover:bg-foreground/20 rounded-full text-foreground"
       >
         <X className="h-6 w-6" />
       </button>
 
       <div className="w-full max-w-lg space-y-6">
         {/* Progress Bar */}
-        <div className="flex items-center justify-between text-white/60 text-sm font-medium">
+        <div className="flex items-center justify-between text-muted-foreground text-sm font-medium">
           <span>Question {currentIndex + 1} / {questions.length}</span>
           <span>Score: {score}</span>
         </div>
-        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-          <div 
+        <div className="h-2 bg-foreground/10 rounded-full overflow-hidden">
+          <div
             className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
             style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
           />
         </div>
 
         {/* Photo Card */}
-        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-black/40 border border-white/10 shadow-2xl">
+        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-background/40 border border-border shadow-2xl">
           <Image
             src={currentQ.moment.photoUrl}
             alt="Trivia Question"
@@ -238,11 +238,11 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
               showResult ? "blur-0 scale-100" : "blur-md scale-110"
             )}
           />
-          
+
           {!showResult && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
-                <span className="text-white font-medium flex items-center gap-2">
+              <div className="bg-background/50 backdrop-blur-sm px-4 py-2 rounded-full border border-border">
+                <span className="text-foreground font-medium flex items-center gap-2">
                   <Sparkles className="h-4 w-4" /> Guess to reveal
                 </span>
               </div>
@@ -252,7 +252,7 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
 
         {/* Question */}
         <div className="text-center space-y-2">
-          <h3 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
+          <h3 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
             {currentQ.type === 'year' ? <Calendar className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
             {currentQ.type === 'year' ? 'When was this taken?' : 'Where was this taken?'}
           </h3>
@@ -261,15 +261,15 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
         {/* Options */}
         <div className="grid grid-cols-2 gap-3">
           {currentQ.options.map((option) => {
-            let buttonStyle = "bg-white/10 hover:bg-white/20 text-white";
-            
+            let buttonStyle = "bg-foreground/10 hover:bg-foreground/20 text-foreground";
+
             if (showResult) {
               if (option === currentQ.correctAnswer) {
-                buttonStyle = "bg-emerald-500 text-white ring-2 ring-emerald-300";
+                buttonStyle = "bg-emerald-500 text-foreground ring-2 ring-emerald-300";
               } else if (option === selectedAnswer) {
-                buttonStyle = "bg-red-500 text-white opacity-50";
+                buttonStyle = "bg-red-500 text-foreground opacity-50";
               } else {
-                buttonStyle = "bg-white/5 text-white/30";
+                buttonStyle = "bg-foreground/5 text-muted-foreground";
               }
             }
 

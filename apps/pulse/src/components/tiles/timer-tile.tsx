@@ -99,14 +99,14 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
         {/* Timer Display */}
         <div className="relative group/display">
             {isEditing ? (
-                <div className="flex items-center gap-1 text-3xl font-mono font-bold text-white">
-                    <input 
+                <div className="flex items-center gap-1 text-3xl font-mono font-bold text-foreground">
+                    <input
                         type="number"
                         min="1"
                         max="999"
                         value={editMinutes}
                         onChange={(e) => setEditMinutes(e.target.value)}
-                        className="w-20 bg-white/10 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-2 focus:ring-accent-500"
+                        className="w-20 bg-foreground/10 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-2 focus:ring-accent-500"
                         autoFocus
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -115,12 +115,12 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
                         }}
                         onBlur={() => handleSetTime(parseInt(editMinutes) || 25)}
                     />
-                    <span className="text-base text-white/50">min</span>
+                    <span className="text-base text-muted-foreground">min</span>
                 </div>
             ) : (
-                <button 
+                <button
                     onClick={() => !isActive && setIsEditing(true)}
-                    className={`text-3xl font-mono font-bold tracking-wider tabular-nums transition-colors ${isActive ? 'text-accent-400' : 'text-white hover:text-white/80'}`}
+                    className={`text-3xl font-mono font-bold tracking-wider tabular-nums transition-colors ${isActive ? 'text-accent-400' : 'text-foreground hover:text-foreground/80'}`}
                     title={isActive ? "Pause to edit" : "Click to edit time"}
                     disabled={isActive}
                 >
@@ -130,8 +130,8 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
         </div>
 
         {/* Progress Bar (Mini) */}
-        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-            <div 
+        <div className="w-full h-1 bg-foreground/10 rounded-full overflow-hidden">
+            <div
                 className="h-full bg-accent-500 transition-all duration-1000 ease-linear"
                 style={{ width: `${progress}%` }}
             />
@@ -139,20 +139,20 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
 
         {/* Controls */}
         <div className="flex items-center gap-3 w-full justify-center">
-             <button 
+             <button
                 onClick={toggleTimer}
                 className={`p-2 rounded-full transition-all ${
-                    isActive 
-                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
+                    isActive
+                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                         : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
                 }`}
             >
                 {isActive ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
             </button>
 
-            <button 
+            <button
                 onClick={resetTimer}
-                className="p-2 rounded-full bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-2 rounded-full bg-foreground/5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
                 title="Reset"
             >
                 <RotateCcw className="w-4 h-4" />
@@ -166,7 +166,7 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
                     <button
                         key={min}
                         onClick={() => handleSetTime(min)}
-                        className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                        className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
                     >
                         {min}m
                     </button>

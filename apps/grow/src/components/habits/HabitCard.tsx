@@ -68,10 +68,10 @@ export function HabitCard({
       case 'frozen':
         return 'bg-blue-900/10 border-blue-500/20 opacity-70';
       case 'not_due':
-        return 'bg-[#1a1a1a] border-white/5 opacity-60';
+        return 'bg-foreground border-border opacity-60';
       case 'due':
       default:
-        return 'bg-[#1a1a1a] border-white/5 hover:border-white/10 hover:shadow-md';
+        return 'bg-foreground border-border hover:border-border hover:shadow-md';
     }
   };
 
@@ -151,7 +151,7 @@ export function HabitCard({
           <h3
             className={cn(
               'text-sm font-medium flex items-center gap-2 transition-all',
-              isCompleted ? 'text-emerald-300 line-through opacity-70' : 'text-white'
+              isCompleted ? 'text-emerald-300 line-through opacity-70' : 'text-foreground'
             )}
           >
             <span className="truncate">{habit.title}</span>
@@ -164,9 +164,9 @@ export function HabitCard({
 
           <div className="flex items-center gap-2 mt-0.5">
             {habit.description && (
-              <p className="text-xs text-white/40 truncate">{habit.description}</p>
+              <p className="text-xs text-foreground/40 truncate">{habit.description}</p>
             )}
-            <span className="text-[10px] text-white/30 flex-shrink-0">
+            <span className="text-[10px] text-foreground/30 flex-shrink-0">
               {getScheduleLabel()}
             </span>
           </div>
@@ -179,7 +179,7 @@ export function HabitCard({
         {showUndo && (
           <button
             onClick={handleUndo}
-            className="flex items-center gap-1 px-2 py-1 text-xs text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-md transition-all"
+            className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 rounded-md transition-all"
           >
             <RotateCcw className="h-3 w-3" />
             Undo
@@ -214,7 +214,7 @@ export function HabitCard({
         {/* Edit Button */}
         <button
           onClick={() => onEdit(habit.id)}
-          className="opacity-0 group-hover:opacity-100 p-1.5 text-white/30 hover:text-white transition-all rounded-md hover:bg-white/5"
+          className="opacity-0 group-hover:opacity-100 p-1.5 text-foreground/30 hover:text-foreground transition-all rounded-md hover:bg-foreground/5"
           aria-label="Edit habit"
         >
           <Settings className="h-4 w-4" />

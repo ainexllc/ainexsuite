@@ -43,7 +43,7 @@ export function Sidebar({
             className={cn(
               'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left',
               viewFilter === 'all' && !selectedProject
-                ? 'bg-accent-500 text-white'
+                ? 'bg-accent-500 text-foreground'
                 : 'hover:surface-card'
             )}
           >
@@ -60,7 +60,7 @@ export function Sidebar({
             className={cn(
               'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left',
               viewFilter === 'today' && !selectedProject
-                ? 'bg-accent-500 text-white'
+                ? 'bg-accent-500 text-foreground'
                 : 'hover:surface-card'
             )}
           >
@@ -77,7 +77,7 @@ export function Sidebar({
             className={cn(
               'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left',
               viewFilter === 'upcoming' && !selectedProject
-                ? 'bg-accent-500 text-white'
+                ? 'bg-accent-500 text-foreground'
                 : 'hover:surface-card'
             )}
           >
@@ -94,7 +94,7 @@ export function Sidebar({
             className={cn(
               'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left',
               viewFilter === 'completed' && !selectedProject
-                ? 'bg-accent-500 text-white'
+                ? 'bg-accent-500 text-foreground'
                 : 'hover:surface-card'
             )}
           >
@@ -107,7 +107,7 @@ export function Sidebar({
         {/* Projects */}
         <div>
           <div className="flex items-center justify-between mb-2 px-4">
-            <h3 className="text-xs font-medium text-ink-600 uppercase tracking-wider">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Projects
             </h3>
             <button
@@ -120,7 +120,7 @@ export function Sidebar({
           </div>
 
           {projects.length === 0 ? (
-            <p className="text-sm text-ink-600 px-4 py-2">No projects yet</p>
+            <p className="text-sm text-muted-foreground px-4 py-2">No projects yet</p>
           ) : (
             <div className="space-y-1">
               {projects.map((project) => (
@@ -133,7 +133,7 @@ export function Sidebar({
                   className={cn(
                     'w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-left',
                     selectedProject === project.id
-                      ? 'bg-accent-500 text-white'
+                      ? 'bg-accent-500 text-foreground'
                       : 'hover:surface-card'
                   )}
                 >

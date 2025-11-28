@@ -76,7 +76,7 @@ export function ConfirmationModal({
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
 
       {/* Modal */}
       <div
@@ -90,10 +90,10 @@ export function ConfirmationModal({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-1 transition-all hover:bg-white/10"
+          className="absolute right-4 top-4 rounded-lg p-1 transition-all hover:bg-foreground/10"
           aria-label="Close"
         >
-          <X className="h-5 w-5 text-white/50 hover:text-white" />
+          <X className="h-5 w-5 text-muted-foreground hover:text-foreground" />
         </button>
 
         {/* Content */}
@@ -110,19 +110,19 @@ export function ConfirmationModal({
 
           {/* Title */}
           <div className="flex flex-col gap-2">
-            <h3 className="text-xl font-semibold text-white">{title}</h3>
-            <p className="text-sm text-white/70">{message}</p>
+            <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+            <p className="text-sm text-muted-foreground">{message}</p>
           </div>
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               onClick={onClose}
-              className="flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all hover:bg-white/10"
+              className="flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all hover:bg-foreground/10"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'rgba(var(--foreground-rgb, 255, 255, 255), 0.05)',
+                borderColor: 'rgba(var(--border-rgb, 255, 255, 255), 0.2)',
+                color: 'var(--foreground)',
               }}
             >
               {cancelText}

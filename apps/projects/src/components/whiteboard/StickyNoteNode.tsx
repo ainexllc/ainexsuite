@@ -152,7 +152,7 @@ function StickyNoteNode({ data, selected }: NodeProps) {
       {/* Pin button - hidden by default, shown on hover (matching notes app) */}
       <button
         onClick={nodeData.onDelete}
-        className={`absolute right-4 top-4 rounded-full bg-white/70 p-2 text-gray-700 shadow-sm transition ${
+        className={`absolute right-4 top-4 rounded-full bg-foreground/70 p-2 text-gray-700 shadow-sm transition ${
           isHovered ? 'flex' : 'hidden'
         }`}
         title="Delete note"

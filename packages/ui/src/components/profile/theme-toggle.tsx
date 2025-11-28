@@ -49,7 +49,7 @@ export function ThemeToggle({ onThemeChange }: ThemeToggleProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-semibold text-white/70 uppercase tracking-wider px-1">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
         Theme
       </h3>
 
@@ -64,8 +64,8 @@ export function ThemeToggle({ onThemeChange }: ThemeToggleProps) {
               onClick={() => handleThemeChange(option.value)}
               className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border transition ${
                 isActive
-                  ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/[0.07] hover:text-white/70'
+                  ? 'bg-foreground/10 border-foreground/20 text-foreground'
+                  : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/[0.07] hover:text-foreground/70'
               }`}
             >
               <IconComponent className="h-5 w-5" />

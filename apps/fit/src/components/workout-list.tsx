@@ -38,18 +38,18 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
           return (
             <article
               key={workout.id}
-              className="group relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-black/60 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl"
+              className="group relative cursor-pointer overflow-hidden rounded-3xl border border-border bg-background/60 backdrop-blur-xl transition-all duration-300 hover:border-border/50 hover:shadow-2xl"
               onClick={() => onEdit(workout)}
             >
               <div className="px-6 py-6">
-                <h3 className="text-base font-semibold text-white mb-3">{workout.title}</h3>
+                <h3 className="text-base font-semibold text-foreground mb-3">{workout.title}</h3>
 
                 {workout.exercises.length > 0 && (
                   <div className="space-y-2">
                     {workout.exercises.slice(0, 4).map((exercise, idx) => (
-                      <div key={idx} className="bg-white/5 p-3 rounded-xl border border-white/5">
-                        <div className="font-medium text-white/90 mb-1">{exercise.name}</div>
-                        <div className="text-sm text-white/50">
+                      <div key={idx} className="bg-foreground/5 p-3 rounded-xl border border-border">
+                        <div className="font-medium text-foreground/90 mb-1">{exercise.name}</div>
+                        <div className="text-sm text-muted-foreground">
                           {exercise.sets.length} sets
                           {exercise.sets.length > 0 && (
                             <span className="ml-2">
@@ -60,7 +60,7 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
                       </div>
                     ))}
                     {workout.exercises.length > 4 && (
-                      <div className="text-xs text-white/40">
+                      <div className="text-xs text-muted-foreground">
                         +{workout.exercises.length - 4} more exercises
                       </div>
                     )}
@@ -68,7 +68,7 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
                 )}
 
                 {totalSets > 0 && (
-                  <div className="mt-3 text-sm text-white/50">
+                  <div className="mt-3 text-sm text-muted-foreground">
                     Total: {totalSets} sets, {totalReps} reps
                   </div>
                 )}
@@ -79,7 +79,7 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
                 className="flex items-center justify-between px-6 pb-4 pt-3 -mt-2 rounded-b-3xl"
                 style={{ backgroundColor: `${primary}1a` }}
               >
-                <div className="flex items-center gap-4 text-xs text-white/50">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
                     {format(new Date(workout.date), 'MMM d, yyyy')}
@@ -99,7 +99,7 @@ export function WorkoutList({ workouts, onEdit }: WorkoutListProps) {
                     e.stopPropagation();
                     setWorkoutToDelete(workout);
                   }}
-                  className="h-8 w-8 flex items-center justify-center text-white/40 hover:text-red-400 hover:bg-red-500/20 rounded-full transition-colors"
+                  className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-red-400 hover:bg-red-500/20 rounded-full transition-colors"
                   title="Delete workout"
                 >
                   <Trash2 className="h-4 w-4" />

@@ -53,7 +53,7 @@ export function TaskList({ onEditTask }: TaskListProps) {
                     {format(date, 'MMM d')}
                   </div>
                 )}
-                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] text-muted-foreground">
                   {task.assigneeIds.length > 0 ? 'A' : '?'}
                 </div>
               </div>

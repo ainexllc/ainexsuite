@@ -35,7 +35,7 @@ function PulseWorkspaceContent() {
             {!showWelcome && (
               <button
                 onClick={resetWelcome}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-lg transition-colors"
                 title="Show help & features"
               >
                 <HelpCircle className="h-4 w-4" />

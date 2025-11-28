@@ -153,7 +153,7 @@ export function AlertModal({
         <button
           type="button"
           onClick={onDismiss}
-          className="px-6 py-2 text-sm font-medium text-white rounded-lg transition-colors shadow-lg min-w-[100px]"
+          className="px-6 py-2 text-sm font-medium text-foreground rounded-lg transition-colors shadow-lg min-w-[100px]"
           style={{
             backgroundColor: config.buttonColor,
             boxShadow: `0 4px 14px -2px ${config.buttonColor}40`,

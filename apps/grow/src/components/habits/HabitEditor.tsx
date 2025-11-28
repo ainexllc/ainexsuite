@@ -130,14 +130,14 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         confirmText="Delete"
         variant="danger"
       />
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div className="w-full max-w-2xl bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+        <div className="w-full max-w-2xl bg-foreground border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
           {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between shrink-0">
-          <h3 className="text-xl font-bold text-white">
+        <div className="p-6 border-b border-border flex items-center justify-between shrink-0">
+          <h3 className="text-xl font-bold text-foreground">
             {editHabitId ? 'Edit Habit' : 'New Habit'}
           </h3>
-          <button onClick={onClose} className="text-white/50 hover:text-white">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -148,13 +148,13 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
           {/* Basic Info */}
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-white/70 mb-2 uppercase tracking-wider">What</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">What</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Morning Run"
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-lg text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-foreground/5 border border-border rounded-xl p-3 text-lg text-foreground focus:outline-none focus:border-indigo-500"
                 required
               />
             </div>
@@ -163,17 +163,17 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Add details..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white/70 focus:outline-none focus:border-indigo-500 min-h-[80px]"
+                className="w-full bg-foreground/5 border border-border rounded-xl p-3 text-sm text-muted-foreground focus:outline-none focus:border-indigo-500 min-h-[80px]"
               />
             </div>
           </div>
 
           {/* Schedule */}
           <div>
-            <label className="block text-xs font-medium text-white/70 mb-3 uppercase tracking-wider flex items-center gap-2">
+            <label className="block text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
               <Calendar className="h-4 w-4" /> When
             </label>
-            
+
             <div className="flex gap-2 mb-4">
               {['daily', 'specific_days', 'interval', 'weekly'].map((type: string) => (
                 <button
@@ -181,9 +181,9 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   type="button"
                   onClick={() => setSchedule({ type: type as FrequencyType, daysOfWeek: type === 'specific_days' ? [] : undefined })}
                   className={`px-3 py-2 rounded-lg text-sm capitalize transition-colors ${
-                    schedule.type === type 
-                      ? 'bg-indigo-500 text-white' 
-                      : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    schedule.type === type
+                      ? 'bg-indigo-500 text-foreground'
+                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
                   }`}
                 >
                   {type.replace('_', ' ')}
@@ -193,7 +193,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
             {/* Specific Days UI */}
             {schedule.type === 'specific_days' && (
-              <div className="flex justify-between gap-2 bg-white/5 p-4 rounded-xl">
+              <div className="flex justify-between gap-2 bg-foreground/5 p-4 rounded-xl">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day: string, idx: number) => (
                   <button
                     key={idx}
@@ -201,8 +201,8 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                     onClick={() => toggleDay(idx)}
                     className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                       schedule.daysOfWeek?.includes(idx)
-                        ? 'bg-indigo-500 text-white scale-110'
-                        : 'bg-white/10 text-white/40 hover:bg-white/20'
+                        ? 'bg-indigo-500 text-foreground scale-110'
+                        : 'bg-foreground/10 text-foreground/40 hover:bg-foreground/20'
                     }`}
                   >
                     {day}
@@ -214,7 +214,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
           {/* Assignees */}
           <div>
-            <label className="block text-xs font-medium text-white/70 mb-3 uppercase tracking-wider flex items-center gap-2">
+            <label className="block text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
               <Users className="h-4 w-4" /> Who
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -226,13 +226,13 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   className={`flex items-center gap-3 p-2 rounded-lg border transition-all ${
                     assignees.includes(member.uid)
                       ? 'bg-indigo-500/20 border-indigo-500/50'
-                      : 'bg-white/5 border-white/5 hover:bg-white/10'
+                      : 'bg-foreground/5 border-border hover:bg-foreground/10'
                   }`}
                 >
-                  <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-xs text-white">
+                  <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-xs text-foreground">
                     {member.displayName.slice(0, 2).toUpperCase()}
                   </div>
-                  <span className={`text-sm ${assignees.includes(member.uid) ? 'text-white' : 'text-white/60'}`}>
+                  <span className={`text-sm ${assignees.includes(member.uid) ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {member.displayName}
                   </span>
                   {assignees.includes(member.uid) && <Check className="h-4 w-4 text-indigo-400 ml-auto" />}
@@ -250,8 +250,8 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                     <Flame className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className={`text-sm font-medium ${wager?.isActive ? 'text-orange-100' : 'text-white/70'}`}>Friendly Wager</h4>
-                    <p className="text-xs text-white/40">Add stakes to build streaks together</p>
+                    <h4 className={`text-sm font-medium ${wager?.isActive ? 'text-orange-100' : 'text-muted-foreground'}`}>Friendly Wager</h4>
+                    <p className="text-xs text-foreground/40">Add stakes to build streaks together</p>
                   </div>
                 </div>
                 <button
@@ -271,10 +271,10 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                     }
                   }}
                   className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                    wager?.isActive ? 'bg-orange-500' : 'bg-white/10'
+                    wager?.isActive ? 'bg-orange-500' : 'bg-foreground/10'
                   }`}
                 >
-                  <div className={`h-4 w-4 rounded-full bg-white transition-transform ${
+                  <div className={`h-4 w-4 rounded-full bg-foreground transition-transform ${
                     wager?.isActive ? 'translate-x-6' : 'translate-x-0'
                   }`} />
                 </button>
@@ -283,23 +283,23 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
               {wager?.isActive && (
                 <div className="space-y-3 animate-fade-in">
                   <div>
-                    <label className="block text-xs font-medium text-white/70 mb-1.5">Stakes</label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Stakes</label>
                     <input
                       type="text"
                       value={wager.description}
                       onChange={(e) => setWager({ ...wager, description: e.target.value })}
                       placeholder="e.g. Loser cooks dinner"
-                      className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500"
+                      className="w-full bg-background/20 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-orange-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-white/70 mb-1.5">Target Streak (Days)</label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Target Streak (Days)</label>
                     <input
                       type="number"
                       min="3"
                       value={wager.targetStreak}
                       onChange={(e) => setWager({ ...wager, targetStreak: parseInt(e.target.value) })}
-                      className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500"
+                      className="w-full bg-background/20 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-orange-500"
                     />
                   </div>
                 </div>
@@ -322,10 +322,10 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
               type="button"
               onClick={() => setIsFrozen(!isFrozen)}
               className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                isFrozen ? 'bg-blue-500' : 'bg-white/10'
+                isFrozen ? 'bg-blue-500' : 'bg-foreground/10'
               }`}
             >
-              <div className={`h-4 w-4 rounded-full bg-white transition-transform ${
+              <div className={`h-4 w-4 rounded-full bg-foreground transition-transform ${
                 isFrozen ? 'translate-x-6' : 'translate-x-0'
               }`} />
             </button>
@@ -334,7 +334,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-white/10 flex justify-end gap-3 shrink-0">
+        <div className="p-6 border-t border-border flex justify-end gap-3 shrink-0">
           {editHabitId && (
             <button
               type="button"
@@ -346,13 +346,13 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
           )}
           <button
             onClick={onClose}
-            className="px-6 py-2 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            className="px-6 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-foreground rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-indigo-500/20"
           >
             <Save className="h-4 w-4" />
             Save Habit

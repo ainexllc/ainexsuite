@@ -33,7 +33,7 @@ export function LogoWordmark({
     >
       <span className="text-orange-500">AI</span>
       <span
-        className={clsx(isLight ? "text-ink-900" : "text-white")}
+        className={clsx(isLight ? "text-ink-900" : "text-foreground")}
         style={{ paddingRight: "1px" }}
       >
         Ne
@@ -57,28 +57,32 @@ export function LogoWordmark({
             y="10"
             width="15"
             height="15"
-            fill={isLight ? "#111827" : "#ffffff"}
+            fill={isLight ? "#111827" : "currentColor"}
+            className={isLight ? "" : "text-foreground"}
           />
           <rect
             x="50"
             y="30"
             width="15"
             height="15"
-            fill={isLight ? "#111827" : "#ffffff"}
+            fill={isLight ? "#111827" : "currentColor"}
+            className={isLight ? "" : "text-foreground"}
           />
           <rect
             x="30"
             y="50"
             width="15"
             height="15"
-            fill={isLight ? "#111827" : "#ffffff"}
+            fill={isLight ? "#111827" : "currentColor"}
+            className={isLight ? "" : "text-foreground"}
           />
           <rect
             x="10"
             y="70"
             width="15"
             height="15"
-            fill={isLight ? "#111827" : "#ffffff"}
+            fill={isLight ? "#111827" : "currentColor"}
+            className={isLight ? "" : "text-foreground"}
           />
         </svg>
       </span>

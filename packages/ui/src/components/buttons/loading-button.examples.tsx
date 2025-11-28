@@ -169,7 +169,7 @@ export function LoadingButtonExamples() {
           <div>
             <h3 className="mb-3 text-sm font-semibold text-ink-600">Form Submission</h3>
             <form
-              className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6"
+              className="space-y-4 rounded-2xl border border-border bg-surface-elevated/60 p-6"
               onSubmit={(e) => {
                 e.preventDefault();
                 simulateAsync(setLoading1);
@@ -178,12 +178,12 @@ export function LoadingButtonExamples() {
               <input
                 type="text"
                 placeholder="Your name"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-ink-700"
+                className="w-full rounded-lg border border-border bg-surface-elevated/60 px-4 py-2 text-ink-700"
               />
               <input
                 type="email"
                 placeholder="Your email"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-ink-700"
+                className="w-full rounded-lg border border-border bg-surface-elevated/60 px-4 py-2 text-ink-700"
               />
               <LoadingButton
                 type="submit"
@@ -199,7 +199,7 @@ export function LoadingButtonExamples() {
           {/* Delete Action */}
           <div>
             <h3 className="mb-3 text-sm font-semibold text-ink-600">Delete Action</h3>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="rounded-2xl border border-border bg-surface-elevated/60 p-6">
               <p className="mb-4 text-ink-700">
                 Are you sure you want to delete this item? This action cannot be undone.
               </p>
@@ -220,7 +220,7 @@ export function LoadingButtonExamples() {
           {/* Save Action */}
           <div>
             <h3 className="mb-3 text-sm font-semibold text-ink-600">Save Action</h3>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="rounded-2xl border border-border bg-surface-elevated/60 p-6">
               <div className="mb-4 flex items-center justify-between">
                 <h4 className="font-semibold text-ink-700">Settings</h4>
                 <LoadingButton

@@ -60,13 +60,13 @@ export function ProgressBar({
     <div className={cn('w-full', className)}>
       {showLabel && labelPosition === 'outside' && (
         <div className={cn('flex justify-between mb-1', labelSizeClasses[size])}>
-          <span className="text-white/70">{displayValue}%</span>
+          <span className="text-muted-foreground">{displayValue}%</span>
         </div>
       )}
 
       <div
         className={cn(
-          'w-full rounded-full overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10',
+          'w-full rounded-full overflow-hidden bg-foreground/5 backdrop-blur-sm border border-border',
           sizeClasses[size]
         )}
         role="progressbar"
@@ -79,7 +79,7 @@ export function ProgressBar({
           className={cn(
             'h-full transition-all duration-500 ease-out relative',
             {
-              'bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse':
+              'bg-gradient-to-r from-transparent via-foreground/20 to-transparent animate-pulse':
                 indeterminate,
               'progress-bar': !indeterminate && variant === 'default',
             }
@@ -107,7 +107,7 @@ export function ProgressBar({
           {showLabel && labelPosition === 'inside' && percentage > 15 && (
             <div
               className={cn(
-                'absolute inset-0 flex items-center justify-end pr-2 font-medium text-white',
+                'absolute inset-0 flex items-center justify-end pr-2 font-medium text-foreground',
                 labelSizeClasses[size]
               )}
             >
@@ -122,8 +122,8 @@ export function ProgressBar({
         <div className="relative">
           <div
             className={cn(
-              'absolute top-2 bg-black/90 text-white px-2 py-1 rounded text-xs font-medium',
-              'pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity'
+              'absolute top-2 bg-background/90 text-foreground px-2 py-1 rounded text-xs font-medium',
+              'pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity border border-border'
             )}
             style={{ left: `${percentage}%`, transform: 'translateX(-50%)' }}
           >

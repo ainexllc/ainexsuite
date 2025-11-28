@@ -769,13 +769,13 @@ function WhiteboardInner(_props: WhiteboardProps) {
         {/* Toolbar Panel - Full View No Scroll */}
         <Panel position="top-left" className={`backdrop-blur-xl rounded-xl shadow-2xl border ${
           isDarkMode
-            ? 'bg-gradient-to-br from-gray-800/85 to-gray-900/85 border-white/10'
-            : 'bg-gradient-to-br from-white/85 to-gray-50/85 border-gray-200'
+            ? 'bg-gradient-to-br from-gray-800/85 to-gray-900/85 border-border'
+            : 'bg-gradient-to-br from-foreground/85 to-gray-50/85 border-gray-200'
         }`}>
           <div className="flex flex-col gap-1 p-2">
           {/* Sticky Notes Section */}
           <div className="flex flex-col gap-1">
-            <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+            <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
               Sticky Notes
             </span>
 
@@ -802,7 +802,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     stickyNoteColor === color
                       ? 'ring-1 ring-cyan-500'
                       : isDarkMode
-                      ? 'border-white/20'
+                      ? 'border-border'
                       : 'border-gray-300'
                   }`}
                   style={{ backgroundColor: color }}
@@ -815,11 +815,11 @@ function WhiteboardInner(_props: WhiteboardProps) {
             </div>
           </div>
 
-          <div className={`h-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
+          <div className={`h-px ${isDarkMode ? 'bg-border' : 'bg-gray-200'}`} />
 
           {/* Undo/Redo Section */}
           <div className="flex flex-col gap-1.5">
-            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
               History
             </span>
             <div className="flex gap-1">
@@ -829,10 +829,10 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm shadow-lg transition-all ${
                   canUndo
                     ? isDarkMode
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                      : 'bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-blue-500 hover:to-cyan-500 text-white'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-foreground'
+                      : 'bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-blue-500 hover:to-cyan-500 text-foreground'
                     : isDarkMode
-                    ? 'bg-white/10 text-white/30 cursor-not-allowed'
+                    ? 'bg-foreground/10 text-muted-foreground cursor-not-allowed'
                     : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                 }`}
                 title="Undo (Ctrl+Z)"
@@ -845,10 +845,10 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm shadow-lg transition-all ${
                   canRedo
                     ? isDarkMode
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                      : 'bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-blue-500 hover:to-cyan-500 text-white'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-foreground'
+                      : 'bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-blue-500 hover:to-cyan-500 text-foreground'
                     : isDarkMode
-                    ? 'bg-white/10 text-white/30 cursor-not-allowed'
+                    ? 'bg-foreground/10 text-muted-foreground cursor-not-allowed'
                     : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                 }`}
                 title="Redo (Ctrl+Y)"
@@ -863,7 +863,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
           {/* Selection Section */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+              <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
                 Selection
               </span>
               {selectedCount > 0 && (
@@ -879,11 +879,11 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl font-medium text-xs shadow-lg transition-all ${
                   nodes.length === 0 && edges.length === 0
                     ? isDarkMode
-                      ? 'bg-white/10 text-white/30 cursor-not-allowed'
+                      ? 'bg-foreground/10 text-muted-foreground cursor-not-allowed'
                       : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                     : isDarkMode
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
-                    : 'bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white'
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-foreground'
+                    : 'bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-foreground'
                 }`}
                 title="Select all (Ctrl+A)"
               >
@@ -896,11 +896,11 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl font-medium text-xs shadow-lg transition-all ${
                   selectedCount === 0
                     ? isDarkMode
-                      ? 'bg-white/10 text-white/30 cursor-not-allowed'
+                      ? 'bg-foreground/10 text-muted-foreground cursor-not-allowed'
                       : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                     : isDarkMode
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white'
-                    : 'bg-gradient-to-r from-orange-400 to-red-400 hover:from-orange-500 hover:to-red-500 text-white'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-foreground'
+                    : 'bg-gradient-to-r from-orange-400 to-red-400 hover:from-orange-500 hover:to-red-500 text-foreground'
                 }`}
                 title="Delete selected (Delete)"
               >
@@ -912,7 +912,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
             {/* Bulk Color Change - only show when nodes are selected */}
             {selectedCount > 0 && nodes.some((n) => n.selected) && (
               <div className="flex items-center gap-2 pt-1">
-                <span className={`text-xs ${isDarkMode ? 'text-white/70' : 'text-gray-600'}`}>
+                <span className={`text-xs ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
                   Color:
                 </span>
                 <div className="flex gap-1 flex-1">
@@ -921,7 +921,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
                       key={color}
                       onClick={() => changeSelectedColor(color)}
                       className={`w-6 h-6 rounded-lg border-2 transition-all hover:scale-110 ${
-                        isDarkMode ? 'border-white/20' : 'border-gray-300'
+                        isDarkMode ? 'border-border' : 'border-gray-300'
                       }`}
                       style={{ backgroundColor: color }}
                       title={`Change to ${color}`}
@@ -938,7 +938,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <Network className="w-3.5 h-3.5" style={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#6b7280' }} />
-              <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+              <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
                 Edge Style
               </span>
             </div>
@@ -949,9 +949,9 @@ function WhiteboardInner(_props: WhiteboardProps) {
                   onClick={() => setEdgeType(type)}
                   className={`px-2 py-1.5 text-xs rounded-lg transition-all capitalize ${
                     edgeType === type
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-foreground font-medium'
                       : isDarkMode
-                      ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                      ? 'bg-foreground/10 text-muted-foreground hover:bg-foreground/20'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                   title={`${type.charAt(0).toUpperCase() + type.slice(1)} edges`}
@@ -966,7 +966,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
 
           {/* Arrow Direction Selector */}
           <div className="flex flex-col gap-1.5">
-            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
               Arrow Direction
             </span>
             <div className="grid grid-cols-2 gap-1">
@@ -981,9 +981,9 @@ function WhiteboardInner(_props: WhiteboardProps) {
                   onClick={() => setArrowType(type)}
                   className={`px-2 py-1.5 text-xs rounded-lg transition-all flex flex-col items-center gap-0.5 ${
                     arrowType === type
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-foreground font-medium'
                       : isDarkMode
-                      ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                      ? 'bg-foreground/10 text-muted-foreground hover:bg-foreground/20'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                   title={`Arrow: ${label}`}
@@ -999,13 +999,13 @@ function WhiteboardInner(_props: WhiteboardProps) {
 
           {/* Line Style Selector */}
           <div className="flex flex-col gap-1.5">
-            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
               Line Style
             </span>
 
             {/* Static Styles */}
             <div className="flex flex-col gap-1">
-              <span className={`text-[10px] uppercase tracking-wide ${isDarkMode ? 'text-white/40' : 'text-gray-500'}`}>
+              <span className={`text-[10px] uppercase tracking-wide ${isDarkMode ? 'text-muted-foreground/60' : 'text-gray-500'}`}>
                 Static
               </span>
               <div className="grid grid-cols-3 gap-1">
@@ -1019,9 +1019,9 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     onClick={() => setLineStyle(style)}
                     className={`px-1.5 py-1.5 text-xs rounded-lg transition-all flex flex-col items-center gap-0.5 ${
                       lineStyle === style
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-foreground font-medium'
                         : isDarkMode
-                        ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                        ? 'bg-foreground/10 text-muted-foreground hover:bg-foreground/20'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                     title={`Line: ${label}`}
@@ -1035,7 +1035,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
 
             {/* Animated Styles */}
             <div className="flex flex-col gap-1">
-              <span className={`text-[10px] uppercase tracking-wide ${isDarkMode ? 'text-white/40' : 'text-gray-500'}`}>
+              <span className={`text-[10px] uppercase tracking-wide ${isDarkMode ? 'text-muted-foreground/60' : 'text-gray-500'}`}>
                 Animated
               </span>
               <div className="grid grid-cols-3 gap-1">
@@ -1049,9 +1049,9 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     onClick={() => setLineStyle(style)}
                     className={`px-1.5 py-1.5 text-xs rounded-lg transition-all flex flex-col items-center gap-0.5 ${
                       lineStyle === style
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-foreground font-medium'
                         : isDarkMode
-                        ? 'bg-white/10 text-white/70 hover:bg-white/20'
+                        ? 'bg-foreground/10 text-muted-foreground hover:bg-foreground/20'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                     title={`Line: ${label} (Animated)`}
@@ -1068,7 +1068,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
 
           {/* Export/Import Section */}
           <div className="flex flex-col gap-1.5">
-            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-white/60' : 'text-gray-600'}`}>
+            <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-muted-foreground' : 'text-gray-600'}`}>
               Data
             </span>
             <div className="flex gap-1">
@@ -1078,11 +1078,11 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl font-medium text-xs shadow-lg transition-all ${
                   nodes.length === 0 && edges.length === 0
                     ? isDarkMode
-                      ? 'bg-white/10 text-white/30 cursor-not-allowed'
+                      ? 'bg-foreground/10 text-muted-foreground cursor-not-allowed'
                       : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                     : isDarkMode
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white'
-                    : 'bg-gradient-to-r from-green-400 to-emerald-400 hover:from-green-500 hover:to-emerald-500 text-white'
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-foreground'
+                    : 'bg-gradient-to-r from-green-400 to-emerald-400 hover:from-green-500 hover:to-emerald-500 text-foreground'
                 }`}
                 title="Export whiteboard to JSON"
               >
@@ -1093,8 +1093,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
                 onClick={importFromJSON}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl font-medium text-xs shadow-lg transition-all ${
                   isDarkMode
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white'
-                    : 'bg-gradient-to-r from-indigo-400 to-purple-400 hover:from-indigo-500 hover:to-purple-500 text-white'
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-foreground'
+                    : 'bg-gradient-to-r from-indigo-400 to-purple-400 hover:from-indigo-500 hover:to-purple-500 text-foreground'
                 }`}
                 title="Import whiteboard from JSON"
               >
@@ -1112,8 +1112,8 @@ function WhiteboardInner(_props: WhiteboardProps) {
               onClick={clearWhiteboard}
               className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm shadow-lg transition-all ${
                 isDarkMode
-                  ? 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white'
-                  : 'bg-gradient-to-r from-red-400 to-rose-400 hover:from-red-500 hover:to-rose-500 text-white'
+                  ? 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-foreground'
+                  : 'bg-gradient-to-r from-red-400 to-rose-400 hover:from-red-500 hover:to-rose-500 text-foreground'
               }`}
               title="Clear whiteboard"
             >
@@ -1126,7 +1126,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
               onClick={toggleDarkMode}
               className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm transition-all ${
                 isDarkMode
-                  ? 'bg-white/10 hover:bg-white/20 text-white/90'
+                  ? 'bg-foreground/10 hover:bg-foreground/20 text-foreground'
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
               title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -1149,7 +1149,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
               onClick={toggleFullscreen}
               className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-sm transition-all ${
                 isDarkMode
-                  ? 'bg-white/10 hover:bg-white/20 text-white/90'
+                  ? 'bg-foreground/10 hover:bg-foreground/20 text-foreground'
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
               title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}

@@ -108,7 +108,7 @@ export default function TodoWorkspacePage() {
                 setSelectedTaskId(undefined);
                 setShowEditor(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-colors shadow-lg shadow-accent-500/20"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-foreground text-sm font-medium transition-colors shadow-lg shadow-accent-500/20"
             >
               <Plus className="h-4 w-4" />
               <span>New Task</span>

@@ -39,7 +39,7 @@ function OvalNode({ data, selected }: NodeProps<OvalNodeType>) {
     background: nodeColor,
     width: 8,
     height: 8,
-    border: '2px solid #fff',
+    border: '2px solid var(--foreground)',
     borderRadius: '50%',
     zIndex: 10,
     opacity: isHovered || selected ? 1 : 0.4,
@@ -119,11 +119,11 @@ function OvalNode({ data, selected }: NodeProps<OvalNodeType>) {
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="h-full w-full resize-none bg-transparent text-center text-sm text-white outline-none"
+            className="h-full w-full resize-none bg-transparent text-center text-sm text-foreground outline-none"
             style={{ fontFamily: 'inherit' }}
           />
         ) : (
-          <div className="text-center text-sm text-white whitespace-pre-wrap break-words">
+          <div className="text-center text-sm text-foreground whitespace-pre-wrap break-words">
             {label}
           </div>
         )}
