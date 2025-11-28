@@ -22,30 +22,32 @@ function PulseWorkspaceContent() {
   }
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      searchPlaceholder="Search health data..."
-      appName="Pulse"
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <SpaceSwitcher />
-          {!showWelcome && (
-            <button
-              onClick={resetWelcome}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              title="Show help & features"
-            >
-              <HelpCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Help</span>
-            </button>
-          )}
+    <div className="h-screen overflow-hidden">
+      <WorkspaceLayout
+        user={user}
+        onSignOut={handleSignOut}
+        searchPlaceholder="Search health data..."
+        appName="Pulse"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-4 mb-6">
+            <SpaceSwitcher />
+            {!showWelcome && (
+              <button
+                onClick={resetWelcome}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                title="Show help & features"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Help</span>
+              </button>
+            )}
+          </div>
+          {showWelcome && <WelcomePanel onDismiss={dismissWelcome} />}
+          <DigitalClock />
         </div>
-        {showWelcome && <WelcomePanel onDismiss={dismissWelcome} />}
-        <DigitalClock />
-      </div>
-    </WorkspaceLayout>
+      </WorkspaceLayout>
+    </div>
   );
 }
 
