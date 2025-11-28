@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Subscriptions App Theme - Emerald Accent Colors in HSL format */
+:root {
+  --app-primary: 160 84% 39%;      /* Emerald-500 #10b981 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 160 84% 39%;    /* Emerald-500 as well for now */
+  --app-secondary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --app-primary: 158 64% 52%;      /* Emerald-400 #34d399 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 158 64% 52%;
+  --app-secondary-foreground: 0 0% 0%;
+}
