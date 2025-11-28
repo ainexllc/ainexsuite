@@ -11,7 +11,6 @@ import { WorkspaceLayout } from '@ainexsuite/ui';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { db } from '@ainexsuite/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { AdminSidebar } from './sidebar';
 
 interface AdminWorkspaceLayoutProps {
   children: ReactNode;
@@ -134,20 +133,8 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
       appName="ADMIN"
       appColor="#71717a"
       showBackground={true}
-      backgroundVariant="minimal"
-      backgroundIntensity={0.3}
-      renderSidebar={({ isOpen, onClose }) => (
-        <AdminSidebar
-          isOpen={isOpen}
-          onClose={onClose}
-          onSignOut={handleSignOut}
-          user={{
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL
-          }}
-        />
-      )}
+      backgroundVariant="dots"
+      backgroundIntensity={0.2}
     >
       {children}
     </WorkspaceLayout>
