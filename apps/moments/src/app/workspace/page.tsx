@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
-import { useRouter } from 'next/navigation';
+import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
+import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
 import type { Moment } from '@ainexsuite/types';
 import { TimelineView } from '@/components/timeline-view';
 import { PhotoEditor } from '@/components/photo-editor';
@@ -20,8 +19,7 @@ import { SlideshowPlayer } from '@/components/slideshow-player';
 import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book, Share2 } from 'lucide-react';
 
 function MomentsWorkspaceContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
-  const router = useRouter();
+  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
 
   const {
     moments,
@@ -57,18 +55,6 @@ function MomentsWorkspaceContent() {
     }
   }, [currentSpaceId, fetchMoments, user?.uid]);
 
-  // Handle sign out
-  const handleSignOut = async () => {
-    try {
-      const { auth } = await import('@ainexsuite/firebase');
-      const firebaseAuth = await import('firebase/auth');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (firebaseAuth as any).signOut(auth);
-      router.push('/');
-    } catch (error) {
-      console.error('Failed to sign out:', error);
-    }
-  };
 
   const handleUpdate = async () => {
     fetchMoments(currentSpaceId || undefined);
@@ -79,16 +65,13 @@ function MomentsWorkspaceContent() {
   const allTags = Array.from(new Set(moments.flatMap((m) => m.tags || []))).sort();
   const filteredMoments = selectedTag ? moments.filter((m) => m.tags?.includes(selectedTag)) : moments;
 
-  // Show loading while authenticating or bootstrapping
-  if (authLoading || bootstrapStatus === 'running') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-base">
-        <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
-      </div>
-    );
+  // Show standardized loading screen
+  if (isLoading) {
+    return <WorkspaceLoadingScreen />;
   }
 
-  if (!user) {
+  // Return null while redirecting
+  if (!isReady || !user) {
     return null;
   }
 

@@ -13,6 +13,7 @@ export * from './email-detection';
 export * from './auth-errors';
 export * from './suite-guard';
 export * from './auth-box';
+export * from './use-workspace-auth';
 export * from './user-utils';
 export * from './stripe-client';
 

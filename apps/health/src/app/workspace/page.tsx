@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
+import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
 import type { HealthMetric } from '@ainexsuite/types';
 import {
   getHealthMetrics,
@@ -20,11 +19,10 @@ import { HealthHistory } from '@/components/health-history';
 import { HealthInsights } from '@/components/health-insights';
 import { AIAssistant } from '@/components/ai-assistant';
 import { FitIntegrationWidget } from '@/components/fit-integration-widget';
-import { Activity, Loader2, Calendar } from 'lucide-react';
+import { Activity, Calendar } from 'lucide-react';
 
 function HealthWorkspaceContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
-  const router = useRouter();
+  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
   const [metrics, setMetrics] = useState<HealthMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [todayMetric, setTodayMetric] = useState<HealthMetric | null>(null);
@@ -52,17 +50,6 @@ function HealthWorkspaceContent() {
     }
   }, [user, loadData]);
 
-  // Handle sign out
-  const handleSignOut = async () => {
-    try {
-      const { auth } = await import('@ainexsuite/firebase');
-      const firebaseAuth = await import('firebase/auth');
-      await firebaseAuth.signOut(auth);
-      router.push('/');
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
-  };
 
   const handleSaveCheckin = async (data: Partial<HealthMetric>) => {
     try {
@@ -109,16 +96,13 @@ function HealthWorkspaceContent() {
     }
   };
 
-  // Show loading while authenticating or bootstrapping
-  if (authLoading || loading || bootstrapStatus === 'running') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-base">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-      </div>
-    );
+  // Show standardized loading screen
+  if (isLoading || loading) {
+    return <WorkspaceLoadingScreen />;
   }
 
-  if (!user) {
+  // Return null while redirecting
+  if (!isReady || !user) {
     return null;
   }
 

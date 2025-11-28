@@ -1,15 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
-import { useRouter } from 'next/navigation';
+import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
+import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
 import { WorkoutList } from '@/components/workout-list';
 import { WorkoutEditor } from '@/components/workout-editor';
 import { WorkoutComposer } from '@/components/workout-composer';
 import { AIAssistant } from '@/components/ai-assistant';
 import { FitInsights } from '@/components/fit-insights';
-import { Dumbbell, Loader2, Trophy } from 'lucide-react';
+import { Dumbbell, Trophy } from 'lucide-react';
 
 // New Components
 import { SpaceSwitcher } from '@/components/spaces';
@@ -22,8 +21,7 @@ import { useFitStore } from '@/lib/store';
 import { Workout } from '@/types/models';
 
 function FitWorkspaceContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
-  const router = useRouter();
+  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
   
   // Store
   const { getCurrentSpace, workouts, addWorkout, updateWorkout } = useFitStore();
@@ -34,18 +32,6 @@ function FitWorkspaceContent() {
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
   const [mobileInsightsExpanded, setMobileInsightsExpanded] = useState(false);
 
-  // Handle sign out
-  const handleSignOut = async () => {
-    try {
-      const { auth } = await import('@ainexsuite/firebase');
-      const firebaseAuth = await import('firebase/auth');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (firebaseAuth as any).signOut(auth);
-      router.push('/');
-    } catch (error) {
-      console.error('Sign out failed:', error);
-    }
-  };
 
   const handleUpdate = async () => {
     // Refresh logic handled by Firestore subscription automatically now
@@ -87,16 +73,15 @@ function FitWorkspaceContent() {
     setSelectedWorkout(null);
   };
 
-  // Show loading while authenticating or bootstrapping
-  if (authLoading || bootstrapStatus === 'running') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
-      </div>
-    );
+  // Show standardized loading screen
+  if (isLoading) {
+    return <WorkspaceLoadingScreen />;
   }
 
-  if (!user) return null;
+  // Return null while redirecting
+  if (!isReady || !user) {
+    return null;
+  }
 
   return (
     <WorkspaceLayout

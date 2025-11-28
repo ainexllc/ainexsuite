@@ -80,7 +80,6 @@ export function WorkspaceHeader({
       style={{
         backgroundColor: 'rgba(5, 5, 5, 0.95)',
         borderColor: 'rgba(var(--theme-primary-rgb), 0.2)',
-        boxShadow: '0 8px 30px -12px rgba(var(--theme-primary-rgb), 0.3)',
         transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
         transition: 'transform 0.3s ease-in-out',
       }}

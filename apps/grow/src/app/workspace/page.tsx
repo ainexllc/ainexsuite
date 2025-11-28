@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout } from '@ainexsuite/ui/components';
-import { useRouter } from 'next/navigation';
-import { Loader2, Plus, Settings, Layout, Package, Crown, Sparkles, BarChart3, Rocket } from 'lucide-react';
+import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
+import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { Plus, Settings, Layout, Package, Crown, Sparkles, BarChart3, Rocket } from 'lucide-react';
 import Link from 'next/link';
 
 // Core Components
@@ -42,8 +41,7 @@ import {
 import { canCreateHabit } from '@/lib/permissions';
 
 function GrowWorkspaceContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
-  const router = useRouter();
+  const { user, isLoading, isReady, handleSignOut, bootstrapStatus } = useWorkspaceAuth();
   
   // Zustand Store
   const {
@@ -86,18 +84,6 @@ function GrowWorkspaceContent() {
   const [showAISuggester, setShowAISuggester] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState<string | undefined>(undefined);
 
-  // Handle sign out
-  const handleSignOut = async () => {
-    try {
-      const { auth } = await import('@ainexsuite/firebase');
-      const firebaseAuth = await import('firebase/auth');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (firebaseAuth as any).signOut(auth);
-      router.push('/');
-    } catch (error) {
-      console.error('Failed to sign out:', error);
-    }
-  };
 
   const handleCompleteHabit = (habitId: string) => {
     if (!user || !currentSpace) return;
@@ -126,16 +112,15 @@ function GrowWorkspaceContent() {
     return partner?.uid || '';
   };
 
-  // Show loading while authenticating or bootstrapping
-  if (authLoading || bootstrapStatus === 'running') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-      </div>
-    );
+  // Show standardized loading screen
+  if (isLoading) {
+    return <WorkspaceLoadingScreen />;
   }
 
-  if (!user) return null;
+  // Return null while redirecting
+  if (!isReady || !user) {
+    return null;
+  }
 
   // Check if onboarding needed (delayed to allow Firestore sync)
   // Show onboarding if user has no spaces after data loads
