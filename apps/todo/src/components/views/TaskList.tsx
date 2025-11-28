@@ -16,7 +16,7 @@ export function TaskList({ onEditTask }: TaskListProps) {
   if (!currentSpace) return null;
 
   // Filter tasks for current space
-  const spaceTasks = tasks.filter((t: Task) => t.spaceId === currentSpace.id);
+  const spaceTasks = tasks.filter((t: Task) => currentSpace.id === 'all' || t.spaceId === currentSpace.id);
 
   const handleToggleComplete = async (task: Task) => {
     const newStatus = task.status === 'done' ? 'todo' : 'done';

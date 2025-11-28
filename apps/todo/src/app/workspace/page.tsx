@@ -17,14 +17,25 @@ import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
 import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
-type ViewType = 'list' | 'board' | 'my-day' | 'matrix';
+import { useTodoStore } from '@/lib/store';
+
+// ...
 
 export default function TodoWorkspacePage() {
   const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
+  const { currentSpaceId, viewPreferences, setViewPreference } = useTodoStore();
 
-  const [view, setView] = useState<ViewType>('list');
   const [showEditor, setShowEditor] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
+
+  // Resolve view from preference or default
+  const view = (viewPreferences[currentSpaceId] as ViewType) || 'list';
+
+  const handleSetView = (newView: ViewType) => {
+    if (currentSpaceId) {
+      setViewPreference(currentSpaceId, newView);
+    }
+  };
 
   // Show standardized loading screen
   if (isLoading) {
@@ -57,28 +68,28 @@ export default function TodoWorkspacePage() {
             {/* View Toggles */}
             <div className="flex bg-surface-card border border-surface-hover rounded-lg p-1">
               <button
-                onClick={() => setView('list')}
+                onClick={() => handleSetView('list')}
                 className={`p-1.5 rounded transition-colors ${view === 'list' ? 'bg-accent-500/10 text-accent-500' : 'text-ink-600 hover:text-ink-800'}`}
                 title="List View"
               >
                 <List className="h-4 w-4" />
               </button>
               <button
-                onClick={() => setView('board')}
+                onClick={() => handleSetView('board')}
                 className={`p-1.5 rounded transition-colors ${view === 'board' ? 'bg-accent-500/10 text-accent-500' : 'text-ink-600 hover:text-ink-800'}`}
                 title="Board View"
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
               <button
-                onClick={() => setView('my-day')}
+                onClick={() => handleSetView('my-day')}
                 className={`p-1.5 rounded transition-colors ${view === 'my-day' ? 'bg-accent-500/10 text-accent-500' : 'text-ink-600 hover:text-ink-800'}`}
                 title="My Day"
               >
                 <Calendar className="h-4 w-4" />
               </button>
               <button
-                onClick={() => setView('matrix')}
+                onClick={() => handleSetView('matrix')}
                 className={`p-1.5 rounded transition-colors ${view === 'matrix' ? 'bg-accent-500/10 text-accent-500' : 'text-ink-600 hover:text-ink-800'}`}
                 title="Eisenhower Matrix"
               >

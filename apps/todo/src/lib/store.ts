@@ -29,6 +29,10 @@ interface TodoState {
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
 
+  // View Preferences
+  viewPreferences: Record<string, string>; // spaceId -> viewType
+  setViewPreference: (spaceId: string, view: string) => void;
+
   // Getters
   getCurrentSpace: () => TaskSpace | undefined;
   getTasksByList: (listId: string) => Task[];
@@ -41,11 +45,12 @@ export const useTodoStore = create<TodoState>()(
       currentSpaceId: '',
       tasks: [],
       myTasks: [],
+      viewPreferences: {},
 
       setSpaces: (spaces) => {
         const currentId = get().currentSpaceId;
         let nextId = currentId;
-        if (spaces.length > 0 && !spaces.find(s => s.id === currentId)) {
+        if (spaces.length > 0 && !spaces.find(s => s.id === currentId) && currentId !== 'all') {
           nextId = spaces[0].id;
         }
         set({ spaces, currentSpaceId: nextId });
@@ -55,6 +60,10 @@ export const useTodoStore = create<TodoState>()(
 
       setCurrentSpace: (spaceId) => set({ currentSpaceId: spaceId }),
       
+      setViewPreference: (spaceId, view) => set((state) => ({
+        viewPreferences: { ...state.viewPreferences, [spaceId]: view }
+      })),
+
       addSpace: async (space) => {
         set((state) => ({ spaces: [...state.spaces, space], currentSpaceId: space.id }));
         await createTodoSpaceInDb(space);
@@ -88,6 +97,18 @@ export const useTodoStore = create<TodoState>()(
 
       getCurrentSpace: () => {
         const { spaces, currentSpaceId } = get();
+        if (currentSpaceId === 'all') {
+          return {
+            id: 'all',
+            name: 'All Spaces',
+            type: 'work', // Default icon
+            members: [],
+            memberUids: [],
+            createdAt: new Date().toISOString(),
+            createdBy: '',
+            lists: []
+          } as TaskSpace;
+        }
         return spaces.find((s) => s.id === currentSpaceId);
       },
 
@@ -98,7 +119,7 @@ export const useTodoStore = create<TodoState>()(
     }),
     {
       name: 'todo-storage-client-prefs',
-      partialize: (state) => ({ currentSpaceId: state.currentSpaceId }),
+      partialize: (state) => ({ currentSpaceId: state.currentSpaceId, viewPreferences: state.viewPreferences }),
     }
   )
 );

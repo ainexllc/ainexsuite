@@ -17,7 +17,10 @@ export function EisenhowerMatrix({ onEditTask }: EisenhowerMatrixProps) {
   const matrixTasks = useMemo(() => {
     if (!currentSpace) return { q1: [], q2: [], q3: [], q4: [] };
 
-    const spaceTasks = tasks.filter(t => t.spaceId === currentSpace.id && t.status !== 'done');
+    const spaceTasks = tasks.filter(t => 
+      (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && 
+      t.status !== 'done'
+    );
     
     const q1: Task[] = []; // Urgent & Important
     const q2: Task[] = []; // Not Urgent & Important

@@ -17,11 +17,14 @@ export function SpaceSwitcher() {
   const [showSpaceEditor, setShowSpaceEditor] = useState(false);
 
   // Map TaskSpace to SpaceItem for the shared component
-  const spaceItems: SpaceItem[] = spaces.map((space: { id: string; name: string; type: string }) => ({
-    id: space.id,
-    name: space.name,
-    type: space.type as SharedSpaceType,
-  }));
+  const spaceItems: SpaceItem[] = [
+    { id: 'all', name: 'All Spaces', type: 'personal' },
+    ...spaces.map((space: { id: string; name: string; type: string }) => ({
+      id: space.id,
+      name: space.name,
+      type: space.type as SharedSpaceType,
+    }))
+  ];
 
   const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
     if (!user) return;
