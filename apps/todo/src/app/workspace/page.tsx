@@ -96,7 +96,7 @@ export default function TodoWorkspacePage() {
           currentSpaceId,
           onSpaceChange: setCurrentSpace,
         }}
-        composerActions={viewToggles}
+        toolbar={viewToggles}
       >
         {/* Content Area */}
         <div className="min-h-[60vh]">

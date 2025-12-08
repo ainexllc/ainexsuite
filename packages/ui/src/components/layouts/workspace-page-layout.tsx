@@ -30,6 +30,10 @@ interface WorkspacePageLayoutProps {
    */
   composerActions?: ReactNode;
   /**
+   * Toolbar area below the composer (e.g., View Switchers, Filters)
+   */
+  toolbar?: ReactNode;
+  /**
    * Maximum width variant
    * @default 'default'
    */
@@ -53,7 +57,8 @@ const maxWidthClasses = {
  * Provides consistent structure across all apps:
  * 1. AI Insights Banner (full width, collapsible)
  * 2. Composer row with SpaceSwitcher and actions
- * 3. Main content area
+ * 3. Toolbar area (optional)
+ * 4. Main content area
  *
  * @example
  * ```tsx
@@ -66,7 +71,7 @@ const maxWidthClasses = {
  *     onSpaceChange: setCurrentSpace,
  *     onCreateSpace: () => setShowEditor(true),
  *   }}
- *   composerActions={<ViewToggle />}
+ *   toolbar={<ViewToggle />}
  * >
  *   <TaskList tasks={tasks} />
  * </WorkspacePageLayout>
@@ -78,6 +83,7 @@ export function WorkspacePageLayout({
   children,
   spaces,
   composerActions,
+  toolbar,
   maxWidth = 'default',
   className = '',
 }: WorkspacePageLayoutProps) {
@@ -110,6 +116,13 @@ export function WorkspacePageLayout({
             )}
             {composerActions}
           </div>
+        </div>
+      )}
+
+      {/* Toolbar Area */}
+      {toolbar && (
+        <div className="flex items-center justify-between gap-4">
+          {toolbar}
         </div>
       )}
 
