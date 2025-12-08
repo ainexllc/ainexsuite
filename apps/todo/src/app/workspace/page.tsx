@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, LayoutGrid, List, Calendar } from 'lucide-react';
+import { LayoutGrid, List, Calendar } from 'lucide-react';
 import { WorkspacePageLayout } from '@ainexsuite/ui';
 
 // Components
@@ -82,17 +82,7 @@ export default function TodoWorkspacePage() {
         </button>
       </div>
 
-      {/* New Task Button */}
-      <button
-        onClick={() => {
-          setSelectedTaskId(undefined);
-          setShowEditor(true);
-        }}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-foreground text-sm font-medium transition-colors shadow-lg shadow-accent-500/20"
-      >
-        <Plus className="h-4 w-4" />
-        <span>New Task</span>
-      </button>
+
     </div>
   );
 
