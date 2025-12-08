@@ -6,6 +6,7 @@ import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { NoteComposer } from "@/components/notes/note-composer";
 import { NoteCard } from "@/components/notes/note-card";
 import { ViewToggle } from "@/components/notes/view-toggle";
+import { SpaceSwitcher } from "@/components/spaces";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { Container } from "@/components/layout/container";
@@ -48,7 +49,8 @@ export function NoteBoard() {
         <div className="flex-1">
           <NoteComposer />
         </div>
-        <div className="pt-1">
+        <div className="flex items-center gap-3 pt-1">
+          <SpaceSwitcher />
           <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
         </div>
       </div>

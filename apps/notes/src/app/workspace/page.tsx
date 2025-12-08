@@ -2,7 +2,6 @@
 
 import { NoteBoard } from '@/components/notes/note-board';
 import { WorkspaceInsights } from '@/components/notes/workspace-insights';
-import { SpaceSwitcher } from '@/components/spaces';
 
 export default function NotesWorkspace() {
   return (
@@ -10,12 +9,7 @@ export default function NotesWorkspace() {
       {/* AI Insights Banner - Full Width at Top */}
       <WorkspaceInsights variant="sidebar" />
 
-      {/* Space Switcher */}
-      <div className="flex items-center gap-4">
-        <SpaceSwitcher />
-      </div>
-
-      {/* Notes Content - Full Width */}
+      {/* Notes Content with SpaceSwitcher integrated */}
       <NoteBoard />
     </div>
   );
