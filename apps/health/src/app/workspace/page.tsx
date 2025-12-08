@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { useWorkspaceAuth } from '@ainexsuite/auth';
 import type { HealthMetric } from '@ainexsuite/types';
 import {
   getHealthMetrics,
@@ -20,9 +19,10 @@ import { HealthInsights } from '@/components/health-insights';
 import { AIAssistant } from '@/components/ai-assistant';
 import { FitIntegrationWidget } from '@/components/fit-integration-widget';
 import { Activity, Calendar } from 'lucide-react';
+import { WorkspaceLoadingScreen, WorkspacePageLayout } from '@ainexsuite/ui';
 
-function HealthWorkspaceContent() {
-  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
+export default function HealthWorkspacePage() {
+  const { user } = useWorkspaceAuth();
   const [metrics, setMetrics] = useState<HealthMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [todayMetric, setTodayMetric] = useState<HealthMetric | null>(null);
@@ -96,34 +96,25 @@ function HealthWorkspaceContent() {
     }
   };
 
-  // Show standardized loading screen
-  if (isLoading || loading) {
+  // Show standardized loading screen if internal data is loading
+  if (loading) {
     return <WorkspaceLoadingScreen />;
   }
 
-  // Return null while redirecting
-  if (!isReady || !user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      searchPlaceholder="Search health data..."
-      appName="Health"
-    >
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* AI Insights Banner - Full Width at Top */}
-        <HealthInsights metrics={metrics} variant="sidebar" />
-
-        {/* Composer - Notes/Journal style */}
-        <HealthCheckinComposer
-          existingMetric={todayMetric}
-          date={getTodayDate()}
-          onSave={handleSaveCheckin}
-        />
-
+    <>
+      <WorkspacePageLayout
+        insightsBanner={<HealthInsights metrics={metrics} variant="sidebar" />}
+        composer={
+          <HealthCheckinComposer
+            existingMetric={todayMetric}
+            date={getTodayDate()}
+            onSave={handleSaveCheckin}
+          />
+        }
+      >
         {/* Today's Status Card */}
         {todayMetric && (
           <div className="bg-gradient-to-br from-primary to-secondary rounded-2xl p-6 text-foreground">
@@ -185,7 +176,7 @@ function HealthWorkspaceContent() {
             onDelete={handleDeleteMetric}
           />
         )}
-      </div>
+      </WorkspacePageLayout>
 
       <AIAssistant />
 
@@ -197,14 +188,6 @@ function HealthWorkspaceContent() {
           onClose={() => setEditingMetric(null)}
         />
       )}
-    </WorkspaceLayout>
-  );
-}
-
-export default function HealthWorkspacePage() {
-  return (
-    <SuiteGuard appName="health">
-      <HealthWorkspaceContent />
-    </SuiteGuard>
+    </>
   );
 }

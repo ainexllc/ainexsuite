@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, EmptyState, SectionHeader } from '@ainexsuite/ui';
+import { useWorkspaceAuth } from '@ainexsuite/auth';
+import { SectionHeader, EmptyState, WorkspacePageLayout } from '@ainexsuite/ui';
 import { WorkoutList } from '@/components/workout-list';
 import { WorkoutEditor } from '@/components/workout-editor';
 import { WorkoutComposer } from '@/components/workout-composer';
@@ -11,7 +11,6 @@ import { FitInsights } from '@/components/fit-insights';
 import { Dumbbell, Trophy } from 'lucide-react';
 
 // New Components
-import { SpaceSwitcher } from '@/components/spaces';
 import { Leaderboard } from '@/components/social/Leaderboard';
 import { SharedWorkoutFeed } from '@/components/social/SharedWorkoutFeed';
 import { ChallengeEditor } from '@/components/social/ChallengeEditor';
@@ -20,24 +19,23 @@ import { FitFirestoreSync } from '@/components/FitFirestoreSync';
 import { useFitStore } from '@/lib/store';
 import { Workout } from '@/types/models';
 
-function FitWorkspaceContent() {
-  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
-  
+export default function FitWorkspacePage() {
+  const { user } = useWorkspaceAuth();
+
   // Store
-  const { getCurrentSpace, workouts, addWorkout, updateWorkout } = useFitStore();
+  const { getCurrentSpace, spaces, currentSpaceId, setCurrentSpace, workouts, addWorkout, updateWorkout } = useFitStore();
   const currentSpace = getCurrentSpace();
-  
+
   const [showEditor, setShowEditor] = useState(false);
   const [showChallengeEditor, setShowChallengeEditor] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
-
 
   const handleUpdate = async () => {
     // Refresh logic handled by Firestore subscription automatically now
     setShowEditor(false);
     setSelectedWorkout(null);
   };
-  
+
   const handleSaveWorkout = async (workoutData: Partial<Workout>) => {
     if (!user) return;
 
@@ -72,51 +70,39 @@ function FitWorkspaceContent() {
     setSelectedWorkout(null);
   };
 
-  // Show standardized loading screen
-  if (isLoading) {
-    return <WorkspaceLoadingScreen />;
-  }
+  if (!user) return null;
 
-  // Return null while redirecting
-  if (!isReady || !user) {
-    return null;
-  }
+  // Map spaces for WorkspacePageLayout - use SpaceType union
+  const spaceItems = spaces.map((space) => ({
+    id: space.id,
+    name: space.name,
+    type: space.type as 'personal' | 'family' | 'work' | 'couple' | 'buddy' | 'squad' | 'project',
+  }));
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      searchPlaceholder="Search workouts..."
-      appName="Fit"
-    >
+    <>
       <FitFirestoreSync />
 
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* AI Insights Banner - Full Width at Top */}
-        <FitInsights variant="sidebar" />
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4 w-full sm:w-auto">
-            <SpaceSwitcher />
-          </div>
-
-          <div className="flex items-center gap-3">
-             {currentSpace?.type !== 'personal' && (
-               <button
-                 onClick={() => setShowChallengeEditor(true)}
-                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 text-sm font-medium transition-colors border border-orange-500/20"
-               >
-                 <Trophy className="h-4 w-4" />
-                 <span>Start Challenge</span>
-               </button>
-             )}
-          </div>
-        </div>
-
-        {/* Workout Composer - Entry point like Notes */}
-        <WorkoutComposer onWorkoutCreated={handleUpdate} />
-
+      <WorkspacePageLayout
+        insightsBanner={<FitInsights variant="sidebar" />}
+        composer={<WorkoutComposer onWorkoutCreated={handleUpdate} />}
+        spaces={{
+          items: spaceItems,
+          currentSpaceId: currentSpaceId,
+          onSpaceChange: setCurrentSpace,
+        }}
+        composerActions={
+          currentSpace?.type !== 'personal' ? (
+            <button
+              onClick={() => setShowChallengeEditor(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 text-sm font-medium transition-colors border border-orange-500/20"
+            >
+              <Trophy className="h-4 w-4" />
+              <span>Start Challenge</span>
+            </button>
+          ) : null
+        }
+      >
         {/* Squad Feed (only if not personal) */}
         {currentSpace?.type !== 'personal' && (
           <SharedWorkoutFeed />
@@ -153,7 +139,7 @@ function FitWorkspaceContent() {
             />
           )}
         </div>
-      </div>
+      </WorkspacePageLayout>
 
       {showEditor && (
         <WorkoutEditor
@@ -166,20 +152,12 @@ function FitWorkspaceContent() {
         />
       )}
 
-        <ChallengeEditor
-          isOpen={showChallengeEditor}
-          onClose={() => setShowChallengeEditor(false)}
-        />
+      <ChallengeEditor
+        isOpen={showChallengeEditor}
+        onClose={() => setShowChallengeEditor(false)}
+      />
 
-        <AIAssistant />
-    </WorkspaceLayout>
-  );
-}
-
-export default function FitWorkspacePage() {
-  return (
-    <SuiteGuard appName="fit">
-      <FitWorkspaceContent />
-    </SuiteGuard>
+      <AIAssistant />
+    </>
   );
 }

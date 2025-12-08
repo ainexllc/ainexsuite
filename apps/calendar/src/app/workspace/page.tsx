@@ -1,24 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@ainexsuite/auth';
 import { Timestamp } from 'firebase/firestore';
-import { WorkspaceLayout, SUITE_APPS, getAppUrl, useToast } from '@ainexsuite/ui';
-import {
-  Loader2,
-  Calendar as CalendarIcon,
-  LayoutGrid,
-  CheckSquare,
-  BookOpen,
-  Activity,
-  Heart,
-  Zap,
-  TrendingUp,
-  Settings,
-  Image as ImageIcon,
-  GitBranch
-} from 'lucide-react';
+import { useToast, WorkspacePageLayout } from '@ainexsuite/ui';
+import { Loader2 } from 'lucide-react';
 import { addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
 
 import { CalendarHeader, CalendarViewType } from '@/components/calendar/calendar-header';
@@ -30,39 +15,10 @@ import { EventModal } from '@/components/calendar/event-modal';
 import { EventsService } from '@/lib/events';
 import { CalendarEvent, CreateEventInput } from '@/types/event';
 import { useReminders } from '@/hooks/use-reminders';
-
-// Environment-aware app URLs
-const isDev = process.env.NODE_ENV === 'development';
-
-// Simple icon mapping using Lucide icons
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  notes: BookOpen,
-  journey: BookOpen,
-  todo: CheckSquare,
-  track: Activity,
-  moments: ImageIcon,
-  grow: TrendingUp,
-  pulse: Zap,
-  fit: Heart,
-  projects: LayoutGrid,
-  workflow: GitBranch,
-  calendar: CalendarIcon,
-  admin: Settings,
-};
-
-// Build apps array from shared configuration with icons
-const apps = Object.entries(SUITE_APPS).map(([slug, config]) => ({
-  name: config.name,
-  slug: config.slug,
-  description: config.description,
-  icon: iconMap[slug] || Settings,
-  color: config.color,
-  url: getAppUrl(slug, isDev),
-}));
+import { useWorkspaceAuth } from '@ainexsuite/auth';
 
 export default function WorkspacePage() {
-  const { user, loading, signOut, ssoInProgress } = useAuth();
-  const router = useRouter();
+  const { user } = useWorkspaceAuth();
   const { toast } = useToast();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -77,19 +33,6 @@ export default function WorkspacePage() {
 
   // Enable reminders
   useReminders(events);
-
-  // Redirect to login if not authenticated
-  // Wait for SSO to complete before redirecting to prevent interrupting app switching
-  useEffect(() => {
-    if (!loading && !ssoInProgress && !user) {
-      const isDev = process.env.NODE_ENV === 'development';
-      const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
-
-      window.location.href = isDev
-        ? 'http://localhost:3000'
-        : mainDomain ? `https://${mainDomain}/login` : '/login';
-    }
-  }, [user, loading, ssoInProgress, router]);
 
   // Fetch events
   useEffect(() => {
@@ -114,16 +57,6 @@ export default function WorkspacePage() {
 
     fetchEvents();
   }, [user, toast]);
-
-  const handleSignOut = async () => {
-    await signOut();
-    const isDev = process.env.NODE_ENV === 'development';
-    const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
-    
-    window.location.href = isDev 
-      ? 'http://localhost:3000' 
-      : mainDomain ? `https://${mainDomain}` : '/';
-  };
 
   const handlePrev = () => {
     if (view === 'month') setCurrentDate(prev => subMonths(prev, 1));
@@ -275,102 +208,84 @@ export default function WorkspacePage() {
     setIsModalOpen(true);
   };
 
-  if (loading || ssoInProgress) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-base">
-        <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
   return (
-    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-foreground">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-accent-500/10 via-transparent to-accent-600/5" />
-
-      <WorkspaceLayout
-        user={user}
-        onSignOut={handleSignOut}
-        appName="Calendar"
-        appColor="#8b5cf6"
-        showBackground={true}
-        apps={apps}
+    <>
+      <WorkspacePageLayout
+        maxWidth="wide"
+        className="h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 py-8 flex flex-col"
+        composerActions={
+          <button
+            onClick={handleNewEventClick}
+            className="flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-foreground rounded-lg font-medium transition-colors"
+          >
+            <span className="text-xl leading-none pb-0.5">+</span>
+            <span>New Event</span>
+          </button>
+        }
       >
-        <div className="h-[calc(100vh-80px)] max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-             <CalendarHeader
-                currentDate={currentDate}
-                view={view}
-                onViewChange={setView}
-                onPrevMonth={handlePrev}
-                onNextMonth={handleNext}
-                onToday={handleToday}
-             />
-             <button
-               onClick={handleNewEventClick}
-               className="flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-foreground rounded-lg font-medium transition-colors"
-             >
-                <span className="text-xl leading-none pb-0.5">+</span>
-                <span>New Event</span>
-             </button>
-          </div>
-
-          <div className="flex-1 min-h-0">
-            {isLoadingEvents ? (
-              <div className="h-full flex items-center justify-center">
-                 <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
-              </div>
-            ) : (
-              <>
-                {view === 'month' && (
-                  <MonthView 
-                    currentDate={currentDate}
-                    events={events}
-                    onDayClick={handleDayClick}
-                    onEventClick={handleEventClick}
-                    onEventDrop={handleEventDrop}
-                  />
-                )}
-                {view === 'week' && (
-                  <WeekView 
-                    currentDate={currentDate}
-                    events={events}
-                    onEventClick={handleEventClick}
-                    onTimeSlotClick={handleTimeSlotClick}
-                  />
-                )}
-                {view === 'day' && (
-                  <DayView 
-                    currentDate={currentDate}
-                    events={events}
-                    onEventClick={handleEventClick}
-                    onTimeSlotClick={handleTimeSlotClick}
-                  />
-                )}
-                {view === 'agenda' && (
-                  <AgendaView 
-                    currentDate={currentDate}
-                    events={events}
-                    onEventClick={handleEventClick}
-                  />
-                )}
-              </>
-            )}
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <CalendarHeader
+            currentDate={currentDate}
+            view={view}
+            onViewChange={setView}
+            onPrevMonth={handlePrev}
+            onNextMonth={handleNext}
+            onToday={handleToday}
+          />
         </div>
 
-        <EventModal 
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSaveEvent}
-          onDelete={handleDeleteEvent}
-          initialDate={selectedDate}
-          eventToEdit={editingEvent}
-        />
-      </WorkspaceLayout>
-    </div>
+        <div className="flex-1 min-h-0">
+          {isLoadingEvents ? (
+            <div className="h-full flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
+            </div>
+          ) : (
+            <>
+              {view === 'month' && (
+                <MonthView
+                  currentDate={currentDate}
+                  events={events}
+                  onDayClick={handleDayClick}
+                  onEventClick={handleEventClick}
+                  onEventDrop={handleEventDrop}
+                />
+              )}
+              {view === 'week' && (
+                <WeekView
+                  currentDate={currentDate}
+                  events={events}
+                  onEventClick={handleEventClick}
+                  onTimeSlotClick={handleTimeSlotClick}
+                />
+              )}
+              {view === 'day' && (
+                <DayView
+                  currentDate={currentDate}
+                  events={events}
+                  onEventClick={handleEventClick}
+                  onTimeSlotClick={handleTimeSlotClick}
+                />
+              )}
+              {view === 'agenda' && (
+                <AgendaView
+                  currentDate={currentDate}
+                  events={events}
+                  onEventClick={handleEventClick}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </WorkspacePageLayout>
+
+      <EventModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveEvent}
+        onDelete={handleDeleteEvent}
+        initialDate={selectedDate}
+        eventToEdit={editingEvent}
+      />
+    </>
   );
 }

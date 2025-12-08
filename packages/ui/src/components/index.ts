@@ -117,6 +117,7 @@ export { AtmosphericGlows } from "./layouts/atmospheric-glows";
 export { WorkspaceHeader } from "./layouts/workspace-header";
 // WorkspacePageHeader hidden - may be used later (see _workspace-page-header.tsx)
 export { WorkspaceLayout } from "./layouts/workspace-layout";
+export { WorkspacePageLayout } from "./layouts/workspace-page-layout";
 export { WorkspaceLoadingScreen } from "./layouts/workspace-loading-screen";
 export {
   FooterPageLayout,
@@ -188,12 +189,14 @@ export {
   TagInput,
   Tag,
   TagList,
+  BaseComposer,
   type InputProps,
   type TextareaProps,
   type FormFieldProps,
   type TagInputProps,
   type TagProps,
   type TagListProps,
+  type BaseComposerProps,
 } from "./forms";
 
 export {

@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { useEffect, useState, useMemo } from 'react';
+import { useWorkspaceAuth } from '@ainexsuite/auth';
 import type { Moment } from '@ainexsuite/types';
-import { EmptyState } from '@ainexsuite/ui';
+import { EmptyState, WorkspacePageLayout } from '@ainexsuite/ui';
 import { TimelineView } from '@/components/timeline-view';
 import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
 import { MomentComposer } from '@/components/moment-composer';
 import { useMomentsStore } from '@/lib/store';
-import { SpaceSwitcher } from '@/components/spaces';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
@@ -19,8 +17,8 @@ import { FlipbookPlayer } from '@/components/flipbook-player';
 import { SlideshowPlayer } from '@/components/slideshow-player';
 import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book, Share2 } from 'lucide-react';
 
-function MomentsWorkspaceContent() {
-  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
+export default function MomentsWorkspacePage() {
+  const { user } = useWorkspaceAuth();
 
   const {
     moments,
@@ -66,38 +64,38 @@ function MomentsWorkspaceContent() {
   const allTags = Array.from(new Set(moments.flatMap((m) => m.tags || []))).sort();
   const filteredMoments = selectedTag ? moments.filter((m) => m.tags?.includes(selectedTag)) : moments;
 
-  // Show standardized loading screen
-  if (isLoading) {
-    return <WorkspaceLoadingScreen />;
-  }
+  // Convert spaces to SpaceItem format for WorkspacePageLayout
+  const spacesConfig = useMemo(() => ({
+    items: spaces.map((space) => ({
+      id: space.id,
+      name: space.name,
+      type: space.type,
+      color: space.type === 'personal' ? '#ec4899' : '#8b5cf6',
+    })),
+    currentSpaceId,
+    onSpaceChange: (spaceId: string) => {
+      const store = useMomentsStore.getState();
+      store.setCurrentSpace(spaceId);
+    },
+  }), [spaces, currentSpaceId]);
 
-  // Return null while redirecting
-  if (!isReady || !user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      searchPlaceholder="Search moments..."
-      appName="Moments"
-    >
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* AI Insights Banner - Full Width at Top */}
-        <MomentsInsights moments={moments} variant="sidebar" />
-
-        {/* Composer - Entry point like Journey */}
-        <MomentComposer
-          spaceId={currentSpaceId || undefined}
-          onMomentCreated={handleUpdate}
-        />
-
+    <>
+      <WorkspacePageLayout
+        insightsBanner={<MomentsInsights moments={moments} variant="sidebar" />}
+        composer={
+          <MomentComposer
+            spaceId={currentSpaceId || undefined}
+            onMomentCreated={handleUpdate}
+          />
+        }
+        spaces={spacesConfig}
+      >
         {/* Space Controls & Filters */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <SpaceSwitcher />
-
             {/* View Options - Always Available */}
             <button
               onClick={() => setShowFlipbook(true)}
@@ -203,7 +201,7 @@ function MomentsWorkspaceContent() {
             onDetail={(moment) => setDetailMoment(moment)}
           />
         )}
-      </div>
+      </WorkspacePageLayout>
 
       {/* Modals */}
       {showEditor && (
@@ -257,14 +255,6 @@ function MomentsWorkspaceContent() {
           onClose={() => setShowFlipbook(false)}
         />
       )}
-    </WorkspaceLayout>
-  );
-}
-
-export default function MomentsWorkspacePage() {
-  return (
-    <SuiteGuard appName="moments">
-      <MomentsWorkspaceContent />
-    </SuiteGuard>
+    </>
   );
 }
