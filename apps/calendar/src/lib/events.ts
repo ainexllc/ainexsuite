@@ -8,32 +8,95 @@ import {
   getDocs, 
   Timestamp, 
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  where
 } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
 import { CalendarEvent, CreateEventInput, UpdateEventInput } from '@/types/event';
-import { addDays, addWeeks, addMonths, addYears, isBefore } from 'date-fns';
+import { addDays, addWeeks, addMonths, addYears, isBefore, parseISO } from 'date-fns';
 
-const COLLECTION_NAME = 'calendar_events';
+const EVENTS_COLLECTION = 'calendar_events';
+const TASKS_COLLECTION = 'tasks';
+
+// Minimal interface for the Todo Task structure stored in Firestore
+interface TaskDoc {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: string;
+  dueDate?: string; // ISO string
+  assigneeIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export const EventsService = {
   /**
-   * Get all events for a user, including expanding recurring events.
-   * Note: In a production app, you'd pass a start/end range to getEvents to limit expansion.
-   * For this prototype, we'll fetch all and expand within a reasonable window (e.g., +/- 1 year from now, or just expanding all).
+   * Get all events for a user, including expanding recurring events and fetching assigned tasks.
    */
   async getEvents(userId: string): Promise<CalendarEvent[]> {
-    const eventsRef = collection(db, 'users', userId, COLLECTION_NAME);
-    const q = query(eventsRef, orderBy('startTime', 'asc'));
+    // 1. Fetch Calendar Events
+    const eventsRef = collection(db, 'users', userId, EVENTS_COLLECTION);
+    const eventsQuery = query(eventsRef, orderBy('startTime', 'asc'));
     
-    const querySnapshot = await getDocs(q);
-    const baseEvents = querySnapshot.docs.map(doc => ({
+    // 2. Fetch Assigned Tasks
+    const tasksRef = collection(db, TASKS_COLLECTION);
+    // Note: We only fetch tasks assigned to the user that are not 'done' (optional, but good for calendar)
+    // For now, we fetch all assigned tasks to show completed ones too if needed
+    const tasksQuery = query(
+      tasksRef, 
+      where('assigneeIds', 'array-contains', userId)
+    );
+
+    const [eventsSnapshot, tasksSnapshot] = await Promise.all([
+      getDocs(eventsQuery),
+      getDocs(tasksQuery)
+    ]);
+
+    const baseEvents = eventsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as CalendarEvent));
 
+    // Process Tasks into Events
+    const taskEvents: CalendarEvent[] = tasksSnapshot.docs
+      .map(doc => {
+        const data = doc.data() as TaskDoc;
+        return { id: doc.id, ...data };
+      })
+      .filter(task => task.dueDate) // Only tasks with due dates
+      .map(task => {
+        // Safely parse the ISO string
+        let startDate: Date;
+        try {
+          startDate = parseISO(task.dueDate!);
+        } catch (e) {
+          console.error(`Invalid date for task ${task.id}`, e);
+          return null;
+        }
+
+        return {
+          id: `task_${task.id}`, // Prefix to distinguish and ensure uniqueness
+          userId,
+          title: task.title,
+          description: task.description,
+          startTime: Timestamp.fromDate(startDate),
+          // Default task duration to 1 hour for calendar visualization
+          endTime: Timestamp.fromDate(new Date(startDate.getTime() + 60 * 60 * 1000)),
+          allDay: false,
+          type: 'task',
+          color: '#10b981', // Emerald-500
+          createdAt: task.createdAt ? Timestamp.fromDate(parseISO(task.createdAt)) : Timestamp.now(),
+          updatedAt: task.updatedAt ? Timestamp.fromDate(parseISO(task.updatedAt)) : Timestamp.now(),
+          // Store original task ID for potential linking back
+          baseEventId: task.id 
+        } as CalendarEvent;
+      })
+      .filter((e): e is CalendarEvent => e !== null);
+
     // Expand recurring events
-    const allEvents: CalendarEvent[] = [];
+    const allEvents: CalendarEvent[] = [...taskEvents];
     const expansionEnd = addYears(new Date(), 1); // Expand up to 1 year in future
 
     for (const event of baseEvents) {
@@ -94,7 +157,7 @@ export const EventsService = {
   },
 
   async addEvent(userId: string, event: CreateEventInput): Promise<string> {
-    const eventsRef = collection(db, 'users', userId, COLLECTION_NAME);
+    const eventsRef = collection(db, 'users', userId, EVENTS_COLLECTION);
     
     const docData: Record<string, unknown> = {
       ...event,
@@ -119,7 +182,7 @@ export const EventsService = {
   },
 
   async updateEvent(userId: string, event: UpdateEventInput): Promise<void> {
-    const eventRef = doc(db, 'users', userId, COLLECTION_NAME, event.id);
+    const eventRef = doc(db, 'users', userId, EVENTS_COLLECTION, event.id);
     
     const updateData: Record<string, unknown> = {
       updatedAt: serverTimestamp(),
@@ -150,7 +213,7 @@ export const EventsService = {
     // Ideally, the UI passes the baseEventId if it's an instance.
     
     const realId = eventId.split('_')[0]; 
-    const eventRef = doc(db, 'users', userId, COLLECTION_NAME, realId);
+    const eventRef = doc(db, 'users', userId, EVENTS_COLLECTION, realId);
     await deleteDoc(eventRef);
   }
 };

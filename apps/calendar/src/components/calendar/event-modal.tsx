@@ -12,7 +12,9 @@ import {
   Input,
   Textarea
 } from '@ainexsuite/ui/components';
+import { navigateToApp } from '@ainexsuite/ui';
 import { format } from 'date-fns';
+import { CheckSquare, ExternalLink } from 'lucide-react';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -40,6 +42,8 @@ export function EventModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const isTask = eventToEdit?.id.startsWith('task_');
 
   useEffect(() => {
     if (isOpen) {
@@ -117,6 +121,52 @@ export function EventModal({
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false);
   };
+
+  const handleViewTask = () => {
+    navigateToApp('todo');
+    onClose();
+  };
+
+  if (isTask) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} size="md">
+        <ModalHeader onClose={onClose}>
+          <ModalTitle className="flex items-center gap-2">
+            <CheckSquare className="h-5 w-5 text-emerald-500" />
+            Task Details
+          </ModalTitle>
+        </ModalHeader>
+        <ModalContent className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {format(new Date(startTime), "EEEE, MMMM d, yyyy 'at' h:mm a")}
+            </p>
+          </div>
+          
+          {description && (
+            <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+              <p className="text-sm text-foreground whitespace-pre-wrap">{description}</p>
+            </div>
+          )}
+
+          <div className="text-xs text-muted-foreground bg-emerald-500/10 border border-emerald-500/20 rounded-md p-3 flex items-start gap-2">
+            <CheckSquare className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+            <p>This is a task synced from the Task app. You can mark it as complete or edit it in the Task workspace.</p>
+          </div>
+        </ModalContent>
+        <ModalFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Close
+          </Button>
+          <Button type="button" onClick={handleViewTask} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Open in Task App
+          </Button>
+        </ModalFooter>
+      </Modal>
+    );
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
