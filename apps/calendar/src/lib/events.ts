@@ -63,7 +63,7 @@ export const EventsService = {
     const taskEvents: CalendarEvent[] = tasksSnapshot.docs
       .map(doc => {
         const data = doc.data() as TaskDoc;
-        return { id: doc.id, ...data };
+        return { ...data, id: doc.id };
       })
       .filter(task => task.dueDate) // Only tasks with due dates
       .map(task => {
