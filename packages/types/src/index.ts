@@ -19,7 +19,6 @@ export * from './moment';
 export * from './learning';
 export * from './health';
 export * from './fitness';
-export * from './smarthub';
 
 // Cross-app types
 export * from './search';
