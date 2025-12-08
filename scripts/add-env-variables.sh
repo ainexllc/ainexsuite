@@ -51,14 +51,15 @@ SECRET_VARS=(
 )
 
 # Apps to configure
-declare -A APPS=(
-    ["main"]="ainexsuite-main"
-    ["journey"]="ainexsuite-journey"
-    ["notes"]="ainexsuite-notes"
-    ["todo"]="ainexsuite-todo"
-    ["moments"]="ainexsuite-moments"
-    ["grow"]="ainexsuite-grow"
-    ["track"]="ainexsuite-track"
+APPS=(
+    "main:ainexsuite-main"
+    "journey:ainexsuite-journey"
+    "notes:ainexsuite-notes"
+    "todo:ainexsuite-todo"
+    "moments:ainexsuite-moments"
+    "grow:ainexsuite-grow"
+    "track:ainexsuite-track"
+    "calendar:ainexsuite-calendar"
 )
 
 # Function to add environment variable to a project
@@ -75,10 +76,10 @@ add_env_var() {
     for env in production preview development; do
         if [ "$is_secret" = "true" ]; then
             # For secret variables, use sensitive flag
-            echo "$var_value" | vercel env add "$var_name" "$env" --sensitive --yes 2>&1 | grep -v "Warning" || true
+            echo "$var_value" | vercel env add "$var_name" "$env" --sensitive --force 2>&1 | grep -v "Warning" || true
         else
             # For public variables
-            echo "$var_value" | vercel env add "$var_name" "$env" --yes 2>&1 | grep -v "Warning" || true
+            echo "$var_value" | vercel env add "$var_name" "$env" --force 2>&1 | grep -v "Warning" || true
         fi
     done
 
@@ -125,8 +126,9 @@ process_app() {
 }
 
 # Process each app
-for app_name in "${!APPS[@]}"; do
-    project_name="${APPS[$app_name]}"
+for item in "${APPS[@]}"; do
+    app_name="${item%%:*}"
+    project_name="${item##*:}"
     process_app "$app_name" "$project_name"
 done
 

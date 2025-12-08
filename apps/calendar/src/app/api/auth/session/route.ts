@@ -3,3 +3,6 @@
  * This ensures consistent SSO behavior across all apps
  */
 export { GET, POST, DELETE, OPTIONS } from '@ainexsuite/auth/server';
+
+// Ensure this runs on Node.js runtime (required for firebase-admin)
+export const runtime = 'nodejs';

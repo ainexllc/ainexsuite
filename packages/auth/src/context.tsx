@@ -154,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 status: response.status,
                 code: errorData.code,
                 error: errorData.error,
+                message: errorData.message, // Server error message
                 details: errorData.details,
                 hint: errorData.hint
               });
