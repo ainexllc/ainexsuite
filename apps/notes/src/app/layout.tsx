@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Kanit, Bebas_Neue, League_Spartan } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ThemeProvider, AppColorProvider } from "@ainexsuite/theme";
 import { AuthProvider } from "@ainexsuite/auth";
 import { Toaster } from "@ainexsuite/ui";
+import "@ainexsuite/ui/styles";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const kanit = Kanit({
   subsets: ["latin"],
@@ -48,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
       >
         <ThemeProvider>
           <AuthProvider>

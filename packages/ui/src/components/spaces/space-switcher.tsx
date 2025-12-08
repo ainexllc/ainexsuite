@@ -95,7 +95,7 @@ export function SpaceSwitcher({
   const [isOpen, setIsOpen] = useState(false);
 
   // Fetch admin config from Firestore
-  const { spaceTypes, uiConfig, loading } = useSpacesConfig({ realtime: useAdminConfig });
+  const { spaceTypes, uiConfig } = useSpacesConfig({ realtime: useAdminConfig });
 
   const currentSpace = spaces.find((s) => s.id === currentSpaceId);
 

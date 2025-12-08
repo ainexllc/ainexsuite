@@ -41,7 +41,7 @@ export function ViewToggle<T extends string = string>({
   className,
   "aria-label": ariaLabel = "View toggle",
 }: ViewToggleProps<T>) {
-  const [focusedIndex, setFocusedIndex] = useState<number>(
+  const [, setFocusedIndex] = useState<number>(
     options.findIndex((opt) => opt.value === value)
   );
   const [indicatorStyle, setIndicatorStyle] = useState<{
@@ -256,7 +256,7 @@ export function SegmentedControl<T extends string = string>({
   className,
   "aria-label": ariaLabel = "Segmented control",
 }: SegmentedControlProps<T>) {
-  const [focusedIndex, setFocusedIndex] = useState<number>(
+  const [, setFocusedIndex] = useState<number>(
     options.findIndex((opt) => opt.value === value)
   );
   const [indicatorStyle, setIndicatorStyle] = useState<{

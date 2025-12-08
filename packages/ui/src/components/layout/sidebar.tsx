@@ -126,7 +126,7 @@ export function Sidebar({
   collapsed = false,
   onToggle,
   position = "left",
-  className,
+  className: _className,
   children,
   showCollapseToggle = true,
   showCloseButton = true,
@@ -137,15 +137,6 @@ export function Sidebar({
   const widthValue = typeof width === "number" ? `${width}px` : width;
   const collapsedWidth = "80px";
 
-  const baseClasses = clsx(
-    "flex h-full flex-col transition-all duration-300",
-    glass && "backdrop-blur-xl",
-    glass ? "bg-background/40" : "bg-surface-base/90",
-    position === "left" && "border-r",
-    position === "right" && "border-l",
-    glass ? "border-border" : "border-outline-subtle/60",
-    className,
-  );
 
   const desktopClasses = clsx(
     "hidden lg:flex h-[calc(100vh-4rem)] shrink-0",
@@ -154,17 +145,6 @@ export function Sidebar({
     glass ? "border-border bg-background/40" : "border-outline-subtle/60 bg-surface-base/85",
     glass && "backdrop-blur-xl",
     "transition-all duration-300",
-  );
-
-  const content = (
-    <div
-      className={baseClasses}
-      style={{
-        width: collapsed ? collapsedWidth : widthValue,
-      }}
-    >
-      {children}
-    </div>
   );
 
   return (

@@ -17,8 +17,6 @@ import { useTheme } from 'next-themes';
 import { useSystemUpdates } from '../../hooks/use-system-updates';
 import { clsx } from 'clsx';
 
-type ThemeValue = 'light' | 'dark' | 'system';
-
 export interface ProfileSidebarProps {
   isOpen: boolean;
   onClose: () => void;

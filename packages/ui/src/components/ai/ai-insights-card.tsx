@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect, useCallback } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Sparkles, RefreshCw, Loader2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "../../lib/utils";
 

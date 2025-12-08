@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { clsx } from "clsx";
-import { Filter, X } from "lucide-react";
+import { Filter } from "lucide-react";
 import { GlassModal, GlassModalHeader, GlassModalContent, GlassModalFooter } from "../glass-modal";
 
 /**

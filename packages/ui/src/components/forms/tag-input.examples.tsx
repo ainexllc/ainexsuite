@@ -455,7 +455,7 @@ export function TagInputCaseSensitive() {
         placeholder="Tags are case-sensitive..."
       />
       <p className="text-xs text-ink-500">
-        "React" and "react" are treated as different tags
+        &quot;React&quot; and &quot;react&quot; are treated as different tags
       </p>
     </div>
   );

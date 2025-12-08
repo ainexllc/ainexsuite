@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ImgHTMLAttributes } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { clsx } from "clsx";
 import { avatarVariants } from "../../config/component-variants";
@@ -118,7 +118,6 @@ export function Avatar({
   };
 
   const hasImage = src && !imageError;
-  const showFallback = !hasImage;
 
   return (
     <div className={clsx("relative inline-flex shrink-0", className)}>

@@ -182,7 +182,7 @@ export const TagInput = React.forwardRef<HTMLDivElement, TagInputProps>(
       placeholder = 'Add tags...',
       maxTags,
       allowCustom = true,
-      variant = 'default',
+      variant: _variant = 'default',
       size = 'md',
       disabled = false,
       className,

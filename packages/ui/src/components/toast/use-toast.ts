@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { ToastActionElement, ToastProps, ToastVariant } from "./toast";
+import type { ToastActionElement, ToastVariant } from "./toast";
 
 // Generate unique IDs for toasts
 const generateToastId = () => {
