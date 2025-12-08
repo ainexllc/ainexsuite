@@ -1,12 +1,9 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import { FileText } from "lucide-react";
 import { EmptyState, ListSection } from "@ainexsuite/ui";
-import { NoteComposer } from "@/components/notes/note-composer";
 import { NoteCard } from "@/components/notes/note-card";
-import { ViewToggle } from "@/components/notes/view-toggle";
-import { SpaceSwitcher } from "@/components/spaces";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { Container } from "@/components/layout/container";
@@ -26,34 +23,18 @@ function NotesSkeleton() {
 
 export function NoteBoard() {
   const { pinned, others, loading, notes, searchQuery } = useNotes();
-  const { preferences, updatePreferences } = usePreferences();
-
-  const [viewMode, setViewMode] = useState<"masonry" | "list">(preferences.viewMode);
-
-  useEffect(() => {
-    setViewMode(preferences.viewMode);
-  }, [preferences.viewMode]);
+  const { preferences } = usePreferences();
 
   const hasNotes = useMemo(() => pinned.length + others.length > 0, [pinned, others]);
 
-  const handleViewModeChange = async (mode: "masonry" | "list") => {
-    setViewMode(mode);
-    await updatePreferences({ viewMode: mode });
-  };
+  // Use preferences directly
+  const viewMode = preferences.viewMode;
 
   const masonryClasses = "columns-1 sm:columns-2 gap-4";
 
   return (
     <Container className="space-y-1 lg:px-0 cq-board" variant="narrow">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <NoteComposer />
-        </div>
-        <div className="flex items-center gap-3 pt-1">
-          <SpaceSwitcher />
-          <ViewToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />
-        </div>
-      </div>
+
 
       {loading ? (
         <NotesSkeleton />
