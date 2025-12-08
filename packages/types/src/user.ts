@@ -1,6 +1,7 @@
 import type { Timestamp, UserPreferences } from './common';
 import type { SearchableApp } from './search';
 
+// User types for authentication and account management
 export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'past_due' | 'canceled';
 export type SubscriptionTier = 'trial' | 'single-app' | 'three-apps' | 'pro' | 'premium';
 export type AccountType = 'single-app' | 'multi-app' | 'suite';
