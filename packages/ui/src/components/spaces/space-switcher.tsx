@@ -167,12 +167,7 @@ export function SpaceSwitcher({
       >
         {showTypeIcons && (
           <div
-            className="h-8 w-8 rounded-md flex items-center justify-center text-foreground flex-shrink-0"
-            style={currentSpace ? {
-              background: `linear-gradient(to bottom right, ${getTypeConfig(currentSpace.type)?.color || 'var(--color-primary)'}, ${getTypeConfig(currentSpace.type)?.color || 'var(--color-primary-dark, var(--color-primary))'})`,
-            } : {
-              background: 'linear-gradient(to bottom right, var(--color-primary), var(--color-primary-dark, var(--color-primary)))',
-            }}
+            className="h-8 w-8 rounded-md flex items-center justify-center text-foreground flex-shrink-0 bg-[var(--color-primary)]"
           >
             {currentSpace ? getIcon(currentSpace.type) : <User className="h-4 w-4" />}
           </div>

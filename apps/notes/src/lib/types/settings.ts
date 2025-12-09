@@ -1,7 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 
 export type ReminderChannel = "email" | "sms" | "push";
-export type ViewMode = "masonry" | "list";
+export type ViewMode = "masonry" | "list" | "calendar";
 
 export type UserPreferenceDoc = {
   reminderChannels: ReminderChannel[];

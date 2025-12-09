@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useAuth } from "@ainexsuite/auth";
 import type { Note, NoteAttachment, NoteDraft, NoteType, NoteColor } from "@/lib/types/note";
+import type { FilterValue, SortConfig } from "@ainexsuite/ui";
 import {
   addAttachments,
   createNote as createNoteMutation,
@@ -55,6 +56,10 @@ type NotesContextValue = {
   setSearchQuery: (value: string) => void;
   activeLabelIds: string[];
   setActiveLabelIds: (labels: string[]) => void;
+  filters: FilterValue;
+  setFilters: (filters: FilterValue) => void;
+  sort: SortConfig;
+  setSort: (sort: SortConfig) => void;
   createNote: (input: CreateNoteInput) => Promise<string | null>;
   updateNote: (noteId: string, updates: NoteDraft) => Promise<void>;
   togglePin: (noteId: string, next: boolean) => Promise<void>;
@@ -84,6 +89,15 @@ export function NotesProvider({ children }: NotesProviderProps) {
   const [pendingNotes, setPendingNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLabelIds, setActiveLabelIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState<FilterValue>({
+    labels: [],
+    colors: [],
+    dateRange: { start: null, end: null },
+  });
+  const [sort, setSort] = useState<SortConfig>({
+    field: 'updatedAt',
+    direction: 'desc',
+  });
   const computedNotesRef = useRef<{
     merged: Note[];
     filtered: Note[];
@@ -344,10 +358,36 @@ export function NotesProvider({ children }: NotesProviderProps) {
 
     const merged = Array.from(noteMap.values());
 
-    const sortByNewest = (a: Note, b: Note) => {
-      const aTime = a.updatedAt?.getTime() ?? a.createdAt.getTime();
-      const bTime = b.updatedAt?.getTime() ?? b.createdAt.getTime();
-      return bTime - aTime;
+    // Dynamic sort function based on sort config
+    const sortNotes = (a: Note, b: Note) => {
+      let aValue: number | string;
+      let bValue: number | string;
+
+      switch (sort.field) {
+        case 'title':
+          aValue = (a.title || '').toLowerCase();
+          bValue = (b.title || '').toLowerCase();
+          break;
+        case 'createdAt':
+          aValue = a.createdAt.getTime();
+          bValue = b.createdAt.getTime();
+          break;
+        case 'updatedAt':
+        default:
+          aValue = a.updatedAt?.getTime() ?? a.createdAt.getTime();
+          bValue = b.updatedAt?.getTime() ?? b.createdAt.getTime();
+          break;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sort.direction === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      return sort.direction === 'asc'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
     };
 
     const trashed = merged
@@ -362,7 +402,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
 
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const hasQuery = normalizedQuery.length > 1;
-    const hasLabelFilter = activeLabelIds.length > 0;
+    const hasColorFilter = filters.colors && filters.colors.length > 0;
+    const hasDateFilter = filters.dateRange?.start || filters.dateRange?.end;
 
     const filtered = activeNotes.filter((note) => {
       // Exclude archived notes from workspace view
@@ -383,12 +424,31 @@ export function NotesProvider({ children }: NotesProviderProps) {
         }
       }
 
-      const matchesLabels = !hasLabelFilter
-        ? true
-        : activeLabelIds.some((labelId) => note.labelIds.includes(labelId));
+      // Filter by labels (combine activeLabelIds and filters.labels)
+      const allLabelFilters = [...activeLabelIds, ...(filters.labels || [])];
+      if (allLabelFilters.length > 0) {
+        const matchesLabels = allLabelFilters.some((labelId) => note.labelIds.includes(labelId));
+        if (!matchesLabels) {
+          return false;
+        }
+      }
 
-      if (!matchesLabels) {
-        return false;
+      // Filter by colors
+      if (hasColorFilter && filters.colors) {
+        if (!filters.colors.includes(note.color)) {
+          return false;
+        }
+      }
+
+      // Filter by date range
+      if (hasDateFilter && filters.dateRange) {
+        const noteDate = note.createdAt;
+        if (filters.dateRange.start && noteDate < filters.dateRange.start) {
+          return false;
+        }
+        if (filters.dateRange.end && noteDate > filters.dateRange.end) {
+          return false;
+        }
       }
 
       if (!hasQuery) {
@@ -402,8 +462,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
       return haystack.includes(normalizedQuery);
     });
 
-    const pinned = filtered.filter((note) => note.pinned).sort(sortByNewest);
-    const others = filtered.filter((note) => !note.pinned).sort(sortByNewest);
+    const pinned = filtered.filter((note) => note.pinned).sort(sortNotes);
+    const others = filtered.filter((note) => !note.pinned).sort(sortNotes);
 
     return {
       merged: activeNotes,
@@ -412,7 +472,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       others,
       trashed,
     };
-  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId]);
+  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort]);
 
   useEffect(() => {
     computedNotesRef.current = computedNotes;
@@ -438,6 +498,10 @@ export function NotesProvider({ children }: NotesProviderProps) {
       setSearchQuery: updateSearchQuery,
       activeLabelIds,
       setActiveLabelIds: updateActiveLabelIds,
+      filters,
+      setFilters,
+      sort,
+      setSort,
       createNote: handleCreate,
       updateNote: handleUpdate,
       togglePin: handleTogglePin,
@@ -458,6 +522,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
       loading,
       searchQuery,
       activeLabelIds,
+      filters,
+      sort,
       handleCreate,
       handleUpdate,
       handleTogglePin,

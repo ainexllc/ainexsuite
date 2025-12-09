@@ -365,3 +365,27 @@ export {
 
 // Theme Components
 export { ThemeSwitcher } from "./theme";
+
+// Toolbar Components
+export {
+  WorkspaceToolbar,
+  ViewToggleGroup,
+  FilterDropdown,
+  SortDropdown,
+  ActivityCalendar,
+  ToolbarButton,
+  type WorkspaceToolbarProps,
+  type ViewToggleGroupProps,
+  type FilterDropdownProps,
+  type SortDropdownProps,
+  type ActivityCalendarProps,
+  type ToolbarButtonProps,
+  type BaseViewMode,
+  type SortField,
+  type SortDirection,
+  type SortConfig,
+  type FilterValue,
+  type ActivityData,
+  type ViewOption,
+  type SortOption,
+} from "./toolbar";
