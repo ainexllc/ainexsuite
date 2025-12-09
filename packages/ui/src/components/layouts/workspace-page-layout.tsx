@@ -9,6 +9,10 @@ interface WorkspacePageLayoutProps {
    */
   insightsBanner?: ReactNode;
   /**
+   * Header content above the AI Insights banner (e.g., View Toggle)
+   */
+  header?: ReactNode;
+  /**
    * Main composer/form field for creating new items
    */
   composer?: ReactNode;
@@ -79,6 +83,7 @@ const maxWidthClasses = {
  */
 export function WorkspacePageLayout({
   insightsBanner,
+  header,
   composer,
   children,
   spaces,
@@ -91,6 +96,13 @@ export function WorkspacePageLayout({
 
   return (
     <div className={`${maxWidthClasses[maxWidth]} mx-auto space-y-6 ${className}`}>
+      {/* Header Area (Optional) */}
+      {header && (
+        <div className="flex justify-end">
+          {header}
+        </div>
+      )}
+
       {/* AI Insights Banner - Full Width */}
       {insightsBanner}
 

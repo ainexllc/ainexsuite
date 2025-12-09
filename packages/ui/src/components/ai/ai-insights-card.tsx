@@ -63,7 +63,10 @@ export interface AIInsightsCardProps {
   /** Default collapsed state (default: false - shows expanded) */
   defaultCollapsed?: boolean;
   /** Storage key for persisting collapsed state (e.g., "journey-insights-collapsed") */
+  /** Storage key for persisting collapsed state (e.g., "journey-insights-collapsed") */
   storageKey?: string;
+  /** Custom actions to display in the header */
+  headerActions?: ReactNode;
 }
 
 /**
@@ -89,6 +92,7 @@ export function AIInsightsCard({
   collapsible = false,
   defaultCollapsed = false,
   storageKey,
+  headerActions,
 }: AIInsightsCardProps) {
   const isSidebar = variant === "sidebar";
   const isCondensed = variant === "condensed";
@@ -242,6 +246,7 @@ export function AIInsightsCard({
             )}
           </div>
           <div className="flex items-center gap-1">
+            {headerActions}
             {onRefresh && (
               <button
                 onClick={onRefresh}

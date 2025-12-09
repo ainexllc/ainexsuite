@@ -13,16 +13,16 @@ export default function NotesWorkspace() {
 
   return (
     <WorkspacePageLayout
-      insightsBanner={<WorkspaceInsights variant="sidebar" />}
-      composer={<NoteComposer />}
-      composerActions={<SpaceSwitcher />}
-      toolbar={
+      header={
         <ViewToggle
           viewMode={preferences.viewMode}
           onViewModeChange={(mode) => updatePreferences({ viewMode: mode })}
         />
       }
-      maxWidth="narrow"
+      insightsBanner={<WorkspaceInsights variant="sidebar" />}
+      composer={<NoteComposer />}
+      composerActions={<SpaceSwitcher />}
+      maxWidth="default"
     >
       <NoteBoard />
     </WorkspacePageLayout>

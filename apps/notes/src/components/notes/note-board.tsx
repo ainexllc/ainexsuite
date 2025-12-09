@@ -6,7 +6,6 @@ import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { NoteCard } from "@/components/notes/note-card";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
-import { Container } from "@/components/layout/container";
 
 function NotesSkeleton() {
   return (
@@ -33,9 +32,7 @@ export function NoteBoard() {
   const masonryClasses = "columns-1 sm:columns-2 gap-4";
 
   return (
-    <Container className="space-y-1 lg:px-0 cq-board" variant="narrow">
-
-
+    <div className="space-y-1 lg:px-0 cq-board">
       {loading ? (
         <NotesSkeleton />
       ) : hasNotes ? (
@@ -79,6 +76,6 @@ export function NoteBoard() {
           variant="default"
         />
       )}
-    </Container>
+    </div>
   );
 }
