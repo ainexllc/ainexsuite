@@ -22,6 +22,7 @@ import {
   Loader2,
   Undo2,
   Brain,
+  FolderOpen,
 } from "lucide-react";
 import { clsx } from "clsx";
 import type {
@@ -36,6 +37,7 @@ import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { useLabels } from "@/components/providers/labels-provider";
 import { useReminders } from "@/components/providers/reminders-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
+import { useSpaces } from "@/components/providers/spaces-provider";
 import type { ReminderFrequency } from "@/lib/types/reminder";
 import type { ReminderChannel } from "@/lib/types/settings";
 import type { CollaboratorRole, NoteCollaborator } from "@/lib/types/note";
@@ -83,6 +85,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const { reminders, createReminder, updateReminder, deleteReminder } = useReminders();
   const { preferences } = usePreferences();
   const { user: sessionUser } = useAuth();
+  const { spaces } = useSpaces();
 
   const [title, setTitle] = useState(note.title);
   const [body, setBody] = useState(note.body);
@@ -108,6 +111,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [bodyHistory, setBodyHistory] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const lastSavedBodyRef = useRef(note.body);
+
   // Auto-resize textarea to fit content
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -117,9 +122,25 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
   }, [body]);
 
-  // Save to history before AI changes
+  // Debounced history saving for manual edits
+  useEffect(() => {
+    // Don't save if body hasn't effectively changed from last save (avoids duplicate entries)
+    if (body === lastSavedBodyRef.current) return;
+
+    const timer = setTimeout(() => {
+      setBodyHistory(prev => [...prev.slice(-19), lastSavedBodyRef.current]); // Keep last 20 states
+      lastSavedBodyRef.current = body;
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timer);
+  }, [body]);
+
+  // Save to history before AI changes (immediate)
   const saveToHistory = useCallback(() => {
-    setBodyHistory(prev => [...prev.slice(-9), body]); // Keep last 10 states
+    if (body !== lastSavedBodyRef.current) {
+      setBodyHistory(prev => [...prev.slice(-19), lastSavedBodyRef.current]);
+      lastSavedBodyRef.current = body;
+    }
   }, [body]);
 
   // Undo function
@@ -128,6 +149,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       const previousState = bodyHistory[bodyHistory.length - 1];
       setBodyHistory(prev => prev.slice(0, -1));
       setBody(previousState);
+      lastSavedBodyRef.current = previousState; // Sync ref so we don't auto-save the undo
     }
   }, [bodyHistory]);
 
@@ -187,6 +209,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [collaborators, setCollaborators] = useState<NoteCollaborator[]>(note.sharedWith);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<CollaboratorRole>("viewer");
+  const [selectedSpaceId, setSelectedSpaceId] = useState<string>(note.spaceId || "personal");
+  const [showSpacePicker, setShowSpacePicker] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [isInviting, setIsInviting] = useState(false);
   const [removingEmail, setRemovingEmail] = useState<string | null>(null);
@@ -493,6 +517,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       (noteDate !== null && note.noteDate === null) ||
       (noteDate !== null && note.noteDate !== null && note.noteDate !== undefined &&
         noteDate.getTime() !== note.noteDate.getTime());
+    // Check if space changed (convert "personal" selection to undefined for comparison)
+    const currentNoteSpaceId = note.spaceId || "personal";
+    const spaceIdChanged = selectedSpaceId !== currentNoteSpaceId;
 
     if (
       !titleChanged &&
@@ -506,7 +533,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       !labelsChanged &&
       !modeChanged &&
       !reminderChanged &&
-      !noteDateChanged
+      !noteDateChanged &&
+      !spaceIdChanged
     ) {
       onClose();
       return;
@@ -554,6 +582,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
       if (noteDateChanged) {
         updates.noteDate = noteDate;
+      }
+
+      if (spaceIdChanged) {
+        // "personal" selection means no spaceId (undefined), otherwise use the selected space ID
+        updates.spaceId = selectedSpaceId === "personal" ? undefined : selectedSpaceId;
       }
 
       if (Object.keys(updates).length) {
@@ -652,6 +685,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     note.labelIds,
     noteDate,
     note.noteDate,
+    selectedSpaceId,
+    note.spaceId,
     updateNote,
     note.id,
     togglePin,
@@ -761,9 +796,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       prev.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              ...next,
-            }
+            ...item,
+            ...next,
+          }
           : item,
       ),
     );
@@ -1333,7 +1368,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         </div>
 
         {/* Bottom toolbar - anchored to bottom with color */}
-        <div className="flex-shrink-0 rounded-b-lg px-6 py-4 bg-zinc-100 dark:bg-zinc-800/80">
+        <div className="flex-shrink-0 mt-auto rounded-b-3xl px-6 py-4 bg-zinc-100 dark:bg-zinc-800/80">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <button
@@ -1365,7 +1400,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   });
                 }}
                 className={clsx(
-                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
                   mode === "checklist" && "bg-white/20 text-white"
                 )}
                 aria-label="Toggle checklist mode"
@@ -1374,7 +1409,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </button>
               <button
                 type="button"
-                className="icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10"
+                className="icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10"
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Add images"
               >
@@ -1390,7 +1425,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalculator(false);
                   }}
                   className={clsx(
-                    "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                    "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
                     showPalette && "bg-white/20 text-white",
                   )}
                   aria-label="Change color"
@@ -1427,7 +1462,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   setShowCalculator(false);
                 }}
                 className={clsx(
-                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
                   showLabelPicker && "bg-white/20 text-white",
                 )}
                 aria-label="Manage labels"
@@ -1437,7 +1472,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <button
                 type="button"
                 className={clsx(
-                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
                   archived && "bg-white/20 text-white",
                 )}
                 onClick={() => setArchived((prev) => !prev)}
@@ -1456,7 +1491,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalculator(false);
                   }}
                   className={clsx(
-                    "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                    "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
                     (showCalendar || noteDate) && "bg-white/20 text-white",
                   )}
                   aria-label="Set date"
@@ -1485,7 +1520,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalendar(false);
                   }}
                   className={clsx(
-                    "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                    "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
                     showCalculator && "bg-white/20 text-white",
                   )}
                   aria-label="Calculator"
@@ -1510,7 +1545,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 onClick={handleUndo}
                 disabled={bodyHistory.length === 0}
                 className={clsx(
-                  "icon-button h-10 w-10 text-white/60 hover:text-white hover:bg-white/10",
+                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
                   bodyHistory.length === 0 && "opacity-30 cursor-not-allowed"
                 )}
                 aria-label="Undo"
@@ -1525,7 +1560,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   onClick={() => setShowEnhanceMenu((prev) => !prev)}
                   disabled={isEnhancing}
                   className={clsx(
-                    "transition-all flex items-center gap-1.5 rounded-full px-3 py-2",
+                    "transition-all flex items-center gap-1.5 rounded-full h-9 px-3",
                     isEnhancing
                       ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
                       : selectedText
@@ -1553,6 +1588,65 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Space Selector - only show if user has more than one space */}
+              {spaces.length > 1 && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSpacePicker((prev) => !prev);
+                      setShowPalette(false);
+                      setShowLabelPicker(false);
+                      setShowCalendar(false);
+                      setShowCalculator(false);
+                    }}
+                    className={clsx(
+                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                      showSpacePicker
+                        ? "border-white bg-white/20 text-white"
+                        : "border-white/20 text-white/70 hover:border-white/40 hover:text-white"
+                    )}
+                    aria-label="Move to space"
+                    title="Move to a different space"
+                  >
+                    <FolderOpen className="h-3.5 w-3.5" />
+                    <span className="max-w-[100px] truncate">
+                      {spaces.find((s) => s.id === selectedSpaceId)?.name || "My Notes"}
+                    </span>
+                  </button>
+                  {showSpacePicker && (
+                    <div className="absolute bottom-full mb-2 right-0 z-30 min-w-[160px] rounded-xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
+                      <div className="px-3 py-2 border-b border-white/10 bg-white/5">
+                        <p className="text-xs font-semibold text-white">Move to Space</p>
+                      </div>
+                      <div className="p-1.5 max-h-48 overflow-y-auto">
+                        {spaces.map((space) => (
+                          <button
+                            key={space.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedSpaceId(space.id);
+                              setShowSpacePicker(false);
+                            }}
+                            className={clsx(
+                              "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2",
+                              space.id === selectedSpaceId
+                                ? "bg-white/20 text-white"
+                                : "text-white/70 hover:bg-white/10 hover:text-white"
+                            )}
+                          >
+                            <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                            <span className="truncate">{space.name}</span>
+                            {space.id === selectedSpaceId && (
+                              <span className="ml-auto text-[10px] text-white/50">current</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <button
                 type="button"
                 className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:border-white/40"

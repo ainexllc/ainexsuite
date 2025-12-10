@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useCallback } from 'react';
 import { WorkspaceHeader } from './workspace-header';
 import { WorkspaceBackground } from '../backgrounds/workspace-background';
 import { FeedbackWidget } from '../feedback/feedback-widget';
@@ -8,9 +8,11 @@ import { FeedbackWidget } from '../feedback/feedback-widget';
 // import { SubscriptionSidebar } from '../layout/subscription-sidebar';
 import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
 import { ProfileSidebar } from '../layout/profile-sidebar';
+import { NotificationDropdown } from '../navigation/notification-dropdown';
 import { getNavigationApps } from '../../utils/navigation';
 import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
 import { useAppTheme } from '@ainexsuite/theme';
+import type { NotificationItem, QuickAction, BreadcrumbItem } from '@ainexsuite/types';
 
 interface WorkspaceLayoutProps {
   /**
@@ -85,6 +87,55 @@ interface WorkspaceLayoutProps {
    * Optional custom sidebar renderer. If provided, it replaces the default AppNavigationSidebar.
    */
   renderSidebar?: (props: { isOpen: boolean; onClose: () => void }) => ReactNode;
+  // NEW: Search props
+  /**
+   * Callback when search is triggered (opens command palette)
+   */
+  onSearchClick?: () => void;
+  // NEW: Breadcrumbs
+  /**
+   * Breadcrumb items for navigation
+   */
+  breadcrumbs?: BreadcrumbItem[];
+  // NEW: Notifications
+  /**
+   * Array of notification items
+   */
+  notifications?: NotificationItem[];
+  /**
+   * Callback when a notification is clicked
+   */
+  onNotificationClick?: (id: string) => void;
+  /**
+   * Callback to mark a notification as read
+   */
+  onMarkAsRead?: (id: string) => void;
+  /**
+   * Callback to mark all notifications as read
+   */
+  onMarkAllRead?: () => void;
+  /**
+   * Callback to clear all notifications
+   */
+  onClearAll?: () => void;
+  /**
+   * Callback to view all notifications
+   */
+  onViewAllNotifications?: () => void;
+  // NEW: Quick Actions
+  /**
+   * Quick actions for the app
+   */
+  quickActions?: QuickAction[];
+  /**
+   * Callback when a quick action is selected
+   */
+  onQuickAction?: (actionId: string) => void;
+  // NEW: AI Assistant
+  /**
+   * Callback when AI assistant button is clicked
+   */
+  onAiAssistantClick?: () => void;
 }
 
 export function WorkspaceLayout({
@@ -101,9 +152,23 @@ export function WorkspaceLayout({
   onSettingsClick,
   onActivityClick,
   renderSidebar,
+  // New props
+  onSearchClick,
+  breadcrumbs,
+  notifications = [],
+  onNotificationClick,
+  onMarkAsRead,
+  onMarkAllRead,
+  onClearAll,
+  onViewAllNotifications,
+  quickActions = [],
+  onQuickAction,
+  onAiAssistantClick,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
 
   // Get global theme settings (from AppColorProvider context)
   const appTheme = useAppTheme();
@@ -127,6 +192,26 @@ export function WorkspaceLayout({
   // Pass user email for access control filtering (e.g., admin app restricted to certain users)
   const defaultApps = getNavigationApps(process.env.NODE_ENV === 'development', user.email);
   const displayApps = apps.length > 0 ? apps : defaultApps;
+
+  // Notification count for the bell icon
+  const notificationCount = notifications.filter((n) => !n.read).length;
+
+  // Toggle handlers
+  const handleNotificationsToggle = useCallback(() => {
+    setIsNotificationsOpen((prev) => !prev);
+    // Close quick actions if opening notifications
+    if (!isNotificationsOpen) {
+      setIsQuickActionsOpen(false);
+    }
+  }, [isNotificationsOpen]);
+
+  const handleQuickActionsToggle = useCallback(() => {
+    setIsQuickActionsOpen((prev) => !prev);
+    // Close notifications if opening quick actions
+    if (!isQuickActionsOpen) {
+      setIsNotificationsOpen(false);
+    }
+  }, [isQuickActionsOpen]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-text-primary">
@@ -152,6 +237,17 @@ export function WorkspaceLayout({
         autoHideEnabled={autoHideEnabled}
         onAutoHideToggle={toggleAutoHide}
         headerMouseProps={headerProps}
+        // New props
+        onSearchClick={onSearchClick}
+        breadcrumbs={breadcrumbs}
+        notificationCount={notificationCount}
+        onNotificationsClick={handleNotificationsToggle}
+        isNotificationsOpen={isNotificationsOpen}
+        quickActions={quickActions}
+        onQuickAction={onQuickAction}
+        isQuickActionsOpen={isQuickActionsOpen}
+        onQuickActionsToggle={handleQuickActionsToggle}
+        onAiAssistantClick={onAiAssistantClick}
       />
 
       {/* Sidebar (Custom or Default) */}
@@ -176,12 +272,28 @@ export function WorkspaceLayout({
         onActivityClick={onActivityClick}
       />
 
+      {/* Notifications Dropdown (positioned absolutely, rendered here for portal-like behavior) */}
+      {isNotificationsOpen && notifications.length >= 0 && (
+        <div className="fixed top-16 right-4 z-50 sm:right-6">
+          <NotificationDropdown
+            isOpen={isNotificationsOpen}
+            onClose={() => setIsNotificationsOpen(false)}
+            items={notifications}
+            onNotificationClick={onNotificationClick}
+            onMarkAsRead={onMarkAsRead}
+            onMarkAllRead={onMarkAllRead}
+            onClearAll={onClearAll}
+            onViewAll={onViewAllNotifications}
+          />
+        </div>
+      )}
+
       {/* Main Content */}
       <main
         className="flex-1 transition-[padding-top] duration-300"
         style={{ paddingTop: isNavVisible ? '4rem' : '0' }}
       >
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
+        <div className="mx-auto max-w-7xl px-4 pt-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
           {children}
         </div>
       </main>

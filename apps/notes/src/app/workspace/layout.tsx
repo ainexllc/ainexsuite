@@ -1,14 +1,51 @@
 'use client';
 
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { getQuickActionsForApp } from '@ainexsuite/types';
 
 export default function WorkspaceRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Get quick actions for Notes app
+  const quickActions = getQuickActionsForApp('notes');
+
+  // Handle quick actions
+  const handleQuickAction = useCallback((actionId: string) => {
+    switch (actionId) {
+      case 'new-note':
+        // Navigate to create new note - this will be handled by the workspace page
+        router.push('/workspace?action=new-note');
+        break;
+      case 'new-checklist':
+        // Navigate to create new checklist
+        router.push('/workspace?action=new-checklist');
+        break;
+      default:
+        // Unknown action - silently ignore for now
+        break;
+    }
+  }, [router]);
+
+  // Handle search trigger
+  const handleSearchClick = useCallback(() => {
+    setIsSearchOpen(true);
+    // TODO: Open command palette when implemented
+  }, []);
+
+  // Handle AI assistant
+  const handleAiAssistantClick = useCallback(() => {
+    // TODO: Open AI assistant panel
+  }, []);
 
   // Show standardized loading screen
   if (isLoading) {
@@ -26,6 +63,13 @@ export default function WorkspaceRootLayout({
       onSignOut={handleSignOut}
       searchPlaceholder="Search notes..."
       appName="NOTES"
+      // New props
+      onSearchClick={handleSearchClick}
+      quickActions={quickActions}
+      onQuickAction={handleQuickAction}
+      onAiAssistantClick={handleAiAssistantClick}
+      // Notifications - empty for now, will be populated by notification service
+      notifications={[]}
     >
       {children}
     </WorkspaceLayout>

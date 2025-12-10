@@ -29,8 +29,8 @@ export const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       action: clsx(
         'flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium transition-all border',
         isActive
-          ? 'bg-[var(--color-primary)]/10 border-[var(--color-primary)] text-[var(--color-primary)]'
-          : 'bg-background/40 backdrop-blur-sm border-border hover:border-[var(--color-primary)] text-muted-foreground hover:text-foreground'
+          ? 'bg-white/10 border-white/20 text-white shadow-sm'
+          : 'bg-background/40 backdrop-blur-sm border-border hover:border-white/20 text-muted-foreground hover:text-white'
       ),
     };
 

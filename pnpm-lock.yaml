@@ -1410,6 +1410,9 @@ importers:
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
+      framer-motion:
+        specifier: ^11.0.0
+        version: 11.18.2(react-dom@19.2.0)(react@19.2.0)
       lucide-react:
         specifier: ^0.344.0
         version: 0.344.0(react@19.2.0)

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown, Check } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { ToolbarButton } from './toolbar-button';
 import type { SortConfig, SortOption } from './types';
@@ -79,35 +80,43 @@ export function SortDropdown({
         <DirectionIcon className="h-3 w-3 opacity-60" />
       </ToolbarButton>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50 min-w-[180px] bg-background/95 backdrop-blur-xl rounded-xl border border-border shadow-xl py-1">
-          {options.map((option) => {
-            const isSelected = option.field === value.field;
-            return (
-              <button
-                key={option.field}
-                onClick={() => handleFieldSelect(option.field)}
-                className={clsx(
-                  'w-full flex items-center justify-between px-4 py-2 text-sm transition-colors',
-                  isSelected
-                    ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
-                    : 'text-foreground hover:bg-foreground/5'
-                )}
-              >
-                <span>{option.label}</span>
-                <div className="flex items-center gap-1">
-                  {isSelected && (
-                    <>
-                      <DirectionIcon className="h-3 w-3" />
-                      <Check className="h-3.5 w-3.5" />
-                    </>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute right-0 top-full mt-2 z-50 min-w-[180px] bg-background/95 backdrop-blur-xl rounded-xl border border-border shadow-xl py-1 origin-top-right"
+          >
+            {options.map((option) => {
+              const isSelected = option.field === value.field;
+              return (
+                <button
+                  key={option.field}
+                  onClick={() => handleFieldSelect(option.field)}
+                  className={clsx(
+                    'w-full flex items-center justify-between px-4 py-2 text-sm transition-colors',
+                    isSelected
+                      ? 'bg-white/10 text-white'
+                      : 'text-foreground hover:bg-white/5'
                   )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
+                >
+                  <span>{option.label}</span>
+                  <div className="flex items-center gap-1">
+                    {isSelected && (
+                      <>
+                        <DirectionIcon className="h-3 w-3" />
+                        <Check className="h-3.5 w-3.5" />
+                      </>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

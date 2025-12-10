@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { Loader2 } from 'lucide-react';
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
+import { getQuickActionsForApp } from '@ainexsuite/types';
 
 export default function WorkspaceRootLayout({
   children,
@@ -17,6 +18,9 @@ export default function WorkspaceRootLayout({
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
+
+  // Get quick actions for Main app
+  const quickActions = getQuickActionsForApp('main');
 
   // Redirect logic
   useEffect(() => {
@@ -52,6 +56,27 @@ export default function WorkspaceRootLayout({
     router.push('/');
   };
 
+  // Handle search trigger from header
+  const handleSearchClick = useCallback(() => {
+    setIsSearchOpen(true);
+  }, []);
+
+  // Handle quick actions
+  const handleQuickAction = useCallback((actionId: string) => {
+    switch (actionId) {
+      case 'go-to-app':
+        setIsSearchOpen(true);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
+  // Handle AI assistant
+  const handleAiAssistantClick = useCallback(() => {
+    setActivePanel('ai-assistant');
+  }, []);
+
   if (loading || ssoInProgress || bootstrapStatus === 'running') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
@@ -76,6 +101,12 @@ export default function WorkspaceRootLayout({
         showBackground={false}
         onSettingsClick={() => setActivePanel('settings')}
         onActivityClick={() => setActivePanel('activity')}
+        // New props
+        onSearchClick={handleSearchClick}
+        quickActions={quickActions}
+        onQuickAction={handleQuickAction}
+        onAiAssistantClick={handleAiAssistantClick}
+        notifications={[]}
       >
         {children}
       </WorkspaceLayout>

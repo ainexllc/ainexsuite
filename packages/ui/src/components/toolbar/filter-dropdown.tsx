@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { ToolbarButton } from './toolbar-button';
 
@@ -61,43 +62,51 @@ export function FilterDropdown({
         <SlidersHorizontal className="h-4 w-4" />
         <span className="text-sm">Filter</span>
         {activeCount > 0 && (
-          <span className="px-1.5 py-0.5 bg-[var(--color-primary)] text-foreground text-xs rounded-full min-w-[1.25rem] text-center">
+          <span className="px-1.5 py-0.5 bg-white/10 text-white text-xs rounded-full min-w-[1.25rem] text-center border border-white/10 shadow-sm backdrop-blur-sm">
             {activeCount}
           </span>
         )}
       </ToolbarButton>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50 min-w-[280px] max-w-[360px] bg-background/95 backdrop-blur-xl rounded-xl border border-border shadow-xl">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h3 className="font-semibold text-foreground text-sm">Filters</h3>
-            <div className="flex items-center gap-2">
-              {activeCount > 0 && onReset && (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute right-0 top-full mt-2 z-50 min-w-[280px] max-w-[360px] bg-background/95 backdrop-blur-xl rounded-xl border border-border shadow-xl origin-top-right"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <h3 className="font-semibold text-foreground text-sm">Filters</h3>
+              <div className="flex items-center gap-2">
+                {activeCount > 0 && onReset && (
+                  <button
+                    onClick={() => {
+                      onReset();
+                    }}
+                    className="text-xs text-white/70 hover:text-white font-medium transition-colors"
+                  >
+                    Clear all
+                  </button>
+                )}
                 <button
-                  onClick={() => {
-                    onReset();
-                  }}
-                  className="text-xs text-[var(--color-primary)] hover:text-[var(--color-primary)]/80 font-medium"
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 hover:bg-foreground/10 rounded-full transition-colors"
                 >
-                  Clear all
+                  <X className="h-4 w-4 text-muted-foreground" />
                 </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-foreground/10 rounded-full transition-colors"
-              >
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
+              </div>
             </div>
-          </div>
 
-          {/* Content */}
-          <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto">
-            {children}
-          </div>
-        </div>
-      )}
+            {/* Content */}
+            <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

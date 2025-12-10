@@ -8,6 +8,7 @@ interface InlineCalendarProps {
   value: Date | null;
   onChange: (date: Date | null) => void;
   onClose: () => void;
+  activeDates?: Date[];
 }
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -16,7 +17,7 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-export function InlineCalendar({ value, onChange, onClose }: InlineCalendarProps) {
+export function InlineCalendar({ value, onChange, onClose, activeDates }: InlineCalendarProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -136,8 +137,15 @@ export function InlineCalendar({ value, onChange, onClose }: InlineCalendarProps
                   isSelected(date)
                     ? "bg-blue-500 text-white"
                     : isToday(date)
-                    ? "bg-white/10 text-white ring-1 ring-blue-500/50"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                      ? "bg-white/10 text-white ring-1 ring-blue-500/50"
+                      : activeDates?.some(
+                        (d) =>
+                          d.getDate() === date.getDate() &&
+                          d.getMonth() === date.getMonth() &&
+                          d.getFullYear() === date.getFullYear()
+                      )
+                        ? "bg-white/5 text-white hover:bg-white/10"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
                 )}
               >
                 {date.getDate()}

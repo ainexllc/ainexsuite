@@ -8,7 +8,6 @@ import {
   Circle,
   Palette,
   Pin,
-  PinOff,
   Trash2,
   Users,
 } from "lucide-react";
@@ -119,18 +118,31 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           setIsEditing(true);
         }}
       >
-        <div className="relative z-10 w-full">
+        {/* Corner Pin Badge - clickable to unpin */}
+        {note.pinned && (
           <button
             type="button"
             onClick={handlePin}
-            className={clsx(
-              "absolute right-0 top-0 hidden rounded-full bg-foreground/10 p-2 text-foreground shadow-sm transition hover:bg-foreground/20 group-hover:flex",
-              note.pinned && "text-accent-400 flex",
-            )}
-            aria-label={note.pinned ? "Unpin note" : "Pin note"}
+            className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
+            aria-label="Unpin note"
           >
-            {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+            <div className="absolute top-0 right-0 bg-amber-500 group-hover/pin:bg-amber-600 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-colors" />
+            <Pin className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
           </button>
+        )}
+
+        <div className="relative z-10 w-full">
+          {/* Pin button - only shows on unpinned notes */}
+          {!note.pinned && (
+            <button
+              type="button"
+              onClick={handlePin}
+              className="absolute right-0 top-0 hidden rounded-full bg-foreground/10 p-2 text-foreground shadow-sm transition hover:bg-foreground/20 group-hover:flex"
+              aria-label="Pin note"
+            >
+              <Pin className="h-4 w-4" />
+            </button>
+          )}
 
           <div
             className={clsx(

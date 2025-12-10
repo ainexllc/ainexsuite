@@ -54,7 +54,7 @@ const checklistTemplate = (): ChecklistItem => ({
 
 
 export function NoteComposer() {
-  const { createNote, updateNote } = useNotes();
+  const { createNote, updateNote, allNotes } = useNotes();
   const { createReminder } = useReminders();
   const { preferences } = usePreferences();
   const { labels } = useLabels();
@@ -324,9 +324,9 @@ export function NoteComposer() {
       prev.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              ...next,
-            }
+            ...item,
+            ...next,
+          }
           : item,
       ),
     );
@@ -421,7 +421,7 @@ export function NoteComposer() {
   }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
 
   return (
-    <section className="w-full mb-8">
+    <section className="w-full">
       {!expanded ? (
         <button
           type="button"
@@ -915,11 +915,17 @@ export function NoteComposer() {
                     <Calendar className="h-5 w-5" />
                   </button>
                   {showCalendar && (
-                    <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
+                    <div className="absolute top-full left-0 mt-2 z-50">
                       <InlineCalendar
                         value={noteDate}
-                        onChange={(date) => setNoteDate(date)}
+                        onChange={(date) => {
+                          setNoteDate(date);
+                          setShowCalendar(false);
+                        }}
                         onClose={() => setShowCalendar(false)}
+                        activeDates={allNotes
+                          .filter((n) => n.noteDate || n.createdAt)
+                          .map((n) => n.noteDate ?? n.createdAt)}
                       />
                     </div>
                   )}

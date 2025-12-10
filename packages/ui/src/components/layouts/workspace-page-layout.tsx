@@ -95,7 +95,7 @@ export function WorkspacePageLayout({
   const hasComposerRow = composer || spaces || composerActions;
 
   return (
-    <div className={`${maxWidthClasses[maxWidth]} mx-auto space-y-6 ${className}`}>
+    <div className={`${maxWidthClasses[maxWidth]} mx-auto space-y-4 ${className}`}>
       {/* Header Area (Optional) */}
       {header && (
         <div className="flex justify-end">
@@ -108,7 +108,7 @@ export function WorkspacePageLayout({
 
       {/* Composer Row: Form + SpaceSwitcher + Actions */}
       {hasComposerRow && (
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           {/* Composer (left side, takes available space) */}
           {composer && (
             <div className="flex-1 min-w-0">
@@ -117,7 +117,7 @@ export function WorkspacePageLayout({
           )}
 
           {/* Right side: SpaceSwitcher + Actions */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0 order-first md:order-none w-full md:w-auto justify-end">
             {spaces && (
               <SpaceSwitcher
                 spaces={spaces.items}

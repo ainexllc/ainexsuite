@@ -109,6 +109,31 @@ export {
 } from "./navigation/search-bar";
 
 export {
+  GlobalSearchTrigger,
+  type GlobalSearchTriggerProps,
+} from "./navigation/global-search-trigger";
+
+export {
+  HeaderBreadcrumbs,
+  type HeaderBreadcrumbsProps,
+} from "./navigation/header-breadcrumbs";
+
+export {
+  NotificationBell,
+  type NotificationBellProps,
+} from "./navigation/notification-bell";
+
+export {
+  NotificationDropdown,
+  type NotificationDropdownProps,
+} from "./navigation/notification-dropdown";
+
+export {
+  QuickActionsMenu,
+  type QuickActionsMenuProps,
+} from "./navigation/quick-actions-menu";
+
+export {
   SearchInput,
   type SearchInputProps,
 } from "./search";

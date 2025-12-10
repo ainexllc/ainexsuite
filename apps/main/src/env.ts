@@ -6,6 +6,7 @@ export const serverEnv = {
   FIREBASE_ADMIN_CLIENT_EMAIL: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
   FIREBASE_ADMIN_PRIVATE_KEY: process.env.FIREBASE_ADMIN_PRIVATE_KEY,
   FIREBASE_ADMIN_DATABASE_URL: process.env.FIREBASE_ADMIN_DATABASE_URL,
+  XAI_API_KEY: process.env.GROK_API_KEY || process.env.XAI_API_KEY,
 };
 
 export const clientEnv = {

@@ -187,6 +187,10 @@ export async function updateNote(
     payload.sharedWithUserIds = updates.sharedWithUserIds;
   }
 
+  if (updates.spaceId !== undefined) {
+    payload.spaceId = updates.spaceId || null;
+  }
+
   await updateDoc(clientNoteDoc(userId, noteId), payload);
 }
 

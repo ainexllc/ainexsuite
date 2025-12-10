@@ -24,6 +24,7 @@ export * from './fitness';
 export * from './search';
 export * from './activity';
 export * from './feedback';
+export * from './notification';
 
 // AI/ML types
 export * from './sentiment';

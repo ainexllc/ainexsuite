@@ -3,6 +3,11 @@
 import { Menu, Sparkles, ChevronDown, PanelTopClose, PanelTop } from 'lucide-react';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
+import { GlobalSearchTrigger } from '../navigation/global-search-trigger';
+import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
+import { NotificationBell } from '../navigation/notification-bell';
+import { QuickActionsMenu } from '../navigation/quick-actions-menu';
+import type { BreadcrumbItem, QuickAction } from '@ainexsuite/types';
 
 interface WorkspaceHeaderProps {
   user: {
@@ -38,6 +43,51 @@ interface WorkspaceHeaderProps {
     onMouseEnter: () => void;
     onMouseLeave: () => void;
   };
+  // NEW: Search props
+  /**
+   * Callback when search trigger is clicked
+   */
+  onSearchClick?: () => void;
+  // NEW: Breadcrumbs
+  /**
+   * Breadcrumb items for navigation
+   */
+  breadcrumbs?: BreadcrumbItem[];
+  // NEW: Notifications
+  /**
+   * Number of unread notifications
+   */
+  notificationCount?: number;
+  /**
+   * Callback when notification bell is clicked
+   */
+  onNotificationsClick?: () => void;
+  /**
+   * Whether the notifications panel is open
+   */
+  isNotificationsOpen?: boolean;
+  // NEW: Quick Actions
+  /**
+   * Quick actions for the app
+   */
+  quickActions?: QuickAction[];
+  /**
+   * Callback when a quick action is selected
+   */
+  onQuickAction?: (actionId: string) => void;
+  /**
+   * Whether the quick actions menu is open
+   */
+  isQuickActionsOpen?: boolean;
+  /**
+   * Callback to toggle quick actions menu
+   */
+  onQuickActionsToggle?: () => void;
+  // NEW: AI Assistant
+  /**
+   * Callback when AI button is clicked
+   */
+  onAiAssistantClick?: () => void;
 }
 
 /**
@@ -46,24 +96,32 @@ interface WorkspaceHeaderProps {
  * Standardized header for workspace pages with:
  * - Fixed positioning with backdrop blur
  * - Theme-aware border and shadow
- * - Search bar
+ * - Global search trigger with Cmd+K
+ * - Breadcrumbs navigation
+ * - Quick actions menu
+ * - Notification bell
  * - AI assistant button
  * - Profile toggle (triggers sidebar)
- *
- * Extracted from Workflow app for reusability across all apps.
  *
  * @example
  * ```tsx
  * <WorkspaceHeader
  *   user={user}
- *   searchPlaceholder="Search workflows..."
+ *   searchPlaceholder="Search notes..."
  *   onSignOut={handleSignOut}
  *   onProfileToggle={() => setShowProfile(true)}
+ *   onSearchClick={() => setSearchOpen(true)}
+ *   breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Notes', current: true }]}
+ *   notificationCount={3}
+ *   onNotificationsClick={() => setNotificationsOpen(true)}
+ *   quickActions={noteQuickActions}
+ *   onQuickAction={handleQuickAction}
  * />
  * ```
  */
 export function WorkspaceHeader({
   user,
+  searchPlaceholder = 'Search...',
   onSignOut: _onSignOut,
   appName,
   appColor,
@@ -73,6 +131,17 @@ export function WorkspaceHeader({
   autoHideEnabled = false,
   onAutoHideToggle,
   headerMouseProps,
+  // New props
+  onSearchClick,
+  breadcrumbs,
+  notificationCount = 0,
+  onNotificationsClick,
+  isNotificationsOpen = false,
+  quickActions = [],
+  onQuickAction,
+  isQuickActionsOpen = false,
+  onQuickActionsToggle,
+  onAiAssistantClick,
 }: WorkspaceHeaderProps) {
   return (
     <header
@@ -86,7 +155,7 @@ export function WorkspaceHeader({
       {...headerMouseProps}
     >
       <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6">
-        {/* Left: Hamburger + Logo */}
+        {/* Left: Hamburger + Logo + Breadcrumbs */}
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -100,13 +169,46 @@ export function WorkspaceHeader({
           <div className="hidden sm:block">
             <AinexStudiosLogo size="sm" align="center" asLink={true} appName={appName} appColor={appColor} />
           </div>
+
+          {/* Breadcrumbs - Only show if provided */}
+          {breadcrumbs && breadcrumbs.length > 0 && (
+            <HeaderBreadcrumbs items={breadcrumbs} className="ml-2" />
+          )}
         </div>
 
-        {/* Center: Spacer */}
-        <div className="flex-1" />
+        {/* Center: Search */}
+        <div className="flex-1 flex justify-center px-4">
+          {onSearchClick && (
+            <GlobalSearchTrigger
+              onClick={onSearchClick}
+              placeholder={searchPlaceholder}
+              className="max-w-md"
+            />
+          )}
+        </div>
 
         {/* Right: Actions */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Quick Actions Menu */}
+          {quickActions.length > 0 && onQuickAction && onQuickActionsToggle && (
+            <QuickActionsMenu
+              isOpen={isQuickActionsOpen}
+              onClose={() => onQuickActionsToggle?.()}
+              onToggle={onQuickActionsToggle}
+              actions={quickActions}
+              onAction={onQuickAction}
+            />
+          )}
+
+          {/* Notifications Bell */}
+          {onNotificationsClick && (
+            <NotificationBell
+              count={notificationCount}
+              onClick={onNotificationsClick}
+              isOpen={isNotificationsOpen}
+            />
+          )}
+
           {/* Auto-hide Toggle (desktop only) */}
           {onAutoHideToggle && (
             <button
@@ -131,6 +233,7 @@ export function WorkspaceHeader({
           {/* AI Assistant Button */}
           <button
             type="button"
+            onClick={onAiAssistantClick}
             className="flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-all"
             style={{
               backgroundColor: 'rgba(var(--theme-primary-rgb), 0.15)',
