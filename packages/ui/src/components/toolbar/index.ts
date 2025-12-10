@@ -13,4 +13,7 @@ export type {
   ActivityData,
   ViewOption,
   SortOption,
+  QuickDatePreset,
+  NoteTypeFilter,
+  DateRangeField,
 } from './types';

@@ -1,14 +1,24 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { List, LayoutGrid, Calendar } from 'lucide-react';
-import { WorkspacePageLayout, WorkspaceToolbar, ActivityCalendar, type ViewOption, type SortOption } from '@ainexsuite/ui';
+import {
+  WorkspacePageLayout,
+  WorkspaceToolbar,
+  ActivityCalendar,
+  ActiveFilterChips,
+  type ViewOption,
+  type SortOption,
+  type FilterChip,
+  type FilterChipType,
+} from '@ainexsuite/ui';
 import { NoteBoard } from '@/components/notes/note-board';
 import { WorkspaceInsights } from '@/components/notes/workspace-insights';
 import { NoteComposer } from "@/components/notes/note-composer";
 import { SpaceSwitcher } from "@/components/spaces";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { useNotes } from "@/components/providers/notes-provider";
+import { useLabels } from "@/components/providers/labels-provider";
 import { NoteFilterContent } from "@/components/notes/note-filter-content";
 import type { ViewMode } from "@/lib/types/settings";
 
@@ -21,12 +31,29 @@ const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
 const SORT_OPTIONS: SortOption[] = [
   { field: 'createdAt', label: 'Date created' },
   { field: 'updatedAt', label: 'Date modified' },
+  { field: 'noteDate', label: 'Note date' },
   { field: 'title', label: 'Title' },
 ];
+
+const NOTE_COLOR_MAP: Record<string, string> = {
+  'default': '#1f2937',
+  'note-white': '#ffffff',
+  'note-lemon': '#fff9c4',
+  'note-peach': '#ffe0b2',
+  'note-tangerine': '#ffccbc',
+  'note-mint': '#c8e6c9',
+  'note-fog': '#cfd8dc',
+  'note-lavender': '#d1c4e9',
+  'note-blush': '#f8bbd0',
+  'note-sky': '#b3e5fc',
+  'note-moss': '#dcedc8',
+  'note-coal': '#455a64',
+};
 
 export default function NotesWorkspace() {
   const { preferences, updatePreferences } = usePreferences();
   const { notes, filters, setFilters, sort, setSort } = useNotes();
+  const { labels } = useLabels();
 
   // Calculate activity data for calendar view
   const activityData = useMemo(() => {
@@ -38,18 +65,110 @@ export default function NotesWorkspace() {
     return data;
   }, [notes]);
 
+  // Generate filter chips for active filters
+  const filterChips = useMemo(() => {
+    const chips: FilterChip[] = [];
+
+    // Label chips
+    if (filters.labels && filters.labels.length > 0) {
+      filters.labels.forEach((labelId) => {
+        const label = labels.find((l) => l.id === labelId);
+        if (label) {
+          chips.push({
+            id: labelId,
+            label: label.name,
+            type: 'label',
+          });
+        }
+      });
+    }
+
+    // Color chips
+    if (filters.colors && filters.colors.length > 0) {
+      filters.colors.forEach((color) => {
+        chips.push({
+          id: color,
+          label: color.replace('note-', '').charAt(0).toUpperCase() + color.replace('note-', '').slice(1),
+          type: 'color',
+          colorValue: NOTE_COLOR_MAP[color],
+        });
+      });
+    }
+
+    // Date range chip
+    if (filters.dateRange?.start || filters.dateRange?.end) {
+      const dateLabel = filters.datePreset && filters.datePreset !== 'custom'
+        ? filters.datePreset.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+        : 'Custom Date';
+      chips.push({
+        id: 'dateRange',
+        label: dateLabel,
+        type: 'date',
+      });
+    }
+
+    // Note type chip
+    if (filters.noteType && filters.noteType !== 'all') {
+      chips.push({
+        id: filters.noteType,
+        label: filters.noteType === 'text' ? 'Text Notes' : 'Checklists',
+        type: 'noteType',
+      });
+    }
+
+    return chips;
+  }, [filters, labels]);
+
   // Count active filters
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.labels && filters.labels.length > 0) count++;
     if (filters.colors && filters.colors.length > 0) count++;
     if (filters.dateRange?.start || filters.dateRange?.end) count++;
+    if (filters.noteType && filters.noteType !== 'all') count++;
     return count;
   }, [filters]);
 
-  const handleFilterReset = () => {
-    setFilters({ labels: [], colors: [], dateRange: { start: null, end: null } });
-  };
+  const handleFilterReset = useCallback(() => {
+    setFilters({
+      labels: [],
+      colors: [],
+      dateRange: { start: null, end: null },
+      datePreset: undefined,
+      dateField: 'createdAt',
+      noteType: 'all',
+    });
+  }, [setFilters]);
+
+  const handleRemoveChip = useCallback((chipId: string, chipType: FilterChipType) => {
+    switch (chipType) {
+      case 'label':
+        setFilters({
+          ...filters,
+          labels: filters.labels?.filter((id) => id !== chipId) || [],
+        });
+        break;
+      case 'color':
+        setFilters({
+          ...filters,
+          colors: filters.colors?.filter((c) => c !== chipId) || [],
+        });
+        break;
+      case 'date':
+        setFilters({
+          ...filters,
+          dateRange: { start: null, end: null },
+          datePreset: undefined,
+        });
+        break;
+      case 'noteType':
+        setFilters({
+          ...filters,
+          noteType: 'all',
+        });
+        break;
+    }
+  }, [filters, setFilters]);
 
   const isCalendarView = preferences.viewMode === 'calendar';
 
@@ -59,17 +178,27 @@ export default function NotesWorkspace() {
       composer={<NoteComposer />}
       composerActions={<SpaceSwitcher />}
       toolbar={
-        <WorkspaceToolbar
-          viewMode={preferences.viewMode}
-          onViewModeChange={(mode) => updatePreferences({ viewMode: mode })}
-          viewOptions={VIEW_OPTIONS}
-          filterContent={<NoteFilterContent filters={filters} onFiltersChange={setFilters} />}
-          activeFilterCount={activeFilterCount}
-          onFilterReset={handleFilterReset}
-          sort={sort}
-          onSortChange={setSort}
-          sortOptions={SORT_OPTIONS}
-        />
+        <div className="space-y-2">
+          <WorkspaceToolbar
+            viewMode={preferences.viewMode}
+            onViewModeChange={(mode) => updatePreferences({ viewMode: mode })}
+            viewOptions={VIEW_OPTIONS}
+            filterContent={<NoteFilterContent filters={filters} onFiltersChange={setFilters} sort={sort} />}
+            activeFilterCount={activeFilterCount}
+            onFilterReset={handleFilterReset}
+            sort={sort}
+            onSortChange={setSort}
+            sortOptions={SORT_OPTIONS}
+          />
+          {filterChips.length > 0 && (
+            <ActiveFilterChips
+              chips={filterChips}
+              onRemove={handleRemoveChip}
+              onClearAll={handleFilterReset}
+              className="px-1"
+            />
+          )}
+        </div>
       }
       maxWidth="default"
     >
@@ -77,6 +206,8 @@ export default function NotesWorkspace() {
         <ActivityCalendar
           activityData={activityData}
           size="large"
+          view={preferences.calendarView || 'month'}
+          onViewChange={(view) => updatePreferences({ calendarView: view })}
         />
       ) : (
         <NoteBoard />

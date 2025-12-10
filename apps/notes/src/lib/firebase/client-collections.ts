@@ -7,6 +7,8 @@ import {
   reminderCollectionPath,
   preferenceDocPath,
   feedbackCollectionPath,
+  filterPresetsCollectionPath,
+  filterPresetDocPath,
 } from "@/lib/firebase/collections";
 
 export function clientNoteCollection(userId: string) {
@@ -35,4 +37,12 @@ export function clientPreferenceDoc(userId: string) {
 
 export function clientFeedbackCollection() {
   return collection(getFirebaseFirestore(), feedbackCollectionPath());
+}
+
+export function clientFilterPresetsCollection(userId: string) {
+  return collection(getFirebaseFirestore(), filterPresetsCollectionPath(userId));
+}
+
+export function clientFilterPresetDoc(userId: string, presetId: string) {
+  return doc(getFirebaseFirestore(), filterPresetDocPath(userId, presetId));
 }

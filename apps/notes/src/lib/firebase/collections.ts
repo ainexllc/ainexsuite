@@ -22,6 +22,14 @@ export function preferenceDocPath(userId: string) {
   return `${userDocPath(userId)}/preferences/default`;
 }
 
+export function filterPresetsCollectionPath(userId: string) {
+  return `${userDocPath(userId)}/filterPresets`;
+}
+
+export function filterPresetDocPath(userId: string, presetId: string) {
+  return `${filterPresetsCollectionPath(userId)}/${presetId}`;
+}
+
 export function feedbackCollectionPath() {
   return "feedback";
 }

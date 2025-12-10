@@ -27,7 +27,9 @@ import {
   restoreNote as restoreNoteMutation,
   permanentlyDeleteNote,
 } from "@/lib/firebase/note-service";
+import { saveFiltersToPreferences } from "@/lib/firebase/preferences-service";
 import { useSpaces } from "@/components/providers/spaces-provider";
+import { usePreferences } from "@/components/providers/preferences-provider";
 
 type CreateNoteInput = {
   title?: string;
@@ -81,6 +83,7 @@ type NotesProviderProps = {
 export function NotesProvider({ children }: NotesProviderProps) {
   const { user } = useAuth();
   const { currentSpaceId } = useSpaces();
+  const { preferences, loading: preferencesLoading } = usePreferences();
   const [ownedNotes, setOwnedNotes] = useState<Note[]>([]);
   const [sharedNotes, setSharedNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +101,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
     field: 'updatedAt',
     direction: 'desc',
   });
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const computedNotesRef = useRef<{
     merged: Note[];
     filtered: Note[];
@@ -107,6 +112,42 @@ export function NotesProvider({ children }: NotesProviderProps) {
   }>({ merged: [], filtered: [], pinned: [], others: [], trashed: [] });
 
   const userId = user?.uid ?? null;
+
+  // Load saved filters from preferences on mount
+  useEffect(() => {
+    if (!preferencesLoading && !filtersInitialized) {
+      if (preferences.savedFilters) {
+        setFilters(preferences.savedFilters);
+      }
+      if (preferences.savedSort) {
+        setSort(preferences.savedSort);
+      }
+      setFiltersInitialized(true);
+    }
+  }, [preferencesLoading, filtersInitialized, preferences.savedFilters, preferences.savedSort]);
+
+  // Debounced save filters to preferences (500ms delay)
+  useEffect(() => {
+    if (!filtersInitialized || !userId) {
+      return;
+    }
+
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Save after 500ms of inactivity
+    saveTimeoutRef.current = setTimeout(() => {
+      void saveFiltersToPreferences(userId, filters, sort);
+    }, 500);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [filters, sort, filtersInitialized, userId]);
 
   useEffect(() => {
     if (!user || !userId) {
@@ -372,6 +413,11 @@ export function NotesProvider({ children }: NotesProviderProps) {
           aValue = a.createdAt.getTime();
           bValue = b.createdAt.getTime();
           break;
+        case 'noteDate':
+          // Sort by associated date (noteDate), fallback to createdAt
+          aValue = a.noteDate?.getTime() ?? a.createdAt.getTime();
+          bValue = b.noteDate?.getTime() ?? b.createdAt.getTime();
+          break;
         case 'updatedAt':
         default:
           aValue = a.updatedAt?.getTime() ?? a.createdAt.getTime();
@@ -404,6 +450,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
     const hasQuery = normalizedQuery.length > 1;
     const hasColorFilter = filters.colors && filters.colors.length > 0;
     const hasDateFilter = filters.dateRange?.start || filters.dateRange?.end;
+    const hasNoteTypeFilter = filters.noteType && filters.noteType !== 'all';
 
     const filtered = activeNotes.filter((note) => {
       // Exclude archived notes from workspace view
@@ -424,6 +471,13 @@ export function NotesProvider({ children }: NotesProviderProps) {
         }
       }
 
+      // Filter by note type (text vs checklist)
+      if (hasNoteTypeFilter) {
+        if (note.type !== filters.noteType) {
+          return false;
+        }
+      }
+
       // Filter by labels (combine activeLabelIds and filters.labels)
       const allLabelFilters = [...activeLabelIds, ...(filters.labels || [])];
       if (allLabelFilters.length > 0) {
@@ -440,13 +494,29 @@ export function NotesProvider({ children }: NotesProviderProps) {
         }
       }
 
-      // Filter by date range
+      // Filter by date range using the specified dateField
       if (hasDateFilter && filters.dateRange) {
-        const noteDate = note.createdAt;
-        if (filters.dateRange.start && noteDate < filters.dateRange.start) {
+        // Determine which date field to use (default: createdAt)
+        const dateField = filters.dateField || 'createdAt';
+        let targetDate: Date | null = null;
+
+        switch (dateField) {
+          case 'updatedAt':
+            targetDate = note.updatedAt ?? note.createdAt;
+            break;
+          case 'noteDate':
+            targetDate = note.noteDate ?? note.createdAt;
+            break;
+          case 'createdAt':
+          default:
+            targetDate = note.createdAt;
+            break;
+        }
+
+        if (filters.dateRange.start && targetDate < filters.dateRange.start) {
           return false;
         }
-        if (filters.dateRange.end && noteDate > filters.dateRange.end) {
+        if (filters.dateRange.end && targetDate > filters.dateRange.end) {
           return false;
         }
       }

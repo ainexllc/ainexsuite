@@ -1,7 +1,16 @@
 import type { Timestamp } from "firebase/firestore";
+import type { FilterValue, SortConfig } from "@ainexsuite/ui";
 
 export type ReminderChannel = "email" | "sms" | "push";
 export type ViewMode = "masonry" | "list" | "calendar";
+
+// Stored version of FilterValue with Timestamps for dates
+export type StoredFilterValue = Omit<FilterValue, 'dateRange'> & {
+  dateRange?: {
+    start: Timestamp | null;
+    end: Timestamp | null;
+  };
+};
 
 export type UserPreferenceDoc = {
   reminderChannels: ReminderChannel[];
@@ -12,13 +21,19 @@ export type UserPreferenceDoc = {
   smartSuggestions: boolean;
   focusModePinned: boolean;
   viewMode: ViewMode;
+  calendarView?: "month" | "week";
+  // Filter persistence
+  savedFilters?: StoredFilterValue;
+  savedSort?: SortConfig;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
 
-export type UserPreference = Omit<UserPreferenceDoc, "createdAt" | "updatedAt"> & {
+export type UserPreference = Omit<UserPreferenceDoc, "createdAt" | "updatedAt" | "savedFilters"> & {
   id: string;
   createdAt: Date;
   updatedAt: Date;
   smsNumber: string | null;
+  // Runtime version with Date objects
+  savedFilters?: FilterValue;
 };

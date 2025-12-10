@@ -388,4 +388,14 @@ export {
   type ActivityData,
   type ViewOption,
   type SortOption,
+  type QuickDatePreset,
+  type NoteTypeFilter,
+  type DateRangeField,
 } from "./toolbar";
+
+// Filter Components
+export {
+  ActiveFilterChips,
+  type FilterChip,
+  type FilterChipType,
+} from "./filters";
