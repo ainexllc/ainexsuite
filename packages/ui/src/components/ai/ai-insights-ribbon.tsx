@@ -41,11 +41,12 @@ export interface AIInsightsRibbonProps {
 
 /**
  * AI Insights Ribbon - Adaptive horizontal ribbon that scales with screen size.
+ * Exact implementation of Mockup #20 Adaptive Ribbon.
  *
  * Layout:
- * - XL/Desktop: Full horizontal ribbon with icon, title, divider, sections inline, buttons
- * - MD/Tablet: Compact bar with icon, truncated focus, inline tags, actions count
- * - SM/Mobile: Minimal pill with icon, short text, badge count
+ * - XL/Desktop: Full ribbon with icon+title, divider, labeled sections inline, action buttons
+ * - MD/Tablet: Compact bar with icon, truncated text, inline tags, actions count
+ * - SM/Mobile: Minimal pill with tiny icon, short text, badge count, chevron
  *
  * Features persistent collapse/expand with localStorage.
  */
@@ -90,47 +91,49 @@ export function AIInsightsRibbon({
   // Count items for badge
   const itemCount = sections.length;
 
-  // Collapsed State - Compact floating pill
+  // ============================================================
+  // COLLAPSED STATE - Mobile-style minimal pill (Mockup #20 Mobile)
+  // ============================================================
   if (!isExpanded) {
     return (
       <div className={cn("animate-in fade-in duration-300", className)}>
         <button
           onClick={toggleExpanded}
-          className="w-full rounded-xl border backdrop-blur-xl px-3 py-2 sm:px-4 sm:py-2.5 text-left transition-all hover:scale-[1.005] active:scale-[0.995] bg-card/80 dark:bg-card/60 shadow-lg dark:shadow-none group"
+          className="w-full rounded-lg border backdrop-blur-xl p-2 text-left transition-all hover:scale-[1.005] active:scale-[0.995] bg-card/80 dark:bg-card/60 shadow-lg dark:shadow-none group"
           style={{
             borderColor: `${accentColor}30`,
             boxShadow: `0 2px 12px -3px ${accentColor}20`,
           }}
         >
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Icon */}
+          <div className="flex items-center gap-2">
+            {/* Tiny Icon */}
             <div
-              className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105"
+              className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center"
               style={{ backgroundColor: `${accentColor}20` }}
             >
               {isLoading ? (
-                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" style={{ color: accentColor }} />
+                <Loader2 className="h-3 w-3 animate-spin" style={{ color: accentColor }} />
               ) : (
-                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" style={{ color: accentColor }} />
+                <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
               )}
             </div>
 
-            {/* Summary text - truncated */}
-            <span className="flex-1 min-w-0 text-xs sm:text-sm font-medium text-text-primary truncate">
+            {/* Short text - truncated */}
+            <span className="flex-1 min-w-0 text-xs font-medium text-text-primary truncate">
               {isLoading ? loadingMessage : primarySummary}
             </span>
 
-            {/* Badge + Arrow */}
-            <div className="flex items-center gap-1.5 text-text-muted flex-shrink-0">
+            {/* Badge + Chevron */}
+            <div className="flex items-center gap-1 flex-shrink-0">
               {!isLoading && (
                 <span
-                  className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold"
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold"
                   style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
                 >
                   {itemCount}
                 </span>
               )}
-              <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:translate-y-0.5" />
+              <ChevronDown className="w-3 h-3 text-text-muted" />
             </div>
           </div>
         </button>
@@ -138,28 +141,32 @@ export function AIInsightsRibbon({
     );
   }
 
-  // Expanded State - Adaptive horizontal ribbon
+  // ============================================================
+  // EXPANDED STATE - Adaptive ribbon with 3 breakpoints
+  // ============================================================
   return (
     <div className={cn("animate-in fade-in slide-in-from-top-1 duration-300", className)}>
       <div
-        className="relative overflow-hidden rounded-xl border backdrop-blur-xl bg-card/90 dark:bg-card/80 shadow-lg dark:shadow-none"
+        className="relative overflow-hidden rounded-lg md:rounded-xl border backdrop-blur-xl bg-card/90 dark:bg-card/80 shadow-lg dark:shadow-none"
         style={{
           borderColor: `${accentColor}30`,
           boxShadow: `0 2px 16px -4px ${accentColor}20`,
         }}
       >
-        {/* Single-row ribbon layout */}
-        <div className="px-3 py-2.5 sm:px-4 sm:py-3">
-          {error ? (
+        {/* ============================================
+            ERROR STATE
+        ============================================ */}
+        {error ? (
+          <div className="p-2 md:p-3 xl:p-4">
             <div className="flex items-center gap-3">
               <div
-                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                className="flex-shrink-0 w-6 h-6 md:w-8 md:h-8 xl:w-10 xl:h-10 rounded md:rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: `${accentColor}20` }}
               >
-                <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+                <Sparkles className="h-3 w-3 md:h-4 md:w-4 xl:h-5 xl:w-5" style={{ color: accentColor }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium truncate">
+                <p className="text-xs md:text-sm text-yellow-600 dark:text-yellow-400 font-medium truncate">
                   {error}
                 </p>
               </div>
@@ -170,15 +177,20 @@ export function AIInsightsRibbon({
                 <ChevronUp className="h-4 w-4" />
               </button>
             </div>
-          ) : isLoading ? (
+          </div>
+        ) : isLoading ? (
+          /* ============================================
+              LOADING STATE
+          ============================================ */
+          <div className="p-2 md:p-3 xl:p-4">
             <div className="flex items-center gap-3">
               <div
-                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                className="flex-shrink-0 w-6 h-6 md:w-8 md:h-8 xl:w-10 xl:h-10 rounded md:rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: `${accentColor}20` }}
               >
-                <Loader2 className="h-4 w-4 animate-spin" style={{ color: accentColor }} />
+                <Loader2 className="h-3 w-3 md:h-4 md:w-4 xl:h-5 xl:w-5 animate-spin" style={{ color: accentColor }} />
               </div>
-              <span className="text-sm text-text-muted flex-1">{loadingMessage}</span>
+              <span className="text-xs md:text-sm text-text-muted flex-1 truncate">{loadingMessage}</span>
               <button
                 onClick={toggleExpanded}
                 className="p-1.5 text-text-muted hover:text-text-primary hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
@@ -186,80 +198,142 @@ export function AIInsightsRibbon({
                 <ChevronUp className="h-4 w-4" />
               </button>
             </div>
-          ) : (
-            <div className="flex items-center gap-3 sm:gap-4">
-              {/* Icon + Title */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+          </div>
+        ) : (
+          /* ============================================
+              CONTENT STATE - 3 responsive layouts
+          ============================================ */
+          <>
+            {/* ----------------------------------------
+                MOBILE (SM) - Minimal pill layout
+            ---------------------------------------- */}
+            <div className="md:hidden p-2">
+              <div className="flex items-center gap-2">
+                {/* Tiny icon */}
                 <div
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center"
+                  className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center"
                   style={{ backgroundColor: `${accentColor}20` }}
                 >
-                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: accentColor }} />
+                  <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
                 </div>
-                <span className="hidden lg:block font-semibold text-sm text-text-primary">{title}</span>
-              </div>
-
-              {/* Divider - desktop only */}
-              <div className="hidden lg:block h-8 w-px bg-border/50 flex-shrink-0" />
-
-              {/* Sections - horizontal flow with responsive layout */}
-              <div className="flex-1 min-w-0 flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-6">
-                {sections.map((section, index) => (
-                  <div key={index} className="min-w-0 flex-shrink-0 lg:flex-shrink">
-                    {/* Desktop: label above content */}
-                    <div className="hidden lg:block">
-                      <p className="text-[10px] text-text-muted uppercase tracking-wide mb-0.5">
-                        {section.label}
-                      </p>
-                      <div className="text-sm text-text-primary">{section.content}</div>
-                    </div>
-                    {/* Mobile/Tablet: inline with icon */}
-                    <div className="lg:hidden flex items-center gap-2">
-                      <span className="flex-shrink-0" style={{ color: accentColor }}>
-                        {section.icon}
-                      </span>
-                      <div className="text-xs sm:text-sm text-text-primary truncate">
-                        {section.summary || section.content}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {lastUpdated && (
-                  <span className="hidden xl:block text-[10px] text-text-muted mr-2">
-                    {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                )}
-                {onRefresh && (
-                  <button
-                    onClick={onRefresh}
-                    disabled={isLoading || refreshDisabled}
-                    className="p-1.5 text-text-muted hover:text-text-primary hover:bg-muted/50 rounded-lg transition-colors disabled:opacity-50"
-                    title="Refresh"
+                {/* Primary text truncated */}
+                <span className="flex-1 min-w-0 text-xs font-medium text-text-primary truncate">
+                  {sections[0]?.summary || sections[0]?.label}
+                </span>
+                {/* Badge + Chevron */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <span
+                    className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold"
+                    style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
                   >
-                    <RefreshCw className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", isLoading && "animate-spin")} />
+                    {itemCount}
+                  </span>
+                  <button
+                    onClick={toggleExpanded}
+                    className="p-0.5 text-text-muted hover:text-text-primary transition-colors"
+                  >
+                    <ChevronUp className="w-3 h-3" />
                   </button>
-                )}
+                </div>
+              </div>
+            </div>
+
+            {/* ----------------------------------------
+                TABLET (MD) - Compact bar with inline tags
+            ---------------------------------------- */}
+            <div className="hidden md:block xl:hidden p-3">
+              <div className="flex items-center gap-4">
+                {/* Icon */}
+                <div
+                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${accentColor}20` }}
+                >
+                  <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+                </div>
+                {/* Main content */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-primary truncate">
+                    {sections[0]?.summary || sections[0]?.label}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {/* Show first section's tags/content inline */}
+                    {sections[1] && (
+                      <div className="text-[10px] text-text-muted truncate">
+                        {sections[1].summary}
+                      </div>
+                    )}
+                    {sections[2] && (
+                      <span className="text-xs text-text-muted">
+                        {sections[2].summary}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {/* Collapse button */}
                 <button
                   onClick={toggleExpanded}
-                  className="p-1.5 text-text-muted hover:text-text-primary hover:bg-muted/50 rounded-lg transition-colors"
-                  title="Collapse"
+                  className="p-1.5 hover:bg-muted/50 rounded-lg flex-shrink-0 transition-colors"
                 >
-                  <ChevronUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <ChevronUp className="w-4 h-4 text-text-muted" />
                 </button>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Subtle gradient accent - less prominent */}
-        <div
-          className="absolute -top-12 -right-12 h-24 w-24 rounded-full blur-2xl pointer-events-none opacity-20"
-          style={{ backgroundColor: accentColor }}
-        />
+            {/* ----------------------------------------
+                DESKTOP (XL) - Full ribbon with labeled sections
+            ---------------------------------------- */}
+            <div className="hidden xl:block p-4">
+              <div className="flex items-center gap-6">
+                {/* Icon + Title */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${accentColor}20` }}
+                  >
+                    <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
+                  </div>
+                  <span className="font-semibold text-text-primary">{title}</span>
+                </div>
+
+                {/* Vertical Divider */}
+                <div className="h-8 w-px bg-border/50 flex-shrink-0" />
+
+                {/* Sections - horizontal with labels above content */}
+                <div className="flex-1 flex items-center gap-8">
+                  {sections.map((section, index) => (
+                    <div key={index} className="min-w-0">
+                      <p className="text-xs text-text-muted mb-1">{section.label}</p>
+                      <div className="text-sm font-medium text-text-primary">
+                        {section.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {onRefresh && (
+                    <button
+                      onClick={onRefresh}
+                      disabled={isLoading || refreshDisabled}
+                      className="p-2 text-text-muted hover:text-text-primary hover:bg-muted/50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Refresh"
+                    >
+                      <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                    </button>
+                  )}
+                  <button
+                    onClick={toggleExpanded}
+                    className="p-2 text-text-muted hover:text-text-primary hover:bg-muted/50 rounded-lg transition-colors"
+                    title="Collapse"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
