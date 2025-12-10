@@ -18,7 +18,6 @@ import { FirestoreSync } from '@/components/FirestoreSync';
 import { QuestEditor } from '@/components/gamification/QuestEditor';
 import { NotificationBell } from '@/components/gamification/NotificationBell';
 import { HabitSuggester } from '@/components/ai/HabitSuggester';
-import { AIInsightsBanner } from '@/components/ai/AIInsightsBanner';
 import { WelcomeFlow } from '@/components/onboarding/WelcomeFlow';
 import { BottomNav } from '@/components/mobile/BottomNav';
 
@@ -134,7 +133,6 @@ export default function GrowWorkspacePage() {
       <FirestoreSync />
 
       <WorkspacePageLayout
-        insightsBanner={<AIInsightsBanner />}
         composerActions={
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
             <div className="flex items-center gap-4 w-full sm:w-auto">

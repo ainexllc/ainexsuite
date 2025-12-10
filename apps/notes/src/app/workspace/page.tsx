@@ -13,7 +13,6 @@ import {
   type FilterChipType,
 } from '@ainexsuite/ui';
 import { NoteBoard } from '@/components/notes/note-board';
-import { WorkspaceInsights } from '@/components/notes/workspace-insights';
 import { NoteComposer } from "@/components/notes/note-composer";
 import { SpaceSwitcher } from "@/components/spaces";
 import { usePreferences } from "@/components/providers/preferences-provider";
@@ -174,7 +173,6 @@ export default function NotesWorkspace() {
 
   return (
     <WorkspacePageLayout
-      insightsBanner={<WorkspaceInsights />}
       composer={<NoteComposer />}
       composerActions={<SpaceSwitcher />}
       toolbar={

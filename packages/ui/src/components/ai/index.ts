@@ -17,3 +17,10 @@ export {
   type AIInsightsRibbonProps,
   type AIInsightsRibbonSection,
 } from "./ai-insights-ribbon";
+
+export {
+  AIInsightsPulldown,
+  useInsightsPulldownExpanded,
+  type AIInsightsPulldownProps,
+  type AIInsightsPulldownSection,
+} from "./ai-insights-pulldown";

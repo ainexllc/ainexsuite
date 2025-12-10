@@ -9,6 +9,7 @@ import { FeedbackWidget } from '../feedback/feedback-widget';
 import { AppNavigationSidebar } from '../layout/app-navigation-sidebar';
 import { ProfileSidebar } from '../layout/profile-sidebar';
 import { NotificationDropdown } from '../navigation/notification-dropdown';
+import { AIInsightsPulldown, type AIInsightsPulldownSection } from '../ai/ai-insights-pulldown';
 import { getNavigationApps } from '../../utils/navigation';
 import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
 import { useAppTheme } from '@ainexsuite/theme';
@@ -136,6 +137,47 @@ interface WorkspaceLayoutProps {
    * Callback when AI assistant button is clicked
    */
   onAiAssistantClick?: () => void;
+  // AI Insights Pulldown props
+  /**
+   * Sections for AI Insights Pulldown. If provided, shows the pulldown handle.
+   */
+  insightsSections?: AIInsightsPulldownSection[];
+  /**
+   * Title for the AI Insights Pulldown
+   */
+  insightsTitle?: string;
+  /**
+   * Whether AI insights are loading
+   */
+  insightsLoading?: boolean;
+  /**
+   * Loading message for AI insights
+   */
+  insightsLoadingMessage?: string;
+  /**
+   * Error message for AI insights
+   */
+  insightsError?: string | null;
+  /**
+   * Last updated timestamp for AI insights
+   */
+  insightsLastUpdated?: Date | null;
+  /**
+   * Callback when AI insights refresh is clicked
+   */
+  onInsightsRefresh?: () => void;
+  /**
+   * Whether insights refresh is disabled
+   */
+  insightsRefreshDisabled?: boolean;
+  /**
+   * Storage key for insights collapse state persistence (defaults to `${appName}-ai-insights-expanded`)
+   */
+  insightsStorageKey?: string;
+  /**
+   * Default expanded state for insights (default: false - collapsed)
+   */
+  insightsDefaultExpanded?: boolean;
 }
 
 export function WorkspaceLayout({
@@ -164,11 +206,23 @@ export function WorkspaceLayout({
   quickActions = [],
   onQuickAction,
   onAiAssistantClick,
+  // AI Insights Pulldown props
+  insightsSections,
+  insightsTitle,
+  insightsLoading,
+  insightsLoadingMessage,
+  insightsError,
+  insightsLastUpdated,
+  onInsightsRefresh,
+  insightsRefreshDisabled,
+  insightsStorageKey,
+  insightsDefaultExpanded,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [isInsightsExpanded, setIsInsightsExpanded] = useState(false);
 
   // Get global theme settings (from AppColorProvider context)
   const appTheme = useAppTheme();
@@ -288,10 +342,37 @@ export function WorkspaceLayout({
         </div>
       )}
 
-      {/* Main Content */}
+      {/* AI Insights Pulldown - positioned under the header */}
+      {insightsSections && (
+        <div
+          className="fixed left-0 right-0 z-30 transition-[top] duration-300"
+          style={{ top: isNavVisible ? '4rem' : '0' }}
+        >
+          <AIInsightsPulldown
+            title={insightsTitle}
+            sections={insightsSections}
+            accentColor={appColor || '#eab308'}
+            isLoading={insightsLoading}
+            loadingMessage={insightsLoadingMessage}
+            error={insightsError}
+            lastUpdated={insightsLastUpdated}
+            onRefresh={onInsightsRefresh}
+            refreshDisabled={insightsRefreshDisabled}
+            storageKey={insightsStorageKey || `${appName || 'app'}-ai-insights-expanded`}
+            defaultExpanded={insightsDefaultExpanded}
+            onExpandedChange={setIsInsightsExpanded}
+          />
+        </div>
+      )}
+
+      {/* Main Content - adjusts padding based on header visibility and insights expanded state */}
       <main
         className="flex-1 transition-[padding-top] duration-300"
-        style={{ paddingTop: isNavVisible ? '4rem' : '0' }}
+        style={{
+          paddingTop: isNavVisible
+            ? (insightsSections && isInsightsExpanded ? 'calc(4rem + 180px)' : 'calc(4rem + 28px)')
+            : (insightsSections && isInsightsExpanded ? '180px' : '28px')
+        }}
       >
         <div className="mx-auto max-w-7xl px-4 pt-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
           {children}

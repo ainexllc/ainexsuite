@@ -308,6 +308,8 @@ export {
   useInsightsCollapsed,
   AIInsightsRibbon,
   useInsightsRibbonCollapsed,
+  AIInsightsPulldown,
+  useInsightsPulldownExpanded,
   type AIInsightsCardProps,
   type AIInsightsSection,
   type AIInsightsBulletListProps,
@@ -315,6 +317,8 @@ export {
   type AIInsightsTextProps,
   type AIInsightsRibbonProps,
   type AIInsightsRibbonSection,
+  type AIInsightsPulldownProps,
+  type AIInsightsPulldownSection,
 } from "./ai";
 
 // AI Insights Banner (Full-width collapsible banner for workspace pages)

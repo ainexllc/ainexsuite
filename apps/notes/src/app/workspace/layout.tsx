@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 
 export default function WorkspaceRootLayout({
@@ -58,11 +59,10 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <WorkspaceLayout
+    <WorkspaceLayoutWithInsights
       user={user}
       onSignOut={handleSignOut}
       searchPlaceholder="Search notes..."
-      appName="NOTES"
       // New props
       onSearchClick={handleSearchClick}
       quickActions={quickActions}
@@ -72,6 +72,6 @@ export default function WorkspaceRootLayout({
       notifications={[]}
     >
       {children}
-    </WorkspaceLayout>
+    </WorkspaceLayoutWithInsights>
   );
 }
