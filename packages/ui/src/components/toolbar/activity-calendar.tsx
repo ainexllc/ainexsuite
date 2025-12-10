@@ -14,6 +14,10 @@ export interface ActivityCalendarProps {
   className?: string;
   /** Size variant - compact for small spaces, default for normal, large for full-width */
   size?: 'compact' | 'default' | 'large';
+  /** Current view mode */
+  view?: 'month' | 'week';
+  /** Callback when view mode changes */
+  onViewChange?: (view: 'month' | 'week') => void;
 }
 
 const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -40,6 +44,8 @@ export function ActivityCalendar({
   onMonthChange,
   className,
   size = 'default',
+  view: controlledView,
+  onViewChange,
 }: ActivityCalendarProps) {
   const [internalMonth, setInternalMonth] = useState(() => new Date());
 
@@ -48,9 +54,28 @@ export function ActivityCalendar({
 
   const today = useMemo(() => new Date(), []);
 
+  const [internalView, setInternalView] = useState<'month' | 'week'>('month');
+  const viewMode = controlledView ?? internalView;
+  const setViewMode = onViewChange ?? setInternalView;
+
   const { weeks, monthStart } = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
+    const date = currentMonth.getDate();
+
+    if (viewMode === 'week') {
+      // Find start of the week (Sunday)
+      const startOfWeek = new Date(currentMonth);
+      startOfWeek.setDate(date - startOfWeek.getDay());
+
+      const week: Date[] = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(d.getDate() + i);
+        week.push(d);
+      }
+      return { weeks: [week], monthStart: currentMonth };
+    }
 
     const monthStart = new Date(year, month, 1);
     const monthEnd = new Date(year, month + 1, 0);
@@ -76,17 +101,25 @@ export function ActivityCalendar({
     }
 
     return { weeks, monthStart };
-  }, [currentMonth]);
+  }, [currentMonth, viewMode]);
 
-  const goToPreviousMonth = () => {
+  const goToPrevious = () => {
     const prev = new Date(currentMonth);
-    prev.setMonth(prev.getMonth() - 1);
+    if (viewMode === 'month') {
+      prev.setMonth(prev.getMonth() - 1);
+    } else {
+      prev.setDate(prev.getDate() - 7);
+    }
     setCurrentMonth(prev);
   };
 
-  const goToNextMonth = () => {
+  const goToNext = () => {
     const next = new Date(currentMonth);
-    next.setMonth(next.getMonth() + 1);
+    if (viewMode === 'month') {
+      next.setMonth(next.getMonth() + 1);
+    } else {
+      next.setDate(next.getDate() + 7);
+    }
     setCurrentMonth(next);
   };
 
@@ -99,14 +132,15 @@ export function ActivityCalendar({
     return date.getMonth() === monthStart.getMonth();
   };
 
-  // Calculate stats for the month
-  const monthStats = useMemo(() => {
+  // Calculate stats for the month/week
+  const stats = useMemo(() => {
     let totalItems = 0;
     let activeDays = 0;
 
     weeks.forEach(week => {
       week.forEach(date => {
-        if (isCurrentMonth(date)) {
+        // In week view, all days are "current" contextually
+        if (viewMode === 'week' || isCurrentMonth(date)) {
           const activity = getActivityLevel(date);
           if (activity > 0) {
             activeDays++;
@@ -117,8 +151,24 @@ export function ActivityCalendar({
     });
 
     return { totalItems, activeDays };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weeks, activityData, monthStart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weeks, activityData, monthStart, viewMode]);
+
+  const headerTitle = useMemo(() => {
+    if (viewMode === 'month') {
+      return `${MONTHS[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+    }
+    // Week view: "Jan 1 - Jan 7"
+    const start = weeks[0][0];
+    const end = weeks[0][6];
+    const startMonth = MONTHS[start.getMonth()].slice(0, 3);
+    const endMonth = MONTHS[end.getMonth()].slice(0, 3);
+
+    if (startMonth === endMonth) {
+      return `${startMonth} ${start.getDate()} - ${end.getDate()}, ${end.getFullYear()}`;
+    }
+    return `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}`;
+  }, [currentMonth, viewMode, weeks]);
 
   return (
     <div className={clsx(
@@ -135,23 +185,43 @@ export function ActivityCalendar({
         size === 'default' && 'mb-4 md:mb-6',
         size === 'large' && 'mb-6 md:mb-8',
       )}>
-        <button
-          onClick={goToPreviousMonth}
-          className={clsx(
-            'hover:bg-foreground/10 rounded-full transition-colors',
-            size === 'compact' && 'p-1',
-            size === 'default' && 'p-1.5 md:p-2',
-            size === 'large' && 'p-2 md:p-3',
-          )}
-          aria-label="Previous month"
-        >
-          <ChevronLeft className={clsx(
-            'text-muted-foreground',
-            size === 'compact' && 'h-4 w-4',
-            size === 'default' && 'h-4 w-4 md:h-5 md:w-5',
-            size === 'large' && 'h-5 w-5 md:h-6 md:w-6',
-          )} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goToPrevious}
+            className={clsx(
+              'hover:bg-foreground/10 rounded-full transition-colors',
+              size === 'compact' && 'p-1',
+              size === 'default' && 'p-1.5 md:p-2',
+              size === 'large' && 'p-2 md:p-3',
+            )}
+            aria-label="Previous"
+          >
+            <ChevronLeft className={clsx(
+              'text-muted-foreground',
+              size === 'compact' && 'h-4 w-4',
+              size === 'default' && 'h-4 w-4 md:h-5 md:w-5',
+              size === 'large' && 'h-5 w-5 md:h-6 md:w-6',
+            )} />
+          </button>
+          <button
+            onClick={goToNext}
+            className={clsx(
+              'hover:bg-foreground/10 rounded-full transition-colors',
+              size === 'compact' && 'p-1',
+              size === 'default' && 'p-1.5 md:p-2',
+              size === 'large' && 'p-2 md:p-3',
+            )}
+            aria-label="Next"
+          >
+            <ChevronRight className={clsx(
+              'text-muted-foreground',
+              size === 'compact' && 'h-4 w-4',
+              size === 'default' && 'h-4 w-4 md:h-5 md:w-5',
+              size === 'large' && 'h-5 w-5 md:h-6 md:w-6',
+            )} />
+          </button>
+        </div>
+
         <div className="text-center">
           <h3 className={clsx(
             'font-semibold text-foreground',
@@ -159,31 +229,40 @@ export function ActivityCalendar({
             size === 'default' && 'text-sm md:text-lg',
             size === 'large' && 'text-lg md:text-xl',
           )}>
-            {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            {headerTitle}
           </h3>
           {size !== 'compact' && (
             <p className="text-xs md:text-sm text-muted-foreground mt-1">
-              {monthStats.activeDays} active days, {monthStats.totalItems} items
+              {stats.activeDays} active days, {stats.totalItems} items
             </p>
           )}
         </div>
-        <button
-          onClick={goToNextMonth}
-          className={clsx(
-            'hover:bg-foreground/10 rounded-full transition-colors',
-            size === 'compact' && 'p-1',
-            size === 'default' && 'p-1.5 md:p-2',
-            size === 'large' && 'p-2 md:p-3',
-          )}
-          aria-label="Next month"
-        >
-          <ChevronRight className={clsx(
-            'text-muted-foreground',
-            size === 'compact' && 'h-4 w-4',
-            size === 'default' && 'h-4 w-4 md:h-5 md:w-5',
-            size === 'large' && 'h-5 w-5 md:h-6 md:w-6',
-          )} />
-        </button>
+
+        {/* View Toggle */}
+        <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/5">
+          <button
+            onClick={() => setViewMode('month')}
+            className={clsx(
+              'px-3 py-1 text-xs font-medium rounded-md transition-all',
+              viewMode === 'month'
+                ? 'bg-white/10 text-white shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Month
+          </button>
+          <button
+            onClick={() => setViewMode('week')}
+            className={clsx(
+              'px-3 py-1 text-xs font-medium rounded-md transition-all',
+              viewMode === 'week'
+                ? 'bg-white/10 text-white shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Week
+          </button>
+        </div>
       </div>
 
       {/* Days of week header */}
@@ -223,6 +302,7 @@ export function ActivityCalendar({
             const isToday = isSameDay(date, today);
             const isSelected = selectedDate && isSameDay(date, selectedDate);
             const inMonth = isCurrentMonth(date);
+            const isRelevant = viewMode === 'week' || inMonth;
 
             return (
               <button
@@ -234,25 +314,27 @@ export function ActivityCalendar({
                   size === 'compact' && 'text-xs rounded-md',
                   size === 'default' && 'text-xs md:text-sm',
                   size === 'large' && 'text-sm md:text-base',
-                  !inMonth && 'opacity-30',
+                  !isRelevant && 'opacity-30',
                   isToday && 'ring-2 ring-[var(--color-primary)]',
                   isSelected && 'bg-[var(--color-primary)] text-foreground',
                   !isSelected && onDateSelect && 'hover:bg-foreground/10',
-                  !isSelected && inMonth && !activity && 'text-foreground',
-                  !isSelected && !inMonth && 'text-muted-foreground',
+                  !isSelected && isRelevant && !activity && 'text-foreground',
+                  !isSelected && !isRelevant && 'text-muted-foreground',
                   // Activity background - fill the day cell with color
-                  !isSelected && activity > 0 && inMonth && 'bg-[var(--color-primary)]/15 text-foreground',
-                  !isSelected && activity >= 3 && inMonth && 'bg-[var(--color-primary)]/25',
-                  !isSelected && activity >= 5 && inMonth && 'bg-[var(--color-primary)]/40',
-                  !isSelected && activity >= 8 && inMonth && 'bg-[var(--color-primary)]/55',
+                  !isSelected && activity > 0 && isRelevant && 'bg-white/5 text-foreground',
+                  !isSelected && activity >= 3 && isRelevant && 'bg-white/10',
+                  !isSelected && activity >= 5 && isRelevant && 'bg-white/15',
+                  !isSelected && activity >= 8 && isRelevant && 'bg-white/20',
                 )}
               >
                 <span>{date.getDate()}</span>
                 {/* Activity indicator - show count on larger sizes */}
                 {activity > 0 && !isSelected && size === 'large' && (
                   <span className={clsx(
-                    'absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium',
-                    'text-[var(--color-primary)]'
+                    'absolute bottom-2 left-1/2 -translate-x-1/2',
+                    'flex items-center justify-center min-w-[20px] px-1.5 py-0.5',
+                    'rounded-full bg-white/10 border border-white/5',
+                    'text-[10px] font-medium text-white/80 shadow-sm backdrop-blur-sm'
                   )}>
                     {activity}
                   </span>
@@ -285,7 +367,7 @@ export function ActivityCalendar({
       )}>
         <div className="flex items-center gap-1.5">
           <span className={clsx(
-            'rounded-md bg-[var(--color-primary)]/15',
+            'rounded-md bg-white/5',
             size === 'compact' && 'w-3 h-3',
             size === 'default' && 'w-4 h-4 md:w-5 md:h-5',
             size === 'large' && 'w-5 h-5 md:w-6 md:h-6',
@@ -294,7 +376,7 @@ export function ActivityCalendar({
         </div>
         <div className="flex items-center gap-1.5">
           <span className={clsx(
-            'rounded-md bg-[var(--color-primary)]/25',
+            'rounded-md bg-white/10',
             size === 'compact' && 'w-3 h-3',
             size === 'default' && 'w-4 h-4 md:w-5 md:h-5',
             size === 'large' && 'w-5 h-5 md:w-6 md:h-6',
@@ -303,7 +385,7 @@ export function ActivityCalendar({
         </div>
         <div className="flex items-center gap-1.5">
           <span className={clsx(
-            'rounded-md bg-[var(--color-primary)]/40',
+            'rounded-md bg-white/15',
             size === 'compact' && 'w-3 h-3',
             size === 'default' && 'w-4 h-4 md:w-5 md:h-5',
             size === 'large' && 'w-5 h-5 md:w-6 md:h-6',
@@ -312,7 +394,7 @@ export function ActivityCalendar({
         </div>
         <div className="flex items-center gap-1.5">
           <span className={clsx(
-            'rounded-md bg-[var(--color-primary)]/55',
+            'rounded-md bg-white/20',
             size === 'compact' && 'w-3 h-3',
             size === 'default' && 'w-4 h-4 md:w-5 md:h-5',
             size === 'large' && 'w-5 h-5 md:w-6 md:h-6',
