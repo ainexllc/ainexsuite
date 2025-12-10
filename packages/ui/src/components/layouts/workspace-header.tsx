@@ -143,8 +143,62 @@ export function WorkspaceHeader({
   onQuickActionsToggle,
   onAiAssistantClick,
 }: WorkspaceHeaderProps) {
+  // Render user avatar/initials (shared between header and floating controls)
+  const renderUserAvatar = () => (
+    user.photoURL ? (
+      <Image
+        src={user.photoURL}
+        alt={user.displayName ?? user.email ?? 'Account'}
+        width={28}
+        height={28}
+        className="rounded-full object-cover"
+        sizes="28px"
+      />
+    ) : (
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500 text-xs font-semibold text-white">
+        {user.displayName
+          ? user.displayName
+              .split(' ')
+              .map((part) => part.charAt(0))
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()
+          : (user.email?.charAt(0).toUpperCase() ?? 'U')}
+      </span>
+    )
+  );
+
   return (
-    <header
+    <>
+      {/* Floating controls when header is hidden (auto-hide mode) */}
+      {autoHideEnabled && !isVisible && (
+        <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none">
+          <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center justify-between px-4 sm:px-6">
+            {/* Hamburger - left */}
+            <button
+              type="button"
+              onClick={onNavigationToggle}
+              className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-lg bg-surface-elevated/90 backdrop-blur-sm shadow-md border border-border-subtle transition hover:bg-surface-hover"
+              aria-label="Toggle navigation"
+            >
+              <Menu className="h-5 w-5 text-text-primary" />
+            </button>
+
+            {/* Profile - right */}
+            <button
+              type="button"
+              className="pointer-events-auto flex items-center gap-2 h-9 rounded-full bg-surface-elevated/90 backdrop-blur-sm text-text-secondary shadow-md border border-border-subtle transition hover:bg-surface-hover px-2"
+              aria-label="Profile menu"
+              onClick={onProfileToggle}
+            >
+              {renderUserAvatar()}
+              <ChevronDown className="h-3.5 w-3.5 text-text-muted" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <header
       className="fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b"
       style={{
         backgroundColor: 'rgba(5, 5, 5, 0.95)',
@@ -251,31 +305,12 @@ export function WorkspaceHeader({
             aria-label="Profile menu"
             onClick={onProfileToggle}
           >
-            {user.photoURL ? (
-              <Image
-                src={user.photoURL}
-                alt={user.displayName ?? user.email ?? 'Account'}
-                width={28}
-                height={28}
-                className="rounded-full object-cover"
-                sizes="28px"
-              />
-            ) : (
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500 text-xs font-semibold text-white">
-                {user.displayName
-                  ? user.displayName
-                      .split(' ')
-                      .map((part) => part.charAt(0))
-                      .join('')
-                      .slice(0, 2)
-                      .toUpperCase()
-                  : (user.email?.charAt(0).toUpperCase() ?? 'U')}
-              </span>
-            )}
+            {renderUserAvatar()}
             <ChevronDown className="h-3.5 w-3.5 text-white/50" />
           </button>
         </div>
       </div>
     </header>
+    </>
   );
 }

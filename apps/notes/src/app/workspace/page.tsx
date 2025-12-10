@@ -174,7 +174,7 @@ export default function NotesWorkspace() {
 
   return (
     <WorkspacePageLayout
-      insightsBanner={<WorkspaceInsights variant="sidebar" />}
+      insightsBanner={<WorkspaceInsights />}
       composer={<NoteComposer />}
       composerActions={<SpaceSwitcher />}
       toolbar={
@@ -189,6 +189,7 @@ export default function NotesWorkspace() {
             sort={sort}
             onSortChange={setSort}
             sortOptions={SORT_OPTIONS}
+            viewPosition="right"
           />
           {filterChips.length > 0 && (
             <ActiveFilterChips

@@ -10,3 +10,10 @@ export {
   type AIInsightsTagListProps,
   type AIInsightsTextProps,
 } from "./ai-insights-card";
+
+export {
+  AIInsightsRibbon,
+  useInsightsRibbonCollapsed,
+  type AIInsightsRibbonProps,
+  type AIInsightsRibbonSection,
+} from "./ai-insights-ribbon";

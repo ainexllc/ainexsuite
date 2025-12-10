@@ -133,7 +133,7 @@ export function WorkspacePageLayout({
 
       {/* Toolbar Area */}
       {toolbar && (
-        <div className="flex items-center justify-between gap-4">
+        <div className="w-full">
           {toolbar}
         </div>
       )}

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 const STORAGE_KEY = 'ainexsuite-auto-hide-nav';
-const HIDE_DELAY = 3000; // Hide after 3 seconds of inactivity
+const HIDE_DELAY = 1000; // Hide after 1 second of inactivity
 const HOVER_ZONE_HEIGHT = 8; // Pixels from top to trigger reveal
 
 export interface UseAutoHideNavOptions {

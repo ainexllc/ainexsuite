@@ -27,6 +27,14 @@ export interface WorkspaceToolbarProps<TViewMode extends string> {
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
 
+  // Layout control
+  /**
+   * Position of view toggle icons
+   * - 'left': View toggles on left, filter/sort on right (default)
+   * - 'right': All controls on right with view toggles furthest right
+   */
+  viewPosition?: 'left' | 'right';
+
   // Styling
   className?: string;
 }
@@ -43,42 +51,64 @@ export function WorkspaceToolbar<TViewMode extends string>({
   sortOptions,
   leftSlot,
   rightSlot,
+  viewPosition = 'left',
   className,
 }: WorkspaceToolbarProps<TViewMode>) {
   const hasFilters = !!filterContent;
   const hasSort = !!sort && !!onSortChange && !!sortOptions?.length;
 
+  const viewToggle = (
+    <ViewToggleGroup
+      value={viewMode}
+      onChange={onViewModeChange}
+      options={viewOptions}
+    />
+  );
+
+  const filterSortControls = (
+    <>
+      {hasFilters && (
+        <FilterDropdown
+          activeCount={activeFilterCount}
+          onReset={onFilterReset}
+        >
+          {filterContent}
+        </FilterDropdown>
+      )}
+
+      {hasSort && (
+        <SortDropdown
+          value={sort}
+          onChange={onSortChange}
+          options={sortOptions}
+        />
+      )}
+    </>
+  );
+
+  // Centered layout: all controls centered horizontally with view toggles furthest right
+  if (viewPosition === 'right') {
+    return (
+      <div className={clsx('flex w-full items-center justify-center gap-2', className)}>
+        {filterSortControls}
+        {rightSlot}
+        {viewToggle}
+      </div>
+    );
+  }
+
+  // Default left-aligned layout
   return (
     <div className={clsx('flex items-center justify-between gap-4', className)}>
       {/* Left side: View toggles + leftSlot */}
       <div className="flex items-center gap-3">
-        <ViewToggleGroup
-          value={viewMode}
-          onChange={onViewModeChange}
-          options={viewOptions}
-        />
+        {viewToggle}
         {leftSlot}
       </div>
 
       {/* Right side: Filter + Sort + rightSlot */}
       <div className="flex items-center gap-2">
-        {hasFilters && (
-          <FilterDropdown
-            activeCount={activeFilterCount}
-            onReset={onFilterReset}
-          >
-            {filterContent}
-          </FilterDropdown>
-        )}
-
-        {hasSort && (
-          <SortDropdown
-            value={sort}
-            onChange={onSortChange}
-            options={sortOptions}
-          />
-        )}
-
+        {filterSortControls}
         {rightSlot}
       </div>
     </div>

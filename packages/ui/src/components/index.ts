@@ -306,11 +306,15 @@ export {
   AIInsightsTagList,
   AIInsightsText,
   useInsightsCollapsed,
+  AIInsightsRibbon,
+  useInsightsRibbonCollapsed,
   type AIInsightsCardProps,
   type AIInsightsSection,
   type AIInsightsBulletListProps,
   type AIInsightsTagListProps,
   type AIInsightsTextProps,
+  type AIInsightsRibbonProps,
+  type AIInsightsRibbonSection,
 } from "./ai";
 
 // AI Insights Banner (Full-width collapsible banner for workspace pages)

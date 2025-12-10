@@ -6,12 +6,12 @@ import { useNotes } from "@/components/providers/notes-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAppColors } from "@ainexsuite/theme";
 import {
-  AIInsightsCard,
+  AIInsightsRibbon,
   AIInsightsBulletList,
   AIInsightsTagList,
   AIInsightsText,
-  useInsightsCollapsed,
-  type AIInsightsSection,
+  useInsightsRibbonCollapsed,
+  type AIInsightsRibbonSection,
 } from "@ainexsuite/ui";
 
 const INSIGHTS_STORAGE_KEY = "notes-insights-collapsed";
@@ -23,17 +23,16 @@ interface InsightData {
 }
 
 interface WorkspaceInsightsProps {
-  variant?: "default" | "sidebar" | "condensed";
-  onExpand?: () => void;
+  className?: string;
 }
 
-export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceInsightsProps) {
+export function WorkspaceInsights({ className }: WorkspaceInsightsProps) {
   const { notes, loading: notesLoading } = useNotes();
   const { currentSpaceId, currentSpace } = useSpaces();
   const { primary: primaryColor } = useAppColors();
 
   // Check if insights are collapsed (skip fetching if true)
-  const isCollapsed = useInsightsCollapsed(INSIGHTS_STORAGE_KEY);
+  const isCollapsed = useInsightsRibbonCollapsed(INSIGHTS_STORAGE_KEY);
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
@@ -144,14 +143,26 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notesLoading, hasEnoughData, currentSpaceId, isCollapsed, STORAGE_KEY]);
 
-  // Build sections for the shared component
-  const sections: AIInsightsSection[] = useMemo(() => {
+  // Build sections for the ribbon component
+  const sections: AIInsightsRibbonSection[] = useMemo(() => {
     if (!data) return [];
 
-    const isSidebar = variant === "sidebar";
-
     return [
-      // Pending Actions - first in sidebar
+      // Current Focus - first for prominence
+      {
+        icon: <Target className="h-3.5 w-3.5" />,
+        label: "Current Focus",
+        content: <AIInsightsText>{data.weeklyFocus}</AIInsightsText>,
+        summary: data.weeklyFocus,
+      },
+      // Active Themes
+      {
+        icon: <Layers className="h-3.5 w-3.5" />,
+        label: "Active Themes",
+        content: <AIInsightsTagList tags={data.commonThemes} />,
+        summary: data.commonThemes.slice(0, 2).join(", "),
+      },
+      // Pending Actions
       {
         icon: <Zap className="h-3.5 w-3.5" />,
         label: "Pending Actions",
@@ -161,36 +172,15 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
             accentColor={primaryColor}
           />
         ),
+        summary: `${data.pendingActions.length} pending`,
       },
-      // Current Focus
-      {
-        icon: <Target className="h-3.5 w-3.5" />,
-        label: "Current Focus",
-        content: <AIInsightsText>{data.weeklyFocus}</AIInsightsText>,
-      },
-      // Active Themes
-      {
-        icon: <Layers className="h-3.5 w-3.5" />,
-        label: "Active Themes",
-        content: <AIInsightsTagList tags={data.commonThemes} />,
-      },
-    ].map((section, index) => ({
-      ...section,
-      // Reorder for non-sidebar: focus first, themes second, actions third
-      ...(isSidebar ? {} : {
-        content: (
-          <div style={{ order: index === 0 ? 3 : index === 1 ? 1 : 2 }}>
-            {section.content}
-          </div>
-        ),
-      }),
-    }));
-  }, [data, primaryColor, variant]);
+    ];
+  }, [data, primaryColor]);
 
-  // Condensed summary: show current focus or first pending action
-  const condensedSummary = useMemo(() => {
+  // Collapsed summary: show current focus
+  const collapsedSummary = useMemo(() => {
     if (!data) return undefined;
-    if (data.weeklyFocus) return data.weeklyFocus;
+    if (data.weeklyFocus) return `Focus: ${data.weeklyFocus}`;
     if (data.pendingActions.length > 0) return data.pendingActions[0];
     return undefined;
   }, [data]);
@@ -210,19 +200,20 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
   // Show prompt to add more data if not enough
   if (!hasEnoughData) {
     return (
-      <div className="rounded-2xl border border-border bg-foreground/5 p-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${primaryColor}20` }}
-          >
-            <Zap className="h-4 w-4" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">{insightsTitle}</p>
-            <p className="text-xs text-muted-foreground">
-              Create at least 2 notes to unlock AI-powered workspace insights
-            </p>
+      <div className={className}>
+        <div className="rounded-full border border-border bg-card/80 dark:bg-card/60 backdrop-blur-xl px-4 py-2.5 sm:px-6 sm:py-3 shadow-lg dark:shadow-none">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full"
+              style={{ backgroundColor: `${primaryColor}20` }}
+            >
+              <Zap className="h-4 w-4" style={{ color: primaryColor }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-text-primary truncate">
+                Create 2+ notes to unlock AI Insights
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -230,21 +221,19 @@ export function WorkspaceInsights({ variant = "default", onExpand }: WorkspaceIn
   }
 
   return (
-    <AIInsightsCard
+    <AIInsightsRibbon
       title={insightsTitle}
       sections={sections}
       accentColor={primaryColor}
-      variant={variant}
       isLoading={loading}
       loadingMessage="Analyzing your recent notes..."
       error={errorMessage}
       lastUpdated={lastUpdated}
       onRefresh={generateInsights}
       refreshDisabled={loading}
-      onExpand={onExpand}
-      condensedSummary={condensedSummary}
-      collapsible
-      storageKey="notes-insights-collapsed"
+      collapsedSummary={collapsedSummary}
+      storageKey={INSIGHTS_STORAGE_KEY}
+      className={className}
     />
   );
 }
