@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Zap, Target, Layers } from "lucide-react";
+import { Zap, Target } from "lucide-react";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAppColors } from "@ainexsuite/theme";
 import {
   AIInsightsRibbon,
-  AIInsightsBulletList,
-  AIInsightsTagList,
-  AIInsightsText,
   useInsightsRibbonCollapsed,
   type AIInsightsRibbonSection,
 } from "@ainexsuite/ui";
@@ -143,39 +140,32 @@ export function WorkspaceInsights({ className }: WorkspaceInsightsProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notesLoading, hasEnoughData, currentSpaceId, isCollapsed, STORAGE_KEY]);
 
-  // Build sections for the ribbon component
+  // Build sections for the ribbon component - compact format for ribbon display
+  // Only Focus and Actions for cleaner layout (Themes removed to reduce cramping)
   const sections: AIInsightsRibbonSection[] = useMemo(() => {
     if (!data) return [];
 
     return [
-      // Current Focus - first for prominence
+      // Focus - short text, truncated
       {
         icon: <Target className="h-3.5 w-3.5" />,
-        label: "Current Focus",
-        content: <AIInsightsText>{data.weeklyFocus}</AIInsightsText>,
+        label: "Focus",
+        content: <span className="truncate max-w-[400px] block">{data.weeklyFocus}</span>,
         summary: data.weeklyFocus,
       },
-      // Active Themes
-      {
-        icon: <Layers className="h-3.5 w-3.5" />,
-        label: "Active Themes",
-        content: <AIInsightsTagList tags={data.commonThemes} />,
-        summary: data.commonThemes.slice(0, 2).join(", "),
-      },
-      // Pending Actions
+      // Actions - count with emphasis
       {
         icon: <Zap className="h-3.5 w-3.5" />,
-        label: "Pending Actions",
+        label: "Actions",
         content: (
-          <AIInsightsBulletList
-            items={data.pendingActions}
-            accentColor={primaryColor}
-          />
+          <span className="font-medium">
+            {data.pendingActions.length} pending
+          </span>
         ),
         summary: `${data.pendingActions.length} pending`,
       },
     ];
-  }, [data, primaryColor]);
+  }, [data]);
 
   // Collapsed summary: show current focus
   const collapsedSummary = useMemo(() => {

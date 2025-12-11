@@ -92,47 +92,141 @@ export function AIInsightsRibbon({
   const itemCount = sections.length;
 
   // ============================================================
-  // COLLAPSED STATE - Mobile-style minimal pill (Mockup #20 Mobile)
+  // COLLAPSED STATE - 3 breakpoints: mobile pill, tablet bar, desktop full ribbon
   // ============================================================
   if (!isExpanded) {
     return (
       <div className={cn("animate-in fade-in duration-300", className)}>
-        <button
-          onClick={toggleExpanded}
-          className="inline-flex rounded-lg backdrop-blur-sm p-2 text-left transition-all hover:bg-white/10 bg-white/5 dark:bg-white/5 border border-white/10"
-        >
-          <div className="flex items-center gap-2">
-            {/* Tiny Icon */}
-            <div
-              className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: `${accentColor}30` }}
-            >
-              {isLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" style={{ color: accentColor }} />
-              ) : (
-                <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
-              )}
+        {/* Mobile collapsed pill (< 768px) */}
+        <div className="md:hidden">
+          <button
+            onClick={toggleExpanded}
+            className="inline-flex rounded-xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] p-2 text-left transition-all hover:bg-white/[0.06]"
+          >
+            <div className="flex items-center gap-2">
+              {/* Tiny Icon */}
+              <div
+                className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center"
+                style={{ backgroundColor: `${accentColor}30` }}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" style={{ color: accentColor }} />
+                ) : (
+                  <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
+                )}
+              </div>
+
+              {/* Short text - truncated */}
+              <span className="text-xs font-medium text-white/90 max-w-[150px] truncate">
+                {isLoading ? loadingMessage : primarySummary}
+              </span>
+
+              {/* Badge + Chevron */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {!isLoading && (
+                  <span
+                    className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                    style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
+                  >
+                    {itemCount}
+                  </span>
+                )}
+                <ChevronDown className="w-3 h-3 text-white/50" />
+              </div>
             </div>
+          </button>
+        </div>
 
-            {/* Short text - truncated */}
-            <span className="text-xs font-medium text-white/90 max-w-[150px] truncate">
-              {isLoading ? loadingMessage : primarySummary}
-            </span>
+        {/* Tablet collapsed bar (768px - 1023px) */}
+        <div className="hidden md:block lg:hidden">
+          <button
+            onClick={toggleExpanded}
+            className="w-full rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-4 py-2.5 text-left transition-all hover:bg-white/[0.06]"
+          >
+            <div className="flex items-center gap-3">
+              {/* Icon */}
+              <div
+                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: `${accentColor}30` }}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" style={{ color: accentColor }} />
+                ) : (
+                  <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+                )}
+              </div>
 
-            {/* Badge + Chevron */}
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {!isLoading && (
-                <span
-                  className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-                  style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
+              {/* Focus text */}
+              <span className="text-sm font-medium text-white flex-1 min-w-0 truncate">
+                {isLoading ? loadingMessage : primarySummary}
+              </span>
+
+              {/* Badge + Chevron */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {!isLoading && (
+                  <span
+                    className="px-2 py-0.5 rounded text-xs font-medium"
+                    style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
+                  >
+                    {itemCount} insights
+                  </span>
+                )}
+                <ChevronDown className="w-4 h-4 text-white/50" />
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Desktop: Always show full ribbon even when "collapsed" (>= 1024px) */}
+        <div className="hidden lg:flex lg:justify-center">
+          <div className="w-[80%] max-w-5xl rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-5 py-3">
+            <div className="flex items-center">
+              {/* Icon + Title */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${accentColor}30` }}
                 >
-                  {itemCount}
-                </span>
-              )}
-              <ChevronDown className="w-3 h-3 text-white/50" />
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" style={{ color: accentColor }} />
+                  ) : (
+                    <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
+                  )}
+                </div>
+                <span className="font-semibold text-white">{title}</span>
+              </div>
+
+              {/* Vertical Divider */}
+              <div className="h-8 w-px bg-white/10 mx-6 flex-shrink-0" />
+
+              {/* Sections - horizontal inline with consistent spacing */}
+              <div className="flex-1 flex items-center gap-12">
+                {sections.map((section, index) => (
+                  <div key={index} className="flex-shrink-0">
+                    <p className="text-[11px] text-white/50 mb-0.5 uppercase tracking-wide">{section.label}</p>
+                    <div className="text-sm text-white">
+                      {section.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-1 flex-shrink-0 ml-4">
+                {onRefresh && (
+                  <button
+                    onClick={onRefresh}
+                    disabled={isLoading || refreshDisabled}
+                    className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                    title="Refresh"
+                  >
+                    <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </button>
+        </div>
       </div>
     );
   }
@@ -194,10 +288,11 @@ export function AIInsightsRibbon({
         ============================================ */
         <>
           {/* ----------------------------------------
-              MOBILE (SM) - Minimal pill layout
+              MOBILE (SM) - Minimal pill layout (below 768px)
+              Mockup #20 Mobile: tiny icon, short text, badge, chevron
           ---------------------------------------- */}
           <div className="md:hidden">
-            <div className="inline-flex rounded-lg backdrop-blur-sm bg-white/5 dark:bg-white/5 border border-white/10 p-2">
+            <div className="inline-flex rounded-xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] p-2">
               <div className="flex items-center gap-2">
                 {/* Tiny icon */}
                 <div
@@ -230,10 +325,11 @@ export function AIInsightsRibbon({
           </div>
 
           {/* ----------------------------------------
-              TABLET (MD) - Compact bar with inline tags
+              TABLET (MD) - Compact bar layout (768px - 1023px)
+              Mockup #20 Tablet: icon, focus text, inline tags, actions count, chevron
           ---------------------------------------- */}
-          <div className="hidden md:block xl:hidden">
-            <div className="rounded-xl backdrop-blur-sm bg-white/5 dark:bg-white/5 border border-white/10 p-3">
+          <div className="hidden md:block lg:hidden">
+            <div className="rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-4 py-2.5">
               <div className="flex items-center gap-3">
                 {/* Icon */}
                 <div
@@ -242,53 +338,40 @@ export function AIInsightsRibbon({
                 >
                   <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
                 </div>
-                {/* Main content */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white/90 truncate">
-                    {sections[0]?.summary || sections[0]?.label}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    {/* Show tags inline */}
-                    {sections[1] && (
-                      <div className="flex items-center gap-1">
-                        <span
-                          className="px-1.5 py-0.5 rounded text-[10px] font-medium"
-                          style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
-                        >
-                          Work
-                        </span>
-                        <span
-                          className="px-1.5 py-0.5 rounded text-[10px] font-medium"
-                          style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
-                        >
-                          Planning
-                        </span>
-                      </div>
-                    )}
-                    {sections[2] && (
-                      <span className="text-xs text-white/50">
-                        {sections[2].summary}
-                      </span>
-                    )}
-                  </div>
+
+                {/* Focus text - truncated */}
+                <span className="text-sm font-medium text-white flex-1 min-w-0 truncate">
+                  {sections[0]?.summary || primarySummary}
+                </span>
+
+                {/* Inline tags (first 2 themes) */}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {sections[1]?.content}
                 </div>
-                {/* Collapse button */}
+
+                {/* Actions count */}
+                <span className="text-xs text-white/60 flex-shrink-0">
+                  {sections[2]?.summary || `${itemCount} items`}
+                </span>
+
+                {/* Chevron */}
                 <button
                   onClick={toggleExpanded}
-                  className="p-1.5 hover:bg-white/10 rounded-lg flex-shrink-0 transition-colors"
+                  className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
                 >
-                  <ChevronDown className="w-4 h-4 text-white/50" />
+                  <ChevronUp className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* ----------------------------------------
-              DESKTOP (XL) - Full ribbon with labeled sections
+              DESKTOP (LG+) - Full ribbon with labeled sections (1024px+)
+              Exact match to Mockup #20 Desktop layout
           ---------------------------------------- */}
-          <div className="hidden xl:block">
-            <div className="rounded-xl backdrop-blur-sm bg-white/5 dark:bg-white/5 border border-white/10 px-4 py-3">
-              <div className="flex items-center gap-6">
+          <div className="hidden lg:flex lg:justify-center">
+            <div className="w-[80%] max-w-5xl rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-5 py-3">
+              <div className="flex items-center">
                 {/* Icon + Title */}
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <div
@@ -297,18 +380,18 @@ export function AIInsightsRibbon({
                   >
                     <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
                   </div>
-                  <span className="font-semibold text-white/90">{title}</span>
+                  <span className="font-semibold text-white">{title}</span>
                 </div>
 
                 {/* Vertical Divider */}
-                <div className="h-10 w-px bg-white/10 flex-shrink-0" />
+                <div className="h-8 w-px bg-white/10 mx-6 flex-shrink-0" />
 
-                {/* Sections - horizontal with labels above content */}
-                <div className="flex-1 flex items-start gap-10">
+                {/* Sections - horizontal inline with consistent spacing */}
+                <div className="flex-1 flex items-center gap-12">
                   {sections.map((section, index) => (
-                    <div key={index} className="min-w-0">
-                      <p className="text-xs text-white/40 mb-1">{section.label}</p>
-                      <div className="text-sm font-medium text-white/90">
+                    <div key={index} className="flex-shrink-0">
+                      <p className="text-[11px] text-white/50 mb-0.5 uppercase tracking-wide">{section.label}</p>
+                      <div className="text-sm text-white">
                         {section.content}
                       </div>
                     </div>
@@ -316,12 +399,12 @@ export function AIInsightsRibbon({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1 flex-shrink-0 ml-4">
                   {onRefresh && (
                     <button
                       onClick={onRefresh}
                       disabled={isLoading || refreshDisabled}
-                      className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
                       title="Refresh"
                     >
                       <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
@@ -329,7 +412,7 @@ export function AIInsightsRibbon({
                   )}
                   <button
                     onClick={toggleExpanded}
-                    className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                     title="Collapse"
                   >
                     <ChevronUp className="h-4 w-4" />

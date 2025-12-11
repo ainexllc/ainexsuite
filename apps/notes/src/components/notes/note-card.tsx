@@ -103,12 +103,10 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     <>
       <article
         className={clsx(
-          // Zinc-First: Solid backgrounds, no muddy transparency
-          "group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-200",
           // Light: white bg, zinc-200 border | Dark: zinc-900 bg, zinc-800 border
           "bg-white dark:bg-zinc-900",
           "border border-zinc-200 dark:border-zinc-800",
-          // Hover: subtle background shift
+          "group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-200",
           "hover:bg-zinc-50 dark:hover:bg-zinc-800/80",
           viewMode === "list"
             ? "flex items-start gap-4 px-5 py-3"
@@ -137,7 +135,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             <button
               type="button"
               onClick={handlePin}
-              className="absolute right-0 top-0 hidden rounded-full bg-foreground/10 p-2 text-foreground shadow-sm transition hover:bg-foreground/20 group-hover:flex"
+              className="absolute right-2 top-2 z-20 hidden rounded-full bg-foreground/10 p-2 text-foreground shadow-sm transition hover:bg-foreground/20 group-hover:flex"
               aria-label="Pin note"
             >
               <Pin className="h-4 w-4" />
