@@ -19,7 +19,7 @@
     "@ainexsuite/types": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-toast": "^1.2.15",
-    "next": "15.5.7",
+    "next": "15.5.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.65.0",

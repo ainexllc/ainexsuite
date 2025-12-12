@@ -22,7 +22,7 @@
     "firebase-admin": "^12.0.0",
     "geist": "^1.2.0",
     "lucide-react": "^0.312.0",
-    "next": "15.5.7",
+    "next": "15.5.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "zustand": "^5.0.8"
