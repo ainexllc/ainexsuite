@@ -209,9 +209,9 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
     previousSpaceIdRef.current = currentSpaceId;
   }, [currentSpaceId]);
 
-  // Load from cache or auto-generate (skip if collapsed)
+  // Load from cache (always) so data is ready when user expands
   useEffect(() => {
-    if (notesLoading || !isExpanded) return;
+    if (notesLoading) return;
 
     const cached = localStorage.getItem(STORAGE_KEY);
     if (cached) {
@@ -224,19 +224,22 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
         if (cacheDate === today) {
           setData(insights);
           setLastUpdated(new Date(timestamp));
-          return;
         }
       } catch {
         // Invalid cache, ignore
       }
     }
+  }, [notesLoading, currentSpaceId, STORAGE_KEY]);
 
-    // If no cache or expired, generate if we have data and haven't tried yet
+  // Auto-generate insights only when expanded and no cached data
+  useEffect(() => {
+    if (notesLoading || !isExpanded) return;
+
+    // If no data yet (cache miss or expired), generate if we have enough notes
     if (hasEnoughData && !data && !loading && !error) {
       generateInsights();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notesLoading, hasEnoughData, currentSpaceId, isExpanded, STORAGE_KEY]);
+  }, [notesLoading, hasEnoughData, currentSpaceId, isExpanded, data, loading, error, generateInsights]);
 
   // Calculate streak data from all non-archived notes
   const streakData = useMemo(() => {
@@ -282,19 +285,15 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
       });
     }
 
-    // 4. Pending Actions (tasks)
+    // 4. Pending Actions (tasks) - show up to 2 actions
     if (data.pendingActions && data.pendingActions.length > 0) {
+      const actionsToShow = data.pendingActions.slice(0, 2);
+      const actionText = actionsToShow.join(". ") + (actionsToShow.length < data.pendingActions.length ? ` (+${data.pendingActions.length - actionsToShow.length} more)` : "");
       allSections.push({
         icon: createElement(Zap, { className: "h-4 w-4" }),
         label: "Pending Actions",
-        content: `${data.pendingActions.length} tasks requiring attention`,
+        content: actionText,
         gradient: { from: primaryColor, to: "#ef4444" }, // yellow → red
-        action: {
-          label: "View All",
-          onClick: () => {
-            console.log("View all actions", data.pendingActions);
-          },
-        },
       });
     }
 

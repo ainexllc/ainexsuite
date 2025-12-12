@@ -122,11 +122,11 @@ export function ModernTagInput({
       {/* Input Container */}
       <div
         className={cn(
-          'flex flex-wrap gap-2 p-3 rounded-xl border bg-white dark:bg-zinc-900 transition-all',
-          'focus-within:border-orange-500 dark:focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/20',
+          'flex flex-wrap gap-2 p-3 rounded-xl border bg-surface-base transition-all',
+          'focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20',
           disabled
-            ? 'border-gray-200 dark:border-zinc-700 opacity-60 cursor-not-allowed'
-            : 'border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-600'
+            ? 'border-border opacity-60 cursor-not-allowed'
+            : 'border-border hover:border-orange-400/50'
         )}
       >
         {/* Existing Tags */}
@@ -170,7 +170,7 @@ export function ModernTagInput({
             placeholder={tags.length === 0 ? placeholder : ''}
             className={cn(
               'w-full bg-transparent border-none outline-none',
-              'text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500',
+              'text-foreground placeholder:text-muted-foreground',
               'disabled:cursor-not-allowed'
             )}
           />
@@ -179,7 +179,7 @@ export function ModernTagInput({
 
       {/* Tag Count & Max Tags Info */}
       {maxTags && tags.length > 0 && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-muted-foreground">
           {tags.length} / {maxTags} tags
         </p>
       )}
@@ -189,11 +189,11 @@ export function ModernTagInput({
         <div
           className={cn(
             'absolute z-50 w-full mt-2 py-2 rounded-xl border shadow-lg',
-            'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700',
+            'bg-surface-base border-border',
             'animate-in fade-in slide-in-from-top-2 duration-200'
           )}
         >
-          <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+          <div className="px-3 py-1 text-xs font-medium text-muted-foreground">
             Suggested tags
           </div>
           {filteredSuggestions.map((suggestion, index) => (
@@ -206,8 +206,8 @@ export function ModernTagInput({
                 'w-full px-3 py-2 text-left text-sm flex items-center gap-2',
                 'transition-colors',
                 index === selectedSuggestionIndex
-                  ? 'bg-orange-500/10 dark:bg-orange-400/10 text-orange-600 dark:text-orange-400'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                  ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                  : 'text-muted-foreground hover:bg-muted'
               )}
             >
               <Hash className="w-3 h-3" />
@@ -218,8 +218,8 @@ export function ModernTagInput({
       )}
 
       {/* Helper Text */}
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-        Press <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 font-mono">Enter</kbd> to add tag, <kbd className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 font-mono">Backspace</kbd> to remove last tag
+      <p className="mt-2 text-xs text-muted-foreground">
+        Press <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono">Enter</kbd> to add tag, <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono">Backspace</kbd> to remove last tag
       </p>
     </div>
   );

@@ -17,7 +17,7 @@ interface AdminWorkspaceLayoutProps {
 }
 
 export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
-  const { user, loading, ssoInProgress, bootstrapStatus } = useAuth();
+  const { user, loading, ssoInProgress, bootstrapStatus, updatePreferences } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
 
@@ -135,6 +135,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
       showBackground={true}
       backgroundVariant="dots"
       backgroundIntensity={0.2}
+      onUpdatePreferences={updatePreferences}
     >
       {children}
     </WorkspaceLayout>

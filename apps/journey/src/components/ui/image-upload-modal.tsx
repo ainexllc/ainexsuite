@@ -137,14 +137,14 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
     <Dialog.Root open={isOpen} onOpenChange={handleClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden z-50">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-base rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden z-50">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-gray-50">
+              <Dialog.Title className="text-xl font-semibold text-foreground">
                 Insert Image
               </Dialog.Title>
               <Dialog.Close asChild>
-                <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <button className="p-2 rounded-lg hover:bg-muted transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </Dialog.Close>
@@ -158,7 +158,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                   'flex-1 py-2 px-4 rounded-lg font-medium transition-colors',
                   activeTab === 'upload'
                     ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-muted text-muted-foreground hover:bg-accent'
                 )}
               >
                 <Upload className="w-4 h-4 inline-block mr-2" />
@@ -170,7 +170,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                   'flex-1 py-2 px-4 rounded-lg font-medium transition-colors',
                   activeTab === 'url'
                     ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-muted text-muted-foreground hover:bg-accent'
                 )}
               >
                 <Link className="w-4 h-4 inline-block mr-2" />
@@ -186,8 +186,8 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                   className={cn(
                     'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
                     isDragActive
-                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/50'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-orange-400 dark:hover:border-orange-500',
+                      ? 'border-orange-500 bg-orange-500/10'
+                      : 'border-border hover:border-orange-400',
                     uploading && 'cursor-not-allowed opacity-60'
                   )}
                 >
@@ -195,8 +195,8 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                   {uploading ? (
                     <div className="space-y-4">
                       <Loader2 className="w-12 h-12 mx-auto text-orange-500 animate-spin" />
-                      <p className="text-gray-600 dark:text-gray-300">Uploading image...</p>
-                      <div className="w-full max-w-xs mx-auto bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
+                      <p className="text-muted-foreground">Uploading image...</p>
+                      <div className="w-full max-w-xs mx-auto bg-muted rounded-full h-2 overflow-hidden">
                         <div
                           className="bg-orange-500 h-full transition-all duration-300"
                           style={{ width: `${uploadProgress}%` }}
@@ -206,17 +206,17 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                   ) : isDragActive ? (
                     <>
                       <ImageIcon className="w-12 h-12 mx-auto text-orange-500 mb-4" />
-                      <p className="text-gray-700 dark:text-gray-200 font-medium">
+                      <p className="text-foreground font-medium">
                         Drop your image here
                       </p>
                     </>
                   ) : (
                     <>
-                      <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                      <p className="text-gray-700 dark:text-gray-200 font-medium mb-2">
+                      <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-foreground font-medium mb-2">
                         Drag & drop an image here
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <p className="text-sm text-muted-foreground mb-4">
                         or
                       </p>
                       <button
@@ -229,7 +229,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                       >
                         Choose File
                       </button>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                      <p className="text-xs text-muted-foreground mt-4">
                         Supports: JPG, PNG, GIF, WebP (max 10MB)
                       </p>
                     </>
@@ -242,7 +242,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
             {activeTab === 'url' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Image URL
                   </label>
                   <div className="flex gap-2">
@@ -251,7 +251,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                       placeholder="https://example.com/image.jpg"
-                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-border rounded-lg bg-surface-base text-foreground focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     />
                     <button
                       onClick={handleUrlSubmit}
@@ -268,7 +268,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
             {/* Preview Section */}
             {previewUrl && (
               <div className="mt-6 space-y-4">
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="border border-border rounded-lg p-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewUrl}
@@ -279,7 +279,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Alt Text (for accessibility)
                   </label>
                   <input
@@ -287,7 +287,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
                     value={altText}
                     onChange={(e) => setAltText(e.target.value)}
                     placeholder="Describe this image..."
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-surface-base text-foreground focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -304,7 +304,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert, entryId }: ImageUp
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={handleClose}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 border border-border rounded-lg text-muted-foreground hover:bg-muted transition-colors"
               >
                 Cancel
               </button>

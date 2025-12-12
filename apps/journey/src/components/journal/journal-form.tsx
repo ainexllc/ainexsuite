@@ -521,8 +521,8 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
             }}
           />
           {isEnhancing && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-surface-base/90 backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Boosting your writing...
               </div>
@@ -546,8 +546,8 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
         className={cn(
           'rounded-2xl border px-4 py-4 shadow-sm transition-colors',
           canEnhance
-            ? 'border-orange-500/60 dark:border-orange-400/60 bg-white dark:bg-gray-900'
-            : 'border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/80',
+            ? 'border-orange-500/60 bg-surface-base'
+            : 'border-border bg-muted/50',
         )}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -590,7 +590,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
                     : isPreviewing && boostPreview?.status === 'ready'
                       ? 'border-orange-500/80 dark:border-orange-400/80 bg-orange-500/10 dark:bg-orange-400/10 text-orange-600 dark:text-orange-400'
                       : wasLastApplied
-                      ? 'border-orange-500/90 dark:border-orange-400/90 text-orange-600 dark:text-orange-400 bg-white/70 dark:bg-gray-900/70'
+                      ? 'border-orange-500/90 text-orange-600 dark:text-orange-400 bg-surface-base/70'
                       : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-orange-500 dark:hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400',
                 )}
               >
@@ -625,7 +625,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
           onClick={closeBoostPreview}
         >
           <div
-            className="relative w-full max-w-3xl rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl"
+            className="relative w-full max-w-3xl rounded-2xl border border-border bg-surface-base shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-5 py-4">
@@ -747,10 +747,10 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
               disabled={isSubmitting}
               className={cn(
                 'p-1.5 rounded-lg border transition-all flex flex-col items-center gap-0.5 hover:scale-105',
-                'bg-white dark:bg-zinc-900',
+                'bg-surface-base',
                 selectedMood === mood
-                  ? 'border-orange-500 dark:border-orange-400 bg-orange-500/10 dark:bg-orange-400/20 shadow-md shadow-orange-500/20'
-                  : 'border-white/10 dark:border-white/10 hover:border-orange-500/40 dark:hover:border-orange-400/40'
+                  ? 'border-orange-500 bg-orange-500/10 shadow-md shadow-orange-500/20'
+                  : 'border-border hover:border-orange-500/40'
               )}
               title={moodConfig[mood].label}
             >

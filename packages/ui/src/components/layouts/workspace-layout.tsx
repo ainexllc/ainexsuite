@@ -13,6 +13,8 @@ import { AIInsightsPulldown, type AIInsightsPulldownSection } from '../ai/ai-ins
 import { getNavigationApps } from '../../utils/navigation';
 import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
 import { useAppTheme } from '@ainexsuite/theme';
+import { useTheme } from 'next-themes';
+import { useEffect } from 'react';
 import type { NotificationItem, QuickAction, BreadcrumbItem } from '@ainexsuite/types';
 
 interface WorkspaceLayoutProps {
@@ -36,10 +38,6 @@ interface WorkspaceLayoutProps {
    * Function to handle sign out
    */
   onSignOut: () => void;
-  /**
-   * Placeholder text for the search bar
-   */
-  searchPlaceholder?: string;
   /**
    * Name of the app (e.g. 'Projects', 'Notes')
    */
@@ -88,11 +86,6 @@ interface WorkspaceLayoutProps {
    * Optional custom sidebar renderer. If provided, it replaces the default AppNavigationSidebar.
    */
   renderSidebar?: (props: { isOpen: boolean; onClose: () => void }) => ReactNode;
-  // NEW: Search props
-  /**
-   * Callback when search is triggered (opens command palette)
-   */
-  onSearchClick?: () => void;
   // NEW: Breadcrumbs
   /**
    * Breadcrumb items for navigation
@@ -178,13 +171,16 @@ interface WorkspaceLayoutProps {
    * Default expanded state for insights (default: false - collapsed)
    */
   insightsDefaultExpanded?: boolean;
+  /**
+   * Callback to update user preferences (e.g. theme)
+   */
+  onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
 }
 
 export function WorkspaceLayout({
   children,
   user,
   onSignOut,
-  searchPlaceholder,
   appName,
   appColor,
   showBackground = true,
@@ -194,8 +190,6 @@ export function WorkspaceLayout({
   onSettingsClick,
   onActivityClick,
   renderSidebar,
-  // New props
-  onSearchClick,
   breadcrumbs,
   notifications = [],
   onNotificationClick,
@@ -217,12 +211,27 @@ export function WorkspaceLayout({
   insightsRefreshDisabled,
   insightsStorageKey,
   insightsDefaultExpanded,
+  onUpdatePreferences,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isInsightsExpanded, setIsInsightsExpanded] = useState(false);
+  const { setTheme, theme: currentTheme } = useTheme(); // Import useTheme
+
+  // Sync user theme preference with system theme
+  // This ensures that when user preference changes (e.g. from another tab/app),
+  // this app updates to match.
+  useEffect(() => {
+    // Only sync if user has a preference and it differs from current system theme
+    // We check against 'system' specially because next-themes resolves it
+    const userTheme = (user as any).preferences?.theme;
+    if (userTheme && userTheme !== currentTheme) {
+      // Avoid loops if next-themes is already updating
+      setTheme(userTheme);
+    }
+  }, [(user as any).preferences?.theme, currentTheme, setTheme]);
 
   // Get global theme settings (from AppColorProvider context)
   const appTheme = useAppTheme();
@@ -282,7 +291,6 @@ export function WorkspaceLayout({
       <WorkspaceHeader
         user={user}
         onSignOut={onSignOut}
-        searchPlaceholder={searchPlaceholder}
         appName={appName}
         appColor={appColor}
         onNavigationToggle={() => setIsNavOpen(!isNavOpen)}
@@ -291,8 +299,6 @@ export function WorkspaceLayout({
         autoHideEnabled={autoHideEnabled}
         onAutoHideToggle={toggleAutoHide}
         headerMouseProps={headerProps}
-        // New props
-        onSearchClick={onSearchClick}
         breadcrumbs={breadcrumbs}
         notificationCount={notificationCount}
         onNotificationsClick={handleNotificationsToggle}
@@ -324,6 +330,7 @@ export function WorkspaceLayout({
         onSignOut={onSignOut}
         onSettingsClick={onSettingsClick}
         onActivityClick={onActivityClick}
+        onThemeChange={(theme) => onUpdatePreferences?.({ theme })}
       />
 
       {/* Notifications Dropdown (positioned absolutely, rendered here for portal-like behavior) */}

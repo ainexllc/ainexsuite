@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { Calendar, Clock, MapPin, Palette, Trash2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, Palette, Trash2, Copy } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, addHours, setHours, setMinutes } from 'date-fns';
 import { CalendarEvent, CreateEventInput } from '@/types/event';
@@ -20,21 +20,25 @@ const EVENT_COLORS = [
 export interface EventComposerRef {
   editEvent: (event: CalendarEvent) => void;
   createEvent: (initialDate?: Date) => void;
+  duplicateEvent: (event: CalendarEvent) => void;
   close: () => void;
 }
 
 interface EventComposerProps {
   onSave: (event: CreateEventInput, eventId?: string) => Promise<void>;
   onDelete?: (eventId: string) => Promise<void>;
+  onDuplicate?: (event: CalendarEvent) => void;
 }
 
 export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
-  function EventComposer({ onSave, onDelete }, ref) {
+  function EventComposer({ onSave, onDelete, onDuplicate }, ref) {
     const [expanded, setExpanded] = useState(false);
     const [editingEventId, setEditingEventId] = useState<string | null>(null);
+    const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [date, setDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+    const [startDate, setStartDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+    const [endDate, setEndDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
     const [startTime, setStartTime] = useState(() => {
       const now = new Date();
       const rounded = setMinutes(setHours(now, now.getHours() + 1), 0);
@@ -52,6 +56,9 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+    // Derived state for multi-day detection
+    const isMultiDay = startDate !== endDate;
+
     const composerRef = useRef<HTMLDivElement>(null);
     const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,6 +68,7 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
     const resetState = useCallback(() => {
       setExpanded(false);
       setEditingEventId(null);
+      setEditingEvent(null);
       setTitle('');
       setDescription('');
       setLocation('');
@@ -69,7 +77,8 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
       setShowColorPicker(false);
       setShowDeleteConfirm(false);
       const now = new Date();
-      setDate(format(now, 'yyyy-MM-dd'));
+      setStartDate(format(now, 'yyyy-MM-dd'));
+      setEndDate(format(now, 'yyyy-MM-dd'));
       const rounded = setMinutes(setHours(now, now.getHours() + 1), 0);
       setStartTime(format(rounded, 'HH:mm'));
       setEndTime(format(addHours(rounded, 1), 'HH:mm'));
@@ -78,15 +87,17 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
     // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
       editEvent: (event: CalendarEvent) => {
-        const startDate = event.startTime.toDate();
-        const endDate = event.endTime.toDate();
+        const eventStartDate = event.startTime.toDate();
+        const eventEndDate = event.endTime.toDate();
 
         setEditingEventId(event.id);
+        setEditingEvent(event);
         setTitle(event.title);
         setDescription(event.description || '');
-        setDate(format(startDate, 'yyyy-MM-dd'));
-        setStartTime(format(startDate, 'HH:mm'));
-        setEndTime(format(endDate, 'HH:mm'));
+        setStartDate(format(eventStartDate, 'yyyy-MM-dd'));
+        setEndDate(format(eventEndDate, 'yyyy-MM-dd'));
+        setStartTime(format(eventStartDate, 'HH:mm'));
+        setEndTime(format(eventEndDate, 'HH:mm'));
         setLocation(event.location || '');
         setColor(event.color || '#3b82f6');
         setAllDay(event.allDay || false);
@@ -98,11 +109,33 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
       createEvent: (initialDate?: Date) => {
         resetState();
         if (initialDate) {
-          setDate(format(initialDate, 'yyyy-MM-dd'));
+          setStartDate(format(initialDate, 'yyyy-MM-dd'));
+          setEndDate(format(initialDate, 'yyyy-MM-dd'));
           setStartTime(format(initialDate, 'HH:mm'));
           setEndTime(format(addHours(initialDate, 1), 'HH:mm'));
         }
         setExpanded(true);
+        requestAnimationFrame(() => titleInputRef.current?.focus());
+      },
+      duplicateEvent: (event: CalendarEvent) => {
+        // Copy all event data but don't set an editing ID (creates new event)
+        const eventStartDate = event.startTime.toDate();
+        const eventEndDate = event.endTime.toDate();
+
+        setEditingEventId(null);
+        setEditingEvent(null);
+        setTitle(`${event.title} (Copy)`);
+        setDescription(event.description || '');
+        setStartDate(format(eventStartDate, 'yyyy-MM-dd'));
+        setEndDate(format(eventEndDate, 'yyyy-MM-dd'));
+        setStartTime(format(eventStartDate, 'HH:mm'));
+        setEndTime(format(eventEndDate, 'HH:mm'));
+        setLocation(event.location || '');
+        setColor(event.color || '#3b82f6');
+        setAllDay(event.allDay || false);
+        setExpanded(true);
+        setShowDeleteConfirm(false);
+
         requestAnimationFrame(() => titleInputRef.current?.focus());
       },
       close: () => {
@@ -115,24 +148,25 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
 
       setIsSubmitting(true);
       try {
-        const [year, month, day] = date.split('-').map(Number);
+        const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+        const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
 
         let startDateTime: Date;
         let endDateTime: Date;
 
         if (allDay) {
           // For all-day events, use noon local time to avoid timezone date boundary issues
-          startDateTime = new Date(year, month - 1, day, 12, 0, 0, 0);
-          endDateTime = new Date(year, month - 1, day, 12, 0, 0, 0);
+          startDateTime = new Date(startYear, startMonth - 1, startDay, 12, 0, 0, 0);
+          endDateTime = new Date(endYear, endMonth - 1, endDay, 12, 0, 0, 0);
         } else {
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
 
-          startDateTime = new Date(year, month - 1, day, startHour, startMinute, 0, 0);
-          endDateTime = new Date(year, month - 1, day, endHour, endMinute, 0, 0);
+          startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMinute, 0, 0);
+          endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMinute, 0, 0);
 
-          // If end time is before start time, assume it's the next day
-          if (endDateTime <= startDateTime) {
+          // If same day and end time is before start time, assume it's the next day
+          if (startDate === endDate && endDateTime <= startDateTime) {
             endDateTime.setDate(endDateTime.getDate() + 1);
           }
         }
@@ -154,7 +188,12 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
       } finally {
         setIsSubmitting(false);
       }
-    }, [title, description, date, startTime, endTime, allDay, color, location, onSave, resetState, editingEventId]);
+    }, [title, description, startDate, endDate, startTime, endTime, allDay, color, location, onSave, resetState, editingEventId]);
+
+    const handleDuplicate = useCallback(() => {
+      if (!editingEvent || !onDuplicate) return;
+      onDuplicate(editingEvent);
+    }, [editingEvent, onDuplicate]);
 
     const handleDelete = useCallback(async () => {
       if (!editingEventId || !onDelete) return;
@@ -231,45 +270,83 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
               />
 
               {/* Date & Time Row */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-white/40" />
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
-                  />
-                </div>
-
-                {!allDay && (
+              <div className="flex flex-col gap-2">
+                {/* Start Date/Time */}
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-white/40" />
+                    <Calendar className="h-4 w-4 text-white/40" />
+                    <span className="text-xs text-white/40 w-10">Start</span>
                     <input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
-                    />
-                    <span className="text-white/40">-</span>
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => {
+                        setStartDate(e.target.value);
+                        // Auto-adjust end date if it's before start date
+                        if (e.target.value > endDate) {
+                          setEndDate(e.target.value);
+                        }
+                      }}
                       className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
                     />
                   </div>
-                )}
 
-                <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={allDay}
-                    onChange={(e) => setAllDay(e.target.checked)}
-                    className="rounded border-white/20 bg-white/5 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                  />
-                  All day
-                </label>
+                  {!allDay && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-white/40" />
+                      <input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* End Date/Time */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-white/40 opacity-0" />
+                    <span className="text-xs text-white/40 w-10">End</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                    />
+                  </div>
+
+                  {!allDay && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-white/40 opacity-0" />
+                      <input
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Options Row */}
+                <div className="flex items-center gap-4 mt-1">
+                  <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={allDay}
+                      onChange={(e) => setAllDay(e.target.checked)}
+                      className="rounded border-white/20 bg-white/5 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                    />
+                    All day
+                  </label>
+                  {isMultiDay && (
+                    <span className="text-xs text-accent-400">
+                      Multi-day event
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Location */}
@@ -322,6 +399,19 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
                       </div>
                     )}
                   </div>
+
+                  {/* Duplicate button (only when editing) */}
+                  {isEditing && onDuplicate && (
+                    <button
+                      type="button"
+                      onClick={handleDuplicate}
+                      disabled={isSubmitting}
+                      className="p-2 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                      title="Duplicate event"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  )}
 
                   {/* Delete button (only when editing) */}
                   {isEditing && onDelete && (

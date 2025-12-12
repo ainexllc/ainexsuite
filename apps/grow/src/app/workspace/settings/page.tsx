@@ -91,7 +91,6 @@ function SettingsContent() {
     <WorkspaceLayout
       user={user}
       onSignOut={handleSignOut}
-      searchPlaceholder="Search settings..."
       appName="Grow"
     >
       <FirestoreSync />

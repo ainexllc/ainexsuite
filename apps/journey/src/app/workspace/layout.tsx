@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
@@ -13,14 +13,12 @@ export default function WorkspaceRootLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
 
   // Get quick actions for Journey app
   const quickActions = getQuickActionsForApp('journey');
 
-  // Handle quick actions
+  // Handle quick actions (abbreviated)
   const handleQuickAction = useCallback((actionId: string) => {
     switch (actionId) {
       case 'new-entry':
@@ -34,13 +32,7 @@ export default function WorkspaceRootLayout({
     }
   }, [router]);
 
-  // Handle search trigger
-  const handleSearchClick = useCallback(() => {
-    setIsSearchOpen(true);
-    // TODO: Open command palette when implemented
-  }, []);
-
-  // Handle AI assistant
+  // Handle AI assistant (abbreviated)
   const handleAiAssistantClick = useCallback(() => {
     // TODO: Open AI assistant panel
   }, []);
@@ -60,14 +52,12 @@ export default function WorkspaceRootLayout({
       <WorkspaceLayout
         user={user}
         onSignOut={handleSignOut}
-        searchPlaceholder="Search journal entries..."
         appName="Journey"
-        // New props
-        onSearchClick={handleSearchClick}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
         onAiAssistantClick={handleAiAssistantClick}
         notifications={[]}
+        onUpdatePreferences={updatePreferences}
       >
         {children}
       </WorkspaceLayout>

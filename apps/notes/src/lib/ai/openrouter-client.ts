@@ -23,8 +23,8 @@ export interface OpenRouterResponse {
 export class OpenRouterClient {
   private apiKey: string;
   private baseUrl = "https://api.x.ai/v1";
-  // Use Grok 2 Latest for all AI tasks
-  private defaultModel = "grok-2-latest";
+  // Use Grok 4.1 Fast for all AI tasks
+  private defaultModel = "grok-4-1-fast";
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.XAI_API_KEY || "";

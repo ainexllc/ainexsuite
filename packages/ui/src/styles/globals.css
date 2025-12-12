@@ -3,36 +3,51 @@
 @tailwind utilities;
 
 /*
- * AINexSuite Design Tokens & Utilities
- * ------------------------------------
- * This stylesheet mirrors the documented NoteNex design system so every app
- * shares a single source of truth for colors, typography, spacing, and surfaces.
+ * AINexSuite Design System
+ * ========================
+ * Zinc-influenced light/dark mode inspired by Linear, Vercel, and GitHub.
+ * See packages/ui/docs/DESIGN_SYSTEM.md for full documentation.
+ *
+ * Key principles:
+ * - Inverted zinc scales between light/dark modes
+ * - Semantic functional tokens over raw color values
+ * - Dynamic app accent colors on neutral canvas
  */
 
 @layer base {
   :root {
     color-scheme: light;
 
-    /* shadcn/ui HSL variables - Light Mode */
-    --background: 0 0% 98%;
-    --foreground: 240 10% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 4%;
-    --primary: 240 6% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
-    --destructive: 0 84% 60%;
+    /*
+     * ZINC BASE SCALE (Reference only - use functional tokens)
+     * --------------------------------------------------------
+     * zinc-50:  #fafafa  |  zinc-500: #71717a  |  zinc-900: #18181b
+     * zinc-100: #f4f4f5  |  zinc-600: #52525b  |  zinc-950: #09090b
+     * zinc-200: #e4e4e7  |  zinc-700: #3f3f46
+     * zinc-300: #d4d4d8  |  zinc-800: #27272a
+     * zinc-400: #a1a1aa
+     */
+
+    /* shadcn/ui HSL variables - Light Mode (zinc-based) */
+    --background: 0 0% 100%;           /* white */
+    --foreground: 240 6% 10%;          /* zinc-900 */
+    --card: 0 0% 100%;                 /* white */
+    --card-foreground: 240 6% 10%;     /* zinc-900 */
+    --popover: 0 0% 100%;              /* white */
+    --popover-foreground: 240 6% 10%;  /* zinc-900 */
+    --primary: 240 6% 10%;             /* zinc-900 - dark button */
+    --primary-foreground: 0 0% 98%;    /* zinc-50 - light text on dark */
+    --secondary: 240 5% 96%;           /* zinc-100 */
+    --secondary-foreground: 240 6% 10%; /* zinc-900 */
+    --muted: 0 0% 98%;                 /* zinc-50 */
+    --muted-foreground: 240 4% 46%;    /* zinc-500 */
+    --accent: 240 5% 96%;              /* zinc-100 */
+    --accent-foreground: 240 6% 10%;   /* zinc-900 */
+    --destructive: 0 84% 60%;          /* red-500 */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 240 6% 10%;
+    --border: 240 6% 90%;              /* zinc-200 */
+    --input: 240 6% 90%;               /* zinc-200 */
+    --ring: 240 6% 10%;                /* zinc-900 */
     --radius: 0.5rem;
 
     /* App-specific accent (default) */
@@ -160,32 +175,32 @@
   .dark {
     color-scheme: dark;
 
-    /* shadcn/ui HSL variables - Dark Mode */
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 4%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 4%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 6% 10%;
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 16%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 63% 31%;
+    /* shadcn/ui HSL variables - Dark Mode (zinc-based, INVERTED) */
+    --background: 240 10% 4%;          /* zinc-950 */
+    --foreground: 0 0% 98%;            /* zinc-50 */
+    --card: 240 6% 10%;                /* zinc-900 */
+    --card-foreground: 0 0% 98%;       /* zinc-50 */
+    --popover: 240 6% 10%;             /* zinc-900 */
+    --popover-foreground: 0 0% 98%;    /* zinc-50 */
+    --primary: 0 0% 98%;               /* zinc-50 - light button */
+    --primary-foreground: 240 6% 10%;  /* zinc-900 - dark text on light */
+    --secondary: 240 4% 16%;           /* zinc-800 */
+    --secondary-foreground: 0 0% 98%;  /* zinc-50 */
+    --muted: 240 6% 10%;               /* zinc-900 */
+    --muted-foreground: 240 4% 66%;    /* zinc-400 */
+    --accent: 240 4% 16%;              /* zinc-800 */
+    --accent-foreground: 0 0% 98%;     /* zinc-50 */
+    --destructive: 0 63% 31%;          /* red-900 */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 240 5% 84%;
+    --border: 240 4% 16%;              /* zinc-800 */
+    --input: 240 4% 16%;               /* zinc-800 */
+    --ring: 240 5% 84%;                /* zinc-300 */
 
-    /* Desaturated accent colors for dark mode */
-    --app-primary: 24 94% 64%;
-    --app-primary-foreground: 0 0% 0%;
-    --app-secondary: 330 76% 68%;
-    --app-secondary-foreground: 0 0% 0%;
+    /* App accent colors (same hue, adjusted for dark mode) */
+    --app-primary: 24 94% 53%;
+    --app-primary-foreground: 0 0% 100%;
+    --app-secondary: 330 76% 60%;
+    --app-secondary-foreground: 0 0% 100%;
 
     --color-surface-base: 20 20 22;
     --color-surface-muted: 28 28 31;
@@ -238,57 +253,74 @@
   .theme-light {
     color-scheme: light;
 
-    --background: 0 0% 98%;
-    --foreground: 240 10% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 4%;
-    --primary: 240 6% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 240 6% 10%;
+    /*
+     * LIGHT MODE - Zinc Scale Mapping
+     * --------------------------------
+     * bg-default:    white      (pure white)
+     * bg-muted:      zinc-50    (#fafafa)
+     * bg-subtle:     zinc-100   (#f4f4f5)
+     * border:        zinc-200   (#e4e4e7)
+     * border-strong: zinc-300   (#d4d4d8)
+     * text-muted:    zinc-500   (#71717a)
+     * text-default:  zinc-900   (#18181b)
+     */
 
-    --app-primary: 24 95% 45%;
+    --background: 0 0% 100%;           /* white */
+    --foreground: 240 6% 10%;          /* zinc-900 */
+    --card: 0 0% 100%;                 /* white */
+    --card-foreground: 240 6% 10%;     /* zinc-900 */
+    --popover: 0 0% 100%;              /* white */
+    --popover-foreground: 240 6% 10%;  /* zinc-900 */
+    --primary: 240 6% 10%;             /* zinc-900 - dark button */
+    --primary-foreground: 0 0% 98%;    /* zinc-50 - white text */
+    --secondary: 240 5% 96%;           /* zinc-100 */
+    --secondary-foreground: 240 6% 10%; /* zinc-900 */
+    --muted: 0 0% 98%;                 /* zinc-50 */
+    --muted-foreground: 240 4% 46%;    /* zinc-500 */
+    --accent: 240 5% 96%;              /* zinc-100 */
+    --accent-foreground: 240 6% 10%;   /* zinc-900 */
+    --destructive: 0 84% 60%;          /* red-500 */
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 90%;              /* zinc-200 */
+    --input: 240 6% 90%;               /* zinc-200 */
+    --ring: 240 6% 10%;                /* zinc-900 */
+
+    /* App accent colors for light mode */
+    --app-primary: 24 95% 53%;
     --app-primary-foreground: 0 0% 100%;
-    --app-secondary: 330 81% 50%;
+    --app-secondary: 330 81% 60%;
     --app-secondary-foreground: 0 0% 100%;
 
-    --color-surface-base: 250 251 252;
-    --color-surface-muted: 243 244 246;
-    --color-surface-elevated: 255 255 255;
-    --color-surface-card: 255 255 255;
-    --color-surface-hover: 241 241 246;
-    --color-surface-overlay: 255 255 255;
+    /* Surfaces - Light mode (RGB for opacity control) */
+    --color-surface-base: 255 255 255;     /* white */
+    --color-surface-muted: 250 250 250;    /* zinc-50 */
+    --color-surface-elevated: 255 255 255; /* white */
+    --color-surface-card: 255 255 255;     /* white */
+    --color-surface-hover: 244 244 245;    /* zinc-100 */
+    --color-surface-overlay: 255 255 255;  /* white */
 
-    --color-outline-subtle: 229 231 235;
-    --color-outline-base: 209 213 219;
-    --color-outline-strong: 234 88 12;
+    /* Borders - Light mode (zinc-200, zinc-300) */
+    --color-outline-subtle: 228 228 231;   /* zinc-200 */
+    --color-outline-base: 212 212 216;     /* zinc-300 */
+    --color-outline-strong: 161 161 170;   /* zinc-400 */
 
-    /* Ink scale INVERTED for light mode (dark text on light bg) */
-    --color-ink-50: 247 247 250;
-    --color-ink-100: 240 240 245;
-    --color-ink-200: 222 222 230;
-    --color-ink-300: 196 196 208;
-    --color-ink-400: 156 163 175;
-    --color-ink-500: 107 114 128;
-    --color-ink-600: 75 85 99;
-    --color-ink-700: 55 65 81;
-    --color-ink-800: 31 41 55;
-    --color-ink-900: 17 24 39;
+    /* Ink scale for light mode - DARK text values */
+    --color-ink-50: 250 250 250;           /* zinc-50 (lightest - rarely used) */
+    --color-ink-100: 244 244 245;          /* zinc-100 */
+    --color-ink-200: 228 228 231;          /* zinc-200 */
+    --color-ink-300: 212 212 216;          /* zinc-300 */
+    --color-ink-400: 161 161 170;          /* zinc-400 - subtle text */
+    --color-ink-500: 113 113 122;          /* zinc-500 - muted text */
+    --color-ink-600: 82 82 91;             /* zinc-600 - secondary text */
+    --color-ink-700: 63 63 70;             /* zinc-700 */
+    --color-ink-800: 39 39 42;             /* zinc-800 */
+    --color-ink-900: 24 24 27;             /* zinc-900 - primary text */
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* Shadows - Light mode (subtle) */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
 
     /* Legacy aliases */
     --surface-base: rgb(var(--color-surface-base));

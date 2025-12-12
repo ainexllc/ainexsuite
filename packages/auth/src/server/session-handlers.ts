@@ -67,8 +67,19 @@ export async function GET(request: NextRequest) {
     if (process.env.NODE_ENV === 'development') {
       try {
         const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
+        // Return full user data if available in cookie (persisted in dev)
+        // or just UID if legacy cookie
         return NextResponse.json(
-          { user: { uid: decoded.uid }, authenticated: true },
+          {
+            user: {
+              uid: decoded.uid,
+              email: decoded.email,
+              displayName: decoded.displayName,
+              photoURL: decoded.photoURL,
+              preferences: decoded.preferences,
+            },
+            authenticated: true
+          },
           { headers: corsHeaders }
         );
       } catch {
@@ -96,6 +107,7 @@ export async function GET(request: NextRequest) {
           email: decodedClaims.email,
           displayName: userData.displayName || decodedClaims.name,
           photoURL: userData.photoURL || decodedClaims.picture,
+          preferences: userData.preferences,
         } : {
           uid: decodedClaims.uid,
           email: decodedClaims.email,
@@ -115,6 +127,88 @@ export async function GET(request: NextRequest) {
 }
 
 /**
+ * PUT /api/auth/session
+ * Update user profile/preferences
+ */
+export async function PUT(request: NextRequest) {
+  const corsHeaders = getCorsHeaders(request);
+
+  try {
+    const sessionCookie = request.cookies.get('__session')?.value;
+    if (!sessionCookie) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders });
+    }
+
+    const updates = await request.json();
+
+    // Validate updates (allow only specific fields)
+    const allowedUpdates = ['preferences', 'displayName', 'photoURL'];
+    const filteredUpdates = Object.keys(updates)
+      .filter(key => allowedUpdates.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = updates[key];
+        return obj;
+      }, {} as Record<string, any>);
+
+    if (Object.keys(filteredUpdates).length === 0) {
+      return NextResponse.json({ error: 'No valid updates provided' }, { status: 400, headers: corsHeaders });
+    }
+
+    // Development: Update session cookie
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
+        const updatedUser = { ...decoded, ...filteredUpdates };
+
+        // Create new cookie with updated data
+        const newSessionCookie = Buffer.from(JSON.stringify(updatedUser)).toString('base64');
+        const cookieDomain = getSessionCookieDomain();
+
+        const res = NextResponse.json(
+          { success: true, user: updatedUser },
+          { headers: corsHeaders }
+        );
+
+        res.cookies.set('__session', newSessionCookie, {
+          ...(cookieDomain ? { domain: cookieDomain } : {}),
+          maxAge: SESSION_COOKIE_MAX_AGE_SECONDS,
+          httpOnly: true,
+          secure: false,
+          sameSite: 'lax',
+          path: '/',
+        });
+
+        return res;
+      } catch (e) {
+        return NextResponse.json({ error: 'Invalid session' }, { status: 401, headers: corsHeaders });
+      }
+    }
+
+    // Production: Update Firestore
+    const adminAuth = getAdminAuth();
+    const adminDb = getAdminFirestore();
+    const { FieldValue } = await import('firebase-admin/firestore');
+
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const userRef = adminDb.collection('users').doc(decodedClaims.uid);
+
+    await userRef.update({
+      ...filteredUpdates,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    return NextResponse.json({ success: true }, { headers: corsHeaders });
+
+  } catch (error) {
+    console.error('Update failed:', error);
+    return NextResponse.json(
+      { error: 'Update failed' },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}
+
+/**
  * OPTIONS /api/auth/session
  * Handle CORS preflight requests
  */
@@ -127,7 +221,7 @@ export async function OPTIONS(request: NextRequest) {
     headers: {
       'Access-Control-Allow-Origin': isAllowed && origin ? origin : '',
       'Access-Control-Allow-Credentials': 'true',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
@@ -258,8 +352,12 @@ export async function POST(request: NextRequest) {
           suiteAccess: true,
         };
 
-        // Create a simple session token
-        const sessionCookie = Buffer.from(JSON.stringify({ uid: user.uid })).toString('base64');
+        // Create a richer session token including preferences for persistence in dev
+        // Allow user object to be stored in cookie for stateless dev experience
+        const cookiePayload = {
+          ...user, // Store full user object
+        };
+        const sessionCookie = Buffer.from(JSON.stringify(cookiePayload)).toString('base64');
 
         const res = NextResponse.json({ sessionCookie, user });
         res.cookies.set('__session', sessionCookie, {
@@ -282,7 +380,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Production: Create session cookie server-side
     // Production: Create session cookie server-side
     let adminAuth, adminDb, FieldValue;
     try {

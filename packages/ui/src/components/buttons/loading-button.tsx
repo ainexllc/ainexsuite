@@ -10,12 +10,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-foreground hover:bg-primary-dark shadow-lg shadow-primary/20',
-        secondary: 'bg-secondary text-foreground hover:bg-secondary-dark shadow-lg shadow-secondary/20',
-        outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-foreground',
+        primary: 'bg-primary text-primary-foreground hover:bg-primary-dark shadow-lg shadow-primary/20',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary-dark shadow-lg shadow-secondary/20',
+        outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground',
         ghost: 'hover:bg-surface-elevated text-text-primary',
-        danger: 'bg-red-500 text-foreground hover:bg-red-600',
-        accent: 'bg-accent-500 text-foreground hover:bg-accent-600 shadow-lg shadow-accent-500/20',
+        danger: 'bg-red-500 text-white hover:bg-red-600',
+        accent: 'bg-accent-500 text-white hover:bg-accent-600 shadow-lg shadow-accent-500/20',
       },
       size: {
         sm: 'h-8 px-3 text-sm',
@@ -130,11 +130,11 @@ export const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonPr
         {...props}
       >
         {loading && spinnerPosition === 'left' && (
-          <Spinner size={finalSpinnerSize} color="text-foreground" />
+          <Spinner size={finalSpinnerSize} color="currentColor" />
         )}
         {displayText}
         {loading && spinnerPosition === 'right' && (
-          <Spinner size={finalSpinnerSize} color="text-foreground" />
+          <Spinner size={finalSpinnerSize} color="currentColor" />
         )}
       </button>
     );

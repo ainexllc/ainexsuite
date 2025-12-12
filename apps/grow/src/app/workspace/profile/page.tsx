@@ -112,7 +112,6 @@ function ProfileContent() {
     <WorkspaceLayout
       user={user}
       onSignOut={handleSignOut}
-      searchPlaceholder="Search..."
       appName="Grow"
     >
       <FirestoreSync />

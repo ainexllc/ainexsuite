@@ -79,14 +79,14 @@ export default function TodoPricingPage() {
     <FooterPageLayout maxWidth="wide">
       <div className="space-y-16">
         <section className="text-center space-y-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-emerald-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-300">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-emerald-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">
             Pricing
           </span>
-          <h1 className="text-4xl font-semibold text-white sm:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">
             Plans for disciplined operators and collaborative teams
           </h1>
-          <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            Try Team Ops free for 14 days. Scale your plan when you’re ready to coordinate larger initiatives.
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto sm:text-xl">
+            Try Team Ops free for 14 days. Scale your plan when you&apos;re ready to coordinate larger initiatives.
           </p>
         </section>
 
@@ -97,29 +97,29 @@ export default function TodoPricingPage() {
               className={`rounded-3xl border ${
                 plan.highlighted
                   ? 'border-emerald-400 bg-gradient-to-br from-emerald-500/10 to-blue-500/10'
-                  : 'border-white/10 bg-zinc-800/80'
+                  : 'border-border bg-surface-elevated'
               } p-8 shadow-lg transition hover:-translate-y-1`}
             >
               <div className="flex items-center justify-between">
-                <div className="text-sm font-semibold uppercase tracking-wide text-white/60">
+                <div className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   {plan.name}
                 </div>
                 {plan.highlighted && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-200">
                     Most Popular
                   </span>
                 )}
               </div>
               <div className="mt-6 flex items-baseline gap-2">
-                <span className="text-4xl font-semibold text-white">{plan.price}</span>
-                {plan.period && <span className="text-sm text-white/60">{plan.period}</span>}
+                <span className="text-4xl font-semibold text-foreground">{plan.price}</span>
+                {plan.period && <span className="text-sm text-muted-foreground">{plan.period}</span>}
               </div>
-              <p className="mt-4 text-sm text-white/70 leading-relaxed">{plan.description}</p>
+              <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
 
-              <ul className="mt-6 space-y-3 text-sm text-white/70">
+              <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
                 {plan.perks.map((perk) => (
                   <li key={perk} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-emerald-300 mt-0.5" />
+                    <Check className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-0.5" />
                     <span>{perk}</span>
                   </li>
                 ))}
@@ -130,7 +130,7 @@ export default function TodoPricingPage() {
                 className={`mt-8 w-full rounded-2xl px-6 py-3 text-sm font-semibold transition ${
                   plan.highlighted
                     ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                    : 'border border-white/20 text-white hover:bg-white/5'
+                    : 'border border-border text-foreground hover:bg-muted'
                 }`}
               >
                 {plan.cta}
@@ -141,42 +141,42 @@ export default function TodoPricingPage() {
 
         <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="space-y-6">
-            <h2 className="text-3xl font-semibold text-white sm:text-4xl">Built with security and reliability at the core</h2>
-            <p className="text-white/70 leading-relaxed">
+            <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">Built with security and reliability at the core</h2>
+            <p className="text-muted-foreground leading-relaxed">
               Todo runs mission-critical operations for teams. Every plan includes enterprise-grade security, compliance, and observability tools.
             </p>
-            <ul className="space-y-4 text-white/70">
+            <ul className="space-y-4 text-muted-foreground">
               <li className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-emerald-300 mt-1" />
+                <Shield className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-1" />
                 <span>Encryption in transit and at rest, with optional zero-retention workspaces.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-emerald-300 mt-1" />
+                <Sparkles className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-1" />
                 <span>Role-based permissions, audit logs, and granular sharing controls.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-300 mt-1" />
+                <Check className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-1" />
                 <span>Compliance-minded architecture for SOC2, GDPR, and HIPAA use cases.</span>
               </li>
             </ul>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 p-8 shadow-lg space-y-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Included in every plan</h3>
-            <ul className="space-y-3 text-sm text-white/70">
+          <div className="rounded-3xl border border-border bg-surface-elevated p-8 shadow-lg space-y-6">
+            <h3 className="text-xl font-semibold text-foreground mb-4">Included in every plan</h3>
+            <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-300 mt-0.5" />
+                <Check className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-0.5" />
                 <span>Unlimited projects, lists, and automations.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-300 mt-0.5" />
+                <Check className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-0.5" />
                 <span>Weekly performance recaps and focus recommendations.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-300 mt-0.5" />
+                <Check className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-0.5" />
                 <span>Email + in-app digests highlighting conflicts and overdue work.</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="h-5 w-5 text-emerald-300 mt-0.5" />
+                <Check className="h-5 w-5 text-emerald-500 dark:text-emerald-300 mt-0.5" />
                 <span>Data exports (CSV, JSON) and 30-day version history.</span>
               </li>
             </ul>
@@ -185,16 +185,16 @@ export default function TodoPricingPage() {
 
         <section className="space-y-8">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-semibold text-white sm:text-4xl">Frequently asked questions</h2>
-            <p className="text-white/70 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">Frequently asked questions</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
               Details about trials, billing, collaboration, and data control in Todo.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             {faqs.map((faq) => (
-              <div key={faq.question} className="rounded-3xl border border-white/10 bg-zinc-800/80 p-6 shadow-md">
-                <h3 className="text-lg font-semibold text-white mb-3">{faq.question}</h3>
-                <p className="text-sm text-white/70 leading-relaxed">{faq.answer}</p>
+              <div key={faq.question} className="rounded-3xl border border-border bg-surface-elevated p-6 shadow-md">
+                <h3 className="text-lg font-semibold text-foreground mb-3">{faq.question}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
               </div>
             ))}
           </div>

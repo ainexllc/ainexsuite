@@ -72,27 +72,7 @@ export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: 
   }
 }
 
-/**
- * Sync session cookie to localStorage for development cross-port navigation
- * This allows different localhost ports to share authentication state
- */
-function syncSessionForDev(): void {
-  try {
-    // Get session cookie
-    const cookies = document.cookie.split(';');
-    const sessionCookie = cookies
-      .find(cookie => cookie.trim().startsWith('__session='))
-      ?.split('=')[1];
 
-    if (sessionCookie) {
-      // Store in localStorage for cross-port access
-      localStorage.setItem('__cross_app_session', sessionCookie);
-      localStorage.setItem('__cross_app_timestamp', Date.now().toString());
-    }
-  } catch (error) {
-    console.warn('Failed to sync session for cross-app navigation:', error);
-  }
-}
 
 /**
  * Check if there's a pending cross-app session in localStorage (for dev)

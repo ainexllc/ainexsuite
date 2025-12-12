@@ -1,15 +1,35 @@
 'use client';
 
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen } from '@ainexsuite/ui';
 import { SpacesProvider } from '@/components/providers/spaces-provider';
+import { EventsProvider, useEvents } from '@/components/providers/events-provider';
+import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
+
+function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
+  const { user, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const { events } = useEvents();
+
+  if (!user) return null;
+
+  return (
+    <WorkspaceLayoutWithInsights
+      user={user}
+      onSignOut={handleSignOut}
+      onUpdatePreferences={updatePreferences}
+      events={events}
+    >
+      {children}
+    </WorkspaceLayoutWithInsights>
+  );
+}
 
 export default function WorkspaceRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
+  const { user, isLoading, isReady } = useWorkspaceAuth();
 
   // Show standardized loading screen
   if (isLoading) {
@@ -23,15 +43,9 @@ export default function WorkspaceRootLayout({
 
   return (
     <SpacesProvider>
-      <WorkspaceLayout
-        user={user}
-        onSignOut={handleSignOut}
-        appName="Calendar"
-        appColor="#06b6d4"
-        showBackground={true}
-      >
-        {children}
-      </WorkspaceLayout>
+      <EventsProvider>
+        <WorkspaceLayoutInner>{children}</WorkspaceLayoutInner>
+      </EventsProvider>
     </SpacesProvider>
   );
 }

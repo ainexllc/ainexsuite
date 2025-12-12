@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   Bell,
-  Check,
   CheckCheck,
   X,
   Info,

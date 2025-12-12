@@ -27,6 +27,8 @@ interface UseWorkspaceAuthReturn {
   isReady: boolean;
   /** Sign out handler */
   handleSignOut: () => Promise<void>;
+  /** Update user preferences */
+  updatePreferences: ReturnType<typeof useAuth>['updatePreferences'];
 }
 
 /**
@@ -45,7 +47,7 @@ interface UseWorkspaceAuthReturn {
  */
 export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWorkspaceAuthReturn {
   const { redirectTo = '/' } = options;
-  const { user, loading, ssoInProgress, bootstrapStatus } = useAuth();
+  const { user, loading, ssoInProgress, bootstrapStatus, updatePreferences } = useAuth();
   const router = useRouter();
 
   // Combined loading state
@@ -83,5 +85,6 @@ export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWork
     isLoading,
     isReady,
     handleSignOut,
+    updatePreferences,
   };
 }

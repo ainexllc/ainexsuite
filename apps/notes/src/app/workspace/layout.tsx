@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen } from '@ainexsuite/ui';
@@ -13,9 +13,7 @@ export default function WorkspaceRootLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
 
   // Get quick actions for Notes app
   const quickActions = getQuickActionsForApp('notes');
@@ -37,12 +35,6 @@ export default function WorkspaceRootLayout({
     }
   }, [router]);
 
-  // Handle search trigger
-  const handleSearchClick = useCallback(() => {
-    setIsSearchOpen(true);
-    // TODO: Open command palette when implemented
-  }, []);
-
   // Handle AI assistant
   const handleAiAssistantClick = useCallback(() => {
     // TODO: Open AI assistant panel
@@ -62,14 +54,12 @@ export default function WorkspaceRootLayout({
     <WorkspaceLayoutWithInsights
       user={user}
       onSignOut={handleSignOut}
-      searchPlaceholder="Search notes..."
-      // New props
-      onSearchClick={handleSearchClick}
       quickActions={quickActions}
       onQuickAction={handleQuickAction}
       onAiAssistantClick={handleAiAssistantClick}
       // Notifications - empty for now, will be populated by notification service
       notifications={[]}
+      onUpdatePreferences={updatePreferences}
     >
       {children}
     </WorkspaceLayoutWithInsights>

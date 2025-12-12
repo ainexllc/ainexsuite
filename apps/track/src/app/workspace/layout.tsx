@@ -8,7 +8,7 @@ export default function WorkspaceRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
+  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
 
   // Show standardized loading screen
   if (isLoading) {
@@ -26,7 +26,7 @@ export default function WorkspaceRootLayout({
       onSignOut={handleSignOut}
       appName="Track"
       appColor="#10b981"
-      searchPlaceholder="Search subscriptions..."
+      onUpdatePreferences={updatePreferences}
     >
       {children}
     </WorkspaceLayout>

@@ -19,17 +19,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { storeSession } from './sso-session-store';
 
 /**
- * Cookie options for development (different ports need less restrictive settings)
- */
-const DEV_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: false, // Not HTTPS in dev
-  sameSite: 'lax' as const,
-  path: '/',
-  maxAge: 60 * 60 * 24 * 5, // 5 days
-};
-
-/**
  * Cookie options for production
  */
 const PROD_COOKIE_OPTIONS = {

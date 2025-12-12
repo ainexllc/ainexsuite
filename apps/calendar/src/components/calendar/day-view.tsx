@@ -1,10 +1,11 @@
 'use client';
 
-import { 
-  format, 
+import {
+  format,
   setHours,
   setMinutes,
   isSameDay,
+  isWithinInterval,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/event';
@@ -16,20 +17,51 @@ interface DayViewProps {
   onTimeSlotClick: (date: Date) => void;
 }
 
-export function DayView({ 
-  currentDate, 
-  events, 
+export function DayView({
+  currentDate,
+  events,
   onEventClick,
   onTimeSlotClick
 }: DayViewProps) {
   // Generate time slots (00:00 to 23:00)
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  const getEventsForDay = (day: Date) => {
-    return events.filter(event => isSameDay(event.startTime.toDate(), day));
+  // Helper to check if an event spans multiple days
+  const isMultiDayEvent = (event: CalendarEvent): boolean => {
+    const start = event.startTime.toDate();
+    const end = event.endTime.toDate();
+    const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    return startDay.getTime() !== endDay.getTime();
   };
 
-  const dayEvents = getEventsForDay(currentDate);
+  // Get all-day and multi-day events for this day
+  const getAllDayEvents = () => {
+    const dayStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+    return events.filter(event => {
+      if (!event.allDay && !isMultiDayEvent(event)) return false;
+
+      const eventStart = event.startTime.toDate();
+      const eventEnd = event.endTime.toDate();
+
+      // Check if current day falls within event range
+      return isSameDay(dayStart, eventStart) ||
+             isSameDay(dayStart, eventEnd) ||
+             isWithinInterval(dayStart, { start: eventStart, end: eventEnd });
+    });
+  };
+
+  // Get timed events (non-all-day, single-day events)
+  const getTimedEventsForDay = () => {
+    return events.filter(event => {
+      if (event.allDay || isMultiDayEvent(event)) return false;
+      return isSameDay(event.startTime.toDate(), currentDate);
+    });
+  };
+
+  const allDayEvents = getAllDayEvents();
+  const timedEvents = getTimedEventsForDay();
 
   // Calculate position and height for an event within the day column
   const getEventStyle = (event: CalendarEvent) => {
@@ -76,6 +108,44 @@ export function DayView({
         </div>
       </div>
 
+      {/* All-day / Multi-day Events Section */}
+      {allDayEvents.length > 0 && (
+        <div className="flex border-b border-border bg-surface-elevated/5 px-6 py-2">
+          <div className="w-20 flex-shrink-0 flex items-center">
+            <span className="text-xs text-muted-foreground/60">All day</span>
+          </div>
+          <div className="flex-1 flex flex-col gap-1">
+            {allDayEvents.map((event) => {
+              const eventColor = event.color || '#3b82f6';
+              const isMulti = isMultiDayEvent(event);
+
+              return (
+                <div
+                  key={`allday-${event.id}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEventClick(event);
+                  }}
+                  className="px-3 py-1.5 text-sm rounded cursor-pointer transition-all text-white font-medium hover:opacity-90"
+                  style={{ backgroundColor: eventColor }}
+                  title={isMulti
+                    ? `${event.title} (${format(event.startTime.toDate(), 'MMM d')} - ${format(event.endTime.toDate(), 'MMM d')})`
+                    : event.title
+                  }
+                >
+                  {event.title}
+                  {isMulti && (
+                    <span className="opacity-70 ml-2 text-xs">
+                      ({format(event.startTime.toDate(), 'MMM d')} - {format(event.endTime.toDate(), 'MMM d')})
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Scrollable Grid */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin relative">
         <div className="flex min-h-[1440px]"> {/* 24 hours * 60px */}
@@ -116,37 +186,33 @@ export function DayView({
               />
             ))}
 
-            {/* Render Events */}
-            {dayEvents.map((event) => {
-              if (event.allDay) return null; // Handle all-day separately later
-              
-              return (
-                <div
-                  key={event.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEventClick(event);
-                  }}
-                  className={cn(
-                    "absolute left-2 right-2 rounded-lg p-3 text-sm border cursor-pointer transition-all z-10 overflow-hidden hover:z-20 hover:scale-[1.01] shadow-sm",
-                    eventTypeStyles[event.type] || eventTypeStyles.event
-                  )}
-                  style={getEventStyle(event)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="font-semibold">{event.title}</div>
-                    <div className="text-xs opacity-70 whitespace-nowrap">
-                      {format(event.startTime.toDate(), 'h:mm a')}
-                    </div>
+            {/* Render Timed Events (non-all-day, single-day events) */}
+            {timedEvents.map((event) => (
+              <div
+                key={event.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEventClick(event);
+                }}
+                className={cn(
+                  "absolute left-2 right-2 rounded-lg p-3 text-sm border cursor-pointer transition-all z-10 overflow-hidden hover:z-20 hover:scale-[1.01] shadow-sm",
+                  eventTypeStyles[event.type] || eventTypeStyles.event
+                )}
+                style={getEventStyle(event)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="font-semibold">{event.title}</div>
+                  <div className="text-xs opacity-70 whitespace-nowrap">
+                    {format(event.startTime.toDate(), 'h:mm a')}
                   </div>
-                  {event.description && (
-                    <div className="text-xs opacity-80 mt-1 line-clamp-2">
-                      {event.description}
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+                {event.description && (
+                  <div className="text-xs opacity-80 mt-1 line-clamp-2">
+                    {event.description}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

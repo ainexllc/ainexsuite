@@ -2,9 +2,9 @@
 
 import { type ReactNode } from 'react';
 import { clsx } from 'clsx';
-import { ViewToggleGroup, type ViewToggleGroupProps } from './view-toggle-group';
-import { FilterDropdown, type FilterDropdownProps } from './filter-dropdown';
-import { SortDropdown, type SortDropdownProps } from './sort-dropdown';
+import { ViewToggleGroup } from './view-toggle-group';
+import { FilterDropdown } from './filter-dropdown';
+import { SortDropdown } from './sort-dropdown';
 import type { ViewOption, SortConfig, SortOption } from './types';
 
 export interface WorkspaceToolbarProps<TViewMode extends string> {

@@ -31,6 +31,7 @@ export interface ProfileSidebarProps {
   onSignOut: () => void;
   onSettingsClick?: () => void;
   onActivityClick?: () => void;
+  onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
 }
 
 function getRelativeTime(date: any) {
@@ -50,9 +51,15 @@ export function ProfileSidebar({
   user,
   onSignOut,
   onSettingsClick,
+  onThemeChange,
 }: ProfileSidebarProps) {
   const { updates, loading: updatesLoading } = useSystemUpdates();
-  const { theme, setTheme } = useTheme();
+  const { theme: systemTheme, setTheme } = useTheme();
+
+  // Use user preference if available, otherwise system theme state
+  // We explicitly check user.preferences?.theme because user type might not strictly match
+  // properly in all usages yet, though it should.
+  const currentTheme = (user as any).preferences?.theme || systemTheme;
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -97,7 +104,7 @@ export function ProfileSidebar({
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
-            
+
             {/* User Identity */}
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-foreground/5 shadow-xl">
@@ -151,9 +158,9 @@ export function ProfileSidebar({
             <div className="space-y-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Appearance</h4>
               <div className="flex items-center gap-3 text-muted-foreground mb-2">
-                {theme === 'dark' ? (
+                {currentTheme === 'dark' ? (
                   <Moon className="h-4 w-4" />
-                ) : theme === 'system' ? (
+                ) : currentTheme === 'system' ? (
                   <Monitor className="h-4 w-4" />
                 ) : (
                   <Sun className="h-4 w-4" />
@@ -165,10 +172,16 @@ export function ProfileSidebar({
                   <button
                     key={mode}
                     type="button"
-                    onClick={() => setTheme(mode)}
+                    onClick={() => {
+                      if (onThemeChange) {
+                        onThemeChange(mode);
+                      } else {
+                        setTheme(mode);
+                      }
+                    }}
                     className={clsx(
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",
-                      theme === mode
+                      currentTheme === mode
                         ? "bg-foreground/20 text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
                     )}
@@ -242,10 +255,10 @@ export function ProfileSidebar({
               Settings
             </button>
 
-             <button
+            <button
               onClick={() => {
-                 onClose();
-                 onSignOut();
+                onClose();
+                onSignOut();
               }}
               className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300 border border-transparent hover:border-red-500/20"
             >

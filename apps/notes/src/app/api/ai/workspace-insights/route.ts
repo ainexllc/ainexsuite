@@ -53,7 +53,6 @@ Field descriptions:
         { role: "system", content: "You are a personal productivity assistant. You speak only valid JSON. Do not include markdown formatting or explanations." },
         { role: "user", content: prompt }
       ],
-      model: "grok-2-latest", // xAI Grok 2 model
       temperature: 0.3, // Lower temperature for deterministic output
     });
 

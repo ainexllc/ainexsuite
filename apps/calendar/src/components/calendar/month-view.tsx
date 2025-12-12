@@ -1,18 +1,30 @@
 'use client';
 
-import { 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  eachDayOfInterval, 
-  isSameMonth, 
-  isSameDay, 
-  isToday, 
-  format 
+import {
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  isToday,
+  format,
+  isWithinInterval,
+  isBefore,
+  differenceInDays,
+  max,
+  min
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/event';
+
+interface MultiDayEventSegment {
+  event: CalendarEvent;
+  isStart: boolean;
+  isEnd: boolean;
+  spanDays: number; // How many days this segment spans (for width calculation)
+}
 
 interface MonthViewProps {
   currentDate: Date;
@@ -41,11 +53,69 @@ export function MonthView({
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  const getEventsForDay = (day: Date) => {
+  // Helper to check if an event spans multiple days
+  const isMultiDayEvent = (event: CalendarEvent): boolean => {
+    const start = event.startTime.toDate();
+    const end = event.endTime.toDate();
+    // Normalize to start of day for comparison
+    const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    return startDay.getTime() !== endDay.getTime();
+  };
+
+  // Get single-day events for a specific day (excludes multi-day events)
+  const getSingleDayEventsForDay = (day: Date) => {
     return events.filter(event => {
+      if (isMultiDayEvent(event)) return false;
       const eventDate = event.startTime.toDate();
       return isSameDay(eventDate, day);
     });
+  };
+
+  // Get multi-day events that span a given day
+  const getMultiDayEventsForDay = (day: Date): MultiDayEventSegment[] => {
+    const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    const weekStart = startOfWeek(day);
+    const weekEnd = endOfWeek(day);
+
+    return events
+      .filter(event => {
+        if (!isMultiDayEvent(event)) return false;
+        const eventStart = event.startTime.toDate();
+        const eventEnd = event.endTime.toDate();
+        // Check if this day falls within the event's range
+        return isWithinInterval(dayStart, { start: eventStart, end: eventEnd }) ||
+               isSameDay(dayStart, eventStart) ||
+               isSameDay(dayStart, eventEnd);
+      })
+      .map(event => {
+        const eventStart = event.startTime.toDate();
+        const eventEnd = event.endTime.toDate();
+
+        // Determine if this is the start/end of the event
+        const isStart = isSameDay(dayStart, eventStart);
+        const isEnd = isSameDay(dayStart, eventEnd);
+
+        // Calculate how many days this event spans within the current week
+        // (for positioning the spanning bar)
+        const segmentStart = max([eventStart, weekStart]);
+        const segmentEnd = min([eventEnd, weekEnd]);
+        const spanDays = Math.max(1, differenceInDays(segmentEnd, segmentStart) + 1);
+
+        return {
+          event,
+          isStart,
+          isEnd,
+          spanDays
+        };
+      })
+      // Only show the event on its start day within each week
+      .filter(segment => {
+        const eventStart = segment.event.startTime.toDate();
+        // Show on actual start day OR first day of week if event started earlier
+        return isSameDay(day, eventStart) ||
+               (isBefore(eventStart, weekStart) && isSameDay(day, weekStart));
+      });
   };
 
   const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
@@ -100,9 +170,17 @@ export function MonthView({
       {/* Calendar Grid */}
       <div className="flex-1 grid grid-cols-7 grid-rows-5 md:grid-rows-6">
         {days.map((day, dayIdx) => {
-          const dayEvents = getEventsForDay(day);
+          const singleDayEvents = getSingleDayEventsForDay(day);
+          const multiDaySegments = getMultiDayEventsForDay(day);
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isDayToday = isToday(day);
+
+          const eventTypeStyles = {
+            event: "bg-accent-500/20 text-accent-200 border-accent-500/30 hover:bg-accent-500/30",
+            task: "bg-surface-success/20 text-success border-surface-success/30 hover:bg-surface-success/30",
+            reminder: "bg-surface-warning/20 text-warning border-surface-warning/30 hover:bg-surface-warning/30",
+            holiday: "bg-surface-error/20 text-error border-surface-error/30 hover:bg-surface-error/30"
+          };
 
           return (
             <div
@@ -111,7 +189,7 @@ export function MonthView({
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, day)}
               className={cn(
-                "min-h-[100px] p-2 border-b border-r border-border transition-colors hover:bg-foreground/5 flex flex-col gap-1",
+                "min-h-[100px] p-2 border-b border-r border-border transition-colors hover:bg-foreground/5 flex flex-col gap-1 relative",
                 !isCurrentMonth && "bg-background/20 text-muted-foreground/60",
                 isCurrentMonth && "bg-transparent text-foreground",
                 // Remove right border for last column
@@ -129,19 +207,16 @@ export function MonthView({
                   {format(day, 'd')}
                 </span>
               </div>
-              
+
               <div className="flex-1 flex flex-col gap-1 mt-1 overflow-y-auto scrollbar-none">
-                {dayEvents.map((event) => {
-                  const eventTypeStyles = {
-                    event: "bg-accent-500/20 text-accent-200 border-accent-500/30 hover:bg-accent-500/30",
-                    task: "bg-surface-success/20 text-success border-surface-success/30 hover:bg-surface-success/30",
-                    reminder: "bg-surface-warning/20 text-warning border-surface-warning/30 hover:bg-surface-warning/30",
-                    holiday: "bg-surface-error/20 text-error border-surface-error/30 hover:bg-surface-error/30"
-                  };
+                {/* Multi-day events - rendered as spanning bars */}
+                {multiDaySegments.map((segment) => {
+                  const { event, isStart, isEnd, spanDays } = segment;
+                  const eventColor = event.color || '#3b82f6';
 
                   return (
                     <div
-                      key={event.id}
+                      key={`multi-${event.id}`}
                       draggable
                       onDragStart={(e) => handleDragStart(e, event)}
                       onClick={(e) => {
@@ -149,16 +224,50 @@ export function MonthView({
                         onEventClick(event);
                       }}
                       className={cn(
-                        "px-2 py-1 text-xs rounded truncate cursor-pointer transition-all border active:opacity-50",
-                        eventTypeStyles[event.type] || eventTypeStyles.event
+                        "px-2 py-1 text-xs truncate cursor-pointer transition-all active:opacity-50 z-10",
+                        "text-white font-medium"
                       )}
-                      title={event.title}
+                      style={{
+                        backgroundColor: eventColor,
+                        borderRadius: isStart && isEnd
+                          ? '4px'
+                          : isStart
+                            ? '4px 0 0 4px'
+                            : isEnd
+                              ? '0 4px 4px 0'
+                              : '0',
+                        // Span across multiple columns
+                        width: `calc(${spanDays * 100}% + ${(spanDays - 1) * 8}px)`,
+                        marginRight: isEnd ? '0' : '-8px',
+                      }}
+                      title={`${event.title} (${format(event.startTime.toDate(), 'MMM d')} - ${format(event.endTime.toDate(), 'MMM d')})`}
                     >
-                      {event.allDay ? '' : format(event.startTime.toDate(), 'h:mm a ')}
-                      <span className="font-medium">{event.title}</span>
+                      {isStart && event.title}
+                      {!isStart && <span className="opacity-60">↳ {event.title}</span>}
                     </div>
                   );
                 })}
+
+                {/* Single-day events */}
+                {singleDayEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, event)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEventClick(event);
+                    }}
+                    className={cn(
+                      "px-2 py-1 text-xs rounded truncate cursor-pointer transition-all border active:opacity-50",
+                      eventTypeStyles[event.type] || eventTypeStyles.event
+                    )}
+                    title={event.title}
+                  >
+                    {event.allDay ? '' : format(event.startTime.toDate(), 'h:mm a ')}
+                    <span className="font-medium">{event.title}</span>
+                  </div>
+                ))}
               </div>
             </div>
           );

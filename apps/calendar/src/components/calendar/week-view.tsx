@@ -1,17 +1,27 @@
 'use client';
 
-import { 
-  startOfWeek, 
-  endOfWeek, 
-  eachDayOfInterval, 
-  isSameDay, 
-  isToday, 
-  format, 
+import {
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameDay,
+  isToday,
+  format,
   setHours,
   setMinutes,
+  max,
+  min,
 } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/event';
+
+interface MultiDayEventSegment {
+  event: CalendarEvent;
+  startDayIndex: number;
+  spanDays: number;
+  isStart: boolean;
+  isEnd: boolean;
+}
 
 interface WeekViewProps {
   currentDate: Date;
@@ -37,9 +47,59 @@ export function WeekView({
   // Generate time slots (00:00 to 23:00)
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  const getEventsForDay = (day: Date) => {
-    return events.filter(event => isSameDay(event.startTime.toDate(), day));
+  // Helper to check if an event spans multiple days
+  const isMultiDayEvent = (event: CalendarEvent): boolean => {
+    const start = event.startTime.toDate();
+    const end = event.endTime.toDate();
+    const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    return startDay.getTime() !== endDay.getTime();
   };
+
+  // Get all-day and multi-day events for the week header
+  const getAllDayEvents = (): MultiDayEventSegment[] => {
+    const segments: MultiDayEventSegment[] = [];
+
+    events.forEach(event => {
+      if (!event.allDay && !isMultiDayEvent(event)) return;
+
+      const eventStart = event.startTime.toDate();
+      const eventEnd = event.endTime.toDate();
+
+      // Check if event overlaps with this week
+      if (eventEnd < startDate || eventStart > endDate) return;
+
+      // Calculate segment within this week
+      const segmentStart = max([eventStart, startDate]);
+      const segmentEnd = min([eventEnd, endDate]);
+
+      const startDayIndex = days.findIndex(d => isSameDay(d, segmentStart));
+      const endDayIndex = days.findIndex(d => isSameDay(d, segmentEnd));
+
+      if (startDayIndex === -1) return;
+
+      const spanDays = Math.max(1, endDayIndex - startDayIndex + 1);
+
+      segments.push({
+        event,
+        startDayIndex: startDayIndex >= 0 ? startDayIndex : 0,
+        spanDays,
+        isStart: isSameDay(eventStart, segmentStart),
+        isEnd: isSameDay(eventEnd, segmentEnd),
+      });
+    });
+
+    return segments;
+  };
+
+  const getTimedEventsForDay = (day: Date) => {
+    return events.filter(event => {
+      if (event.allDay || isMultiDayEvent(event)) return false;
+      return isSameDay(event.startTime.toDate(), day);
+    });
+  };
+
+  const allDayEvents = getAllDayEvents();
 
   // Calculate position and height for an event within the day column
   const getEventStyle = (event: CalendarEvent) => {
@@ -100,6 +160,53 @@ export function WeekView({
         </div>
       </div>
 
+      {/* All-day / Multi-day Events Section */}
+      {allDayEvents.length > 0 && (
+        <div className="flex border-b border-border bg-surface-elevated/5">
+          <div className="w-16 border-r border-border flex-shrink-0 flex items-center justify-center">
+            <span className="text-xs text-muted-foreground/60">All day</span>
+          </div>
+          <div className="flex-1 grid grid-cols-7 relative min-h-[32px] py-1">
+            {allDayEvents.map((segment, idx) => {
+              const { event, startDayIndex, spanDays, isStart, isEnd } = segment;
+              const eventColor = event.color || '#3b82f6';
+
+              return (
+                <div
+                  key={`allday-${event.id}-${idx}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEventClick(event);
+                  }}
+                  className={cn(
+                    "absolute top-1 px-2 py-0.5 text-xs truncate cursor-pointer transition-all z-10",
+                    "text-white font-medium hover:opacity-90"
+                  )}
+                  style={{
+                    left: `calc(${(startDayIndex / 7) * 100}% + 2px)`,
+                    width: `calc(${(spanDays / 7) * 100}% - 4px)`,
+                    backgroundColor: eventColor,
+                    borderRadius: isStart && isEnd
+                      ? '4px'
+                      : isStart
+                        ? '4px 0 0 4px'
+                        : isEnd
+                          ? '0 4px 4px 0'
+                          : '0',
+                  }}
+                  title={event.allDay
+                    ? event.title
+                    : `${event.title} (${format(event.startTime.toDate(), 'MMM d')} - ${format(event.endTime.toDate(), 'MMM d')})`
+                  }
+                >
+                  {event.title}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Scrollable Grid */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin relative">
         <div className="flex min-h-[1440px]"> {/* 24 hours * 60px */}
@@ -129,7 +236,7 @@ export function WeekView({
             ))}
 
             {days.map((day, _index) => {
-              const dayEvents = getEventsForDay(day);
+              const timedEvents = getTimedEventsForDay(day);
 
               return (
                 <div
@@ -151,30 +258,26 @@ export function WeekView({
                     />
                   ))}
 
-                  {/* Render Events */}
-                  {dayEvents.map((event) => {
-                    if (event.allDay) return null; // Handle all-day separately later
-                    
-                    return (
-                      <div
-                        key={event.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEventClick(event);
-                        }}
-                        className={cn(
-                          "absolute left-0.5 right-1 rounded-md p-1.5 text-xs border cursor-pointer transition-all z-10 overflow-hidden hover:z-20 hover:scale-[1.02]",
-                          eventTypeStyles[event.type] || eventTypeStyles.event
-                        )}
-                        style={getEventStyle(event)}
-                      >
-                        <div className="font-semibold truncate">{event.title}</div>
-                        <div className="opacity-80 truncate">
-                          {format(event.startTime.toDate(), 'h:mm a')} - {format(event.endTime.toDate(), 'h:mm a')}
-                        </div>
+                  {/* Render Timed Events (non-all-day, single-day events) */}
+                  {timedEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick(event);
+                      }}
+                      className={cn(
+                        "absolute left-0.5 right-1 rounded-md p-1.5 text-xs border cursor-pointer transition-all z-10 overflow-hidden hover:z-20 hover:scale-[1.02]",
+                        eventTypeStyles[event.type] || eventTypeStyles.event
+                      )}
+                      style={getEventStyle(event)}
+                    >
+                      <div className="font-semibold truncate">{event.title}</div>
+                      <div className="opacity-80 truncate">
+                        {format(event.startTime.toDate(), 'h:mm a')} - {format(event.endTime.toDate(), 'h:mm a')}
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               );
             })}

@@ -29,9 +29,9 @@ export function MoodDistribution({ entries }: MoodDistributionProps) {
 
   if (topMoods.length === 0) {
     return (
-      <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+      <div className="rounded-2xl border-2 border-border bg-surface-base p-6">
         <h3 className="text-lg font-semibold mb-4">Mood Distribution</h3>
-        <p className="text-gray-600 dark:text-gray-400 text-center py-8">
+        <p className="text-muted-foreground text-center py-8">
           No mood data yet. Start logging your moods!
         </p>
       </div>
@@ -39,7 +39,7 @@ export function MoodDistribution({ entries }: MoodDistributionProps) {
   }
 
   return (
-    <div className="rounded-2xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+    <div className="rounded-2xl border-2 border-border bg-surface-base p-6">
       <h3 className="text-lg font-semibold mb-4">Mood Distribution</h3>
 
       <div className="space-y-3">
@@ -55,15 +55,15 @@ export function MoodDistribution({ entries }: MoodDistributionProps) {
                   <div className={clsx('p-1.5 rounded-lg', color)}>
                     <Icon className="h-4 w-4" />
                   </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-sm font-medium text-foreground">
                     {label}
                   </span>
                 </div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-muted-foreground">
                   {count} ({percentage}%)
                 </span>
               </div>
-              <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={clsx('h-full rounded-full', color)}
                   style={{ width: `${percentage}%` }}

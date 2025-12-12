@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect, useRef } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Sparkles, RefreshCw, Loader2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -57,7 +57,6 @@ export function AIInsightsRibbon({
   isLoading = false,
   loadingMessage = "Analyzing...",
   error = null,
-  lastUpdated = null,
   onRefresh,
   refreshDisabled = false,
   storageKey,

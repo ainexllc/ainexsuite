@@ -17,12 +17,11 @@ interface WorkspaceLayoutWithInsightsProps {
     trialStartDate?: number;
   };
   onSignOut: () => void;
-  searchPlaceholder?: string;
-  onSearchClick?: () => void;
   quickActions?: QuickAction[];
   onQuickAction?: (actionId: string) => void;
   onAiAssistantClick?: () => void;
   notifications?: NotificationItem[];
+  onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
 }
 
 /**
@@ -33,12 +32,11 @@ export function WorkspaceLayoutWithInsights({
   children,
   user,
   onSignOut,
-  searchPlaceholder = "Search notes...",
-  onSearchClick,
   quickActions = [],
   onQuickAction,
   onAiAssistantClick,
   notifications = [],
+  onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
   // Get insights data from the hook (requires NotesProvider and SpacesProvider)
   const insights = useWorkspaceInsights();
@@ -47,10 +45,7 @@ export function WorkspaceLayoutWithInsights({
     <WorkspaceLayout
       user={user}
       onSignOut={onSignOut}
-      searchPlaceholder={searchPlaceholder}
       appName="NOTES"
-      // New props
-      onSearchClick={onSearchClick}
       quickActions={quickActions}
       onQuickAction={onQuickAction}
       onAiAssistantClick={onAiAssistantClick}
@@ -65,6 +60,7 @@ export function WorkspaceLayoutWithInsights({
       onInsightsRefresh={insights.onRefresh}
       insightsRefreshDisabled={insights.refreshDisabled}
       insightsStorageKey={insights.storageKey}
+      onUpdatePreferences={onUpdatePreferences}
     >
       {children}
     </WorkspaceLayout>

@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import {
   Archive,
@@ -23,6 +23,7 @@ import {
   Undo2,
   Brain,
   FolderOpen,
+  Plus,
 } from "lucide-react";
 import { clsx } from "clsx";
 import type {
@@ -81,7 +82,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     removeAttachment,
     attachFiles,
   } = useNotes();
-  const { labels } = useLabels();
+  const { labels, createLabel } = useLabels();
   const { reminders, createReminder, updateReminder, deleteReminder } = useReminders();
   const { preferences } = usePreferences();
   const { user: sessionUser } = useAuth();
@@ -165,6 +166,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
     note.labelIds ?? [],
   );
+  const [newLabelName, setNewLabelName] = useState("");
+  const [isCreatingLabel, setIsCreatingLabel] = useState(false);
+  const newLabelInputRef = useRef<HTMLInputElement>(null);
   const [reminderEnabled, setReminderEnabled] = useState(Boolean(note.reminderAt));
   const [reminderValue, setReminderValue] = useState(
     note.reminderAt ? formatDateTimeLocalInput(note.reminderAt) : "",
@@ -844,6 +848,60 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         : [...prev, labelId],
     );
   };
+
+  const handleCreateNewLabel = useCallback(async () => {
+    const name = newLabelName.trim();
+    if (!name || isCreatingLabel) {
+      return;
+    }
+
+    // Check if a label with this name already exists (case-insensitive)
+    const existingLabel = labels.find(
+      (label) => label.name.toLowerCase() === name.toLowerCase()
+    );
+    if (existingLabel) {
+      // If it exists, just select it and clear the input
+      if (!selectedLabelIds.includes(existingLabel.id)) {
+        setSelectedLabelIds((prev) => [...prev, existingLabel.id]);
+      }
+      setNewLabelName("");
+      return;
+    }
+
+    try {
+      setIsCreatingLabel(true);
+      const newLabelId = await createLabel({ name });
+      if (newLabelId) {
+        setSelectedLabelIds((prev) => [...prev, newLabelId]);
+      }
+      setNewLabelName("");
+    } catch (error) {
+      console.error("Failed to create label:", error);
+    } finally {
+      setIsCreatingLabel(false);
+    }
+  }, [newLabelName, isCreatingLabel, labels, selectedLabelIds, createLabel]);
+
+  const handleNewLabelKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      void handleCreateNewLabel();
+    } else if (e.key === "Escape") {
+      setNewLabelName("");
+      newLabelInputRef.current?.blur();
+    }
+  };
+
+  // Filter labels based on search input
+  const filteredLabels = useMemo(() => {
+    if (!newLabelName.trim()) {
+      return labels;
+    }
+    const searchTerm = newLabelName.toLowerCase();
+    return labels.filter((label) =>
+      label.name.toLowerCase().includes(searchTerm)
+    );
+  }, [labels, newLabelName]);
 
   const content = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-4 sm:px-6 sm:py-6">
@@ -1665,39 +1723,80 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             </div>
           </div>
           {showLabelPicker ? (
-            <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3 mt-3">
-              {labels.length ? (
-                labels.map((label) => {
-                  const isSelected = selectedLabelIds.includes(label.id);
-                  return (
-                    <button
-                      key={label.id}
-                      type="button"
-                      className={clsx(
-                        "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
-                        isSelected
-                          ? "border-white bg-white/20 text-white"
-                          : "border-white/20 bg-white/5 text-white/70 hover:border-white/40 hover:text-white",
-                      )}
-                      onClick={() => toggleLabelSelection(label.id)}
-                    >
-                      <span
+            <div className="border-t border-white/10 pt-3 mt-3 space-y-3">
+              {/* New label input */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    ref={newLabelInputRef}
+                    type="text"
+                    value={newLabelName}
+                    onChange={(e) => setNewLabelName(e.target.value)}
+                    onKeyDown={handleNewLabelKeyDown}
+                    placeholder="Search or create a tag..."
+                    className="w-full rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
+                    disabled={isCreatingLabel}
+                  />
+                  {isCreatingLabel && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-white/60" />
+                    </div>
+                  )}
+                </div>
+                {newLabelName.trim() && !labels.some(
+                  (l) => l.name.toLowerCase() === newLabelName.trim().toLowerCase()
+                ) && (
+                  <button
+                    type="button"
+                    onClick={() => void handleCreateNewLabel()}
+                    disabled={isCreatingLabel}
+                    className="flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-2 text-xs font-medium text-white hover:bg-white/20 transition disabled:opacity-50"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Create
+                  </button>
+                )}
+              </div>
+
+              {/* Existing labels */}
+              <div className="flex flex-wrap gap-2">
+                {filteredLabels.length ? (
+                  filteredLabels.map((label) => {
+                    const isSelected = selectedLabelIds.includes(label.id);
+                    return (
+                      <button
+                        key={label.id}
+                        type="button"
                         className={clsx(
-                          "h-2 w-2 rounded-full",
-                          label.color === "default"
-                            ? "bg-white/40"
-                            : `bg-${label.color}`,
+                          "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
+                          isSelected
+                            ? "border-white bg-white/20 text-white"
+                            : "border-white/20 bg-white/5 text-white/70 hover:border-white/40 hover:text-white",
                         )}
-                      />
-                      {label.name}
-                    </button>
-                  );
-                })
-              ) : (
-                <p className="text-xs text-white/50">
-                  Create labels from the sidebar to organize notes.
-                </p>
-              )}
+                        onClick={() => toggleLabelSelection(label.id)}
+                      >
+                        <span
+                          className={clsx(
+                            "h-2 w-2 rounded-full",
+                            label.color === "default"
+                              ? "bg-white/40"
+                              : `bg-${label.color}`,
+                          )}
+                        />
+                        {label.name}
+                      </button>
+                    );
+                  })
+                ) : newLabelName.trim() ? (
+                  <p className="text-xs text-white/50">
+                    No matching tags. Press Enter or click Create to add &quot;{newLabelName.trim()}&quot;.
+                  </p>
+                ) : (
+                  <p className="text-xs text-white/50">
+                    No tags yet. Type above to create your first tag.
+                  </p>
+                )}
+              </div>
             </div>
           ) : null}
         </div>

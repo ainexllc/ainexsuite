@@ -67,7 +67,6 @@ function AnalyticsContent() {
     <WorkspaceLayout
       user={user}
       onSignOut={handleSignOut}
-      searchPlaceholder="Search analytics..."
       appName="Grow"
     >
       <FirestoreSync />

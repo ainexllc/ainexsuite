@@ -89,7 +89,7 @@ export function RichTextEditorEnhanced({
     editable: !disabled,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose dark:prose-invert max-w-none focus:outline-none min-h-[300px] px-4 py-3 text-gray-900 dark:text-gray-100'
+        class: 'prose prose-sm sm:prose dark:prose-invert max-w-none focus:outline-none min-h-[300px] px-4 py-3 text-foreground'
       }
     }
   });
@@ -390,7 +390,7 @@ export function RichTextEditorEnhanced({
 
         <div
           {...getRootProps()}
-          className="bg-white dark:bg-gray-900 relative"
+          className="bg-surface-base relative"
         >
           <input {...getInputProps()} />
           <ImageDropOverlay isDragActive={isDragActive} />

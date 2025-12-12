@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useState, useEffect } from "react";
-import { Sparkles, RefreshCw, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, X, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 export interface AIInsightsPulldownSection {
@@ -69,7 +69,6 @@ export interface AIInsightsPulldownProps {
  * Based on MarketingSlideshow - Full Hero Style
  */
 export function AIInsightsPulldown({
-  title = "AI Insights",
   sections,
   accentColor,
   accentColorSecondary,
@@ -82,13 +81,16 @@ export function AIInsightsPulldown({
   storageKey,
   defaultExpanded = false,
   className,
-  onViewDetails,
   onExpandedChange,
 }: AIInsightsPulldownProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isHoverPaused, setIsHoverPaused] = useState(false);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
   const autoRotateInterval = 5000; // 5 seconds like MarketingSlideshow
+
+  // Combined pause state - paused if either hover or manual
+  const isPaused = isHoverPaused || isManuallyPaused;
 
   // Get gradient colors for current slide
   const currentSection = sections[currentSlide];
@@ -157,8 +159,8 @@ export function AIInsightsPulldown({
         {/* Full Hero Panel */}
         <div
           className="relative w-full overflow-hidden border-b border-white/10 bg-black/20 backdrop-blur-xl"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
+          onMouseEnter={() => setIsHoverPaused(true)}
+          onMouseLeave={() => setIsHoverPaused(false)}
         >
           {/* Gradient Background - transitions with slide */}
           <div
@@ -302,7 +304,7 @@ export function AIInsightsPulldown({
                   </span>
                 )}
 
-                {/* Prev/Next Buttons */}
+                {/* Prev/Pause/Next Buttons */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={goToPrevious}
@@ -310,6 +312,18 @@ export function AIInsightsPulldown({
                     aria-label="Previous slide"
                   >
                     <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setIsManuallyPaused(!isManuallyPaused)}
+                    className={cn(
+                      "flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 transition-all duration-300",
+                      isManuallyPaused
+                        ? "bg-white/20 text-white"
+                        : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                    )}
+                    aria-label={isManuallyPaused ? "Resume auto-play" : "Pause auto-play"}
+                  >
+                    {isManuallyPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={goToNext}
@@ -365,8 +379,15 @@ export function AIInsightsPulldown({
  * Hook to check if insights pulldown is expanded (for lazy loading)
  */
 export function useInsightsPulldownExpanded(storageKey: string | undefined): boolean {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    // Initialize synchronously from localStorage to avoid flash/race conditions
+    if (typeof window !== "undefined" && storageKey) {
+      return localStorage.getItem(storageKey) === "true";
+    }
+    return false;
+  });
 
+  // Update if storageKey changes
   useEffect(() => {
     if (storageKey) {
       const stored = localStorage.getItem(storageKey);

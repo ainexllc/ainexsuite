@@ -9,7 +9,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth, SSOHandler } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
-import type { User } from '@ainexsuite/types';
+import type { User, UserPreferences } from '@ainexsuite/types';
 import {
   removeSessionCookie,
   initializeSession,
@@ -39,6 +39,8 @@ interface AuthContextType {
   setSsoComplete: () => void;
   /** Hydrate user directly from dev session (dev only) */
   hydrateFromDevSession: (sessionCookie: string) => void;
+  /** Update user preferences (theme, etc) with backend sync */
+  updatePreferences: (updates: Partial<UserPreferences>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,6 +117,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setSsoComplete = useCallback(() => {
     setSsoInProgress(false);
   }, []);
+
+  // Cross-tab/cross-app preference sync via BroadcastChannel
+  // When theme changes in one tab, all other tabs update immediately
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const channel = new BroadcastChannel('ainex-preferences');
+    channel.onmessage = (event) => {
+      if (event.data.type === 'PREFERENCES_UPDATE') {
+        setUser(prev => prev ? {
+          ...prev,
+          preferences: { ...prev.preferences, ...event.data.preferences }
+        } : null);
+      }
+    };
+
+    return () => channel.close();
+  }, []);
+
+  // Update user preferences (Global Theme Sync)
+  const updatePreferences = useCallback(async (updates: Partial<UserPreferences>) => {
+    if (!user) return;
+
+    // 1. Optimistic update
+    const previousUser = user;
+    const updatedUser = {
+      ...user,
+      preferences: {
+        ...user.preferences,
+        ...updates,
+      },
+    };
+
+    // Immediate state update for UI responsiveness
+    setUser(updatedUser);
+
+    // 2. Broadcast to other tabs/apps for real-time sync
+    if (typeof window !== 'undefined') {
+      const channel = new BroadcastChannel('ainex-preferences');
+      channel.postMessage({ type: 'PREFERENCES_UPDATE', preferences: updates });
+      channel.close();
+    }
+
+    try {
+      // 3. API Call to persist
+      const response = await fetch('/api/auth/session', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ preferences: updatedUser.preferences }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update preferences');
+      }
+
+      // In dev mode, the PUT returns a new cookie which browser handles automatically via Set-Cookie header
+      // The updated cookie contains the new preferences which will be picked up on next hydrate
+    } catch (error) {
+      console.error('Failed to save preferences:', error);
+      // Revert optimistic update on failure
+      setUser(previousUser);
+    }
+  }, [user]);
 
   useEffect(() => {
 
@@ -295,7 +362,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: decoded.email || '',
         displayName: decoded.displayName || decoded.email || 'Dev User',
         photoURL: decoded.photoURL || '',
-        preferences: {
+        preferences: decoded.preferences || {
           theme: 'dark',
           language: 'en',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -312,6 +379,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           grow: true,
           pulse: true,
           fit: true,
+          project: true,
+          workflow: true,
+          calendar: true,
         },
         appPermissions: {},
         appsUsed: {},
@@ -344,6 +414,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setBootstrapStatus,
         setSsoComplete,
         hydrateFromDevSession,
+        updatePreferences,
       }}
     >
       {/* SSOHandler processes auth_token from URL and signals completion */}

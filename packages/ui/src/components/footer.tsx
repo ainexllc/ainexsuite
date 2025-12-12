@@ -50,16 +50,16 @@ export function Footer({
   ];
 
   return (
-    <footer className="bg-surface-base border-t border-outline-base dark:bg-zinc-900/80 dark:border-border">
+    <footer className="bg-surface-base border-t border-border">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Columns */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-ink-900 dark:text-foreground tracking-wider uppercase">Product</h3>
+            <h3 className="text-xs font-semibold text-foreground tracking-wider uppercase">Product</h3>
             <ul className="space-y-1">
               {defaultProductLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-muted-foreground hover:text-ink-900 dark:hover:text-primary transition-colors">
+                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -67,11 +67,11 @@ export function Footer({
             </ul>
           </div>
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-ink-900 dark:text-foreground tracking-wider uppercase">Company</h3>
+            <h3 className="text-xs font-semibold text-foreground tracking-wider uppercase">Company</h3>
             <ul className="space-y-1">
               {defaultCompanyLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-muted-foreground hover:text-ink-900 dark:hover:text-primary transition-colors">
+                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -79,11 +79,11 @@ export function Footer({
             </ul>
           </div>
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-ink-900 dark:text-foreground tracking-wider uppercase">Resources</h3>
+            <h3 className="text-xs font-semibold text-foreground tracking-wider uppercase">Resources</h3>
             <ul className="space-y-1">
               {defaultResourceLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-muted-foreground hover:text-ink-900 dark:hover:text-primary transition-colors">
+                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -91,11 +91,11 @@ export function Footer({
             </ul>
           </div>
           <div className="space-y-2">
-            <h3 className="text-xs font-semibold text-ink-900 dark:text-foreground tracking-wider uppercase">Legal</h3>
+            <h3 className="text-xs font-semibold text-foreground tracking-wider uppercase">Legal</h3>
             <ul className="space-y-1">
               {defaultLegalLinks.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-sm text-ink-600 dark:text-muted-foreground hover:text-ink-900 dark:hover:text-primary transition-colors">
+                  <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -105,7 +105,7 @@ export function Footer({
         </div>
 
         {/* Social Links and Copyright */}
-        <div className="mt-6 border-t border-outline-base dark:border-border pt-4">
+        <div className="mt-6 border-t border-border pt-4">
           {socialLinks && socialLinks.length > 0 && (
             <div className="flex justify-center gap-6 mb-4">
               {socialLinks.map((link) => (
@@ -114,7 +114,7 @@ export function Footer({
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-ink-600 dark:text-muted-foreground hover:text-ink-900 dark:hover:text-primary transition-colors"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   aria-label={link.label}
                 >
                   {link.label}
@@ -123,14 +123,14 @@ export function Footer({
             </div>
           )}
           <div className="text-center space-y-1">
-            <p className="text-sm text-ink-600 dark:text-muted-foreground font-medium">
+            <p className="text-sm text-muted-foreground font-medium">
               &copy; {new Date().getFullYear()} {appName}. All rights reserved.
             </p>
-            <p className="text-xs text-ink-500 dark:text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Built with ❤️ for productivity and growth
             </p>
-            <p className="text-xs text-ink-400 dark:text-muted-foreground">
-              Questions? Contact us at <a href="mailto:support@ainexsuite.com" className="hover:text-ink-700 dark:hover:text-primary underline transition-colors">support@ainexsuite.com</a>
+            <p className="text-xs text-muted-foreground">
+              Questions? Contact us at <a href="mailto:support@ainexsuite.com" className="hover:text-foreground underline transition-colors">support@ainexsuite.com</a>
             </p>
           </div>
         </div>

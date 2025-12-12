@@ -1,67 +1,231 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { Timestamp } from 'firebase/firestore';
-import { useToast, WorkspacePageLayout } from '@ainexsuite/ui';
-import { Loader2 } from 'lucide-react';
-import { addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
+import { useState, useCallback, useRef, useMemo } from 'react';
+import {
+  useToast,
+  WorkspacePageLayout,
+  WorkspaceToolbar,
+  ActiveFilterChips,
+  type ViewOption,
+  type FilterChip,
+  type FilterChipType,
+} from '@ainexsuite/ui';
+import {
+  Loader2,
+  CalendarDays,
+  CalendarRange,
+  Calendar as CalendarIcon,
+  List,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  X,
+} from 'lucide-react';
+import { addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, format, isWithinInterval } from 'date-fns';
 
-import { CalendarHeader, CalendarViewType } from '@/components/calendar/calendar-header';
+import { CalendarViewType } from '@/components/calendar/calendar-header';
 import { MonthView } from '@/components/calendar/month-view';
 import { WeekView } from '@/components/calendar/week-view';
 import { DayView } from '@/components/calendar/day-view';
 import { AgendaView } from '@/components/calendar/agenda-view';
 import { EventComposer, EventComposerRef } from '@/components/calendar/event-composer';
+import { CalendarFilterContent, CalendarFilters } from '@/components/calendar/calendar-filter-content';
+import { KeyboardShortcutsModal } from '@/components/calendar/keyboard-shortcuts-modal';
 import { SpaceSwitcher } from '@/components/spaces';
 import { EventsService } from '@/lib/events';
-import { CalendarEvent, CreateEventInput } from '@/types/event';
+import { useEvents } from '@/components/providers/events-provider';
+import { CalendarEvent, CreateEventInput, EventType } from '@/types/event';
 import { useReminders } from '@/hooks/use-reminders';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
+
+const VIEW_OPTIONS: ViewOption<CalendarViewType>[] = [
+  { value: 'month', icon: CalendarDays, label: 'Month view' },
+  { value: 'week', icon: CalendarRange, label: 'Week view' },
+  { value: 'day', icon: CalendarIcon, label: 'Day view' },
+  { value: 'agenda', icon: List, label: 'Agenda view' },
+];
+
+// Sort options - can be used when sorting is needed
+// const SORT_OPTIONS: SortOption[] = [
+//   { field: 'dueDate', label: 'Event time' },
+//   { field: 'title', label: 'Title' },
+//   { field: 'createdAt', label: 'Date created' },
+// ];
+
+const EVENT_COLOR_MAP: Record<string, string> = {
+  '#3b82f6': 'Blue',
+  '#ef4444': 'Red',
+  '#22c55e': 'Green',
+  '#f59e0b': 'Amber',
+  '#8b5cf6': 'Purple',
+  '#ec4899': 'Pink',
+  '#06b6d4': 'Cyan',
+  '#f97316': 'Orange',
+};
+
+const DEFAULT_FILTERS: CalendarFilters = {
+  eventTypes: [],
+  colors: [],
+  datePreset: undefined,
+  dateRange: { start: null, end: null },
+};
 
 export default function WorkspacePage() {
   const { user } = useWorkspaceAuth();
   const { toast } = useToast();
   const composerRef = useRef<EventComposerRef>(null);
+  const { events, loading: isLoadingEvents, refreshEvents } = useEvents();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>('month');
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [filters, setFilters] = useState<CalendarFilters>(DEFAULT_FILTERS);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
   // Enable reminders
   useReminders(events);
 
-  // Refresh events helper
-  const refreshEvents = useCallback(async () => {
-    if (!user) return;
-    const fetchedEvents = await EventsService.getEvents(user.uid);
-    setEvents(fetchedEvents);
-  }, [user]);
+  // Keyboard shortcuts
+  const { showHelp, setShowHelp } = useKeyboardShortcuts({
+    onNewEvent: () => composerRef.current?.createEvent(new Date()),
+    onToday: () => setCurrentDate(new Date()),
+    onPrev: () => {
+      if (view === 'month') setCurrentDate(prev => subMonths(prev, 1));
+      else if (view === 'week') setCurrentDate(prev => subWeeks(prev, 1));
+      else if (view === 'day') setCurrentDate(prev => subDays(prev, 1));
+    },
+    onNext: () => {
+      if (view === 'month') setCurrentDate(prev => addMonths(prev, 1));
+      else if (view === 'week') setCurrentDate(prev => addWeeks(prev, 1));
+      else if (view === 'day') setCurrentDate(prev => addDays(prev, 1));
+    },
+    onViewChange: setView,
+    onCloseComposer: () => composerRef.current?.close(),
+    onToggleSearch: () => setShowSearch(prev => !prev),
+  });
 
-  // Fetch events
-  useEffect(() => {
-    if (!user) return;
-
-    async function fetchEvents() {
-      setIsLoadingEvents(true);
-      try {
-        const fetchedEvents = await EventsService.getEvents(user!.uid);
-        setEvents(fetchedEvents);
-      } catch (error) {
-        console.error("Failed to fetch events:", error);
-        toast({
-          title: "Failed to load events",
-          description: "Unable to fetch your calendar events. Please refresh the page.",
-          variant: 'error'
-        });
-      } finally {
-        setIsLoadingEvents(false);
+  // Filter events based on current filters and search
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+          event.title.toLowerCase().includes(query) ||
+          event.description?.toLowerCase().includes(query) ||
+          event.location?.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
       }
+
+      // Event type filter
+      if (filters.eventTypes.length > 0) {
+        if (!filters.eventTypes.includes(event.type)) return false;
+      }
+
+      // Color filter
+      if (filters.colors.length > 0) {
+        if (!event.color || !filters.colors.includes(event.color)) return false;
+      }
+
+      // Date range filter
+      if (filters.dateRange.start && filters.dateRange.end) {
+        const eventStart = event.startTime.toDate();
+        const eventEnd = event.endTime.toDate();
+        const filterStart = filters.dateRange.start;
+        const filterEnd = filters.dateRange.end;
+
+        // Check if event overlaps with filter range
+        const overlaps =
+          isWithinInterval(eventStart, { start: filterStart, end: filterEnd }) ||
+          isWithinInterval(eventEnd, { start: filterStart, end: filterEnd }) ||
+          (eventStart <= filterStart && eventEnd >= filterEnd);
+
+        if (!overlaps) return false;
+      }
+
+      return true;
+    });
+  }, [events, filters, searchQuery]);
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips: FilterChip[] = [];
+
+    // Event type chips
+    filters.eventTypes.forEach(type => {
+      chips.push({
+        id: type,
+        label: type.charAt(0).toUpperCase() + type.slice(1),
+        type: 'noteType' as FilterChipType,
+      });
+    });
+
+    // Color chips
+    filters.colors.forEach(color => {
+      chips.push({
+        id: color,
+        label: EVENT_COLOR_MAP[color] || 'Color',
+        type: 'color' as FilterChipType,
+        colorValue: color,
+      });
+    });
+
+    // Date range chip
+    if (filters.datePreset && filters.datePreset !== 'custom') {
+      chips.push({
+        id: 'dateRange',
+        label: filters.datePreset.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        type: 'date' as FilterChipType,
+      });
+    } else if (filters.dateRange.start || filters.dateRange.end) {
+      chips.push({
+        id: 'dateRange',
+        label: 'Custom Date',
+        type: 'date' as FilterChipType,
+      });
     }
 
-    fetchEvents();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    return chips;
+  }, [filters]);
+
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.eventTypes.length > 0) count++;
+    if (filters.colors.length > 0) count++;
+    if (filters.dateRange.start || filters.dateRange.end) count++;
+    return count;
+  }, [filters]);
+
+  const handleFilterReset = useCallback(() => {
+    setFilters(DEFAULT_FILTERS);
+  }, []);
+
+  const handleRemoveChip = useCallback((chipId: string, chipType: FilterChipType) => {
+    switch (chipType) {
+      case 'noteType':
+        setFilters(prev => ({
+          ...prev,
+          eventTypes: prev.eventTypes.filter(t => t !== chipId) as EventType[],
+        }));
+        break;
+      case 'color':
+        setFilters(prev => ({
+          ...prev,
+          colors: prev.colors.filter(c => c !== chipId),
+        }));
+        break;
+      case 'date':
+        setFilters(prev => ({
+          ...prev,
+          datePreset: undefined,
+          dateRange: { start: null, end: null },
+        }));
+        break;
+    }
+  }, []);
+
 
   const handlePrev = () => {
     if (view === 'month') setCurrentDate(prev => subMonths(prev, 1));
@@ -87,6 +251,12 @@ export default function WorkspacePage() {
     // Skip task events - they should open in todo app
     if (event.id.startsWith('task_')) return;
     composerRef.current?.editEvent(event);
+  };
+
+  // Handle event duplication
+  const handleDuplicateEvent = (event: CalendarEvent) => {
+    // Use the composer's duplicateEvent method which copies all event data
+    composerRef.current?.duplicateEvent(event);
   };
 
   // Handler for composer save (both new and edit)
@@ -161,17 +331,6 @@ export default function WorkspacePage() {
 
     const newEndTime = new Date(newStartTime.getTime() + duration);
 
-    // Optimistic update
-    setEvents(prev => prev.map(e =>
-      e.id === event.id
-        ? {
-            ...e,
-            startTime: Timestamp.fromDate(newStartTime),
-            endTime: Timestamp.fromDate(newEndTime)
-          }
-        : e
-    ));
-
     try {
       await EventsService.updateEvent(user.uid, {
         id: event.id,
@@ -200,6 +359,18 @@ export default function WorkspacePage() {
     composerRef.current?.createEvent(date);
   };
 
+  // Date navigation label
+  const dateLabel = useMemo(() => {
+    if (view === 'month') return format(currentDate, 'MMMM yyyy');
+    if (view === 'week') {
+      const weekStart = subDays(currentDate, currentDate.getDay());
+      const weekEnd = addDays(weekStart, 6);
+      return `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`;
+    }
+    if (view === 'day') return format(currentDate, 'EEEE, MMMM d, yyyy');
+    return format(currentDate, 'MMMM yyyy');
+  }, [currentDate, view]);
+
   return (
     <WorkspacePageLayout
       maxWidth="wide"
@@ -209,21 +380,95 @@ export default function WorkspacePage() {
           ref={composerRef}
           onSave={handleComposerSave}
           onDelete={handleDeleteEvent}
+          onDuplicate={handleDuplicateEvent}
         />
       }
       composerActions={<SpaceSwitcher />}
-    >
-        <div className="flex items-center justify-between mb-6">
-          <CalendarHeader
-            currentDate={currentDate}
-            view={view}
-            onViewChange={setView}
-            onPrevMonth={handlePrev}
-            onNextMonth={handleNext}
-            onToday={handleToday}
+      toolbar={
+        <div className="space-y-2">
+          <WorkspaceToolbar
+            viewMode={view}
+            onViewModeChange={setView}
+            viewOptions={VIEW_OPTIONS}
+            filterContent={<CalendarFilterContent filters={filters} onFiltersChange={setFilters} />}
+            activeFilterCount={activeFilterCount}
+            onFilterReset={handleFilterReset}
+            viewPosition="right"
+            leftSlot={
+              <div className="flex items-center gap-3">
+                {/* Date Navigation */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handlePrev}
+                    className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                    title="Previous"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleToday}
+                    className="px-3 py-1 text-sm font-medium rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                    title="Next"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+                <span className="text-lg font-semibold text-foreground">{dateLabel}</span>
+              </div>
+            }
+            rightSlot={
+              <div className="flex items-center gap-2">
+                {/* Search */}
+                {showSearch ? (
+                  <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg px-2">
+                    <Search className="w-4 h-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search events..."
+                      className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none py-1.5 w-40"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setShowSearch(false);
+                      }}
+                      className="p-1 hover:bg-white/10 rounded"
+                    >
+                      <X className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowSearch(true)}
+                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+                    title="Search events"
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            }
           />
+          {filterChips.length > 0 && (
+            <ActiveFilterChips
+              chips={filterChips}
+              onRemove={handleRemoveChip}
+              onClearAll={handleFilterReset}
+              className="px-1"
+            />
+          )}
         </div>
-
+      }
+    >
         <div className="flex-1 min-h-0">
           {isLoadingEvents ? (
             <div className="h-full flex items-center justify-center">
@@ -234,7 +479,7 @@ export default function WorkspacePage() {
               {view === 'month' && (
                 <MonthView
                   currentDate={currentDate}
-                  events={events}
+                  events={filteredEvents}
                   onDayClick={handleDayClick}
                   onEventClick={handleEventClick}
                   onEventDrop={handleEventDrop}
@@ -243,7 +488,7 @@ export default function WorkspacePage() {
               {view === 'week' && (
                 <WeekView
                   currentDate={currentDate}
-                  events={events}
+                  events={filteredEvents}
                   onEventClick={handleEventClick}
                   onTimeSlotClick={handleTimeSlotClick}
                 />
@@ -251,7 +496,7 @@ export default function WorkspacePage() {
               {view === 'day' && (
                 <DayView
                   currentDate={currentDate}
-                  events={events}
+                  events={filteredEvents}
                   onEventClick={handleEventClick}
                   onTimeSlotClick={handleTimeSlotClick}
                 />
@@ -259,13 +504,16 @@ export default function WorkspacePage() {
               {view === 'agenda' && (
                 <AgendaView
                   currentDate={currentDate}
-                  events={events}
+                  events={filteredEvents}
                   onEventClick={handleEventClick}
                 />
               )}
             </>
           )}
         </div>
+
+        {/* Keyboard Shortcuts Modal */}
+        <KeyboardShortcutsModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
     </WorkspacePageLayout>
   );
 }

@@ -14,7 +14,7 @@ export default function WorkspaceRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, signOut, bootstrapStatus, ssoInProgress } = useAuth();
+  const { user, loading, signOut, bootstrapStatus, ssoInProgress, updatePreferences } = useAuth();
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
@@ -56,11 +56,6 @@ export default function WorkspaceRootLayout({
     router.push('/');
   };
 
-  // Handle search trigger from header
-  const handleSearchClick = useCallback(() => {
-    setIsSearchOpen(true);
-  }, []);
-
   // Handle quick actions
   const handleQuickAction = useCallback((actionId: string) => {
     switch (actionId) {
@@ -101,12 +96,11 @@ export default function WorkspaceRootLayout({
         showBackground={false}
         onSettingsClick={() => setActivePanel('settings')}
         onActivityClick={() => setActivePanel('activity')}
-        // New props
-        onSearchClick={handleSearchClick}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
         onAiAssistantClick={handleAiAssistantClick}
         notifications={[]}
+        onUpdatePreferences={updatePreferences}
       >
         {children}
       </WorkspaceLayout>

@@ -93,7 +93,7 @@ export function AutoTagSuggestions({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          <span className="text-sm font-medium text-foreground">
             Suggested Tags
           </span>
           {loading && (
@@ -156,7 +156,7 @@ export function AutoTagSuggestions({
       {/* Current Tags */}
       {currentTags.length > 0 && (
         <div className="space-y-2">
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          <div className="text-xs font-medium text-muted-foreground">
             Current Tags
           </div>
           <div className="flex flex-wrap gap-2">
@@ -165,9 +165,9 @@ export function AutoTagSuggestions({
                 key={`current-${tag}-${index}`}
                 className={cn(
                   'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm',
-                  'bg-gray-100 dark:bg-gray-800',
-                  'text-gray-700 dark:text-gray-300',
-                  'border border-gray-200 dark:border-gray-700'
+                  'bg-muted',
+                  'text-muted-foreground',
+                  'border border-border'
                 )}
               >
                 {tag}
@@ -175,8 +175,8 @@ export function AutoTagSuggestions({
                   type="button"
                   onClick={() => onRemoveTag(tag)}
                   className={cn(
-                    'ml-1 rounded-full p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors',
-                    'focus:outline-none focus:ring-1 focus:ring-orange-500 dark:focus:ring-orange-400'
+                    'ml-1 rounded-full p-0.5 hover:bg-accent transition-colors',
+                    'focus:outline-none focus:ring-1 focus:ring-orange-500'
                   )}
                   aria-label={`Remove ${tag} tag`}
                 >
@@ -190,7 +190,7 @@ export function AutoTagSuggestions({
 
       {/* Loading State */}
       {loading && suggestions.length === 0 && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span>Analyzing content for tag suggestions...</span>
         </div>
@@ -198,7 +198,7 @@ export function AutoTagSuggestions({
 
       {/* Empty State */}
       {!loading && availableSuggestions.length === 0 && currentTags.length === 0 && (
-        <div className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="text-sm text-muted-foreground">
           Write more content to get tag suggestions
         </div>
       )}

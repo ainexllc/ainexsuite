@@ -146,7 +146,7 @@ export function HealthInsights({ metrics, variant = 'default', onExpand }: Healt
         ),
       },
     ];
-  }, [data]);
+  }, [data, accentColor]);
 
   const condensedSummary = useMemo(() => {
     if (!data) return undefined;

@@ -89,7 +89,7 @@ export function ActivityCalendar({
     calendarEnd.setDate(calendarEnd.getDate() + (6 - calendarEnd.getDay()));
 
     const weeks: Date[][] = [];
-    let currentDate = new Date(calendarStart);
+    const currentDate = new Date(calendarStart);
 
     while (currentDate <= calendarEnd) {
       const week: Date[] = [];

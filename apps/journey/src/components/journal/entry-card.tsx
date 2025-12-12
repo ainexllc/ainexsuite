@@ -21,15 +21,15 @@ export function EntryCard({ entry, onClick }: EntryCardProps) {
   return (
     <article
       onClick={onClick}
-      className="group cursor-pointer rounded-2xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 transition-all hover:border-purple-500 hover:shadow-lg"
+      className="group cursor-pointer rounded-2xl border-2 border-border bg-surface-base p-6 transition-all hover:border-purple-500 hover:shadow-lg"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+          <h3 className="text-lg font-semibold text-foreground mb-1">
             {entry.title}
           </h3>
-          <time className="text-sm text-gray-600 dark:text-gray-400">
+          <time className="text-sm text-muted-foreground">
             {formatDate(new Date(entry.createdAt))}
           </time>
         </div>
@@ -44,12 +44,12 @@ export function EntryCard({ entry, onClick }: EntryCardProps) {
       </div>
 
       {/* Content Preview */}
-      <p className="text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">
+      <p className="text-muted-foreground mb-4 line-clamp-3">
         {contentPreview}
       </p>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between pt-4 border-t border-border">
         <div className="flex flex-wrap gap-2">
           {entry.tags.slice(0, 3).map((tag) => (
             <span
@@ -60,14 +60,14 @@ export function EntryCard({ entry, onClick }: EntryCardProps) {
             </span>
           ))}
           {entry.tags.length > 3 && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-muted-foreground">
               +{entry.tags.length - 3} more
             </span>
           )}
         </div>
 
         {entry.isPrivate && (
-          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Lock className="h-3 w-3" />
             <span>Private</span>
           </div>

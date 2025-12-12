@@ -3,7 +3,6 @@
 import { Menu, Sparkles, ChevronDown, PanelTopClose, PanelTop } from 'lucide-react';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
-import { GlobalSearchTrigger } from '../navigation/global-search-trigger';
 import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
 import { NotificationBell } from '../navigation/notification-bell';
 import { QuickActionsMenu } from '../navigation/quick-actions-menu';
@@ -18,7 +17,6 @@ interface WorkspaceHeaderProps {
     subscriptionTier?: string;
     trialStartDate?: number;
   };
-  searchPlaceholder?: string;
   onSignOut: () => void;
   appName?: string;
   appColor?: string;
@@ -43,11 +41,6 @@ interface WorkspaceHeaderProps {
     onMouseEnter: () => void;
     onMouseLeave: () => void;
   };
-  // NEW: Search props
-  /**
-   * Callback when search trigger is clicked
-   */
-  onSearchClick?: () => void;
   // NEW: Breadcrumbs
   /**
    * Breadcrumb items for navigation
@@ -96,7 +89,6 @@ interface WorkspaceHeaderProps {
  * Standardized header for workspace pages with:
  * - Fixed positioning with backdrop blur
  * - Theme-aware border and shadow
- * - Global search trigger with Cmd+K
  * - Breadcrumbs navigation
  * - Quick actions menu
  * - Notification bell
@@ -107,10 +99,8 @@ interface WorkspaceHeaderProps {
  * ```tsx
  * <WorkspaceHeader
  *   user={user}
- *   searchPlaceholder="Search notes..."
  *   onSignOut={handleSignOut}
  *   onProfileToggle={() => setShowProfile(true)}
- *   onSearchClick={() => setSearchOpen(true)}
  *   breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Notes', current: true }]}
  *   notificationCount={3}
  *   onNotificationsClick={() => setNotificationsOpen(true)}
@@ -121,7 +111,6 @@ interface WorkspaceHeaderProps {
  */
 export function WorkspaceHeader({
   user,
-  searchPlaceholder = 'Search...',
   onSignOut: _onSignOut,
   appName,
   appColor,
@@ -131,8 +120,6 @@ export function WorkspaceHeader({
   autoHideEnabled = false,
   onAutoHideToggle,
   headerMouseProps,
-  // New props
-  onSearchClick,
   breadcrumbs,
   notificationCount = 0,
   onNotificationsClick,
@@ -230,19 +217,11 @@ export function WorkspaceHeader({
           )}
         </div>
 
-        {/* Center: Search */}
-        <div className="flex-1 flex justify-center px-4">
-          {onSearchClick && (
-            <GlobalSearchTrigger
-              onClick={onSearchClick}
-              placeholder={searchPlaceholder}
-              className="max-w-md"
-            />
-          )}
-        </div>
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Right: Actions */}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-2">
           {/* Quick Actions Menu */}
           {quickActions.length > 0 && onQuickAction && onQuickActionsToggle && (
             <QuickActionsMenu
