@@ -250,7 +250,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
       {/* Header */}
       <header className="relative z-50 border-b border-border bg-[#050505]/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center pl-2 sm:pl-4 md:pl-6">
             {props.logo}
           </Link>
           <div className="hidden items-center gap-6 md:flex">

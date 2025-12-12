@@ -211,13 +211,22 @@ export function AppSwitcher({
       });
 
       if (response.ok) {
-        const { customToken } = await response.json();
+        const data = await response.json();
 
-        // Get the correct URL based on environment
-        const urlWithToken = new URL(targetUrl);
-        urlWithToken.searchParams.set('auth_token', customToken);
-
-        window.location.href = urlWithToken.toString();
+        // In dev mode, store session in localStorage for instant auth on target app
+        if (data.devMode && data.sessionCookie) {
+          localStorage.setItem('__cross_app_session', data.sessionCookie);
+          localStorage.setItem('__cross_app_timestamp', String(Date.now()));
+          window.location.href = targetUrl;
+        } else if (data.devMode) {
+          // Dev mode without session (not logged in)
+          window.location.href = targetUrl;
+        } else {
+          // Production path: Add auth token to URL
+          const urlWithToken = new URL(targetUrl);
+          urlWithToken.searchParams.set('auth_token', data.customToken);
+          window.location.href = urlWithToken.toString();
+        }
       } else {
         // Token generation failed - user probably not logged in on this app
         // Navigate without SSO (target app will handle authentication)

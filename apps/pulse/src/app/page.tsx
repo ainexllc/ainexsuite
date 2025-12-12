@@ -6,7 +6,6 @@ import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
 import {
-  Loader2,
   Shield,
   Clock,
   Timer,
@@ -124,7 +123,20 @@ function PulseHomePageContent() {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="h-16 w-16 rounded-full bg-[#ef4444]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#ef4444]" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-loader2 relative mx-auto h-12 w-12 animate-spin text-[#ef4444]"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
           </div>
           {loadingMessage && (
             <div className="space-y-2">

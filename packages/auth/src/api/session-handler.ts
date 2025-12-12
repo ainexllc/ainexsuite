@@ -13,17 +13,18 @@ import type { User } from '@ainexsuite/types';
  * Detect cookie domain based on hostname
  */
 function detectCookieDomain(hostname: string): string {
-  if (process.env.NODE_ENV === 'development') {
-    // Development: use .localhost or custom local domain
-    if (hostname.includes('.localhost')) {
-      return '.localhost';
+  // Check for Vercel production environment or explicit production flag
+  if (process.env.VERCEL_ENV === 'production' ||
+    process.env.NODE_ENV === 'production') {
+    // Production logic remains same
+    if (hostname.includes('ainexsuite.com')) {
+      return '.ainexsuite.com';
     }
-    if (hostname.includes('.ainex.local')) {
-      return '.ainex.local';
-    }
-    // Fallback to localhost
-    return 'localhost';
   }
+
+  // Development: Return undefined to create a "HostOnly" cookie
+  // This allows the cookie to be shared across all ports on localhost (3000, 3001, etc.)
+  return undefined as unknown as string;
 
   // Production: check for subdomain vs standalone domain
   if (hostname.includes('ainexsuite.com')) {
@@ -205,7 +206,7 @@ export async function handleSessionCreation(req: NextRequest) {
       });
 
       response.cookies.set('__session', mockSessionCookie, {
-        domain: cookieDomain,
+        ...(cookieDomain ? { domain: cookieDomain } : {}), // Only set domain if defined
         maxAge: 60 * 60 * 24 * 14, // 14 days
         httpOnly: true,
         secure: false, // HTTP in development
@@ -231,7 +232,7 @@ export async function handleSessionCreation(req: NextRequest) {
     const response = NextResponse.json({ user, sessionCookie });
 
     response.cookies.set('__session', sessionCookie, {
-      domain: cookieDomain,
+      ...(cookieDomain ? { domain: cookieDomain } : {}), // Only set domain if defined
       maxAge: 60 * 60 * 24 * 14, // 14 days
       httpOnly: true,
       secure: true, // HTTPS only in production

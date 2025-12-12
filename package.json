@@ -19,7 +19,7 @@
     "build": "turbo run build",
     "build:apps": "turbo run build --filter './apps/*'",
     "build:packages": "turbo run build --filter './packages/*'",
-    "build:workspace": "turbo run build --filter '@ainexsuite/types' --filter '@ainexsuite/firebase' --filter '@ainexsuite/auth' --filter '@ainexsuite/ui'",
+    "build:workspace": "turbo run build --filter '@ainexsuite/types' --filter '@ainexsuite/firebase' --filter '@ainexsuite/auth' --filter '@ainexsuite/ui' --filter '@ainexsuite/ai'",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:unit": "turbo run test:unit",
@@ -38,7 +38,14 @@
     "deploy:pulse": "turbo run deploy --filter @ainexsuite/pulse",
     "deploy:fit": "turbo run deploy --filter @ainexsuite/fit",
     "deploy:admin": "turbo run deploy --filter admin",
-    "deploy:notenex": "turbo run deploy --filter @ainexsuite/notenex"
+    "deploy:notenex": "turbo run deploy --filter @ainexsuite/notenex",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop all",
+    "pm2:restart": "pm2 restart all",
+    "pm2:delete": "pm2 delete all",
+    "pm2:logs": "pm2 logs",
+    "pm2:status": "pm2 status",
+    "pm2:monit": "pm2 monit"
   },
   "workspaces": [
     "apps/*",
@@ -46,6 +53,7 @@
     "packages/generators/*"
   ],
   "devDependencies": {
+    "pm2": "^5.3.0",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",

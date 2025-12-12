@@ -19,6 +19,8 @@ import {
   isSessionExpired,
 } from './session';
 import { AuthBootstrap } from './auth-bootstrap';
+import { SSOBridge } from './components/sso-bridge';
+import { syncSessionWithAuthHub } from './utils/sso-protocol';
 
 export type BootstrapStatus = 'pending' | 'running' | 'complete' | 'failed';
 
@@ -35,6 +37,8 @@ interface AuthContextType {
   setBootstrapStatus: (status: BootstrapStatus) => void;
   /** Called by SSOHandler to signal SSO completion */
   setSsoComplete: () => void;
+  /** Hydrate user directly from dev session (dev only) */
+  hydrateFromDevSession: (sessionCookie: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -104,6 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return hasToken;
   });
 
+  // Track if we used dev hydration (no Firebase auth, just UI-level user)
+  const [devHydrated, setDevHydrated] = useState(false);
+
   // Callback for SSOHandler to signal completion
   const setSsoComplete = useCallback(() => {
     setSsoInProgress(false);
@@ -146,6 +153,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const { sessionCookie, user: userData } = await response.json();
             initializeSession(sessionCookie);
             setUser(userData);
+            // Sync session with Auth Hub for cross-app SSO (fire and forget)
+            syncSessionWithAuthHub(sessionCookie).catch(() => {
+              // Silent fail - SSO sync is not critical
+            });
           } else {
             // Log the full error response to help debug
             try {
@@ -258,6 +269,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const bootstrapPending = bootstrapStatus === 'pending' || bootstrapStatus === 'running';
   const effectiveLoading = loading || ssoInProgress || (!user && bootstrapPending);
 
+  // Dev-only: Hydrate user directly from session cookie
+  // Used when Firebase Admin SDK isn't available to create custom tokens
+  const hydrateFromDevSession = useCallback((sessionCookie: string) => {
+    if (process.env.NODE_ENV !== 'development') {
+      console.warn('[Auth] hydrateFromDevSession called in production, ignoring');
+      return;
+    }
+
+    try {
+      const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
+      const uid = decoded.uid;
+
+      if (!uid) {
+        console.error('[Auth] Invalid session cookie - no uid');
+        return;
+      }
+
+      console.log('[Auth] Hydrating user from dev session, uid:', uid);
+
+      // Create a minimal user object
+      const now = Date.now();
+      const devUser: User = {
+        uid,
+        email: decoded.email || '',
+        displayName: decoded.displayName || decoded.email || 'Dev User',
+        photoURL: decoded.photoURL || '',
+        preferences: {
+          theme: 'dark',
+          language: 'en',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          notifications: { email: true, push: false, inApp: true },
+        },
+        createdAt: now,
+        lastLoginAt: now,
+        apps: {
+          notes: true,
+          journey: true,
+          todo: true,
+          health: true,
+          moments: true,
+          grow: true,
+          pulse: true,
+          fit: true,
+        },
+        appPermissions: {},
+        appsUsed: {},
+        appsEligible: ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'],
+        trialStartDate: now,
+        subscriptionStatus: 'trial',
+        suiteAccess: true,
+      };
+
+      setUser(devUser);
+      setDevHydrated(true);
+      setLoading(false);
+      console.log('[Auth] Dev user hydrated successfully');
+    } catch (error) {
+      console.error('[Auth] Failed to hydrate from dev session:', error);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -271,11 +343,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsBootstrapping,
         setBootstrapStatus,
         setSsoComplete,
+        hydrateFromDevSession,
       }}
     >
       {/* SSOHandler processes auth_token from URL and signals completion */}
       <SSOHandler onComplete={setSsoComplete} />
       <AuthBootstrap />
+      {/* SSOBridge checks Auth Hub for cross-app SSO when not authenticated */}
+      {/* Disabled when devHydrated - dev hydration already succeeded without Firebase */}
+      <SSOBridge
+        enabled={!user && !devHydrated && bootstrapStatus === 'complete' && !ssoInProgress}
+        onComplete={() => {
+          // SSOBridge completed its check - if it found a session,
+          // signInWithCustomToken will trigger onAuthStateChanged
+        }}
+      />
       {children}
     </AuthContext.Provider>
   );

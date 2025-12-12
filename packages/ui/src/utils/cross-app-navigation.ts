@@ -31,11 +31,6 @@ export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: 
   const isDev = process.env.NODE_ENV === 'development';
   const targetUrl = getAppUrl(appSlug, isDev);
 
-  // In development, sync session cookie to localStorage for cross-port authentication
-  if (isDev) {
-    syncSessionForDev();
-  }
-
   try {
     // Request custom token for SSO
     const response = await fetch('/api/auth/custom-token', {
@@ -44,11 +39,26 @@ export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: 
     });
 
     if (response.ok) {
-      const { customToken } = await response.json();
+      const data = await response.json();
 
-      // Add auth token to URL
+      // In dev mode, store session in localStorage for instant auth on target app
+      // This is the key optimization - no need for SSOBridge or extra API calls
+      if (data.devMode && data.sessionCookie) {
+        localStorage.setItem('__cross_app_session', data.sessionCookie);
+        localStorage.setItem('__cross_app_timestamp', String(Date.now()));
+        window.location.href = targetUrl;
+        return;
+      }
+
+      // Dev mode without session (not logged in)
+      if (data.devMode) {
+        window.location.href = targetUrl;
+        return;
+      }
+
+      // Production path: Add auth token to URL
       const urlWithToken = new URL(targetUrl);
-      urlWithToken.searchParams.set('auth_token', customToken);
+      urlWithToken.searchParams.set('auth_token', data.customToken);
 
       window.location.href = urlWithToken.toString();
     } else {

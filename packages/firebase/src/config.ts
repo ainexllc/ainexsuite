@@ -27,13 +27,17 @@ export const SESSION_COOKIE_MAX_AGE = SESSION_COOKIE_MAX_AGE_MS; // Keep for bac
 // Environment-aware cookie domain
 // Use a function for runtime evaluation since this package is built separately
 // and process.env.NODE_ENV would be evaluated at package build time otherwise
-export function getSessionCookieDomain(): string {
+export function getSessionCookieDomain(): string | undefined {
   // Check for Vercel production environment or explicit production flag
   if (process.env.VERCEL_ENV === 'production' ||
-      process.env.NODE_ENV === 'production') {
+    process.env.NODE_ENV === 'production') {
     return '.ainexsuite.com';
   }
-  return '.localhost';
+  // Development: Return undefined - cookies without a domain are "HostOnly"
+  // and will be sent to all ports on the same host (localhost)
+  // Note: We rely on localStorage sync for cross-port SSO in dev since
+  // httpOnly cookies can't be read client-side for transfer
+  return undefined;
 }
 
 // @deprecated Use getSessionCookieDomain() instead - this constant may not work correctly

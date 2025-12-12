@@ -150,7 +150,7 @@ export async function DELETE(request: NextRequest) {
 
     // Clear the cookie by setting it with maxAge: 0
     res.cookies.set('__session', '', {
-      domain: cookieDomain,
+      ...(cookieDomain ? { domain: cookieDomain } : {}), // Only set domain if defined
       maxAge: 0,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -263,7 +263,7 @@ export async function POST(request: NextRequest) {
 
         const res = NextResponse.json({ sessionCookie, user });
         res.cookies.set('__session', sessionCookie, {
-          domain: cookieDomain,
+          ...(cookieDomain ? { domain: cookieDomain } : {}), // Only set domain if defined
           maxAge: SESSION_COOKIE_MAX_AGE_SECONDS, // 14 days in seconds
           httpOnly: true,
           secure: false, // Allow insecure cookies in dev
@@ -283,11 +283,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Production: Create session cookie server-side
-    const adminAuth = getAdminAuth();
-    const adminDb = getAdminFirestore();
-
-    // Import FieldValue dynamically to avoid issues in environments without admin SDK
-    const { FieldValue } = await import('firebase-admin/firestore');
+    // Production: Create session cookie server-side
+    let adminAuth, adminDb, FieldValue;
+    try {
+      adminAuth = getAdminAuth();
+      adminDb = getAdminFirestore();
+      // Import FieldValue dynamically to avoid issues in environments without admin SDK
+      ({ FieldValue } = await import('firebase-admin/firestore'));
+    } catch (e) {
+      console.error('Firebase Admin SDK initialization failed:', e);
+      return NextResponse.json(
+        {
+          error: 'Firebase Admin SDK initialization failed',
+          details: e instanceof Error ? e.message : String(e),
+          hint: 'Check FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY environment variables'
+        },
+        { status: 500 }
+      );
+    }
 
     // Verify ID token
     const decodedToken = await adminAuth.verifyIdToken(idToken);
@@ -366,7 +379,7 @@ export async function POST(request: NextRequest) {
     const res = NextResponse.json({ sessionCookie, user });
 
     res.cookies.set('__session', sessionCookie, {
-      domain: cookieDomain,
+      ...(cookieDomain ? { domain: cookieDomain } : {}), // Only set domain if defined
       maxAge: SESSION_COOKIE_MAX_AGE_SECONDS, // 14 days in seconds
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -385,6 +398,104 @@ export async function POST(request: NextRequest) {
         stack: process.env.NODE_ENV === 'development' ? stack : undefined,
       },
       { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST /api/auth/custom-token
+ *
+ * Generates a Firebase custom token from a verified session cookie.
+ * Used for SSO bootstrap - converts server-side session to client-side auth.
+ *
+ * In development: accepts base64-encoded JSON session from request body
+ * In production: verifies Firebase session cookie and creates custom token
+ */
+export async function CustomTokenPOST(request: NextRequest) {
+  const isDev = process.env.NODE_ENV === 'development';
+
+  try {
+    // Try to get session cookie from httpOnly cookie first
+    let sessionCookie = request.cookies.get('__session')?.value;
+
+    // Also check request body (for cross-port SSO in dev)
+    if (!sessionCookie) {
+      try {
+        const body = await request.json();
+        sessionCookie = body.sessionCookie;
+      } catch {
+        // No body or invalid JSON - that's fine
+      }
+    }
+
+    if (!sessionCookie) {
+      return NextResponse.json(
+        { error: 'No session cookie found' },
+        { status: 401 }
+      );
+    }
+
+    // In development, session cookies are base64-encoded JSON
+    // Try to use Admin SDK for real custom tokens (if credentials are configured)
+    // Fall back to devMode hydration if Admin SDK is not available
+    if (isDev) {
+      try {
+        const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
+        const uid = decoded.uid;
+
+        if (!uid) {
+          return NextResponse.json(
+            { error: 'Invalid session cookie: no uid' },
+            { status: 401 }
+          );
+        }
+
+        // Try to create real custom token with Admin SDK
+        try {
+          const adminAuth = getAdminAuth();
+          const customToken = await adminAuth.createCustomToken(uid);
+          console.log('[CustomToken] Dev mode with Admin SDK: created real custom token for uid:', uid);
+          return NextResponse.json({ customToken });
+        } catch (adminError) {
+          // Admin SDK not configured or failed - fall back to devMode hydration
+          console.log('[CustomToken] Admin SDK not available, using devMode hydration for uid:', uid);
+          return NextResponse.json({
+            customToken: null,
+            sessionCookie: sessionCookie,
+            devMode: true,
+          });
+        }
+      } catch (parseError) {
+        return NextResponse.json(
+          { error: 'Invalid session cookie format' },
+          { status: 401 }
+        );
+      }
+    }
+
+    // Production: Verify session cookie with Firebase Admin
+    const adminAuth = getAdminAuth();
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+
+    // Create custom token for this user
+    const customToken = await adminAuth.createCustomToken(decodedClaims.uid);
+
+    return NextResponse.json({ customToken });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('[CustomToken] Error:', errorMessage);
+
+    // Provide more specific error messages
+    let userMessage = 'Failed to generate authentication token';
+    if (errorMessage.includes('expired')) {
+      userMessage = 'Session expired';
+    } else if (errorMessage.includes('revoked')) {
+      userMessage = 'Session revoked';
+    }
+
+    return NextResponse.json(
+      { error: userMessage },
+      { status: 401 }
     );
   }
 }

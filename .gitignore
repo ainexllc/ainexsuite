@@ -49,6 +49,7 @@ functions/lib/
 dev.log
 *_debug.log
 *.log
+logs/
 
 # Environment backups (sensitive)
 docs/reference/env-backups/
