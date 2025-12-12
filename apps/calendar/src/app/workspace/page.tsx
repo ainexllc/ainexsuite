@@ -56,7 +56,8 @@ export default function WorkspacePage() {
     }
 
     fetchEvents();
-  }, [user, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handlePrev = () => {
     if (view === 'month') setCurrentDate(prev => subMonths(prev, 1));
