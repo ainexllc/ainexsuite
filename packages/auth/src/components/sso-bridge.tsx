@@ -16,6 +16,12 @@ interface SSOBridgeProps {
    * Default: true when not authenticated
    */
   enabled?: boolean;
+
+  /**
+   * Callback to hydrate user from dev session cookie (dev mode only)
+   * This avoids the need to reload the page
+   */
+  hydrateFromDevSession?: (sessionCookie: string) => void;
 }
 
 /**
@@ -36,7 +42,7 @@ interface SSOBridgeProps {
  * Usage:
  * Automatically included in AuthProvider - no manual usage needed.
  */
-export function SSOBridge({ onComplete, enabled = true }: SSOBridgeProps) {
+export function SSOBridge({ onComplete, enabled = true, hydrateFromDevSession }: SSOBridgeProps) {
   const [completed, setCompleted] = useState(false);
   const checkingRef = useRef(false);
 
@@ -62,7 +68,7 @@ export function SSOBridge({ onComplete, enabled = true }: SSOBridgeProps) {
       .then(async (sessionCookie) => {
         if (sessionCookie) {
           console.log('[SSOBridge] Found session on Auth Hub, bootstrapping...');
-          await bootstrapWithSession(sessionCookie);
+          await bootstrapWithSession(sessionCookie, hydrateFromDevSession);
         } else {
           console.log('[SSOBridge] No session found on Auth Hub');
         }
@@ -75,7 +81,7 @@ export function SSOBridge({ onComplete, enabled = true }: SSOBridgeProps) {
         checkingRef.current = false;
         onComplete?.();
       });
-  }, [enabled, completed, onComplete]);
+  }, [enabled, completed, onComplete, hydrateFromDevSession]);
 
   // No UI needed - this is purely functional
   return null;
@@ -118,7 +124,10 @@ async function checkAuthHub(): Promise<string | null> {
  * Bootstrap authentication using the session cookie from Auth Hub
  * Calls the local /api/auth/custom-token endpoint with the session
  */
-async function bootstrapWithSession(sessionCookie: string): Promise<void> {
+async function bootstrapWithSession(
+  sessionCookie: string,
+  hydrateFromDevSession?: (sessionCookie: string) => void
+): Promise<void> {
   try {
     // Call local endpoint to get a custom token from the session
     const response = await fetch('/api/auth/custom-token', {
@@ -136,15 +145,19 @@ async function bootstrapWithSession(sessionCookie: string): Promise<void> {
     const data = await response.json();
 
     // In development mode without admin SDK, server returns devMode=true with sessionCookie
-    // In this case, we need to trigger a page reload or use a different auth method
+    // Use hydrateFromDevSession callback to set user directly without reloading
     if (data.devMode && data.sessionCookie) {
-      console.log('[SSOBridge] Dev mode - setting session cookie and reloading...');
-      // Store in localStorage for auth-bootstrap to pick up
+      console.log('[SSOBridge] Dev mode - hydrating user directly from session');
+      // Store in localStorage for future page refreshes
       if (typeof window !== 'undefined') {
         localStorage.setItem('__cross_app_session', data.sessionCookie);
         localStorage.setItem('__cross_app_timestamp', String(Date.now()));
-        // Reload to let auth-bootstrap pick up the session
-        window.location.reload();
+      }
+      // Use the callback to hydrate user directly (no reload!)
+      if (hydrateFromDevSession) {
+        hydrateFromDevSession(data.sessionCookie);
+      } else {
+        console.warn('[SSOBridge] No hydrateFromDevSession callback provided, user will not be hydrated');
       }
       return;
     }

@@ -353,6 +353,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {/* Disabled when devHydrated - dev hydration already succeeded without Firebase */}
       <SSOBridge
         enabled={!user && !devHydrated && bootstrapStatus === 'complete' && !ssoInProgress}
+        hydrateFromDevSession={hydrateFromDevSession}
         onComplete={() => {
           // SSOBridge completed its check - if it found a session,
           // signInWithCustomToken will trigger onAuthStateChanged
