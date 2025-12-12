@@ -68,15 +68,25 @@ export function EventComposer({ onSave }: EventComposerProps) {
     setIsSubmitting(true);
     try {
       const [year, month, day] = date.split('-').map(Number);
-      const [startHour, startMinute] = startTime.split(':').map(Number);
-      const [endHour, endMinute] = endTime.split(':').map(Number);
 
-      const startDateTime = new Date(year, month - 1, day, startHour, startMinute);
-      const endDateTime = new Date(year, month - 1, day, endHour, endMinute);
+      let startDateTime: Date;
+      let endDateTime: Date;
 
-      // If end time is before start time, assume it's the next day
-      if (endDateTime <= startDateTime) {
-        endDateTime.setDate(endDateTime.getDate() + 1);
+      if (allDay) {
+        // For all-day events, use noon local time to avoid timezone date boundary issues
+        startDateTime = new Date(year, month - 1, day, 12, 0, 0, 0);
+        endDateTime = new Date(year, month - 1, day, 12, 0, 0, 0);
+      } else {
+        const [startHour, startMinute] = startTime.split(':').map(Number);
+        const [endHour, endMinute] = endTime.split(':').map(Number);
+
+        startDateTime = new Date(year, month - 1, day, startHour, startMinute, 0, 0);
+        endDateTime = new Date(year, month - 1, day, endHour, endMinute, 0, 0);
+
+        // If end time is before start time, assume it's the next day
+        if (endDateTime <= startDateTime) {
+          endDateTime.setDate(endDateTime.getDate() + 1);
+        }
       }
 
       await onSave({
