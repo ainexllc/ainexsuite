@@ -29,6 +29,9 @@ const leagueSpartan = League_Spartan({
 export const metadata: Metadata = {
   title: 'Calendar - AINexSuite',
   description: 'Manage your schedule and events with AINexSuite Calendar.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

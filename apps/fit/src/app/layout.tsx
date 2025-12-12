@@ -16,6 +16,9 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Fit - Fitness Tracking',
   description: 'Track your workouts and fitness progress',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

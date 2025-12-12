@@ -22,6 +22,9 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Moments - Photo Journal',
   description: 'Capture and cherish your life moments',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

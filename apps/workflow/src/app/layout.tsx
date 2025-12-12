@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   title: 'AINexSuite Workflow - Visual Workflow Builder',
   description: 'Design, automate, and execute beautiful workflows with drag-and-drop simplicity. Transform complex processes into elegant visual diagrams.',
   keywords: ['workflow', 'automation', 'visual builder', 'process automation', 'ai workflow', 'workflow designer'],
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -28,6 +28,9 @@ const vt323 = VT323({
 export const metadata: Metadata = {
   title: 'Pulse - Health Metrics',
   description: 'Track your health and wellness metrics',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export const viewport: Viewport = {

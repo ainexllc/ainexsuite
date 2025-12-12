@@ -22,6 +22,9 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Grow - Learning Goals',
   description: 'Track your learning journey and skill development',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

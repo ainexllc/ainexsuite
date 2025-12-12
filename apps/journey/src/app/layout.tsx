@@ -23,6 +23,9 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Journey - AINexSuite',
   description: 'Daily reflections and mood tracking with AI insights',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 // Toast provider added for notifications
 

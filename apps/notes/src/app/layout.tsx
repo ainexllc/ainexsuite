@@ -31,6 +31,9 @@ export const metadata: Metadata = {
   title: "NoteNex • Capture and organize ideas effortlessly",
   description:
     "A modern note-taking surface inspired by Google Keep with powerful organization, collaboration, and insight features.",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -22,6 +22,9 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Health - AINexSuite',
   description: 'Health metrics and wellness tracking with AI insights',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

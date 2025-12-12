@@ -22,6 +22,9 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Todo - AINexSuite',
   description: 'Project management and task tracking with AI assistance',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

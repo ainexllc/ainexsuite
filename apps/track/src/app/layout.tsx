@@ -22,6 +22,9 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Track - AINexSuite',
   description: 'Track and manage your recurring expenses with AI insights',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
