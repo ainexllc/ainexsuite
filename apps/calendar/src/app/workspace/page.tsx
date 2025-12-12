@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Timestamp } from 'firebase/firestore';
 import { useToast, WorkspacePageLayout } from '@ainexsuite/ui';
 import { Loader2 } from 'lucide-react';
@@ -11,8 +11,7 @@ import { MonthView } from '@/components/calendar/month-view';
 import { WeekView } from '@/components/calendar/week-view';
 import { DayView } from '@/components/calendar/day-view';
 import { AgendaView } from '@/components/calendar/agenda-view';
-import { EventModal } from '@/components/calendar/event-modal';
-import { EventComposer } from '@/components/calendar/event-composer';
+import { EventComposer, EventComposerRef } from '@/components/calendar/event-composer';
 import { SpaceSwitcher } from '@/components/spaces';
 import { EventsService } from '@/lib/events';
 import { CalendarEvent, CreateEventInput } from '@/types/event';
@@ -22,16 +21,12 @@ import { useWorkspaceAuth } from '@ainexsuite/auth';
 export default function WorkspacePage() {
   const { user } = useWorkspaceAuth();
   const { toast } = useToast();
+  const composerRef = useRef<EventComposerRef>(null);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>('month');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
-
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [editingEvent, setEditingEvent] = useState<CalendarEvent | undefined>(undefined);
 
   // Enable reminders
   useReminders(events);
@@ -82,25 +77,26 @@ export default function WorkspacePage() {
 
   const handleToday = () => setCurrentDate(new Date());
 
+  // Open composer for new event on a specific date
   const handleDayClick = (date: Date) => {
-    setSelectedDate(date);
-    setEditingEvent(undefined);
-    setIsModalOpen(true);
+    composerRef.current?.createEvent(date);
   };
 
+  // Open composer to edit an existing event
   const handleEventClick = (event: CalendarEvent) => {
-    setEditingEvent(event);
-    setSelectedDate(undefined);
-    setIsModalOpen(true);
+    // Skip task events - they should open in todo app
+    if (event.id.startsWith('task_')) return;
+    composerRef.current?.editEvent(event);
   };
 
-  // Handler for modal save (editing events)
-  const handleSaveEvent = async (eventData: CreateEventInput) => {
+  // Handler for composer save (both new and edit)
+  const handleComposerSave = async (eventData: CreateEventInput, eventId?: string) => {
     if (!user) return;
     try {
-      if (editingEvent) {
+      if (eventId) {
+        // Updating existing event
         await EventsService.updateEvent(user.uid, {
-          id: editingEvent.id,
+          id: eventId,
           ...eventData
         });
         toast({
@@ -109,6 +105,7 @@ export default function WorkspacePage() {
           variant: 'success'
         });
       } else {
+        // Creating new event
         await EventsService.addEvent(user.uid, eventData);
         toast({
           title: "Event created",
@@ -116,29 +113,6 @@ export default function WorkspacePage() {
           variant: 'success'
         });
       }
-
-      await refreshEvents();
-      setIsModalOpen(false);
-    } catch (e) {
-      console.error("Error saving event", e);
-      toast({
-        title: "Failed to save event",
-        description: "There was an error saving your event. Please try again.",
-        variant: 'error'
-      });
-    }
-  };
-
-  // Handler for composer save (new events from inline composer)
-  const handleComposerSave = async (eventData: CreateEventInput) => {
-    if (!user) return;
-    try {
-      await EventsService.addEvent(user.uid, eventData);
-      toast({
-        title: "Event created",
-        description: "Your event has been added to the calendar.",
-        variant: 'success'
-      });
       await refreshEvents();
     } catch (e) {
       console.error("Error saving event", e);
@@ -151,6 +125,7 @@ export default function WorkspacePage() {
     }
   };
 
+  // Handler for composer delete
   const handleDeleteEvent = async (eventId: string) => {
     if (!user) return;
     try {
@@ -161,7 +136,6 @@ export default function WorkspacePage() {
         variant: 'success'
       });
       await refreshEvents();
-      setIsModalOpen(false);
     } catch (e) {
       console.error("Error deleting event", e);
       toast({
@@ -169,6 +143,7 @@ export default function WorkspacePage() {
         description: "There was an error deleting your event. Please try again.",
         variant: 'error'
       });
+      throw e;
     }
   };
 
@@ -222,19 +197,22 @@ export default function WorkspacePage() {
   };
 
   const handleTimeSlotClick = (date: Date) => {
-    setSelectedDate(date);
-    setEditingEvent(undefined);
-    setIsModalOpen(true);
+    composerRef.current?.createEvent(date);
   };
 
   return (
-    <>
-      <WorkspacePageLayout
-        maxWidth="wide"
-        className="h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 py-8 flex flex-col"
-        composer={<EventComposer onSave={handleComposerSave} />}
-        composerActions={<SpaceSwitcher />}
-      >
+    <WorkspacePageLayout
+      maxWidth="wide"
+      className="h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 py-8 flex flex-col"
+      composer={
+        <EventComposer
+          ref={composerRef}
+          onSave={handleComposerSave}
+          onDelete={handleDeleteEvent}
+        />
+      }
+      composerActions={<SpaceSwitcher />}
+    >
         <div className="flex items-center justify-between mb-6">
           <CalendarHeader
             currentDate={currentDate}
@@ -288,16 +266,6 @@ export default function WorkspacePage() {
             </>
           )}
         </div>
-      </WorkspacePageLayout>
-
-      <EventModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveEvent}
-        onDelete={handleDeleteEvent}
-        initialDate={selectedDate}
-        eventToEdit={editingEvent}
-      />
-    </>
+    </WorkspacePageLayout>
   );
 }
