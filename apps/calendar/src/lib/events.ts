@@ -158,21 +158,25 @@ export const EventsService = {
 
   async addEvent(userId: string, event: CreateEventInput): Promise<string> {
     const eventsRef = collection(db, 'users', userId, EVENTS_COLLECTION);
-    
+
     const docData: Record<string, unknown> = {
-      ...event,
       userId,
+      title: event.title,
+      description: event.description || '',
       startTime: Timestamp.fromDate(event.startTime),
       endTime: Timestamp.fromDate(event.endTime),
       allDay: event.allDay || false,
       type: event.type || 'event',
+      color: event.color || '#3b82f6',
+      location: event.location || '',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
 
     if (event.recurrence) {
       docData.recurrence = {
-        ...event.recurrence,
+        frequency: event.recurrence.frequency,
+        interval: event.recurrence.interval,
         endDate: event.recurrence.endDate ? Timestamp.fromDate(event.recurrence.endDate) : null
       };
     }
