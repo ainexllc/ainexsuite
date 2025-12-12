@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
-import { Sparkles, RefreshCw, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { ReactNode, useState, useEffect, useRef } from "react";
+import { Sparkles, RefreshCw, Loader2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 export interface AIInsightsRibbonSection {
@@ -65,6 +65,9 @@ export function AIInsightsRibbon({
   collapsedSummary,
 }: AIInsightsRibbonProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const autoRotateInterval = 4000; // 4 seconds
 
   // Load expanded state from localStorage
   useEffect(() => {
@@ -76,6 +79,34 @@ export function AIInsightsRibbon({
     }
   }, [storageKey]);
 
+  // Auto-rotate through sections
+  useEffect(() => {
+    if (isPaused || sections.length <= 1 || isLoading) return;
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % sections.length);
+    }, autoRotateInterval);
+
+    return () => clearInterval(interval);
+  }, [isPaused, sections.length, isLoading]);
+
+  // Reset slide when sections change
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [sections.length]);
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const goToPrevious = () => {
+    setCurrentSlide((prev) => (prev - 1 + sections.length) % sections.length);
+  };
+
+  const goToNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % sections.length);
+  };
+
   // Toggle and persist state
   const toggleExpanded = () => {
     const newExpanded = !isExpanded;
@@ -85,8 +116,9 @@ export function AIInsightsRibbon({
     }
   };
 
-  // Get first section summary for collapsed view
-  const primarySummary = collapsedSummary || sections[0]?.summary || "View insights";
+  // Get current section for rotating display
+  const currentSection = sections[currentSlide];
+  const primarySummary = collapsedSummary || currentSection?.summary || sections[0]?.summary || "View insights";
 
   // Count items for badge
   const itemCount = sections.length;
@@ -101,13 +133,18 @@ export function AIInsightsRibbon({
         <div className="md:hidden">
           <button
             onClick={toggleExpanded}
-            className="inline-flex rounded-xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] p-2 text-left transition-all hover:bg-white/[0.06]"
+            className="relative inline-flex rounded-xl backdrop-blur-md border p-2 text-left transition-all bg-white/90 dark:bg-transparent hover:bg-white dark:hover:bg-white/[0.06] overflow-hidden"
+            style={{ borderColor: `${accentColor}40` }}
           >
-            <div className="flex items-center gap-2">
+            <div
+              className="absolute inset-0 rounded-xl opacity-[0.12] dark:opacity-[0.15]"
+              style={{ backgroundColor: accentColor }}
+            />
+            <div className="relative flex items-center gap-2">
               {/* Tiny Icon */}
               <div
                 className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center"
-                style={{ backgroundColor: `${accentColor}30` }}
+                style={{ backgroundColor: `${accentColor}40` }}
               >
                 {isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" style={{ color: accentColor }} />
@@ -117,7 +154,7 @@ export function AIInsightsRibbon({
               </div>
 
               {/* Short text - truncated */}
-              <span className="text-xs font-medium text-white/90 max-w-[150px] truncate">
+              <span className="text-xs font-medium text-zinc-800 dark:text-white/90 max-w-[150px] truncate">
                 {isLoading ? loadingMessage : primarySummary}
               </span>
 
@@ -126,12 +163,12 @@ export function AIInsightsRibbon({
                 {!isLoading && (
                   <span
                     className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-                    style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
+                    style={{ backgroundColor: `${accentColor}40`, color: accentColor }}
                   >
                     {itemCount}
                   </span>
                 )}
-                <ChevronDown className="w-3 h-3 text-white/50" />
+                <ChevronDown className="w-3 h-3 text-zinc-500 dark:text-white/50" />
               </div>
             </div>
           </button>
@@ -141,13 +178,18 @@ export function AIInsightsRibbon({
         <div className="hidden md:block lg:hidden">
           <button
             onClick={toggleExpanded}
-            className="w-full rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-4 py-2.5 text-left transition-all hover:bg-white/[0.06]"
+            className="relative w-full rounded-2xl backdrop-blur-md border px-4 py-2.5 text-left transition-all bg-white/90 dark:bg-transparent hover:bg-white dark:hover:bg-white/[0.06] overflow-hidden"
+            style={{ borderColor: `${accentColor}40` }}
           >
-            <div className="flex items-center gap-3">
+            <div
+              className="absolute inset-0 opacity-[0.12] dark:opacity-[0.15]"
+              style={{ backgroundColor: accentColor }}
+            />
+            <div className="relative flex items-center gap-3">
               {/* Icon */}
               <div
                 className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: `${accentColor}30` }}
+                style={{ backgroundColor: `${accentColor}40` }}
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" style={{ color: accentColor }} />
@@ -157,7 +199,7 @@ export function AIInsightsRibbon({
               </div>
 
               {/* Focus text */}
-              <span className="text-sm font-medium text-white flex-1 min-w-0 truncate">
+              <span className="text-sm font-medium text-zinc-900 dark:text-white flex-1 min-w-0 truncate">
                 {isLoading ? loadingMessage : primarySummary}
               </span>
 
@@ -165,27 +207,38 @@ export function AIInsightsRibbon({
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!isLoading && (
                   <span
-                    className="px-2 py-0.5 rounded text-xs font-medium"
-                    style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
+                    className="px-2 py-0.5 rounded text-xs font-semibold"
+                    style={{ backgroundColor: `${accentColor}40`, color: accentColor }}
                   >
                     {itemCount} insights
                   </span>
                 )}
-                <ChevronDown className="w-4 h-4 text-white/50" />
+                <ChevronDown className="w-4 h-4 text-zinc-500 dark:text-white/50" />
               </div>
             </div>
           </button>
         </div>
 
-        {/* Desktop: Always show full ribbon even when "collapsed" (>= 1024px) */}
-        <div className="hidden lg:flex lg:justify-center">
-          <div className="w-[80%] max-w-5xl rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-5 py-3">
-            <div className="flex items-center">
+        {/* Desktop: Rotating banner with single insight (>= 1024px) */}
+        <div
+          className="hidden lg:flex lg:justify-center"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div
+            className="relative w-[80%] max-w-5xl rounded-2xl backdrop-blur-md border px-5 py-3 bg-white/90 dark:bg-transparent overflow-hidden"
+            style={{ borderColor: `${accentColor}40` }}
+          >
+            <div
+              className="absolute inset-0 opacity-[0.10] dark:opacity-[0.15]"
+              style={{ backgroundColor: accentColor }}
+            />
+            <div className="relative flex items-center">
               {/* Icon + Title */}
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${accentColor}30` }}
+                  style={{ backgroundColor: `${accentColor}40` }}
                 >
                   {isLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" style={{ color: accentColor }} />
@@ -193,31 +246,97 @@ export function AIInsightsRibbon({
                     <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
                   )}
                 </div>
-                <span className="font-semibold text-white">{title}</span>
+                <span className="font-semibold text-zinc-900 dark:text-white">{title}</span>
               </div>
 
               {/* Vertical Divider */}
-              <div className="h-8 w-px bg-white/10 mx-6 flex-shrink-0" />
+              <div
+                className="h-8 w-px mx-6 flex-shrink-0 opacity-30"
+                style={{ backgroundColor: accentColor }}
+              />
 
-              {/* Sections - horizontal inline with consistent spacing */}
-              <div className="flex-1 flex items-center gap-12">
-                {sections.map((section, index) => (
-                  <div key={index} className="flex-shrink-0">
-                    <p className="text-[11px] text-white/50 mb-0.5 uppercase tracking-wide">{section.label}</p>
-                    <div className="text-sm text-white">
-                      {section.content}
+              {/* Rotating Single Insight */}
+              <div className="flex-1 flex items-center gap-4 min-w-0">
+                {/* Previous Button */}
+                {sections.length > 1 && (
+                  <button
+                    onClick={goToPrevious}
+                    className="flex-shrink-0 p-1.5 rounded-lg text-zinc-400 dark:text-white/40 hover:text-zinc-600 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    aria-label="Previous insight"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                )}
+
+                {/* Current Insight with fade animation */}
+                {currentSection && (
+                  <div
+                    key={currentSlide}
+                    className="flex-1 flex items-center gap-3 min-w-0 animate-in fade-in slide-in-from-right-2 duration-300"
+                  >
+                    {/* Section Icon */}
+                    <div
+                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${accentColor}25` }}
+                    >
+                      <span style={{ color: accentColor }}>{currentSection.icon}</span>
+                    </div>
+                    {/* Label + Content */}
+                    <div className="flex-1 min-w-0">
+                      <span
+                        className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide mb-0.5"
+                        style={{ backgroundColor: `${accentColor}25`, color: accentColor }}
+                      >
+                        {currentSection.label}
+                      </span>
+                      <div className="text-sm text-zinc-800 dark:text-white truncate">
+                        {currentSection.summary || currentSection.content}
+                      </div>
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* Next Button */}
+                {sections.length > 1 && (
+                  <button
+                    onClick={goToNext}
+                    className="flex-shrink-0 p-1.5 rounded-lg text-zinc-400 dark:text-white/40 hover:text-zinc-600 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    aria-label="Next insight"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                )}
               </div>
 
+              {/* Dots Indicator */}
+              {sections.length > 1 && (
+                <div className="flex items-center gap-1.5 mx-4">
+                  {sections.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={cn(
+                        "h-1.5 rounded-full transition-all duration-300",
+                        index === currentSlide
+                          ? "w-4"
+                          : "w-1.5 opacity-40 hover:opacity-70"
+                      )}
+                      style={{
+                        backgroundColor: index === currentSlide ? accentColor : (typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? 'white' : '#71717a'),
+                      }}
+                      aria-label={`Go to insight ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* Action Buttons */}
-              <div className="flex items-center gap-1 flex-shrink-0 ml-4">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 {onRefresh && (
                   <button
                     onClick={onRefresh}
                     disabled={isLoading || refreshDisabled}
-                    className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
                     title="Refresh"
                   >
                     <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
@@ -240,22 +359,29 @@ export function AIInsightsRibbon({
           ERROR STATE
       ============================================ */}
       {error ? (
-        <div className="rounded-xl backdrop-blur-sm bg-white/5 dark:bg-white/5 border border-white/10 p-3 md:p-4">
-          <div className="flex items-center gap-3">
+        <div
+          className="relative rounded-xl backdrop-blur-sm border p-3 md:p-4 bg-white/90 dark:bg-transparent overflow-hidden"
+          style={{ borderColor: `${accentColor}40` }}
+        >
+          <div
+            className="absolute inset-0 opacity-[0.10] dark:opacity-[0.15]"
+            style={{ backgroundColor: accentColor }}
+          />
+          <div className="relative flex items-center gap-3">
             <div
               className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: `${accentColor}30` }}
+              style={{ backgroundColor: `${accentColor}40` }}
             >
               <Sparkles className="h-4 w-4 md:h-5 md:w-5" style={{ color: accentColor }} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-yellow-400 font-medium truncate">
+              <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium truncate">
                 {error}
               </p>
             </div>
             <button
               onClick={toggleExpanded}
-              className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              className="p-1.5 text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
             >
               <ChevronUp className="h-4 w-4" />
             </button>
@@ -265,18 +391,25 @@ export function AIInsightsRibbon({
         /* ============================================
             LOADING STATE
         ============================================ */
-        <div className="rounded-xl backdrop-blur-sm bg-white/5 dark:bg-white/5 border border-white/10 p-3 md:p-4">
-          <div className="flex items-center gap-3">
+        <div
+          className="relative rounded-xl backdrop-blur-sm border p-3 md:p-4 bg-white/90 dark:bg-transparent overflow-hidden"
+          style={{ borderColor: `${accentColor}40` }}
+        >
+          <div
+            className="absolute inset-0 opacity-[0.10] dark:opacity-[0.15]"
+            style={{ backgroundColor: accentColor }}
+          />
+          <div className="relative flex items-center gap-3">
             <div
               className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: `${accentColor}30` }}
+              style={{ backgroundColor: `${accentColor}40` }}
             >
               <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" style={{ color: accentColor }} />
             </div>
-            <span className="text-sm text-white/60 flex-1 truncate">{loadingMessage}</span>
+            <span className="text-sm text-zinc-600 dark:text-white/60 flex-1 truncate">{loadingMessage}</span>
             <button
               onClick={toggleExpanded}
-              className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+              className="p-1.5 text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
             >
               <ChevronUp className="h-4 w-4" />
             </button>
@@ -292,30 +425,37 @@ export function AIInsightsRibbon({
               Mockup #20 Mobile: tiny icon, short text, badge, chevron
           ---------------------------------------- */}
           <div className="md:hidden">
-            <div className="inline-flex rounded-xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] p-2">
-              <div className="flex items-center gap-2">
+            <div
+              className="relative inline-flex rounded-xl backdrop-blur-md border p-2 bg-white/90 dark:bg-transparent overflow-hidden"
+              style={{ borderColor: `${accentColor}40` }}
+            >
+              <div
+                className="absolute inset-0 rounded-xl opacity-[0.12] dark:opacity-[0.15]"
+                style={{ backgroundColor: accentColor }}
+              />
+              <div className="relative flex items-center gap-2">
                 {/* Tiny icon */}
                 <div
                   className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center"
-                  style={{ backgroundColor: `${accentColor}30` }}
+                  style={{ backgroundColor: `${accentColor}40` }}
                 >
                   <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
                 </div>
                 {/* Primary text truncated */}
-                <span className="text-xs font-medium text-white/90 max-w-[150px] truncate">
+                <span className="text-xs font-medium text-zinc-800 dark:text-white/90 max-w-[150px] truncate">
                   {sections[0]?.summary || sections[0]?.label}
                 </span>
                 {/* Badge + Chevron */}
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <span
                     className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-                    style={{ backgroundColor: `${accentColor}30`, color: accentColor }}
+                    style={{ backgroundColor: `${accentColor}40`, color: accentColor }}
                   >
                     {itemCount}
                   </span>
                   <button
                     onClick={toggleExpanded}
-                    className="p-0.5 text-white/50 hover:text-white transition-colors"
+                    className="p-0.5 text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white transition-colors"
                   >
                     <ChevronUp className="w-3 h-3" />
                   </button>
@@ -329,18 +469,25 @@ export function AIInsightsRibbon({
               Mockup #20 Tablet: icon, focus text, inline tags, actions count, chevron
           ---------------------------------------- */}
           <div className="hidden md:block lg:hidden">
-            <div className="rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-4 py-2.5">
-              <div className="flex items-center gap-3">
+            <div
+              className="relative rounded-2xl backdrop-blur-md border px-4 py-2.5 bg-white/90 dark:bg-transparent overflow-hidden"
+              style={{ borderColor: `${accentColor}40` }}
+            >
+              <div
+                className="absolute inset-0 opacity-[0.12] dark:opacity-[0.15]"
+                style={{ backgroundColor: accentColor }}
+              />
+              <div className="relative flex items-center gap-3">
                 {/* Icon */}
                 <div
                   className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${accentColor}30` }}
+                  style={{ backgroundColor: `${accentColor}40` }}
                 >
                   <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
                 </div>
 
                 {/* Focus text - truncated */}
-                <span className="text-sm font-medium text-white flex-1 min-w-0 truncate">
+                <span className="text-sm font-medium text-zinc-900 dark:text-white flex-1 min-w-0 truncate">
                   {sections[0]?.summary || primarySummary}
                 </span>
 
@@ -350,14 +497,14 @@ export function AIInsightsRibbon({
                 </div>
 
                 {/* Actions count */}
-                <span className="text-xs text-white/60 flex-shrink-0">
+                <span className="text-xs text-zinc-600 dark:text-white/60 flex-shrink-0">
                   {sections[2]?.summary || `${itemCount} items`}
                 </span>
 
                 {/* Chevron */}
                 <button
                   onClick={toggleExpanded}
-                  className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+                  className="p-1.5 text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
                 >
                   <ChevronUp className="h-4 w-4" />
                 </button>
@@ -366,45 +513,121 @@ export function AIInsightsRibbon({
           </div>
 
           {/* ----------------------------------------
-              DESKTOP (LG+) - Full ribbon with labeled sections (1024px+)
-              Exact match to Mockup #20 Desktop layout
+              DESKTOP (LG+) - Rotating banner with single insight (1024px+)
           ---------------------------------------- */}
-          <div className="hidden lg:flex lg:justify-center">
-            <div className="w-[80%] max-w-5xl rounded-2xl backdrop-blur-md bg-white/[0.03] border border-white/[0.08] px-5 py-3">
-              <div className="flex items-center">
+          <div
+            className="hidden lg:flex lg:justify-center"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
+            <div
+              className="relative w-[80%] max-w-5xl rounded-2xl backdrop-blur-md border px-5 py-3 bg-white/90 dark:bg-transparent overflow-hidden"
+              style={{ borderColor: `${accentColor}40` }}
+            >
+              <div
+                className="absolute inset-0 opacity-[0.10] dark:opacity-[0.15]"
+                style={{ backgroundColor: accentColor }}
+              />
+              <div className="relative flex items-center">
                 {/* Icon + Title */}
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: `${accentColor}30` }}
+                    style={{ backgroundColor: `${accentColor}40` }}
                   >
                     <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
                   </div>
-                  <span className="font-semibold text-white">{title}</span>
+                  <span className="font-semibold text-zinc-900 dark:text-white">{title}</span>
                 </div>
 
                 {/* Vertical Divider */}
-                <div className="h-8 w-px bg-white/10 mx-6 flex-shrink-0" />
+                <div
+                  className="h-8 w-px mx-6 flex-shrink-0 opacity-30"
+                  style={{ backgroundColor: accentColor }}
+                />
 
-                {/* Sections - horizontal inline with consistent spacing */}
-                <div className="flex-1 flex items-center gap-12">
-                  {sections.map((section, index) => (
-                    <div key={index} className="flex-shrink-0">
-                      <p className="text-[11px] text-white/50 mb-0.5 uppercase tracking-wide">{section.label}</p>
-                      <div className="text-sm text-white">
-                        {section.content}
+                {/* Rotating Single Insight */}
+                <div className="flex-1 flex items-center gap-4 min-w-0">
+                  {/* Previous Button */}
+                  {sections.length > 1 && (
+                    <button
+                      onClick={goToPrevious}
+                      className="flex-shrink-0 p-1.5 rounded-lg text-zinc-400 dark:text-white/40 hover:text-zinc-600 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                      aria-label="Previous insight"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                  )}
+
+                  {/* Current Insight with fade animation */}
+                  {currentSection && (
+                    <div
+                      key={`expanded-${currentSlide}`}
+                      className="flex-1 flex items-center gap-3 min-w-0 animate-in fade-in slide-in-from-right-2 duration-300"
+                    >
+                      {/* Section Icon */}
+                      <div
+                        className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: `${accentColor}25` }}
+                      >
+                        <span style={{ color: accentColor }}>{currentSection.icon}</span>
+                      </div>
+                      {/* Label + Content */}
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide mb-0.5"
+                          style={{ backgroundColor: `${accentColor}25`, color: accentColor }}
+                        >
+                          {currentSection.label}
+                        </span>
+                        <div className="text-sm text-zinc-800 dark:text-white truncate">
+                          {currentSection.summary || currentSection.content}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Next Button */}
+                  {sections.length > 1 && (
+                    <button
+                      onClick={goToNext}
+                      className="flex-shrink-0 p-1.5 rounded-lg text-zinc-400 dark:text-white/40 hover:text-zinc-600 dark:hover:text-white/70 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                      aria-label="Next insight"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
 
+                {/* Dots Indicator */}
+                {sections.length > 1 && (
+                  <div className="flex items-center gap-1.5 mx-4">
+                    {sections.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className={cn(
+                          "h-1.5 rounded-full transition-all duration-300",
+                          index === currentSlide
+                            ? "w-4"
+                            : "w-1.5 opacity-40 hover:opacity-70"
+                        )}
+                        style={{
+                          backgroundColor: index === currentSlide ? accentColor : 'currentColor',
+                        }}
+                        aria-label={`Go to insight ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 {/* Action Buttons */}
-                <div className="flex items-center gap-1 flex-shrink-0 ml-4">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   {onRefresh && (
                     <button
                       onClick={onRefresh}
                       disabled={isLoading || refreshDisabled}
-                      className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
                       title="Refresh"
                     >
                       <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
@@ -412,7 +635,7 @@ export function AIInsightsRibbon({
                   )}
                   <button
                     onClick={toggleExpanded}
-                    className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-2 text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors"
                     title="Collapse"
                   >
                     <ChevronUp className="h-4 w-4" />

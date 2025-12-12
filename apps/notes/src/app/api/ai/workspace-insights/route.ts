@@ -20,20 +20,31 @@ export async function POST(request: NextRequest) {
       `Note ${i + 1} (${n.date}): [${n.title || "Untitled"}] ${n.content.slice(0, 300)}...`
     ).join("\n\n");
 
-    const prompt = `Analyze the following recent notes from my workspace and provide high-level insights.
-    
+    const prompt = `Analyze the following recent notes from my workspace and provide comprehensive insights.
+
 ${notesContext}
 
 Return ONLY a valid JSON object with this structure:
 {
   "weeklyFocus": "A 1-sentence summary of what I seem to be working on recently.",
   "commonThemes": ["Theme 1", "Theme 2", "Theme 3"],
-  "pendingActions": ["Critical task 1", "Critical task 2", "Critical task 3"]
+  "pendingActions": ["Critical task 1", "Critical task 2", "Critical task 3"],
+  "mood": "creative",
+  "topCategories": [{"name": "Category", "count": 3}],
+  "connections": [{"topic": "Topic Name", "noteCount": 2}],
+  "learningTopics": ["Topic 1", "Topic 2"],
+  "quickTip": "One actionable suggestion"
 }
 
-- "weeklyFocus": Synthesize the main topic or project.
-- "commonThemes": Identify recurring subjects (e.g., "House Renovation", "Q4 Planning").
-- "pendingActions": Extract up to 3 most important uncompleted tasks or reminders found in the text.
+Field descriptions:
+- "weeklyFocus": Synthesize the main topic or project being worked on.
+- "commonThemes": Identify 3 recurring subjects (e.g., "House Renovation", "Q4 Planning").
+- "pendingActions": Extract up to 3 most important uncompleted tasks or reminders.
+- "mood": One word describing the emotional tone of the notes (creative, focused, stressed, productive, reflective, energized, overwhelmed).
+- "topCategories": Top 3 categories/themes with approximate note counts based on content.
+- "connections": Topics or projects mentioned in multiple notes that could be linked together (max 2).
+- "learningTopics": New concepts, skills, or areas being explored/researched (max 3).
+- "quickTip": One actionable productivity suggestion based on the notes content.
 `;
 
     // Use createCompletion for better control (lower temperature for JSON stability)
@@ -65,7 +76,12 @@ Return ONLY a valid JSON object with this structure:
        return NextResponse.json({
          weeklyFocus: "Could not analyze notes at this time.",
          commonThemes: [],
-         pendingActions: []
+         pendingActions: [],
+         mood: "neutral",
+         topCategories: [],
+         connections: [],
+         learningTopics: [],
+         quickTip: ""
        });
     }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Target, Zap } from "lucide-react";
+import { Target, Zap, Flame, BarChart3, Heart, Network, Brain, Lightbulb } from "lucide-react";
 import { createElement } from "react";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
@@ -17,6 +17,79 @@ interface InsightData {
   weeklyFocus: string;
   commonThemes: string[];
   pendingActions: string[];
+  // New fields
+  mood: string;
+  topCategories: Array<{ name: string; count: number }>;
+  connections: Array<{ topic: string; noteCount: number }>;
+  learningTopics: string[];
+  quickTip: string;
+}
+
+interface StreakData {
+  streakDays: number;
+  notesThisWeek: number;
+}
+
+/**
+ * Calculate writing streak and notes this week from note timestamps
+ */
+function calculateStreak(notes: Array<{ createdAt: Date; updatedAt: Date }>): StreakData {
+  if (notes.length === 0) return { streakDays: 0, notesThisWeek: 0 };
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  // Count notes this week
+  const notesThisWeek = notes.filter((n) => n.createdAt >= weekAgo).length;
+
+  // Calculate streak: count consecutive days with notes going backwards from today
+  const noteDates = new Set(
+    notes.map((n) => {
+      const d = n.createdAt;
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    })
+  );
+
+  let streakDays = 0;
+  const checkDate = new Date(today);
+
+  // Check today first, if no note today, check yesterday as streak start
+  const todayKey = `${checkDate.getFullYear()}-${checkDate.getMonth()}-${checkDate.getDate()}`;
+  if (!noteDates.has(todayKey)) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  // Count consecutive days backwards
+  let hasMoreDays = true;
+  while (hasMoreDays) {
+    const key = `${checkDate.getFullYear()}-${checkDate.getMonth()}-${checkDate.getDate()}`;
+    if (noteDates.has(key)) {
+      streakDays++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      hasMoreDays = false;
+    }
+  }
+
+  return { streakDays, notesThisWeek };
+}
+
+/**
+ * Get mood emoji/description for display
+ */
+function getMoodDisplay(mood: string): string {
+  const moodMap: Record<string, string> = {
+    creative: "Creative & inspired",
+    focused: "Focused & productive",
+    stressed: "Under pressure",
+    productive: "Highly productive",
+    reflective: "Thoughtful & reflective",
+    energized: "Energized & motivated",
+    overwhelmed: "Feeling overwhelmed",
+    neutral: "Balanced",
+  };
+  return moodMap[mood?.toLowerCase()] || mood || "Balanced";
 }
 
 export interface WorkspaceInsightsResult {
@@ -56,7 +129,6 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
   const hasEnoughData = recentNotes.length >= 2;
   // Space-specific cache key
   const STORAGE_KEY = `ainex-notes-workspace-insights-${currentSpaceId}`;
-  const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 
   const saveToCache = useCallback(
     (insights: InsightData) => {
@@ -145,9 +217,11 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
     if (cached) {
       try {
         const { insights, timestamp } = JSON.parse(cached);
-        const age = Date.now() - timestamp;
+        // Check if cache is from today (once per day strategy to save tokens)
+        const cacheDate = new Date(timestamp).toDateString();
+        const today = new Date().toDateString();
 
-        if (age < CACHE_DURATION) {
+        if (cacheDate === today) {
           setData(insights);
           setLastUpdated(new Date(timestamp));
           return;
@@ -164,48 +238,114 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notesLoading, hasEnoughData, currentSpaceId, isExpanded, STORAGE_KEY]);
 
-  // Build sections for the pulldown component
+  // Calculate streak data from all non-archived notes
+  const streakData = useMemo(() => {
+    const activeNotes = notes.filter((n) => !n.archived && !n.deletedAt);
+    return calculateStreak(activeNotes);
+  }, [notes]);
+
+  // Build sections for the pulldown component with gradient colors (8 slides)
   const sections: AIInsightsPulldownSection[] = useMemo(() => {
     if (!data) return [];
 
-    return [
-      // Focus - with full content
-      {
-        icon: createElement(Target, {
-          className: "h-4 w-4",
-          style: { color: primaryColor },
-        }),
+    const allSections: AIInsightsPulldownSection[] = [];
+
+    // 1. Current Focus (productivity)
+    if (data.weeklyFocus) {
+      allSections.push({
+        icon: createElement(Target, { className: "h-4 w-4" }),
         label: "Current Focus",
         content: data.weeklyFocus,
-      },
-      // Actions - count with action button
-      {
-        icon: createElement(Zap, {
-          className: "h-4 w-4",
-          style: { color: "#ef4444" },
-        }),
+        gradient: { from: primaryColor, to: "#f97316" }, // yellow → orange
+      });
+    }
+
+    // 2. Writing Streak (engagement) - client-side calculated
+    if (streakData.streakDays > 0 || streakData.notesThisWeek > 0) {
+      allSections.push({
+        icon: createElement(Flame, { className: "h-4 w-4" }),
+        label: "Writing Streak",
+        content: streakData.streakDays > 0
+          ? `${streakData.streakDays}-day streak! You've created ${streakData.notesThisWeek} notes this week`
+          : `${streakData.notesThisWeek} notes this week - start your streak today!`,
+        gradient: { from: primaryColor, to: "#f97316" }, // yellow → orange
+      });
+    }
+
+    // 3. Mood / Energy (wellness)
+    if (data.mood) {
+      allSections.push({
+        icon: createElement(Heart, { className: "h-4 w-4" }),
+        label: "Energy & Mood",
+        content: getMoodDisplay(data.mood),
+        gradient: { from: primaryColor, to: "#ec4899" }, // yellow → pink
+      });
+    }
+
+    // 4. Pending Actions (tasks)
+    if (data.pendingActions && data.pendingActions.length > 0) {
+      allSections.push({
+        icon: createElement(Zap, { className: "h-4 w-4" }),
         label: "Pending Actions",
-        content: (
-          <>
-            <span className="text-lg font-semibold" style={{ color: "#ef4444" }}>
-              {data.pendingActions.length}
-            </span>
-            <span className="ml-1 text-white/60">tasks</span>
-          </>
-        ),
-        action:
-          data.pendingActions.length > 0
-            ? {
-                label: "View All →",
-                onClick: () => {
-                  // TODO: Navigate to actions view
-                  console.log("View all actions", data.pendingActions);
-                },
-              }
-            : undefined,
-      },
-    ];
-  }, [data, primaryColor]);
+        content: `${data.pendingActions.length} tasks requiring attention`,
+        gradient: { from: primaryColor, to: "#ef4444" }, // yellow → red
+        action: {
+          label: "View All",
+          onClick: () => {
+            console.log("View all actions", data.pendingActions);
+          },
+        },
+      });
+    }
+
+    // 5. Top Categories (analytics)
+    if (data.topCategories && data.topCategories.length > 0) {
+      const categoryText = data.topCategories
+        .slice(0, 3)
+        .map((c) => `${c.name} (${c.count})`)
+        .join(", ");
+      allSections.push({
+        icon: createElement(BarChart3, { className: "h-4 w-4" }),
+        label: "Top Categories",
+        content: `Most active: ${categoryText}`,
+        gradient: { from: primaryColor, to: "#8b5cf6" }, // yellow → purple
+      });
+    }
+
+    // 6. Connections (organization)
+    if (data.connections && data.connections.length > 0) {
+      const conn = data.connections[0];
+      allSections.push({
+        icon: createElement(Network, { className: "h-4 w-4" }),
+        label: "Connections",
+        content: `${conn.noteCount} notes mention "${conn.topic}" - consider linking them`,
+        gradient: { from: primaryColor, to: "#06b6d4" }, // yellow → cyan
+      });
+    }
+
+    // 7. Learning Topics (growth)
+    if (data.learningTopics && data.learningTopics.length > 0) {
+      const topics = data.learningTopics.slice(0, 3).join(", ");
+      allSections.push({
+        icon: createElement(Brain, { className: "h-4 w-4" }),
+        label: "Learning",
+        content: `You're exploring: ${topics}`,
+        gradient: { from: primaryColor, to: "#10b981" }, // yellow → green
+      });
+    }
+
+    // 8. Quick Tip (actionable)
+    if (data.quickTip) {
+      allSections.push({
+        icon: createElement(Lightbulb, { className: "h-4 w-4" }),
+        label: "Quick Tip",
+        content: data.quickTip,
+        gradient: { from: primaryColor, to: "#f59e0b" }, // yellow → amber
+      });
+    }
+
+    return allSections;
+  }, [data, primaryColor, streakData]);
 
   // Format error message
   const errorMessage = error?.includes("API key")
