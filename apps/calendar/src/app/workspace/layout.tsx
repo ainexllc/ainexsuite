@@ -2,6 +2,7 @@
 
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { SpacesProvider } from '@/components/providers/spaces-provider';
 
 export default function WorkspaceRootLayout({
   children,
@@ -21,14 +22,16 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      appName="Calendar"
-      appColor="#8b5cf6"
-      showBackground={true}
-    >
-      {children}
-    </WorkspaceLayout>
+    <SpacesProvider>
+      <WorkspaceLayout
+        user={user}
+        onSignOut={handleSignOut}
+        appName="Calendar"
+        appColor="#06b6d4"
+        showBackground={true}
+      >
+        {children}
+      </WorkspaceLayout>
+    </SpacesProvider>
   );
 }

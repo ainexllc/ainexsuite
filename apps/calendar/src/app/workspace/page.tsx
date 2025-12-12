@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Timestamp } from 'firebase/firestore';
 import { useToast, WorkspacePageLayout } from '@ainexsuite/ui';
 import { Loader2 } from 'lucide-react';
@@ -12,6 +12,8 @@ import { WeekView } from '@/components/calendar/week-view';
 import { DayView } from '@/components/calendar/day-view';
 import { AgendaView } from '@/components/calendar/agenda-view';
 import { EventModal } from '@/components/calendar/event-modal';
+import { EventComposer } from '@/components/calendar/event-composer';
+import { SpaceSwitcher } from '@/components/spaces';
 import { EventsService } from '@/lib/events';
 import { CalendarEvent, CreateEventInput } from '@/types/event';
 import { useReminders } from '@/hooks/use-reminders';
@@ -33,6 +35,13 @@ export default function WorkspacePage() {
 
   // Enable reminders
   useReminders(events);
+
+  // Refresh events helper
+  const refreshEvents = useCallback(async () => {
+    if (!user) return;
+    const fetchedEvents = await EventsService.getEvents(user.uid);
+    setEvents(fetchedEvents);
+  }, [user]);
 
   // Fetch events
   useEffect(() => {
@@ -85,6 +94,7 @@ export default function WorkspacePage() {
     setIsModalOpen(true);
   };
 
+  // Handler for modal save (editing events)
   const handleSaveEvent = async (eventData: CreateEventInput) => {
     if (!user) return;
     try {
@@ -107,9 +117,7 @@ export default function WorkspacePage() {
         });
       }
 
-      // Refresh events
-      const fetchedEvents = await EventsService.getEvents(user.uid);
-      setEvents(fetchedEvents);
+      await refreshEvents();
       setIsModalOpen(false);
     } catch (e) {
       console.error("Error saving event", e);
@@ -118,6 +126,28 @@ export default function WorkspacePage() {
         description: "There was an error saving your event. Please try again.",
         variant: 'error'
       });
+    }
+  };
+
+  // Handler for composer save (new events from inline composer)
+  const handleComposerSave = async (eventData: CreateEventInput) => {
+    if (!user) return;
+    try {
+      await EventsService.addEvent(user.uid, eventData);
+      toast({
+        title: "Event created",
+        description: "Your event has been added to the calendar.",
+        variant: 'success'
+      });
+      await refreshEvents();
+    } catch (e) {
+      console.error("Error saving event", e);
+      toast({
+        title: "Failed to save event",
+        description: "There was an error saving your event. Please try again.",
+        variant: 'error'
+      });
+      throw e; // Re-throw so composer knows save failed
     }
   };
 
@@ -130,9 +160,7 @@ export default function WorkspacePage() {
         description: "Your event has been removed from the calendar.",
         variant: 'success'
       });
-      // Refresh events
-      const fetchedEvents = await EventsService.getEvents(user.uid);
-      setEvents(fetchedEvents);
+      await refreshEvents();
       setIsModalOpen(false);
     } catch (e) {
       console.error("Error deleting event", e);
@@ -176,9 +204,7 @@ export default function WorkspacePage() {
         endTime: newEndTime
       });
 
-      // Refresh to get real timestamps
-      const fetchedEvents = await EventsService.getEvents(user.uid);
-      setEvents(fetchedEvents);
+      await refreshEvents();
       toast({
         title: "Event moved",
         description: "Your event has been moved successfully.",
@@ -186,21 +212,13 @@ export default function WorkspacePage() {
       });
     } catch (e) {
       console.error("Error dropping event", e);
-      // Revert on error
-      const fetchedEvents = await EventsService.getEvents(user.uid);
-      setEvents(fetchedEvents);
+      await refreshEvents();
       toast({
         title: "Failed to move event",
         description: "There was an error moving your event. Please try again.",
         variant: 'error'
       });
     }
-  };
-
-  const handleNewEventClick = () => {
-    setSelectedDate(new Date());
-    setEditingEvent(undefined);
-    setIsModalOpen(true);
   };
 
   const handleTimeSlotClick = (date: Date) => {
@@ -214,15 +232,8 @@ export default function WorkspacePage() {
       <WorkspacePageLayout
         maxWidth="wide"
         className="h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 py-8 flex flex-col"
-        composerActions={
-          <button
-            onClick={handleNewEventClick}
-            className="flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-foreground rounded-lg font-medium transition-colors"
-          >
-            <span className="text-xl leading-none pb-0.5">+</span>
-            <span>New Event</span>
-          </button>
-        }
+        composer={<EventComposer onSave={handleComposerSave} />}
+        composerActions={<SpaceSwitcher />}
       >
         <div className="flex items-center justify-between mb-6">
           <CalendarHeader
