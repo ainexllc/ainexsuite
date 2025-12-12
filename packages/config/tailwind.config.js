@@ -124,8 +124,18 @@ const sharedTheme = {
       danger: withOpacityValue('--color-danger'),
       note: notePalette,
     },
+    /**
+     * Font Family Configuration
+     *
+     * Primary sans font (--font-primary): User-selectable
+     * - Default: Plus Jakarta Sans
+     * - Options: Inter, Geist, DM Sans, System (SF Pro)
+     * - Changed via Settings > Appearance > Font
+     *
+     * Logo/Brand fonts: Kanit, Bebas Neue (DO NOT CHANGE)
+     */
     fontFamily: {
-      sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+      sans: ['var(--font-primary)', 'system-ui', 'sans-serif'],
       mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       brand: ['var(--font-kanit)', 'system-ui', 'sans-serif'],
       display: ['var(--font-kanit)', 'system-ui', 'sans-serif'],

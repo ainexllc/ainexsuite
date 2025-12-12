@@ -1,11 +1,14 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal } from '@ainexsuite/ui';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { getQuickActionsForApp } from '@ainexsuite/types';
+import { StickyNote } from 'lucide-react';
+import { SettingsPanel } from '@/components/layout/settings-panel';
+import { usePreferences } from '@/components/providers/preferences-provider';
 
 export default function WorkspaceRootLayout({
   children,
@@ -14,6 +17,8 @@ export default function WorkspaceRootLayout({
 }) {
   const router = useRouter();
   const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const { preferences, updatePreferences: updateAppPreferences, loading: preferencesLoading } = usePreferences();
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   // Get quick actions for Notes app
   const quickActions = getQuickActionsForApp('notes');
@@ -40,6 +45,11 @@ export default function WorkspaceRootLayout({
     // TODO: Open AI assistant panel
   }, []);
 
+  // Handle settings click
+  const handleSettingsClick = useCallback(() => {
+    setSettingsModalOpen(true);
+  }, []);
+
   // Show standardized loading screen
   if (isLoading) {
     return <WorkspaceLoadingScreen />;
@@ -51,17 +61,49 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <WorkspaceLayoutWithInsights
-      user={user}
-      onSignOut={handleSignOut}
-      quickActions={quickActions}
-      onQuickAction={handleQuickAction}
-      onAiAssistantClick={handleAiAssistantClick}
-      // Notifications - empty for now, will be populated by notification service
-      notifications={[]}
-      onUpdatePreferences={updatePreferences}
-    >
-      {children}
-    </WorkspaceLayoutWithInsights>
+    <>
+      <WorkspaceLayoutWithInsights
+        user={user}
+        onSignOut={handleSignOut}
+        quickActions={quickActions}
+        onQuickAction={handleQuickAction}
+        onAiAssistantClick={handleAiAssistantClick}
+        onSettingsClick={handleSettingsClick}
+        // Notifications - empty for now, will be populated by notification service
+        notifications={[]}
+        onUpdatePreferences={updatePreferences}
+      >
+        {children}
+      </WorkspaceLayoutWithInsights>
+
+      {/* Global Settings Modal */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        user={user ? {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+        } : null}
+        preferences={user?.preferences ?? {
+          theme: 'dark',
+          language: 'en',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          notifications: { email: true, push: false, inApp: true },
+        }}
+        onUpdatePreferences={updatePreferences}
+        appSettings={
+          <SettingsPanel
+            preferences={preferences}
+            isLoading={preferencesLoading}
+            onUpdate={updateAppPreferences}
+            onClose={() => setSettingsModalOpen(false)}
+          />
+        }
+        appSettingsLabel="Notes"
+        appSettingsIcon={<StickyNote className="h-4 w-4" />}
+      />
+    </>
   );
 }

@@ -20,6 +20,7 @@ interface WorkspaceLayoutWithInsightsProps {
   quickActions?: QuickAction[];
   onQuickAction?: (actionId: string) => void;
   onAiAssistantClick?: () => void;
+  onSettingsClick?: () => void;
   notifications?: NotificationItem[];
   onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
 }
@@ -35,6 +36,7 @@ export function WorkspaceLayoutWithInsights({
   quickActions = [],
   onQuickAction,
   onAiAssistantClick,
+  onSettingsClick,
   notifications = [],
   onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
@@ -49,6 +51,7 @@ export function WorkspaceLayoutWithInsights({
       quickActions={quickActions}
       onQuickAction={onQuickAction}
       onAiAssistantClick={onAiAssistantClick}
+      onSettingsClick={onSettingsClick}
       notifications={notifications}
       // AI Insights Pulldown - always pass sections (pulldown handles empty state)
       insightsSections={insights.sections}

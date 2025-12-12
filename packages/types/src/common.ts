@@ -11,14 +11,23 @@ export interface BaseDocument {
   updatedAt: Timestamp;
 }
 
+export type FontFamily = 'plus-jakarta-sans' | 'inter' | 'geist' | 'dm-sans' | 'system';
+
 export interface UserPreferences {
   theme: 'light' | 'dark' | 'system';
   language: string;
   timezone: string;
+  accentColor?: string;
+  fontFamily?: FontFamily;
+  fontSize?: 'sm' | 'md' | 'lg';
+  density?: 'compact' | 'comfortable' | 'spacious';
   notifications: {
     email: boolean;
     push: boolean;
     inApp: boolean;
+    digest?: 'none' | 'daily' | 'weekly';
+    quietHoursStart?: string;
+    quietHoursEnd?: string;
   };
 }
 

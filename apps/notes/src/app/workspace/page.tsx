@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
-import { List, LayoutGrid, Calendar } from 'lucide-react';
+import { useMemo, useCallback, useState } from 'react';
+import { List, LayoutGrid, Calendar, X } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
@@ -51,8 +51,9 @@ const NOTE_COLOR_MAP: Record<string, string> = {
 
 export default function NotesWorkspace() {
   const { preferences, updatePreferences } = usePreferences();
-  const { notes, filters, setFilters, sort, setSort } = useNotes();
+  const { notes, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
   const { labels } = useLabels();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Calculate activity data for calendar view
   const activityData = useMemo(() => {
@@ -171,16 +172,50 @@ export default function NotesWorkspace() {
 
   const isCalendarView = preferences.viewMode === 'calendar';
 
+  const handleSearchToggle = useCallback(() => {
+    setIsSearchOpen((prev) => {
+      if (prev) {
+        // Clear search when closing
+        setSearchQuery('');
+      }
+      return !prev;
+    });
+  }, [setSearchQuery]);
+
   return (
     <WorkspacePageLayout
       composer={<NoteComposer />}
       composerActions={<SpaceSwitcher />}
       toolbar={
         <div className="space-y-2">
+          {isSearchOpen && (
+            <div className="flex items-center gap-2 justify-center">
+              <div className="relative flex-1 max-w-md">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search notes..."
+                  autoFocus
+                  className="w-full h-9 px-4 pr-10 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
           <WorkspaceToolbar
             viewMode={preferences.viewMode}
             onViewModeChange={(mode) => updatePreferences({ viewMode: mode })}
             viewOptions={VIEW_OPTIONS}
+            onSearchClick={handleSearchToggle}
+            isSearchActive={isSearchOpen || !!searchQuery}
             filterContent={<NoteFilterContent filters={filters} onFiltersChange={setFilters} sort={sort} />}
             activeFilterCount={activeFilterCount}
             onFilterReset={handleFilterReset}

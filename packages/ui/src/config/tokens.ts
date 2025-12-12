@@ -181,8 +181,8 @@ export const typography = {
  * References CSS custom properties defined in globals.css.
  */
 export const fonts = {
-  /** Primary UI font - Geist Sans */
-  sans: 'var(--font-geist-sans, system-ui, sans-serif)',
+  /** Primary UI font - Inter */
+  sans: 'var(--font-inter, system-ui, sans-serif)',
   /** Monospace font - Geist Mono */
   mono: 'var(--font-geist-mono, ui-monospace, monospace)',
   /** Accent font - Kanit */

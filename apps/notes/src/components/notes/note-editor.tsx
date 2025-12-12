@@ -178,31 +178,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   );
   const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>("once");
 
-  // Calculate dynamic height based on content rows
-  const contentRows = useMemo(() => {
-    if (mode === "checklist") {
-      return checklist.length;
-    }
-    // Count lines in body text
-    return body.split('\n').length;
-  }, [mode, checklist.length, body]);
+  // Get current color config for the editor
+  const currentColorConfig = useMemo(() => {
+    return NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
+  }, [color]);
 
-  // Determine modal size class based on content
-  const modalSizeClass = useMemo(() => {
-    // Account for attachments adding height
-    const hasAttachments = existingAttachments.length > 0 || newAttachments.length > 0;
-    const effectiveRows = contentRows + (hasAttachments ? 6 : 0);
-
-    if (effectiveRows <= 5) {
-      return "min-h-[320px]"; // Small - few items
-    } else if (effectiveRows <= 10) {
-      return "min-h-[420px]"; // Medium
-    } else if (effectiveRows <= 15) {
-      return "min-h-[520px]"; // Large
-    } else {
-      return "min-h-[620px]"; // Extra large - lots of content
-    }
-  }, [contentRows, existingAttachments.length, newAttachments.length]);
+  // Modal is now full-height responsive - no need for content-based sizing
   const [customCron, setCustomCron] = useState("");
   const [reminderPrimed, setReminderPrimed] = useState(false);
   const [reminderPanelOpen, setReminderPanelOpen] = useState(false);
@@ -904,12 +885,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   }, [labels, newLabelName]);
 
   const content = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-4 sm:px-6 sm:py-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 md:p-6">
       <div
         ref={editorContainerRef}
         className={clsx(
-          "relative w-full max-w-3xl max-h-[85vh] flex flex-col rounded-3xl border border-white/10 bg-[#1a1a1a]/95 backdrop-blur-xl shadow-2xl",
-          modalSizeClass,
+          "relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl sm:rounded-3xl border shadow-2xl",
+          currentColorConfig.cardClass,
+          "border-zinc-200 dark:border-zinc-800",
         )}
       >
         <div className="flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto">
@@ -918,7 +900,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Title"
-              className="w-full bg-transparent text-lg font-semibold text-white placeholder-white/40 focus:outline-none"
+              className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
             />
             <div className="flex items-center gap-2 mr-14">
               <button
@@ -1086,7 +1068,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 }}
                 placeholder="Write your note…"
                 className={clsx(
-                  "min-h-[200px] w-full resize-none overflow-hidden bg-transparent text-sm text-white/80 placeholder-white/40 focus:outline-none transition-all duration-300",
+                  "min-h-[300px] sm:min-h-[400px] w-full resize-none overflow-hidden bg-transparent text-[15px] leading-7 tracking-[-0.01em] focus:outline-none transition-all duration-300",
+                  "text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
                   isEnhancing && !selectedText && "blur-sm opacity-50",
                   isEnhancing && selectedText && "opacity-0"
                 )}
@@ -1426,7 +1409,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         </div>
 
         {/* Bottom toolbar - anchored to bottom with color */}
-        <div className="flex-shrink-0 mt-auto rounded-b-3xl px-6 py-4 bg-zinc-100 dark:bg-zinc-800/80">
+        <div className={clsx(
+          "flex-shrink-0 mt-auto rounded-b-2xl sm:rounded-b-3xl px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-200 dark:border-zinc-700/50",
+          currentColorConfig.footerClass
+        )}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <button
@@ -1458,8 +1444,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   });
                 }}
                 className={clsx(
-                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
-                  mode === "checklist" && "bg-white/20 text-white"
+                  "h-9 w-9 rounded-full flex items-center justify-center transition",
+                  mode === "checklist"
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 )}
                 aria-label="Toggle checklist mode"
               >
@@ -1467,7 +1455,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </button>
               <button
                 type="button"
-                className="icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10"
+                className="h-9 w-9 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Add images"
               >
@@ -1483,15 +1471,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalculator(false);
                   }}
                   className={clsx(
-                    "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
-                    showPalette && "bg-white/20 text-white",
+                    "h-9 w-9 rounded-full flex items-center justify-center transition",
+                    showPalette
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
                   )}
                   aria-label="Change color"
                 >
                   <Palette className="h-4 w-4" />
                 </button>
                 {showPalette ? (
-                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl bg-[#1a1a1a]/95 p-3 shadow-2xl backdrop-blur-xl border border-white/10">
+                  <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
                     {NOTE_COLORS.map((option) => (
                       <button
                         key={option.id}
@@ -1501,9 +1491,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           setShowPalette(false);
                         }}
                         className={clsx(
-                          "inline-flex shrink-0 h-8 w-8 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
+                          "inline-flex shrink-0 h-8 w-8 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)]",
                           option.swatchClass,
-                          option.id === color && "ring-2 ring-white",
+                          option.id === color && "ring-2 ring-[var(--color-primary)]",
                         )}
                         aria-label={`Set color ${option.label}`}
                       />
@@ -1520,8 +1510,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   setShowCalculator(false);
                 }}
                 className={clsx(
-                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
-                  showLabelPicker && "bg-white/20 text-white",
+                  "h-9 w-9 rounded-full flex items-center justify-center transition",
+                  showLabelPicker
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
                 )}
                 aria-label="Manage labels"
               >
@@ -1530,8 +1522,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <button
                 type="button"
                 className={clsx(
-                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
-                  archived && "bg-white/20 text-white",
+                  "h-9 w-9 rounded-full flex items-center justify-center transition",
+                  archived
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
                 )}
                 onClick={() => setArchived((prev) => !prev)}
                 aria-label={archived ? "Unarchive" : "Archive"}
@@ -1549,8 +1543,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalculator(false);
                   }}
                   className={clsx(
-                    "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
-                    (showCalendar || noteDate) && "bg-white/20 text-white",
+                    "h-9 w-9 rounded-full flex items-center justify-center transition",
+                    (showCalendar || noteDate)
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
                   )}
                   aria-label="Set date"
                   title={noteDate ? `Date: ${noteDate.toLocaleDateString()}` : "Add a date"}
@@ -1578,8 +1574,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalendar(false);
                   }}
                   className={clsx(
-                    "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
-                    showCalculator && "bg-white/20 text-white",
+                    "h-9 w-9 rounded-full flex items-center justify-center transition",
+                    showCalculator
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
                   )}
                   aria-label="Calculator"
                   title="Open calculator"
@@ -1596,14 +1594,14 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 )}
               </div>
               {/* Separator */}
-              <div className="w-px h-6 bg-white/20" />
+              <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-600" />
               {/* Undo button */}
               <button
                 type="button"
                 onClick={handleUndo}
                 disabled={bodyHistory.length === 0}
                 className={clsx(
-                  "icon-button h-9 w-9 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10",
+                  "h-9 w-9 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
                   bodyHistory.length === 0 && "opacity-30 cursor-not-allowed"
                 )}
                 aria-label="Undo"
@@ -1623,7 +1621,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
                       : selectedText
                         ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
-                        : "text-white/60 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                        : "text-zinc-500 dark:text-zinc-400 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                   )}
                   aria-label="Enhance with AI"
                   title={selectedText ? `Enhance selected text (${selectedText.text.length} chars)` : "Enhance all text with AI"}
@@ -1661,8 +1659,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     className={clsx(
                       "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition",
                       showSpacePicker
-                        ? "border-white bg-white/20 text-white"
-                        : "border-white/20 text-white/70 hover:border-white/40 hover:text-white"
+                        ? "border-zinc-400 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+                        : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
                     )}
                     aria-label="Move to space"
                     title="Move to a different space"
@@ -1673,9 +1671,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     </span>
                   </button>
                   {showSpacePicker && (
-                    <div className="absolute bottom-full mb-2 right-0 z-30 min-w-[160px] rounded-xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
-                      <div className="px-3 py-2 border-b border-white/10 bg-white/5">
-                        <p className="text-xs font-semibold text-white">Move to Space</p>
+                    <div className="absolute bottom-full mb-2 right-0 z-30 min-w-[160px] rounded-xl shadow-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
+                      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800">
+                        <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Move to Space</p>
                       </div>
                       <div className="p-1.5 max-h-48 overflow-y-auto">
                         {spaces.map((space) => (
@@ -1689,14 +1687,14 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                             className={clsx(
                               "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2",
                               space.id === selectedSpaceId
-                                ? "bg-white/20 text-white"
-                                : "text-white/70 hover:bg-white/10 hover:text-white"
+                                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                                : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200"
                             )}
                           >
                             <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
                             <span className="truncate">{space.name}</span>
                             {space.id === selectedSpaceId && (
-                              <span className="ml-auto text-[10px] text-white/50">current</span>
+                              <span className="ml-auto text-[10px] text-zinc-400 dark:text-zinc-500">current</span>
                             )}
                           </button>
                         ))}
@@ -1707,7 +1705,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               )}
               <button
                 type="button"
-                className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-medium text-white/70 hover:text-white hover:border-white/40"
+                className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
                 onClick={onClose}
               >
                 Cancel
@@ -1715,7 +1713,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <button
                 type="button"
                 onClick={() => void handleSave()}
-                className="rounded-full bg-white px-5 py-1.5 text-sm font-semibold text-black shadow-sm transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white disabled:opacity-60"
+                className="rounded-full bg-[var(--color-primary)] px-5 py-1.5 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-60"
                 disabled={isSaving}
               >
                 {isSaving ? "Saving…" : "Save"}
@@ -1723,7 +1721,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             </div>
           </div>
           {showLabelPicker ? (
-            <div className="border-t border-white/10 pt-3 mt-3 space-y-3">
+            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-3 mt-3 space-y-3">
               {/* New label input */}
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -1734,12 +1732,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     onChange={(e) => setNewLabelName(e.target.value)}
                     onKeyDown={handleNewLabelKeyDown}
                     placeholder="Search or create a tag..."
-                    className="w-full rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
+                    className="w-full rounded-full border px-4 py-2 text-sm focus:outline-none bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-300 dark:focus:border-zinc-600"
                     disabled={isCreatingLabel}
                   />
                   {isCreatingLabel && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Loader2 className="h-4 w-4 animate-spin text-white/60" />
+                      <Loader2 className="h-4 w-4 animate-spin text-zinc-400 dark:text-zinc-500" />
                     </div>
                   )}
                 </div>
@@ -1750,7 +1748,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     type="button"
                     onClick={() => void handleCreateNewLabel()}
                     disabled={isCreatingLabel}
-                    className="flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-2 text-xs font-medium text-white hover:bg-white/20 transition disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition disabled:opacity-50 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Create
@@ -1770,8 +1768,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         className={clsx(
                           "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
                           isSelected
-                            ? "border-white bg-white/20 text-white"
-                            : "border-white/20 bg-white/5 text-white/70 hover:border-white/40 hover:text-white",
+                            ? "border-zinc-400 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-800 dark:hover:text-zinc-200",
                         )}
                         onClick={() => toggleLabelSelection(label.id)}
                       >
@@ -1779,8 +1777,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           className={clsx(
                             "h-2 w-2 rounded-full",
                             label.color === "default"
-                              ? "bg-white/40"
-                              : `bg-${label.color}`,
+                              ? "bg-zinc-400 dark:bg-zinc-500"
+                              : `bg-${label.color}-500`,
                           )}
                         />
                         {label.name}
@@ -1788,11 +1786,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     );
                   })
                 ) : newLabelName.trim() ? (
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
                     No matching tags. Press Enter or click Create to add &quot;{newLabelName.trim()}&quot;.
                   </p>
                 ) : (
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
                     No tags yet. Type above to create your first tag.
                   </p>
                 )}
@@ -1804,7 +1802,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white"
+          className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full transition bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
           aria-label="Close editor"
         >
           <X className="h-5 w-5" />

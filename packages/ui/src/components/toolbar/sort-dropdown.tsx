@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown, Check } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { clsx } from 'clsx';
-import { ToolbarButton } from './toolbar-button';
 import type { SortConfig, SortOption } from './types';
 
 export interface SortDropdownProps {
@@ -68,17 +67,21 @@ export function SortDropdown({
 
   return (
     <div ref={dropdownRef} className={clsx('relative', className)}>
-      <ToolbarButton
-        variant="action"
-        isActive={isOpen}
+      <button
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
+        aria-label={`Sort by ${currentOption?.label || 'date'}`}
+        title={`Sort by ${currentOption?.label || 'date'}`}
+        className={clsx(
+          'h-8 w-8 inline-flex items-center justify-center rounded-full transition-all',
+          isOpen
+            ? 'bg-[var(--color-primary)] text-white shadow-md'
+            : 'text-zinc-400 hover:bg-white/10 hover:text-white dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
+        )}
       >
         <ArrowUpDown className="h-4 w-4" />
-        <span className="text-sm">{currentOption?.label || 'Sort'}</span>
-        <DirectionIcon className="h-3 w-3 opacity-60" />
-      </ToolbarButton>
+      </button>
 
       <AnimatePresence>
         {isOpen && (

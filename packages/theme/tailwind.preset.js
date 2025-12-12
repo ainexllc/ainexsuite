@@ -29,7 +29,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
         brand: ['var(--font-kanit)', 'system-ui', 'sans-serif'],
         display: ['var(--font-kanit)', 'system-ui', 'sans-serif'],

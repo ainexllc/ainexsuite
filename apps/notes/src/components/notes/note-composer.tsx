@@ -484,7 +484,7 @@ export function NoteComposer() {
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] backdrop-blur-sm"
+          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
           onClick={() => setExpanded(true)}
         >
           <span>Take a note...</span>
@@ -493,7 +493,8 @@ export function NoteComposer() {
         <div
           ref={composerRef}
           className={clsx(
-            "w-full rounded-2xl shadow-xl bg-[#121212] border border-white/10 backdrop-blur-xl transition-all",
+            "w-full rounded-2xl shadow-lg border transition-all",
+            "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800",
             color !== "default" && backgroundClass,
           )}
         >
@@ -503,7 +504,7 @@ export function NoteComposer() {
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Title"
-                className="w-full bg-transparent text-lg font-semibold text-white placeholder:text-white/30 focus:outline-none"
+                className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 autoFocus
                 ref={titleInputRef}
               />
@@ -514,7 +515,7 @@ export function NoteComposer() {
                   "p-2 rounded-full transition-colors",
                   pinned
                     ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                    : "text-white/40 hover:text-white hover:bg-white/10",
+                    : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
                 )}
                 aria-label={pinned ? "Unpin note" : "Pin note"}
               >
@@ -535,7 +536,7 @@ export function NoteComposer() {
                   }}
                   placeholder="What's on your mind?..."
                   rows={attachments.length ? 3 : 5}
-                  className="min-h-[120px] w-full resize-none bg-transparent text-base text-white/90 placeholder:text-white/30 focus:outline-none leading-relaxed pr-10"
+                  className="min-h-[120px] w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] pr-10 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 />
                 {body.trim() && (
                   <button
@@ -546,7 +547,7 @@ export function NoteComposer() {
                       "absolute bottom-2 right-0 p-1.5 rounded-full transition-all",
                       isEnhancing
                         ? "text-[var(--color-primary)] cursor-wait"
-                        : "text-white/40 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                        : "text-zinc-400 dark:text-zinc-500 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                     )}
                     aria-label="Enhance with AI"
                     title="Enhance with AI"
@@ -823,7 +824,7 @@ export function NoteComposer() {
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -853,14 +854,14 @@ export function NoteComposer() {
                       }
                     });
                   }}
-                  className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   aria-label="Toggle checklist mode"
                 >
                   <CheckSquare className="h-5 w-5" />
                 </button>
                 <button
                   type="button"
-                  className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   onClick={() => fileInputRef.current?.click()}
                   aria-label="Add image attachment"
                 >
@@ -871,7 +872,7 @@ export function NoteComposer() {
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showPalette ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                      showPalette ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     )}
                     onClick={() => {
                       setShowPalette((prev) => !prev);
@@ -908,7 +909,7 @@ export function NoteComposer() {
                   type="button"
                   className={clsx(
                     "p-2 rounded-full transition-colors",
-                    showLabelPicker ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : "text-white/50 hover:text-white hover:bg-white/10"
+                    showLabelPicker ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   )}
                   onClick={() => {
                     setShowLabelPicker((prev) => !prev);
@@ -924,7 +925,7 @@ export function NoteComposer() {
                   type="button"
                   className={clsx(
                     "p-2 rounded-full transition-colors",
-                    reminderPanelOpen ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : reminderEnabled ? "text-[var(--color-primary)]" : "text-white/50 hover:text-white hover:bg-white/10"
+                    reminderPanelOpen ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10" : reminderEnabled ? "text-[var(--color-primary)]" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   )}
                   onClick={() => {
                     setReminderPanelOpen((prev) => {
@@ -960,7 +961,7 @@ export function NoteComposer() {
                         ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
                         : noteDate
                           ? "text-[var(--color-primary)]"
-                          : "text-white/50 hover:text-white hover:bg-white/10"
+                          : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     )}
                     onClick={() => {
                       setShowCalendar((prev) => !prev);
@@ -997,7 +998,7 @@ export function NoteComposer() {
                       "p-2 rounded-full transition-colors",
                       showCalculator
                         ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                        : "text-white/50 hover:text-white hover:bg-white/10"
+                        : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     )}
                     onClick={() => {
                       setShowCalculator((prev) => !prev);
@@ -1024,7 +1025,7 @@ export function NoteComposer() {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-sm font-medium text-white/50 hover:text-white transition-colors"
+                  className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                   onClick={resetState}
                 >
                   Close
@@ -1032,7 +1033,7 @@ export function NoteComposer() {
                 <button
                   type="button"
                   onClick={() => void handleSubmit()}
-                  className="rounded-full bg-[var(--color-primary)] px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Saving..." : "Save"}
@@ -1042,7 +1043,7 @@ export function NoteComposer() {
           </div>
 
           {showLabelPicker ? (
-            <div className="border-t border-white/10 px-5 py-3 space-y-3">
+            <div className="border-t border-zinc-200 dark:border-zinc-800 px-5 py-3 space-y-3">
               {/* New label input */}
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -1053,12 +1054,12 @@ export function NoteComposer() {
                     onChange={(e) => setNewLabelName(e.target.value)}
                     onKeyDown={handleNewLabelKeyDown}
                     placeholder="Search or create a tag..."
-                    className="w-full rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-white placeholder-white/40 focus:border-white/40 focus:outline-none"
+                    className="w-full rounded-full border px-4 py-2 text-sm focus:outline-none bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-300 dark:focus:border-zinc-600"
                     disabled={isCreatingLabel}
                   />
                   {isCreatingLabel && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Loader2 className="h-4 w-4 animate-spin text-white/60" />
+                      <Loader2 className="h-4 w-4 animate-spin text-zinc-400 dark:text-zinc-500" />
                     </div>
                   )}
                 </div>
@@ -1069,7 +1070,7 @@ export function NoteComposer() {
                     type="button"
                     onClick={() => void handleCreateNewLabel()}
                     disabled={isCreatingLabel}
-                    className="flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-2 text-xs font-medium text-white hover:bg-white/20 transition disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition disabled:opacity-50 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Create
@@ -1090,16 +1091,16 @@ export function NoteComposer() {
                         className={clsx(
                           "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
                           isSelected
-                            ? "border-white bg-white/20 text-white"
-                            : "border-white/20 bg-white/5 text-white/70 hover:border-white/40 hover:text-white",
+                            ? "border-zinc-400 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-800 dark:hover:text-zinc-200",
                         )}
                       >
                         <span
                           className={clsx(
                             "h-2 w-2 rounded-full",
                             label.color === "default"
-                              ? "bg-white/40"
-                              : `bg-${label.color}`,
+                              ? "bg-zinc-400 dark:bg-zinc-500"
+                              : `bg-${label.color}-500`,
                           )}
                         />
                         {label.name}
@@ -1107,11 +1108,11 @@ export function NoteComposer() {
                     );
                   })
                 ) : newLabelName.trim() ? (
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
                     No matching tags. Press Enter or click Create to add &quot;{newLabelName.trim()}&quot;.
                   </p>
                 ) : (
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
                     No tags yet. Type above to create your first tag.
                   </p>
                 )}

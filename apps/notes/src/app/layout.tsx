@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Kanit, Bebas_Neue, League_Spartan } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue, League_Spartan } from "next/font/google";
+
+// Primary fonts - user-selectable via Settings > Appearance
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
 import { AppProviders } from "@/components/providers/app-providers";
 import { ThemeProvider, AppColorProvider } from "@ainexsuite/theme";
 import { AuthProvider } from "@ainexsuite/auth";
@@ -44,11 +65,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
+        className={`${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
       >
         <ThemeProvider>
           <AuthProvider>
-            <AppColorProvider appId="notes" fallbackPrimary="#eab308" fallbackSecondary="#fde047">
+            <AppColorProvider appId="notes" fallbackPrimary="#f59e0b" fallbackSecondary="#d97706">
               <AppProviders>{children}</AppProviders>
               <Toaster />
             </AppColorProvider>

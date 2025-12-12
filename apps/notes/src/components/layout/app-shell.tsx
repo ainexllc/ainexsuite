@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { NavigationPanel } from "@ainexsuite/ui";
+import { NavigationPanel, SettingsModal, useFontPreference } from "@ainexsuite/ui";
+import { useAuth } from "@ainexsuite/auth";
 import { TopNav } from "./top-nav";
 import { LabelsSection } from "./labels-section";
 import { AppsSection } from "./apps-section";
@@ -18,6 +19,7 @@ import {
   Sparkles,
   Send,
   X,
+  StickyNote,
 } from "lucide-react";
 import { SettingsPanel } from "./settings-panel";
 import { FeedbackWidget } from "@ainexsuite/ui/components";
@@ -31,6 +33,11 @@ type ActivePanel = "notifications" | "settings" | "ai-assistant" | null;
 export function AppShell({ children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { user, updatePreferences: updateGlobalPreferences } = useAuth();
+
+  // Apply user's font preference
+  useFontPreference(user?.preferences?.fontFamily);
+
   const { allNotes, pinned, others, loading } = useNotes();
   const {
     preferences,
@@ -39,6 +46,7 @@ export function AppShell({ children }: AppShellProps) {
   } = usePreferences();
   const [isNavOpen, setNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   const navSections = useMemo(
     () => [
@@ -108,7 +116,7 @@ export function AppShell({ children }: AppShellProps) {
         <TopNav
           onMenuClick={() => setNavOpen((prev) => !prev)}
           onRefresh={handleRefresh}
-          onOpenSettings={() => togglePanel("settings")}
+          onOpenSettings={() => setSettingsModalOpen(true)}
           onOpenAiAssistant={() => togglePanel("ai-assistant")}
           onOpenActivity={() => togglePanel("notifications")}
         />
@@ -122,6 +130,35 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Feedback Widget */}
         <FeedbackWidget appName="notes" />
+
+        {/* Global Settings Modal */}
+        <SettingsModal
+          isOpen={settingsModalOpen}
+          onClose={() => setSettingsModalOpen(false)}
+          user={user ? {
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+          } : null}
+          preferences={user?.preferences ?? {
+            theme: 'dark',
+            language: 'en',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            notifications: { email: true, push: false, inApp: true },
+          }}
+          onUpdatePreferences={updateGlobalPreferences}
+          appSettings={
+            <SettingsPanel
+              preferences={preferences}
+              isLoading={preferencesLoading}
+              onUpdate={updatePreferences}
+              onClose={() => setSettingsModalOpen(false)}
+            />
+          }
+          appSettingsLabel="Notes"
+          appSettingsIcon={<StickyNote className="h-4 w-4" />}
+        />
 
         {/* Navigation overlay panel */}
         {isNavOpen && (

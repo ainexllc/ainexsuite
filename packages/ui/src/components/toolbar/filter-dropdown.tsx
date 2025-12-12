@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { clsx } from 'clsx';
-import { ToolbarButton } from './toolbar-button';
 
 export interface FilterDropdownProps {
   activeCount?: number;
@@ -52,21 +51,26 @@ export function FilterDropdown({
 
   return (
     <div ref={dropdownRef} className={clsx('relative', className)}>
-      <ToolbarButton
-        variant="action"
-        isActive={isOpen || activeCount > 0}
+      <button
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="true"
+        aria-label="Filter"
+        title="Filter"
+        className={clsx(
+          'relative h-8 w-8 inline-flex items-center justify-center rounded-full transition-all',
+          isOpen || activeCount > 0
+            ? 'bg-[var(--color-primary)] text-white shadow-md'
+            : 'text-zinc-400 hover:bg-white/10 hover:text-white dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
+        )}
       >
         <SlidersHorizontal className="h-4 w-4" />
-        <span className="text-sm">Filter</span>
         {activeCount > 0 && (
-          <span className="px-1.5 py-0.5 bg-white/10 text-white text-xs rounded-full min-w-[1.25rem] text-center border border-white/10 shadow-sm backdrop-blur-sm">
+          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-medium text-white flex items-center justify-center">
             {activeCount}
           </span>
         )}
-      </ToolbarButton>
+      </button>
 
       <AnimatePresence>
         {isOpen && (

@@ -432,3 +432,11 @@ export {
   type FilterChip,
   type FilterChipType,
 } from "./filters";
+
+// Settings Components
+export {
+  SettingsModal,
+  type SettingsModalProps,
+  type SettingsUser,
+  type SettingsTab,
+} from "./settings";

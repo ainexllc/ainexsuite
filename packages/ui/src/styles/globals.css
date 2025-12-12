@@ -56,8 +56,17 @@
     --app-secondary: 330 81% 60%;
     --app-secondary-foreground: 0 0% 100%;
 
-    /* Typography tokens */
-    --font-geist-sans: 'Geist Sans', system-ui, sans-serif;
+    /* Typography tokens - Font families */
+    --font-plus-jakarta-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-geist: 'Geist Sans', system-ui, sans-serif;
+    --font-dm-sans: 'DM Sans', system-ui, sans-serif;
+    --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+
+    /* Active primary font (defaults to Plus Jakarta Sans) */
+    --font-primary: var(--font-plus-jakarta-sans);
+
+    /* Monospace and brand fonts */
     --font-geist-mono: 'Geist Mono', 'SFMono-Regular', ui-monospace, monospace;
     --font-kanit: 'Kanit', system-ui, sans-serif;
 
@@ -360,9 +369,26 @@
   body {
     @apply bg-background text-foreground;
     margin: 0;
-    font-family: var(--font-geist-sans);
+    font-family: var(--font-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Font preference selectors - applied via data-font attribute on html */
+  [data-font="plus-jakarta-sans"] {
+    --font-primary: var(--font-plus-jakarta-sans);
+  }
+  [data-font="inter"] {
+    --font-primary: var(--font-inter);
+  }
+  [data-font="geist"] {
+    --font-primary: var(--font-geist);
+  }
+  [data-font="dm-sans"] {
+    --font-primary: var(--font-dm-sans);
+  }
+  [data-font="system"] {
+    --font-primary: var(--font-system);
   }
 
   a {

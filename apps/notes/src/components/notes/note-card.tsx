@@ -42,7 +42,8 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
   }, [note.labelIds, labelMap]);
 
   const noteColorConfig = NOTE_COLORS.find((c) => c.id === note.color);
-  const footerClass = noteColorConfig?.footerClass || "bg-muted";
+  const cardClass = noteColorConfig?.cardClass || "bg-zinc-50 dark:bg-zinc-900";
+  const footerClass = noteColorConfig?.footerClass || "bg-zinc-100 dark:bg-zinc-800";
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -102,11 +103,11 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     <>
       <article
         className={clsx(
-          // Use semantic tokens for light/dark mode
-          "bg-surface-base",
-          "border border-border",
+          // Use theme lab color system for light/dark mode
+          cardClass,
+          "border border-zinc-200 dark:border-zinc-800",
           "group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-200",
-          "hover:bg-muted",
+          "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
           viewMode === "list"
             ? "flex items-start gap-4 px-5 py-3"
             : "break-inside-avoid px-6 py-6",
@@ -134,7 +135,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             <button
               type="button"
               onClick={handlePin}
-              className="absolute right-2 top-2 z-20 hidden rounded-full bg-foreground/10 p-2 text-foreground shadow-sm transition hover:bg-foreground/20 group-hover:flex"
+              className="absolute right-2 top-2 z-20 hidden rounded-full p-2 transition group-hover:flex bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
               aria-label="Pin note"
             >
               <Pin className="h-4 w-4" />
@@ -153,7 +154,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             }}
           >
             {note.title ? (
-              <h3 className="pr-8 text-base font-semibold text-foreground">
+              <h3 className="pr-8 text-[17px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-[-0.02em]">
                 {note.title}
               </h3>
             ) : null}
@@ -165,21 +166,28 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                     key={item.id}
                     className={clsx(
                       "flex items-start gap-2 text-sm",
-                      item.completed ? "text-muted-foreground line-through" : "text-foreground/80",
+                      item.completed
+                        ? "text-zinc-400 dark:text-zinc-600 line-through"
+                        : "text-zinc-700 dark:text-zinc-300",
                     )}
                   >
-                    <span className={clsx("mt-1 h-2 w-2 rounded-full", item.completed ? "bg-foreground/20" : "bg-accent-500")} />
+                    <span className={clsx(
+                      "mt-1.5 h-2 w-2 rounded-full flex-shrink-0",
+                      item.completed
+                        ? "bg-zinc-300 dark:bg-zinc-700"
+                        : "bg-yellow-500"
+                    )} />
                     <span>{item.text}</span>
                   </li>
                 ))}
                 {note.checklist.length > 6 ? (
-                  <li className="text-xs text-muted-foreground">
+                  <li className="text-xs text-zinc-400 dark:text-zinc-500">
                     +{note.checklist.length - 6} more
                   </li>
                 ) : null}
               </ul>
             ) : note.body ? (
-              <p className="mt-3 whitespace-pre-wrap text-sm text-foreground/70 leading-relaxed">
+              <p className="mt-3 whitespace-pre-wrap text-[15px] text-zinc-600 dark:text-zinc-400 leading-7 tracking-[-0.01em]">
                 {note.body}
               </p>
             ) : null}
@@ -211,14 +219,14 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                 {noteLabels.map((label) => (
                   <span
                     key={label.id}
-                    className="inline-flex items-center gap-2 rounded-full bg-foreground/10 px-3 py-1 text-xs font-medium text-foreground/80 border border-border"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                   >
                     <span
                       className={clsx(
                         "h-2 w-2 rounded-full",
                         label.color === "default"
-                          ? "bg-muted-foreground"
-                          : `bg-${label.color}`,
+                          ? "bg-zinc-400"
+                          : `bg-${label.color}-500`,
                       )}
                     />
                     <span>{label.name}</span>
@@ -228,40 +236,38 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             ) : null}
           </div>
 
-          <footer className={clsx("mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-lg", footerClass)}>
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+          <footer className={clsx("mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-lg border-t border-zinc-200 dark:border-zinc-700/50", footerClass)}>
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               {note.sharedWithUserIds?.length ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
+                <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
                   <Users className="h-3 w-3" />
                   {note.sharedWithUserIds.length}
                 </span>
               ) : null}
               <span>
-                {note.updatedAt.getTime() !== note.createdAt.getTime()
-                  ? `Updated ${note.updatedAt.toLocaleDateString()}`
-                  : `Created ${note.createdAt.toLocaleDateString()}`}
+                {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={handleArchive}
-                className="icon-button h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded-full"
+                className="h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
                 aria-label={note.archived ? "Unarchive note" : "Archive note"}
               >
-                <Archive className="h-4 w-4" />
+                <Archive className="h-3.5 w-3.5" />
               </button>
               <div className="relative flex items-center">
                 <button
                   type="button"
                   onClick={handleOpenPalette}
                   className={clsx(
-                    "icon-button h-8 w-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10",
-                    showPalette && "bg-foreground/20 text-foreground",
+                    "h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200",
+                    showPalette && "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200",
                   )}
                   aria-label="Change color"
                 >
-                  <Palette className="h-4 w-4" />
+                  <Palette className="h-3.5 w-3.5" />
                 </button>
                 {showPalette ? (
                   <div
@@ -287,10 +293,10 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
               <button
                 type="button"
                 onClick={handleDeleteClick}
-                className="icon-button h-8 w-8 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:text-red-300 rounded-full"
+                className="h-7 w-7 rounded-full flex items-center justify-center transition text-red-400 hover:bg-red-500/20 hover:text-red-500"
                 aria-label="Delete note"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
           </footer>

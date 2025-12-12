@@ -1,7 +1,28 @@
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
+import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
+
+// Primary fonts - user-selectable via Settings > Appearance
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta-sans',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+});
 import { AuthProvider } from '@ainexsuite/auth';
 import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
 import { Toaster } from '@ainexsuite/ui';
@@ -40,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <ThemeProvider>
           <AuthProvider>

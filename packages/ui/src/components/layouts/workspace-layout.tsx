@@ -352,7 +352,7 @@ export function WorkspaceLayout({
       {/* AI Insights Pulldown - positioned under the header */}
       {insightsSections && (
         <div
-          className="fixed left-0 right-0 z-30 transition-[top] duration-300"
+          className={`fixed left-0 right-0 z-30 transition-all duration-300 ${isProfileOpen ? 'blur-sm opacity-50 pointer-events-none' : ''}`}
           style={{ top: isNavVisible ? '4rem' : '0' }}
         >
           <AIInsightsPulldown
