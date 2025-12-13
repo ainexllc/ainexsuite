@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspacePageLayout } from '@ainexsuite/ui';
 import { DashboardView } from '@/components/dashboard/dashboard-view';
-import { JournalInsights } from '@/components/journal/journal-insights';
+
 import { JournalComposer } from '@/components/journal/journal-composer';
 import { useSpaces } from '@/components/providers/spaces-provider';
 import { getUserJournalEntries } from '@/lib/firebase/firestore';
@@ -63,7 +63,7 @@ export default function WorkspacePage() {
 
   return (
     <WorkspacePageLayout
-      insightsBanner={<JournalInsights entries={entries} />}
+
       composer={<JournalComposer onEntryCreated={handleEntryCreated} />}
       spaces={spacesConfig}
     >

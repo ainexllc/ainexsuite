@@ -7,7 +7,7 @@ import { getUserSettings, UserSettings } from '@/lib/firebase/settings';
 import { cn } from '@/lib/utils';
 import { getTheme } from '@/lib/dashboard-themes';
 import { JournalComposer } from '@/components/journal/journal-composer';
-import { JournalInsights } from '@/components/journal/journal-insights';
+
 import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 
 interface DashboardStats {
@@ -91,8 +91,7 @@ export function NotebookLiteDashboard({
   return (
     <div className={cn("transition-colors duration-500 min-h-screen", theme.font)}>
       <div className="space-y-6 pb-20 max-w-7xl mx-auto">
-        {/* AI Insights Banner - Full Width at Top */}
-        <JournalInsights entries={entries} variant="sidebar" />
+
 
         {/* Space Switcher */}
         <div className="flex items-center gap-4">
