@@ -443,3 +443,9 @@ export {
 
 // Re-export hooks for convenience (main export is from '../hooks')
 export { useFontPreference, useThemePreference } from "../hooks";
+
+// Error Pages
+export {
+  NotFound,
+  type NotFoundProps,
+} from "./not-found";
