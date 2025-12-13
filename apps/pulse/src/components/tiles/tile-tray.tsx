@@ -832,6 +832,7 @@ export function TileTray({
                           { id: 'autumn-leaves', name: 'Autumn', icon: '🍂' },
                           { id: 'confetti', name: 'Confetti', icon: '🎉' },
                           { id: 'christmas-lights', name: 'Lights', icon: '🎄' },
+                          { id: 'christmas', name: 'Christmas', icon: '🎅' },
                       ].map((effect) => (
                           <button
                               key={effect.id}
