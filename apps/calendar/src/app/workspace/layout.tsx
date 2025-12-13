@@ -1,7 +1,7 @@
 'use client';
 
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, useFontPreference, useThemePreference } from '@ainexsuite/ui';
 import { SpacesProvider } from '@/components/providers/spaces-provider';
 import { EventsProvider, useEvents } from '@/components/providers/events-provider';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
@@ -30,6 +30,10 @@ export default function WorkspaceRootLayout({
   children: React.ReactNode;
 }) {
   const { user, isLoading, isReady } = useWorkspaceAuth();
+
+  // Sync user preferences (font & theme) from Firestore
+  useFontPreference(user?.preferences?.fontFamily);
+  useThemePreference(user?.preferences?.theme);
 
   // Show standardized loading screen
   if (isLoading) {

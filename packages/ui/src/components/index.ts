@@ -440,3 +440,6 @@ export {
   type SettingsUser,
   type SettingsTab,
 } from "./settings";
+
+// Re-export hooks for convenience (main export is from '../hooks')
+export { useFontPreference, useThemePreference } from "../hooks";

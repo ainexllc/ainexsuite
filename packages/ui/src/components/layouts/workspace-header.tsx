@@ -145,11 +145,11 @@ export function WorkspaceHeader({
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500 text-xs font-semibold text-white">
         {user.displayName
           ? user.displayName
-              .split(' ')
-              .map((part) => part.charAt(0))
-              .join('')
-              .slice(0, 2)
-              .toUpperCase()
+            .split(' ')
+            .map((part) => part.charAt(0))
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
           : (user.email?.charAt(0).toUpperCase() ?? 'U')}
       </span>
     )
@@ -165,131 +165,107 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onNavigationToggle}
-              className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-lg bg-surface-elevated/90 backdrop-blur-sm shadow-md border border-border-subtle transition hover:bg-surface-hover"
+              className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-lg backdrop-blur-sm shadow-md border border-border transition bg-background/95 hover:bg-accent text-foreground"
               aria-label="Toggle navigation"
             >
-              <Menu className="h-5 w-5 text-text-primary" />
+              <Menu className="h-5 w-5" />
             </button>
 
             {/* Profile - right */}
             <button
               type="button"
-              className="pointer-events-auto flex items-center gap-2 h-9 rounded-full bg-surface-elevated/90 backdrop-blur-sm text-text-secondary shadow-md border border-border-subtle transition hover:bg-surface-hover px-2"
+              className="pointer-events-auto flex items-center gap-2 h-9 rounded-full backdrop-blur-sm shadow-md border border-border transition px-2 bg-background/95 hover:bg-accent text-foreground"
               aria-label="Profile menu"
               onClick={onProfileToggle}
             >
               {renderUserAvatar()}
-              <ChevronDown className="h-3.5 w-3.5 text-text-muted" />
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
           </div>
         </div>
       )}
 
       <header
-      className="fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b"
-      style={{
-        backgroundColor: 'rgba(5, 5, 5, 0.95)',
-        borderColor: 'rgba(var(--theme-primary-rgb), 0.2)',
-        transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
-        transition: 'transform 0.3s ease-in-out',
-      }}
-      {...headerMouseProps}
-    >
-      <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6">
-        {/* Left: Hamburger + Logo + Breadcrumbs */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onNavigationToggle}
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 shadow-sm transition hover:bg-white/10"
-            aria-label="Toggle navigation"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <div className="hidden sm:block">
-            <AinexStudiosLogo size="sm" align="center" asLink={true} appName={appName} appColor={appColor} />
-          </div>
-
-          {/* Breadcrumbs - Only show if provided */}
-          {breadcrumbs && breadcrumbs.length > 0 && (
-            <HeaderBreadcrumbs items={breadcrumbs} className="ml-2" />
-          )}
-        </div>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
-          {/* Quick Actions Menu */}
-          {quickActions.length > 0 && onQuickAction && onQuickActionsToggle && (
-            <QuickActionsMenu
-              isOpen={isQuickActionsOpen}
-              onClose={() => onQuickActionsToggle?.()}
-              onToggle={onQuickActionsToggle}
-              actions={quickActions}
-              onAction={onQuickAction}
-            />
-          )}
-
-          {/* Notifications Bell */}
-          {onNotificationsClick && (
-            <NotificationBell
-              count={notificationCount}
-              onClick={onNotificationsClick}
-              isOpen={isNotificationsOpen}
-            />
-          )}
-
-          {/* Auto-hide Toggle (desktop only) */}
-          {onAutoHideToggle && (
+        className={`fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b border-border-secondary transition-transform duration-300 ease-in-out bg-white/80 dark:bg-zinc-950/90 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+        {...headerMouseProps}
+      >
+        <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6">
+          {/* Left: Hamburger + Logo + Breadcrumbs */}
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onAutoHideToggle}
-              className="hidden lg:flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-all hover:bg-white/10"
-              style={{
-                backgroundColor: autoHideEnabled ? 'rgba(var(--theme-primary-rgb), 0.15)' : 'transparent',
-                color: autoHideEnabled ? 'var(--theme-primary-light)' : 'rgba(255,255,255,0.5)'
-              }}
-              aria-label={autoHideEnabled ? 'Disable auto-hide navbar' : 'Enable auto-hide navbar'}
-              title={autoHideEnabled ? 'Disable auto-hide (Cmd+\\)' : 'Enable auto-hide (Cmd+\\)'}
+              onClick={onNavigationToggle}
+              className="flex h-10 w-10 items-center justify-center rounded-lg shadow-sm transition bg-secondary text-foreground hover:bg-accent"
+              aria-label="Toggle navigation"
             >
-              {autoHideEnabled ? (
-                <PanelTopClose className="h-4 w-4" />
-              ) : (
-                <PanelTop className="h-4 w-4" />
-              )}
+              <Menu className="h-5 w-5" />
             </button>
-          )}
 
-          {/* AI Assistant Button */}
-          <button
-            type="button"
-            onClick={onAiAssistantClick}
-            className="flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-all"
-            style={{
-              backgroundColor: 'rgba(var(--theme-primary-rgb), 0.15)',
-              color: 'var(--theme-primary-light)'
-            }}
-            aria-label="AI Assistant"
-          >
-            <Sparkles className="h-4 w-4" />
-          </button>
+            <div className="hidden sm:block">
+              <AinexStudiosLogo size="sm" align="center" asLink={true} appName={appName} appColor={appColor} />
+            </div>
 
-          {/* Profile Sidebar Toggle */}
-          <button
-            type="button"
-            className="flex items-center gap-2 h-9 rounded-full bg-white/5 text-white/70 shadow-sm transition hover:bg-white/10 px-2"
-            aria-label="Profile menu"
-            onClick={onProfileToggle}
-          >
-            {renderUserAvatar()}
-            <ChevronDown className="h-3.5 w-3.5 text-white/50" />
-          </button>
+            {/* Breadcrumbs - Only show if provided */}
+            {breadcrumbs && breadcrumbs.length > 0 && (
+              <HeaderBreadcrumbs items={breadcrumbs} className="ml-2" />
+            )}
+          </div>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            {/* Notifications Bell */}
+            {onNotificationsClick && (
+              <NotificationBell
+                count={notificationCount}
+                onClick={onNotificationsClick}
+                isOpen={isNotificationsOpen}
+              />
+            )}
+
+            {/* Auto-hide Toggle (desktop only) */}
+            {onAutoHideToggle && (
+              <button
+                type="button"
+                onClick={onAutoHideToggle}
+                className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-all hover:bg-accent ${autoHideEnabled ? 'bg-[rgba(var(--theme-primary-rgb),0.15)] text-[var(--theme-primary)]' : 'text-muted-foreground'
+                  }`}
+                aria-label={autoHideEnabled ? 'Disable auto-hide navbar' : 'Enable auto-hide navbar'}
+                title={autoHideEnabled ? 'Disable auto-hide (Cmd+\\)' : 'Enable auto-hide (Cmd+\\)'}
+              >
+                {autoHideEnabled ? (
+                  <PanelTopClose className="h-4 w-4" />
+                ) : (
+                  <PanelTop className="h-4 w-4" />
+                )}
+              </button>
+            )}
+
+            {/* AI Assistant Button */}
+            <button
+              type="button"
+              onClick={onAiAssistantClick}
+              className="flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-all bg-[rgba(var(--theme-primary-rgb),0.12)] dark:bg-[rgba(var(--theme-primary-rgb),0.15)] text-[var(--theme-primary)] hover:opacity-80"
+              aria-label="AI Assistant"
+            >
+              <Sparkles className="h-4 w-4" />
+            </button>
+
+            {/* Profile Sidebar Toggle */}
+            <button
+              type="button"
+              className="flex items-center gap-2 h-9 rounded-full shadow-sm transition px-2 bg-secondary text-secondary-foreground hover:bg-accent"
+              aria-label="Profile menu"
+              onClick={onProfileToggle}
+            >
+              {renderUserAvatar()}
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
     </>
   );
 }

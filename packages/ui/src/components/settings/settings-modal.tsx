@@ -4,6 +4,7 @@ import * as React from "react";
 import { clsx } from "clsx";
 import { X, User, Palette, Bell } from "lucide-react";
 import { createPortal } from "react-dom";
+import { useTheme } from "next-themes";
 import type { UserPreferences, FontFamily } from "@ainexsuite/types";
 
 export type SettingsTab = "profile" | "appearance" | "notifications" | "app";
@@ -304,10 +305,14 @@ const FONT_OPTIONS: Array<{ id: FontFamily; label: string; fontClass: string }> 
 
 function AppearanceSettings({ preferences, onUpdatePreferences }: AppearanceSettingsProps) {
   const [saving, setSaving] = React.useState(false);
+  const { setTheme } = useTheme();
 
   const handleThemeChange = async (theme: "light" | "dark" | "system") => {
     setSaving(true);
     try {
+      // Apply theme immediately to next-themes
+      setTheme(theme);
+      // Persist to Firestore
       await onUpdatePreferences({ theme });
     } finally {
       setSaving(false);

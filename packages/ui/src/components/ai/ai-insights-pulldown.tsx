@@ -148,7 +148,7 @@ export function AIInsightsPulldown({
   };
 
   return (
-    <div className={cn("flex flex-col flex-shrink-0", className)}>
+    <div className={cn("flex flex-col flex-shrink-0 dark", className)}>
       {/* Panel wrapper - animates height to push content */}
       <div
         className={cn(
@@ -156,9 +156,9 @@ export function AIInsightsPulldown({
           isExpanded ? "max-h-[180px]" : "max-h-0"
         )}
       >
-        {/* Full Hero Panel */}
+        {/* Full Hero Panel - always dark mode */}
         <div
-          className="relative w-full overflow-hidden border-b border-white/10 bg-black/20 backdrop-blur-xl"
+          className="relative w-full overflow-hidden border-b border-white/10 bg-black/90 backdrop-blur-xl"
           onMouseEnter={() => setIsHoverPaused(true)}
           onMouseLeave={() => setIsHoverPaused(false)}
         >

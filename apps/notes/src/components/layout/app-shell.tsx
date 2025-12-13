@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { NavigationPanel, SettingsModal, useFontPreference } from "@ainexsuite/ui";
+import { NavigationPanel, SettingsModal } from "@ainexsuite/ui";
 import { useAuth } from "@ainexsuite/auth";
 import { TopNav } from "./top-nav";
 import { LabelsSection } from "./labels-section";
@@ -34,9 +34,6 @@ export function AppShell({ children }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, updatePreferences: updateGlobalPreferences } = useAuth();
-
-  // Apply user's font preference
-  useFontPreference(user?.preferences?.fontFamily);
 
   const { allNotes, pinned, others, loading } = useNotes();
   const {

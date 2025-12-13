@@ -64,11 +64,28 @@ export async function GET(request: NextRequest) {
     }
 
     // For local development, decode the simple base64 session
+    // Also try to fetch latest preferences from Firestore
     if (process.env.NODE_ENV === 'development') {
       try {
         const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
-        // Return full user data if available in cookie (persisted in dev)
-        // or just UID if legacy cookie
+
+        // Try to get latest preferences from Firestore
+        let preferences = decoded.preferences;
+        try {
+          const adminDb = getAdminFirestore();
+          const userDoc = await adminDb.collection('users').doc(decoded.uid).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            if (userData?.preferences) {
+              preferences = userData.preferences;
+              console.log('[Session GET] Loaded preferences from Firestore for uid:', decoded.uid);
+            }
+          }
+        } catch (firestoreError) {
+          console.log('[Session GET] Could not load from Firestore, using cookie preferences');
+        }
+
+        // Return full user data with Firestore preferences (or cookie fallback)
         return NextResponse.json(
           {
             user: {
@@ -76,7 +93,7 @@ export async function GET(request: NextRequest) {
               email: decoded.email,
               displayName: decoded.displayName,
               photoURL: decoded.photoURL,
-              preferences: decoded.preferences,
+              preferences: preferences,
             },
             authenticated: true
           },
@@ -154,11 +171,26 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'No valid updates provided' }, { status: 400, headers: corsHeaders });
     }
 
-    // Development: Update session cookie
+    // Development: Update session cookie AND Firestore
     if (process.env.NODE_ENV === 'development') {
       try {
         const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
         const updatedUser = { ...decoded, ...filteredUpdates };
+
+        // Also persist to Firestore in dev mode (if Admin SDK available)
+        try {
+          const adminDb = getAdminFirestore();
+          const { FieldValue } = await import('firebase-admin/firestore');
+          const userRef = adminDb.collection('users').doc(decoded.uid);
+          await userRef.update({
+            ...filteredUpdates,
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+          console.log('[Session] Preferences saved to Firestore for uid:', decoded.uid);
+        } catch (firestoreError) {
+          // Firestore update failed - continue with cookie update only
+          console.log('[Session] Firestore update skipped (Admin SDK not available):', firestoreError instanceof Error ? firestoreError.message : firestoreError);
+        }
 
         // Create new cookie with updated data
         const newSessionCookie = Buffer.from(JSON.stringify(updatedUser)).toString('base64');
@@ -312,6 +344,33 @@ export async function POST(request: NextRequest) {
           userData = {};
         }
 
+        // Default preferences (used if no existing user in Firestore)
+        let existingPreferences = {
+          theme: 'dark' as const,
+          language: 'en',
+          timezone: 'America/New_York',
+          notifications: {
+            email: true,
+            push: false,
+            inApp: true,
+          },
+        };
+
+        // Try to load existing user preferences from Firestore
+        try {
+          const adminDb = getAdminFirestore();
+          const userDoc = await adminDb.collection('users').doc(userData.uid || 'dev-user').get();
+          if (userDoc.exists) {
+            const existingUser = userDoc.data();
+            if (existingUser?.preferences) {
+              existingPreferences = existingUser.preferences;
+              console.log('[Session] Loaded existing preferences from Firestore for uid:', userData.uid);
+            }
+          }
+        } catch (firestoreError) {
+          console.log('[Session] Could not load preferences from Firestore (Admin SDK not available)');
+        }
+
         // Create minimal user object for local dev
         // In dev mode, all apps are pre-activated to avoid repeated activation modals
         const user = {
@@ -319,16 +378,7 @@ export async function POST(request: NextRequest) {
           email: userData.email || 'dev@example.com',
           displayName: userData.displayName || 'Dev User',
           photoURL: userData.photoURL || '',
-          preferences: {
-            theme: 'dark' as const,
-            language: 'en',
-            timezone: 'America/New_York',
-            notifications: {
-              email: true,
-              push: false,
-              inApp: true,
-            },
-          },
+          preferences: existingPreferences,
           createdAt: Date.now(),
           lastLoginAt: Date.now(),
           apps: {
@@ -556,9 +606,28 @@ export async function CustomTokenPOST(request: NextRequest) {
         } catch (adminError) {
           // Admin SDK not configured or failed - fall back to devMode hydration
           console.log('[CustomToken] Admin SDK not available, using devMode hydration for uid:', uid);
+
+          // Try to get latest preferences from Firestore and update the session cookie
+          let updatedSessionCookie = sessionCookie;
+          try {
+            const adminDb = getAdminFirestore();
+            const userDoc = await adminDb.collection('users').doc(uid).get();
+            if (userDoc.exists) {
+              const userData = userDoc.data();
+              if (userData?.preferences) {
+                // Update the decoded session with Firestore preferences
+                decoded.preferences = userData.preferences;
+                updatedSessionCookie = Buffer.from(JSON.stringify(decoded)).toString('base64');
+                console.log('[CustomToken] Updated session cookie with Firestore preferences for uid:', uid);
+              }
+            }
+          } catch (firestoreError) {
+            console.log('[CustomToken] Could not fetch Firestore preferences, using cookie preferences');
+          }
+
           return NextResponse.json({
             customToken: null,
-            sessionCookie: sessionCookie,
+            sessionCookie: updatedSessionCookie,
             devMode: true,
           });
         }

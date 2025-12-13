@@ -354,6 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log('[Auth] Hydrating user from dev session, uid:', uid);
+      console.log('[Auth] Cookie preferences:', decoded.preferences);
 
       // Create a minimal user object
       const now = Date.now();

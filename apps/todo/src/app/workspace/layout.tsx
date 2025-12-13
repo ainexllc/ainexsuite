@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen } from '@ainexsuite/ui';
+import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference, useThemePreference } from '@ainexsuite/ui';
 import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 
@@ -14,6 +14,10 @@ export default function WorkspaceRootLayout({
 }) {
   const router = useRouter();
   const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
+
+  // Sync user preferences (font & theme) from Firestore
+  useFontPreference(user?.preferences?.fontFamily);
+  useThemePreference(user?.preferences?.theme);
 
   // Get quick actions for Todo app
   const quickActions = getQuickActionsForApp('todo');
