@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@ainexsuite/firebase": "workspace:*",
+    "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",
     "react": "^19.1.0",
     "js-cookie": "^3.0.5",

@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference, useThemePreference } from '@ainexsuite/ui';
+import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
 import { SpacesProvider } from '@/components/providers/spaces-provider';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 
@@ -15,9 +15,8 @@ export default function WorkspaceRootLayout({
   const router = useRouter();
   const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
 
-  // Sync user preferences (font & theme) from Firestore
+  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
-  useThemePreference(user?.preferences?.theme);
 
   // Get quick actions for Journey app
   const quickActions = getQuickActionsForApp('journey');

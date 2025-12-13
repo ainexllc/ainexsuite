@@ -12,3 +12,10 @@ export {
   type SpacesConfig,
   type UseSpacesConfigOptions,
 } from './use-spaces-config';
+export { useWorkspaceInsights } from './use-workspace-insights';
+export type {
+  WorkspaceInsightsConfig,
+  WorkspaceInsightsResult,
+  InsightsCacheData,
+} from './use-workspace-insights.types';
+export { useRealtimeThemeSync } from './use-realtime-theme-sync';

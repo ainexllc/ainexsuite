@@ -2,6 +2,11 @@ import type { Metadata } from 'next';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
+import { AuthProvider } from '@ainexsuite/auth';
+import { ThemeProvider, AppColorProvider, themeSyncScriptContent } from '@ainexsuite/theme';
+import { getServerTheme } from '@ainexsuite/theme/server';
+import '@ainexsuite/ui/styles';
+import './globals.css';
 
 // Primary fonts - user-selectable via Settings > Appearance
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -23,10 +28,6 @@ const dmSans = DM_Sans({
   display: 'swap',
   weight: ['300', '400', '500', '600', '700'],
 });
-import { AuthProvider } from '@ainexsuite/auth';
-import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
-import '@ainexsuite/ui/styles';
-import './globals.css';
 
 const kanit = Kanit({
   subsets: ['latin'],
@@ -55,15 +56,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const theme = await getServerTheme();
+
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${theme} ${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeSyncScriptContent }} />
+      </head>
       <body className="font-sans antialiased">
-        <ThemeProvider>
+        <ThemeProvider defaultTheme={theme} enableSystem={false} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="projects" fallbackPrimary="#6366f1" fallbackSecondary="#818cf8">
               {children}

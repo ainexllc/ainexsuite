@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Inter, DM_Sans, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
 import { GeistSans } from 'geist/font/sans';
 import { AuthProvider } from '@ainexsuite/auth';
-import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
+import { ThemeProvider, AppColorProvider, themeSyncScriptContent } from '@ainexsuite/theme';
+import { getServerTheme } from '@ainexsuite/theme/server';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -58,17 +59,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const theme = await getServerTheme();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={theme}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeSyncScriptContent }} />
+      </head>
       <body
         className={`${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${geistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
       >
-        <ThemeProvider>
+        <ThemeProvider defaultTheme={theme} enableSystem={false} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="admin" fallbackPrimary="#71717a" fallbackSecondary="#a1a1aa">
               {children}

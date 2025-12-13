@@ -13,8 +13,7 @@ import { AIInsightsPulldown, type AIInsightsPulldownSection } from '../ai/ai-ins
 import { getNavigationApps } from '../../utils/navigation';
 import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
 import { useAppTheme } from '@ainexsuite/theme';
-import { useTheme } from 'next-themes';
-import { useEffect } from 'react';
+import { useRealtimeThemeSync } from '../../hooks/use-realtime-theme-sync';
 import type { NotificationItem, QuickAction, BreadcrumbItem } from '@ainexsuite/types';
 
 interface WorkspaceLayoutProps {
@@ -218,20 +217,13 @@ export function WorkspaceLayout({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [isInsightsExpanded, setIsInsightsExpanded] = useState(false);
-  const { setTheme, theme: currentTheme } = useTheme(); // Import useTheme
 
-  // Sync user theme preference with system theme
-  // This ensures that when user preference changes (e.g. from another tab/app),
-  // this app updates to match.
-  useEffect(() => {
-    // Only sync if user has a preference and it differs from current system theme
-    // We check against 'system' specially because next-themes resolves it
-    const userTheme = (user as any).preferences?.theme;
-    if (userTheme && userTheme !== currentTheme) {
-      // Avoid loops if next-themes is already updating
-      setTheme(userTheme);
-    }
-  }, [(user as any).preferences?.theme, currentTheme, setTheme]);
+  // Real-time theme sync: bidirectional sync with Firestore for cross-device theme
+  // Also syncs local theme changes TO Firestore automatically
+  useRealtimeThemeSync({
+    uid: user.uid,
+    updatePreferences: onUpdatePreferences as ((updates: { theme: string }) => Promise<void>) | undefined,
+  });
 
   // Get global theme settings (from AppColorProvider context)
   const appTheme = useAppTheme();
@@ -330,7 +322,10 @@ export function WorkspaceLayout({
         onSignOut={onSignOut}
         onSettingsClick={onSettingsClick}
         onActivityClick={onActivityClick}
-        onThemeChange={(theme) => onUpdatePreferences?.({ theme })}
+        onThemeChange={() => {
+          // Theme changes are now automatically synced to Firestore by useRealtimeThemeSync
+          // No need to manually call onUpdatePreferences - the hook detects next-themes changes
+        }}
       />
 
       {/* Notifications Dropdown (positioned absolutely, rendered here for portal-like behavior) */}

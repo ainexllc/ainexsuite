@@ -10,6 +10,7 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { auth, SSOHandler } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User, UserPreferences } from '@ainexsuite/types';
+import { setThemeCookie, getThemeCookie, type ThemeValue } from '@ainexsuite/theme';
 import {
   removeSessionCookie,
   initializeSession,
@@ -60,13 +61,15 @@ function checkForSSOToken(): boolean {
 function createFallbackUser(firebaseUser: FirebaseUser): User {
   const now = Date.now();
   const isDev = process.env.NODE_ENV === 'development';
+  // Use cookie theme as source of truth (shared across all apps)
+  const cookieTheme = typeof document !== 'undefined' ? getThemeCookie() : null;
   return {
     uid: firebaseUser.uid,
     email: firebaseUser.email || '',
     displayName: firebaseUser.displayName || firebaseUser.email || 'User',
     photoURL: firebaseUser.photoURL || '',
     preferences: {
-      theme: 'dark',
+      theme: cookieTheme || 'dark',
       language: 'en',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       notifications: {
@@ -153,7 +156,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Immediate state update for UI responsiveness
     setUser(updatedUser);
 
-    // 2. Broadcast to other tabs/apps for real-time sync
+    // 2. If theme is being updated, also set the cookie for cross-app sync
+    // Cookie is shared across all ports on localhost and subdomains in production
+    if (updates.theme) {
+      setThemeCookie(updates.theme as ThemeValue);
+    }
+
+    // 3. Broadcast to other tabs/apps for real-time sync
     if (typeof window !== 'undefined') {
       const channel = new BroadcastChannel('ainex-preferences');
       channel.postMessage({ type: 'PREFERENCES_UPDATE', preferences: updates });
@@ -354,20 +363,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log('[Auth] Hydrating user from dev session, uid:', uid);
-      console.log('[Auth] Cookie preferences:', decoded.preferences);
+      console.log('[Auth] Session cookie preferences:', decoded.preferences);
 
-      // Create a minimal user object
+      // IMPORTANT: Use ainex-theme cookie as source of truth for theme
+      // This cookie is shared across all apps (ports) and is the authoritative source
+      const cookieTheme = getThemeCookie();
+      const sessionTheme = decoded.preferences?.theme;
+      const authorativeTheme = cookieTheme || sessionTheme || 'dark';
+      console.log('[Auth] Theme resolution: cookie=' + cookieTheme + ', session=' + sessionTheme + ', using=' + authorativeTheme);
+
+      // Create a minimal user object with cookie theme taking precedence
       const now = Date.now();
+      const basePreferences = decoded.preferences || {
+        theme: 'dark',
+        language: 'en',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        notifications: { email: true, push: false, inApp: true },
+      };
       const devUser: User = {
         uid,
         email: decoded.email || '',
         displayName: decoded.displayName || decoded.email || 'Dev User',
         photoURL: decoded.photoURL || '',
-        preferences: decoded.preferences || {
-          theme: 'dark',
-          language: 'en',
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          notifications: { email: true, push: false, inApp: true },
+        preferences: {
+          ...basePreferences,
+          theme: authorativeTheme, // Cookie theme takes precedence
         },
         createdAt: now,
         lastLoginAt: now,
