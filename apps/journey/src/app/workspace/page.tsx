@@ -16,6 +16,7 @@ export default function WorkspacePage() {
   const searchParams = useSearchParams();
   const dateFilter = searchParams.get('date');
   const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
