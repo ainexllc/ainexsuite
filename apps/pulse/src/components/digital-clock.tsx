@@ -682,6 +682,73 @@ export function DigitalClock() {
         );
     }
 
+    // Minimal Style
+    if (clockStyle === 'minimal') {
+        const hours = time.getHours();
+        const minutes = time.getMinutes();
+        const displayHours = timeFormat === '12h' ? (hours % 12 || 12) : hours;
+        const period = timeFormat === '12h' ? (hours >= 12 ? 'PM' : 'AM') : '';
+
+        return (
+            <div className="flex flex-col items-center">
+                <div className="text-8xl font-extralight tracking-widest text-foreground/90">
+                    {String(displayHours).padStart(2, '0')}
+                    <span className="animate-pulse">:</span>
+                    {String(minutes).padStart(2, '0')}
+                </div>
+                {period && (
+                    <div className="text-lg font-light tracking-[0.5em] text-foreground/50 mt-2">
+                        {period}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // Binary Clock Style
+    if (clockStyle === 'binary') {
+        const hours = time.getHours();
+        const minutes = time.getMinutes();
+        const seconds = time.getSeconds();
+
+        const toBinaryArray = (num: number, bits: number): boolean[] => {
+            return Array.from({ length: bits }, (_, i) => Boolean((num >> (bits - 1 - i)) & 1));
+        };
+
+        const hourBits = toBinaryArray(hours, 5);
+        const minuteBits = toBinaryArray(minutes, 6);
+        const secondBits = toBinaryArray(seconds, 6);
+
+        const renderBinaryRow = (bits: boolean[], label: string) => (
+            <div className="flex items-center gap-3">
+                <span className="text-xs font-mono text-foreground/50 w-8">{label}</span>
+                <div className="flex gap-1.5">
+                    {bits.map((bit, i) => (
+                        <div
+                            key={i}
+                            className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                                bit
+                                    ? 'bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]'
+                                    : 'bg-foreground/20'
+                            }`}
+                        />
+                    ))}
+                </div>
+            </div>
+        );
+
+        return (
+            <div className="flex flex-col gap-3 p-6 bg-black/40 backdrop-blur-sm rounded-xl border border-foreground/10">
+                {renderBinaryRow(hourBits, 'HRS')}
+                {renderBinaryRow(minuteBits, 'MIN')}
+                {renderBinaryRow(secondBits, 'SEC')}
+                <div className="text-xs font-mono text-foreground/40 text-center mt-2 tracking-wider">
+                    {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+                </div>
+            </div>
+        );
+    }
+
     // Default Digital
     return (
         <div className="text-6xl font-mono font-bold tracking-tight drop-shadow-lg text-foreground">

@@ -883,6 +883,8 @@ export function TileTray({
                       { id: 'flip', name: 'Retro Flip', desc: 'Classic split-flap display' },
                       { id: 'retro-digital', name: 'Old School', desc: 'LCD 7-segment style' },
                       { id: 'analog', name: 'Analog', desc: 'Traditional watch face' },
+                      { id: 'minimal', name: 'Minimal', desc: 'Ultra-clean, thin font' },
+                      { id: 'binary', name: 'Binary', desc: 'Glowing binary dots' },
                   ].map((style) => (
                       <button
                           key={style.id}
@@ -905,6 +907,21 @@ export function TileTray({
                               )}
                               {style.id === 'retro-digital' && <span className="font-mono font-bold text-xs tracking-widest">88:88</span>}
                               {style.id === 'analog' && <Clock className="w-6 h-6" />}
+                              {style.id === 'minimal' && <span className="font-extralight text-sm tracking-widest">12:00</span>}
+                              {style.id === 'binary' && (
+                                  <div className="flex flex-col gap-0.5">
+                                      <div className="flex gap-0.5">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                          <div className="w-1.5 h-1.5 rounded-full bg-current opacity-30" />
+                                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                      </div>
+                                      <div className="flex gap-0.5">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-current opacity-30" />
+                                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                          <div className="w-1.5 h-1.5 rounded-full bg-current opacity-30" />
+                                      </div>
+                                  </div>
+                              )}
                           </div>
 
                           <div>

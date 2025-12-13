@@ -3,7 +3,7 @@ import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 
 const SETTINGS_COLLECTION = 'user_settings';
 
-export type ClockStyle = 'digital' | 'neon' | 'flip' | 'analog' | 'retro-digital' | 'christmas-analog';
+export type ClockStyle = 'digital' | 'neon' | 'flip' | 'analog' | 'retro-digital' | 'christmas-analog' | 'minimal' | 'binary';
 
 export interface ClockSettings {
   tiles: Record<string, string | null>;
