@@ -885,9 +885,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   }, [labels, newLabelName]);
 
   const content = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 md:p-6">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 md:p-6"
+      onClick={onClose}
+    >
       <div
         ref={editorContainerRef}
+        onClick={(e) => e.stopPropagation()}
         className={clsx(
           "relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl sm:rounded-3xl border shadow-2xl",
           currentColorConfig.cardClass,
