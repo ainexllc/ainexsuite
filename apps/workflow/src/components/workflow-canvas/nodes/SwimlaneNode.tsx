@@ -85,11 +85,11 @@ function SwimlaneNode({ data, selected }: NodeProps<SwimlaneNodeType>) {
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full bg-transparent text-foreground outline-none"
+              className="w-full bg-transparent text-zinc-900 dark:text-zinc-100 outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <span className="text-foreground">{label}</span>
+            <span className="text-zinc-900 dark:text-zinc-100">{label}</span>
           )}
           <span className="text-muted-foreground text-[10px]">
             {orientation === 'horizontal' ? 'Horizontal' : 'Vertical'}
