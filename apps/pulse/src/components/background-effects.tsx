@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'fog' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'autumn-leaves';
+export type EffectType = 'none' | 'rain' | 'heavy-rain' | 'snow' | 'heavy-snow' | 'fog' | 'christmas-lights' | 'confetti' | 'christmas-lights-snow' | 'fireflies' | 'sakura' | 'autumn-leaves' | 'christmas';
 
 interface BackgroundEffectsProps {
   effect: EffectType;
@@ -45,11 +45,12 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
     'christmas-lights-snow',
     'fireflies',
     'sakura',
-    'autumn-leaves'
+    'autumn-leaves',
+    'christmas'
   ].includes(effect);
 
   // Helper to determine if we need lights
-  const needsLights = ['christmas-lights', 'christmas-lights-snow'].includes(effect);
+  const needsLights = ['christmas-lights', 'christmas-lights-snow', 'christmas'].includes(effect);
 
   // Canvas Animation Loop
   useEffect(() => {
@@ -162,6 +163,49 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
             rotationSpeed: (Math.random() - 0.5) * 3,
             opacity: Math.random() * 0.4 + 0.6,
             color: ['#FF6B35', '#F7931E', '#FDC830', '#C1272D', '#8B4513'][Math.floor(Math.random() * 5)] // Fall colors
+          });
+        }
+      } else if (effect === 'christmas') {
+        // Snowflakes - beautiful 6-pointed crystalline shapes
+        for (let i = 0; i < 60; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 4 + 2,
+            speedY: Math.random() * 1.5 + 0.5,
+            speedX: (Math.random() - 0.5) * 0.5,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 1,
+            opacity: Math.random() * 0.5 + 0.5,
+            type: 'rocket' as const, // Using 'rocket' to mark snowflakes
+            color: '#FFFFFF'
+          });
+        }
+        // Twinkling stars in background
+        for (let i = 0; i < 40; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 2 + 1,
+            opacity: Math.random(),
+            pulseSpeed: Math.random() * 0.03 + 0.01,
+            type: 'spark' as const, // Using 'spark' to mark stars
+            color: ['#FFD700', '#FFFFFF', '#FFF8DC', '#FFFACD'][Math.floor(Math.random() * 4)]
+          });
+        }
+        // Christmas ornaments floating down
+        const ornamentColors = ['#E53935', '#43A047', '#1E88E5', '#FFD700', '#9C27B0', '#FF7043'];
+        for (let i = 0; i < 15; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 6 + 4,
+            speedY: Math.random() * 0.8 + 0.3,
+            speedX: (Math.random() - 0.5) * 0.3,
+            rotation: 0,
+            rotationSpeed: 0,
+            opacity: Math.random() * 0.3 + 0.7,
+            color: ornamentColors[Math.floor(Math.random() * ornamentColors.length)]
           });
         }
       }
@@ -322,6 +366,162 @@ export function BackgroundEffects({ effect }: BackgroundEffectsProps) {
           }
           if (p.x > canvas.width) p.x = 0;
           if (p.x < 0) p.x = canvas.width;
+        });
+      }
+      else if (effect === 'christmas') {
+        particles.forEach(p => {
+          if (p.type === 'rocket') {
+            // Draw beautiful 6-pointed snowflake
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(((p.rotation || 0) * Math.PI) / 180);
+
+            const r = p.radius || 3;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${p.opacity || 0.8})`;
+            ctx.lineWidth = 1;
+            ctx.lineCap = 'round';
+
+            // Draw 6 main branches with smaller side branches
+            for (let i = 0; i < 6; i++) {
+              ctx.save();
+              ctx.rotate((i * Math.PI) / 3);
+
+              // Main branch
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(0, -r);
+              ctx.stroke();
+
+              // Side branches
+              ctx.beginPath();
+              ctx.moveTo(0, -r * 0.4);
+              ctx.lineTo(-r * 0.25, -r * 0.6);
+              ctx.moveTo(0, -r * 0.4);
+              ctx.lineTo(r * 0.25, -r * 0.6);
+              ctx.moveTo(0, -r * 0.7);
+              ctx.lineTo(-r * 0.2, -r * 0.85);
+              ctx.moveTo(0, -r * 0.7);
+              ctx.lineTo(r * 0.2, -r * 0.85);
+              ctx.stroke();
+
+              ctx.restore();
+            }
+
+            // Add sparkle at center
+            ctx.fillStyle = `rgba(255, 255, 255, ${(p.opacity || 0.8) * 0.6})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
+            // Update position with gentle floating
+            p.y += p.speedY || 1;
+            p.x += (p.speedX || 0) + Math.sin(time * 1.5 + (p.rotation || 0) * 0.1) * 0.3;
+            p.rotation = (p.rotation || 0) + (p.rotationSpeed || 0.5);
+
+            if (p.y > canvas.height + 10) {
+              p.y = -10;
+              p.x = Math.random() * canvas.width;
+            }
+            if (p.x > canvas.width) p.x = 0;
+            if (p.x < 0) p.x = canvas.width;
+          }
+          else if (p.type === 'spark') {
+            // Draw twinkling star
+            const twinkle = 0.4 + Math.sin(time * 4 + (p.opacity || 0) * 20) * 0.6;
+            const r = (p.radius || 1.5) * (0.8 + twinkle * 0.4);
+
+            // Star glow
+            const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 3);
+            gradient.addColorStop(0, `rgba(255, 215, 0, ${twinkle * 0.5})`);
+            gradient.addColorStop(0.5, `rgba(255, 215, 0, ${twinkle * 0.2})`);
+            gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Star core with 4-point sparkle
+            ctx.fillStyle = p.color || '#FFD700';
+            ctx.save();
+            ctx.translate(p.x, p.y);
+
+            // Horizontal and vertical rays
+            ctx.beginPath();
+            ctx.moveTo(-r * 1.5, 0);
+            ctx.lineTo(0, -r * 0.3);
+            ctx.lineTo(r * 1.5, 0);
+            ctx.lineTo(0, r * 0.3);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(0, -r * 1.5);
+            ctx.lineTo(-r * 0.3, 0);
+            ctx.lineTo(0, r * 1.5);
+            ctx.lineTo(r * 0.3, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(0, 0, r * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+          }
+          else {
+            // Draw Christmas ornament (bauble)
+            const r = p.radius || 5;
+
+            // Ornament glow
+            const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 1.5);
+            glow.addColorStop(0, `${p.color}40`);
+            glow.addColorStop(1, `${p.color}00`);
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Main ornament body with gradient
+            const gradient = ctx.createRadialGradient(
+              p.x - r * 0.3, p.y - r * 0.3, 0,
+              p.x, p.y, r
+            );
+            gradient.addColorStop(0, `${p.color}FF`);
+            gradient.addColorStop(0.7, p.color || '#E53935');
+            gradient.addColorStop(1, `${p.color}99`);
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Shine highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(p.x - r * 0.3, p.y - r * 0.3, r * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cap/top of ornament
+            ctx.fillStyle = '#C0C0C0';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y - r, r * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Update position
+            p.y += p.speedY || 0.5;
+            p.x += (p.speedX || 0) + Math.sin(time + (p.opacity || 0) * 5) * 0.2;
+
+            if (p.y > canvas.height + r * 2) {
+              p.y = -r * 2;
+              p.x = Math.random() * canvas.width;
+            }
+            if (p.x > canvas.width) p.x = 0;
+            if (p.x < 0) p.x = canvas.width;
+          }
         });
       }
 
