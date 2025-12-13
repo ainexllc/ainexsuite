@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react';
 import { X, FolderPlus } from 'lucide-react';
 
@@ -25,6 +25,37 @@ function StickyNoteNode({ data, selected }: NodeProps) {
   const [text, setText] = useState(nodeData.text);
   const [title, setTitle] = useState(nodeData.title || '');
   const [isHovered, setIsHovered] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
+  const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Show handles on both hover and touch (touch stays visible for 3 seconds)
+  const showHandles = isHovered || isTouched || selected;
+
+  // Handle touch start - show handles on touch
+  const handleTouchStart = useCallback(() => {
+    setIsTouched(true);
+    // Clear any existing timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+  }, []);
+
+  // Handle touch end - keep handles visible for a while then hide
+  const handleTouchEnd = useCallback(() => {
+    // Keep handles visible for 3 seconds after touch ends
+    touchTimeoutRef.current = setTimeout(() => {
+      setIsTouched(false);
+    }, 3000);
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const defaultWidth = 320;
   const defaultHeight = 280;
@@ -74,13 +105,13 @@ function StickyNoteNode({ data, selected }: NodeProps) {
 
   const handleStyle = {
     background: '#3b82f6',
-    width: 12,
-    height: 12,
+    width: 16,  // Larger for better touch targets
+    height: 16,
     border: '3px solid #0a0a0a',
     borderRadius: '50%',
     boxShadow: '0 0 0 2px #3b82f6, 0 0 8px #3b82f6',
     zIndex: 10,
-    opacity: isHovered ? 1 : 0.2,
+    opacity: showHandles ? 1 : 0.2,
     transition: 'opacity 0.2s',
   };
 
@@ -89,14 +120,14 @@ function StickyNoteNode({ data, selected }: NodeProps) {
       {!nodeData.locked && (
         <NodeResizer
           color="#06b6d4"
-          isVisible={isHovered || selected}
+          isVisible={showHandles}
           minWidth={150}
           minHeight={100}
           maxWidth={500}
           maxHeight={1000}
           handleStyle={{
-            width: 12,
-            height: 12,
+            width: 16,  // Larger for touch
+            height: 16,
             borderRadius: '50%',
             backgroundColor: '#06b6d4',
             border: '3px solid #0a0a0a',
@@ -111,11 +142,13 @@ function StickyNoteNode({ data, selected }: NodeProps) {
         />
       )}
       <div
-        className={`rounded-3xl select-none transition-shadow border-2 border-transparent hover:border-cyan-500 shadow-lg flex flex-col overflow-hidden ${
+        className={`rounded-3xl select-none transition-shadow border-2 border-transparent hover:border-cyan-500 shadow-lg flex flex-col overflow-hidden touch-manipulation ${
           nodeData.locked ? 'cursor-not-allowed' : 'cursor-move'
-        }`}
+        } ${showHandles ? 'border-cyan-500' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
           backgroundColor: nodeData.color,
           width: `${width}px`,
@@ -149,11 +182,15 @@ function StickyNoteNode({ data, selected }: NodeProps) {
         style={{ ...handleStyle, left: 0 }}
       />
 
-      {/* Pin button - hidden by default, shown on hover (matching notes app) */}
+      {/* Delete button - hidden by default, shown on hover/touch */}
       <button
         onClick={nodeData.onDelete}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          nodeData.onDelete?.();
+        }}
         className={`absolute right-4 top-4 rounded-full bg-foreground/70 p-2 text-gray-700 shadow-sm transition ${
-          isHovered ? 'flex' : 'hidden'
+          showHandles ? 'flex' : 'hidden'
         }`}
         title="Delete note"
       >
