@@ -89,11 +89,11 @@ function DocumentsNode({ data, selected }: NodeProps<DocumentsNodeType>) {
               onBlur={stopEditing}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full rounded bg-background/40 px-2 py-1 text-center text-foreground outline-none"
+              className="w-full rounded bg-background/40 px-2 py-1 text-center text-zinc-900 dark:text-zinc-100 outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <p className="rounded bg-background/30 px-3 py-1 text-center text-sm text-foreground">
+            <p className="rounded bg-background/30 px-3 py-1 text-center text-sm text-zinc-900 dark:text-zinc-100">
               {label}
             </p>
           )}

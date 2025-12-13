@@ -81,7 +81,7 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
               onBlur={stopEditingEmoji}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full bg-transparent text-center text-3xl text-foreground outline-none"
+              className="w-full bg-transparent text-center text-3xl text-zinc-900 dark:text-zinc-100 outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
@@ -96,11 +96,11 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
               onBlur={stopEditingLabel}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="w-full bg-transparent text-foreground outline-none"
+              className="w-full bg-transparent text-zinc-900 dark:text-zinc-100 outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (
-            <p className="text-sm text-foreground">{label}</p>
+            <p className="text-sm text-zinc-900 dark:text-zinc-100">{label}</p>
           )}
         </div>
       </div>

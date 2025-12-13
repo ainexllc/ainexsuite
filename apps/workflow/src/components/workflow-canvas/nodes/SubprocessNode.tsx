@@ -75,11 +75,11 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
                 onBlur={stopEditingLabel}
                 onKeyDown={handleKeyDown}
                 autoFocus
-                className="w-full bg-transparent text-foreground outline-none"
+                className="w-full bg-transparent text-zinc-900 dark:text-zinc-100 outline-none"
                 style={{ fontFamily: 'inherit' }}
               />
             ) : (
-              <span className="text-foreground">{label}</span>
+              <span className="text-zinc-900 dark:text-zinc-100">{label}</span>
             )}
           </div>
           <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
@@ -98,7 +98,7 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
               onBlur={stopEditingDetail}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="h-full w-full resize-none bg-transparent text-foreground outline-none"
+              className="h-full w-full resize-none bg-transparent text-zinc-900 dark:text-zinc-100 outline-none"
               style={{ fontFamily: 'inherit' }}
             />
           ) : (

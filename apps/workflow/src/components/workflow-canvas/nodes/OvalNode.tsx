@@ -119,11 +119,11 @@ function OvalNode({ data, selected }: NodeProps<OvalNodeType>) {
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="h-full w-full resize-none bg-transparent text-center text-sm text-foreground outline-none"
+            className="h-full w-full resize-none bg-transparent text-center text-sm text-zinc-900 dark:text-zinc-100 outline-none"
             style={{ fontFamily: 'inherit' }}
           />
         ) : (
-          <div className="text-center text-sm text-foreground whitespace-pre-wrap break-words">
+          <div className="text-center text-sm text-zinc-900 dark:text-zinc-100 whitespace-pre-wrap break-words">
             {label}
           </div>
         )}
