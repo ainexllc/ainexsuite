@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import {
   StickyNote as StickyNoteIcon, Trash2, Sun, Moon, Undo2, Redo2, CheckSquare, Trash, Network, Download, Upload, Maximize2, Minimize2,
 } from 'lucide-react';
@@ -31,6 +31,16 @@ import '@xyflow/react/dist/base.css';
 import './whiteboard.css';
 import StickyNoteNode from './StickyNoteNode';
 import { useUndoRedo } from './hooks/useUndoRedo';
+
+// Touch drag state for creating notes from toolbar
+interface TouchDragState {
+  isDragging: boolean;
+  color: string;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+}
 
 // Custom styles for edges to ensure visibility
 const edgeStyles = {
@@ -106,6 +116,17 @@ function WhiteboardInner(_props: WhiteboardProps) {
   const [edgeType, setEdgeType] = useState<'smoothstep' | 'straight' | 'default' | 'step'>('smoothstep');
   const [arrowType, setArrowType] = useState<'none' | 'end' | 'start' | 'both'>('end');
   const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted'>('solid');
+
+  // Touch drag state for creating notes from toolbar
+  const [touchDrag, setTouchDrag] = useState<TouchDragState>({
+    isDragging: false,
+    color: '#fef08a',
+    startX: 0,
+    startY: 0,
+    currentX: 0,
+    currentY: 0,
+  });
+  const reactFlowRef = useRef<HTMLDivElement>(null);
 
   // Define node types
   const nodeTypes: NodeTypes = useMemo(
@@ -629,6 +650,169 @@ function WhiteboardInner(_props: WhiteboardProps) {
     [screenToFlowPosition, stickyNoteColor, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, updateNodeSize, takeSnapshot]
   );
 
+  // Touch event handlers for dragging sticky notes from toolbar
+  const handleTouchStart = useCallback((e: React.TouchEvent, color: string) => {
+    const touch = e.touches[0];
+    setTouchDrag({
+      isDragging: true,
+      color,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
+    });
+    setStickyNoteColor(color);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchDrag.isDragging) return;
+    const touch = e.touches[0];
+    setTouchDrag((prev) => ({
+      ...prev,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
+    }));
+  }, [touchDrag.isDragging]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchDrag.isDragging) return;
+
+    const touch = e.changedTouches[0];
+    const dropX = touch.clientX;
+    const dropY = touch.clientY;
+
+    // Check if we've moved enough to be considered a drag (not just a tap)
+    const dragDistance = Math.sqrt(
+      Math.pow(dropX - touchDrag.startX, 2) + Math.pow(dropY - touchDrag.startY, 2)
+    );
+
+    // Only create a note if dragged at least 30px (prevents accidental note creation on tap)
+    if (dragDistance > 30) {
+      // Check if dropped on the canvas area
+      const reactFlowBounds = reactFlowRef.current?.getBoundingClientRect();
+      if (reactFlowBounds &&
+          dropX >= reactFlowBounds.left &&
+          dropX <= reactFlowBounds.right &&
+          dropY >= reactFlowBounds.top &&
+          dropY <= reactFlowBounds.bottom) {
+
+        const position = screenToFlowPosition({
+          x: dropX,
+          y: dropY,
+        });
+
+        takeSnapshot();
+        const nodeId = `note-${Date.now()}`;
+        const newNode: Node = {
+          id: nodeId,
+          type: 'stickyNote',
+          position,
+          data: {
+            text: '',
+            title: '',
+            color: touchDrag.color,
+            fontSize: stickyNoteFontSize,
+            fontFamily: stickyNoteFontFamily,
+            isDarkMode,
+            onDelete: () => deleteNode(nodeId),
+            onTextChange: (text: string) => updateNodeText(nodeId, text),
+            onTitleChange: (title: string) => updateNodeTitle(nodeId, title),
+            onResize: (width: number, height: number) => updateNodeSize(nodeId, width, height),
+          },
+        };
+
+        setNodesState((nds) => [...nds, newNode]);
+      }
+    }
+
+    setTouchDrag({
+      isDragging: false,
+      color: '#fef08a',
+      startX: 0,
+      startY: 0,
+      currentX: 0,
+      currentY: 0,
+    });
+  }, [touchDrag, screenToFlowPosition, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, updateNodeSize, takeSnapshot]);
+
+  // Global touch move and end handlers (for when touch moves outside the toolbar)
+  useEffect(() => {
+    if (!touchDrag.isDragging) return;
+
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      setTouchDrag((prev) => ({
+        ...prev,
+        currentX: touch.clientX,
+        currentY: touch.clientY,
+      }));
+    };
+
+    const handleGlobalTouchEnd = (e: TouchEvent) => {
+      const touch = e.changedTouches[0];
+      const dropX = touch.clientX;
+      const dropY = touch.clientY;
+
+      const dragDistance = Math.sqrt(
+        Math.pow(dropX - touchDrag.startX, 2) + Math.pow(dropY - touchDrag.startY, 2)
+      );
+
+      if (dragDistance > 30) {
+        const reactFlowBounds = reactFlowRef.current?.getBoundingClientRect();
+        if (reactFlowBounds &&
+            dropX >= reactFlowBounds.left &&
+            dropX <= reactFlowBounds.right &&
+            dropY >= reactFlowBounds.top &&
+            dropY <= reactFlowBounds.bottom) {
+
+          const position = screenToFlowPosition({
+            x: dropX,
+            y: dropY,
+          });
+
+          takeSnapshot();
+          const nodeId = `note-${Date.now()}`;
+          const newNode: Node = {
+            id: nodeId,
+            type: 'stickyNote',
+            position,
+            data: {
+              text: '',
+              title: '',
+              color: touchDrag.color,
+              fontSize: stickyNoteFontSize,
+              fontFamily: stickyNoteFontFamily,
+              isDarkMode,
+              onDelete: () => deleteNode(nodeId),
+              onTextChange: (text: string) => updateNodeText(nodeId, text),
+              onTitleChange: (title: string) => updateNodeTitle(nodeId, title),
+              onResize: (width: number, height: number) => updateNodeSize(nodeId, width, height),
+            },
+          };
+
+          setNodesState((nds) => [...nds, newNode]);
+        }
+      }
+
+      setTouchDrag({
+        isDragging: false,
+        color: '#fef08a',
+        startX: 0,
+        startY: 0,
+        currentX: 0,
+        currentY: 0,
+      });
+    };
+
+    window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
+    window.addEventListener('touchend', handleGlobalTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchmove', handleGlobalTouchMove);
+      window.removeEventListener('touchend', handleGlobalTouchEnd);
+    };
+  }, [touchDrag.isDragging, touchDrag.startX, touchDrag.startY, touchDrag.color, screenToFlowPosition, stickyNoteFontSize, stickyNoteFontFamily, isDarkMode, setNodesState, deleteNode, updateNodeText, updateNodeTitle, updateNodeSize, takeSnapshot]);
+
   // Export whiteboard to JSON
   const exportToJSON = useCallback(() => {
     const exportData = {
@@ -734,7 +918,24 @@ function WhiteboardInner(_props: WhiteboardProps) {
 
   return (
     <div ref={whiteboardRef} className={`w-full h-full relative rounded-lg overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+      {/* Touch drag preview */}
+      {touchDrag.isDragging && (
+        <div
+          className="fixed pointer-events-none z-[9999] opacity-80 rounded-2xl shadow-2xl flex items-center justify-center"
+          style={{
+            left: touchDrag.currentX - 40,
+            top: touchDrag.currentY - 40,
+            width: 80,
+            height: 80,
+            backgroundColor: touchDrag.color,
+            transform: 'translate(0, 0)',
+          }}
+        >
+          <StickyNoteIcon className="w-8 h-8 text-gray-700" />
+        </div>
+      )}
       <ReactFlow
+        ref={reactFlowRef}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -753,6 +954,12 @@ function WhiteboardInner(_props: WhiteboardProps) {
         connectOnClick={true}
         edgesReconnectable={true}
         proOptions={{ hideAttribution: true }}
+        panOnScroll={true}
+        panOnDrag={true}
+        selectionOnDrag={false}
+        zoomOnPinch={true}
+        zoomOnScroll={true}
+        zoomOnDoubleClick={true}
       >
         <Background
           variant={BackgroundVariant.Dots}
@@ -779,7 +986,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
               Sticky Notes
             </span>
 
-            {/* Draggable Color Swatches */}
+            {/* Draggable Color Swatches - Touch and Mouse */}
             <div className="grid grid-cols-3 gap-1">
               {[
                 { color: '#fef08a', label: 'Yellow' },
@@ -798,7 +1005,10 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     e.dataTransfer.effectAllowed = 'move';
                     setStickyNoteColor(color);
                   }}
-                  className={`flex flex-col items-center justify-center gap-0.5 p-2 rounded-lg border shadow-md transition-all cursor-move hover:scale-105 ${
+                  onTouchStart={(e) => handleTouchStart(e, color)}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  className={`flex flex-col items-center justify-center gap-0.5 p-2 rounded-lg border shadow-md transition-all cursor-move hover:scale-105 touch-none ${
                     stickyNoteColor === color
                       ? 'ring-1 ring-cyan-500'
                       : isDarkMode
