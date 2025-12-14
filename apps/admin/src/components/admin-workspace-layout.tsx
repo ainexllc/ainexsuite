@@ -7,7 +7,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, useFontPreference, useThemePreference } from '@ainexsuite/ui';
+import { WorkspaceLayout, useFontPreference } from '@ainexsuite/ui';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { db } from '@ainexsuite/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -21,9 +21,8 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
 
-  // Sync user preferences (font & theme) from Firestore
+  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
-  useThemePreference(user?.preferences?.theme);
 
   // Check admin role
   useEffect(() => {
@@ -137,8 +136,6 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
       appName="ADMIN"
       appColor="#71717a"
       showBackground={true}
-      backgroundVariant="dots"
-      backgroundIntensity={0.2}
       onUpdatePreferences={updatePreferences}
     >
       {children}

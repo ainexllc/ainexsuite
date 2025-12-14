@@ -38,12 +38,12 @@ export function NotificationBell({
       onClick={onClick}
       className={`
         relative flex h-9 w-9 items-center justify-center rounded-full
-        transition-colors duration-150
+        transition-all
         ${isOpen
-          ? 'bg-foreground/15 text-foreground'
-          : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground'
+          ? 'bg-zinc-300/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200'
+          : 'text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
         }
-        focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background
+        focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 focus:ring-offset-background
         ${className}
       `}
       aria-label={`Notifications${hasUnread ? `, ${count} unread` : ''}`}

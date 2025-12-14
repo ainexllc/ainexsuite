@@ -893,7 +893,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         ref={editorContainerRef}
         onClick={(e) => e.stopPropagation()}
         className={clsx(
-          "relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl sm:rounded-3xl border shadow-2xl",
+          "relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl",
           currentColorConfig.cardClass,
           "border-zinc-200 dark:border-zinc-800",
         )}
@@ -1414,7 +1414,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
         {/* Bottom toolbar - anchored to bottom with color */}
         <div className={clsx(
-          "flex-shrink-0 mt-auto rounded-b-2xl sm:rounded-b-3xl px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-200 dark:border-zinc-700/50",
+          "flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-200 dark:border-zinc-700/50",
           currentColorConfig.footerClass
         )}>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1748,16 +1748,16 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 {newLabelName.trim() && !labels.some(
                   (l) => l.name.toLowerCase() === newLabelName.trim().toLowerCase()
                 ) && (
-                  <button
-                    type="button"
-                    onClick={() => void handleCreateNewLabel()}
-                    disabled={isCreatingLabel}
-                    className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition disabled:opacity-50 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Create
-                  </button>
-                )}
+                    <button
+                      type="button"
+                      onClick={() => void handleCreateNewLabel()}
+                      disabled={isCreatingLabel}
+                      className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition disabled:opacity-50 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Create
+                    </button>
+                  )}
               </div>
 
               {/* Existing labels */}

@@ -14,49 +14,49 @@ export const NOTE_PATTERNS: Array<{
   /** Preview icon for the picker */
   previewClass: string;
 }> = [
-  {
-    id: "none",
-    label: "None",
-    description: "No pattern",
-    patternClass: "",
-    previewClass: "bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600",
-  },
-  {
-    id: "dots",
-    label: "Dots",
-    description: "Subtle dot pattern",
-    patternClass: "bg-pattern-dots",
-    previewClass: "bg-pattern-dots bg-white dark:bg-gray-800",
-  },
-  {
-    id: "grid",
-    label: "Grid",
-    description: "Minimal grid lines",
-    patternClass: "bg-pattern-grid",
-    previewClass: "bg-pattern-grid bg-white dark:bg-gray-800",
-  },
-  {
-    id: "diagonal",
-    label: "Diagonal",
-    description: "Diagonal stripes",
-    patternClass: "bg-pattern-diagonal",
-    previewClass: "bg-pattern-diagonal bg-white dark:bg-gray-800",
-  },
-  {
-    id: "waves",
-    label: "Waves",
-    description: "Organic wave pattern",
-    patternClass: "bg-pattern-waves",
-    previewClass: "bg-pattern-waves bg-white dark:bg-gray-800",
-  },
-  {
-    id: "circles",
-    label: "Circles",
-    description: "Scattered circles",
-    patternClass: "bg-pattern-circles",
-    previewClass: "bg-pattern-circles bg-white dark:bg-gray-800",
-  },
-];
+    {
+      id: "none",
+      label: "None",
+      description: "No pattern",
+      patternClass: "",
+      previewClass: "bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600",
+    },
+    {
+      id: "dots",
+      label: "Dots",
+      description: "Subtle dot pattern",
+      patternClass: "bg-pattern-dots",
+      previewClass: "bg-pattern-dots bg-white dark:bg-gray-800",
+    },
+    {
+      id: "grid",
+      label: "Grid",
+      description: "Minimal grid lines",
+      patternClass: "bg-pattern-grid",
+      previewClass: "bg-pattern-grid bg-white dark:bg-gray-800",
+    },
+    {
+      id: "diagonal",
+      label: "Diagonal",
+      description: "Diagonal stripes",
+      patternClass: "bg-pattern-diagonal",
+      previewClass: "bg-pattern-diagonal bg-white dark:bg-gray-800",
+    },
+    {
+      id: "waves",
+      label: "Waves",
+      description: "Organic wave pattern",
+      patternClass: "bg-pattern-waves",
+      previewClass: "bg-pattern-waves bg-white dark:bg-gray-800",
+    },
+    {
+      id: "circles",
+      label: "Circles",
+      description: "Scattered circles",
+      patternClass: "bg-pattern-circles",
+      previewClass: "bg-pattern-circles bg-white dark:bg-gray-800",
+    },
+  ];
 
 /**
  * SVG Pattern Data URIs
@@ -66,7 +66,7 @@ export const NOTE_PATTERNS: Array<{
 
 // Dots: Small circular dots in a grid pattern
 export const PATTERN_DOTS_SVG =
-  "data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1.5' fill='%23000' fill-opacity='0.08'/%3E%3C/svg%3E";
+  "data:image/svg+xml,%3Csvg width='30' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23000' fill-opacity='0.05'/%3E%3C/svg%3E";
 
 // Grid: Subtle grid lines
 export const PATTERN_GRID_SVG =

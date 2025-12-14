@@ -146,9 +146,9 @@ export function AIInsightsRibbon({
                 style={{ backgroundColor: `${accentColor}40` }}
               >
                 {isLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin" style={{ color: accentColor }} />
+                  <Loader2 className="h-3 w-3 animate-spin" style={{ color: '#f97316' }} />
                 ) : (
-                  <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
+                  <Sparkles className="h-3 w-3" style={{ color: '#f97316' }} />
                 )}
               </div>
 
@@ -191,9 +191,9 @@ export function AIInsightsRibbon({
                 style={{ backgroundColor: `${accentColor}40` }}
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" style={{ color: accentColor }} />
+                  <Loader2 className="h-4 w-4 animate-spin" style={{ color: '#f97316' }} />
                 ) : (
-                  <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+                  <Sparkles className="h-4 w-4" style={{ color: '#f97316' }} />
                 )}
               </div>
 
@@ -207,7 +207,7 @@ export function AIInsightsRibbon({
                 {!isLoading && (
                   <span
                     className="px-2 py-0.5 rounded text-xs font-semibold"
-                    style={{ backgroundColor: `${accentColor}40`, color: accentColor }}
+                    style={{ backgroundColor: `${accentColor}40`, color: '#f97316' }}
                   >
                     {itemCount} insights
                   </span>
@@ -240,9 +240,9 @@ export function AIInsightsRibbon({
                   style={{ backgroundColor: `${accentColor}40` }}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" style={{ color: accentColor }} />
+                    <Loader2 className="h-5 w-5 animate-spin" style={{ color: '#f97316' }} />
                   ) : (
-                    <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
+                    <Sparkles className="h-5 w-5" style={{ color: '#f97316' }} />
                   )}
                 </div>
                 <span className="font-semibold text-zinc-900 dark:text-white">{title}</span>
@@ -278,13 +278,13 @@ export function AIInsightsRibbon({
                       className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: `${accentColor}25` }}
                     >
-                      <span style={{ color: accentColor }}>{currentSection.icon}</span>
+                      <span style={{ color: '#f97316' }}>{currentSection.icon}</span>
                     </div>
                     {/* Label + Content */}
                     <div className="flex-1 min-w-0">
                       <span
                         className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide mb-0.5"
-                        style={{ backgroundColor: `${accentColor}25`, color: accentColor }}
+                        style={{ backgroundColor: `${accentColor}25`, color: '#f97316' }}
                       >
                         {currentSection.label}
                       </span>
@@ -371,7 +371,7 @@ export function AIInsightsRibbon({
               className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: `${accentColor}40` }}
             >
-              <Sparkles className="h-4 w-4 md:h-5 md:w-5" style={{ color: accentColor }} />
+              <Sparkles className="h-4 w-4 md:h-5 md:w-5" style={{ color: '#f97316' }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium truncate">
@@ -403,7 +403,7 @@ export function AIInsightsRibbon({
               className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: `${accentColor}40` }}
             >
-              <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" style={{ color: accentColor }} />
+              <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" style={{ color: '#f97316' }} />
             </div>
             <span className="text-sm text-zinc-600 dark:text-white/60 flex-1 truncate">{loadingMessage}</span>
             <button
@@ -438,7 +438,7 @@ export function AIInsightsRibbon({
                   className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center"
                   style={{ backgroundColor: `${accentColor}40` }}
                 >
-                  <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
+                  <Sparkles className="h-3 w-3" style={{ color: '#f97316' }} />
                 </div>
                 {/* Primary text truncated */}
                 <span className="text-xs font-medium text-zinc-800 dark:text-white/90 max-w-[150px] truncate">
@@ -448,7 +448,7 @@ export function AIInsightsRibbon({
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <span
                     className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-                    style={{ backgroundColor: `${accentColor}40`, color: accentColor }}
+                    style={{ backgroundColor: `${accentColor}40`, color: '#f97316' }}
                   >
                     {itemCount}
                   </span>
@@ -482,7 +482,7 @@ export function AIInsightsRibbon({
                   className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
                   style={{ backgroundColor: `${accentColor}40` }}
                 >
-                  <Sparkles className="h-4 w-4" style={{ color: accentColor }} />
+                  <Sparkles className="h-4 w-4" style={{ color: '#f97316' }} />
                 </div>
 
                 {/* Focus text - truncated */}
@@ -534,7 +534,7 @@ export function AIInsightsRibbon({
                     className="w-10 h-10 rounded-lg flex items-center justify-center"
                     style={{ backgroundColor: `${accentColor}40` }}
                   >
-                    <Sparkles className="h-5 w-5" style={{ color: accentColor }} />
+                    <Sparkles className="h-5 w-5" style={{ color: '#f97316' }} />
                   </div>
                   <span className="font-semibold text-zinc-900 dark:text-white">{title}</span>
                 </div>
@@ -569,13 +569,13 @@ export function AIInsightsRibbon({
                         className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
                         style={{ backgroundColor: `${accentColor}25` }}
                       >
-                        <span style={{ color: accentColor }}>{currentSection.icon}</span>
+                        <span style={{ color: '#f97316' }}>{currentSection.icon}</span>
                       </div>
                       {/* Label + Content */}
                       <div className="flex-1 min-w-0">
                         <span
                           className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide mb-0.5"
-                          style={{ backgroundColor: `${accentColor}25`, color: accentColor }}
+                          style={{ backgroundColor: `${accentColor}25`, color: '#f97316' }}
                         >
                           {currentSection.label}
                         </span>

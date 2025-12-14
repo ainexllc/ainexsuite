@@ -163,24 +163,24 @@ export function SpaceSwitcher({
     <div className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-hover ${transitionClass} w-full min-w-[180px] max-w-[280px]`}
+        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-2xl border shadow-sm ${transitionClass} w-full min-w-[160px] max-w-[220px] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700`}
       >
         {showTypeIcons && (
           <div
-            className="h-8 w-8 rounded-md flex items-center justify-center text-foreground flex-shrink-0 bg-[var(--color-primary)]"
+            className="h-7 w-7 rounded-md flex items-center justify-center text-white flex-shrink-0 bg-[#f97316]"
           >
-            {currentSpace ? getIcon(currentSpace.type) : <User className="h-4 w-4" />}
+            {currentSpace ? getIcon(currentSpace.type) : <User className="h-3.5 w-3.5" />}
           </div>
         )}
         <div className="flex-1 text-left min-w-0">
-          <p className="text-sm font-medium text-ink-900 leading-none truncate">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-none truncate">
             {currentSpace?.name || effectiveDefaultName}
           </p>
-          <p className="text-xs text-ink-500 capitalize truncate">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 capitalize truncate mt-0.5">
             {currentSpace ? (getTypeConfig(currentSpace.type)?.label || currentSpace.type) : 'personal'}
           </p>
         </div>
-        <ChevronDown className={`h-4 w-4 text-ink-500 flex-shrink-0 ${transitionClass} ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 text-zinc-400 dark:text-zinc-500 flex-shrink-0 ${transitionClass} ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -203,7 +203,7 @@ export function SpaceSwitcher({
                     onClick={() => handleSelectSpace(space.id)}
                     className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm ${transitionClass} ${
                       isActive
-                        ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+                        ? 'bg-[#f97316]/10 text-[#f97316]'
                         : 'text-ink-600 hover:bg-surface-hover hover:text-ink-900'
                     }`}
                     style={isActive ? getTypeStyle(space.type, true) : {}}
@@ -228,7 +228,7 @@ export function SpaceSwitcher({
               <div className="border-t border-outline-subtle p-1">
                 <button
                   onClick={handleCreateSpace}
-                  className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-[var(--color-primary)] hover:bg-surface-hover ${transitionClass}`}
+                  className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-[#f97316] hover:bg-surface-hover ${transitionClass}`}
                 >
                   <Plus className="h-4 w-4" />
                   Create New Space

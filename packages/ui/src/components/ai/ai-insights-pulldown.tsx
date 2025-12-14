@@ -190,7 +190,7 @@ export function AIInsightsPulldown({
                 >
                   <Loader2
                     className="h-8 w-8 animate-spin"
-                    style={{ color: accentColor }}
+                    style={{ color: '#f97316' }}
                   />
                 </div>
                 <span className="text-base text-white/60 font-medium">{loadingMessage}</span>
@@ -214,7 +214,7 @@ export function AIInsightsPulldown({
                   >
                     <span
                       className="[&>svg]:w-8 [&>svg]:h-8 transition-colors duration-500"
-                      style={{ color: gradientFrom }}
+                      style={{ color: '#f97316' }}
                     >
                       {currentSection?.icon}
                     </span>
@@ -225,11 +225,11 @@ export function AIInsightsPulldown({
                     <div className="flex items-center gap-2">
                       <Sparkles
                         className="w-4 h-4 transition-colors duration-500"
-                        style={{ color: gradientFrom }}
+                        style={{ color: '#f97316' }}
                       />
                       <span
                         className="text-xs font-bold uppercase tracking-wider transition-colors duration-500"
-                        style={{ color: gradientFrom }}
+                        style={{ color: '#f97316' }}
                       >
                         {currentSection?.label}
                       </span>
@@ -366,7 +366,7 @@ export function AIInsightsPulldown({
           {!isExpanded && (
             <Sparkles
               className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ color: accentColor }}
+              style={{ color: '#f97316' }}
             />
           )}
         </button>

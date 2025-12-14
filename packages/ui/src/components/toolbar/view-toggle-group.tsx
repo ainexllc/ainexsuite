@@ -42,7 +42,7 @@ export function ViewToggleGroup<T extends string>({
               buttonSize,
               'inline-flex items-center justify-center rounded-full transition-all',
               isActive
-                ? 'bg-[var(--color-primary)] text-white shadow-md'
+                ? 'bg-[#f97316] text-white shadow-md'
                 : 'text-zinc-400 hover:bg-white/10 hover:text-white dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
             )}
           >

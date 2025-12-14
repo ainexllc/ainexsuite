@@ -113,6 +113,7 @@ export function ProfileSidebar({
                     src={user.photoURL}
                     alt={user.displayName ?? user.email ?? 'User'}
                     fill
+                    sizes="96px"
                     className="object-cover"
                   />
                 ) : (
@@ -173,11 +174,10 @@ export function ProfileSidebar({
                     key={mode}
                     type="button"
                     onClick={() => {
-                      if (onThemeChange) {
-                        onThemeChange(mode);
-                      } else {
-                        setTheme(mode);
-                      }
+                      // Always update UI immediately
+                      setTheme(mode);
+                      // Also persist to backend if handler provided
+                      onThemeChange?.(mode);
                     }}
                     className={clsx(
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",

@@ -43,7 +43,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
 
   const noteColorConfig = NOTE_COLORS.find((c) => c.id === note.color);
   const cardClass = noteColorConfig?.cardClass || "bg-zinc-50 dark:bg-zinc-900";
-  const footerClass = noteColorConfig?.footerClass || "bg-zinc-100 dark:bg-zinc-800";
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -106,7 +105,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           // Use theme lab color system for light/dark mode
           cardClass,
           "border border-zinc-200 dark:border-zinc-800",
-          "group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-200",
+          "group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
           viewMode === "list"
             ? "flex items-start gap-4 px-5 py-3"
@@ -236,7 +235,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             ) : null}
           </div>
 
-          <footer className={clsx("mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-lg border-t border-zinc-200 dark:border-zinc-700/50", footerClass)}>
+          <footer className={clsx("mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t-0")}>
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               {note.sharedWithUserIds?.length ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">

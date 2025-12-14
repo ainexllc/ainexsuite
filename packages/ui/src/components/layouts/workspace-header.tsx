@@ -165,10 +165,10 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onNavigationToggle}
-              className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-lg backdrop-blur-sm shadow-md border border-border transition bg-background/95 hover:bg-accent text-foreground"
+              className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm shadow-md border border-border transition bg-background/95 hover:bg-accent text-foreground"
               aria-label="Toggle navigation"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4" />
             </button>
 
             {/* Profile - right */}
@@ -186,19 +186,19 @@ export function WorkspaceHeader({
       )}
 
       <header
-        className={`fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b border-border-secondary transition-transform duration-300 ease-in-out bg-white/80 dark:bg-zinc-950/90 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+        className={`fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b-2 border-amber-500 transition-transform duration-300 ease-in-out bg-zinc-100/95 dark:bg-zinc-950/90 dark:border-zinc-800 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
         {...headerMouseProps}
       >
         <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6">
           {/* Left: Hamburger + Logo + Breadcrumbs */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={onNavigationToggle}
-              className="flex h-10 w-10 items-center justify-center rounded-lg shadow-sm transition bg-secondary text-foreground hover:bg-accent"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-all bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
               aria-label="Toggle navigation"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4" />
             </button>
 
             <div className="hidden sm:block">
@@ -215,7 +215,7 @@ export function WorkspaceHeader({
           <div className="flex-1" />
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {/* Notifications Bell */}
             {onNotificationsClick && (
               <NotificationBell
@@ -230,8 +230,11 @@ export function WorkspaceHeader({
               <button
                 type="button"
                 onClick={onAutoHideToggle}
-                className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-all hover:bg-accent ${autoHideEnabled ? 'bg-[rgba(var(--theme-primary-rgb),0.15)] text-[var(--theme-primary)]' : 'text-muted-foreground'
-                  }`}
+                className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                  autoHideEnabled
+                    ? 'bg-amber-200 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                    : 'text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300'
+                }`}
                 aria-label={autoHideEnabled ? 'Disable auto-hide navbar' : 'Enable auto-hide navbar'}
                 title={autoHideEnabled ? 'Disable auto-hide (Cmd+\\)' : 'Enable auto-hide (Cmd+\\)'}
               >
@@ -247,7 +250,7 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onAiAssistantClick}
-              className="flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-all bg-[rgba(var(--theme-primary-rgb),0.12)] dark:bg-[rgba(var(--theme-primary-rgb),0.15)] text-[var(--theme-primary)] hover:opacity-80"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-all bg-amber-200 text-amber-700 hover:bg-amber-300 dark:bg-amber-500/20 dark:text-amber-400 dark:hover:bg-amber-500/30"
               aria-label="AI Assistant"
             >
               <Sparkles className="h-4 w-4" />
@@ -256,12 +259,12 @@ export function WorkspaceHeader({
             {/* Profile Sidebar Toggle */}
             <button
               type="button"
-              className="flex items-center gap-2 h-9 rounded-full shadow-sm transition px-2 bg-secondary text-secondary-foreground hover:bg-accent"
+              className="flex items-center gap-2 h-9 rounded-full transition-all px-2 bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
               aria-label="Profile menu"
               onClick={onProfileToggle}
             >
               {renderUserAvatar()}
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </button>
           </div>
         </div>

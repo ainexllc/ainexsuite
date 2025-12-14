@@ -1,23 +1,40 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Target, Zap, Flame, BarChart3, Heart, Network, Brain, Lightbulb } from "lucide-react";
-import { createElement } from "react";
+import { useMemo, createElement } from "react";
+import {
+  Target,
+  Zap,
+  Flame,
+  BarChart3,
+  Heart,
+  Network,
+  Brain,
+  Lightbulb,
+} from "lucide-react";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAppColors } from "@ainexsuite/theme";
 import {
-  useInsightsPulldownExpanded,
+  useWorkspaceInsights as useSharedWorkspaceInsights,
+  type WorkspaceInsightsConfig,
+  type WorkspaceInsightsResult,
   type AIInsightsPulldownSection,
 } from "@ainexsuite/ui";
+import type { Note } from "@/lib/types/note";
+
+// Re-export the result type for consumers
+export type { WorkspaceInsightsResult };
 
 const INSIGHTS_STORAGE_KEY = "notes-ai-insights-expanded";
+const RECENT_COUNT = 5;
 
-interface InsightData {
+/**
+ * Notes insight data schema from API
+ */
+interface NotesInsightData {
   weeklyFocus: string;
   commonThemes: string[];
   pendingActions: string[];
-  // New fields
   mood: string;
   topCategories: Array<{ name: string; count: number }>;
   connections: Array<{ topic: string; noteCount: number }>;
@@ -25,6 +42,9 @@ interface InsightData {
   quickTip: string;
 }
 
+/**
+ * Streak data calculated client-side
+ */
 interface StreakData {
   streakDays: number;
   notesThisWeek: number;
@@ -33,7 +53,9 @@ interface StreakData {
 /**
  * Calculate writing streak and notes this week from note timestamps
  */
-function calculateStreak(notes: Array<{ createdAt: Date; updatedAt: Date }>): StreakData {
+function calculateStreak(
+  notes: Array<{ createdAt: Date; updatedAt: Date }>
+): StreakData {
   if (notes.length === 0) return { streakDays: 0, notesThisWeek: 0 };
 
   const now = new Date();
@@ -92,280 +114,186 @@ function getMoodDisplay(mood: string): string {
   return moodMap[mood?.toLowerCase()] || mood || "Balanced";
 }
 
-export interface WorkspaceInsightsResult {
-  sections: AIInsightsPulldownSection[];
-  title: string;
-  isLoading: boolean;
-  loadingMessage: string;
-  error: string | null;
-  lastUpdated: Date | null;
-  onRefresh: () => void;
-  refreshDisabled: boolean;
-  storageKey: string;
-  hasEnoughData: boolean;
+/**
+ * Build insight sections from API data
+ */
+function buildNoteSections(
+  data: NotesInsightData,
+  primaryColor: string,
+  localStats?: object
+): AIInsightsPulldownSection[] {
+  const allSections: AIInsightsPulldownSection[] = [];
+  const streakData = localStats as StreakData | undefined;
+
+  // 1. Current Focus (productivity)
+  if (data.weeklyFocus) {
+    allSections.push({
+      icon: createElement(Target, { className: "h-4 w-4" }),
+      label: "Current Focus",
+      content: data.weeklyFocus,
+      gradient: { from: primaryColor, to: "#f97316" },
+    });
+  }
+
+  // 2. Writing Streak (engagement) - client-side calculated
+  if (streakData && (streakData.streakDays > 0 || streakData.notesThisWeek > 0)) {
+    allSections.push({
+      icon: createElement(Flame, { className: "h-4 w-4" }),
+      label: "Writing Streak",
+      content:
+        streakData.streakDays > 0
+          ? `${streakData.streakDays}-day streak! You've created ${streakData.notesThisWeek} notes this week`
+          : `${streakData.notesThisWeek} notes this week - start your streak today!`,
+      gradient: { from: primaryColor, to: "#f97316" },
+    });
+  }
+
+  // 3. Mood / Energy (wellness)
+  if (data.mood) {
+    allSections.push({
+      icon: createElement(Heart, { className: "h-4 w-4" }),
+      label: "Energy & Mood",
+      content: getMoodDisplay(data.mood),
+      gradient: { from: primaryColor, to: "#ec4899" },
+    });
+  }
+
+  // 4. Pending Actions (tasks)
+  if (data.pendingActions && data.pendingActions.length > 0) {
+    const actionsToShow = data.pendingActions.slice(0, 2);
+    const actionText =
+      actionsToShow.join(". ") +
+      (actionsToShow.length < data.pendingActions.length
+        ? ` (+${data.pendingActions.length - actionsToShow.length} more)`
+        : "");
+    allSections.push({
+      icon: createElement(Zap, { className: "h-4 w-4" }),
+      label: "Pending Actions",
+      content: actionText,
+      gradient: { from: primaryColor, to: "#ef4444" },
+    });
+  }
+
+  // 5. Top Categories (analytics)
+  if (data.topCategories && data.topCategories.length > 0) {
+    const categoryText = data.topCategories
+      .slice(0, 3)
+      .map((c) => `${c.name} (${c.count})`)
+      .join(", ");
+    allSections.push({
+      icon: createElement(BarChart3, { className: "h-4 w-4" }),
+      label: "Top Categories",
+      content: `Most active: ${categoryText}`,
+      gradient: { from: primaryColor, to: "#8b5cf6" },
+    });
+  }
+
+  // 6. Connections (organization)
+  if (data.connections && data.connections.length > 0) {
+    const conn = data.connections[0];
+    allSections.push({
+      icon: createElement(Network, { className: "h-4 w-4" }),
+      label: "Connections",
+      content: `${conn.noteCount} notes mention "${conn.topic}" - consider linking them`,
+      gradient: { from: primaryColor, to: "#06b6d4" },
+    });
+  }
+
+  // 7. Learning Topics (growth)
+  if (data.learningTopics && data.learningTopics.length > 0) {
+    const topics = data.learningTopics.slice(0, 3).join(", ");
+    allSections.push({
+      icon: createElement(Brain, { className: "h-4 w-4" }),
+      label: "Learning",
+      content: `You're exploring: ${topics}`,
+      gradient: { from: primaryColor, to: "#10b981" },
+    });
+  }
+
+  // 8. Quick Tip (actionable)
+  if (data.quickTip) {
+    allSections.push({
+      icon: createElement(Lightbulb, { className: "h-4 w-4" }),
+      label: "Quick Tip",
+      content: data.quickTip,
+      gradient: { from: primaryColor, to: "#f59e0b" },
+    });
+  }
+
+  return allSections;
 }
 
+/**
+ * Notes workspace insights hook.
+ * Uses the shared useWorkspaceInsights hook with notes-specific configuration.
+ */
 export function useWorkspaceInsights(): WorkspaceInsightsResult {
   const { notes, loading: notesLoading } = useNotes();
   const { currentSpaceId, currentSpace } = useSpaces();
   const { primary: primaryColor } = useAppColors();
 
-  // Check if insights are expanded (skip fetching if collapsed)
-  const isExpanded = useInsightsPulldownExpanded(INSIGHTS_STORAGE_KEY);
-
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<InsightData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const previousSpaceIdRef = useRef<string | null>(null);
-
-  // Only analyze if we have enough notes
-  const RECENT_COUNT = 5;
-  const recentNotes = notes
-    .filter((n) => !n.archived && !n.deletedAt)
-    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-    .slice(0, RECENT_COUNT);
-
-  const hasEnoughData = recentNotes.length >= 2;
-  // Space-specific cache key
-  const STORAGE_KEY = `ainex-notes-workspace-insights-${currentSpaceId}`;
-
-  const saveToCache = useCallback(
-    (insights: InsightData) => {
-      const cacheData = {
-        insights,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cacheData));
-      setLastUpdated(new Date());
-    },
-    [STORAGE_KEY]
-  );
-
-  const generateInsights = useCallback(async () => {
-    if (!hasEnoughData || loading) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Prepare payload
-      const payload = recentNotes.map((n) => ({
-        title: n.title,
-        content:
-          n.type === "checklist"
-            ? n.checklist.map((i) => i.text).join("\n")
-            : n.body,
-        date: n.updatedAt.toISOString().split("T")[0],
-      }));
-
-      const response = await fetch("/api/ai/workspace-insights", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: payload }),
-      });
-
-      if (!response.ok) {
-        // Handle specific error cases
-        if (response.status === 500) {
-          const errorData = await response
-            .json()
-            .catch(() => ({ error: "Server error" }));
-          if (
-            errorData.error?.includes("API key") ||
-            errorData.error?.includes("API Key") ||
-            errorData.error?.includes("configuration missing")
-          ) {
-            throw new Error(
-              "AI features require API key configuration. Please contact support."
-            );
-          }
-        }
-        throw new Error("Failed to generate insights");
-      }
-
-      const result = await response.json();
-      setData(result);
-      saveToCache(result);
-    } catch (err) {
-      console.error(err);
-      setError("Could not analyze workspace.");
-    } finally {
-      setLoading(false);
-    }
-  }, [hasEnoughData, loading, recentNotes, saveToCache]);
-
-  // Reset and reload when space changes
-  useEffect(() => {
-    if (
-      previousSpaceIdRef.current !== null &&
-      previousSpaceIdRef.current !== currentSpaceId
-    ) {
-      // Space changed - reset state and load new data
-      setData(null);
-      setError(null);
-      setLastUpdated(null);
-    }
-    previousSpaceIdRef.current = currentSpaceId;
-  }, [currentSpaceId]);
-
-  // Load from cache (always) so data is ready when user expands
-  useEffect(() => {
-    if (notesLoading) return;
-
-    const cached = localStorage.getItem(STORAGE_KEY);
-    if (cached) {
-      try {
-        const { insights, timestamp } = JSON.parse(cached);
-        // Check if cache is from today (once per day strategy to save tokens)
-        const cacheDate = new Date(timestamp).toDateString();
-        const today = new Date().toDateString();
-
-        if (cacheDate === today) {
-          setData(insights);
-          setLastUpdated(new Date(timestamp));
-        }
-      } catch {
-        // Invalid cache, ignore
-      }
-    }
-  }, [notesLoading, currentSpaceId, STORAGE_KEY]);
-
-  // Auto-generate insights only when expanded and no cached data
-  useEffect(() => {
-    if (notesLoading || !isExpanded) return;
-
-    // If no data yet (cache miss or expired), generate if we have enough notes
-    if (hasEnoughData && !data && !loading && !error) {
-      generateInsights();
-    }
-  }, [notesLoading, hasEnoughData, currentSpaceId, isExpanded, data, loading, error, generateInsights]);
-
-  // Calculate streak data from all non-archived notes
-  const streakData = useMemo(() => {
-    const activeNotes = notes.filter((n) => !n.archived && !n.deletedAt);
-    return calculateStreak(activeNotes);
+  // Filter to recent active notes
+  const recentNotes = useMemo(() => {
+    return notes
+      .filter((n) => !n.archived && !n.deletedAt)
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .slice(0, RECENT_COUNT);
   }, [notes]);
 
-  // Build sections for the pulldown component with gradient colors (8 slides)
-  const sections: AIInsightsPulldownSection[] = useMemo(() => {
-    if (!data) return [];
+  // All active notes for streak calculation
+  const activeNotes = useMemo(() => {
+    return notes.filter((n) => !n.archived && !n.deletedAt);
+  }, [notes]);
 
-    const allSections: AIInsightsPulldownSection[] = [];
+  // Config for the shared hook
+  const config: WorkspaceInsightsConfig<Note, NotesInsightData> = useMemo(
+    () => ({
+      appName: "notes",
+      expandedStorageKey: INSIGHTS_STORAGE_KEY,
+      spaceId: currentSpaceId,
+      apiEndpoint: "/api/ai/workspace-insights",
 
-    // 1. Current Focus (productivity)
-    if (data.weeklyFocus) {
-      allSections.push({
-        icon: createElement(Target, { className: "h-4 w-4" }),
-        label: "Current Focus",
-        content: data.weeklyFocus,
-        gradient: { from: primaryColor, to: "#f97316" }, // yellow → orange
-      });
-    }
+      preparePayload: (notesToAnalyze) => ({
+        notes: notesToAnalyze.map((n) => ({
+          title: n.title,
+          content:
+            n.type === "checklist"
+              ? n.checklist.map((i) => i.text).join("\n")
+              : n.body,
+          date: n.updatedAt.toISOString().split("T")[0],
+        })),
+      }),
 
-    // 2. Writing Streak (engagement) - client-side calculated
-    if (streakData.streakDays > 0 || streakData.notesThisWeek > 0) {
-      allSections.push({
-        icon: createElement(Flame, { className: "h-4 w-4" }),
-        label: "Writing Streak",
-        content: streakData.streakDays > 0
-          ? `${streakData.streakDays}-day streak! You've created ${streakData.notesThisWeek} notes this week`
-          : `${streakData.notesThisWeek} notes this week - start your streak today!`,
-        gradient: { from: primaryColor, to: "#f97316" }, // yellow → orange
-      });
-    }
+      buildSections: buildNoteSections,
 
-    // 3. Mood / Energy (wellness)
-    if (data.mood) {
-      allSections.push({
-        icon: createElement(Heart, { className: "h-4 w-4" }),
-        label: "Energy & Mood",
-        content: getMoodDisplay(data.mood),
-        gradient: { from: primaryColor, to: "#ec4899" }, // yellow → pink
-      });
-    }
+      title: (spaceName) =>
+        spaceName ? `${spaceName} Insights` : "AI Insights",
 
-    // 4. Pending Actions (tasks) - show up to 2 actions
-    if (data.pendingActions && data.pendingActions.length > 0) {
-      const actionsToShow = data.pendingActions.slice(0, 2);
-      const actionText = actionsToShow.join(". ") + (actionsToShow.length < data.pendingActions.length ? ` (+${data.pendingActions.length - actionsToShow.length} more)` : "");
-      allSections.push({
-        icon: createElement(Zap, { className: "h-4 w-4" }),
-        label: "Pending Actions",
-        content: actionText,
-        gradient: { from: primaryColor, to: "#ef4444" }, // yellow → red
-      });
-    }
+      loadingMessage: "Analyzing your recent notes...",
+      minimumDataCount: 2,
 
-    // 5. Top Categories (analytics)
-    if (data.topCategories && data.topCategories.length > 0) {
-      const categoryText = data.topCategories
-        .slice(0, 3)
-        .map((c) => `${c.name} (${c.count})`)
-        .join(", ");
-      allSections.push({
-        icon: createElement(BarChart3, { className: "h-4 w-4" }),
-        label: "Top Categories",
-        content: `Most active: ${categoryText}`,
-        gradient: { from: primaryColor, to: "#8b5cf6" }, // yellow → purple
-      });
-    }
+      // Calculate streak data client-side
+      calculateLocalStats: () => calculateStreak(activeNotes),
 
-    // 6. Connections (organization)
-    if (data.connections && data.connections.length > 0) {
-      const conn = data.connections[0];
-      allSections.push({
-        icon: createElement(Network, { className: "h-4 w-4" }),
-        label: "Connections",
-        content: `${conn.noteCount} notes mention "${conn.topic}" - consider linking them`,
-        gradient: { from: primaryColor, to: "#06b6d4" }, // yellow → cyan
-      });
-    }
+      // Generate hash for smart refresh when notes change
+      generateDataHash: (notesToHash) =>
+        notesToHash
+          .map((n) => `${n.id}-${n.updatedAt.getTime()}`)
+          .sort()
+          .join("|")
+          .slice(0, 500),
 
-    // 7. Learning Topics (growth)
-    if (data.learningTopics && data.learningTopics.length > 0) {
-      const topics = data.learningTopics.slice(0, 3).join(", ");
-      allSections.push({
-        icon: createElement(Brain, { className: "h-4 w-4" }),
-        label: "Learning",
-        content: `You're exploring: ${topics}`,
-        gradient: { from: primaryColor, to: "#10b981" }, // yellow → green
-      });
-    }
+      // Item count threshold for smart refresh
+      itemCountThreshold: 3,
+    }),
+    [currentSpaceId, activeNotes]
+  );
 
-    // 8. Quick Tip (actionable)
-    if (data.quickTip) {
-      allSections.push({
-        icon: createElement(Lightbulb, { className: "h-4 w-4" }),
-        label: "Quick Tip",
-        content: data.quickTip,
-        gradient: { from: primaryColor, to: "#f59e0b" }, // yellow → amber
-      });
-    }
-
-    return allSections;
-  }, [data, primaryColor, streakData]);
-
-  // Format error message
-  const errorMessage = error?.includes("API key")
-    ? "AI features require configuration. Insights will be available once set up."
-    : error;
-
-  // Dynamic title based on current space
-  const insightsTitle = currentSpace?.name
-    ? `${currentSpace.name} Insights`
-    : "AI Insights";
-
-  return {
-    sections,
-    title: insightsTitle,
-    isLoading: loading,
-    loadingMessage: "Analyzing your recent notes...",
-    error: errorMessage,
-    lastUpdated,
-    onRefresh: generateInsights,
-    refreshDisabled: loading,
-    storageKey: INSIGHTS_STORAGE_KEY,
-    hasEnoughData,
-  };
+  return useSharedWorkspaceInsights(
+    recentNotes,
+    notesLoading,
+    config,
+    currentSpace?.name,
+    primaryColor
+  );
 }
