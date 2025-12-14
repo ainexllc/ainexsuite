@@ -69,7 +69,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeSyncScriptContent }} />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider defaultTheme={theme} enableSystem={false} storageKey="ainex-theme">
+        <ThemeProvider defaultTheme={theme} enableSystem={true} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="projects" fallbackPrimary="#6366f1" fallbackSecondary="#818cf8">
               {children}

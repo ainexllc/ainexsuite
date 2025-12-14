@@ -63,7 +63,7 @@ export default async function RootLayout({
         <meta name="theme-color" content="#0a0a0a" />
       </head>
       <body className="font-sans antialiased transition-colors duration-300">
-        <ThemeProvider defaultTheme={theme} enableSystem={false} storageKey="ainex-theme">
+        <ThemeProvider defaultTheme={theme} enableSystem={true} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="todo" fallbackPrimary="#f59e0b" fallbackSecondary="#fbbf24">
               {children}
