@@ -307,7 +307,18 @@ function AppearanceSettings({ preferences, onUpdatePreferences }: AppearanceSett
   const [saving, setSaving] = React.useState(false);
   const { setTheme } = useTheme();
 
+  // Local state for immediate visual feedback
+  const [selectedTheme, setSelectedTheme] = React.useState<"light" | "dark" | "system">(
+    preferences.theme || "dark"
+  );
+
+  // Debug logging
+  console.log('[AppearanceSettings] selectedTheme:', selectedTheme, 'preferences.theme:', preferences.theme);
+
   const handleThemeChange = async (theme: "light" | "dark" | "system") => {
+    console.log('[AppearanceSettings] handleThemeChange called with:', theme);
+    // Update local state immediately for visual feedback
+    setSelectedTheme(theme);
     setSaving(true);
     try {
       // Apply theme immediately to next-themes
@@ -365,7 +376,7 @@ function AppearanceSettings({ preferences, onUpdatePreferences }: AppearanceSett
               disabled={saving}
               className={clsx(
                 "flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border transition-all",
-                preferences.theme === theme
+                selectedTheme === theme
                   ? "border-primary bg-primary/5 text-foreground"
                   : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
               )}

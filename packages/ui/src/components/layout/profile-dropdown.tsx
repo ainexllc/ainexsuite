@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, type ReactNode } from "react";
+import { useRef, useEffect, useState, type ReactNode, useCallback } from "react";
 import { Moon, Sun, Monitor, LogOut } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";
@@ -20,7 +20,7 @@ export type ProfileDropdownProps = {
   } | null;
   /** Theme configuration (optional) - supports Light/Dark/System */
   theme?: {
-    current: ThemeValue;
+    current: ThemeValue | undefined;
     setTheme: (theme: ThemeValue) => void;
   };
   /** Menu items configuration */
@@ -45,6 +45,22 @@ export function ProfileDropdown({
   customMenuItems,
 }: ProfileDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Track the selected theme locally for immediate UI feedback
+  const [selectedTheme, setSelectedTheme] = useState<ThemeValue>("dark");
+  const hasInitialized = useRef(false);
+
+  // Initialize from localStorage only once on mount
+  useEffect(() => {
+    if (hasInitialized.current) return;
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('ainex-theme') as ThemeValue | null;
+      if (stored && ['light', 'dark', 'system'].includes(stored)) {
+        setSelectedTheme(stored);
+      }
+      hasInitialized.current = true;
+    }
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -149,9 +165,9 @@ export function ProfileDropdown({
         {theme && (
           <div className="px-3 py-2">
             <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
-              {theme.current === "dark" ? (
+              {selectedTheme === "dark" ? (
                 <Moon className="h-4 w-4" />
-              ) : theme.current === "system" ? (
+              ) : selectedTheme === "system" ? (
                 <Monitor className="h-4 w-4" />
               ) : (
                 <Sun className="h-4 w-4" />
@@ -159,28 +175,34 @@ export function ProfileDropdown({
               <span>Theme</span>
             </div>
             <div className="flex gap-1 p-1 bg-muted rounded-lg">
-              {(["light", "dark", "system"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    theme.setTheme(mode);
-                  }}
-                  className={clsx(
-                    "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
-                    theme.current === mode
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                  aria-label={`Set ${mode} theme`}
-                >
-                  {mode === "light" && <Sun className="h-3 w-3" />}
-                  {mode === "dark" && <Moon className="h-3 w-3" />}
-                  {mode === "system" && <Monitor className="h-3 w-3" />}
-                  <span className="capitalize">{mode}</span>
-                </button>
-              ))}
+              {(["light", "dark", "system"] as const).map((mode) => {
+                const isActive = selectedTheme === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Update local state immediately for instant feedback
+                      setSelectedTheme(mode);
+                      // Then propagate to the theme system
+                      theme.setTheme(mode);
+                    }}
+                    className={clsx(
+                      "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
+                      isActive
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                    )}
+                    aria-label={`Set ${mode} theme`}
+                  >
+                    {mode === "light" && <Sun className="h-3 w-3" />}
+                    {mode === "dark" && <Moon className="h-3 w-3" />}
+                    {mode === "system" && <Monitor className="h-3 w-3" />}
+                    <span className="capitalize">{mode}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
