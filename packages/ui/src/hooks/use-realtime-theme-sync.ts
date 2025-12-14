@@ -115,7 +115,10 @@ export function useRealtimeThemeSync({ uid, updatePreferences }: ThemeSyncOption
     }
   }, [uid, preferences?.theme, loading, currentTheme, setTheme, updatePreferences]);
 
-  // Sync TO Firestore when local theme changes
+  // Track last sync attempt time to prevent rapid retries
+  const lastSyncAttemptRef = useRef<number>(0);
+
+  // Sync TO Firestore when local theme changes (debounced)
   useEffect(() => {
     // Skip if no user or no updatePreferences function
     if (!uid || !updatePreferences) return;
@@ -132,14 +135,24 @@ export function useRealtimeThemeSync({ uid, updatePreferences }: ThemeSyncOption
     // Skip if we're currently syncing from Firestore
     if (isSyncingToFirestoreRef.current) return;
 
+    // Debounce: Skip if we tried to sync less than 2 seconds ago
+    const now = Date.now();
+    if (now - lastSyncAttemptRef.current < 2000) {
+      return;
+    }
+
     // This is a local change - sync to Firestore
     console.log('[RealtimeThemeSync] Local theme changed:', lastSyncedThemeRef.current, '->', currentTheme);
     lastSyncedThemeRef.current = currentTheme;
+    lastSyncAttemptRef.current = now;
     isLocalChangeRef.current = true; // Prevent feedback loop
     isSyncingToFirestoreRef.current = true;
 
     updatePreferences({ theme: currentTheme })
-      .catch(console.error)
+      .catch((err) => {
+        // On error, don't revert - just log. Cookie is already set correctly.
+        console.error('[RealtimeThemeSync] Failed to sync theme to Firestore:', err);
+      })
       .finally(() => {
         isSyncingToFirestoreRef.current = false;
       });
