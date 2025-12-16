@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { X, Hash, Save, Copy, Loader2 } from 'lucide-react';
 import { useMomentsStore } from '@/lib/store';
-import type { Space } from '@ainexsuite/types';
+import type { MomentsSpace } from '@/components/providers/spaces-provider';
 import { updateDoc, doc } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
 
 interface SpaceSettingsModalProps {
-  space: Space;
+  space: MomentsSpace;
   onClose: () => void;
 }
 

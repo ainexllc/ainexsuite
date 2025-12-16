@@ -9,6 +9,7 @@ import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
 import { MomentComposer } from '@/components/moment-composer';
 import { useMomentsStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
@@ -19,13 +20,14 @@ import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book, Share2 } f
 export default function MomentsWorkspacePage() {
   const { user } = useWorkspaceAuth();
 
+  // Use shared SpacesProvider for spaces (auto-creates default space)
+  const { spaces, currentSpaceId, setCurrentSpace, currentSpace } = useSpaces();
+
+  // Use Zustand store for moments data
   const {
     moments,
     isLoadingMoments,
-    fetchSpaces,
     fetchMoments,
-    currentSpaceId,
-    spaces
   } = useMomentsStore();
 
   const [showEditor, setShowEditor] = useState(false);
@@ -37,26 +39,17 @@ export default function MomentsWorkspacePage() {
   const [detailMoment, setDetailMoment] = useState<Moment | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const currentSpace = spaces.find(s => s.id === currentSpaceId);
-
-  // Initial Data Load
-  useEffect(() => {
-    if (user?.uid) {
-      fetchSpaces(user.uid);
-    }
-  }, [user?.uid, fetchSpaces]);
-
   // Fetch moments when space changes
   useEffect(() => {
-    if (user?.uid) {
-      fetchMoments(user.uid, currentSpaceId || undefined);
+    if (user?.uid && currentSpaceId) {
+      fetchMoments(user.uid, currentSpaceId);
     }
   }, [currentSpaceId, fetchMoments, user?.uid]);
 
 
   const handleUpdate = async () => {
-    if (user?.uid) {
-      fetchMoments(user.uid, currentSpaceId || undefined);
+    if (user?.uid && currentSpaceId) {
+      fetchMoments(user.uid, currentSpaceId);
     }
     setShowEditor(false);
     setSelectedMoment(null);
@@ -73,12 +66,11 @@ export default function MomentsWorkspacePage() {
       type: space.type,
       color: space.type === 'personal' ? '#ec4899' : '#8b5cf6',
     })),
-    currentSpaceId,
+    currentSpaceId: currentSpaceId || null,
     onSpaceChange: (spaceId: string) => {
-      const store = useMomentsStore.getState();
-      store.setCurrentSpace(spaceId);
+      setCurrentSpace(spaceId);
     },
-  }), [spaces, currentSpaceId]);
+  }), [spaces, currentSpaceId, setCurrentSpace]);
 
   if (!user) return null;
 

@@ -2,6 +2,7 @@
 
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { SpacesProvider } from '@/components/providers/spaces-provider';
 
 export default function WorkspaceRootLayout({
   children,
@@ -25,14 +26,16 @@ export default function WorkspaceRootLayout({
 
   return (
     <SuiteGuard appName="moments">
-      <WorkspaceLayout
-        user={user}
-        onSignOut={handleSignOut}
-        appName="Moments"
-        onUpdatePreferences={updatePreferences}
-      >
-        {children}
-      </WorkspaceLayout>
+      <SpacesProvider>
+        <WorkspaceLayout
+          user={user}
+          onSignOut={handleSignOut}
+          appName="Moments"
+          onUpdatePreferences={updatePreferences}
+        >
+          {children}
+        </WorkspaceLayout>
+      </SpacesProvider>
     </SuiteGuard>
   );
 }
