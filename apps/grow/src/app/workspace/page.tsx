@@ -20,19 +20,13 @@ import { HabitSuggester } from '@/components/ai/HabitSuggester';
 import { BottomNav } from '@/components/mobile/BottomNav';
 
 // Analytics Components
-import { CombinedInsights } from '@/components/analytics/CombinedInsights';
 import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
 
 // Store & Types
 import { useGrowStore } from '@/lib/store';
 import { getHabitStatus, getTodayDateString } from '@/lib/date-utils';
 import { Habit, Member, Quest } from '@/types/models';
-import {
-  calculateWeeklyConsistency,
-  getBestDayOfWeek,
-  calculateCompletionRate,
-  getTeamContribution
-} from '@/lib/analytics-utils';
+import { getTeamContribution } from '@/lib/analytics-utils';
 import { canCreateHabit } from '@/lib/permissions';
 
 export default function GrowWorkspacePage() {
@@ -57,13 +51,7 @@ export default function GrowWorkspacePage() {
     ? canCreateHabit(currentSpace, user.uid)
     : { allowed: false, reason: 'No space selected' };
 
-  // Analytics Calculations
-  const weeklyStats = calculateWeeklyConsistency(habits, completions);
-  const bestDay = getBestDayOfWeek(completions);
-  const totalCompletions = completions.length;
-  const completionRate = habits.length > 0
-    ? Math.round(habits.reduce((acc: number, h: Habit) => acc + calculateCompletionRate(h, completions), 0) / habits.length)
-    : 0;
+  // Team stats for leaderboard
   const teamStats = currentSpace ? getTeamContribution(currentSpace.members, completions) : [];
 
   // UI State
@@ -150,16 +138,10 @@ export default function GrowWorkspacePage() {
           </div>
         )}
 
-        {/* Analytics Row - Full Width */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <CombinedInsights
-            weeklyStats={weeklyStats}
-            bestDay={bestDay}
-            totalCompletions={totalCompletions}
-            completionRate={completionRate}
-          />
-          {currentSpace?.type !== 'personal' && <TeamLeaderboard data={teamStats} />}
-        </div>
+        {/* Team Leaderboard - Only for non-personal spaces */}
+        {currentSpace?.type !== 'personal' && (
+          <TeamLeaderboard data={teamStats} />
+        )}
 
         {/* Active Wagers - Full Width */}
         {currentSpace?.type === 'couple' && (
