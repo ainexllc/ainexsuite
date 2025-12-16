@@ -12,7 +12,6 @@ import { useMomentsStore } from '@/lib/store';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
-import { MomentsInsights } from '@/components/moments-insights';
 import { FlipbookPlayer } from '@/components/flipbook-player';
 import { SlideshowPlayer } from '@/components/slideshow-player';
 import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book, Share2 } from 'lucide-react';
@@ -84,7 +83,6 @@ export default function MomentsWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
-        insightsBanner={<MomentsInsights moments={moments} variant="sidebar" />}
         composer={
           <MomentComposer
             spaceId={currentSpaceId || undefined}
