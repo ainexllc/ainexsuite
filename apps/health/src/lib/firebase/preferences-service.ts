@@ -13,6 +13,13 @@ import type { HealthFilterValue } from '@/components/health-filter-content';
 
 export const DEFAULT_PREFERENCES: Omit<UserPreference, 'id' | 'createdAt' | 'updatedAt'> = {
   viewMode: 'masonry',
+  weightUnit: 'kg',
+  waterUnit: 'glasses',
+  showGoals: true,
+  dailyWaterGoal: 8,
+  targetWeight: null,
+  enableReminders: false,
+  reminderTime: undefined,
 };
 
 /**
@@ -77,6 +84,16 @@ function mapPreferenceSnapshot(
       ? toRuntimeFilters(data.savedFilters as StoredHealthFilterValue)
       : undefined,
     savedSort: data.savedSort as SortConfig | undefined,
+    // Unit preferences
+    weightUnit: data.weightUnit ?? DEFAULT_PREFERENCES.weightUnit,
+    waterUnit: data.waterUnit ?? DEFAULT_PREFERENCES.waterUnit,
+    // Display preferences
+    showGoals: data.showGoals ?? DEFAULT_PREFERENCES.showGoals,
+    dailyWaterGoal: data.dailyWaterGoal ?? DEFAULT_PREFERENCES.dailyWaterGoal,
+    targetWeight: data.targetWeight ?? DEFAULT_PREFERENCES.targetWeight,
+    // Check-in preferences
+    enableReminders: data.enableReminders ?? DEFAULT_PREFERENCES.enableReminders,
+    reminderTime: data.reminderTime ?? DEFAULT_PREFERENCES.reminderTime,
     createdAt: data.createdAt?.toDate?.() ?? new Date(),
     updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
   };

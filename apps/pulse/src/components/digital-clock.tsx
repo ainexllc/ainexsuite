@@ -11,7 +11,7 @@ import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
 import { TimerTile } from './tiles/timer-tile';
 import { AlarmClockTile } from './tiles/alarm-clock-tile';
-import { ClockService, ClockStyle } from '@/lib/clock-settings';
+import { ClockService, ClockStyle, type ClockSettings } from '@/lib/clock-settings';
 import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
 import { BackgroundEffects, EffectType } from './background-effects';
 import { usePulseStore } from '@/lib/store';
@@ -194,22 +194,28 @@ export function DigitalClock() {
   }, []);
 
   // Sync with Firestore on load and changes - keyed by space
+  // Enhanced for wall displays with visibility change handling and periodic refresh
   useEffect(() => {
     if (!user) return;
 
-    // Reset to defaults when space changes (before loading new settings)
-    setTiles(DEFAULT_TILES);
-    setBackgroundImage(null);
-    setBackgroundEffect('none');
-    setBackgroundDim(50);
-    setClockStyle('digital');
-    setTimeFormat(getSystemTimeFormat());
-    setActiveLayoutId(DEFAULT_LAYOUT.id);
-    setShowClock(true);
-    setShowTiles(true);
+    let unsubscribe: (() => void) | null = null;
+    let refreshInterval: NodeJS.Timeout | null = null;
 
-    // Subscribe to real-time updates for current space
-    const unsubscribe = ClockService.subscribeToSettings(user.uid, currentSpaceId || undefined, (settings) => {
+    // Reset to defaults when space changes (before loading new settings)
+    const resetToDefaults = () => {
+      setTiles(DEFAULT_TILES);
+      setBackgroundImage(null);
+      setBackgroundEffect('none');
+      setBackgroundDim(50);
+      setClockStyle('digital');
+      setTimeFormat(getSystemTimeFormat());
+      setActiveLayoutId(DEFAULT_LAYOUT.id);
+      setShowClock(true);
+      setShowTiles(true);
+    };
+
+    // Apply settings from Firestore snapshot
+    const applySettings = (settings: ClockSettings | null) => {
       if (settings) {
         setTiles(settings.tiles || DEFAULT_TILES);
         setBackgroundImage(settings.backgroundImage);
@@ -220,27 +226,66 @@ export function DigitalClock() {
           setWeatherZipcode(settings.weatherZipcode);
         }
         if (settings.layoutId && LAYOUTS[settings.layoutId]) {
-            setActiveLayoutId(settings.layoutId);
+          setActiveLayoutId(settings.layoutId);
         }
         if (settings.backgroundEffect) {
-            setBackgroundEffect(settings.backgroundEffect as EffectType);
+          setBackgroundEffect(settings.backgroundEffect as EffectType);
         }
         if (typeof settings.backgroundDim === 'number') {
-            setBackgroundDim(settings.backgroundDim);
+          setBackgroundDim(settings.backgroundDim);
         }
         if (settings.clockStyle) {
-            setClockStyle(settings.clockStyle as ClockStyle);
+          setClockStyle(settings.clockStyle as ClockStyle);
         }
         if (typeof settings.showClock === 'boolean') {
-            setShowClock(settings.showClock);
+          setShowClock(settings.showClock);
         }
         if (typeof settings.showTiles === 'boolean') {
-            setShowTiles(settings.showTiles);
+          setShowTiles(settings.showTiles);
         }
       }
-    });
+    };
 
-    return () => unsubscribe();
+    // Setup real-time subscription
+    const setupSubscription = () => {
+      // Unsubscribe from previous if exists
+      if (unsubscribe) {
+        unsubscribe();
+      }
+      // Subscribe to real-time updates for current space
+      unsubscribe = ClockService.subscribeToSettings(user.uid, currentSpaceId || undefined, applySettings);
+    };
+
+    // Handle visibility change - re-establish subscription when page becomes visible
+    // This is critical for wall displays that may sleep/wake
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-fetch settings immediately when page becomes visible
+        // This ensures we catch any changes that occurred while hidden
+        ClockService.getSettings(user.uid, currentSpaceId || undefined).then(applySettings);
+      }
+    };
+
+    // Initial setup
+    resetToDefaults();
+    setupSubscription();
+
+    // Listen for visibility changes (crucial for wall displays)
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Periodic refresh every 30 seconds as a fallback for wall displays
+    // This catches any missed updates due to WebSocket disconnections
+    refreshInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        ClockService.getSettings(user.uid, currentSpaceId || undefined).then(applySettings);
+      }
+    }, 30000);
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+      if (refreshInterval) clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [user, currentSpaceId]);
 
   const updateSettings = async (

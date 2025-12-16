@@ -12,6 +12,10 @@ export interface SortConfig {
   direction: SortDirection;
 }
 
+// Unit preferences for health metrics
+export type WeightUnit = 'kg' | 'lbs';
+export type WaterUnit = 'glasses' | 'ml' | 'oz';
+
 // Stored version of FilterValue with Timestamps for dates
 export type StoredHealthFilterValue = Omit<HealthFilterValue, 'dateRange'> & {
   dateRange?: {
@@ -25,6 +29,16 @@ export type UserPreferenceDoc = {
   calendarView?: 'month' | 'week';
   savedFilters?: StoredHealthFilterValue;
   savedSort?: SortConfig;
+  // Unit preferences
+  weightUnit?: WeightUnit;
+  waterUnit?: WaterUnit;
+  // Display preferences
+  showGoals?: boolean;
+  dailyWaterGoal?: number;
+  targetWeight?: number | null;
+  // Check-in preferences
+  enableReminders?: boolean;
+  reminderTime?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
