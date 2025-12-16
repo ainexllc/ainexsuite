@@ -53,6 +53,7 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+  ownerId: string; // User who created this task (for Firestore rules)
   order: number; // For manual sorting within list
   // Standard entry fields (shared across apps)
   pinned?: boolean;

@@ -102,7 +102,6 @@ export function WorkspaceLayoutWithInsights({
         mood={rawData?.mood}
         commonThemes={rawData?.commonThemes}
         pendingActions={rawData?.pendingActions}
-        topCategories={rawData?.topCategories}
         connections={rawData?.connections}
         learningTopics={rawData?.learningTopics}
         quickTip={rawData?.quickTip}

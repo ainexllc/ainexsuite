@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ArrowRight, Plus } from 'lucide-react';
+import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '@/lib/store';
 import { Task, Priority } from '@/types/models';
 
@@ -10,6 +11,7 @@ interface SmartTaskInputProps {
 }
 
 export function SmartTaskInput({ onOpenFullEditor }: SmartTaskInputProps) {
+  const { user } = useAuth();
   const { getCurrentSpace, addTask } = useTodoStore();
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -50,13 +52,13 @@ export function SmartTaskInput({ onOpenFullEditor }: SmartTaskInputProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !currentSpace) return;
+    if (!input.trim() || !currentSpace || !user) return;
 
     setIsProcessing(true);
     const { title, priority, dueDate } = parseTask(input);
 
     const newTask: Task = {
-      id: `task_${Date.now()}`,
+      id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       spaceId: currentSpace.id,
       listId: currentSpace.lists[0]?.id || 'default', // Fallback
       title,
@@ -64,12 +66,13 @@ export function SmartTaskInput({ onOpenFullEditor }: SmartTaskInputProps) {
       status: 'todo',
       priority,
       dueDate,
-      assigneeIds: [currentSpace.createdBy],
+      assigneeIds: [user.uid],
       subtasks: [],
       tags: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      createdBy: currentSpace.createdBy,
+      createdBy: user.uid,
+      ownerId: user.uid,
       order: 0,
     };
 
@@ -78,7 +81,7 @@ export function SmartTaskInput({ onOpenFullEditor }: SmartTaskInputProps) {
     setIsProcessing(false);
   };
 
-  if (!currentSpace) return null;
+  if (!currentSpace || !user) return null;
 
   return (
     <form onSubmit={handleSubmit} className="w-full">

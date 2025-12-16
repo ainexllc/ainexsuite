@@ -12,12 +12,14 @@ import {
   Tag,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '@/lib/store';
 import { Task, Priority, TaskList, Member } from '@/types/models';
 import { ENTRY_COLORS, getEntryColorConfig } from '@ainexsuite/ui';
 import type { EntryColor } from '@ainexsuite/types';
 
 export function TaskComposer() {
+  const { user } = useAuth();
   const { getCurrentSpace, addTask } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
@@ -40,6 +42,7 @@ export function TaskComposer() {
 
   const composerRef = useRef<HTMLDivElement | null>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const isSubmittingRef = useRef(false);
 
   // Set default list when space changes
   useEffect(() => {
@@ -69,7 +72,8 @@ export function TaskComposer() {
   }, [currentSpace]);
 
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting || !currentSpace) return;
+    // Use ref for immediate check to prevent race conditions
+    if (isSubmittingRef.current || isSubmitting || !currentSpace || !user) return;
 
     if (!hasContent) {
       resetState();
@@ -77,10 +81,12 @@ export function TaskComposer() {
     }
 
     try {
+      // Set both ref and state immediately
+      isSubmittingRef.current = true;
       setIsSubmitting(true);
 
       const newTask: Task = {
-        id: `task_${Date.now()}`,
+        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         spaceId: currentSpace.id,
         listId: listId || currentSpace.lists[0]?.id || 'default',
         title: title.trim(),
@@ -88,12 +94,13 @@ export function TaskComposer() {
         status: 'todo',
         priority,
         dueDate,
-        assigneeIds: assignees.length > 0 ? assignees : [currentSpace.createdBy],
+        assigneeIds: assignees.length > 0 ? assignees : [user.uid],
         subtasks: [],
         tags,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        createdBy: currentSpace.createdBy,
+        createdBy: user.uid,
+        ownerId: user.uid,
         order: 0,
         color,
         pinned,
@@ -102,9 +109,10 @@ export function TaskComposer() {
       await addTask(newTask);
       resetState();
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [isSubmitting, currentSpace, hasContent, resetState, title, description, priority, dueDate, assignees, listId, tags, color, pinned, addTask]);
+  }, [isSubmitting, currentSpace, user, hasContent, resetState, title, description, priority, dueDate, assignees, listId, tags, color, pinned, addTask]);
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim();
@@ -125,7 +133,8 @@ export function TaskComposer() {
     const handlePointerDown = (event: PointerEvent) => {
       if (!composerRef.current) return;
       if (composerRef.current.contains(event.target as Node)) return;
-      if (isSubmitting) return;
+      // Use ref for immediate check to prevent race conditions
+      if (isSubmittingRef.current || isSubmitting) return;
 
       if (hasContent) {
         void handleSubmit();
@@ -138,7 +147,7 @@ export function TaskComposer() {
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
 
-  if (!currentSpace) return null;
+  if (!currentSpace || !user) return null;
 
   const colorConfig = getEntryColorConfig(color);
 

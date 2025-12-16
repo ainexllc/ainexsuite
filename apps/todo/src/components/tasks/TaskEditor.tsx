@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, Flag, Users, Save, Trash2, Loader2 } from 'lucide-react';
 import { EntryEditorShell, Textarea, ConfirmationDialog } from '@ainexsuite/ui';
 import type { EntryColor } from '@ainexsuite/types';
+import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '../../lib/store';
 import { Task, Priority, TaskList, Member } from '../../types/models';
 
@@ -15,6 +16,7 @@ interface TaskEditorProps {
 }
 
 export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskEditorProps) {
+  const { user } = useAuth();
   const { getCurrentSpace, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskPin, toggleTaskArchive } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
@@ -93,7 +95,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
   }
 
   const handleSubmit = async () => {
-    if (!title.trim()) {
+    if (!title.trim() || !user) {
       return;
     }
 
@@ -113,7 +115,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         });
       } else {
         const newTask: Task = {
-          id: `task_${Date.now()}`,
+          id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           spaceId: currentSpace.id,
           listId,
           title,
@@ -121,12 +123,13 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           status: 'todo',
           priority,
           dueDate,
-          assigneeIds: assignees.length > 0 ? assignees : [currentSpace.createdBy],
+          assigneeIds: assignees.length > 0 ? assignees : [user.uid],
           subtasks: [],
           tags: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          createdBy: currentSpace.createdBy,
+          createdBy: user.uid,
+          ownerId: user.uid,
           order: 0,
           color,
           pinned,
