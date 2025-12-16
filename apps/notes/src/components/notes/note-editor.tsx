@@ -1081,7 +1081,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               />
               {/* Text overlay for selected text enhancement - shows text with only selected portion blurred */}
               {isEnhancing && selectedText && (
-                <div className="absolute inset-0 pointer-events-none text-sm text-white/80 whitespace-pre-wrap break-words overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words overflow-hidden">
                   <span>{body.substring(0, selectedText.start)}</span>
                   <span className="relative inline">
                     <span className="blur-sm bg-[var(--color-primary)]/20 rounded px-0.5">{body.substring(selectedText.start, selectedText.end)}</span>
@@ -1167,7 +1167,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         delete checklistInputRefs.current[item.id];
                       }
                     }}
-                    className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-white/80 placeholder-white/40 focus:border-white/30 focus:outline-none"
+                    className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-400 dark:focus:border-zinc-600 focus:outline-none"
                   />
                   <button
                     type="button"
@@ -1186,7 +1186,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <button
                 type="button"
                 onClick={handleAddChecklistItem}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-medium text-white/60 transition hover:border-white/40 hover:text-white/80"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
               >
                 <CheckSquare className="h-3.5 w-3.5" /> Add item
               </button>
