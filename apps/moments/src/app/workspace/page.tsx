@@ -49,13 +49,15 @@ export default function MomentsWorkspacePage() {
   // Fetch moments when space changes
   useEffect(() => {
     if (user?.uid) {
-      fetchMoments(currentSpaceId || undefined);
+      fetchMoments(user.uid, currentSpaceId || undefined);
     }
   }, [currentSpaceId, fetchMoments, user?.uid]);
 
 
   const handleUpdate = async () => {
-    fetchMoments(currentSpaceId || undefined);
+    if (user?.uid) {
+      fetchMoments(user.uid, currentSpaceId || undefined);
+    }
     setShowEditor(false);
     setSelectedMoment(null);
   };

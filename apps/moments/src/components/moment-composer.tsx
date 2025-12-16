@@ -119,16 +119,16 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
   };
 
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting || !user || !photoFile) return;
+    if (isSubmitting || !user?.uid || !photoFile) return;
 
     try {
       setIsSubmitting(true);
 
       // Upload photo to Firebase Storage first (not base64 to Firestore)
-      const photoUrl = await uploadPhoto(photoFile);
+      const photoUrl = await uploadPhoto(user.uid, photoFile);
 
       // Create the moment with the Storage URL
-      await createMoment({
+      await createMoment(user.uid, {
         title: caption.trim() || 'Untitled Moment',
         caption: caption.trim(),
         location: location.trim(),
@@ -143,7 +143,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
       });
 
       // Refresh moments list
-      await fetchMoments(spaceId);
+      await fetchMoments(user.uid, spaceId);
       onMomentCreated?.();
       resetState();
     } catch (error) {
@@ -151,7 +151,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, user, photoFile, caption, location, date, tags, people, mood, weather, spaceId, fetchMoments, onMomentCreated, resetState]);
+  }, [isSubmitting, user?.uid, photoFile, caption, location, date, tags, people, mood, weather, spaceId, fetchMoments, onMomentCreated, resetState]);
 
   // Handle click outside to close if empty
   useEffect(() => {

@@ -2,11 +2,10 @@ import { db, storage, createActivity } from '@ainexsuite/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, getDoc, orderBy, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Moment, CreateMomentInput, UpdateMomentInput, Reaction, Comment } from '@ainexsuite/types';
-import { getCurrentUserId } from './utils';
 
 const MOMENTS_COLLECTION = 'moments';
 
-export async function getMoments(spaceId?: string): Promise<Moment[]> {
+export async function getMoments(userId: string, spaceId?: string): Promise<Moment[]> {
   // If spaceId provided, we fetch moments for that space (public/shared view)
   if (spaceId) {
     const q = query(
@@ -19,7 +18,6 @@ export async function getMoments(spaceId?: string): Promise<Moment[]> {
   }
 
   // Otherwise fetch personal moments (ownerId = user, spaceId = null)
-  const userId = getCurrentUserId();
   const q = query(
     collection(db, MOMENTS_COLLECTION),
     where('ownerId', '==', userId),
@@ -31,8 +29,7 @@ export async function getMoments(spaceId?: string): Promise<Moment[]> {
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Moment));
 }
 
-export async function createMoment(input: Omit<CreateMomentInput, 'ownerId'>): Promise<string> {
-  const userId = getCurrentUserId();
+export async function createMoment(userId: string, input: Omit<CreateMomentInput, 'ownerId'>): Promise<string> {
   const momentData = {
     ...input,
     ownerId: userId,
@@ -125,8 +122,7 @@ export async function deleteMoment(id: string): Promise<void> {
   }
 }
 
-export async function uploadPhoto(file: File): Promise<string> {
-  const userId = getCurrentUserId();
+export async function uploadPhoto(userId: string, file: File): Promise<string> {
   const timestamp = Date.now();
   const fileName = `${userId}/${timestamp}_${file.name}`;
   const storageRef = ref(storage, `moments/${fileName}`);

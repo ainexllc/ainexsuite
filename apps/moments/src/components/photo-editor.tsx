@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import Image from 'next/image';
 import type { Moment } from '@ainexsuite/types';
+import { useAuth } from '@ainexsuite/auth';
 import { createMoment, updateMoment, deleteMoment, uploadPhoto } from '@/lib/moments';
 import { X, Trash2, Upload, MapPin, Tag as TagIcon, Image as ImageIcon } from 'lucide-react';
 
@@ -14,6 +15,7 @@ interface PhotoEditorProps {
 }
 
 export function PhotoEditor({ moment, spaceId, onClose, onSave }: PhotoEditorProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState(moment?.title || '');
   const [caption, setCaption] = useState(moment?.caption || '');
   const [location, setLocation] = useState(moment?.location || '');
@@ -58,6 +60,11 @@ export function PhotoEditor({ moment, spaceId, onClose, onSave }: PhotoEditorPro
   };
 
   const handleSave = async () => {
+    if (!user?.uid) {
+      alert('You must be logged in to save');
+      return;
+    }
+
     if (!photoPreview && !moment) {
       alert('Please select a photo');
       return;
@@ -74,7 +81,7 @@ export function PhotoEditor({ moment, spaceId, onClose, onSave }: PhotoEditorPro
 
       if (photoFile) {
         setUploading(true);
-        photoUrl = await uploadPhoto(photoFile);
+        photoUrl = await uploadPhoto(user.uid, photoFile);
         setUploading(false);
       }
 
@@ -88,7 +95,7 @@ export function PhotoEditor({ moment, spaceId, onClose, onSave }: PhotoEditorPro
         });
       } else {
         // Create new moment
-        await createMoment({
+        await createMoment(user.uid, {
           title,
           caption: caption.trim() || '',
           location: location.trim() || '',

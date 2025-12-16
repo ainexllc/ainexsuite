@@ -20,7 +20,7 @@ interface MomentsState {
   setCurrentSpace: (spaceId: string) => void;
   addSpace: (userId: string, name: string, type: Space['type'], pin?: string) => Promise<void>;
   joinByPin: (pin: string, userId?: string) => Promise<Space | null>; // userId optional for guest access
-  fetchMoments: (spaceId?: string) => Promise<void>;
+  fetchMoments: (userId: string, spaceId?: string) => Promise<void>;
 
   // Guest Mode
   guestAccessSpace: Space | null;
@@ -65,8 +65,7 @@ export const useMomentsStore = create<MomentsState>()(
 
       setCurrentSpace: (spaceId: string) => {
         set({ currentSpaceId: spaceId });
-        // Fetch moments for this space
-        get().fetchMoments(spaceId);
+        // Note: Moments will be fetched by the workspace page when space changes
       },
 
       addSpace: async (userId, name, type, pin) => {
@@ -101,17 +100,12 @@ export const useMomentsStore = create<MomentsState>()(
         }
       },
 
-      fetchMoments: async (spaceId) => {
+      fetchMoments: async (userId, spaceId) => {
         const targetSpaceId = spaceId || get().currentSpaceId || get().guestAccessSpace?.id;
-        // If no space context, we might fetch "all personal" or empty
-        // For now, let's assume we need a space ID or it fetches user's personal moments if authenticated
-        
+
         set({ isLoadingMoments: true });
         try {
-          // TODO: Update getMoments to accept spaceId
-          // For now passing null/undefined will fallback to current behavior (user's moments)
-          // We need to update getMoments signature
-          const moments = await getMoments(targetSpaceId || undefined); 
+          const moments = await getMoments(userId, targetSpaceId || undefined);
           set({ moments, isLoadingMoments: false });
         } catch (error) {
           console.error('Failed to fetch moments:', error);
