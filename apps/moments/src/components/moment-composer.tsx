@@ -118,16 +118,21 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     setPeople(people.filter(p => p !== personToRemove));
   };
 
+  const canSave = photoFile || caption.trim();
+
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting || !user?.uid || !photoFile) return;
+    if (isSubmitting || !user?.uid || !canSave) return;
 
     try {
       setIsSubmitting(true);
 
-      // Upload photo to Firebase Storage first (not base64 to Firestore)
-      const photoUrl = await uploadPhoto(user.uid, photoFile);
+      // Upload photo to Firebase Storage if one was selected
+      let photoUrl: string | undefined;
+      if (photoFile) {
+        photoUrl = await uploadPhoto(user.uid, photoFile);
+      }
 
-      // Create the moment with the Storage URL
+      // Create the moment (photo is optional)
       await createMoment(user.uid, {
         title: caption.trim() || 'Untitled Moment',
         caption: caption.trim(),
@@ -151,7 +156,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, user?.uid, photoFile, caption, location, date, tags, people, mood, weather, spaceId, fetchMoments, onMomentCreated, resetState]);
+  }, [isSubmitting, user?.uid, canSave, photoFile, caption, location, date, tags, people, mood, weather, spaceId, fetchMoments, onMomentCreated, resetState]);
 
   // Handle click outside to close if empty
   useEffect(() => {
@@ -493,13 +498,13 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={isSubmitting || !photoFile}
+                  disabled={isSubmitting || !canSave}
                   className="rounded-full px-6 py-2 text-sm font-semibold text-foreground shadow-lg transition hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center gap-2"
                   style={{
                     backgroundColor: primaryColor,
                     boxShadow: `0 10px 15px -3px ${primaryColor}33`
                   }}
-                  onMouseEnter={(e) => !isSubmitting && !photoFile ? null : e.currentTarget.style.opacity = '0.9'}
+                  onMouseEnter={(e) => !isSubmitting && !canSave ? null : e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   {isSubmitting ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
 import type { Moment } from '@ainexsuite/types';
@@ -11,7 +11,9 @@ interface FlipbookPlayerProps {
   onClose: () => void;
 }
 
-export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
+export function FlipbookPlayer({ moments: allMoments, onClose }: FlipbookPlayerProps) {
+  // Filter to only moments with photos
+  const moments = useMemo(() => allMoments.filter(m => m.photoUrl), [allMoments]);
   // Pages logic: 
   // Cover + Moments + Back Cover
   // To simplify, we treat each moment as a right-side page initially, 
@@ -122,7 +124,7 @@ export function FlipbookPlayer({ moments, onClose }: FlipbookPlayerProps) {
                 <div className="absolute inset-0 bg-[#f5f5f0] flex flex-col">
                   <div className="relative flex-1 m-4 border-4 border-foreground shadow-inner bg-gray-100 overflow-hidden">
                     <Image
-                      src={moment.photoUrl}
+                      src={moment.photoUrl!}
                       alt={moment.title}
                       fill
                       className="object-cover"

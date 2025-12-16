@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 export type BaseViewMode = 'list' | 'masonry' | 'calendar';
 
 // Sort configuration
-export type SortField = 'createdAt' | 'updatedAt' | 'title' | 'dueDate' | 'noteDate';
+export type SortField = 'createdAt' | 'updatedAt' | 'title' | 'dueDate' | 'noteDate' | 'date';
 export type SortDirection = 'asc' | 'desc';
 
 export interface SortConfig {

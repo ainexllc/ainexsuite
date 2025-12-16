@@ -1,9 +1,21 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import type { Moment } from '@ainexsuite/types';
-import { EmptyState, WorkspacePageLayout } from '@ainexsuite/ui';
+import {
+  EmptyState,
+  WorkspacePageLayout,
+  WorkspaceToolbar,
+  WorkspaceLoadingScreen,
+  ActivityCalendar,
+  ActiveFilterChips,
+  type ViewOption,
+  type SortOption,
+  type SortConfig,
+  type FilterChip,
+  type FilterChipType,
+} from '@ainexsuite/ui';
 import { TimelineView } from '@/components/timeline-view';
 import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
@@ -15,13 +27,54 @@ import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
 import { FlipbookPlayer } from '@/components/flipbook-player';
 import { SlideshowPlayer } from '@/components/slideshow-player';
-import { Image as ImageIcon, Loader2, Settings, Gamepad2, Play, Book, Share2 } from 'lucide-react';
+import { MomentsFilterContent } from '@/components/moments-filter-content';
+import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
+import {
+  Image as ImageIcon,
+  LayoutGrid,
+  List,
+  Calendar,
+  Gamepad2,
+  Play,
+  Book,
+} from 'lucide-react';
+
+type ViewType = 'timeline' | 'masonry' | 'calendar';
+
+const VIEW_OPTIONS: ViewOption<ViewType>[] = [
+  { value: 'timeline', icon: List, label: 'Timeline view' },
+  { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
+  { value: 'calendar', icon: Calendar, label: 'Calendar view' },
+];
+
+const SORT_OPTIONS: SortOption[] = [
+  { field: 'date', label: 'Date captured' },
+  { field: 'createdAt', label: 'Date added' },
+  { field: 'title', label: 'Title' },
+];
+
+const MOOD_LABELS: Record<string, string> = {
+  Happy: '😊 Happy',
+  Loved: '🥰 Loved',
+  Excited: '🎉 Excited',
+  Chill: '😌 Chill',
+  Sad: '😔 Sad',
+  Tired: '😴 Tired',
+};
+
+interface MomentsFilters {
+  tags?: string[];
+  moods?: string[];
+  people?: string[];
+  dateRange?: { start: string | null; end: string | null };
+  datePreset?: string;
+}
 
 export default function MomentsWorkspacePage() {
   const { user } = useWorkspaceAuth();
 
   // Use shared SpacesProvider for spaces (auto-creates default space)
-  const { spaces, currentSpaceId, setCurrentSpace, currentSpace } = useSpaces();
+  const { currentSpaceId, currentSpace } = useSpaces();
 
   // Use Zustand store for moments data
   const {
@@ -30,6 +83,7 @@ export default function MomentsWorkspacePage() {
     fetchMoments,
   } = useMomentsStore();
 
+  // UI State
   const [showEditor, setShowEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showGame, setShowGame] = useState(false);
@@ -37,7 +91,11 @@ export default function MomentsWorkspacePage() {
   const [showFlipbook, setShowFlipbook] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState<Moment | null>(null);
   const [detailMoment, setDetailMoment] = useState<Moment | null>(null);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  // View & Filter State
+  const [view, setView] = useState<ViewType>('timeline');
+  const [sort, setSort] = useState<SortConfig>({ field: 'date', direction: 'desc' });
+  const [filters, setFilters] = useState<MomentsFilters>({});
 
   // Fetch moments when space changes
   useEffect(() => {
@@ -45,7 +103,6 @@ export default function MomentsWorkspacePage() {
       fetchMoments(user.uid, currentSpaceId);
     }
   }, [currentSpaceId, fetchMoments, user?.uid]);
-
 
   const handleUpdate = async () => {
     if (user?.uid && currentSpaceId) {
@@ -55,143 +112,319 @@ export default function MomentsWorkspacePage() {
     setSelectedMoment(null);
   };
 
-  const allTags = Array.from(new Set(moments.flatMap((m) => m.tags || []))).sort();
-  const filteredMoments = selectedTag ? moments.filter((m) => m.tags?.includes(selectedTag)) : moments;
+  // Get unique values for filters
+  const allTags = useMemo(() =>
+    Array.from(new Set(moments.flatMap((m) => m.tags || []))).sort(),
+    [moments]
+  );
+  const allMoods = useMemo(() =>
+    Array.from(new Set(moments.map((m) => m.mood).filter(Boolean))) as string[],
+    [moments]
+  );
+  const allPeople = useMemo(() =>
+    Array.from(new Set(moments.flatMap((m) => m.people || []))).sort(),
+    [moments]
+  );
 
-  // Convert spaces to SpaceItem format for WorkspacePageLayout
-  const spacesConfig = useMemo(() => ({
-    items: spaces.map((space) => ({
-      id: space.id,
-      name: space.name,
-      type: space.type,
-      color: space.type === 'personal' ? '#ec4899' : '#8b5cf6',
-    })),
-    currentSpaceId: currentSpaceId || null,
-    onSpaceChange: (spaceId: string) => {
-      setCurrentSpace(spaceId);
+  // Apply filters
+  const filteredMoments = useMemo(() => {
+    let result = [...moments];
+
+    // Filter by tags
+    if (filters.tags && filters.tags.length > 0) {
+      result = result.filter((m) =>
+        filters.tags!.some((tag) => m.tags?.includes(tag))
+      );
+    }
+
+    // Filter by moods
+    if (filters.moods && filters.moods.length > 0) {
+      result = result.filter((m) => filters.moods!.includes(m.mood || ''));
+    }
+
+    // Filter by people
+    if (filters.people && filters.people.length > 0) {
+      result = result.filter((m) =>
+        filters.people!.some((person) => m.people?.includes(person))
+      );
+    }
+
+    // Filter by date range
+    if (filters.dateRange?.start || filters.dateRange?.end) {
+      result = result.filter((m) => {
+        const momentDate = new Date(m.date).toISOString().split('T')[0];
+        if (filters.dateRange!.start && momentDate < filters.dateRange!.start) return false;
+        if (filters.dateRange!.end && momentDate > filters.dateRange!.end) return false;
+        return true;
+      });
+    }
+
+    // Apply sorting
+    result.sort((a, b) => {
+      let aVal: number | string;
+      let bVal: number | string;
+
+      switch (sort.field) {
+        case 'date':
+          aVal = a.date;
+          bVal = b.date;
+          break;
+        case 'createdAt':
+          aVal = a.createdAt || 0;
+          bVal = b.createdAt || 0;
+          break;
+        case 'title':
+          aVal = a.title.toLowerCase();
+          bVal = b.title.toLowerCase();
+          break;
+        default:
+          aVal = a.date;
+          bVal = b.date;
+      }
+
+      if (sort.direction === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      }
+      return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+    });
+
+    return result;
+  }, [moments, filters, sort]);
+
+  // Calculate activity data for calendar view
+  const activityData = useMemo(() => {
+    const data: Record<string, number> = {};
+    moments.forEach((moment) => {
+      const date = new Date(moment.date).toISOString().split('T')[0];
+      data[date] = (data[date] || 0) + 1;
+    });
+    return data;
+  }, [moments]);
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips: FilterChip[] = [];
+
+    // Tag chips
+    if (filters.tags && filters.tags.length > 0) {
+      filters.tags.forEach((tag) => {
+        chips.push({
+          id: tag,
+          label: `#${tag}`,
+          type: 'label' as FilterChipType,
+        });
+      });
+    }
+
+    // Mood chips
+    if (filters.moods && filters.moods.length > 0) {
+      filters.moods.forEach((mood) => {
+        chips.push({
+          id: mood,
+          label: MOOD_LABELS[mood] || mood,
+          type: 'noteType' as FilterChipType,
+        });
+      });
+    }
+
+    // People chips
+    if (filters.people && filters.people.length > 0) {
+      filters.people.forEach((person) => {
+        chips.push({
+          id: person,
+          label: person,
+          type: 'space' as FilterChipType,
+        });
+      });
+    }
+
+    // Date range chip
+    if (filters.dateRange?.start || filters.dateRange?.end) {
+      const dateLabel =
+        filters.datePreset && filters.datePreset !== 'custom'
+          ? filters.datePreset
+              .split('-')
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(' ')
+          : 'Custom Date';
+      chips.push({
+        id: 'dateRange',
+        label: dateLabel,
+        type: 'date' as FilterChipType,
+      });
+    }
+
+    return chips;
+  }, [filters]);
+
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.tags && filters.tags.length > 0) count++;
+    if (filters.moods && filters.moods.length > 0) count++;
+    if (filters.people && filters.people.length > 0) count++;
+    if (filters.dateRange?.start || filters.dateRange?.end) count++;
+    return count;
+  }, [filters]);
+
+  const handleFilterReset = useCallback(() => {
+    setFilters({});
+  }, []);
+
+  const handleRemoveChip = useCallback(
+    (chipId: string, chipType: FilterChipType) => {
+      switch (chipType) {
+        case 'label':
+          // Remove tag
+          setFilters({
+            ...filters,
+            tags: filters.tags?.filter((t) => t !== chipId) || [],
+          });
+          break;
+        case 'noteType':
+          // Remove mood
+          setFilters({
+            ...filters,
+            moods: filters.moods?.filter((m) => m !== chipId) || [],
+          });
+          break;
+        case 'space':
+          // Remove person
+          setFilters({
+            ...filters,
+            people: filters.people?.filter((p) => p !== chipId) || [],
+          });
+          break;
+        case 'date':
+          setFilters({
+            ...filters,
+            dateRange: { start: null, end: null },
+            datePreset: undefined,
+          });
+          break;
+      }
     },
-  }), [spaces, currentSpaceId, setCurrentSpace]);
+    [filters]
+  );
+
+  const isCalendarView = view === 'calendar';
+
+  // Show loading screen
+  if (isLoadingMoments && moments.length === 0) {
+    return <WorkspaceLoadingScreen />;
+  }
 
   if (!user) return null;
 
   return (
     <>
       <WorkspacePageLayout
+        maxWidth="default"
         composer={
           <MomentComposer
             spaceId={currentSpaceId || undefined}
             onMomentCreated={handleUpdate}
           />
         }
-        spaces={spacesConfig}
-      >
-        {/* Space Controls & Filters */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            {/* View Options - Always Available */}
-            <button
-              onClick={() => setShowFlipbook(true)}
-              className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-              title="View as Flipbook"
-              disabled={filteredMoments.length === 0}
-            >
-              <Book className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setShowSlideshow(true)}
-              className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-              title="Play Slideshow"
-              disabled={filteredMoments.length === 0}
-            >
-              <Play className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setShowGame(true)}
-              className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-              title="Play Trivia"
-              disabled={filteredMoments.length === 0}
-            >
-              <Gamepad2 className="h-5 w-5" />
-            </button>
-
-            {/* Space Specific Controls */}
-            {currentSpace && (
-              <>
-                <div className="w-px h-6 bg-outline-subtle mx-1" />
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                  title="Share Space"
-                >
-                  <Share2 className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                  title="Space Settings"
-                >
-                  <Settings className="h-5 w-5" />
-                </button>
-              </>
+        composerActions={<SpaceSwitcher />}
+        toolbar={
+          <div className="space-y-2">
+            <WorkspaceToolbar
+              viewMode={view}
+              onViewModeChange={setView}
+              viewOptions={VIEW_OPTIONS}
+              sort={sort}
+              onSortChange={setSort}
+              sortOptions={SORT_OPTIONS}
+              filterContent={
+                <MomentsFilterContent
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  availableTags={allTags}
+                  availableMoods={allMoods}
+                  availablePeople={allPeople}
+                />
+              }
+              activeFilterCount={activeFilterCount}
+              onFilterReset={handleFilterReset}
+              viewPosition="right"
+              rightSlot={
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setShowFlipbook(true)}
+                    className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+                    title="View as Flipbook"
+                    disabled={filteredMoments.length === 0}
+                  >
+                    <Book className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setShowSlideshow(true)}
+                    className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+                    title="Play Slideshow"
+                    disabled={filteredMoments.length === 0}
+                  >
+                    <Play className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setShowGame(true)}
+                    className="p-2 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
+                    title="Play Trivia"
+                    disabled={filteredMoments.length === 0}
+                  >
+                    <Gamepad2 className="h-4 w-4" />
+                  </button>
+                </div>
+              }
+            />
+            {filterChips.length > 0 && (
+              <ActiveFilterChips
+                chips={filterChips}
+                onRemove={handleRemoveChip}
+                onClearAll={handleFilterReset}
+                className="px-1"
+              />
             )}
           </div>
-
-          {/* Tag Filter */}
-          {allTags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedTag(null)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  !selectedTag
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
-                }`}
-              >
-                All
-              </button>
-              {allTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setSelectedTag(tag)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    selectedTag === tag
-                      ? 'bg-pink-500 text-white'
-                      : 'bg-surface-elevated text-text-muted hover:bg-surface-hover'
-                  }`}
-                >
-                  #{tag}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Flashback Widget - Full Width */}
-        {!selectedTag && !isLoadingMoments && moments.length > 0 && (
+        }
+      >
+        {/* Flashback Widget - Full Width (only on timeline, no filters) */}
+        {view === 'timeline' && filterChips.length === 0 && moments.length > 0 && (
           <FlashbackWidget onDetail={setDetailMoment} />
         )}
 
-        {/* Moments Content */}
-        {isLoadingMoments ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
-          </div>
-        ) : filteredMoments.length === 0 ? (
+        {/* Empty State */}
+        {filteredMoments.length === 0 && (
           <EmptyState
-            title={selectedTag ? `No moments with tag "${selectedTag}"` : "No moments yet"}
-            description={selectedTag ? "Try selecting a different tag or create a new moment" : "Start capturing your memories! Create your first moment above."}
+            title={filterChips.length > 0 ? 'No matching moments' : 'No moments yet'}
+            description={
+              filterChips.length > 0
+                ? 'Try adjusting your filters or create a new moment'
+                : 'Start capturing your memories! Create your first moment above.'
+            }
             icon={ImageIcon}
             variant="default"
           />
-        ) : (
-          <TimelineView
-            moments={filteredMoments}
-            onEdit={(moment) => {
-              setSelectedMoment(moment);
-              setShowEditor(true);
-            }}
-            onDetail={(moment) => setDetailMoment(moment)}
-          />
+        )}
+
+        {/* Views */}
+        {filteredMoments.length > 0 && (
+          isCalendarView ? (
+            <ActivityCalendar
+              activityData={activityData}
+              size="large"
+            />
+          ) : (
+            <TimelineView
+              moments={filteredMoments}
+              viewMode={view}
+              onEdit={(moment) => {
+                setSelectedMoment(moment);
+                setShowEditor(true);
+              }}
+              onDetail={(moment) => setDetailMoment(moment)}
+            />
+          )
         )}
       </WorkspacePageLayout>
 

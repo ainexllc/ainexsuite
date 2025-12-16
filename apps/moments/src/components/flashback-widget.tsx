@@ -25,7 +25,9 @@ export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
     return moments.filter((moment) => {
       const mDate = new Date(moment.date);
       // Match Month and Day, but NOT the same year (must be in the past)
+      // Also require a photo for flashback display
       return (
+        moment.photoUrl &&
         getMonth(mDate) === currentMonth &&
         getDate(mDate) === currentDay &&
         mDate.getFullYear() < today.getFullYear()
@@ -58,7 +60,7 @@ export function FlashbackWidget({ onDetail }: FlashbackWidgetProps) {
               }}
             >
               <Image
-                src={moment.photoUrl}
+                src={moment.photoUrl!}
                 alt={moment.title}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"

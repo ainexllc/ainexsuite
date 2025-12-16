@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { X, Tag, Palette, Calendar, FileText, Bookmark } from "lucide-react";
+import { X, Tag, Palette, Calendar, FileText, Bookmark, Users } from "lucide-react";
 import { cn } from "../../lib/utils";
 
-export type FilterChipType = "label" | "color" | "date" | "noteType" | "dateField" | "preset";
+export type FilterChipType = "label" | "color" | "date" | "noteType" | "dateField" | "preset" | "space";
 
 export interface FilterChip {
   id: string;
@@ -27,6 +27,7 @@ const chipTypeIcons: Record<FilterChipType, React.ComponentType<{ className?: st
   noteType: FileText,
   dateField: Calendar,
   preset: Bookmark,
+  space: Users,
 };
 
 const chipTypeColors: Record<FilterChipType, string> = {
@@ -36,6 +37,7 @@ const chipTypeColors: Record<FilterChipType, string> = {
   noteType: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   dateField: "bg-teal-500/20 text-teal-400 border-teal-500/30",
   preset: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  space: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
 };
 
 export function ActiveFilterChips({

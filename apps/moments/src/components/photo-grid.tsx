@@ -20,15 +20,21 @@ export function PhotoGrid({ moments, onDetail, onEdit }: PhotoGridProps) {
           className="photo-card relative"
           onClick={() => onDetail(moment)}
         >
-          <Image
-            src={moment.photoUrl}
-            alt={moment.caption || 'Moment'}
-            fill
-            sizes="(min-width: 1024px) 280px, 50vw"
-            className="object-cover"
-            unoptimized
-            priority={false}
-          />
+          {moment.photoUrl ? (
+            <Image
+              src={moment.photoUrl}
+              alt={moment.caption || 'Moment'}
+              fill
+              sizes="(min-width: 1024px) 280px, 50vw"
+              className="object-cover"
+              unoptimized
+              priority={false}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-surface-elevated flex items-center justify-center">
+              <span className="text-text-muted text-sm">Text moment</span>
+            </div>
+          )}
 
           <div className="photo-overlay">
             {moment.caption && (

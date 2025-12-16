@@ -140,15 +140,21 @@ export function PhotoDetail({ moment: initialMoment, onClose, onEdit }: PhotoDet
         {/* Photo Section */}
         <div className="lg:col-span-2 flex items-center justify-center bg-black/20 rounded-2xl">
           <div className="relative w-full h-full min-h-[50vh] lg:min-h-[80vh]">
-            <Image
-              src={moment.photoUrl}
-              alt={moment.caption || 'Moment'}
-              fill
-              sizes="(min-width: 1024px) 66vw, 100vw"
-              className="object-contain"
-              priority
-              unoptimized
-            />
+            {moment.photoUrl ? (
+              <Image
+                src={moment.photoUrl}
+                alt={moment.caption || 'Moment'}
+                fill
+                sizes="(min-width: 1024px) 66vw, 100vw"
+                className="object-contain"
+                priority
+                unoptimized
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-text-muted">
+                <span className="text-lg">No photo</span>
+              </div>
+            )}
           </div>
         </div>
 

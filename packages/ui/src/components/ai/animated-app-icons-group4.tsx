@@ -563,12 +563,12 @@ export function WorkflowLoopIcon({ size = 24, color = "#06b6d4", isAnimating = t
   };
 
   const dotVariants: Variants = {
-    idle: { scale: 1, opacity: 0.5 },
-    animate: (i: number) => ({
-      scale: [1, 1.5, 1],
-      opacity: [0.5, 1, 0.5],
-      transition: { duration: 1.5, repeat: Infinity, delay: i * 0.5, ease: "easeInOut" },
-    }),
+    idle: { scale: 1, opacity: 0.6 },
+    animate: {
+      scale: [1, 1.3, 1],
+      opacity: [0.6, 1, 0.6],
+      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+    },
   };
 
   return (

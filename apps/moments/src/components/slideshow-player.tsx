@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { X, Play, Pause, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import type { Moment } from '@ainexsuite/types';
@@ -13,7 +13,9 @@ interface SlideshowPlayerProps {
   initialIndex?: number;
 }
 
-export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: SlideshowPlayerProps) {
+export function SlideshowPlayer({ moments: allMoments, onClose, initialIndex = 0 }: SlideshowPlayerProps) {
+  // Filter to only moments with photos
+  const moments = useMemo(() => allMoments.filter(m => m.photoUrl), [allMoments]);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(true);
   const [showControls, setShowControls] = useState(true);
@@ -92,7 +94,7 @@ export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: Slidesho
       {/* Background Blur Layer */}
       <div className="absolute inset-0 z-0 opacity-30 blur-3xl transform scale-110">
         <Image
-          src={currentMoment.photoUrl}
+          src={currentMoment.photoUrl!}
           alt="Background"
           fill
           className="object-cover transition-all duration-1000"
@@ -105,7 +107,7 @@ export function SlideshowPlayer({ moments, onClose, initialIndex = 0 }: Slidesho
         <div className="relative w-full h-full max-w-7xl max-h-screen aspect-[16/9] md:aspect-auto">
           <Image
             key={currentMoment.id} // Key change triggers animation
-            src={currentMoment.photoUrl}
+            src={currentMoment.photoUrl!}
             alt={currentMoment.title || 'Slideshow'}
             fill
             className="object-contain animate-in fade-in duration-700"

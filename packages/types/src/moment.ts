@@ -16,8 +16,8 @@ export interface Comment {
 export interface Moment extends BaseDocument {
   title: string;
   caption: string;
-  photoUrl: string;
-  thumbnailUrl: string;
+  photoUrl?: string;
+  thumbnailUrl?: string;
   date: number; // timestamp
   location: string;
   tags: string[];

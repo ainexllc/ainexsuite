@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { X, Trophy, Sparkles, Calendar, MapPin, AlertCircle } from 'lucide-react';
 import type { Moment } from '@ainexsuite/types';
@@ -20,7 +20,9 @@ interface Question {
   correctAnswer: string;
 }
 
-export function TriviaGame({ moments, onClose }: TriviaGameProps) {
+export function TriviaGame({ moments: allMoments, onClose }: TriviaGameProps) {
+  // Filter to only moments with photos for trivia
+  const moments = useMemo(() => allMoments.filter(m => m.photoUrl), [allMoments]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -230,7 +232,7 @@ export function TriviaGame({ moments, onClose }: TriviaGameProps) {
         {/* Photo Card */}
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-background/40 border border-border shadow-2xl">
           <Image
-            src={currentQ.moment.photoUrl}
+            src={currentQ.moment.photoUrl!}
             alt="Trivia Question"
             fill
             className={cn(
