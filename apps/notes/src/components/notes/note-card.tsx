@@ -186,7 +186,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                 ) : null}
               </ul>
             ) : note.body ? (
-              <p className="mt-3 whitespace-pre-wrap text-[15px] text-zinc-600 dark:text-zinc-400 leading-7 tracking-[-0.01em]">
+              <p className="mt-3 whitespace-pre-wrap text-[15px] text-zinc-700 dark:text-zinc-300 leading-7 tracking-[-0.01em]">
                 {note.body}
               </p>
             ) : null}
