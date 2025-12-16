@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, MapPin, Calendar, Tag, X, Loader2, Smile, Users, Cloud } from 'lucide-react';
+import { Camera, MapPin, Calendar, Tag, X, Smile, Users, Cloud } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useAppColors } from '@ainexsuite/theme';
@@ -180,20 +180,15 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border focus-visible:outline-none focus-visible:ring-2 backdrop-blur-sm"
-          style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
           onClick={() => setExpanded(true)}
         >
           <span>Capture a moment...</span>
-          <span className="flex items-center gap-3 text-muted-foreground">
-            <Camera className="h-5 w-5" />
-            <MapPin className="h-5 w-5" />
-          </span>
         </button>
       ) : (
         <div
           ref={composerRef}
-          className="w-full rounded-2xl shadow-xl bg-surface-card border border-border backdrop-blur-xl transition-all overflow-hidden"
+          className="w-full rounded-2xl shadow-lg border transition-all overflow-hidden bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
         >
           {/* Photo Preview/Upload Area */}
           <div
@@ -238,9 +233,9 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="Write a caption..."
-              rows={2}
-              className="w-full resize-none bg-transparent text-base text-foreground/90 placeholder:text-muted-foreground focus:outline-none leading-relaxed"
+              placeholder="What's this moment about?..."
+              rows={3}
+              className="w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
             />
 
             {/* Meta Row 1: Date & Location */}
@@ -363,11 +358,11 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
             )}
 
             {/* Action Bar */}
-            <div className="flex items-center justify-between gap-2 pt-3 border-t border-border">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
+                  className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   onClick={() => fileInputRef.current?.click()}
                   title="Change photo"
                 >
@@ -380,12 +375,10 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showPeopleInput ? "" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                      showPeopleInput
+                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                        : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     )}
-                    style={showPeopleInput ? {
-                      color: primaryColor,
-                      backgroundColor: `${primaryColor}1a`
-                    } : undefined}
                     onClick={() => {
                       setShowPeopleInput(!showPeopleInput);
                       setShowTagInput(false);
@@ -436,12 +429,10 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                     type="button"
                     className={clsx(
                       "p-2 rounded-full transition-colors",
-                      showTagInput ? "" : "text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                      showTagInput
+                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                        : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     )}
-                    style={showTagInput ? {
-                      color: primaryColor,
-                      backgroundColor: `${primaryColor}1a`
-                    } : undefined}
                     onClick={() => {
                       setShowTagInput(!showTagInput);
                       setShowPeopleInput(false);
@@ -490,31 +481,18 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                   onClick={resetState}
                 >
-                  Cancel
+                  Close
                 </button>
                 <button
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !canSave}
-                  className="rounded-full px-6 py-2 text-sm font-semibold text-foreground shadow-lg transition hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 flex items-center gap-2"
-                  style={{
-                    backgroundColor: primaryColor,
-                    boxShadow: `0 10px 15px -3px ${primaryColor}33`
-                  }}
-                  onMouseEnter={(e) => !isSubmitting && !canSave ? null : e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Moment'
-                  )}
+                  {isSubmitting ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>
