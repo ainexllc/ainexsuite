@@ -529,3 +529,14 @@
 .text-balance {
   text-wrap: balance;
 }
+
+/* Robot animation keyframes for AI Insights pulldown */
+@keyframes blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}

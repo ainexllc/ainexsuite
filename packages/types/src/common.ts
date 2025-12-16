@@ -91,3 +91,25 @@ export type HabitFrequency = 'daily' | 'weekly' | 'custom';
 export type HabitType = 'boolean' | 'numeric' | 'scale';
 
 export type ExerciseCategory = 'strength' | 'cardio' | 'flexibility';
+
+// Shared entry color system for consistent styling across apps
+export type EntryColor =
+  | 'default'
+  | 'entry-white'
+  | 'entry-lemon'
+  | 'entry-peach'
+  | 'entry-tangerine'
+  | 'entry-mint'
+  | 'entry-fog'
+  | 'entry-lavender'
+  | 'entry-blush'
+  | 'entry-sky'
+  | 'entry-moss'
+  | 'entry-coal';
+
+// Standard fields for entries that can be pinned, archived, and colored
+export interface StandardEntryFields {
+  pinned?: boolean;
+  archived?: boolean;
+  color?: EntryColor;
+}

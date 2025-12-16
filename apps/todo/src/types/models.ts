@@ -1,5 +1,7 @@
 // apps/todo/src/types/models.ts
 
+import type { EntryColor } from '@ainexsuite/types';
+
 export type SpaceType = 'personal' | 'family' | 'work';
 
 export interface Member {
@@ -52,4 +54,8 @@ export interface Task {
   updatedAt: string;
   createdBy: string;
   order: number; // For manual sorting within list
+  // Standard entry fields (shared across apps)
+  pinned?: boolean;
+  archived?: boolean;
+  color?: EntryColor;
 }

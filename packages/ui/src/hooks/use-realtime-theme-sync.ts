@@ -32,17 +32,14 @@ export function useRealtimeThemeSync({ uid, updatePreferences }: ThemeSyncOption
   const { theme: currentTheme, setTheme } = useTheme();
   const { preferences, loading } = useUserPreferencesListener(uid);
 
-  // Track if we just made a local change to prevent feedback loops
-  const isLocalChangeRef = useRef(false);
+  // Track last local change time to ignore Firestore echoes
+  const lastLocalChangeTimeRef = useRef<number>(0);
 
-  // Track the last theme we synced (either direction)
-  const lastSyncedThemeRef = useRef<string | null>(null);
-
-  // Track if we've done initial sync
+  // Track sync state
   const hasInitialSyncRef = useRef(false);
-
-  // Track if we're currently syncing to Firestore
+  const lastSyncedThemeRef = useRef<string | null>(null);
   const isSyncingToFirestoreRef = useRef(false);
+  const isLocalChangeRef = useRef(false);
 
   // Sync FROM Firestore (cross-device sync)
   useEffect(() => {
@@ -61,57 +58,37 @@ export function useRealtimeThemeSync({ uid, updatePreferences }: ThemeSyncOption
 
     const firestoreTheme = preferences.theme;
 
-    // Skip if this is a local change we just made
-    if (isLocalChangeRef.current) {
-      isLocalChangeRef.current = false;
+    // IGNORE echoes: If we made a local change recently, ignore Firestore updates
+    // This allows the local state to settle and the Firestore write to complete/propagate
+    if (Date.now() - lastLocalChangeTimeRef.current < 2000) {
+      // Update our reference to what's in Firestore so we don't re-sync it back later
       lastSyncedThemeRef.current = firestoreTheme;
       return;
     }
 
-    // IMPORTANT: On initial sync, the ainex-theme cookie is the source of truth
-    // This cookie is shared across all apps (ports) and may have been set by another app
-    // Only on SUBSEQUENT syncs do we let Firestore updates override
+    // IMPORTANT: On initial sync, cookie wins if different
     if (!hasInitialSyncRef.current) {
       const cookieTheme = getThemeCookie();
-      console.log('[RealtimeThemeSync] Initial sync - cookie:', cookieTheme, 'firestore:', firestoreTheme);
-
       if (cookieTheme && cookieTheme !== firestoreTheme) {
-        // Cookie exists and differs from Firestore - cookie wins on this device
-        // The cookie represents the most recent theme choice on THIS device
-        console.log('[RealtimeThemeSync] Using cookie theme (cross-app sync):', cookieTheme);
         lastSyncedThemeRef.current = cookieTheme;
         hasInitialSyncRef.current = true;
-
-        // Update next-themes to match cookie if needed
-        if (currentTheme !== cookieTheme) {
-          setTheme(cookieTheme);
-        }
-
-        // Also sync cookie theme to Firestore so other devices get it
-        if (updatePreferences && cookieTheme !== firestoreTheme) {
-          isLocalChangeRef.current = true;
+        if (currentTheme !== cookieTheme) setTheme(cookieTheme);
+        if (updatePreferences) {
+          lastLocalChangeTimeRef.current = Date.now();
           updatePreferences({ theme: cookieTheme }).catch(console.error);
         }
         return;
       }
-
-      // No cookie or cookie matches Firestore - use Firestore value
       hasInitialSyncRef.current = true;
     }
 
-    // Only update if theme actually changed from Firestore
+    // Only update if theme actually changed from Firestore and valid
     if (firestoreTheme !== lastSyncedThemeRef.current) {
-      console.log('[RealtimeThemeSync] Firestore theme changed:', lastSyncedThemeRef.current, '->', firestoreTheme);
       lastSyncedThemeRef.current = firestoreTheme;
-
-      // Update next-themes (which also updates localStorage)
       if (currentTheme !== firestoreTheme) {
         setTheme(firestoreTheme);
+        setThemeCookie(firestoreTheme as ThemeValue);
       }
-
-      // Also update the cookie for cross-app sync
-      // Cookie is shared across all ports on localhost and subdomains in production
-      setThemeCookie(firestoreTheme as ThemeValue);
     }
   }, [uid, preferences?.theme, loading, currentTheme, setTheme, updatePreferences]);
 
@@ -135,27 +112,25 @@ export function useRealtimeThemeSync({ uid, updatePreferences }: ThemeSyncOption
     // Skip if we're currently syncing from Firestore
     if (isSyncingToFirestoreRef.current) return;
 
-    // Debounce: Skip if we tried to sync less than 2 seconds ago
-    const now = Date.now();
-    if (now - lastSyncAttemptRef.current < 2000) {
-      return;
-    }
+    // This is a local change - mark timestamp immediately
+    lastLocalChangeTimeRef.current = Date.now();
 
-    // This is a local change - sync to Firestore
-    console.log('[RealtimeThemeSync] Local theme changed:', lastSyncedThemeRef.current, '->', currentTheme);
-    lastSyncedThemeRef.current = currentTheme;
-    lastSyncAttemptRef.current = now;
-    isLocalChangeRef.current = true; // Prevent feedback loop
-    isSyncingToFirestoreRef.current = true;
-
-    updatePreferences({ theme: currentTheme })
-      .catch((err) => {
-        // On error, don't revert - just log. Cookie is already set correctly.
+    // Debounce sync to Firestore
+    const startSync = async () => {
+      lastSyncedThemeRef.current = currentTheme;
+      isSyncingToFirestoreRef.current = true;
+      try {
+        await updatePreferences({ theme: currentTheme });
+      } catch (err) {
         console.error('[RealtimeThemeSync] Failed to sync theme to Firestore:', err);
-      })
-      .finally(() => {
+      } finally {
         isSyncingToFirestoreRef.current = false;
-      });
+        lastSyncAttemptRef.current = Date.now();
+      }
+    };
+
+    const timer = setTimeout(startSync, 1000);
+    return () => clearTimeout(timer);
   }, [uid, currentTheme, updatePreferences]);
 
   /**

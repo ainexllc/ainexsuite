@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import type { AppConfig, AppSlug } from '@ainexsuite/types';
 import { APP_REGISTRY } from '@ainexsuite/types';
+import { NotesStickyIcon } from './ai';
 
 // Map icon names to actual icon components
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -46,6 +47,11 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Calendar,
   Settings,
   Circle,
+};
+
+// Animated icons for specific apps (uses different props)
+const ANIMATED_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string; isAnimating?: boolean }>> = {
+  NotesStickyIcon,
 };
 
 // Type for login status of each app
@@ -134,6 +140,23 @@ export function AppSwitcher({
   // Get icon component from the icon map
   const getIcon = (iconName: string) => {
     return ICON_MAP[iconName] || Circle;
+  };
+
+  // Check if app uses animated icon
+  const getAnimatedIcon = (iconName: string) => {
+    return ANIMATED_ICON_MAP[iconName];
+  };
+
+  // Render icon - supports both lucide and animated icons
+  const renderIcon = (app: AppConfig, size: 'sm' | 'md' = 'md') => {
+    const AnimatedIcon = getAnimatedIcon(app.icon);
+    if (AnimatedIcon) {
+      const iconSize = size === 'sm' ? 16 : 20;
+      return <AnimatedIcon size={iconSize} color="currentColor" isAnimating={true} />;
+    }
+    const Icon = getIcon(app.icon);
+    const iconClass = size === 'sm' ? 'h-4 w-4 text-foreground' : 'h-5 w-5 text-foreground';
+    return <Icon className={iconClass} />;
   };
 
   // Close on escape key
@@ -294,7 +317,6 @@ export function AppSwitcher({
                   Recently Used
                 </div>
                 {recentlyUsedApps.map(app => {
-                  const Icon = getIcon(app.icon);
                   return (
                     <a
                       key={app.slug}
@@ -308,7 +330,7 @@ export function AppSwitcher({
                         <div
                           className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${app.gradient}`}
                         >
-                          <Icon className="h-4 w-4 text-foreground" />
+                          {renderIcon(app, 'sm')}
                         </div>
                         <StatusIndicator slug={app.slug} />
                       </div>
@@ -328,7 +350,6 @@ export function AppSwitcher({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {availableApps.map(app => {
-                  const Icon = getIcon(app.icon);
                   const isActive = app.slug === currentApp.slug;
 
                   return (
@@ -344,7 +365,7 @@ export function AppSwitcher({
                         <div
                           className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${app.gradient}`}
                         >
-                          <Icon className="h-5 w-5 text-foreground" />
+                          {renderIcon(app, 'md')}
                         </div>
                         <StatusIndicator slug={app.slug} />
                       </div>

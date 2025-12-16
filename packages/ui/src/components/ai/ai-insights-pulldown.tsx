@@ -1,12 +1,62 @@
 "use client";
 
 import { ReactNode, useState, useEffect } from "react";
-import { Sparkles, RefreshCw, Loader2, X, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, ChevronLeft, ChevronRight, Pause, Play, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
+import {
+  AIAnalyticsIcon,
+  AIBrainIcon,
+  NeuralNetworkIcon,
+  AIChatIcon,
+  AISparkleIcon,
+  AIRobotIcon,
+  AICircuitIcon,
+  AIProcessingIcon,
+  AIMagicWandIcon,
+  AILightbulbIcon,
+  AIVoiceIcon,
+  AIEyeIcon,
+  AICodeIcon,
+  AIAtomIcon,
+  AITargetIcon,
+  AILearningIcon,
+  AIShieldIcon,
+  AICloudIcon,
+  AIDNAIcon,
+  AICompassIcon,
+  type AnimatedAIIconName,
+} from "./animated-ai-icons";
+
+// Map of animated icon names to components
+const ANIMATED_ICON_MAP: Record<AnimatedAIIconName, React.ComponentType<{ size?: number; color?: string; isAnimating?: boolean; className?: string }>> = {
+  Brain: AIBrainIcon,
+  NeuralNetwork: NeuralNetworkIcon,
+  Chat: AIChatIcon,
+  Sparkle: AISparkleIcon,
+  Robot: AIRobotIcon,
+  Circuit: AICircuitIcon,
+  Processing: AIProcessingIcon,
+  MagicWand: AIMagicWandIcon,
+  Lightbulb: AILightbulbIcon,
+  Voice: AIVoiceIcon,
+  Eye: AIEyeIcon,
+  Code: AICodeIcon,
+  Atom: AIAtomIcon,
+  Target: AITargetIcon,
+  Learning: AILearningIcon,
+  Shield: AIShieldIcon,
+  Analytics: AIAnalyticsIcon,
+  Cloud: AICloudIcon,
+  DNA: AIDNAIcon,
+  Compass: AICompassIcon,
+};
 
 export interface AIInsightsPulldownSection {
-  /** Icon for the section */
-  icon: ReactNode;
+  /** Icon for the section (fallback if no animatedIconType) */
+  icon?: ReactNode;
+  /** Animated icon type - use this for beautiful animated icons */
+  animatedIconType?: AnimatedAIIconName;
   /** Label for the section */
   label: string;
   /** Content to display */
@@ -23,12 +73,22 @@ export interface AIInsightsPulldownSection {
   };
 }
 
+// AI-themed color palette - independent of app accent colors
+const AI_COLOR_PALETTE = [
+  { from: '#8b5cf6', to: '#6366f1' },  // Purple to Indigo
+  { from: '#06b6d4', to: '#3b82f6' },  // Cyan to Blue
+  { from: '#ec4899', to: '#8b5cf6' },  // Pink to Purple
+  { from: '#14b8a6', to: '#06b6d4' },  // Teal to Cyan
+  { from: '#f59e0b', to: '#ec4899' },  // Amber to Pink
+  { from: '#6366f1', to: '#8b5cf6' },  // Indigo to Purple
+];
+
 export interface AIInsightsPulldownProps {
   /** Title displayed in the header */
   title?: string;
   /** Sections to display (max 2-3 recommended for horizontal layout) */
   sections: AIInsightsPulldownSection[];
-  /** Primary accent color (hex) */
+  /** Primary accent color (hex) - used for handle tab only */
   accentColor: string;
   /** Secondary accent color for gradient (hex) - defaults to accentColor */
   accentColorSecondary?: string;
@@ -81,6 +141,7 @@ export function AIInsightsPulldown({
   storageKey,
   defaultExpanded = false,
   className,
+  onViewDetails,
   onExpandedChange,
 }: AIInsightsPulldownProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -92,10 +153,11 @@ export function AIInsightsPulldown({
   // Combined pause state - paused if either hover or manual
   const isPaused = isHoverPaused || isManuallyPaused;
 
-  // Get gradient colors for current slide
+  // Get gradient colors for current slide from AI palette (not app colors)
   const currentSection = sections[currentSlide];
-  const gradientFrom = currentSection?.gradient?.from || accentColor;
-  const gradientTo = currentSection?.gradient?.to || accentColorSecondary || accentColor;
+  const currentPalette = AI_COLOR_PALETTE[currentSlide % AI_COLOR_PALETTE.length];
+  const gradientFrom = currentPalette.from;
+  const gradientTo = currentPalette.to;
 
   // Load expanded state from localStorage
   useEffect(() => {
@@ -149,228 +211,283 @@ export function AIInsightsPulldown({
 
   return (
     <div className={cn("flex flex-col flex-shrink-0 dark", className)}>
-      {/* Panel wrapper - animates height to push content */}
+      {/* Thin accent line across bottom of nav - matches tab styling */}
+      <div
+        className="h-[2px] w-full"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${accentColor}60 20%, ${accentColor} 50%, ${accentColor}60 80%, transparent)`,
+        }}
+      />
+
+      {/* Panel wrapper - animates height to push content - responsive heights */}
       <div
         className={cn(
           "overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          isExpanded ? "max-h-[180px]" : "max-h-0"
+          isExpanded
+            ? "max-h-[100px] sm:max-h-[120px] lg:max-h-[140px] xl:max-h-[160px] 2xl:max-h-[180px]"
+            : "max-h-0"
         )}
       >
-        {/* Full Hero Panel - always dark mode */}
+        {/* Glassmorphism Slide-out Panel - edge to edge - responsive heights */}
         <div
-          className="relative w-full overflow-hidden border-b border-white/10 bg-black/90 backdrop-blur-xl"
+          className="relative h-[100px] sm:h-[120px] lg:h-[140px] xl:h-[160px] 2xl:h-[180px] border-b transition-all duration-500"
+          style={{ borderColor: `${gradientFrom}40` }}
           onMouseEnter={() => setIsHoverPaused(true)}
           onMouseLeave={() => setIsHoverPaused(false)}
         >
-          {/* Gradient Background - transitions with slide */}
+          {/* Base dark background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/90" />
+
+          {/* Bold color gradient overlay - transitions with each slide */}
           <div
-            className="absolute inset-0 opacity-20 transition-all duration-500"
+            className="absolute inset-0 transition-all duration-500"
             style={{
-              background: `linear-gradient(135deg, ${gradientFrom} 0%, ${gradientTo} 100%)`,
+              background: `linear-gradient(135deg, ${gradientFrom}50 0%, ${gradientFrom}20 30%, transparent 50%, ${gradientTo}15 70%, ${gradientTo}40 100%)`,
             }}
           />
 
-          {/* Glow Effects - corner orbs */}
+          {/* Top edge glow - color emanating from nav - responsive height */}
           <div
-            className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full blur-[100px] opacity-30 transition-all duration-500"
+            className="absolute top-0 left-0 right-0 h-16 sm:h-20 lg:h-24 xl:h-28 transition-all duration-500 pointer-events-none"
+            style={{
+              background: `linear-gradient(180deg, ${gradientFrom}60 0%, ${gradientFrom}30 40%, transparent 100%)`,
+            }}
+          />
+
+          <div className="absolute inset-0 backdrop-blur-xl" />
+
+          {/* Large colorful glow orbs - responsive sizes */}
+          <div
+            className="absolute -top-16 sm:-top-20 lg:-top-24 left-1/4 w-48 sm:w-64 lg:w-80 xl:w-96 2xl:w-[28rem] h-32 sm:h-40 lg:h-48 xl:h-56 2xl:h-64 rounded-full blur-[60px] sm:blur-[80px] lg:blur-[100px] opacity-40 transition-all duration-500 pointer-events-none"
             style={{ backgroundColor: gradientFrom }}
           />
           <div
-            className="absolute bottom-0 left-0 w-[250px] h-[250px] rounded-full blur-[80px] opacity-25 transition-all duration-500"
+            className="absolute -bottom-16 sm:-bottom-20 lg:-bottom-24 right-1/4 w-44 sm:w-60 lg:w-72 xl:w-80 2xl:w-96 h-28 sm:h-36 lg:h-44 xl:h-52 2xl:h-60 rounded-full blur-[50px] sm:blur-[60px] lg:blur-[80px] opacity-35 transition-all duration-500 pointer-events-none"
             style={{ backgroundColor: gradientTo }}
           />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 lg:w-96 xl:w-[30rem] 2xl:w-[36rem] h-24 sm:h-28 lg:h-32 xl:h-40 2xl:h-48 rounded-full blur-[80px] sm:blur-[100px] lg:blur-[120px] opacity-20 transition-all duration-500 pointer-events-none"
+            style={{ backgroundColor: gradientFrom }}
+          />
 
-          {/* Content Container */}
-          <div className="relative z-10 h-[160px]">
+          {/* Content - responsive padding and gaps */}
+          <div className="relative h-full flex items-center px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 2xl:gap-10 z-10">
             {isLoading ? (
-              <div className="flex items-center justify-center h-full gap-4">
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center border border-white/10 bg-white/5"
-                  style={{ boxShadow: `0 0 40px ${accentColor}40` }}
-                >
-                  <Loader2
-                    className="h-8 w-8 animate-spin"
-                    style={{ color: '#f97316' }}
-                  />
-                </div>
-                <span className="text-base text-white/60 font-medium">{loadingMessage}</span>
+              <div className="flex items-center justify-center w-full gap-2 sm:gap-3">
+                <Loader2
+                  className="h-4 w-4 sm:h-5 sm:w-5 animate-spin"
+                  style={{ color: accentColor }}
+                />
+                <span className="text-xs sm:text-sm text-white/60 font-medium">{loadingMessage}</span>
               </div>
             ) : error ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-base text-yellow-400 font-medium">{error}</p>
+              <div className="flex items-center justify-center w-full">
+                <p className="text-xs sm:text-sm text-yellow-400 font-medium">{error}</p>
               </div>
             ) : sections.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-base text-white/40">Add more notes to see AI insights</p>
+              <div className="flex items-center justify-center w-full">
+                <p className="text-xs sm:text-sm text-white/40">Add more data to see AI insights</p>
               </div>
             ) : (
-              /* Main Content */
-              <div className="flex items-start h-full px-8 pt-6 pb-12">
-                <div className="flex items-center gap-5 flex-1">
-                  {/* Large Icon with Glow */}
-                  <div
-                    className="flex-shrink-0 flex items-center justify-center w-16 h-16 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-500"
-                    style={{ boxShadow: `0 0 40px ${gradientFrom}40` }}
-                  >
+              <>
+                {/* Icon with bold glow - responsive sizes - supports animated icons */}
+                <div
+                  className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 2xl:w-24 2xl:h-24 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all duration-500"
+                  style={{
+                    backgroundColor: `${gradientFrom}15`,
+                    borderColor: `${gradientFrom}40`,
+                    boxShadow: `0 0 30px ${gradientFrom}50, 0 0 60px ${gradientFrom}20`
+                  }}
+                >
+                  {currentSection?.animatedIconType ? (
+                    // Render animated icon with responsive size
+                    (() => {
+                      const AnimatedIcon = ANIMATED_ICON_MAP[currentSection.animatedIconType];
+                      return (
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 transition-all duration-500">
+                          <AnimatedIcon
+                            size={40}
+                            color={gradientFrom}
+                            isAnimating={true}
+                            className="w-full h-full"
+                          />
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    // Fallback to static icon
                     <span
-                      className="[&>svg]:w-8 [&>svg]:h-8 transition-colors duration-500"
-                      style={{ color: '#f97316' }}
+                      className="[&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6 lg:[&>svg]:w-7 lg:[&>svg]:h-7 xl:[&>svg]:w-8 xl:[&>svg]:h-8 2xl:[&>svg]:w-10 2xl:[&>svg]:h-10 transition-colors duration-500"
+                      style={{ color: gradientFrom }}
                     >
                       {currentSection?.icon}
                     </span>
-                  </div>
+                  )}
+                </div>
 
-                  {/* Text Content */}
-                  <div className="flex-1 space-y-1.5 min-w-0 pt-1">
-                    <div className="flex items-center gap-2">
-                      <Sparkles
-                        className="w-4 h-4 transition-colors duration-500"
-                        style={{ color: '#f97316' }}
-                      />
-                      <span
-                        className="text-xs font-bold uppercase tracking-wider transition-colors duration-500"
-                        style={{ color: '#f97316' }}
-                      >
-                        {currentSection?.label}
-                      </span>
-                    </div>
-                    <div className="text-2xl font-bold text-white tracking-tight leading-tight">
-                      {currentSection?.content}
-                    </div>
-                  </div>
-
-                  {/* Action Button (if present) */}
-                  {currentSection?.action && (
-                    <button
-                      onClick={currentSection.action.onClick}
-                      className="flex-shrink-0 inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg text-white"
-                      style={{
-                        background: `linear-gradient(135deg, ${gradientFrom} 0%, ${gradientTo} 100%)`,
-                      }}
+                {/* Text Content - responsive typography */}
+                <div className="flex-1 min-w-0 space-y-0.5 sm:space-y-1 lg:space-y-1.5 xl:space-y-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5">
+                    <Sparkles
+                      className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 transition-colors duration-500"
+                      style={{ color: gradientFrom }}
+                    />
+                    <span
+                      className="text-[10px] sm:text-xs lg:text-sm xl:text-base font-bold uppercase tracking-wider transition-colors duration-500"
+                      style={{ color: gradientFrom }}
                     >
-                      {currentSection.action.label}
-                      <ChevronRight className="w-4 h-4" />
+                      {currentSection?.label}
+                    </span>
+                  </div>
+                  <div className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white leading-snug line-clamp-2">
+                    {currentSection?.content}
+                  </div>
+                </div>
+
+                {/* Right side controls - responsive */}
+                <div className="flex-shrink-0 flex flex-col gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3">
+                  {/* Nav buttons row - hidden on mobile, visible from sm up */}
+                  <div className="hidden sm:flex gap-1 lg:gap-1.5">
+                    <button
+                      onClick={goToPrevious}
+                      className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 rounded-lg bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all"
+                      aria-label="Previous"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                    </button>
+                    <button
+                      onClick={() => setIsManuallyPaused(!isManuallyPaused)}
+                      className={cn(
+                        "flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 rounded-lg border border-white/10 transition-all",
+                        isManuallyPaused
+                          ? "bg-white/20 text-white"
+                          : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                      )}
+                      aria-label={isManuallyPaused ? "Resume" : "Pause"}
+                    >
+                      {isManuallyPaused ? <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" /> : <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />}
+                    </button>
+                    <button
+                      onClick={goToNext}
+                      className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 rounded-lg bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all"
+                      aria-label="Next"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                    </button>
+                  </div>
+
+                  {/* View Details button - responsive sizing */}
+                  <button
+                    onClick={onViewDetails}
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1.5 sm:py-2 lg:py-2.5 xl:py-3 rounded-lg font-semibold text-xs sm:text-sm lg:text-base xl:text-lg text-white transition-all hover:scale-105 hover:shadow-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+                    }}
+                  >
+                    <span className="hidden xs:inline">View</span> Details
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Bottom dots & timestamp - responsive */}
+          {sections.length > 1 && !isLoading && !error && (
+            <div className="absolute bottom-1.5 sm:bottom-2 lg:bottom-2.5 xl:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-3 lg:gap-4 z-10">
+              <div className="flex gap-1 sm:gap-1.5 lg:gap-2">
+                {sections.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    className={cn(
+                      "h-0.5 sm:h-1 lg:h-1.5 rounded-full transition-all duration-300",
+                      index === currentSlide
+                        ? "w-3 sm:w-4 lg:w-5 xl:w-6 bg-white"
+                        : "w-1 sm:w-1.5 lg:w-2 bg-white/30 hover:bg-white/50"
+                    )}
+                    aria-label={`Go to insight ${index + 1}`}
+                  />
+                ))}
+              </div>
+              {lastUpdated && (
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                  <span className="text-[8px] sm:text-[9px] lg:text-[10px] xl:text-xs text-white/40">
+                    · Updated {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                  {onRefresh && (
+                    <button
+                      onClick={onRefresh}
+                      disabled={refreshDisabled}
+                      className="p-0.5 sm:p-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Refresh insights"
+                    >
+                      <RefreshCw className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5", refreshDisabled && "animate-spin")} />
                     </button>
                   )}
                 </div>
-              </div>
-            )}
-
-            {/* Top Right Controls - Refresh & Close */}
-            <div className="absolute top-2 right-2 flex items-center gap-1 z-20">
-              {onRefresh && (
-                <button
-                  onClick={onRefresh}
-                  disabled={refreshDisabled}
-                  className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Refresh insights"
-                >
-                  <RefreshCw className={cn("w-4 h-4", refreshDisabled && "animate-spin")} />
-                </button>
               )}
-              <button
-                onClick={toggleExpanded}
-                className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                title="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
+          )}
 
-            {/* Bottom Navigation - dots left, timestamp center, arrows right */}
-            {sections.length > 1 && !isLoading && !error && (
-              <div className="absolute bottom-3 left-0 right-0 flex items-center justify-between px-8">
-                {/* Dots Indicator */}
-                <div className="flex items-center gap-2">
-                  {sections.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => goToSlide(index)}
-                      className={cn(
-                        "h-1.5 rounded-full transition-all duration-300",
-                        index === currentSlide
-                          ? "w-8 bg-white"
-                          : "w-1.5 bg-white/30 hover:bg-white/50"
-                      )}
-                      aria-label={`Go to insight ${index + 1}`}
-                    />
-                  ))}
-                </div>
-
-                {/* Cached Timestamp */}
-                {lastUpdated && (
-                  <span className="text-[10px] text-white/30">
-                    Cached · {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                  </span>
-                )}
-
-                {/* Prev/Pause/Next Buttons */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={goToPrevious}
-                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all duration-300"
-                    aria-label="Previous slide"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setIsManuallyPaused(!isManuallyPaused)}
-                    className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 transition-all duration-300",
-                      isManuallyPaused
-                        ? "bg-white/20 text-white"
-                        : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
-                    )}
-                    aria-label={isManuallyPaused ? "Resume auto-play" : "Pause auto-play"}
-                  >
-                    {isManuallyPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                  </button>
-                  <button
-                    onClick={goToNext}
-                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all duration-300"
-                    aria-label="Next slide"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
-      {/* Handle Tab - always visible, centered */}
+      {/* Handle Tab - always visible, centered - responsive */}
       <div className="flex justify-center relative z-10">
         <button
           onClick={toggleExpanded}
           className={cn(
-            "group flex flex-col items-center justify-center gap-0.5 px-6 py-1.5 rounded-b-xl border border-t-0 transition-all duration-300",
-            isExpanded ? "h-5" : "h-5 hover:h-6"
+            "group flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 lg:px-5 rounded-b-lg sm:rounded-b-xl border border-t-0 transition-all duration-300",
+            isExpanded ? "h-5 sm:h-6 lg:h-7 py-0.5 sm:py-1" : "h-7 sm:h-8 lg:h-9 py-1 sm:py-1.5 hover:h-8 sm:hover:h-9 lg:hover:h-10"
           )}
           style={{
-            backgroundColor: isExpanded ? `${accentColor}20` : `${accentColor}10`,
-            borderColor: `${accentColor}30`,
-            boxShadow: isExpanded ? `0 4px 15px ${accentColor}20` : undefined,
+            backgroundColor: isExpanded ? `${accentColor}20` : `${accentColor}15`,
+            borderColor: `${accentColor}40`,
+            boxShadow: isExpanded
+              ? `0 4px 15px ${accentColor}20`
+              : `0 4px 20px ${accentColor}30, 0 0 40px ${accentColor}15`,
           }}
         >
-          {/* Handle line with gradient */}
-          <div
-            className="w-8 h-1 rounded-full transition-all duration-300"
-            style={{
-              background: isExpanded
-                ? `linear-gradient(90deg, ${gradientFrom}, ${gradientTo})`
-                : `${accentColor}60`,
-            }}
-          />
-          {/* Sparkles icon appears on hover when collapsed */}
-          {!isExpanded && (
-            <Sparkles
-              className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ color: '#f97316' }}
+          {isExpanded ? (
+            /* Simple handle line when expanded - responsive */
+            <div
+              className="w-6 sm:w-8 lg:w-10 h-0.5 sm:h-1 rounded-full transition-all duration-300"
+              style={{
+                background: `linear-gradient(90deg, ${gradientFrom}, ${gradientTo})`,
+              }}
             />
+          ) : (
+            /* Animated Analytics Icon when collapsed - responsive */
+            <>
+              {/* Analytics Icon with glow */}
+              <div
+                className="relative [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5 lg:[&>svg]:w-6 lg:[&>svg]:h-6"
+                style={{
+                  filter: `drop-shadow(0 0 6px ${accentColor}60)`,
+                }}
+              >
+                <AIAnalyticsIcon size={20} color={accentColor} isAnimating={true} />
+              </div>
+
+              {/* AI Text - hidden on smallest screens */}
+              <span
+                className="hidden xs:inline text-[9px] sm:text-[10px] lg:text-xs font-bold tracking-wider opacity-80 group-hover:opacity-100 transition-opacity"
+                style={{ color: accentColor }}
+              >
+                AI
+              </span>
+
+              {/* Sparkles on hover */}
+              <Sparkles
+                className="h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-3.5 lg:w-3.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ color: accentColor }}
+              />
+            </>
           )}
         </button>
       </div>
+
     </div>
   );
 }
@@ -397,3 +514,6 @@ export function useInsightsPulldownExpanded(storageKey: string | undefined): boo
 
   return isExpanded;
 }
+
+// Re-export type for consumers
+export type { AnimatedAIIconName };

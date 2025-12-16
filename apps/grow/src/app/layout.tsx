@@ -5,6 +5,8 @@ import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue } from 'next/font/
 import { AuthProvider } from '@ainexsuite/auth';
 import { AppColorProvider, ThemeProvider, themeSyncScriptContent } from '@ainexsuite/theme';
 import { getServerTheme } from '@ainexsuite/theme/server';
+import { Toaster } from '@ainexsuite/ui';
+import { AppProviders } from '@/components/providers/app-providers';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -42,8 +44,8 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: 'Grow - Learning Goals',
-  description: 'Track your learning journey and skill development',
+  title: 'Grow - Habit Tracker',
+  description: 'Build better habits and track your personal growth',
   icons: {
     icon: '/favicon.svg',
   },
@@ -66,7 +68,10 @@ export default async function RootLayout({
         <ThemeProvider defaultTheme={theme} enableSystem={true} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="grow" fallbackPrimary="#14b8a6" fallbackSecondary="#6366f1">
-              {children}
+              <AppProviders>
+                {children}
+                <Toaster />
+              </AppProviders>
             </AppColorProvider>
           </AuthProvider>
         </ThemeProvider>

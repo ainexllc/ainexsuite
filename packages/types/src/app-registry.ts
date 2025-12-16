@@ -57,7 +57,7 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     name: 'Notes',
     slug: 'notes',
     description: 'Quickly capture your thoughts, ideas, and notes. Organize with labels and AI-powered search.',
-    icon: 'FileText',
+    icon: 'NotesStickyIcon',
     color: 'yellow',
     gradient: 'from-yellow-500 to-orange-500',
     devUrl: 'http://localhost:3001',

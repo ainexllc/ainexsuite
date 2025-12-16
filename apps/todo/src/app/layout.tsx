@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
-import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue } from 'next/font/google';
+import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
 import { AppColorProvider, ThemeProvider, themeSyncScriptContent } from '@ainexsuite/theme';
 import { getServerTheme } from '@ainexsuite/theme/server';
+import { Toaster } from '@ainexsuite/ui';
 import '@ainexsuite/ui/styles';
 import './globals.css';
 
@@ -41,6 +42,12 @@ const bebasNeue = Bebas_Neue({
   variable: '--font-bebas-neue',
 });
 
+const leagueSpartan = League_Spartan({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-league-spartan',
+});
+
 export const metadata: Metadata = {
   title: 'Todo - AINexSuite',
   description: 'Project management and task tracking with AI assistance',
@@ -57,16 +64,19 @@ export default async function RootLayout({
   const theme = await getServerTheme();
 
   return (
-    <html lang="en" className={`${theme} ${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={theme}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeSyncScriptContent }} />
         <meta name="theme-color" content="#0a0a0a" />
       </head>
-      <body className="font-sans antialiased transition-colors duration-300">
+      <body
+        className={`${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} ${leagueSpartan.variable} font-sans antialiased`}
+      >
         <ThemeProvider defaultTheme={theme} enableSystem={true} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="todo" fallbackPrimary="#f59e0b" fallbackSecondary="#fbbf24">
               {children}
+              <Toaster />
             </AppColorProvider>
           </AuthProvider>
         </ThemeProvider>

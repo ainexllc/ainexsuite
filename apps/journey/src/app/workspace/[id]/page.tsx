@@ -13,8 +13,7 @@ import { saveSentimentAnalysis } from '@/lib/firebase/sentiment';
 import { ArrowLeft, Loader2, Paperclip, X, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { formatDateTime } from '@/lib/utils/date';
-import { usePrivacy } from '@/contexts/privacy-context';
-import { PasscodeModal } from '@/components/privacy/passcode-modal';
+import { usePrivacy, PasscodeModal } from '@ainexsuite/privacy';
 
 export default function EditJournalPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);

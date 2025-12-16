@@ -1,62 +1,82 @@
 'use client';
 
-import { useEffect, useMemo, useCallback, useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { List, LayoutGrid, Calendar } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspacePageLayout } from '@ainexsuite/ui';
+import {
+  WorkspacePageLayout,
+  WorkspaceToolbar,
+  type ViewOption,
+  type SortOption,
+  type SortConfig,
+} from '@ainexsuite/ui';
 import { DashboardView } from '@/components/dashboard/dashboard-view';
-
 import { JournalComposer } from '@/components/journal/journal-composer';
-import { useSpaces } from '@/components/providers/spaces-provider';
-import { getUserJournalEntries } from '@/lib/firebase/firestore';
-import type { JournalEntry } from '@ainexsuite/types';
+import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
+import {
+  JournalFilterContent,
+  type JournalFilterValue,
+} from '@/components/journal/journal-filter-content';
+
+type ViewMode = 'list' | 'masonry' | 'calendar';
+
+const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
+  { value: 'list', icon: List, label: 'List view' },
+  { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
+  { value: 'calendar', icon: Calendar, label: 'Calendar view' },
+];
+
+const SORT_OPTIONS: SortOption[] = [
+  { field: 'createdAt', label: 'Date created' },
+  { field: 'updatedAt', label: 'Date modified' },
+  { field: 'title', label: 'Title' },
+];
+
+const DEFAULT_FILTERS: JournalFilterValue = {
+  moods: [],
+  tags: [],
+  colors: [],
+  dateRange: { start: null, end: null },
+  datePreset: undefined,
+  dateField: 'createdAt',
+};
 
 export default function WorkspacePage() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const dateFilter = searchParams.get('date');
-  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('masonry');
+  const [filters, setFilters] = useState<JournalFilterValue>(DEFAULT_FILTERS);
+  const [sort, setSort] = useState<SortConfig>({ field: 'createdAt', direction: 'desc' });
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Load entries for insights
-  const loadEntries = useCallback(async () => {
-    if (!user) return;
-    try {
-      const { entries: fetchedEntries } = await getUserJournalEntries(user.uid, {
-        limit: 100,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-        spaceId: currentSpaceId,
-      });
-      setEntries(fetchedEntries);
-    } catch (err) {
-      console.error('Failed to load entries for insights:', err);
-    }
-  }, [user, currentSpaceId]);
-
-  // Load entries on mount and when space changes
-  useEffect(() => {
-    void loadEntries();
-  }, [loadEntries, refreshTrigger]);
-
-  // Handle entry created - trigger refresh
   const handleEntryCreated = useCallback(() => {
-    setRefreshTrigger((prev) => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   }, []);
 
-  // Convert spaces to SpaceItem format
-  const spacesConfig = useMemo(() => ({
-    items: spaces.map((space) => ({
-      id: space.id,
-      name: space.name,
-      type: space.type,
-      color: space.type === 'personal' ? '#f97316' : '#8b5cf6',
-    })),
-    currentSpaceId,
-    onSpaceChange: setCurrentSpace,
-  }), [spaces, currentSpaceId, setCurrentSpace]);
+  const handleSearchToggle = useCallback(() => {
+    setIsSearchOpen((prev) => !prev);
+    if (isSearchOpen) {
+      setSearchQuery('');
+    }
+  }, [isSearchOpen]);
+
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.moods && filters.moods.length > 0) count++;
+    if (filters.tags && filters.tags.length > 0) count++;
+    if (filters.colors && filters.colors.length > 0) count++;
+    if (filters.dateRange?.start || filters.dateRange?.end) count++;
+    return count;
+  }, [filters]);
+
+  const handleFilterReset = useCallback(() => {
+    setFilters(DEFAULT_FILTERS);
+  }, []);
 
   if (!user) {
     return null;
@@ -64,11 +84,44 @@ export default function WorkspacePage() {
 
   return (
     <WorkspacePageLayout
-
       composer={<JournalComposer onEntryCreated={handleEntryCreated} />}
-      spaces={spacesConfig}
+      composerActions={<SpaceSwitcher />}
+      toolbar={
+        <div className="space-y-2">
+          <WorkspaceToolbar
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            viewOptions={VIEW_OPTIONS}
+            onSearchClick={handleSearchToggle}
+            isSearchActive={isSearchOpen || !!searchQuery}
+            filterContent={
+              <JournalFilterContent
+                filters={filters}
+                onFiltersChange={setFilters}
+                sort={sort}
+              />
+            }
+            activeFilterCount={activeFilterCount}
+            onFilterReset={handleFilterReset}
+            sort={sort}
+            onSortChange={setSort}
+            sortOptions={SORT_OPTIONS}
+            viewPosition="right"
+          />
+        </div>
+      }
+      maxWidth="default"
     >
-      <DashboardView dateFilter={dateFilter || undefined} />
+      <DashboardView
+        dateFilter={dateFilter || undefined}
+        refreshKey={refreshKey}
+        filters={filters}
+        sort={sort}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        isSearchOpen={isSearchOpen}
+        viewMode={viewMode}
+      />
     </WorkspacePageLayout>
   );
 }

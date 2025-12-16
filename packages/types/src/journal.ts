@@ -1,4 +1,7 @@
-import type { BaseDocument, MoodType } from './common';
+import type { BaseDocument, MoodType, EntryColor } from './common';
+
+// Re-export EntryColor for backward compatibility
+export type { EntryColor } from './common';
 
 export interface Attachment {
   id: string;
@@ -22,6 +25,9 @@ export interface JournalEntry extends BaseDocument {
   isDraft: boolean;
   wordCount?: number;
   spaceId?: string; // Optional - null/undefined means personal default space
+  color?: EntryColor; // Entry card background color
+  archived?: boolean; // Whether entry is archived
+  pinned?: boolean; // Whether entry is pinned to top
 }
 
 export type CreateJournalEntryInput = Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt' | 'wordCount'>;
@@ -37,6 +43,7 @@ export interface JournalEntryFormData {
   isPrivate: boolean;
   isDraft?: boolean;
   date?: string | number | Date;
+  pinned?: boolean;
 }
 
 export interface MoodPattern {

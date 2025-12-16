@@ -1,11 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, ArrowRight, Calendar, Flag } from 'lucide-react';
+import { ArrowRight, Plus } from 'lucide-react';
 import { useTodoStore } from '@/lib/store';
 import { Task, Priority } from '@/types/models';
 
-export function SmartTaskInput() {
+interface SmartTaskInputProps {
+  onOpenFullEditor?: () => void;
+}
+
+export function SmartTaskInput({ onOpenFullEditor }: SmartTaskInputProps) {
   const { getCurrentSpace, addTask } = useTodoStore();
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -77,39 +81,37 @@ export function SmartTaskInput() {
   if (!currentSpace) return null;
 
   return (
-    <form onSubmit={handleSubmit} className="relative group">
-      <div className="absolute inset-0 bg-gradient-to-r from-accent-500/20 to-purple-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="relative flex items-center bg-surface-card border border-outline-subtle rounded-xl p-2 shadow-sm focus-within:ring-2 focus-within:ring-accent-500/50 transition-all">
-        <div className="p-2 text-accent-500">
-          <Sparkles className="h-5 w-5" />
-        </div>
+    <form onSubmit={handleSubmit} className="w-full">
+      <div className="flex items-center rounded-2xl border px-5 py-4 shadow-sm transition focus-within:ring-2 focus-within:ring-[var(--color-primary)] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Add a task... (e.g., 'Review report tomorrow #urgent')"
-          className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted px-2"
+          placeholder="Add a task..."
+          className="flex-1 bg-transparent border-none outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
         />
-        <button
-          type="submit"
-          disabled={!input.trim() || isProcessing}
-          className="p-2 bg-accent-500 hover:bg-accent-600 text-foreground rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <ArrowRight className="h-4 w-4" />
-        </button>
-      </div>
-      
-      {/* Helper Hints */}
-      {input.length > 0 && (
-        <div className="absolute top-full left-0 mt-2 flex gap-2 text-xs text-muted animate-in fade-in slide-in-from-top-1">
-          <span className="flex items-center gap-1 bg-surface-elevated px-2 py-1 rounded-md border border-outline-subtle">
-            <Flag className="h-3 w-3" /> #urgent for High Priority
-          </span>
-          <span className="flex items-center gap-1 bg-surface-elevated px-2 py-1 rounded-md border border-outline-subtle">
-            <Calendar className="h-3 w-3" /> &quot;tomorrow&quot; for Due Date
-          </span>
+        <div className="flex items-center gap-2 ml-3">
+          {onOpenFullEditor && (
+            <button
+              type="button"
+              onClick={onOpenFullEditor}
+              className="p-2 rounded-full text-zinc-400 dark:text-zinc-500 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-all"
+              title="Open full editor"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
+          {input.trim() && (
+            <button
+              type="submit"
+              disabled={isProcessing}
+              className="p-2 rounded-full bg-[var(--color-primary)] text-white shadow-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </form>
   );
 }

@@ -9,10 +9,7 @@ import { useToast } from '@ainexsuite/ui';
 import type { JournalEntry } from '@ainexsuite/types';
 import { ArrowLeft, Edit, Loader2, Lock } from 'lucide-react';
 import Link from 'next/link';
-import { usePrivacy } from '@/contexts/privacy-context';
-import { PasscodeModal } from '@/components/privacy/passcode-modal';
-import { BlurredContent } from '@/components/privacy/blurred-content';
-import { PrivateEntryNotice } from '@/components/privacy/private-entry-notice';
+import { usePrivacy, PasscodeModal, BlurredContent, PrivateEntryNotice } from '@ainexsuite/privacy';
 
 export default function ViewJournalPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);

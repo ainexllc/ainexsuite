@@ -21,16 +21,13 @@ export interface OpenRouterResponse {
 }
 
 export class OpenRouterClient {
-  private apiKey: string;
   private baseUrl = "https://api.x.ai/v1";
-  // Use Grok 4.1 Fast for all AI tasks
-  private defaultModel = "grok-4-1-fast";
+  // Use Grok 4.1 Fast Non-Reasoning for all AI tasks
+  private defaultModel = "grok-4-1-fast-non-reasoning";
 
-  constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.XAI_API_KEY || "";
-    if (!this.apiKey) {
-       console.warn("GROK_API_KEY is not configured.");
-    }
+  // Get API key at request time (not cached at module load)
+  private getApiKey(): string {
+    return process.env.XAI_API_KEY || process.env.GROK_API_KEY || serverEnv.XAI_API_KEY || "";
   }
 
   async createCompletion(options: OpenRouterCompletionOptions): Promise<OpenRouterResponse> {
@@ -43,17 +40,18 @@ export class OpenRouterClient {
 
     // Always use xAI/Grok API with grok-4-1-fast-non-reasoning
     const model = this.defaultModel;
+    const apiKey = this.getApiKey();
 
-    if (!this.apiKey) {
-        console.error("AI Client: Missing GROK_API_KEY");
-        throw new Error("GROK_API_KEY is missing");
+    if (!apiKey) {
+        console.error("AI Client: Missing XAI_API_KEY or GROK_API_KEY");
+        throw new Error("XAI_API_KEY is missing");
     }
 
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${this.apiKey}`,
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model,

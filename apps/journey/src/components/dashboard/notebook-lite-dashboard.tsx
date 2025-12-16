@@ -1,14 +1,11 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { JournalEntry } from '@ainexsuite/types';
-import { EntriesSection } from '@/components/dashboard/entries-section';
 import { OnThisDayCard } from '@/components/dashboard/on-this-day-card';
+import { JournalBoard } from '@/components/journal/journal-board';
 import { usePersonalizedWelcome } from '@/hooks/usePersonalizedWelcome';
 import { getUserSettings, UserSettings } from '@/lib/firebase/settings';
-import { cn } from '@/lib/utils';
-import { getTheme } from '@/lib/dashboard-themes';
-import { JournalComposer } from '@/components/journal/journal-composer';
 
-import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
+type ViewMode = 'list' | 'masonry' | 'calendar';
 
 interface DashboardStats {
   streak: number;
@@ -40,8 +37,7 @@ interface NotebookLiteDashboardProps {
   stats: DashboardStats;
   isLoadingEntries: boolean;
   onThisDayEntries: JournalEntry[];
-  currentThemeId?: string;
-  onThemeChange?: (themeId: string) => void;
+  viewMode?: ViewMode;
 }
 
 export function NotebookLiteDashboard({
@@ -66,12 +62,9 @@ export function NotebookLiteDashboard({
   stats: _stats,
   isLoadingEntries,
   onThisDayEntries,
-  currentThemeId = 'obsidian',
-  onThemeChange: _onThemeChange
+  viewMode = 'masonry',
 }: NotebookLiteDashboardProps) {
   const [settings, setSettings] = useState<UserSettings | null>(null);
-
-  const theme = useMemo(() => getTheme(currentThemeId), [currentThemeId]);
 
   // Fetch user settings
   useEffect(() => {
@@ -88,39 +81,49 @@ export function NotebookLiteDashboard({
     enabled: entries.length > 0 && settings?.privacy?.personalizedWelcome === true,
   });
 
+  const hasFilters = searchTerm.length > 0 || selectedTags.length > 0;
+
   return (
-    <div className={cn("transition-colors duration-500 min-h-screen", theme.font)}>
-      <div className="space-y-6 pb-20 max-w-7xl mx-auto">
-
-
-        {/* Space Switcher */}
-        <div className="flex items-center gap-4">
-          <SpaceSwitcher />
-        </div>
-
-        {/* Journal Composer */}
-        <JournalComposer onEntryCreated={onEntryUpdated} />
-
+    <div className="min-h-screen transition-colors duration-500">
+      <div className="mx-auto max-w-7xl space-y-6 pb-20">
         {/* On This Day - Full Width */}
-        {onThisDayEntries.length > 0 && (
-          <OnThisDayCard entries={onThisDayEntries} theme={theme} />
-        )}
+        {onThisDayEntries.length > 0 && <OnThisDayCard entries={onThisDayEntries} />}
 
-        {/* Entries Section - Full Width */}
-        <EntriesSection
-          layoutVariant="list"
-          entriesToDisplay={paginatedEntries}
-          totalEntries={totalEntries}
-          searchTerm={searchTerm}
-          selectedTags={selectedTags}
-          onClearFilters={onClearFilters}
+        {/* Journal Board with Pinned Section */}
+        <JournalBoard
+          entries={paginatedEntries}
+          viewMode={viewMode}
+          loading={isLoadingEntries}
           onEntryUpdated={onEntryUpdated}
-          page={page}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-          isLoading={isLoadingEntries}
-          theme={theme}
+          searchTerm={searchTerm}
+          hasFilters={hasFilters}
+          onClearFilters={onClearFilters}
         />
+
+        {/* Pagination */}
+        {!isLoadingEntries && totalPages > 1 && (
+          <div className="flex items-center justify-between rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground">
+            <button
+              type="button"
+              disabled={page === 0}
+              onClick={() => onPageChange(Math.max(0, page - 1))}
+              className="rounded-full px-3 py-1 text-sm font-semibold text-muted-foreground transition hover:bg-accent/10 disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <span className="text-xs">
+              Page {page + 1} of {totalPages} ({totalEntries} entries)
+            </span>
+            <button
+              type="button"
+              disabled={page >= totalPages - 1}
+              onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
+              className="rounded-full px-3 py-1 text-sm font-semibold text-muted-foreground transition hover:bg-accent/10 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

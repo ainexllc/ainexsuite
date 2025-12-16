@@ -65,11 +65,11 @@ export function subscribeToSpaceTasks(spaceId: string, callback: (tasks: Task[])
   });
 }
 
-export function subscribeToMyTasks(userId: string, callback: (tasks: Task[]) => void) {
+export function subscribeToAllUserTasks(userId: string, callback: (tasks: Task[]) => void) {
+  // Get all tasks where user is an assignee (for "All Spaces" view)
   const q = query(
     collection(db, 'tasks'),
-    where('assigneeIds', 'array-contains', userId),
-    where('status', '!=', 'done') // Only open tasks
+    where('assigneeIds', 'array-contains', userId)
   );
 
   return onSnapshot(q, (snapshot) => {

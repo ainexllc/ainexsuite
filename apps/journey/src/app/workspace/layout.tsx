@@ -1,27 +1,38 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, useFontPreference } from '@ainexsuite/ui';
 import { SpacesProvider } from '@/components/providers/spaces-provider';
+import { EntriesProvider, useEntries } from '@/components/providers/entries-provider';
+import { PrivacyProvider } from '@ainexsuite/privacy';
+import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { getQuickActionsForApp } from '@ainexsuite/types';
+import { BookOpen } from 'lucide-react';
 
-export default function WorkspaceRootLayout({
+/**
+ * Inner layout that has access to EntriesProvider context
+ */
+function WorkspaceLayoutInner({
   children,
+  user,
+  handleSignOut,
+  updatePreferences,
 }: {
   children: React.ReactNode;
+  user: NonNullable<ReturnType<typeof useWorkspaceAuth>['user']>;
+  handleSignOut: () => void;
+  updatePreferences: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
 }) {
   const router = useRouter();
-  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
-
-  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
-  useFontPreference(user?.preferences?.fontFamily);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const { entries, loading: entriesLoading } = useEntries();
 
   // Get quick actions for Journey app
   const quickActions = getQuickActionsForApp('journey');
 
-  // Handle quick actions (abbreviated)
+  // Handle quick actions
   const handleQuickAction = useCallback((actionId: string) => {
     switch (actionId) {
       case 'new-entry':
@@ -35,10 +46,66 @@ export default function WorkspaceRootLayout({
     }
   }, [router]);
 
-  // Handle AI assistant (abbreviated)
+  // Handle AI assistant
   const handleAiAssistantClick = useCallback(() => {
     // TODO: Open AI assistant panel
   }, []);
+
+  // Handle settings click
+  const handleSettingsClick = useCallback(() => {
+    setSettingsModalOpen(true);
+  }, []);
+
+  return (
+    <>
+      <WorkspaceLayoutWithInsights
+        user={user}
+        onSignOut={handleSignOut}
+        quickActions={quickActions}
+        onQuickAction={handleQuickAction}
+        onAiAssistantClick={handleAiAssistantClick}
+        onSettingsClick={handleSettingsClick}
+        notifications={[]}
+        onUpdatePreferences={updatePreferences}
+        entries={entries}
+        entriesLoading={entriesLoading}
+      >
+        {children}
+      </WorkspaceLayoutWithInsights>
+
+      {/* Global Settings Modal */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        user={user ? {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+        } : null}
+        preferences={user?.preferences ?? {
+          theme: 'dark',
+          language: 'en',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          notifications: { email: true, push: false, inApp: true },
+        }}
+        onUpdatePreferences={updatePreferences}
+        appSettingsLabel="Journey"
+        appSettingsIcon={<BookOpen className="h-4 w-4" />}
+      />
+    </>
+  );
+}
+
+export default function WorkspaceRootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
+
+  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
+  useFontPreference(user?.preferences?.fontFamily);
 
   // Show standardized loading screen
   if (isLoading) {
@@ -52,18 +119,17 @@ export default function WorkspaceRootLayout({
 
   return (
     <SpacesProvider>
-      <WorkspaceLayout
-        user={user}
-        onSignOut={handleSignOut}
-        appName="Journey"
-        quickActions={quickActions}
-        onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
-        notifications={[]}
-        onUpdatePreferences={updatePreferences}
-      >
-        {children}
-      </WorkspaceLayout>
+      <PrivacyProvider config={{ appName: 'journey' }}>
+        <EntriesProvider>
+          <WorkspaceLayoutInner
+            user={user}
+            handleSignOut={handleSignOut}
+            updatePreferences={updatePreferences}
+          >
+            {children}
+          </WorkspaceLayoutInner>
+        </EntriesProvider>
+      </PrivacyProvider>
     </SpacesProvider>
   );
 }

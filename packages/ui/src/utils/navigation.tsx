@@ -1,5 +1,6 @@
+'use client';
+
 import {
-  StickyNote,
   Map,
   CheckSquare,
   Heart,
@@ -13,9 +14,17 @@ import {
   Settings,
 } from 'lucide-react';
 import { SUITE_APPS, getAppUrl } from '../config/apps';
+import { NotesStickyIcon } from '../components/ai';
+
+// Wrapper to make animated icon fill the container as a background-style element
+const NotesAnimatedIcon = ({ className }: { className?: string }) => (
+  <div className={`absolute inset-0 flex items-center justify-center ${className}`}>
+    <NotesStickyIcon size={28} color="#fbbf24" isAnimating={true} />
+  </div>
+);
 
 const ICON_MAP = {
-  notes: StickyNote,
+  notes: NotesAnimatedIcon,
   journey: Map,
   todo: CheckSquare,
   health: Heart,

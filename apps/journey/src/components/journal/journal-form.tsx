@@ -40,6 +40,8 @@ interface JournalFormProps {
   onSubmit: (data: JournalEntryFormData, files: File[]) => Promise<void>;
   isSubmitting: boolean;
   onContentChange?: (content: string) => void;
+  /** Hide the built-in submit buttons (when buttons are rendered externally) */
+  hideButtons?: boolean;
 }
 
 const ENHANCEMENT_STYLES: Array<{
@@ -105,10 +107,12 @@ export interface JournalFormHandle {
   setContent: (value: string) => void;
   appendToContent: (value: string, options?: { prependNewLine?: boolean }) => void;
   setTitle: (value: string) => void;
+  submitPublish: () => void;
+  submitDraft: () => void;
 }
 
 export const JournalForm = forwardRef<JournalFormHandle, JournalFormProps>(
-function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, ref) {
+function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hideButtons = false }, ref) {
   const [files, setFiles] = useState<File[]>([]);
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [linkInput, setLinkInput] = useState('');
@@ -184,6 +188,12 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
     },
     setTitle: (value: string) => {
       setValue('title', value, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    },
+    submitPublish: () => {
+      submitPublish();
+    },
+    submitDraft: () => {
+      submitDraft();
     },
   }));
 
@@ -917,37 +927,39 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange }, r
         </label>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4">
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={() => submitDraft()}
-          className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex-1 sm:flex-none"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 animate-spin inline" size={18} />
-              Saving...
-            </>
-          ) : (
-            draftLabel
-          )}
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2 bg-orange-500 dark:bg-orange-400 text-white rounded-lg hover:bg-orange-600 dark:hover:bg-orange-500 transition-colors flex flex-1 items-center justify-center sm:flex-none"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="animate-spin mr-2 inline" size={20} />
-              Saving...
-            </>
-          ) : (
-            publishLabel
-          )}
-        </button>
-      </div>
+      {!hideButtons && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4 pt-4 mt-2 border-t border-border">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => submitDraft()}
+            className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex-1 sm:flex-none"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 animate-spin inline" size={18} />
+                Saving...
+              </>
+            ) : (
+              draftLabel
+            )}
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-orange-500 dark:bg-orange-400 text-white rounded-lg hover:bg-orange-600 dark:hover:bg-orange-500 transition-colors flex flex-1 items-center justify-center sm:flex-none"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin mr-2 inline" size={20} />
+                Saving...
+              </>
+            ) : (
+              publishLabel
+            )}
+          </button>
+        </div>
+      )}
     </form>
   );
 });

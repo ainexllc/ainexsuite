@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { db } from '@ainexsuite/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { db, auth } from '@ainexsuite/firebase';
 import type { SpaceType } from '@ainexsuite/types';
 
 /**
@@ -83,73 +84,86 @@ export function useSpacesConfig(options: UseSpacesConfigOptions = {}): SpacesCon
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (realtime) {
-      // Real-time listeners
-      const unsubTypes = onSnapshot(
-        doc(db, 'config', 'space_types'),
-        (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.types && Array.isArray(data.types)) {
-              setSpaceTypes(data.types);
+    let unsubTypes: (() => void) | undefined;
+    let unsubUI: (() => void) | undefined;
+
+    // Wait for auth state before setting up Firestore listeners
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // Not authenticated - use defaults silently (no error spam)
+        setLoading(false);
+        return;
+      }
+
+      if (realtime) {
+        // Real-time listeners (only when authenticated)
+        unsubTypes = onSnapshot(
+          doc(db, 'config', 'space_types'),
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              if (data.types && Array.isArray(data.types)) {
+                setSpaceTypes(data.types);
+              }
             }
+            setLoading(false);
+          },
+          (err) => {
+            console.error('Error fetching space types:', err);
+            setError('Failed to load space types');
+            setLoading(false);
           }
-          setLoading(false);
-        },
-        (err) => {
-          console.error('Error fetching space types:', err);
-          setError('Failed to load space types');
-          setLoading(false);
-        }
-      );
+        );
 
-      const unsubUI = onSnapshot(
-        doc(db, 'config', 'spaces_ui'),
-        (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setUiConfig({ ...DEFAULT_UI_CONFIG, ...data });
-          }
-        },
-        (err) => {
-          console.error('Error fetching UI config:', err);
-        }
-      );
-
-      return () => {
-        unsubTypes();
-        unsubUI();
-      };
-    } else {
-      // One-time fetch
-      const fetchConfig = async () => {
-        try {
-          const [typesDoc, uiDoc] = await Promise.all([
-            getDoc(doc(db, 'config', 'space_types')),
-            getDoc(doc(db, 'config', 'spaces_ui')),
-          ]);
-
-          if (typesDoc.exists()) {
-            const data = typesDoc.data();
-            if (data.types && Array.isArray(data.types)) {
-              setSpaceTypes(data.types);
+        unsubUI = onSnapshot(
+          doc(db, 'config', 'spaces_ui'),
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              setUiConfig({ ...DEFAULT_UI_CONFIG, ...data });
             }
+          },
+          (err) => {
+            console.error('Error fetching UI config:', err);
           }
+        );
+      } else {
+        // One-time fetch (only when authenticated)
+        const fetchConfig = async () => {
+          try {
+            const [typesDoc, uiDoc] = await Promise.all([
+              getDoc(doc(db, 'config', 'space_types')),
+              getDoc(doc(db, 'config', 'spaces_ui')),
+            ]);
 
-          if (uiDoc.exists()) {
-            const data = uiDoc.data();
-            setUiConfig({ ...DEFAULT_UI_CONFIG, ...data });
+            if (typesDoc.exists()) {
+              const data = typesDoc.data();
+              if (data.types && Array.isArray(data.types)) {
+                setSpaceTypes(data.types);
+              }
+            }
+
+            if (uiDoc.exists()) {
+              const data = uiDoc.data();
+              setUiConfig({ ...DEFAULT_UI_CONFIG, ...data });
+            }
+          } catch (err) {
+            console.error('Error fetching spaces config:', err);
+            setError('Failed to load spaces configuration');
+          } finally {
+            setLoading(false);
           }
-        } catch (err) {
-          console.error('Error fetching spaces config:', err);
-          setError('Failed to load spaces configuration');
-        } finally {
-          setLoading(false);
-        }
-      };
+        };
 
-      fetchConfig();
-    }
+        fetchConfig();
+      }
+    });
+
+    return () => {
+      unsubAuth();
+      unsubTypes?.();
+      unsubUI?.();
+    };
   }, [realtime]);
 
   return { spaceTypes, uiConfig, loading, error };

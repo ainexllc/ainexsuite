@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Flag, Users, Save, Trash2 } from 'lucide-react';
-import { Modal, ModalHeader, ModalTitle, ModalDescription, ModalContent, ModalFooter, Button, Textarea, ConfirmationDialog } from '@ainexsuite/ui';
+import { Calendar, Flag, Users, Save, Trash2, Loader2 } from 'lucide-react';
+import { EntryEditorShell, Textarea, ConfirmationDialog } from '@ainexsuite/ui';
+import type { EntryColor } from '@ainexsuite/types';
 import { useTodoStore } from '../../lib/store';
 import { Task, Priority, TaskList, Member } from '../../types/models';
 
@@ -14,7 +15,7 @@ interface TaskEditorProps {
 }
 
 export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskEditorProps) {
-  const { getCurrentSpace, addTask, updateTask, deleteTask, tasks } = useTodoStore();
+  const { getCurrentSpace, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskPin, toggleTaskArchive } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
   const [title, setTitle] = useState('');
@@ -24,6 +25,12 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
   const [assignees, setAssignees] = useState<string[]>([]);
   const [listId, setListId] = useState(defaultListId || '');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Shell state
+  const [color, setColor] = useState<EntryColor>('default');
+  const [pinned, setPinned] = useState(false);
+  const [archived, setArchived] = useState(false);
 
   // Load data if editing
   useEffect(() => {
@@ -36,6 +43,9 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         setDueDate(task.dueDate || '');
         setAssignees(task.assigneeIds);
         setListId(task.listId);
+        setColor((task.color as EntryColor) || 'default');
+        setPinned(task.pinned || false);
+        setArchived(task.archived || false);
       }
     } else if (isOpen && !editTaskId) {
       // Reset form for new task
@@ -45,6 +55,9 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
       setDueDate('');
       setAssignees([]);
       setListId(defaultListId || '');
+      setColor('default');
+      setPinned(false);
+      setArchived(false);
     }
   }, [isOpen, editTaskId, tasks, defaultListId]);
 
@@ -58,57 +71,73 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
   // Show message if no space is available
   if (!currentSpace) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} size="md">
-        <ModalContent className="text-center py-8">
-          <ModalTitle>No Space Selected</ModalTitle>
-          <ModalDescription className="mt-2">
+      <EntryEditorShell
+        isOpen={isOpen}
+        onClose={onClose}
+        hideFooter={true}
+      >
+        <div className="text-center py-8">
+          <h2 className="text-lg font-semibold text-foreground">No Space Selected</h2>
+          <p className="mt-2 text-muted-foreground">
             Please create or select a space before creating tasks.
-          </ModalDescription>
-          <div className="mt-6">
-            <Button onClick={onClose}>Close</Button>
-          </div>
-        </ModalContent>
-      </Modal>
+          </p>
+          <button
+            onClick={onClose}
+            className="mt-6 rounded-full bg-[var(--color-primary)] px-5 py-1.5 text-sm font-semibold text-white"
+          >
+            Close
+          </button>
+        </div>
+      </EntryEditorShell>
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!title.trim()) {
       return;
     }
 
-    if (editTaskId) {
-      await updateTask(editTaskId, {
-        title,
-        description,
-        priority,
-        dueDate,
-        assigneeIds: assignees,
-        listId,
-      });
-    } else {
-      const newTask: Task = {
-        id: `task_${Date.now()}`,
-        spaceId: currentSpace.id,
-        listId,
-        title,
-        description,
-        status: 'todo',
-        priority,
-        dueDate,
-        assigneeIds: assignees.length > 0 ? assignees : [currentSpace.createdBy],
-        subtasks: [],
-        tags: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: currentSpace.createdBy,
-        order: 0,
-      };
-      await addTask(newTask);
+    setIsSubmitting(true);
+    try {
+      if (editTaskId) {
+        await updateTask(editTaskId, {
+          title,
+          description,
+          priority,
+          dueDate,
+          assigneeIds: assignees,
+          listId,
+          color,
+          pinned,
+          archived,
+        });
+      } else {
+        const newTask: Task = {
+          id: `task_${Date.now()}`,
+          spaceId: currentSpace.id,
+          listId,
+          title,
+          description,
+          status: 'todo',
+          priority,
+          dueDate,
+          assigneeIds: assignees.length > 0 ? assignees : [currentSpace.createdBy],
+          subtasks: [],
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          createdBy: currentSpace.createdBy,
+          order: 0,
+          color,
+          pinned,
+          archived,
+        };
+        await addTask(newTask);
+      }
+      onClose();
+    } finally {
+      setIsSubmitting(false);
     }
-    onClose();
   };
 
   const handleDelete = async () => {
@@ -118,33 +147,98 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
     }
   };
 
+  const handleColorChange = async (newColor: EntryColor) => {
+    setColor(newColor);
+    if (editTaskId) {
+      await updateTaskColor(editTaskId, newColor);
+    }
+  };
+
+  const handlePinChange = async (newPinned: boolean) => {
+    setPinned(newPinned);
+    if (editTaskId) {
+      await toggleTaskPin(editTaskId, newPinned);
+    }
+  };
+
+  const handleArchiveChange = async (newArchived: boolean) => {
+    setArchived(newArchived);
+    if (editTaskId) {
+      await toggleTaskArchive(editTaskId, newArchived);
+    }
+  };
+
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <form onSubmit={handleSubmit}>
-        <ModalHeader onClose={onClose}>
-          <ModalTitle>
-            {editTaskId ? 'Edit Task' : 'New Task'}
-          </ModalTitle>
-        </ModalHeader>
-
-        <ModalContent className="space-y-6">
+      <EntryEditorShell
+        isOpen={isOpen}
+        onClose={onClose}
+        color={color}
+        onColorChange={handleColorChange}
+        pinned={pinned}
+        onPinChange={handlePinChange}
+        archived={archived}
+        onArchiveChange={handleArchiveChange}
+        toolbarActions={
+          editTaskId ? (
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="h-9 w-9 rounded-full flex items-center justify-center transition text-red-500 hover:bg-red-500/20"
+              aria-label="Delete task"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          ) : null
+        }
+        footerRightContent={
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!title.trim() || isSubmitting}
+              className="rounded-full bg-[var(--color-primary)] px-5 py-1.5 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-60 inline-flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  {editTaskId ? 'Save Changes' : 'Create Task'}
+                </>
+              )}
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-6">
           {/* Title Input */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Task Title *</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">Task Title *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title..."
-              className="w-full bg-surface-card border border-outline-subtle rounded-lg px-4 py-3 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent-500"
+              className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-3 text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
               autoFocus
-              required
             />
           </div>
+
           {/* List/Status Selector */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">List</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">List</label>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {currentSpace.lists.map((list: TaskList) => (
                 <button
@@ -153,8 +247,8 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                   onClick={() => setListId(list.id)}
                   className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
                     listId === list.id
-                      ? 'bg-accent-500 text-foreground'
-                      : 'bg-surface-card border border-outline-subtle text-muted-foreground hover:bg-surface-elevated'
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                   }`}
                 >
                   {list.title}
@@ -167,7 +261,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           <div className="grid grid-cols-2 gap-4">
             {/* Priority */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-1">
+              <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2 flex items-center gap-1">
                 <Flag className="h-4 w-4" /> Priority
               </label>
               <div className="flex gap-2">
@@ -180,8 +274,8 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                       priority === p
                         ? p === 'high'
                           ? 'bg-red-500/20 text-red-500 border-2 border-red-500/50'
-                          : 'bg-accent-500/20 text-accent-500 border-2 border-accent-500/50'
-                        : 'bg-surface-card border-2 border-outline-subtle text-muted-foreground hover:bg-surface-elevated'
+                          : 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] border-2 border-[var(--color-primary)]/50'
+                        : 'bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     }`}
                   >
                     {p}
@@ -192,21 +286,21 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
             {/* Due Date */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-1">
+              <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2 flex items-center gap-1">
                 <Calendar className="h-4 w-4" /> Due Date
               </label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-surface-card border border-outline-subtle rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent-500"
+                className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Description</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">Description</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -217,7 +311,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
           {/* Assignees */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2 flex items-center gap-1">
+            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2 flex items-center gap-1">
               <Users className="h-4 w-4" /> Assignees
             </label>
             <div className="flex flex-wrap gap-2">
@@ -234,11 +328,11 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                   }}
                   className={`flex items-center gap-2 px-3 py-2 rounded-full border-2 text-sm transition-all ${
                     assignees.includes(member.uid)
-                      ? 'bg-accent-500/20 border-accent-500/50 text-accent-500'
-                      : 'bg-surface-card border-outline-subtle text-muted-foreground hover:bg-surface-elevated'
+                      ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/50 text-[var(--color-primary)]'
+                      : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                   }`}
                 >
-                  <div className="h-5 w-5 rounded-full bg-surface-elevated flex items-center justify-center text-xs text-foreground font-medium">
+                  <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs text-zinc-900 dark:text-zinc-100 font-medium">
                     {member.displayName.slice(0, 1).toUpperCase()}
                   </div>
                   {member.displayName}
@@ -246,32 +340,8 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
               ))}
             </div>
           </div>
-        </ModalContent>
-
-        <ModalFooter className={editTaskId ? "justify-between" : undefined}>
-          {editTaskId && (
-            <Button
-              type="button"
-              variant="danger"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete Task
-            </Button>
-          )}
-          <div className="flex gap-2 ml-auto">
-            <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!title.trim()} className="gap-2">
-              <Save className="h-4 w-4" />
-              {editTaskId ? 'Save Changes' : 'Create Task'}
-            </Button>
-          </div>
-        </ModalFooter>
-      </form>
-    </Modal>
+        </div>
+      </EntryEditorShell>
 
       <ConfirmationDialog
         isOpen={showDeleteConfirm}

@@ -1,25 +1,26 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { LayoutGrid, List, Calendar, Sun, Grid2X2 } from 'lucide-react';
+import { LayoutGrid, List, Calendar, Sun, Grid2X2, Columns } from 'lucide-react';
 import { WorkspacePageLayout, WorkspaceToolbar, ActivityCalendar, type ViewOption, type SortOption, type SortConfig } from '@ainexsuite/ui';
 
 // Components
 import { TaskEditor } from '@/components/tasks/TaskEditor';
-import { TaskInsights } from '@/components/tasks/TaskInsights';
-import { SmartTaskInput } from '@/components/tasks/SmartTaskInput';
-import { TaskList } from '@/components/views/TaskList';
+import { TaskComposer } from '@/components/tasks/TaskComposer';
 import { TaskBoard } from '@/components/views/TaskBoard';
+import { TaskKanban } from '@/components/views/TaskKanban';
 import { MyDayView } from '@/components/views/MyDayView';
 import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
+import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 
 import { useTodoStore } from '@/lib/store';
 
-type ViewType = 'list' | 'board' | 'my-day' | 'matrix' | 'calendar';
+type ViewType = 'list' | 'masonry' | 'board' | 'my-day' | 'matrix' | 'calendar';
 
 const VIEW_OPTIONS: ViewOption<ViewType>[] = [
   { value: 'list', icon: List, label: 'List view' },
-  { value: 'board', icon: LayoutGrid, label: 'Board view' },
+  { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
+  { value: 'board', icon: Columns, label: 'Board view' },
   { value: 'my-day', icon: Sun, label: 'My Day' },
   { value: 'matrix', icon: Grid2X2, label: 'Eisenhower Matrix' },
   { value: 'calendar', icon: Calendar, label: 'Calendar view' },
@@ -33,7 +34,7 @@ const SORT_OPTIONS: SortOption[] = [
 ];
 
 export default function TodoWorkspacePage() {
-  const { currentSpaceId, viewPreferences, setViewPreference, spaces, setCurrentSpace, tasks } = useTodoStore();
+  const { currentSpaceId, viewPreferences, setViewPreference, tasks } = useTodoStore();
 
   const [showEditor, setShowEditor] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
@@ -60,38 +61,27 @@ export default function TodoWorkspacePage() {
     return data;
   }, [tasks]);
 
-  // Prepare spaces for WorkspacePageLayout
-  const spaceItems = [
-    { id: 'all', name: 'All Spaces', type: 'personal' as const },
-    ...spaces.map(space => ({
-      id: space.id,
-      name: space.name,
-      type: space.type as 'personal' | 'family' | 'work',
-    }))
-  ];
-
   const isCalendarView = view === 'calendar';
 
   return (
     <>
       <WorkspacePageLayout
-        insightsBanner={<TaskInsights variant="sidebar" />}
-        composer={<SmartTaskInput />}
-        spaces={{
-          items: spaceItems,
-          currentSpaceId,
-          onSpaceChange: setCurrentSpace,
-        }}
+        composer={<TaskComposer />}
+        composerActions={<SpaceSwitcher />}
         toolbar={
-          <WorkspaceToolbar
-            viewMode={view}
-            onViewModeChange={handleSetView}
-            viewOptions={VIEW_OPTIONS}
-            sort={sort}
-            onSortChange={setSort}
-            sortOptions={SORT_OPTIONS}
-          />
+          <div className="space-y-2">
+            <WorkspaceToolbar
+              viewMode={view}
+              onViewModeChange={handleSetView}
+              viewOptions={VIEW_OPTIONS}
+              sort={sort}
+              onSortChange={setSort}
+              sortOptions={SORT_OPTIONS}
+              viewPosition="right"
+            />
+          </div>
         }
+        maxWidth="default"
       >
         {/* Content Area */}
         <div className="min-h-[60vh]">
@@ -102,13 +92,16 @@ export default function TodoWorkspacePage() {
             />
           ) : (
             <>
-              {view === 'list' && (
-                <TaskList onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
+              {(view === 'list' || view === 'masonry') && (
+                <TaskBoard
+                  viewMode={view}
+                  onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
+                />
               )}
 
               {view === 'board' && (
                 <div className="overflow-x-auto">
-                  <TaskBoard onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
+                  <TaskKanban onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
                 </div>
               )}
 

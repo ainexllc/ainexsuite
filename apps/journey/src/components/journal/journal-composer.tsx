@@ -8,7 +8,8 @@ import {
   Smile,
   Tag,
   X,
-  PenLine,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@ainexsuite/auth";
@@ -43,6 +44,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
   const [showMoodPicker, setShowMoodPicker] = useState(false);
   const [showTagInput, setShowTagInput] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [pinned, setPinned] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +74,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
     setShowMoodPicker(false);
     setShowTagInput(false);
     setTagInput("");
+    setPinned(false);
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -97,6 +100,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
         date: new Date().toISOString(),
         links: [],
         isPrivate: false,
+        pinned: pinned,
       }, currentSpaceId);
 
       // 2. Upload attachments if any
@@ -147,6 +151,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
     body,
     mood,
     tags,
+    pinned,
     attachments,
     onEntryCreated,
     toast,
@@ -234,14 +239,10 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] backdrop-blur-sm"
+          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
           onClick={() => setExpanded(true)}
         >
           <span>Write a journal entry...</span>
-          <span className="flex items-center gap-3 text-muted-foreground">
-            <PenLine className="h-5 w-5" />
-            <ImageIcon className="h-5 w-5" />
-          </span>
         </button>
       ) : (
         <div
@@ -273,6 +274,19 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                   {moodConfig[mood].label}
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setPinned((prev) => !prev)}
+                className={clsx(
+                  "p-2 rounded-full transition-colors",
+                  pinned
+                    ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                )}
+                aria-label={pinned ? "Unpin entry" : "Pin entry"}
+              >
+                {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+              </button>
             </div>
 
             <textarea
@@ -343,7 +357,7 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                 >
                   <ImageIcon className="h-5 w-5" />
                 </button>
-                
+
                 <div className="relative">
                   <button
                     type="button"

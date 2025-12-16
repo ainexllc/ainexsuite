@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { EntryColor } from '@ainexsuite/types';
 import { TaskSpace, Task } from '../types/models';
 import {
   createTodoSpaceInDb,
@@ -28,6 +29,11 @@ interface TodoState {
   addTask: (task: Task) => Promise<void>;
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
+
+  // Entry actions (standardized across apps)
+  toggleTaskPin: (taskId: string, pinned: boolean) => Promise<void>;
+  toggleTaskArchive: (taskId: string, archived: boolean) => Promise<void>;
+  updateTaskColor: (taskId: string, color: EntryColor) => Promise<void>;
 
   // View Preferences
   viewPreferences: Record<string, string>; // spaceId -> viewType
@@ -93,6 +99,28 @@ export const useTodoStore = create<TodoState>()(
           tasks: state.tasks.filter((t) => t.id !== taskId)
         }));
         await deleteTaskFromDb(taskId);
+      },
+
+      // Entry actions (standardized across apps)
+      toggleTaskPin: async (taskId, pinned) => {
+        set((state) => ({
+          tasks: state.tasks.map((t) => t.id === taskId ? { ...t, pinned } : t)
+        }));
+        await updateTaskInDb(taskId, { pinned });
+      },
+
+      toggleTaskArchive: async (taskId, archived) => {
+        set((state) => ({
+          tasks: state.tasks.map((t) => t.id === taskId ? { ...t, archived } : t)
+        }));
+        await updateTaskInDb(taskId, { archived });
+      },
+
+      updateTaskColor: async (taskId, color) => {
+        set((state) => ({
+          tasks: state.tasks.map((t) => t.id === taskId ? { ...t, color } : t)
+        }));
+        await updateTaskInDb(taskId, { color });
       },
 
       getCurrentSpace: () => {

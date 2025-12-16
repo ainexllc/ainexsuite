@@ -1,6 +1,7 @@
 'use client';
 
-import { Menu, Sparkles, ChevronDown, PanelTopClose, PanelTop } from 'lucide-react';
+import { Menu, ChevronDown, PanelTopClose, PanelTop } from 'lucide-react';
+import { AIVoiceIcon } from '../ai';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
@@ -250,10 +251,13 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onAiAssistantClick}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-all bg-amber-200 text-amber-700 hover:bg-amber-300 dark:bg-amber-500/20 dark:text-amber-400 dark:hover:bg-amber-500/30"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-all bg-amber-200 hover:bg-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500/30"
               aria-label="AI Assistant"
+              style={{
+                filter: 'drop-shadow(0 0 4px rgba(245, 158, 11, 0.4))',
+              }}
             >
-              <Sparkles className="h-4 w-4" />
+              <AIVoiceIcon size={18} color="#f59e0b" isAnimating={true} />
             </button>
 
             {/* Profile Sidebar Toggle */}

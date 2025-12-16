@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, SlidersHorizontal, X, Calendar, Flag } from 'lucide-react';
-import type { Priority } from '@ainexsuite/types';
+import { Search, SlidersHorizontal, X, Calendar, Flag, Palette } from 'lucide-react';
+import type { Priority, EntryColor } from '@ainexsuite/types';
+import { ENTRY_COLOR_SWATCHES } from '@ainexsuite/ui';
 import { cn } from '@/lib/utils';
 
 export type ViewFilter = 'all' | 'inbox' | 'today' | 'upcoming' | 'someday' | 'completed';
@@ -13,6 +14,7 @@ export interface TaskFilterOptions {
   priorityFilter: Priority | 'all';
   dateRange: 'all' | 'overdue' | 'today' | 'week' | 'month';
   showCompleted: boolean;
+  colors: EntryColor[];
 }
 
 interface TaskFiltersProps {
@@ -69,15 +71,25 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
       priorityFilter: 'all',
       dateRange: 'all',
       showCompleted: false,
+      colors: [],
     });
     setShowAdvancedFilters(false);
+  };
+
+  const toggleColor = (color: EntryColor) => {
+    const currentColors = filters.colors || [];
+    const newColors = currentColors.includes(color)
+      ? currentColors.filter((c) => c !== color)
+      : [...currentColors, color];
+    onFiltersChange({ ...filters, colors: newColors });
   };
 
   const hasActiveFilters =
     filters.searchQuery ||
     filters.priorityFilter !== 'all' ||
     filters.dateRange !== 'all' ||
-    filters.showCompleted;
+    filters.showCompleted ||
+    (filters.colors && filters.colors.length > 0);
 
   return (
     <div className="space-y-4">
@@ -122,6 +134,7 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
                 filters.priorityFilter !== 'all',
                 filters.dateRange !== 'all',
                 filters.showCompleted,
+                filters.colors && filters.colors.length > 0,
               ].filter(Boolean).length}
             </span>
           )}
@@ -207,8 +220,41 @@ export function TaskFilters({ filters, onFiltersChange, taskCounts }: TaskFilter
             </div>
           </div>
 
+          {/* Color Filter */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              Colors
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {ENTRY_COLOR_SWATCHES.map((color) => {
+                const isSelected = filters.colors?.includes(color.value);
+                return (
+                  <button
+                    key={color.value}
+                    onClick={() => toggleColor(color.value)}
+                    title={color.label}
+                    className={cn(
+                      'w-8 h-8 rounded-full transition-all border-2',
+                      color.className,
+                      isSelected
+                        ? 'border-accent-500 ring-2 ring-accent-500/30'
+                        : 'border-transparent hover:border-accent-500/50'
+                    )}
+                  >
+                    {isSelected && (
+                      <svg className="w-4 h-4 mx-auto text-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Show Completed Toggle */}
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-2 md:col-span-2">
             <input
               type="checkbox"
               id="show-completed"

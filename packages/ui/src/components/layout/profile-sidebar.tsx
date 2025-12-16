@@ -10,10 +10,12 @@ import {
   Monitor,
   Bell,
   CreditCard,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@ainexsuite/theme';
 import { useSystemUpdates } from '../../hooks/use-system-updates';
 import { clsx } from 'clsx';
 
@@ -54,12 +56,36 @@ export function ProfileSidebar({
   onThemeChange,
 }: ProfileSidebarProps) {
   const { updates, loading: updatesLoading } = useSystemUpdates();
-  const { theme: systemTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  // Use user preference if available, otherwise system theme state
-  // We explicitly check user.preferences?.theme because user type might not strictly match
-  // properly in all usages yet, though it should.
-  const currentTheme = (user as any).preferences?.theme || systemTheme;
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use next-themes as the source of truth for the UI
+  // Fallback to user pref or system only if not mounted yet (rare but safe)
+  // Use local state for instant feedback (Optimistic UI)
+  // This prevents any "lag" waiting for context updates or storage writes
+  const [optimisticTheme, setOptimisticTheme] = useState<string>('system');
+
+  // Sync local state with global theme when it changes externally (or initializes)
+  // Note: We don't include `user` in dependencies to avoid stale preferences overriding optimistic state
+  useEffect(() => {
+    if (mounted && theme) {
+      setOptimisticTheme(theme);
+    }
+  }, [theme, mounted]);
+
+  const activeTheme = optimisticTheme;
+
+  console.log('[ProfileSidebar] Render:', {
+    mounted,
+    theme,
+    optimisticTheme,
+    activeTheme
+  });
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -159,9 +185,9 @@ export function ProfileSidebar({
             <div className="space-y-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Appearance</h4>
               <div className="flex items-center gap-3 text-muted-foreground mb-2">
-                {currentTheme === 'dark' ? (
+                {activeTheme === 'dark' ? (
                   <Moon className="h-4 w-4" />
-                ) : currentTheme === 'system' ? (
+                ) : activeTheme === 'system' ? (
                   <Monitor className="h-4 w-4" />
                 ) : (
                   <Sun className="h-4 w-4" />
@@ -174,16 +200,20 @@ export function ProfileSidebar({
                     key={mode}
                     type="button"
                     onClick={() => {
-                      // Always update UI immediately
+                      // Optimistic interface update - instant feedback
+                      setOptimisticTheme(mode);
+
+                      // Actual theme update
                       setTheme(mode);
-                      // Also persist to backend if handler provided
+
+                      // Also persist to backend if handler provided (legacy, now handled by hook)
                       onThemeChange?.(mode);
                     }}
                     className={clsx(
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all",
-                      currentTheme === mode
-                        ? "bg-foreground/20 text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
+                      activeTheme === mode
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                     )}
                     aria-label={`Set ${mode} theme`}
                   >

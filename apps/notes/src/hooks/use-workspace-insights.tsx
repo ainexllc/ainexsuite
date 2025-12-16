@@ -1,16 +1,6 @@
 "use client";
 
-import { useMemo, createElement } from "react";
-import {
-  Target,
-  Zap,
-  Flame,
-  BarChart3,
-  Heart,
-  Network,
-  Brain,
-  Lightbulb,
-} from "lucide-react";
+import { useMemo } from "react";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAppColors } from "@ainexsuite/theme";
@@ -116,6 +106,7 @@ function getMoodDisplay(mood: string): string {
 
 /**
  * Build insight sections from API data
+ * Uses animated AI icons for the expanded pulldown display
  */
 function buildNoteSections(
   data: NotesInsightData,
@@ -125,20 +116,20 @@ function buildNoteSections(
   const allSections: AIInsightsPulldownSection[] = [];
   const streakData = localStats as StreakData | undefined;
 
-  // 1. Current Focus (productivity)
+  // 1. Current Focus (productivity) - Target icon
   if (data.weeklyFocus) {
     allSections.push({
-      icon: createElement(Target, { className: "h-4 w-4" }),
+      animatedIconType: "Target",
       label: "Current Focus",
       content: data.weeklyFocus,
       gradient: { from: primaryColor, to: "#f97316" },
     });
   }
 
-  // 2. Writing Streak (engagement) - client-side calculated
+  // 2. Writing Streak (engagement) - Sparkle icon
   if (streakData && (streakData.streakDays > 0 || streakData.notesThisWeek > 0)) {
     allSections.push({
-      icon: createElement(Flame, { className: "h-4 w-4" }),
+      animatedIconType: "Sparkle",
       label: "Writing Streak",
       content:
         streakData.streakDays > 0
@@ -148,17 +139,17 @@ function buildNoteSections(
     });
   }
 
-  // 3. Mood / Energy (wellness)
+  // 3. Mood / Energy (wellness) - Brain icon
   if (data.mood) {
     allSections.push({
-      icon: createElement(Heart, { className: "h-4 w-4" }),
+      animatedIconType: "Brain",
       label: "Energy & Mood",
       content: getMoodDisplay(data.mood),
       gradient: { from: primaryColor, to: "#ec4899" },
     });
   }
 
-  // 4. Pending Actions (tasks)
+  // 4. Pending Actions (tasks) - MagicWand icon
   if (data.pendingActions && data.pendingActions.length > 0) {
     const actionsToShow = data.pendingActions.slice(0, 2);
     const actionText =
@@ -167,53 +158,53 @@ function buildNoteSections(
         ? ` (+${data.pendingActions.length - actionsToShow.length} more)`
         : "");
     allSections.push({
-      icon: createElement(Zap, { className: "h-4 w-4" }),
+      animatedIconType: "MagicWand",
       label: "Pending Actions",
       content: actionText,
       gradient: { from: primaryColor, to: "#ef4444" },
     });
   }
 
-  // 5. Top Categories (analytics)
+  // 5. Top Categories (analytics) - Analytics icon
   if (data.topCategories && data.topCategories.length > 0) {
     const categoryText = data.topCategories
       .slice(0, 3)
       .map((c) => `${c.name} (${c.count})`)
       .join(", ");
     allSections.push({
-      icon: createElement(BarChart3, { className: "h-4 w-4" }),
+      animatedIconType: "Analytics",
       label: "Top Categories",
       content: `Most active: ${categoryText}`,
       gradient: { from: primaryColor, to: "#8b5cf6" },
     });
   }
 
-  // 6. Connections (organization)
+  // 6. Connections (organization) - NeuralNetwork icon
   if (data.connections && data.connections.length > 0) {
     const conn = data.connections[0];
     allSections.push({
-      icon: createElement(Network, { className: "h-4 w-4" }),
+      animatedIconType: "NeuralNetwork",
       label: "Connections",
       content: `${conn.noteCount} notes mention "${conn.topic}" - consider linking them`,
       gradient: { from: primaryColor, to: "#06b6d4" },
     });
   }
 
-  // 7. Learning Topics (growth)
+  // 7. Learning Topics (growth) - Robot icon
   if (data.learningTopics && data.learningTopics.length > 0) {
     const topics = data.learningTopics.slice(0, 3).join(", ");
     allSections.push({
-      icon: createElement(Brain, { className: "h-4 w-4" }),
-      label: "Learning",
+      animatedIconType: "Robot",
+      label: "Exploring",
       content: `You're exploring: ${topics}`,
       gradient: { from: primaryColor, to: "#10b981" },
     });
   }
 
-  // 8. Quick Tip (actionable)
+  // 8. Quick Tip (actionable) - Lightbulb icon
   if (data.quickTip) {
     allSections.push({
-      icon: createElement(Lightbulb, { className: "h-4 w-4" }),
+      animatedIconType: "Lightbulb",
       label: "Quick Tip",
       content: data.quickTip,
       gradient: { from: primaryColor, to: "#f59e0b" },

@@ -91,7 +91,11 @@ export async function createJournalEntry(
 // Update an existing journal entry
 export async function updateJournalEntry(
   entryId: string,
-  data: Partial<JournalEntryFormData> & { attachments?: JournalEntry['attachments'] }
+  data: Partial<JournalEntryFormData> & {
+    attachments?: JournalEntry['attachments'];
+    archived?: boolean;
+    color?: JournalEntry['color'];
+  }
 ): Promise<void> {
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
   const sanitizedData = { ...data };
@@ -335,4 +339,50 @@ export async function getJournalStats(userId: string) {
     tagCounts,
     entriesByMonth
   };
+}
+
+// Toggle pin status of an entry
+export async function toggleEntryPin(entryId: string, pinned: boolean): Promise<void> {
+  const docRef = doc(db, JOURNALS_COLLECTION, entryId);
+  await updateDoc(docRef, {
+    pinned,
+    updatedAt: Date.now()
+  });
+}
+
+// Toggle archive status of an entry
+export async function toggleEntryArchive(entryId: string, archived: boolean): Promise<void> {
+  const docRef = doc(db, JOURNALS_COLLECTION, entryId);
+  await updateDoc(docRef, {
+    archived,
+    updatedAt: Date.now()
+  });
+
+  // Log activity (only for archiving, not unarchiving)
+  if (archived) {
+    try {
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        await createActivity({
+          app: 'journey',
+          action: 'archived',
+          itemType: 'entry',
+          itemId: entryId,
+          itemTitle: data.title || 'Journal Entry',
+        });
+      }
+    } catch {
+      // Ignore activity logging error
+    }
+  }
+}
+
+// Update entry color
+export async function updateEntryColor(entryId: string, color: string): Promise<void> {
+  const docRef = doc(db, JOURNALS_COLLECTION, entryId);
+  await updateDoc(docRef, {
+    color,
+    updatedAt: Date.now()
+  });
 }

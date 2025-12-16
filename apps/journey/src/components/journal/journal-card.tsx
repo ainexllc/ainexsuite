@@ -1,46 +1,56 @@
-import { JournalEntry } from '@ainexsuite/types';
-import { formatDate, formatRelativeTime } from '@/lib/utils/date';
-import { getMoodIcon, getMoodLabel } from '@/lib/utils/mood';
-import { cn } from '@/lib/utils';
-import { deleteJournalEntry } from '@/lib/firebase/firestore';
-import { deleteAllEntryFiles } from '@/lib/firebase/storage';
-import { useToast } from '@ainexsuite/ui';
-import { useRouter } from 'next/navigation';
-import { Paperclip, Trash2, Edit, Link as LinkIcon, Lock, Unlock } from 'lucide-react';
+"use client";
+
 import { useState } from 'react';
-import { usePrivacy } from '@/contexts/privacy-context';
-import { BlurredContent } from '@/components/privacy/blurred-content';
-import { PasscodeModal } from '@/components/privacy/passcode-modal';
-import { format } from 'date-fns';
-import { DashboardTheme } from '@/lib/dashboard-themes';
+import { clsx } from 'clsx';
+import type { JournalEntry, EntryColor } from '@ainexsuite/types';
+import { getMoodIcon, getMoodLabel } from '@/lib/utils/mood';
+import { deleteJournalEntry, toggleEntryPin, toggleEntryArchive, updateEntryColor } from '@/lib/firebase/firestore';
+import { deleteAllEntryFiles } from '@/lib/firebase/storage';
+import { useToast, ConfirmationDialog, ENTRY_COLORS } from '@ainexsuite/ui';
+import { useRouter } from 'next/navigation';
+import {
+  Paperclip,
+  Trash2,
+  Link as LinkIcon,
+  Lock,
+  Unlock,
+  Pin,
+  Archive,
+  Palette,
+} from 'lucide-react';
+import { usePrivacy, BlurredContent, PasscodeModal } from '@ainexsuite/privacy';
+import { JournalEntryEditor } from './journal-entry-editor';
 
 interface JournalCardProps {
   entry: JournalEntry;
   onUpdate: () => void;
-  theme?: DashboardTheme;
 }
 
-export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
+export function JournalCard({ entry, onUpdate }: JournalCardProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<'view' | 'edit' | null>(null);
   const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode } = usePrivacy();
 
-  // Fallbacks
-  const textPrimary = theme?.textPrimary || 'text-white';
-  const textSecondary = theme?.textSecondary || 'text-white/70';
-  const accentText = theme?.accent || 'text-[#f97316]';
-  const accentBg = theme?.accentBg || 'bg-[#f97316]';
-  const bgSurface = theme?.bgSurface || 'bg-zinc-800/95';
-  const borderClass = theme?.border || 'border-white/10';
-  
-  // Private entries logic...
+  // Private entries logic
   const isLocked = entry.isPrivate && hasPasscode && !isUnlocked;
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this entry?')) return;
+  // Get color configuration
+  const entryColorConfig = ENTRY_COLORS.find((c) => c.id === (entry.color || 'default'));
+  const cardClass = entryColorConfig?.cardClass || 'bg-zinc-50 dark:bg-zinc-900';
+
+  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (isDeleting) return;
 
     setIsDeleting(true);
     try {
@@ -48,13 +58,14 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
         await deleteAllEntryFiles(entry.ownerId, entry.id);
       }
       await deleteJournalEntry(entry.id);
+      setShowDeleteConfirm(false);
       toast({
         title: 'Entry deleted',
-        description: 'Your journal entry has been deleted.',
+        description: 'Your journal entry has been moved to trash.',
         variant: 'success',
       });
       onUpdate();
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to delete entry',
@@ -65,12 +76,48 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
     }
   };
 
-  const handleEdit = () => {
+  const handleCancelDelete = () => {
+    if (isDeleting) return;
+    setShowDeleteConfirm(false);
+  };
+
+  const handlePin = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    await toggleEntryPin(entry.id, !entry.pinned);
+    onUpdate();
+  };
+
+  const handleArchive = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    await toggleEntryArchive(entry.id, !entry.archived);
+    onUpdate();
+  };
+
+  const handleOpenPalette = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setShowPalette((prev) => !prev);
+  };
+
+  const handleColorSelect = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    color: EntryColor,
+  ) => {
+    event.stopPropagation();
+    if (color === entry.color) {
+      setShowPalette(false);
+      return;
+    }
+    await updateEntryColor(entry.id, color);
+    setShowPalette(false);
+    onUpdate();
+  };
+
+  const handleCardClick = () => {
     if (isLocked) {
       setPendingAction('edit');
       setShowPasscodeModal(true);
     } else {
-      router.push(`/workspace/${entry.id}`);
+      setIsEditing(true);
     }
   };
 
@@ -98,14 +145,14 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
         setShowPasscodeModal(false);
         setTimeout(() => {
           if (pendingAction === 'edit') {
-            router.push(`/workspace/${entry.id}`);
+            setIsEditing(true);
           } else if (pendingAction === 'view') {
             router.push(`/workspace/${entry.id}/view`);
           }
           setPendingAction(null);
         }, 100);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to process passcode. Please try again.',
@@ -142,128 +189,223 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
   };
 
   return (
-    <div className={cn("relative group overflow-hidden transition-all duration-300", 
-        theme ? cn(theme.panel, theme.radius, theme.border, theme.shadow, theme.bgHover) : "bg-white/5 backdrop-blur-sm rounded-xl border border-white/10"
-    )}>
-      {/* Action buttons overlay */}
-      <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleEdit();
-          }}
-          className={cn("p-2.5 text-white rounded-lg shadow-lg transform hover:scale-110 transition-all duration-200", accentBg)}
-          disabled={isDeleting}
-          aria-label="Edit entry"
-        >
-          <Edit className="w-4 h-4" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDelete();
-          }}
-          className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200"
-          disabled={isDeleting}
-          aria-label="Delete entry"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
+    <>
+      <article
+        className={clsx(
+          cardClass,
+          'border border-zinc-200 dark:border-zinc-800',
+          'group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200',
+          'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md',
+          'break-inside-avoid px-6 py-6',
+        )}
+        onClick={handleCardClick}
+      >
+        {/* Corner Pin Badge - clickable to unpin */}
+        {entry.pinned && (
+          <button
+            type="button"
+            onClick={handlePin}
+            className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
+            aria-label="Unpin entry"
+          >
+            <div className="absolute top-0 right-0 bg-amber-500 group-hover/pin:bg-amber-600 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-colors" />
+            <Pin className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
+          </button>
+        )}
 
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-                {entry.isPrivate && (
-                <div className="flex items-center" title={
-                    !hasPasscode ? "Private entry (no passcode set)" :
-                    isLocked ? "Private entry (locked)" :
-                    "Private entry (unlocked)"
-                }>
-                    {!hasPasscode ? (
-                    <Lock className="w-4 h-4 text-amber-500" />
-                    ) : isLocked ? (
-                    <Lock className="w-4 h-4 text-red-500" />
-                    ) : (
-                    <Unlock className="w-4 h-4 text-green-500" />
-                    )}
+        <div className="relative z-10 w-full">
+          {/* Pin button - only shows on unpinned entries */}
+          {!entry.pinned && (
+            <button
+              type="button"
+              onClick={handlePin}
+              className="absolute right-2 top-2 z-20 hidden rounded-full p-2 transition group-hover:flex bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
+              aria-label="Pin entry"
+            >
+              <Pin className="h-4 w-4" />
+            </button>
+          )}
+
+          <div
+            className="overflow-y-auto pr-1 max-h-[480px]"
+            onScroll={() => {
+              if (showPalette) {
+                setShowPalette(false);
+              }
+            }}
+          >
+            {/* Header with badges */}
+            <div className="mb-3 flex items-center gap-2 flex-wrap pr-8">
+              {entry.isPrivate && (
+                <div
+                  className="flex items-center"
+                  title={
+                    !hasPasscode
+                      ? 'Private entry (no passcode set)'
+                      : isLocked
+                        ? 'Private entry (locked)'
+                        : 'Private entry (unlocked)'
+                  }
+                >
+                  {!hasPasscode ? (
+                    <Lock className="h-4 w-4 text-amber-500" />
+                  ) : isLocked ? (
+                    <Lock className="h-4 w-4 text-red-500" />
+                  ) : (
+                    <Unlock className="h-4 w-4 text-green-500" />
+                  )}
                 </div>
-                )}
-                {entry.isDraft && (
-                <span className={cn("rounded-full border border-dashed px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide", borderClass, accentText)}>
-                    Draft
+              )}
+              {entry.isDraft && (
+                <span className="rounded-full border border-dashed border-border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                  Draft
                 </span>
-                )}
-                <h3 className={cn("font-semibold text-lg line-clamp-1 pr-20", textPrimary)}>
+              )}
+            </div>
+
+            {/* Title */}
+            {entry.title && (
+              <h3 className="pr-8 text-[17px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-[-0.02em]">
                 {entry.title}
-                </h3>
-            </div>
-            <DateBadge createdAt={entry.createdAt} theme={theme} />
-            </div>
-        </div>
+              </h3>
+            )}
 
-        <BlurredContent isLocked={isLocked} onClick={handleView} className="min-h-[70px] mb-4">
-            <p className={cn("line-clamp-3", textSecondary)}>
-            {truncateContent(entry.content)}
-            </p>
-        </BlurredContent>
+            {/* Content */}
+            <BlurredContent isLocked={isLocked} onClick={handleView} className="mt-3">
+              <p className="whitespace-pre-wrap text-[15px] text-zinc-600 dark:text-zinc-400 leading-7 tracking-[-0.01em] line-clamp-4">
+                {truncateContent(entry.content, 200)}
+              </p>
+            </BlurredContent>
 
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-wrap">
-            {entry.mood && (() => {
+            {/* Mood and Tags */}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {entry.mood && (() => {
                 const Icon = getMoodIcon(entry.mood);
                 return (
-                <span className={cn("inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium", bgSurface, textPrimary)}>
-                    <Icon className="h-4 w-4" />
-                    {getMoodLabel(entry.mood)}
-                </span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                    <Icon className="h-3.5 w-3.5" />
+                    <span>{getMoodLabel(entry.mood)}</span>
+                  </span>
                 );
-            })()}
+              })()}
 
-            {entry.tags && entry.tags.slice(0, 3).map((tag) => (
+              {entry.tags?.slice(0, 3).map((tag) => (
                 <span
-                key={tag}
-                className={cn("px-2 py-1 rounded-full text-xs", bgSurface, textPrimary)}
+                  key={tag}
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                 >
-                {tag}
+                  {tag}
                 </span>
-            ))}
+              ))}
 
-            {entry.tags && entry.tags.length > 3 && (
-                <span className={cn("text-xs", textSecondary)}>
-                +{entry.tags.length - 3} more
+              {entry.tags && entry.tags.length > 3 && (
+                <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                  +{entry.tags.length - 3} more
                 </span>
-            )}
+              )}
+            </div>
+          </div>
+
+          {/* Footer with actions */}
+          <footer className="mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              {/* Attachments indicator */}
+              {entry.attachments && entry.attachments.length > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
+                  <Paperclip className="h-3 w-3" />
+                  {entry.attachments.length}
+                </span>
+              )}
+              {/* Links indicator */}
+              {entry.links && entry.links.length > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
+                  <LinkIcon className="h-3 w-3" />
+                  {entry.links.length}
+                </span>
+              )}
+              <span>
+                {(entry.updatedAt && entry.updatedAt !== entry.createdAt ? new Date(entry.updatedAt) : new Date(entry.createdAt)).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </span>
             </div>
 
-            <div className="flex items-center gap-3">
-            {entry.attachments && entry.attachments.length > 0 && (
-                <div className={cn("flex items-center gap-1", textSecondary)}>
-                <Paperclip className="w-4 h-4" />
-                <span className="text-xs">{entry.attachments.length}</span>
-                </div>
-            )}
+            {/* Action buttons */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleArchive}
+                className="h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
+                aria-label={entry.archived ? 'Unarchive entry' : 'Archive entry'}
+              >
+                <Archive className="h-3.5 w-3.5" />
+              </button>
 
-            {entry.links && entry.links.length > 0 && (
-                <div className={cn("flex items-center gap-1", accentText)}>
-                <LinkIcon className="w-4 h-4" />
-                <span className="text-xs">{entry.links.length}</span>
-                </div>
-            )}
+              {/* Color picker */}
+              <div className="relative flex items-center">
+                <button
+                  type="button"
+                  onClick={handleOpenPalette}
+                  className={clsx(
+                    'h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200',
+                    showPalette && 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200',
+                  )}
+                  aria-label="Change color"
+                >
+                  <Palette className="h-3.5 w-3.5" />
+                </button>
+                {showPalette && (
+                  <div
+                    className="absolute bottom-10 right-0 z-30 flex gap-2 rounded-2xl bg-background/95 p-3 shadow-2xl backdrop-blur-xl border border-border"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    {ENTRY_COLORS.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={clsx(
+                          'h-6 w-6 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500',
+                          option.swatchClass,
+                          option.id === (entry.color || 'default') && 'ring-2 ring-foreground',
+                        )}
+                        onClick={(event) => handleColorSelect(event, option.id)}
+                        aria-label={`Set color ${option.label}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                className="h-7 w-7 rounded-full flex items-center justify-center transition text-red-400 hover:bg-red-500/20 hover:text-red-500"
+                aria-label="Delete entry"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
+          </footer>
         </div>
-      </div>
+      </article>
 
-      {!isLocked && (
-        <button
-          onClick={handleView}
-          className="absolute inset-0 z-10"
-          aria-label="View entry"
-        >
-          <span className="sr-only">View entry</span>
-        </button>
+      {/* Modals */}
+      {isEditing && (
+        <JournalEntryEditor
+          entry={entry}
+          onClose={() => setIsEditing(false)}
+          onSaved={onUpdate}
+        />
       )}
+
+      <ConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete this entry?"
+        description="This will permanently delete your journal entry. This action cannot be undone."
+        confirmText="Delete entry"
+        cancelText="Keep entry"
+        variant="danger"
+      />
 
       <PasscodeModal
         isOpen={showPasscodeModal}
@@ -275,42 +417,6 @@ export function JournalCard({ entry, onUpdate, theme }: JournalCardProps) {
         mode={hasPasscode ? 'verify' : 'setup'}
         title={hasPasscode ? 'Unlock Private Entries' : 'Set Privacy Passcode'}
       />
-    </div>
-  );
-}
-
-function DateBadge({ createdAt, theme }: { createdAt: Date | string | number, theme?: DashboardTheme }) {
-  const date = typeof createdAt === 'string'
-    ? new Date(createdAt)
-    : typeof createdAt === 'number'
-    ? new Date(createdAt)
-    : createdAt;
-  const month = format(date, 'MMM');
-  const day = format(date, 'dd');
-  const time = format(date, 'p');
-  
-  const accentText = theme?.accent || 'text-[#f97316]';
-  const textPrimary = theme?.textPrimary || 'text-white';
-  const textSecondary = theme?.textSecondary || 'text-white/60';
-  const bgSurface = theme?.bgSurface || 'bg-white/5';
-  const borderClass = theme?.border || 'border-white/10';
-
-  return (
-    <div className={cn("flex items-center gap-3 text-sm", textSecondary)}>
-      <div className={cn("flex h-12 w-12 flex-col items-center justify-center rounded-xl border shadow-sm", borderClass, bgSurface)}>
-        <span className={cn("text-[10px] font-semibold uppercase tracking-wide", accentText)}>
-          {month}
-        </span>
-        <span className={cn("text-lg font-bold", textPrimary)}>{day}</span>
-      </div>
-      <div className="flex flex-col leading-tight">
-        <span className={cn("text-sm font-medium", textPrimary)}>{formatDate(date)}</span>
-        <span className={cn("text-xs flex items-center gap-1", textSecondary)}>
-          <span>{time}</span>
-          <span>•</span>
-          <span>{formatRelativeTime(date)}</span>
-        </span>
-      </div>
-    </div>
+    </>
   );
 }

@@ -22,7 +22,7 @@ interface WorkspaceLayoutProps {
    */
   children: ReactNode;
   /**
-   * User object for the profile dropdown
+   * User object for the profile sidebar
    */
   user: {
     uid?: string;
@@ -171,6 +171,10 @@ interface WorkspaceLayoutProps {
    */
   insightsDefaultExpanded?: boolean;
   /**
+   * Callback when "View Details" is clicked in AI insights
+   */
+  onInsightsViewDetails?: () => void;
+  /**
    * Callback to update user preferences (e.g. theme)
    */
   onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
@@ -210,6 +214,7 @@ export function WorkspaceLayout({
   insightsRefreshDisabled,
   insightsStorageKey,
   insightsDefaultExpanded,
+  onInsightsViewDetails,
   onUpdatePreferences,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -314,7 +319,7 @@ export function WorkspaceLayout({
         />
       )}
 
-      {/* Profile Sidebar */}
+      {/* Profile Sidebar - slide-in panel from the right */}
       <ProfileSidebar
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
@@ -363,6 +368,7 @@ export function WorkspaceLayout({
             storageKey={insightsStorageKey || `${appName || 'app'}-ai-insights-expanded`}
             defaultExpanded={insightsDefaultExpanded}
             onExpandedChange={setIsInsightsExpanded}
+            onViewDetails={onInsightsViewDetails}
           />
         </div>
       )}

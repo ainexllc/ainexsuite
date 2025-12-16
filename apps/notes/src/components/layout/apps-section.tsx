@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import {
   Home,
-  FileText,
   BookOpen,
   CheckSquare,
   Camera,
@@ -12,12 +11,17 @@ import {
   Dumbbell,
 } from "lucide-react";
 import { clsx } from "clsx";
-import { NavigationSection } from "@ainexsuite/ui";
+import { NavigationSection, NotesStickyIcon } from "@ainexsuite/ui";
 import { navigateToApp, getCurrentAppSlug } from "@ainexsuite/ui";
+
+// Wrapper to make animated icon compatible with lucide-style rendering
+const NotesAnimatedIcon = ({ className }: { className?: string }) => (
+  <NotesStickyIcon size={16} color="currentColor" isAnimating={true} className={className} />
+);
 
 const apps = [
   { slug: 'main', icon: Home, label: 'Dashboard' },
-  { slug: 'notes', icon: FileText, label: 'Notes' },
+  { slug: 'notes', icon: NotesAnimatedIcon, label: 'Notes' },
   { slug: 'journey', icon: BookOpen, label: 'Journey' },
   { slug: 'todo', icon: CheckSquare, label: 'Tasks' },
   { slug: 'health', icon: ActivityIcon, label: 'Health' },

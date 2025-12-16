@@ -3,7 +3,8 @@
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLayoutWithInsights } from '@/components/layouts';
 import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 
@@ -51,10 +52,9 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <WorkspaceLayout
+    <WorkspaceLayoutWithInsights
       user={user}
       onSignOut={handleSignOut}
-      appName="Task"
       quickActions={quickActions}
       onQuickAction={handleQuickAction}
       onAiAssistantClick={handleAiAssistantClick}
@@ -63,6 +63,6 @@ export default function WorkspaceRootLayout({
     >
       <TodoFirestoreSync />
       {children}
-    </WorkspaceLayout>
+    </WorkspaceLayoutWithInsights>
   );
 }

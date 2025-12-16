@@ -2,6 +2,76 @@
 
 import { X, Home } from 'lucide-react';
 import { navigateToApp, getCurrentAppSlug } from '../../utils/cross-app-navigation';
+import { NotesStickyIcon, AdminControlsIcon, CalendarWeekIcon, ProjectsTimelineIcon, FitCaloriesIcon, HealthActivityIcon, TodoTargetIcon, GrowHabitIcon, MomentsCameraIcon, JourneyJournalIcon, WorkflowProcessIcon, PulseAmbientIcon } from '../ai';
+
+// Map hex colors (from app config) to their light variants
+const HEX_COLOR_MAP: Record<string, string> = {
+  '#eab308': '#fbbf24', // yellow
+  '#f97316': '#fb923c', // orange
+  '#ef4444': '#f87171', // red
+  '#ec4899': '#f472b6', // pink
+  '#f43f5e': '#fb7185', // rose
+  '#a855f7': '#c084fc', // purple
+  '#8b5cf6': '#a78bfa', // violet
+  '#6366f1': '#818cf8', // indigo
+  '#3b82f6': '#60a5fa', // blue
+  '#0ea5e9': '#38bdf8', // sky
+  '#06b6d4': '#22d3ee', // cyan
+  '#14b8a6': '#2dd4bf', // teal
+  '#10b981': '#34d399', // emerald
+  '#22c55e': '#4ade80', // green
+  '#71717a': '#a1a1aa', // zinc
+  '#64748b': '#94a3b8', // slate
+};
+
+// Default color (blue)
+const DEFAULT_COLOR = '#3b82f6';
+const DEFAULT_LIGHT = '#60a5fa';
+
+// Get color pair from hex color
+const getColorPair = (hexColor: string | undefined): { base: string; light: string } => {
+  const base = hexColor || DEFAULT_COLOR;
+  const light = HEX_COLOR_MAP[base] || DEFAULT_LIGHT;
+  return { base, light };
+};
+
+// Get icon color based on active state
+const getIconColor = (hexColor: string | undefined, isActive: boolean): string => {
+  const { base, light } = getColorPair(hexColor);
+  return isActive ? light : base;
+};
+
+// Map app slugs to their animated icons
+const ANIMATED_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string; isAnimating?: boolean }>> = {
+  notes: NotesStickyIcon,
+  admin: AdminControlsIcon,
+  calendar: CalendarWeekIcon,
+  project: ProjectsTimelineIcon,
+  fit: FitCaloriesIcon,
+  health: HealthActivityIcon,
+  todo: TodoTargetIcon,
+  grow: GrowHabitIcon,
+  moments: MomentsCameraIcon,
+  journey: JourneyJournalIcon,
+  workflow: WorkflowProcessIcon,
+  pulse: PulseAmbientIcon,
+};
+
+// App subtitles
+const APP_SUBTITLES: Record<string, string> = {
+  notes: 'Quick capture',
+  admin: 'System controls',
+  calendar: 'Week at a glance',
+  project: 'Track progress',
+  fit: 'Burn calories',
+  health: 'Track wellness',
+  todo: 'Hit your goals',
+  grow: 'Build habits',
+  moments: 'Capture memories',
+  journey: 'Daily reflections',
+  workflow: 'Automate tasks',
+  pulse: 'Ambient display',
+};
 
 export interface AppNavigationSidebarProps {
   isOpen: boolean;
@@ -85,6 +155,86 @@ export function AppNavigationSidebar({
               {apps.map((app) => {
                 const IconComponent = app.icon;
                 const isCurrentApp = app.slug === currentAppSlug;
+                const AnimatedIcon = ANIMATED_ICONS[app.slug];
+                const subtitle = APP_SUBTITLES[app.slug];
+                const colors = getColorPair(app.color);
+                const iconColor = isCurrentApp ? colors.light : colors.base;
+
+                // Enhanced app link with animated icon (if available)
+                if (AnimatedIcon) {
+                  return (
+                    <button
+                      key={app.slug}
+                      type="button"
+                      onClick={() => handleAppNavigation(app.slug)}
+                      disabled={isCurrentApp}
+                      className="group relative rounded-xl p-2 transition-all duration-300 hover:translate-x-1 overflow-hidden disabled:cursor-default disabled:opacity-75 w-full text-left"
+                      style={{
+                        '--app-color': colors.base,
+                        '--app-color-light': colors.light,
+                      } as React.CSSProperties}
+                    >
+                      {/* Animated gradient background using inline styles */}
+                      <div
+                        className="absolute inset-0 rounded-xl transition-all duration-500"
+                        style={{
+                          background: isCurrentApp
+                            ? `linear-gradient(to bottom right, ${colors.base}4d, ${colors.light}33)`
+                            : `linear-gradient(to bottom right, ${colors.base}1a, ${colors.light}0d)`,
+                        }}
+                      />
+                      <div
+                        className="absolute inset-0 rounded-xl transition-all duration-300 group-hover:opacity-100"
+                        style={{
+                          background: !isCurrentApp ? `linear-gradient(to bottom right, ${colors.base}40, ${colors.light}26)` : 'transparent',
+                          opacity: 0,
+                        }}
+                      />
+                      <div
+                        className="absolute inset-0 rounded-xl border transition-all duration-300"
+                        style={{
+                          borderColor: isCurrentApp ? `${colors.light}80` : `${colors.base}33`,
+                        }}
+                      />
+
+                      {/* Content wrapper */}
+                      <div className="relative z-10 flex items-center gap-3">
+                        {/* Large animated icon container */}
+                        <div
+                          className="relative flex h-12 w-12 items-center justify-center rounded-lg transition-all duration-300"
+                          style={{
+                            backgroundColor: isCurrentApp ? `${colors.light}33` : `${colors.base}1a`,
+                          }}
+                        >
+                          <AnimatedIcon
+                            size={32}
+                            color={iconColor}
+                            isAnimating={true}
+                          />
+                        </div>
+
+                        {/* Text content */}
+                        <div className="flex flex-col min-w-0">
+                          <span
+                            className="text-sm font-semibold transition-colors duration-300"
+                            style={{
+                              color: isCurrentApp ? colors.light : 'var(--foreground)',
+                            }}
+                          >
+                            {app.name}
+                          </span>
+                          {subtitle && (
+                            <span className="text-[10px] text-muted-foreground truncate">
+                              {subtitle}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                }
+
+                // Standard app links (fallback for apps without animated icons)
                 return (
                   <button
                     key={app.slug}
@@ -93,9 +243,9 @@ export function AppNavigationSidebar({
                     disabled={isCurrentApp}
                     className="group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 overflow-hidden disabled:cursor-default disabled:opacity-75 w-full text-left"
                     style={{
-                      '--accent': app.color,
-                      '--accent-dim': `${app.color}1a`, // 10% opacity
-                      '--accent-glow': `${app.color}40`, // 25% opacity
+                      '--accent': colors.base,
+                      '--accent-dim': `${colors.base}1a`,
+                      '--accent-glow': `${colors.base}40`,
                     } as React.CSSProperties}
                   >
                     {/* Background & Border Effects */}
@@ -103,8 +253,8 @@ export function AppNavigationSidebar({
 
                     {/* Icon Container */}
                     <div
-                      className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300 flex-shrink-0 ${isCurrentApp ? 'bg-[var(--accent)] border-[var(--accent)] text-background' : 'bg-background/40 border-border group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-background'}`}
-                      style={{ color: isCurrentApp ? undefined : app.color }}
+                      className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300 flex-shrink-0 overflow-hidden ${isCurrentApp ? 'bg-[var(--accent)] border-[var(--accent)] text-background' : 'bg-background/40 border-border group-hover:bg-[var(--accent)] group-hover:border-[var(--accent)] group-hover:text-background'}`}
+                      style={{ color: isCurrentApp ? undefined : colors.base }}
                     >
                       <IconComponent className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
                     </div>

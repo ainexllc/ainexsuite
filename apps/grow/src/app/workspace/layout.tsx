@@ -1,8 +1,10 @@
 'use client';
 
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { NotificationToast } from '@/components/gamification/NotificationToast';
+import { FirestoreSync } from '@/components/FirestoreSync';
 
 export default function WorkspaceRootLayout({
   children,
@@ -26,15 +28,16 @@ export default function WorkspaceRootLayout({
 
   return (
     <SuiteGuard appName="grow">
-      <WorkspaceLayout
+      {/* Sync Firestore data to Zustand store */}
+      <FirestoreSync />
+      <WorkspaceLayoutWithInsights
         user={user}
         onSignOut={handleSignOut}
-        appName="Grow"
         onUpdatePreferences={updatePreferences}
       >
         <NotificationToast />
         {children}
-      </WorkspaceLayout>
+      </WorkspaceLayoutWithInsights>
     </SuiteGuard>
   );
 }

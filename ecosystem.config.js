@@ -1,8 +1,33 @@
+// Load environment variables from .env.local
+const fs = require('fs');
+const path = require('path');
+
+function loadEnvFile() {
+  const envPath = path.join(__dirname, '.env.local');
+  const env = {};
+
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, 'utf-8');
+    content.split('\n').forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        if (key && valueParts.length > 0) {
+          env[key.trim()] = valueParts.join('=').trim();
+        }
+      }
+    });
+  }
+
+  return env;
+}
+
+const envFromFile = loadEnvFile();
+
 // Shared environment variables for all apps
-// Note: GROK_API_KEY and XAI_API_KEY should be set in your shell environment or .env file
 const sharedEnv = {
-  GROK_API_KEY: process.env.GROK_API_KEY || '',
-  XAI_API_KEY: process.env.XAI_API_KEY || '',
+  GROK_API_KEY: envFromFile.GROK_API_KEY || process.env.GROK_API_KEY || '',
+  XAI_API_KEY: envFromFile.XAI_API_KEY || process.env.XAI_API_KEY || '',
 };
 
 module.exports = {

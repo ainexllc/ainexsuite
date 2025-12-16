@@ -16,6 +16,7 @@
     "@ainexsuite/firebase": "workspace:*",
     "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",
+    "@ainexsuite/privacy": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "@anthropic-ai/sdk": "^0.67.0",
     "@hookform/resolvers": "^5.2.2",

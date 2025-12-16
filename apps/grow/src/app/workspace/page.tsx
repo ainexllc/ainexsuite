@@ -2,23 +2,21 @@
 
 import { useState } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { Plus, Settings, Layout, Package, Crown, Sparkles, BarChart3, Rocket } from 'lucide-react';
-import Link from 'next/link';
+import { Plus, Layout, Crown, Rocket } from 'lucide-react';
 
 // Core Components
 import { WorkspacePageLayout, EmptyState } from '@ainexsuite/ui';
 import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 import { MemberManager } from '@/components/spaces/MemberManager';
 import { HabitEditor } from '@/components/habits/HabitEditor';
+import { HabitComposer } from '@/components/habits/HabitComposer';
 import { HabitCard } from '@/components/habits/HabitCard';
 import { HabitPacks } from '@/components/gamification/HabitPacks';
 import { QuestBar } from '@/components/gamification/QuestBar';
 import { WagerCard } from '@/components/gamification/WagerCard';
 import { FirestoreSync } from '@/components/FirestoreSync';
 import { QuestEditor } from '@/components/gamification/QuestEditor';
-import { NotificationBell } from '@/components/gamification/NotificationBell';
 import { HabitSuggester } from '@/components/ai/HabitSuggester';
-import { WelcomeFlow } from '@/components/onboarding/WelcomeFlow';
 import { BottomNav } from '@/components/mobile/BottomNav';
 
 // Analytics Components
@@ -38,11 +36,10 @@ import {
 import { canCreateHabit } from '@/lib/permissions';
 
 export default function GrowWorkspacePage() {
-  const { user, bootstrapStatus } = useWorkspaceAuth();
+  const { user } = useWorkspaceAuth();
   
   // Zustand Store
   const {
-    spaces,
     getCurrentSpace,
     getSpaceHabits,
     getSpaceQuests,
@@ -51,10 +48,6 @@ export default function GrowWorkspacePage() {
     completions
   } = useGrowStore();
 
-  // Onboarding state - show if no spaces exist after initial load
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingChecked, setOnboardingChecked] = useState(false);
-  
   const currentSpace = getCurrentSpace();
   const habits = currentSpace ? getSpaceHabits(currentSpace.id) : [];
   const quests = currentSpace ? getSpaceQuests(currentSpace.id) : [];
@@ -108,24 +101,6 @@ export default function GrowWorkspacePage() {
     return partner?.uid || '';
   };
 
-  // Check if onboarding needed (delayed to allow Firestore sync)
-  // Show onboarding if user has no spaces after data loads
-  if (!onboardingChecked && bootstrapStatus === 'complete') {
-    setTimeout(() => {
-      if (spaces.length === 0) {
-        setShowOnboarding(true);
-      }
-      setOnboardingChecked(true);
-    }, 1000);
-  }
-
-  // Show onboarding flow
-  if (showOnboarding) {
-    return (
-      <WelcomeFlow onComplete={() => setShowOnboarding(false)} />
-    );
-  }
-
   if (!user) return null;
 
   return (
@@ -133,66 +108,12 @@ export default function GrowWorkspacePage() {
       <FirestoreSync />
 
       <WorkspacePageLayout
-        composerActions={
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <SpaceSwitcher />
-              {currentSpace?.type !== 'personal' && (
-                <button
-                  onClick={() => setShowMemberManager(true)}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 transition-colors"
-                  title="Manage Members"
-                >
-                  <Settings className="h-5 w-5" />
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-3">
-              <NotificationBell />
-              <Link
-                href="/workspace/analytics"
-                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 transition-colors"
-                title="View Analytics"
-              >
-                <BarChart3 className="h-5 w-5" />
-              </Link>
-              <button
-                onClick={() => setShowAISuggester(true)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500/20 to-purple-500/20 hover:from-violet-500/30 hover:to-purple-500/30 border border-violet-500/30 text-violet-300 text-sm transition-all"
-                title="Get AI habit suggestions"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span className="hidden sm:inline">AI Suggest</span>
-              </button>
-              <button
-                onClick={() => setShowHabitPacks(true)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-sm transition-colors"
-              >
-                <Package className="h-4 w-4" />
-                <span className="hidden sm:inline">Packs</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (createPermission.allowed) {
-                    setSelectedHabitId(undefined);
-                    setShowHabitEditor(true);
-                  }
-                }}
-                disabled={!createPermission.allowed}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  createPermission.allowed
-                    ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                    : 'bg-white/10 text-white/40 cursor-not-allowed'
-                }`}
-                title={createPermission.allowed ? 'Create a new habit' : createPermission.reason}
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">New Habit</span>
-              </button>
-            </div>
-          </div>
+        composer={
+          createPermission.allowed ? (
+            <HabitComposer onAISuggestClick={() => setShowAISuggester(true)} />
+          ) : null
         }
+        composerActions={<SpaceSwitcher />}
       >
 
         {/* Quests Section (Squad/Couple Only) */}

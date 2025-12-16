@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Menu, ChevronDown, Sparkles } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
+import { AIVoiceIcon } from "../ai";
 import { clsx } from "clsx";
 import Image from "next/image";
 
@@ -143,6 +144,8 @@ export type TopNavAiButtonProps = {
   onClick: () => void;
   /** Custom label for accessibility */
   label?: string;
+  /** Accent color for the AI icon (hex) */
+  accentColor?: string;
 };
 
 /**
@@ -151,15 +154,19 @@ export type TopNavAiButtonProps = {
 export function TopNavAiButton({
   onClick,
   label = "AI Assistant",
+  accentColor = "#f97316",
 }: TopNavAiButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground shadow-sm transition hover:bg-accent hover:text-accent-foreground"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-muted shadow-sm transition hover:bg-accent"
       aria-label={label}
+      style={{
+        filter: `drop-shadow(0 0 4px ${accentColor}40)`,
+      }}
     >
-      <Sparkles className="h-4 w-4" />
+      <AIVoiceIcon size={18} color={accentColor} isAnimating={true} />
     </button>
   );
 }
