@@ -3,7 +3,7 @@
  * CRUD operations for health metrics data
  */
 
-import { db, auth } from '@ainexsuite/firebase';
+import { db } from '@ainexsuite/firebase';
 import {
   collection,
   query,
@@ -20,20 +20,14 @@ import type { HealthMetric, CreateHealthMetricInput, UpdateHealthMetricInput } f
 
 const COLLECTION = 'health_metrics';
 
-function getCurrentUserId(): string {
-  const user = auth.currentUser;
-  if (!user) throw new Error('User not authenticated');
-  return user.uid;
-}
-
 /**
- * Get all health metrics for current user
+ * Get all health metrics for a user
  */
 export async function getHealthMetrics(
+  userId: string,
   startDate?: Date,
   endDate?: Date
 ): Promise<HealthMetric[]> {
-  const userId = getCurrentUserId();
   const metricsRef = collection(db, COLLECTION);
 
   const q = query(
@@ -64,8 +58,7 @@ export async function getHealthMetrics(
 /**
  * Get health metric for a specific date
  */
-export async function getHealthMetricByDate(date: string): Promise<HealthMetric | null> {
-  const userId = getCurrentUserId();
+export async function getHealthMetricByDate(userId: string, date: string): Promise<HealthMetric | null> {
   const metricsRef = collection(db, COLLECTION);
 
   const q = query(
@@ -88,9 +81,9 @@ export async function getHealthMetricByDate(date: string): Promise<HealthMetric 
  * Create a new health metric entry
  */
 export async function createHealthMetric(
+  userId: string,
   data: Omit<CreateHealthMetricInput, 'ownerId'>
 ): Promise<HealthMetric> {
-  const userId = getCurrentUserId();
   const now = Timestamp.now();
 
   const metricData = {

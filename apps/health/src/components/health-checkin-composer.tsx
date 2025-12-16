@@ -11,7 +11,9 @@ import {
   Smile,
   Meh,
   Frown,
-  Loader2,
+  Pin,
+  PinOff,
+  StickyNote,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -22,11 +24,11 @@ interface HealthCheckinComposerProps {
 }
 
 const moodOptions: { value: MoodType; icon: typeof Smile; label: string; color: string }[] = [
-  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-primary' },
+  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-[var(--color-primary)]' },
   { value: 'happy', icon: Smile, label: 'Good', color: 'text-green-500' },
   { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
-  { value: 'stressed', icon: Frown, label: 'Bad', color: 'text-orange-500' },
-  { value: 'tired', icon: Frown, label: 'Terrible', color: 'text-red-500' },
+  { value: 'stressed', icon: Frown, label: 'Low', color: 'text-orange-500' },
+  { value: 'tired', icon: Frown, label: 'Bad', color: 'text-red-500' },
 ];
 
 export function HealthCheckinComposer({
@@ -38,8 +40,10 @@ export function HealthCheckinComposer({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const composerRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
+    title: '',
     weight: existingMetric?.weight ?? null,
     sleep: existingMetric?.sleep ?? null,
     water: existingMetric?.water ?? null,
@@ -47,12 +51,17 @@ export function HealthCheckinComposer({
     mood: existingMetric?.mood ?? null,
     heartRate: existingMetric?.heartRate ?? null,
     notes: existingMetric?.notes ?? '',
+    pinned: false,
   });
+
+  const [showMoodPicker, setShowMoodPicker] = useState(false);
+  const [showNotesField, setShowNotesField] = useState(!!existingMetric?.notes);
 
   // Sync form data when existingMetric changes
   useEffect(() => {
     if (existingMetric) {
       setFormData({
+        title: '',
         weight: existingMetric.weight ?? null,
         sleep: existingMetric.sleep ?? null,
         water: existingMetric.water ?? null,
@@ -60,7 +69,9 @@ export function HealthCheckinComposer({
         mood: existingMetric.mood ?? null,
         heartRate: existingMetric.heartRate ?? null,
         notes: existingMetric.notes ?? '',
+        pinned: false,
       });
+      if (existingMetric.notes) setShowNotesField(true);
     }
   }, [existingMetric]);
 
@@ -83,6 +94,7 @@ export function HealthCheckinComposer({
   const resetState = useCallback(() => {
     setExpanded(false);
     setFormData({
+      title: '',
       weight: existingMetric?.weight ?? null,
       sleep: existingMetric?.sleep ?? null,
       water: existingMetric?.water ?? null,
@@ -90,7 +102,10 @@ export function HealthCheckinComposer({
       mood: existingMetric?.mood ?? null,
       heartRate: existingMetric?.heartRate ?? null,
       notes: existingMetric?.notes ?? '',
+      pinned: false,
     });
+    setShowMoodPicker(false);
+    setShowNotesField(!!existingMetric?.notes);
     isSubmittingRef.current = false;
   }, [existingMetric]);
 
@@ -101,7 +116,6 @@ export function HealthCheckinComposer({
     setIsSubmitting(true);
 
     try {
-      // Filter out null values for Firestore
       const dataToSave: Partial<HealthMetric> = { date };
       if (formData.weight !== null) dataToSave.weight = formData.weight;
       if (formData.sleep !== null) dataToSave.sleep = formData.sleep;
@@ -137,57 +151,82 @@ export function HealthCheckinComposer({
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [expanded, hasContent, resetState]);
 
+  const selectedMood = moodOptions.find(m => m.value === formData.mood);
+
   return (
-    <section className="w-full mb-6">
+    <section className="w-full">
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center rounded-2xl border border-border bg-foreground/5 px-5 py-4 text-left text-sm text-muted-foreground shadow-sm transition hover:bg-foreground/10 hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary backdrop-blur-sm"
+          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
           onClick={() => setExpanded(true)}
         >
-          <span>{existingMetric ? 'Update today\'s check-in...' : 'Check in today...'}</span>
+          <span>{existingMetric ? 'Update today\'s check-in...' : 'Log a health check-in...'}</span>
         </button>
       ) : (
         <div
           ref={composerRef}
-          className="w-full rounded-2xl shadow-xl bg-[#121212] border border-border backdrop-blur-xl transition-all overflow-hidden"
+          className="w-full rounded-2xl shadow-lg border transition-all bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
         >
-          <div className="flex flex-col gap-5 px-5 py-5">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">
-                {existingMetric ? 'Update Check-in' : 'Daily Check-in'}
-              </h3>
-              <span className="text-sm text-muted-foreground">
-                {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-              </span>
+          <div className="flex flex-col gap-3 px-5 py-4">
+            {/* Header - Title input + mood badge + pin (matches notes/journey) */}
+            <div className="flex items-start gap-3">
+              <input
+                value={formData.title || new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                onChange={(e) => updateField('title', e.target.value)}
+                placeholder="Title"
+                className="w-full bg-transparent text-lg font-semibold text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none"
+                autoFocus
+                ref={titleInputRef}
+              />
+              {selectedMood && (
+                <button
+                  onClick={() => setShowMoodPicker(!showMoodPicker)}
+                  className={clsx(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                    "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                  )}
+                >
+                  <selectedMood.icon className="w-3.5 h-3.5" />
+                  {selectedMood.label}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => updateField('pinned', !formData.pinned)}
+                className={clsx(
+                  "p-2 rounded-full transition-colors flex-shrink-0",
+                  formData.pinned
+                    ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                )}
+                aria-label={formData.pinned ? "Unpin" : "Pin"}
+              >
+                {formData.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+              </button>
             </div>
 
-            {/* Quick Stats Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {/* Weight */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Scale className="h-3.5 w-3.5 text-primary" />
-                  Weight (lbs)
+            {/* Health Metrics Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <Scale className="h-3.5 w-3.5" />
+                  Weight
                 </label>
                 <input
                   type="number"
                   step="0.1"
                   value={formData.weight ?? ''}
-                  onChange={(e) =>
-                    updateField('weight', e.target.value ? parseFloat(e.target.value) : null)
-                  }
-                  placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
+                  onChange={(e) => updateField('weight', e.target.value ? parseFloat(e.target.value) : null)}
+                  placeholder="lbs"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:border-[var(--color-primary)] text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 />
               </div>
 
-              {/* Sleep */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Moon className="h-3.5 w-3.5 text-indigo-500" />
-                  Sleep (hrs)
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <Moon className="h-3.5 w-3.5" />
+                  Sleep
                 </label>
                 <input
                   type="number"
@@ -195,37 +234,31 @@ export function HealthCheckinComposer({
                   min="0"
                   max="24"
                   value={formData.sleep ?? ''}
-                  onChange={(e) =>
-                    updateField('sleep', e.target.value ? parseFloat(e.target.value) : null)
-                  }
-                  placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
+                  onChange={(e) => updateField('sleep', e.target.value ? parseFloat(e.target.value) : null)}
+                  placeholder="hrs"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:border-[var(--color-primary)] text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 />
               </div>
 
-              {/* Water */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Droplets className="h-3.5 w-3.5 text-blue-500" />
-                  Water (glasses)
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <Droplets className="h-3.5 w-3.5" />
+                  Water
                 </label>
                 <input
                   type="number"
                   min="0"
                   max="20"
                   value={formData.water ?? ''}
-                  onChange={(e) =>
-                    updateField('water', e.target.value ? parseInt(e.target.value) : null)
-                  }
-                  placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
+                  onChange={(e) => updateField('water', e.target.value ? parseInt(e.target.value) : null)}
+                  placeholder="glasses"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:border-[var(--color-primary)] text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 />
               </div>
 
-              {/* Heart Rate */}
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Heart className="h-3.5 w-3.5 text-red-500" />
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  <Heart className="h-3.5 w-3.5" />
                   Heart Rate
                 </label>
                 <input
@@ -233,19 +266,17 @@ export function HealthCheckinComposer({
                   min="40"
                   max="200"
                   value={formData.heartRate ?? ''}
-                  onChange={(e) =>
-                    updateField('heartRate', e.target.value ? parseInt(e.target.value) : null)
-                  }
-                  placeholder="—"
-                  className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
+                  onChange={(e) => updateField('heartRate', e.target.value ? parseInt(e.target.value) : null)}
+                  placeholder="bpm"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:border-[var(--color-primary)] text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 />
               </div>
             </div>
 
             {/* Energy Level */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <Activity className="h-3.5 w-3.5 text-amber-500" />
+            <div className="space-y-1">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <Activity className="h-3.5 w-3.5" />
                 Energy Level
               </label>
               <div className="flex gap-1">
@@ -255,10 +286,10 @@ export function HealthCheckinComposer({
                     type="button"
                     onClick={() => updateField('energy', formData.energy === level ? null : level)}
                     className={clsx(
-                      'flex-1 py-2 rounded-lg text-sm font-medium transition-colors',
+                      'flex-1 py-1.5 rounded-lg text-sm font-medium transition-colors',
                       formData.energy === level
-                        ? 'bg-primary text-foreground'
-                        : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground/70'
+                        ? 'bg-[var(--color-primary)] text-white'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     )}
                   >
                     {level}
@@ -267,70 +298,90 @@ export function HealthCheckinComposer({
               </div>
             </div>
 
-            {/* Mood */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <Heart className="h-3.5 w-3.5 text-pink-500" />
-                How are you feeling?
-              </label>
-              <div className="flex gap-2">
+            {/* Notes field (toggleable) */}
+            {showNotesField && (
+              <textarea
+                value={formData.notes}
+                onChange={(e) => updateField('notes', e.target.value)}
+                placeholder="Any notes about how you're feeling..."
+                rows={3}
+                className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:border-[var(--color-primary)] text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 resize-none"
+              />
+            )}
+
+            {/* Mood Picker Popup */}
+            {showMoodPicker && (
+              <div className="flex gap-2 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
                 {moodOptions.map(({ value, icon: Icon, label, color }) => (
                   <button
                     key={value}
                     type="button"
-                    onClick={() => updateField('mood', formData.mood === value ? null : value)}
+                    onClick={() => {
+                      updateField('mood', formData.mood === value ? null : value);
+                      setShowMoodPicker(false);
+                    }}
                     className={clsx(
-                      'flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-colors',
+                      'flex-1 flex flex-col items-center gap-1 py-2 rounded-lg transition-colors',
                       formData.mood === value
-                        ? 'bg-primary/20 border-2 border-primary'
-                        : 'bg-foreground/5 border-2 border-transparent hover:bg-foreground/10'
+                        ? 'bg-[var(--color-primary)]/20'
+                        : 'hover:bg-zinc-200 dark:hover:bg-zinc-700'
                     )}
                   >
                     <Icon className={clsx('h-5 w-5', color)} />
-                    <span className="text-xs text-muted-foreground">{label}</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{label}</span>
                   </button>
                 ))}
               </div>
-            </div>
+            )}
 
-            {/* Notes */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Notes (optional)</label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => updateField('notes', e.target.value)}
-                placeholder="How are you feeling today? Any symptoms or observations?"
-                rows={2}
-                className="w-full px-3 py-2 rounded-xl bg-foreground/5 border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground resize-none"
-              />
-            </div>
+            {/* Footer - Icon toolbar + Close/Save (matches notes/journey) */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  className={clsx(
+                    "p-2 rounded-full transition-colors",
+                    showMoodPicker
+                      ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                      : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  )}
+                  onClick={() => setShowMoodPicker(!showMoodPicker)}
+                  title="Set mood"
+                >
+                  <Smile className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  className={clsx(
+                    "p-2 rounded-full transition-colors",
+                    showNotesField
+                      ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                      : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  )}
+                  onClick={() => setShowNotesField(!showNotesField)}
+                  title="Add notes"
+                >
+                  <StickyNote className="h-5 w-5" />
+                </button>
+              </div>
 
-            {/* Action Bar */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-              <button
-                type="button"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                onClick={resetState}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting || !hasContent}
-                className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:bg-primary flex items-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : existingMetric ? (
-                  'Update'
-                ) : (
-                  'Save Check-in'
-                )}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  onClick={resetState}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !hasContent}
+                  className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                  {isSubmitting ? 'Saving...' : 'Save'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

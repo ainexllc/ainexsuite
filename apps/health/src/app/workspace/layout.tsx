@@ -1,7 +1,11 @@
 'use client';
 
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { SpacesProvider } from '@/components/providers/spaces-provider';
+import { HealthMetricsProvider } from '@/components/providers/health-metrics-provider';
+import { PreferencesProvider } from '@/components/providers/preferences-provider';
+import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 
 export default function WorkspaceRootLayout({
   children,
@@ -25,14 +29,19 @@ export default function WorkspaceRootLayout({
 
   return (
     <SuiteGuard appName="health">
-      <WorkspaceLayout
-        user={user}
-        onSignOut={handleSignOut}
-        appName="Health"
-        onUpdatePreferences={updatePreferences}
-      >
-        {children}
-      </WorkspaceLayout>
+      <SpacesProvider>
+        <PreferencesProvider>
+          <HealthMetricsProvider>
+            <WorkspaceLayoutWithInsights
+              user={user}
+              onSignOut={handleSignOut}
+              onUpdatePreferences={updatePreferences}
+            >
+              {children}
+            </WorkspaceLayoutWithInsights>
+          </HealthMetricsProvider>
+        </PreferencesProvider>
+      </SpacesProvider>
     </SuiteGuard>
   );
 }

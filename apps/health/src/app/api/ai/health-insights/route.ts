@@ -17,15 +17,25 @@ const SYSTEM_PROMPT = `You are a supportive wellness coach AI. Analyze the provi
 
 Return ONLY valid JSON with this exact structure (no markdown, no code blocks, just raw JSON):
 {
-  "weeklyTrend": "A 1-2 sentence summary of overall health patterns and trends",
+  "weeklyFocus": "A 1-2 sentence summary of the user's current health focus and overall patterns",
+  "mood": "One word describing overall energy/mood trend: energized, tired, balanced, stressed, focused, relaxed, improving, or declining",
   "recommendations": ["recommendation1", "recommendation2", "recommendation3"],
-  "focusArea": "One key area to focus on based on the data"
+  "focusArea": "One key area to focus on based on the data",
+  "healthTrends": [
+    {"metric": "Sleep", "trend": "improving/stable/declining + brief note"},
+    {"metric": "Hydration", "trend": "improving/stable/declining + brief note"},
+    {"metric": "Energy", "trend": "improving/stable/declining + brief note"}
+  ],
+  "quickTip": "One actionable tip they can do today"
 }
 
 Guidelines:
-- weeklyTrend: Summarize patterns in sleep, hydration, energy, and weight. Be encouraging and supportive.
+- weeklyFocus: Summarize the overall health picture. Be encouraging and supportive.
+- mood: Single word from the list that best describes their overall state
 - recommendations: 3 actionable, specific tips based on the data (e.g., "Try to get to bed 30 minutes earlier to hit your 8-hour sleep goal")
 - focusArea: Identify the most impactful area to improve based on trends
+- healthTrends: Include 2-3 key metrics showing their trends
+- quickTip: One simple, immediately actionable suggestion
 
 Keep responses warm, motivating, and focused on sustainable improvements.`;
 
@@ -117,23 +127,34 @@ export async function POST(request: NextRequest) {
       console.error('Failed to parse AI response:', aiResponse);
       // Return fallback insights
       insights = {
-        weeklyTrend: 'Keep tracking your health metrics to reveal meaningful patterns!',
+        weeklyFocus: 'Keep tracking your health metrics to reveal meaningful patterns!',
+        mood: 'balanced',
         recommendations: [
           'Aim for 7-8 hours of quality sleep each night',
           'Stay hydrated with at least 8 glasses of water daily',
           'Check in regularly to build awareness of your health patterns',
         ],
         focusArea: 'Consistency in tracking',
+        healthTrends: [
+          { metric: 'Sleep', trend: 'Tracking in progress' },
+          { metric: 'Hydration', trend: 'Tracking in progress' },
+        ],
+        quickTip: 'Log your check-in today to start seeing your trends!',
       };
     }
 
     // Validate and ensure proper structure
     return NextResponse.json({
-      weeklyTrend: insights.weeklyTrend || 'Keep tracking to discover your patterns!',
+      weeklyFocus: insights.weeklyFocus || insights.weeklyTrend || 'Keep tracking to discover your patterns!',
+      mood: insights.mood || 'balanced',
       recommendations: Array.isArray(insights.recommendations)
         ? insights.recommendations.slice(0, 3)
         : [],
       focusArea: insights.focusArea || 'Overall wellness',
+      healthTrends: Array.isArray(insights.healthTrends)
+        ? insights.healthTrends.slice(0, 3)
+        : [],
+      quickTip: insights.quickTip || 'Take a moment to check in with how you feel today.',
     });
   } catch (error) {
     console.error('Health Insights Error:', error);

@@ -1,62 +1,64 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { List, LayoutGrid, Calendar, Activity } from 'lucide-react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import type { HealthMetric } from '@ainexsuite/types';
 import {
-  getHealthMetrics,
-  getHealthMetricByDate,
-  createHealthMetric,
-  updateHealthMetric,
-  deleteHealthMetric,
-  getTodayDate,
-} from '@/lib/health-metrics';
+  WorkspacePageLayout,
+  WorkspaceToolbar,
+  WorkspaceLoadingScreen,
+  ActivityCalendar,
+  ActiveFilterChips,
+  type ViewOption,
+  type FilterChip,
+  type FilterChipType,
+} from '@ainexsuite/ui';
+import { getTodayDate } from '@/lib/health-metrics';
+import { useHealthMetrics } from '@/components/providers/health-metrics-provider';
+import { usePreferences } from '@/components/providers/preferences-provider';
 import { HealthCheckinComposer } from '@/components/health-checkin-composer';
 import { HealthEditModal } from '@/components/health-edit-modal';
-import { HealthStats } from '@/components/health-stats';
-import { HealthHistory } from '@/components/health-history';
-import { HealthInsights } from '@/components/health-insights';
-import { AIAssistant } from '@/components/ai-assistant';
-import { FitIntegrationWidget } from '@/components/fit-integration-widget';
-import { Activity, Calendar } from 'lucide-react';
-import { WorkspaceLoadingScreen, WorkspacePageLayout } from '@ainexsuite/ui';
+import { HealthBoard } from '@/components/health-board';
+import { HealthFilterContent } from '@/components/health-filter-content';
+import { SpaceSwitcher } from '@/components/spaces';
+import type { ViewMode } from '@/lib/types/settings';
+
+const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
+  { value: 'list', icon: List, label: 'List view' },
+  { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
+  { value: 'calendar', icon: Calendar, label: 'Calendar view' },
+];
+
+const MOOD_LABELS: Record<string, string> = {
+  energetic: 'Great',
+  happy: 'Good',
+  neutral: 'Okay',
+  stressed: 'Low',
+  tired: 'Bad',
+};
 
 export default function HealthWorkspacePage() {
   const { user } = useWorkspaceAuth();
-  const [metrics, setMetrics] = useState<HealthMetric[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [todayMetric, setTodayMetric] = useState<HealthMetric | null>(null);
+  const {
+    metrics,
+    todayMetric,
+    loading,
+    filters,
+    setFilters,
+    createMetric,
+    updateMetric,
+    deleteMetric,
+  } = useHealthMetrics();
+  const { preferences, updatePreferences } = usePreferences();
   const [editingMetric, setEditingMetric] = useState<HealthMetric | null>(null);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [fetchedMetrics, todayData] = await Promise.all([
-        getHealthMetrics(),
-        getHealthMetricByDate(getTodayDate()),
-      ]);
-      setMetrics(fetchedMetrics);
-      setTodayMetric(todayData);
-    } catch (error) {
-      console.error('Failed to load health data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      void loadData();
-    }
-  }, [user, loadData]);
-
 
   const handleSaveCheckin = async (data: Partial<HealthMetric>) => {
     try {
       if (todayMetric && data.date === getTodayDate()) {
-        await updateHealthMetric(todayMetric.id, data);
+        await updateMetric(todayMetric.id, data);
       } else {
-        await createHealthMetric({
+        await createMetric({
           date: data.date || getTodayDate(),
           sleep: data.sleep ?? null,
           water: data.water ?? null,
@@ -70,7 +72,6 @@ export default function HealthWorkspacePage() {
           notes: data.notes || '',
         });
       }
-      await loadData();
     } catch (error) {
       console.error('Failed to save check-in:', error);
     }
@@ -79,8 +80,7 @@ export default function HealthWorkspacePage() {
   const handleEditMetric = async (data: Partial<HealthMetric>) => {
     if (!editingMetric) return;
     try {
-      await updateHealthMetric(editingMetric.id, data);
-      await loadData();
+      await updateMetric(editingMetric.id, data);
       setEditingMetric(null);
     } catch (error) {
       console.error('Failed to update check-in:', error);
@@ -89,12 +89,116 @@ export default function HealthWorkspacePage() {
 
   const handleDeleteMetric = async (id: string) => {
     try {
-      await deleteHealthMetric(id);
-      await loadData();
+      await deleteMetric(id);
     } catch (error) {
       console.error('Failed to delete metric:', error);
     }
   };
+
+  // Calculate activity data for calendar view
+  const activityData = useMemo(() => {
+    const data: Record<string, number> = {};
+    metrics.forEach((metric) => {
+      const date = metric.date;
+      data[date] = (data[date] || 0) + 1;
+    });
+    return data;
+  }, [metrics]);
+
+  // Generate filter chips
+  const filterChips = useMemo(() => {
+    const chips: FilterChip[] = [];
+
+    // Mood chips
+    if (filters.moods && filters.moods.length > 0) {
+      filters.moods.forEach((mood) => {
+        chips.push({
+          id: mood,
+          label: MOOD_LABELS[mood] || mood,
+          type: 'label' as FilterChipType,
+        });
+      });
+    }
+
+    // Date range chip
+    if (filters.dateRange?.start || filters.dateRange?.end) {
+      const dateLabel =
+        filters.datePreset && filters.datePreset !== 'custom'
+          ? filters.datePreset
+              .split('-')
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(' ')
+          : 'Custom Date';
+      chips.push({
+        id: 'dateRange',
+        label: dateLabel,
+        type: 'date' as FilterChipType,
+      });
+    }
+
+    // Metric presence chips
+    if (filters.hasWeight) {
+      chips.push({ id: 'hasWeight', label: 'Has Weight', type: 'noteType' as FilterChipType });
+    }
+    if (filters.hasSleep) {
+      chips.push({ id: 'hasSleep', label: 'Has Sleep', type: 'noteType' as FilterChipType });
+    }
+    if (filters.hasWater) {
+      chips.push({ id: 'hasWater', label: 'Has Water', type: 'noteType' as FilterChipType });
+    }
+    if (filters.hasEnergy) {
+      chips.push({ id: 'hasEnergy', label: 'Has Energy', type: 'noteType' as FilterChipType });
+    }
+
+    return chips;
+  }, [filters]);
+
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.moods && filters.moods.length > 0) count++;
+    if (filters.dateRange?.start || filters.dateRange?.end) count++;
+    if (filters.hasWeight || filters.hasSleep || filters.hasWater || filters.hasEnergy) count++;
+    return count;
+  }, [filters]);
+
+  const handleFilterReset = useCallback(() => {
+    setFilters({});
+  }, [setFilters]);
+
+  const handleRemoveChip = useCallback(
+    (chipId: string, chipType: FilterChipType) => {
+      switch (chipType) {
+        case 'label':
+          // Remove mood
+          setFilters({
+            ...filters,
+            moods: filters.moods?.filter((m) => m !== chipId) || [],
+          });
+          break;
+        case 'date':
+          setFilters({
+            ...filters,
+            dateRange: { start: null, end: null },
+            datePreset: undefined,
+          });
+          break;
+        case 'noteType': {
+          // Remove metric filter
+          const newFilters = { ...filters };
+          if (chipId === 'hasWeight') newFilters.hasWeight = undefined;
+          if (chipId === 'hasSleep') newFilters.hasSleep = undefined;
+          if (chipId === 'hasWater') newFilters.hasWater = undefined;
+          if (chipId === 'hasEnergy') newFilters.hasEnergy = undefined;
+          setFilters(newFilters);
+          break;
+        }
+      }
+    },
+    [filters, setFilters]
+  );
+
+  const isCalendarView = preferences.viewMode === 'calendar';
 
   // Show standardized loading screen if internal data is loading
   if (loading) {
@@ -106,7 +210,7 @@ export default function HealthWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
-        insightsBanner={<HealthInsights metrics={metrics} variant="sidebar" />}
+        maxWidth="default"
         composer={
           <HealthCheckinComposer
             existingMetric={todayMetric}
@@ -114,45 +218,33 @@ export default function HealthWorkspacePage() {
             onSave={handleSaveCheckin}
           />
         }
-      >
-        {/* Today's Status Card */}
-        {todayMetric && (
-          <div className="bg-gradient-to-br from-primary to-secondary rounded-2xl p-6 text-foreground">
-            <div className="flex items-center gap-3 mb-4">
-              <Calendar className="h-6 w-6" />
-              <h2 className="text-lg font-semibold">Today&apos;s Check-in</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {todayMetric.weight && (
-                <div>
-                  <p className="text-foreground/70 text-sm">Weight</p>
-                  <p className="text-xl font-bold">{todayMetric.weight} lbs</p>
-                </div>
-              )}
-              {todayMetric.sleep && (
-                <div>
-                  <p className="text-foreground/70 text-sm">Sleep</p>
-                  <p className="text-xl font-bold">{todayMetric.sleep} hrs</p>
-                </div>
-              )}
-              {todayMetric.water && (
-                <div>
-                  <p className="text-foreground/70 text-sm">Water</p>
-                  <p className="text-xl font-bold">{todayMetric.water} glasses</p>
-                </div>
-              )}
-              {todayMetric.energy && (
-                <div>
-                  <p className="text-foreground/70 text-sm">Energy</p>
-                  <p className="text-xl font-bold">{todayMetric.energy}/10</p>
-                </div>
-              )}
-            </div>
+        composerActions={<SpaceSwitcher />}
+        toolbar={
+          <div className="space-y-2">
+            <WorkspaceToolbar
+              viewMode={preferences.viewMode}
+              onViewModeChange={(mode) => updatePreferences({ viewMode: mode })}
+              viewOptions={VIEW_OPTIONS}
+              filterContent={
+                <HealthFilterContent filters={filters} onFiltersChange={setFilters} />
+              }
+              activeFilterCount={activeFilterCount}
+              onFilterReset={handleFilterReset}
+              viewPosition="right"
+            />
+            {filterChips.length > 0 && (
+              <ActiveFilterChips
+                chips={filterChips}
+                onRemove={handleRemoveChip}
+                onClearAll={handleFilterReset}
+                className="px-1"
+              />
+            )}
           </div>
-        )}
-
+        }
+      >
         {/* Empty State */}
-        {!todayMetric && metrics.length === 0 && (
+        {metrics.length === 0 && (
           <div className="text-center py-12 rounded-2xl bg-foreground/5 border border-border">
             <Activity className="h-16 w-16 mx-auto mb-4 text-primary/50" />
             <p className="text-foreground/70 mb-2">No health data yet</p>
@@ -162,23 +254,20 @@ export default function HealthWorkspacePage() {
           </div>
         )}
 
-        {/* Stats and Integration - Side by Side on larger screens */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <HealthStats metrics={metrics} />
-          <FitIntegrationWidget />
-        </div>
-
-        {/* Health History */}
+        {/* Views */}
         {metrics.length > 0 && (
-          <HealthHistory
-            metrics={metrics}
-            onEdit={setEditingMetric}
-            onDelete={handleDeleteMetric}
-          />
+          isCalendarView ? (
+            <ActivityCalendar
+              activityData={activityData}
+              size="large"
+              view={preferences.calendarView || 'month'}
+              onViewChange={(view) => updatePreferences({ calendarView: view })}
+            />
+          ) : (
+            <HealthBoard onEdit={setEditingMetric} onDelete={handleDeleteMetric} />
+          )
         )}
       </WorkspacePageLayout>
-
-      <AIAssistant />
 
       {/* Edit Modal */}
       {editingMetric && (
