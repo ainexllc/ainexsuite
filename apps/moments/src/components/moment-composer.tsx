@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, MapPin, Calendar, Tag, X, Smile, Users, Cloud } from 'lucide-react';
+import { Camera, MapPin, Calendar, Tag, X, Smile, Users, Cloud, Palette, Pin, PinOff } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useAppColors } from '@ainexsuite/theme';
 import { createMoment, uploadPhoto } from '@/lib/moments';
 import { useMomentsStore } from '@/lib/store';
+import { MOMENT_COLORS, type MomentColor } from '@/lib/constants/moment-colors';
 
 interface MomentComposerProps {
   spaceId?: string;
@@ -47,6 +48,11 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Notes-style features
+  const [color, setColor] = useState<MomentColor>('default');
+  const [pinned, setPinned] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
 
@@ -72,12 +78,18 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     setPeople([]);
     setPeopleInput('');
     setShowPeopleInput(false);
+    setColor('default');
+    setPinned(false);
+    setShowPalette(false);
     if (photoPreview) {
       URL.revokeObjectURL(photoPreview);
     }
     setPhotoFile(null);
     setPhotoPreview(null);
   }, [photoPreview]);
+
+  // Get the color config for the current selection
+  const colorConfig = MOMENT_COLORS.find(c => c.id === color) || MOMENT_COLORS[0];
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files || !files[0]) return;
@@ -188,7 +200,12 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
       ) : (
         <div
           ref={composerRef}
-          className="w-full rounded-2xl shadow-lg border transition-all overflow-hidden bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+          className={clsx(
+            "w-full rounded-2xl shadow-lg border transition-all overflow-hidden",
+            color === 'default'
+              ? "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+              : colorConfig.cardClass
+          )}
         >
           {/* Photo Preview/Upload Area */}
           <div
@@ -229,14 +246,29 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
 
           {/* Form Fields */}
           <div className="flex flex-col gap-4 px-5 py-4">
-            {/* Caption */}
-            <textarea
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="What's this moment about?..."
-              rows={3}
-              className="w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-            />
+            {/* Caption with Pin Button */}
+            <div className="flex items-start gap-3">
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="What's this moment about?..."
+                rows={3}
+                className="flex-1 resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+              />
+              <button
+                type="button"
+                onClick={() => setPinned((prev) => !prev)}
+                className={clsx(
+                  "p-2 rounded-full transition-colors",
+                  pinned
+                    ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                )}
+                aria-label={pinned ? "Unpin moment" : "Pin moment"}
+              >
+                {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+              </button>
+            </div>
 
             {/* Meta Row 1: Date & Location */}
             <div className="flex flex-wrap gap-3">
@@ -364,10 +396,52 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                   type="button"
                   className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   onClick={() => fileInputRef.current?.click()}
-                  title="Change photo"
+                  title="Add photo"
                 >
                   <Camera className="h-5 w-5" />
                 </button>
+
+                {/* Color Palette Button */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    className={clsx(
+                      "p-2 rounded-full transition-colors",
+                      showPalette
+                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                        : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    )}
+                    onClick={() => {
+                      setShowPalette(!showPalette);
+                      setShowPeopleInput(false);
+                      setShowTagInput(false);
+                    }}
+                    title="Choose color"
+                  >
+                    <Palette className="h-5 w-5" />
+                  </button>
+
+                  {showPalette && (
+                    <div className="absolute bottom-12 left-1/2 z-30 flex -translate-x-1/2 gap-2 rounded-2xl bg-surface-elevated/95 p-3 shadow-floating backdrop-blur-xl border border-zinc-200 dark:border-zinc-700">
+                      {MOMENT_COLORS.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            setColor(option.id);
+                            setShowPalette(false);
+                          }}
+                          className={clsx(
+                            "h-8 w-8 rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)]",
+                            option.swatchClass,
+                            option.id === color && "ring-2 ring-[var(--color-primary)]",
+                          )}
+                          title={option.label}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Add People Button */}
                 <div className="relative">
