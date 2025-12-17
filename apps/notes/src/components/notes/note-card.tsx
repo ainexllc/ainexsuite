@@ -134,8 +134,8 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
               backgroundPosition: 'center',
             }}
           >
-            {/* Adaptive overlay for text readability */}
-            <div className={getOverlayClasses(backgroundImage)} />
+            {/* Overlay for text readability */}
+            <div className={getOverlayClasses(backgroundImage, note.backgroundOverlay ?? 'auto')} />
           </div>
         )}
 

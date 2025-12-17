@@ -48,7 +48,8 @@ import {
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
 import { InlineCalculator } from "./inline-calculator";
-import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
+import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS, OVERLAY_OPTIONS } from "@/lib/backgrounds";
+import type { BackgroundOverlay } from "@/lib/types/note";
 import { useBackgrounds } from "@/hooks/use-backgrounds";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
@@ -102,6 +103,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   );
   const [color, setColor] = useState<NoteColor>(note.color);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(note.backgroundImage ?? null);
+  const [backgroundOverlay, setBackgroundOverlay] = useState<BackgroundOverlay>(note.backgroundOverlay ?? 'auto');
 
   // Get current background for display (must be after backgroundImage state)
   const currentBackground = useMemo(() => {
@@ -362,6 +364,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     const bodyChanged = body !== note.body;
     const colorChanged = color !== note.color;
     const backgroundImageChanged = backgroundImage !== (note.backgroundImage ?? null);
+    const backgroundOverlayChanged = backgroundOverlay !== (note.backgroundOverlay ?? 'auto');
     const pinnedChanged = pinned !== note.pinned;
     const archivedChanged = archived !== note.archived;
     const attachmentsRemoved = removedAttachments.length > 0;
@@ -410,6 +413,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       !bodyChanged &&
       !colorChanged &&
       !backgroundImageChanged &&
+      !backgroundOverlayChanged &&
       !pinnedChanged &&
       !archivedChanged &&
       !checklistChanged &&
@@ -462,6 +466,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
       if (backgroundImageChanged) {
         updates.backgroundImage = backgroundImage;
+      }
+
+      if (backgroundOverlayChanged) {
+        updates.backgroundOverlay = backgroundOverlay;
       }
 
       if (labelsChanged) {
@@ -803,8 +811,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               backgroundPosition: 'center',
             }}
           >
-            {/* Adaptive overlay for text readability */}
-            <div className={getOverlayClasses(currentBackground)} />
+            {/* Overlay for text readability */}
+            <div className={getOverlayClasses(currentBackground, backgroundOverlay)} />
           </div>
         )}
 
@@ -1389,6 +1397,31 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     </div>
                     {availableBackgrounds.length === 0 && (
                       <p className="text-xs text-zinc-400 text-center py-2">No backgrounds available</p>
+                    )}
+
+                    {/* Overlay selector - only show when background is selected */}
+                    {backgroundImage && (
+                      <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Overlay Style</p>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {OVERLAY_OPTIONS.map((option) => (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => setBackgroundOverlay(option.id)}
+                              className={clsx(
+                                "px-2 py-1.5 rounded-lg text-xs font-medium transition-all",
+                                backgroundOverlay === option.id
+                                  ? "bg-[var(--color-primary)] text-white"
+                                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                              )}
+                              title={option.description}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 ) : null}

@@ -57,6 +57,12 @@ export type NotePattern =
   | "waves"
   | "circles";
 
+export type BackgroundOverlay =
+  | "none"    // No overlay
+  | "auto"    // Adaptive based on brightness
+  | "dim"     // Dark overlay for contrast
+  | "glass";  // Frosted glass effect
+
 export type ChecklistItem = {
   id: string;
   text: string;
@@ -98,6 +104,7 @@ export type NoteDoc = {
   color: NoteColor;
   pattern?: NotePattern;
   backgroundImage?: string | null; // ID of a predefined background image
+  backgroundOverlay?: BackgroundOverlay; // Overlay style for background images
   pinned: boolean;
   archived: boolean;
   labelIds: string[];
@@ -133,6 +140,7 @@ export type NoteDraft = {
   color?: NoteColor;
   pattern?: NotePattern;
   backgroundImage?: string | null;
+  backgroundOverlay?: BackgroundOverlay;
   reminderAt?: Date | null;
   reminderId?: string | null;
   noteDate?: Date | null;

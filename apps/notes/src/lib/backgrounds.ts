@@ -4,6 +4,8 @@
  * These helpers work with any object that has a 'brightness' field
  */
 
+import type { BackgroundOverlay } from '@/lib/types/note';
+
 export interface BackgroundOption {
   id: string;
   name: string;
@@ -111,16 +113,43 @@ export function getTextColorClasses(
 }
 
 /**
- * Get overlay classes based on background brightness
+ * Overlay options for background images
  */
-export function getOverlayClasses(bg: BackgroundOption | null): string {
+export const OVERLAY_OPTIONS: { id: BackgroundOverlay; label: string; description: string }[] = [
+  { id: 'none', label: 'None', description: 'No overlay' },
+  { id: 'auto', label: 'Auto', description: 'Adaptive based on image' },
+  { id: 'dim', label: 'Dim', description: 'Dark overlay for contrast' },
+  { id: 'glass', label: 'Glass', description: 'Frosted glass effect' },
+];
+
+/**
+ * Get overlay classes based on background and overlay setting
+ */
+export function getOverlayClasses(
+  bg: BackgroundOption | null,
+  overlay: BackgroundOverlay = 'auto'
+): string {
   if (!bg) return '';
 
-  // For light backgrounds: white overlay to wash out colors for better dark text readability
-  // For dark backgrounds: no overlay needed - white text is already readable
-  return bg.brightness === 'light'
-    ? 'absolute inset-0 bg-white/35'
-    : '';
+  switch (overlay) {
+    case 'none':
+      return '';
+
+    case 'dim':
+      // Dark overlay for better text contrast
+      return 'absolute inset-0 bg-black/40';
+
+    case 'glass':
+      // Frosted glass effect with blur and subtle tint
+      return 'absolute inset-0 bg-white/10 backdrop-blur-sm';
+
+    case 'auto':
+    default:
+      // Adaptive: white overlay on light backgrounds, none on dark
+      return bg.brightness === 'light'
+        ? 'absolute inset-0 bg-white/35'
+        : '';
+  }
 }
 
 /**
