@@ -56,6 +56,8 @@ export interface EntryEditorShellProps {
   toolbarActions?: ReactNode;
   /** Additional header actions (before pin button) */
   headerActions?: ReactNode;
+  /** Title content to render in header (left side, same row as pin) */
+  titleContent?: ReactNode;
   /** Content to show when labels/share panel is expanded in footer */
   footerExpandedContent?: ReactNode;
   /** Custom content for right side of footer (replaces default Cancel/Save) */
@@ -64,6 +66,8 @@ export interface EntryEditorShellProps {
   saveText?: string;
   /** Cancel button text */
   cancelText?: string;
+  /** Hide the header actions (pin, close, etc) - useful when content has inline controls */
+  hideHeaderActions?: boolean;
 }
 
 export function EntryEditorShell({
@@ -87,10 +91,12 @@ export function EntryEditorShell({
   children,
   toolbarActions,
   headerActions,
+  titleContent,
   footerExpandedContent,
   footerRightContent,
   saveText = 'Save',
   cancelText = 'Cancel',
+  hideHeaderActions = false,
 }: EntryEditorShellProps) {
   const [showPalette, setShowPalette] = useState(false);
 
@@ -102,90 +108,107 @@ export function EntryEditorShell({
   const content = (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 md:p-6"
-      onClick={onClose}
+      onMouseDown={(e) => {
+        // Only close if clicking directly on the backdrop, not when dragging from inside
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <div
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
         className={clsx(
-          'relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl',
+          'relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl transition-colors duration-200',
           colorConfig.cardClass,
           'border-zinc-200 dark:border-zinc-800'
         )}
       >
-        {/* Header actions - right side */}
-        <div className="absolute right-4 top-4 flex items-center gap-2 z-20">
-          {/* Reminder button */}
-          {onReminderClick && (
-            <button
-              type="button"
-              className={clsx(
-                'h-9 w-9 rounded-full flex items-center justify-center transition',
-                isReminderPanelOpen
-                  ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                  : reminderEnabled
-                    ? 'text-[var(--color-primary)]'
+        {/* Header row - title on left, actions on right */}
+        <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-2 flex-shrink-0">
+          {/* Title content slot */}
+          {titleContent && (
+            <div className="flex-1 min-w-0 min-h-[40px] flex items-center">
+              {titleContent}
+            </div>
+          )}
+
+          {/* Header actions - right side */}
+          {!hideHeaderActions && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Reminder button */}
+            {onReminderClick && (
+              <button
+                type="button"
+                className={clsx(
+                  'h-9 w-9 rounded-full flex items-center justify-center transition',
+                  isReminderPanelOpen
+                    ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
+                    : reminderEnabled
+                      ? 'text-[var(--color-primary)]'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200'
+                )}
+                onClick={onReminderClick}
+                aria-label="Set reminder"
+              >
+                <BellRing
+                  className={clsx('h-4 w-4', reminderEnabled && 'fill-current')}
+                />
+              </button>
+            )}
+
+            {/* Share button */}
+            {onShareClick && (
+              <button
+                type="button"
+                onClick={onShareClick}
+                className={clsx(
+                  'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition',
+                  isSharePanelOpen
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
+                    : 'border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500'
+                )}
+                aria-expanded={isSharePanelOpen}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                {shareCount ? `${shareCount} shared` : 'Share'}
+              </button>
+            )}
+
+            {/* Additional header actions slot */}
+            {headerActions}
+
+            {/* Pin button */}
+            {onPinChange && (
+              <button
+                type="button"
+                onClick={() => onPinChange(!pinned)}
+                className={clsx(
+                  'h-9 w-9 rounded-full flex items-center justify-center transition',
+                  pinned
+                    ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200'
-              )}
-              onClick={onReminderClick}
-              aria-label="Set reminder"
-            >
-              <BellRing
-                className={clsx('h-4 w-4', reminderEnabled && 'fill-current')}
-              />
-            </button>
-          )}
+                )}
+                aria-label={pinned ? 'Unpin' : 'Pin'}
+              >
+                {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+              </button>
+            )}
 
-          {/* Share button */}
-          {onShareClick && (
+            {/* Close button */}
             <button
               type="button"
-              onClick={onShareClick}
-              className={clsx(
-                'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition',
-                isSharePanelOpen
-                  ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                  : 'border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500'
-              )}
-              aria-expanded={isSharePanelOpen}
+              onClick={onClose}
+              className="h-10 w-10 rounded-full flex items-center justify-center transition bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
+              aria-label="Close editor"
             >
-              <Share2 className="h-3.5 w-3.5" />
-              {shareCount ? `${shareCount} shared` : 'Share'}
+              <X className="h-5 w-5" />
             </button>
+          </div>
           )}
-
-          {/* Additional header actions slot */}
-          {headerActions}
-
-          {/* Pin button */}
-          {onPinChange && (
-            <button
-              type="button"
-              onClick={() => onPinChange(!pinned)}
-              className={clsx(
-                'h-9 w-9 rounded-full flex items-center justify-center transition',
-                pinned
-                  ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200'
-              )}
-              aria-label={pinned ? 'Unpin' : 'Pin'}
-            >
-              {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-            </button>
-          )}
-
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 w-10 rounded-full flex items-center justify-center transition bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-            aria-label="Close editor"
-          >
-            <X className="h-5 w-5" />
-          </button>
         </div>
 
-        {/* Main content area - pt-16 to clear absolute header buttons, pb-6 for bottom breathing room */}
-        <div className="flex flex-col gap-4 px-6 pt-16 pb-6 flex-1 overflow-y-auto">
+        {/* Main content area */}
+        <div className="flex flex-col gap-4 px-6 pb-6 flex-1 overflow-y-auto">
           {children}
         </div>
 
@@ -193,7 +216,7 @@ export function EntryEditorShell({
         {!hideFooter && (
           <div
             className={clsx(
-              'flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-200 dark:border-zinc-700/50',
+              'flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-200 dark:border-zinc-700/50 transition-colors duration-200',
               colorConfig.footerClass
             )}
           >

@@ -62,27 +62,19 @@ export type NoteColor =
 
 export type NotePattern = 'none' | 'dots' | 'lines' | 'grid';
 
+// Reduced set of analytically meaningful emotions based on psychological models
+// Covers valence (positive/negative) and arousal (high/low energy) dimensions
+// Enables: sentiment analysis, mood trend tracking, mental health pattern detection
 export type MoodType =
-  | 'happy'
-  | 'sad'
-  | 'neutral'
-  | 'excited'
-  | 'anxious'
-  | 'grateful'
-  | 'angry'
-  | 'peaceful'
-  | 'stressed'
-  | 'hopeful'
-  | 'tired'
-  | 'energetic'
-  | 'confused'
-  | 'confident'
-  | 'lonely'
-  | 'loved'
-  | 'frustrated'
-  | 'inspired'
-  | 'bored'
-  | 'content';
+  | 'happy'      // Positive, moderate energy - general wellbeing
+  | 'excited'    // Positive, high energy - enthusiasm, joy
+  | 'grateful'   // Positive, reflective - appreciation, thankfulness
+  | 'peaceful'   // Positive, low energy - calm, relaxed, content
+  | 'neutral'    // Baseline state
+  | 'anxious'    // Negative, high energy - worry, stress (key mental health indicator)
+  | 'sad'        // Negative, low energy - melancholy, grief
+  | 'frustrated' // Negative, action-blocked - irritation, anger
+  | 'tired';     // Low energy - fatigue, burnout indicator
 
 export type Priority = 'urgent' | 'high' | 'medium' | 'low' | 'none';
 

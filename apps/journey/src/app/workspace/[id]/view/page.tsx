@@ -4,12 +4,10 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
 import { getJournalEntry } from '@/lib/firebase/firestore';
-import { JournalView } from '@/components/journal/journal-view';
+import { JournalEntryViewer } from '@/components/journal/journal-entry-viewer';
 import { useToast } from '@ainexsuite/ui';
 import type { JournalEntry } from '@ainexsuite/types';
-import { ArrowLeft, Edit, Loader2, Lock } from 'lucide-react';
-import Link from 'next/link';
-import { usePrivacy, PasscodeModal, BlurredContent, PrivateEntryNotice } from '@ainexsuite/privacy';
+import { Loader2 } from 'lucide-react';
 
 export default function ViewJournalPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -18,8 +16,6 @@ export default function ViewJournalPage({ params }: { params: Promise<{ id: stri
   const { toast } = useToast();
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showPasscodeModal, setShowPasscodeModal] = useState(false);
-  const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode } = usePrivacy();
 
   useEffect(() => {
     if (user && resolvedParams.id) {
@@ -43,11 +39,6 @@ export default function ViewJournalPage({ params }: { params: Promise<{ id: stri
       }
 
       setEntry(data);
-
-      // Check if entry is private and locked
-      if (data.isPrivate && hasPasscode && !isUnlocked) {
-        setShowPasscodeModal(true);
-      }
     } catch (error) {
       toast({
         title: 'Error',
@@ -72,75 +63,11 @@ export default function ViewJournalPage({ params }: { params: Promise<{ id: stri
     return null;
   }
 
-  const isLocked = entry.isPrivate && hasPasscode && !isUnlocked;
-
-  const handlePasscodeSubmit = async (passcode: string) => {
-    if (hasPasscode) {
-      const success = await verifyPasscode(passcode);
-      if (success) {
-        setShowPasscodeModal(false);
-      }
-      return success;
-    } else {
-      const success = await setupPasscode(passcode);
-      if (success) {
-        setShowPasscodeModal(false);
-      }
-      return success;
-    }
-  };
-
   return (
-    <div className="space-y-8">
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-8 shadow-[0_30px_80px_-40px_rgba(249,115,22,0.45)] backdrop-blur">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/workspace"
-            className="inline-flex items-center gap-2 text-white/60 transition-colors hover:text-white"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Workspace
-          </Link>
-
-          <Link
-            href={`/workspace/${entry.id}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all hover:border-[#f97316]/30 hover:bg-[#f97316]/10"
-          >
-            <Edit className="w-4 h-4" />
-            Edit Entry
-          </Link>
-        </div>
-      </div>
-
-      <PrivateEntryNotice isPrivate={entry.isPrivate} />
-
-      {isLocked ? (
-        <div className="max-w-4xl rounded-3xl border border-white/10 bg-zinc-800/90 p-8 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <Lock className="w-5 h-5 text-white/70" />
-            <h1 className="text-2xl font-bold text-white">{entry.title}</h1>
-          </div>
-          <BlurredContent isLocked={true} onClick={() => setShowPasscodeModal(true)}>
-            <div className="h-64" />
-          </BlurredContent>
-        </div>
-      ) : (
-        <JournalView entry={entry} />
-      )}
-
-      <PasscodeModal
-        isOpen={showPasscodeModal}
-        onClose={() => {
-          if (isLocked) {
-            router.push('/workspace');
-          } else {
-            setShowPasscodeModal(false);
-          }
-        }}
-        onSubmit={handlePasscodeSubmit}
-        mode={hasPasscode ? 'verify' : 'setup'}
-        title={hasPasscode ? 'Unlock Private Entry' : 'Set Privacy Passcode'}
-      />
-    </div>
+    <JournalEntryViewer
+      entry={entry}
+      onClose={() => router.push('/workspace')}
+      onEdit={() => router.push(`/workspace/${entry.id}`)}
+    />
   );
 }

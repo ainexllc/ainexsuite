@@ -129,3 +129,24 @@ export async function fileExists(
     return false;
   }
 }
+
+// Delete a file by its Firebase Storage URL
+export async function deleteFileByUrl(url: string): Promise<void> {
+  try {
+    // Firebase Storage URLs contain the path encoded in the URL
+    // Example: https://firebasestorage.googleapis.com/v0/b/bucket/o/users%2FuserId%2Fattachments%2FentryId%2Ffile.jpg?alt=media&token=xxx
+    const urlObj = new URL(url);
+    const pathMatch = urlObj.pathname.match(/\/o\/(.+)$/);
+    if (!pathMatch) {
+      console.warn('Could not extract path from Firebase Storage URL:', url);
+      return;
+    }
+    const encodedPath = pathMatch[1];
+    const decodedPath = decodeURIComponent(encodedPath);
+    const storageRef = ref(storage, decodedPath);
+    await deleteObject(storageRef);
+  } catch (error) {
+    // Log but don't throw - the image might be from an external source or already deleted
+    console.warn('Failed to delete file from storage:', error);
+  }
+}

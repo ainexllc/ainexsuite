@@ -1,72 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useState, useRef } from "react";
-import { createPortal } from "react-dom";
-import { X, Lock, Loader2, Tag, Plus } from "lucide-react";
+import { useCallback, useState, useRef } from "react";
+import { X, Lock, Tag, Plus, Loader2 } from "lucide-react";
 import { clsx } from "clsx";
-import type { JournalEntry, JournalEntryFormData, EntryColor } from "@ainexsuite/types";
+import type { JournalEntryFormData, EntryColor } from "@ainexsuite/types";
 import { useAuth } from "@ainexsuite/auth";
-import { getJournalEntry, updateJournalEntry } from "@/lib/firebase/firestore";
+import { createJournalEntry, updateJournalEntry } from "@/lib/firebase/firestore";
 import { JournalForm, JournalFormHandle } from "@/components/journal/journal-form";
 import { useToast, EntryEditorShell } from "@ainexsuite/ui";
-import { sentimentService } from "@/lib/ai/sentiment-service";
-import { saveSentimentAnalysis } from "@/lib/firebase/sentiment";
-import { usePrivacy, PasscodeModal } from "@ainexsuite/privacy";
+import { useSpaces } from "@/components/providers/spaces-provider";
 
-type JournalEntryEditorProps = {
-  entry: JournalEntry;
+type JournalComposerModalProps = {
+  isOpen: boolean;
   onClose: () => void;
-  onSaved?: () => void;
+  onEntryCreated?: () => void;
 };
 
-export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEditorProps) {
+export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: JournalComposerModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { currentSpaceId } = useSpaces();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPasscodeModal, setShowPasscodeModal] = useState(false);
-  const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode } = usePrivacy();
   const formRef = useRef<JournalFormHandle>(null);
 
-  // Entry state that can be modified via shell buttons
-  const [pinned, setPinned] = useState(entry.pinned || false);
-  const [archived, setArchived] = useState(entry.archived || false);
-  const [color, setColor] = useState<EntryColor>(entry.color || 'default');
-  const [title, setTitle] = useState(entry.title || '');
+  // Entry state
+  const [pinned, setPinned] = useState(false);
+  const [archived, setArchived] = useState(false);
+  const [color, setColor] = useState<EntryColor>('default');
+  const [title, setTitle] = useState('');
 
-  // Footer toolbar state (tags and private only - mood/links in form)
+  // Footer toolbar state
   const [showTagPicker, setShowTagPicker] = useState(false);
-  const [tags, setTags] = useState<string[]>(entry.tags || []);
-  const [isPrivate, setIsPrivate] = useState(entry.isPrivate || false);
+  const [tags, setTags] = useState<string[]>([]);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
   // Sync title changes to the form
-  useEffect(() => {
-    formRef.current?.setTitle(title);
-  }, [title]);
-
-  // Determine button labels
-  const publishLabel = entry.isDraft ? 'Publish Entry' : 'Save Changes';
-  const draftLabel = entry.isDraft ? 'Update Draft' : 'Save as Draft';
-
-  const isLocked = entry.isPrivate && hasPasscode && !isUnlocked;
-
-  // Show passcode modal if entry is private and locked
-  useEffect(() => {
-    if (isLocked) {
-      setShowPasscodeModal(true);
-    }
-  }, [isLocked]);
-
-  // Handle escape key to close
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    formRef.current?.setTitle(newTitle);
+  };
 
   // Helper functions for tags
   const handleAddTag = () => {
@@ -81,128 +54,74 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
+  const resetState = useCallback(() => {
+    setPinned(false);
+    setArchived(false);
+    setColor('default');
+    setTitle('');
+    setShowTagPicker(false);
+    setTags([]);
+    setIsPrivate(false);
+    setTagInput('');
+  }, []);
+
+  const handleClose = useCallback(() => {
+    resetState();
+    onClose();
+  }, [resetState, onClose]);
+
   // Images are uploaded directly to Firebase Storage via the rich text editor toolbar
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = useCallback(async (data: JournalEntryFormData, _newFiles: File[]) => {
-    if (!user || !entry) return;
+    if (!user) return;
 
     setIsSubmitting(true);
     try {
-      const isDraft = data.isDraft ?? entry.isDraft ?? false;
+      const isDraft = data.isDraft ?? false;
 
-      // Update the journal entry (include pinned/archived/color and footer state)
-      // mood and links come from form data, tags and isPrivate from footer
-      await updateJournalEntry(entry.id, {
+      // Create the entry with form data + footer state
+      const entryId = await createJournalEntry(user.uid, {
         ...data,
-        pinned,
-        archived,
-        color,
         tags,
         isPrivate,
-      });
+        pinned,
+      }, currentSpaceId);
 
-      // Trigger sentiment re-analysis in the background
-      getJournalEntry(entry.id).then(async (updatedEntry) => {
-        if (updatedEntry) {
-          try {
-            const analysis = await sentimentService.analyzeEntry(updatedEntry);
-            await saveSentimentAnalysis(analysis);
-          } catch {
-            // Don't show error to user, analysis is optional
-          }
-        }
-      });
+      // Update with additional properties not in form data type
+      if (archived || color !== 'default') {
+        await updateJournalEntry(entryId, {
+          archived,
+          color,
+        });
+      }
 
       toast({
-        title: isDraft ? "Draft updated" : "Success!",
+        title: isDraft ? "Draft saved" : "Entry created",
         description: isDraft
-          ? "Your draft changes have been saved."
-          : "Your journal entry has been updated.",
+          ? "Your draft has been saved."
+          : "Your journal entry has been created.",
         variant: "success",
       });
 
-      onSaved?.();
-      onClose();
+      onEntryCreated?.();
+      handleClose();
     } catch {
       toast({
         title: "Error",
-        description: "Failed to update journal entry",
+        description: "Failed to create journal entry",
         variant: "error",
       });
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, entry, toast, onSaved, onClose, pinned, archived, color, tags, isPrivate]);
+  }, [user, pinned, archived, color, tags, isPrivate, currentSpaceId, toast, onEntryCreated, handleClose]);
 
-  const handlePasscodeSubmit = async (passcode: string) => {
-    if (hasPasscode) {
-      const success = await verifyPasscode(passcode);
-      if (success) {
-        setShowPasscodeModal(false);
-      }
-      return success;
-    } else {
-      const success = await setupPasscode(passcode);
-      if (success) {
-        setShowPasscodeModal(false);
-      }
-      return success;
-    }
-  };
+  if (!isOpen) return null;
 
-  // Locked state content
-  if (isLocked) {
-    const content = (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 md:p-6"
-        onClick={onClose}
-      >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl overflow-hidden bg-background border-border"
-        >
-          <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <Lock className="w-16 h-16 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">Private Entry</h2>
-            <p className="text-muted-foreground text-center mb-6">
-              This entry is private. Enter your passcode to edit.
-            </p>
-            <button
-              onClick={() => setShowPasscodeModal(true)}
-              className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:brightness-110 transition"
-            >
-              Unlock to Edit
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full transition bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-            aria-label="Close editor"
-          >
-            <X className="h-5 w-5" />
-          </button>
-
-          <PasscodeModal
-            isOpen={showPasscodeModal}
-            onClose={onClose}
-            onSubmit={handlePasscodeSubmit}
-            mode={hasPasscode ? "verify" : "setup"}
-            title={hasPasscode ? "Unlock Private Entry" : "Set Privacy Passcode"}
-          />
-        </div>
-      </div>
-    );
-
-    return createPortal(content, document.body);
-  }
-
-  // Main editor using EntryEditorShell
   return (
     <EntryEditorShell
       isOpen={true}
-      onClose={onClose}
+      onClose={handleClose}
       color={color}
       onColorChange={setColor}
       pinned={pinned}
@@ -213,10 +132,11 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
         <input
           type="text"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="Title"
           className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
           disabled={isSubmitting}
+          autoFocus
         />
       }
       toolbarActions={
@@ -313,7 +233,7 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
           <button
             type="button"
             className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isSubmitting}
           >
             Cancel
@@ -330,7 +250,7 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
                 Saving...
               </>
             ) : (
-              draftLabel
+              'Save as Draft'
             )}
           </button>
           <button
@@ -345,24 +265,23 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
                 Saving...
               </>
             ) : (
-              publishLabel
+              'Save Entry'
             )}
           </button>
         </div>
       }
     >
-      {/* Journal Form - images are added via toolbar, no separate attachments section */}
+      {/* Journal Form */}
       <JournalForm
         ref={formRef}
-        entryId={entry.id}
         initialData={{
-          title: entry.title,
-          content: entry.content,
-          tags: entry.tags,
-          mood: entry.mood,
-          links: entry.links || [],
-          isPrivate: entry.isPrivate,
-          isDraft: entry.isDraft,
+          title: '',
+          content: '',
+          tags: [],
+          mood: 'neutral',
+          links: [],
+          isPrivate: false,
+          isDraft: false,
         }}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}

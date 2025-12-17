@@ -3,8 +3,8 @@
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { ImageWithDelete } from './image-with-delete';
 import { cn } from '@/lib/utils';
 import {
   Bold,
@@ -69,10 +69,10 @@ export function RichTextEditorEnhanced({
           class: 'text-orange-600 dark:text-orange-400 underline hover:text-orange-700 dark:hover:text-orange-300'
         }
       }),
-      Image.configure({
-        inline: true,
+      ImageWithDelete.configure({
+        inline: false,
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg my-4 cursor-pointer hover:opacity-90 transition-opacity'
+          class: 'max-w-full h-auto rounded-lg'
         }
       }),
       Placeholder.configure({
@@ -89,7 +89,7 @@ export function RichTextEditorEnhanced({
     editable: !disabled,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose dark:prose-invert max-w-none focus:outline-none min-h-[300px] px-4 py-3 text-foreground'
+        class: 'prose prose-sm sm:prose dark:prose-invert max-w-none focus:outline-none min-h-[400px] max-h-[600px] overflow-y-auto px-4 py-3 text-foreground'
       }
     }
   });
@@ -251,8 +251,8 @@ export function RichTextEditorEnhanced({
       disabled={disabled}
       title={title}
       className={cn(
-        'p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
-        isActive && 'bg-gray-100 dark:bg-gray-800 text-orange-600 dark:text-orange-400',
+        'p-2 rounded hover:bg-gray-100 dark:hover:bg-white/10 transition-colors',
+        isActive && 'bg-gray-100 dark:bg-white/10 text-orange-600 dark:text-orange-400',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
@@ -262,8 +262,8 @@ export function RichTextEditorEnhanced({
 
   return (
     <>
-      <div className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div className="border-b border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-2 py-1 flex items-center gap-1 flex-wrap">
+      <div className="rounded-lg overflow-hidden">
+        <div className="border-b border-zinc-200/50 dark:border-zinc-700/30 bg-zinc-900/10 dark:bg-zinc-900/30 backdrop-blur-md px-2 py-1.5 flex items-center gap-1 flex-wrap">
           <div className="flex items-center gap-1">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBold().run()}
@@ -284,7 +284,7 @@ export function RichTextEditorEnhanced({
             </ToolbarButton>
           </div>
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+          <div className="w-px h-6 bg-zinc-200 dark:bg-white/20" />
 
           <div className="flex items-center gap-1">
             <ToolbarButton
@@ -306,7 +306,7 @@ export function RichTextEditorEnhanced({
             </ToolbarButton>
           </div>
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+          <div className="w-px h-6 bg-zinc-200 dark:bg-white/20" />
 
           <div className="flex items-center gap-1">
             <ToolbarButton
@@ -337,7 +337,7 @@ export function RichTextEditorEnhanced({
             </ToolbarButton>
           </div>
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+          <div className="w-px h-6 bg-zinc-200 dark:bg-white/20" />
 
           <div className="flex items-center gap-1">
             <ToolbarButton
@@ -358,7 +358,7 @@ export function RichTextEditorEnhanced({
             </ToolbarButton>
           </div>
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+          <div className="w-px h-6 bg-zinc-200 dark:bg-white/20" />
 
           <div className="flex items-center gap-1">
             <ToolbarButton
@@ -380,7 +380,7 @@ export function RichTextEditorEnhanced({
 
           {uploadingImages.size > 0 && (
             <>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+              <div className="w-px h-6 bg-zinc-200 dark:bg-white/20" />
               <div className="text-sm text-orange-600 dark:text-orange-400 px-2">
                 Uploading {uploadingImages.size} image{uploadingImages.size > 1 ? 's' : ''}...
               </div>
@@ -390,7 +390,7 @@ export function RichTextEditorEnhanced({
 
         <div
           {...getRootProps()}
-          className="bg-surface-base relative"
+          className="bg-transparent relative"
         >
           <input {...getInputProps()} />
           <ImageDropOverlay isDragActive={isDragActive} />

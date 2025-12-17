@@ -14,25 +14,19 @@ import { NotebookLiteDashboard } from '@/components/dashboard/notebook-lite-dash
 import { useSpaces } from '@/components/providers/spaces-provider';
 import type { JournalFilterValue } from '@/components/journal/journal-filter-content';
 
+// Updated to match reduced analytically meaningful mood set
 const POSITIVE_MOODS: Set<MoodType> = new Set([
   'happy',
   'excited',
   'grateful',
   'peaceful',
-  'hopeful',
-  'energetic',
-  'confident',
-  'loved',
-  'inspired',
-  'content',
 ]);
 
 const NEGATIVE_MOODS: Set<MoodType> = new Set([
-  'sad',
   'anxious',
-  'angry',
-  'stressed',
+  'sad',
   'frustrated',
+  'tired',
 ]);
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;

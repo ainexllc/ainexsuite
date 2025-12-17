@@ -18,3 +18,25 @@
   --app-secondary: 330 76% 68%;    /* Pink-400 */
   --app-secondary-foreground: 0 0% 0%;
 }
+
+/* Text selection styling */
+::selection {
+  background-color: hsl(var(--app-primary) / 0.3);
+  color: inherit;
+}
+
+.dark ::selection {
+  background-color: hsl(var(--app-primary) / 0.4);
+  color: inherit;
+}
+
+/* TipTap editor selection */
+.ProseMirror ::selection {
+  background-color: hsl(var(--app-primary) / 0.3);
+  color: inherit;
+}
+
+.dark .ProseMirror ::selection {
+  background-color: hsl(var(--app-primary) / 0.4);
+  color: inherit;
+}

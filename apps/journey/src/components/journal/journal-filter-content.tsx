@@ -27,6 +27,7 @@ const DATE_FIELD_OPTIONS: { value: DateRangeField; label: string }[] = [
   { value: 'updatedAt', label: 'Modified Date' },
 ];
 
+// Reduced analytically meaningful mood set
 const MOOD_OPTIONS: MoodType[] = [
   'happy',
   'excited',
@@ -35,8 +36,7 @@ const MOOD_OPTIONS: MoodType[] = [
   'neutral',
   'anxious',
   'sad',
-  'angry',
-  'stressed',
+  'frustrated',
   'tired',
 ];
 

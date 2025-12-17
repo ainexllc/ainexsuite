@@ -6,27 +6,18 @@ interface MoodChartProps {
   entries: JournalEntry[];
 }
 
+// Reduced analytically meaningful mood set with sentiment values
+// Positive (4-5), Neutral (3), Negative (1-2)
 const MOOD_VALUES: Record<MoodType, number> = {
   happy: 5,
   excited: 5,
   grateful: 5,
   peaceful: 4,
-  hopeful: 4,
-  energetic: 4,
-  confident: 4,
-  loved: 5,
-  inspired: 5,
-  content: 4,
   neutral: 3,
-  tired: 2,
-  confused: 2,
-  lonely: 1,
-  bored: 2,
+  anxious: 2,
   sad: 1,
-  anxious: 1,
-  angry: 1,
-  stressed: 1,
-  frustrated: 1,
+  frustrated: 2,
+  tired: 2,
 };
 
 export function MoodChart({ entries }: MoodChartProps) {

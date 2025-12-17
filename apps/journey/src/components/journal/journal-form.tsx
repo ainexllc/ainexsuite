@@ -5,14 +5,13 @@ import type { ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { JournalEntryFormData, MoodType, ContentEnhancementStyle } from '@ainexsuite/types';
+import { JournalEntryFormData, ContentEnhancementStyle, MoodType } from '@ainexsuite/types';
 import { moodConfig } from '@/lib/utils/mood';
 import { cn } from '@/lib/utils';
-import { Loader2, Upload, X, Link, Sparkles, Scissors, Compass, Copy } from 'lucide-react';
+import { Loader2, Upload, X, Sparkles, Scissors, Compass, Copy } from 'lucide-react';
 import { RichTextEditorEnhanced } from '@/components/ui/rich-text-editor-enhanced';
 // TODO: Port InlinePrompt component from journalnex-app
 // import { InlinePrompt } from '@/components/prompts/inline-prompt';
-import { ModernTagInput } from '@/components/ui/modern-tag-input';
 import { useToast } from '@ainexsuite/ui';
 import { auth } from '@ainexsuite/firebase';
 import { plainText } from '@/lib/utils/text';
@@ -24,10 +23,8 @@ const journalSchema = z.object({
   content: z.string().min(1, 'Content is required'),
   tags: z.array(z.string()),
   mood: z.enum([
-    'happy', 'sad', 'neutral', 'excited', 'anxious',
-    'grateful', 'angry', 'peaceful', 'stressed', 'hopeful',
-    'tired', 'energetic', 'confused', 'confident', 'lonely',
-    'loved', 'frustrated', 'inspired', 'bored', 'content'
+    'happy', 'excited', 'grateful', 'peaceful', 'neutral',
+    'anxious', 'sad', 'frustrated', 'tired'
   ]).optional(),
   links: z.array(z.string().url('Please enter a valid URL')),
   isPrivate: z.boolean(),
@@ -42,6 +39,10 @@ interface JournalFormProps {
   onContentChange?: (content: string) => void;
   /** Hide the built-in submit buttons (when buttons are rendered externally) */
   hideButtons?: boolean;
+  /** Hide the title field (when title is rendered externally in the shell) */
+  hideTitle?: boolean;
+  /** Entry ID for image uploads - if provided, images go to entry folder; otherwise temp folder */
+  entryId?: string;
 }
 
 const ENHANCEMENT_STYLES: Array<{
@@ -112,13 +113,11 @@ export interface JournalFormHandle {
 }
 
 export const JournalForm = forwardRef<JournalFormHandle, JournalFormProps>(
-function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hideButtons = false }, ref) {
+function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hideButtons = false, hideTitle = false, entryId }, ref) {
   const [files, setFiles] = useState<File[]>([]);
-  const [tags, setTags] = useState<string[]>(initialData?.tags || []);
-  const [linkInput, setLinkInput] = useState('');
-  const [links, setLinks] = useState<string[]>(initialData?.links || []);
   const [enhancingStyle, setEnhancingStyle] = useState<ContentEnhancementStyle | null>(null);
   const [lastEnhancedContent, setLastEnhancedContent] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [lastEnhancedStyle, setLastEnhancedStyle] = useState<ContentEnhancementStyle | null>(null);
   const isEnhancing = enhancingStyle !== null;
   const { toast } = useToast();
@@ -146,14 +145,16 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
     },
   });
 
-  const selectedMood = watch('mood');
   const contentValue = watch('content');
+  const selectedMood = watch('mood');
   const contentPlain = plainText(contentValue || '');
   const minBoostWordCount = 40;
   const wordCount = contentPlain.trim().length
     ? contentPlain.trim().split(/\s+/).filter(Boolean).length
     : 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const missingWords = Math.max(minBoostWordCount - wordCount, 0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const canEnhance = wordCount >= minBoostWordCount;
 
   useEffect(() => {
@@ -204,8 +205,6 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
     await onSubmit(
       {
         ...data,
-        tags,
-        links,
         isDraft: mode === 'draft',
       },
       files,
@@ -333,48 +332,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  const handleTagsChange = (newTags: string[]) => {
-    setTags(newTags);
-    setValue('tags', newTags);
-  };
-
-  const addLink = () => {
-    const trimmedLink = linkInput.trim();
-    if (trimmedLink && !links.includes(trimmedLink)) {
-      // Basic URL validation
-      try {
-        new URL(trimmedLink);
-        const newLinks = [...links, trimmedLink];
-        setLinks(newLinks);
-        setValue('links', newLinks);
-        setLinkInput('');
-      } catch {
-        // If URL is invalid, try adding https:// prefix
-        try {
-          new URL(`https://${trimmedLink}`);
-          const fullUrl = `https://${trimmedLink}`;
-          const newLinks = [...links, fullUrl];
-          setLinks(newLinks);
-          setValue('links', newLinks);
-          setLinkInput('');
-        } catch {
-          // Still invalid, don't add it
-          toast({
-            title: 'Invalid URL',
-            description: 'Please enter a valid URL',
-            variant: 'error',
-          });
-        }
-      }
-    }
-  };
-
-  const removeLink = (link: string) => {
-    const newLinks = links.filter(l => l !== link);
-    setLinks(newLinks);
-    setValue('links', newLinks);
-  };
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBoostPreview = async (style: ContentEnhancementStyle) => {
     if (isEnhancing) return;
 
@@ -464,6 +422,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUndoEnhancement = () => {
     if (!lastEnhancedContent) return;
 
@@ -495,34 +454,31 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
     : 'Save Draft';
 
   return (
-    <form onSubmit={submitPublish} className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-          Title
-        </label>
-        <input
-          {...register('title')}
-          type="text"
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-accent-500 dark:focus:ring-accent-400 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
-          placeholder="Give your entry a title..."
-          disabled={isSubmitting}
-          onKeyDown={handleTitleKeyDown}
-        />
-        {errors.title && (
-          <p className="text-red-500 text-sm mt-1">{String(errors.title.message)}</p>
-        )}
-      </div>
+    <form onSubmit={submitPublish} className="space-y-4">
+      {!hideTitle && (
+        <div>
+          <input
+            {...register('title')}
+            type="text"
+            className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+            placeholder="Title"
+            disabled={isSubmitting}
+            onKeyDown={handleTitleKeyDown}
+          />
+          {errors.title && (
+            <p className="text-red-500 text-sm mt-1">{String(errors.title.message)}</p>
+          )}
+        </div>
+      )}
 
       <div className="relative">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-          Content
-        </label>
         <div className="relative">
           <RichTextEditorEnhanced
             content={contentValue || ''}
             onChange={(value) => setValue('content', value)}
             placeholder="Write your thoughts..."
             disabled={isSubmitting || isEnhancing}
+            entryId={entryId}
             onEditorReady={(focus) => {
               editorFocusRef.current = focus;
             }}
@@ -549,83 +505,6 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
         /> */}
         {errors.content && (
           <p className="text-red-500 text-sm mt-1">{String(errors.content.message)}</p>
-        )}
-      </div>
-
-      <div
-        className={cn(
-          'rounded-2xl border px-4 py-4 shadow-sm transition-colors',
-          canEnhance
-            ? 'border-orange-500/60 bg-surface-base'
-            : 'border-border bg-muted/50',
-        )}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">AI boosts</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Quick rewrites tuned to your draft—apply or undo in one tap.
-            </p>
-          </div>
-          <span
-            className={cn(
-              'rounded-full px-3 py-1 text-xs font-semibold',
-              canEnhance
-                ? 'bg-orange-500/10 dark:bg-orange-400/10 text-orange-600 dark:text-orange-400'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
-            )}
-          >
-            {canEnhance ? `Ready • ${wordCount} words` : `Need ${missingWords} more words`}
-          </span>
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {ENHANCEMENT_STYLES.map((style) => {
-            const isActive = enhancingStyle === style.id;
-            const wasLastApplied = lastEnhancedStyle === style.id;
-            const isPreviewing = boostPreview?.style === style.id;
-            const isLoading = isActive || (isPreviewing && boostPreview?.status === 'loading');
-
-            return (
-              <button
-                key={style.id}
-                type="button"
-                title={style.description}
-                onClick={() => handleBoostPreview(style.id)}
-                disabled={isSubmitting || isLoading || !canEnhance}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-orange-500/40 disabled:cursor-not-allowed disabled:opacity-60',
-                  isActive
-                    ? 'border-orange-500 dark:border-orange-400 bg-orange-500 dark:bg-orange-400 text-white shadow-sm'
-                    : isPreviewing && boostPreview?.status === 'ready'
-                      ? 'border-orange-500/80 dark:border-orange-400/80 bg-orange-500/10 dark:bg-orange-400/10 text-orange-600 dark:text-orange-400'
-                      : wasLastApplied
-                      ? 'border-orange-500/90 text-orange-600 dark:text-orange-400 bg-surface-base/70'
-                      : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-orange-500 dark:hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400',
-                )}
-              >
-                <span className="flex h-5 w-5 items-center justify-center">
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : style.icon}
-                </span>
-                {style.label}
-              </button>
-            );
-          })}
-          {lastEnhancedContent && (
-            <button
-              type="button"
-              onClick={handleUndoEnhancement}
-              disabled={enhancingStyle !== null}
-              className="inline-flex items-center gap-2 rounded-full border border-transparent px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 transition hover:text-gray-900 dark:hover:text-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Undo last change
-            </button>
-          )}
-        </div>
-        {!canEnhance && (
-          <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-            AI boosts unlock around {minBoostWordCount} words. Capture a little more detail to try them out.
-          </p>
         )}
       </div>
 
@@ -744,118 +623,46 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+      {/* Mood Picker */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
           How are you feeling?
         </label>
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-1.5">
-          {(Object.keys(moodConfig) as MoodType[]).map((mood) => (
-            <button
-              key={mood}
-              type="button"
-              onClick={() => setValue('mood', mood)}
-              disabled={isSubmitting}
-              className={cn(
-                'p-1.5 rounded-lg border transition-all flex flex-col items-center gap-0.5 hover:scale-105',
-                'bg-surface-base',
-                selectedMood === mood
-                  ? 'border-orange-500 bg-orange-500/10 shadow-md shadow-orange-500/20'
-                  : 'border-border hover:border-orange-500/40'
-              )}
-              title={moodConfig[mood].label}
-            >
-              {(() => {
-                const Icon = moodConfig[mood].icon;
-                return <Icon className={cn(
-                  "h-4 w-4 transition-colors",
-                  selectedMood === mood ? "text-orange-500 dark:text-orange-400" : "text-gray-600 dark:text-gray-300"
-                )} />;
-              })()}
-              <span className={cn(
-                "text-[10px] font-medium leading-tight",
-                selectedMood === mood
-                  ? "text-orange-500 dark:text-orange-400"
-                  : "text-gray-600 dark:text-gray-400"
-              )}>{moodConfig[mood].label}</span>
-            </button>
-          ))}
-        </div>
-        {selectedMood && (
-          <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
-            Selected: <span className="font-semibold text-orange-500 dark:text-orange-400">{moodConfig[selectedMood as MoodType].label}</span>
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-          Tags
-        </label>
-        <ModernTagInput
-          tags={tags}
-          onTagsChange={handleTagsChange}
-          disabled={isSubmitting}
-          placeholder="Type and press Enter to add tags..."
-          maxTags={10}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-          Links
-        </label>
-        <div className="flex gap-2 mb-2">
-          <div className="flex-1 relative">
-            <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400" />
-            <input
-              type="text"
-              value={linkInput}
-              onChange={(e) => setLinkInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addLink();
-                }
-              }}
-              className="w-full pl-9 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
-              placeholder="Add links (YouTube, articles, etc.)..."
-              disabled={isSubmitting}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={addLink}
-            disabled={isSubmitting}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-          >
-            Add
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {links.map((link) => (
-            <span
-              key={link}
-              className="inline-flex items-center gap-1 bg-[#f97316]/20 text-[#f97316] px-3 py-1 rounded-full text-sm"
-            >
-              <Link className="w-3 h-3" />
-              <a
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline truncate max-w-40"
-              >
-                {link.length > 30 ? `${link.substring(0, 30)}...` : link}
-              </a>
+        <div className="grid grid-cols-3 gap-2">
+          {(Object.keys(moodConfig) as MoodType[]).map((mood) => {
+            const config = moodConfig[mood];
+            const Icon = config.icon;
+            const isSelected = selectedMood === mood;
+            return (
               <button
+                key={mood}
                 type="button"
-                onClick={() => removeLink(link)}
+                onClick={() => setValue('mood', mood)}
                 disabled={isSubmitting}
-                className="hover:text-red-500"
+                className={cn(
+                  'flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all',
+                  isSelected
+                    ? 'bg-orange-500/15 dark:bg-orange-400/10 ring-2 ring-orange-500 dark:ring-orange-400'
+                    : 'bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10'
+                )}
               >
-                <X className="w-3 h-3" />
+                <Icon className={cn(
+                  'h-6 w-6',
+                  isSelected
+                    ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-zinc-600 dark:text-zinc-400'
+                )} />
+                <span className={cn(
+                  'text-[11px] font-medium leading-tight',
+                  isSelected
+                    ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-zinc-600 dark:text-zinc-500'
+                )}>
+                  {config.label}
+                </span>
               </button>
-            </span>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -888,43 +695,60 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
         </div>
 
         {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-lg p-3"
-              >
-                <span className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                  {file.name}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeFile(index)}
-                  disabled={isSubmitting}
-                  className="text-red-500 hover:text-red-600"
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {files.map((file, index) => {
+              const isImage = file.type.startsWith('image/');
+              const previewUrl = isImage ? URL.createObjectURL(file) : null;
+
+              return isImage ? (
+                <figure
+                  key={index}
+                  className="relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800"
                 >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={previewUrl!}
+                    alt={file.name}
+                    className="h-32 w-full object-cover opacity-90 hover:opacity-100 transition-opacity"
+                    onLoad={() => {
+                      // Revoke URL after image loads to free memory
+                      if (previewUrl) URL.revokeObjectURL(previewUrl);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    disabled={isSubmitting}
+                    className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm transition-colors"
+                    aria-label={`Remove ${file.name}`}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1">
+                    <span className="text-xs text-white truncate block">{file.name}</span>
+                  </div>
+                </figure>
+              ) : (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
+                >
+                  <span className="text-sm text-zinc-900 dark:text-zinc-100 truncate">
+                    {file.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    disabled={isSubmitting}
+                    className="text-red-500 hover:text-red-600 ml-2"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          {...register('isPrivate')}
-          type="checkbox"
-          id="isPrivate"
-          className="rounded border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 focus:ring-orange-500 dark:focus:ring-orange-400"
-          disabled={isSubmitting}
-        />
-        <label
-          htmlFor="isPrivate"
-          className="text-sm text-gray-700 dark:text-gray-300"
-        >
-          Keep this entry private
-        </label>
       </div>
 
       {!hideButtons && (
