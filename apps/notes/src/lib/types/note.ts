@@ -58,10 +58,12 @@ export type NotePattern =
   | "circles";
 
 export type BackgroundOverlay =
-  | "none"    // No overlay
-  | "auto"    // Adaptive based on brightness
-  | "dim"     // Dark overlay for contrast
-  | "glass";  // Frosted glass effect
+  | "none"      // No overlay
+  | "auto"      // Adaptive based on brightness
+  | "dim"       // Light dark overlay
+  | "dimmer"    // Medium dark overlay
+  | "dimmest"   // Heavy dark overlay
+  | "glass";    // Frosted glass effect
 
 export type ChecklistItem = {
   id: string;

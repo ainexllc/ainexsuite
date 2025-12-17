@@ -118,7 +118,9 @@ export function getTextColorClasses(
 export const OVERLAY_OPTIONS: { id: BackgroundOverlay; label: string; description: string }[] = [
   { id: 'none', label: 'None', description: 'No overlay' },
   { id: 'auto', label: 'Auto', description: 'Adaptive based on image' },
-  { id: 'dim', label: 'Dim', description: 'Dark overlay for contrast' },
+  { id: 'dim', label: 'Dim', description: 'Light dark overlay' },
+  { id: 'dimmer', label: 'Dimmer', description: 'Medium dark overlay' },
+  { id: 'dimmest', label: 'Dimmest', description: 'Heavy dark overlay' },
   { id: 'glass', label: 'Glass', description: 'Frosted glass effect' },
 ];
 
@@ -136,8 +138,16 @@ export function getOverlayClasses(
       return '';
 
     case 'dim':
-      // Dark overlay for better text contrast
-      return 'absolute inset-0 bg-black/40';
+      // Light dark overlay
+      return 'absolute inset-0 bg-black/30';
+
+    case 'dimmer':
+      // Medium dark overlay
+      return 'absolute inset-0 bg-black/50';
+
+    case 'dimmest':
+      // Heavy dark overlay
+      return 'absolute inset-0 bg-black/70';
 
     case 'glass':
       // Frosted glass effect with blur and subtle tint
