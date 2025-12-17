@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getBackgroundOptions, subscribeToBackgrounds, toBackgroundOption } from '@ainexsuite/firebase';
 import type { BackgroundDoc, BackgroundOption } from '@ainexsuite/types';
 interface UseBackgroundsReturn {
@@ -20,19 +20,14 @@ export function useBackgrounds(): UseBackgroundsReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get user tier from subscription context (default to 'free')
-  // TODO: Integrate with subscription system to get actual tier
-  const userTier = useMemo(() => {
-    return 'free' as 'free' | 'premium' | 'enterprise';
-  }, []);
-
-  // Fetch backgrounds
+  // Fetch backgrounds (no tier filtering for now)
   const fetchBackgrounds = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const options = await getBackgroundOptions(userTier);
+      // Get all backgrounds without tier filtering
+      const options = await getBackgroundOptions();
       setBackgrounds(options);
     } catch (err) {
       console.error('Failed to fetch backgrounds:', err);
@@ -41,7 +36,7 @@ export function useBackgrounds(): UseBackgroundsReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [userTier]);
+  }, []);
 
   // Initial fetch
   useEffect(() => {
@@ -52,23 +47,16 @@ export function useBackgrounds(): UseBackgroundsReturn {
   useEffect(() => {
     const unsubscribe = subscribeToBackgrounds(
       (docs: BackgroundDoc[]) => {
-        // Filter by active and access level
-        const accessible = docs.filter((bg) => {
-          if (!bg.active) return false;
-          if (bg.accessLevel === 'free') return true;
-          if (bg.accessLevel === 'premium') return userTier !== 'free';
-          if (bg.accessLevel === 'restricted') return userTier === 'enterprise';
-          return false;
-        });
-
+        // For now, show all active backgrounds regardless of access level
+        // TODO: Re-enable access level filtering once subscription system is integrated
+        const accessible = docs.filter((bg) => bg.active);
         setBackgrounds(accessible.map(toBackgroundOption));
         setIsLoading(false);
-      },
-      { active: true }
+      }
     );
 
     return () => unsubscribe();
-  }, [userTier]);
+  }, []);
 
   // Get background by ID
   const getById = useCallback(
