@@ -243,12 +243,19 @@ export function subscribeToBackgrounds(
  * Filters by user's subscription tier
  */
 export async function getBackgroundOptions(
-  userTier: 'free' | 'premium' | 'enterprise' = 'free'
+  userTier?: 'free' | 'premium' | 'enterprise'
 ): Promise<BackgroundOption[]> {
-  const backgrounds = await getBackgrounds({ active: true });
+  // Get all backgrounds (filter active client-side to avoid index requirement)
+  const backgrounds = await getBackgrounds();
+  const activeBackgrounds = backgrounds.filter(bg => bg.active !== false);
+
+  // If no tier specified, return all active backgrounds
+  if (!userTier) {
+    return activeBackgrounds.map(toBackgroundOption);
+  }
 
   // Filter by access level based on user tier
-  const accessible = backgrounds.filter((bg) => {
+  const accessible = activeBackgrounds.filter((bg) => {
     if (bg.accessLevel === 'free') return true;
     if (bg.accessLevel === 'premium') return userTier !== 'free';
     if (bg.accessLevel === 'restricted') return userTier === 'enterprise';
