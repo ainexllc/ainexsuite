@@ -97,6 +97,7 @@ export type NoteDoc = {
   checklist: ChecklistItem[];
   color: NoteColor;
   pattern?: NotePattern;
+  backgroundImage?: string | null; // ID of a predefined background image
   pinned: boolean;
   archived: boolean;
   labelIds: string[];
@@ -131,6 +132,7 @@ export type NoteDraft = {
   checklist?: ChecklistItem[];
   color?: NoteColor;
   pattern?: NotePattern;
+  backgroundImage?: string | null;
   reminderAt?: Date | null;
   reminderId?: string | null;
   noteDate?: Date | null;

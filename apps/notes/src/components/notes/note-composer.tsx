@@ -420,9 +420,7 @@ export function NoteComposer() {
 
     try {
       setIsCreatingLabel(true);
-      console.log("[NoteComposer] Creating label with name:", name);
       const newLabelId = await createLabel({ name });
-      console.log("[NoteComposer] Created label with id:", newLabelId);
       if (newLabelId) {
         setSelectedLabelIds((prev) => [...prev, newLabelId]);
       }

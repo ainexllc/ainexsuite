@@ -58,7 +58,6 @@ export function storeSession(sessionCookie: string): boolean {
     expiresAt: now + SESSION_TTL,
   });
 
-  console.log(`[SSO Store] Stored session for uid: ${sessionId} (total sessions: ${sessionStore.size})`);
   return true;
 }
 
@@ -85,11 +84,9 @@ export function getLatestSession(): string | null {
   }
 
   if (latestSession) {
-    console.log(`[SSO Store] Returning latest session (created: ${new Date(latestSession.createdAt).toISOString()})`);
     return latestSession.sessionCookie;
   }
 
-  console.log('[SSO Store] No valid session found');
   return null;
 }
 
@@ -128,7 +125,6 @@ export function removeSession(sessionCookie: string): boolean {
  */
 export function clearAllSessions(): void {
   sessionStore.clear();
-  console.log('[SSO Store] All sessions cleared');
 }
 
 /**
@@ -151,8 +147,5 @@ if (typeof setInterval !== 'undefined') {
       }
     }
 
-    if (removed > 0) {
-      console.log(`[SSO Store] Cleaned up ${removed} expired sessions`);
-    }
   }, CLEANUP_INTERVAL);
 }

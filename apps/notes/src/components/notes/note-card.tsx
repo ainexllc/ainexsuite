@@ -18,6 +18,7 @@ import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { NoteEditor } from "@/components/notes/note-editor";
 import { useLabels } from "@/components/providers/labels-provider";
+import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses } from "@/lib/backgrounds";
 
 type NoteCardProps = {
   note: Note;
@@ -43,6 +44,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
 
   const noteColorConfig = NOTE_COLORS.find((c) => c.id === note.color);
   const cardClass = noteColorConfig?.cardClass || "bg-zinc-50 dark:bg-zinc-900";
+  const backgroundImage = note.backgroundImage ? getBackgroundById(note.backgroundImage) ?? null : null;
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -103,7 +105,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
       <article
         className={clsx(
           // Use theme lab color system for light/dark mode
-          cardClass,
+          !backgroundImage && cardClass,
           "border border-zinc-200 dark:border-zinc-800",
           "group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
@@ -115,6 +117,21 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           setIsEditing(true);
         }}
       >
+        {/* Background Image Layer */}
+        {backgroundImage && (
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url(${backgroundImage.fullImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Adaptive overlay for text readability */}
+            <div className={getOverlayClasses(backgroundImage)} />
+          </div>
+        )}
+
         {/* Corner Pin Badge - clickable to unpin */}
         {note.pinned && (
           <button
@@ -153,7 +170,10 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             }}
           >
             {note.title ? (
-              <h3 className="pr-8 text-[17px] font-semibold text-zinc-900 dark:text-zinc-50 tracking-[-0.02em]">
+              <h3 className={clsx(
+                "pr-8 text-[17px] font-semibold tracking-[-0.02em]",
+                getTextColorClasses(backgroundImage, 'title')
+              )}>
                 {note.title}
               </h3>
             ) : null}
@@ -166,27 +186,33 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                     className={clsx(
                       "flex items-start gap-2 text-sm",
                       item.completed
-                        ? "text-zinc-400 dark:text-zinc-600 line-through"
-                        : "text-zinc-700 dark:text-zinc-300",
+                        ? clsx(getTextColorClasses(backgroundImage, 'checklist-completed'), "line-through")
+                        : getTextColorClasses(backgroundImage, 'checklist'),
                     )}
                   >
                     <span className={clsx(
                       "mt-1.5 h-2 w-2 rounded-full flex-shrink-0",
                       item.completed
-                        ? "bg-zinc-300 dark:bg-zinc-700"
+                        ? backgroundImage?.brightness === 'light' ? "bg-black/20" : backgroundImage ? "bg-white/30" : "bg-zinc-300 dark:bg-zinc-700"
                         : "bg-yellow-500"
                     )} />
                     <span>{item.text}</span>
                   </li>
                 ))}
                 {note.checklist.length > 6 ? (
-                  <li className="text-xs text-zinc-400 dark:text-zinc-500">
+                  <li className={clsx(
+                    "text-xs",
+                    getTextColorClasses(backgroundImage, 'muted')
+                  )}>
                     +{note.checklist.length - 6} more
                   </li>
                 ) : null}
               </ul>
             ) : note.body ? (
-              <p className="mt-3 whitespace-pre-wrap text-[15px] text-zinc-700 dark:text-zinc-300 leading-7 tracking-[-0.01em]">
+              <p className={clsx(
+                "mt-3 whitespace-pre-wrap text-[15px] leading-7 tracking-[-0.01em]",
+                getTextColorClasses(backgroundImage, 'body')
+              )}>
                 {note.body}
               </p>
             ) : null}
@@ -236,7 +262,10 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           </div>
 
           <footer className={clsx("mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t-0")}>
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className={clsx(
+              "flex items-center gap-2 text-[11px] uppercase tracking-wide",
+              getTextColorClasses(backgroundImage, 'muted')
+            )}>
               {note.sharedWithUserIds?.length ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
                   <Users className="h-3 w-3" />
@@ -251,7 +280,10 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
               <button
                 type="button"
                 onClick={handleArchive}
-                className="h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
+                className={clsx(
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  getActionColorClasses(backgroundImage)
+                )}
                 aria-label={note.archived ? "Unarchive note" : "Archive note"}
               >
                 <Archive className="h-3.5 w-3.5" />
@@ -261,8 +293,8 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
                   type="button"
                   onClick={handleOpenPalette}
                   className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200",
-                    showPalette && "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200",
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    getActionColorClasses(backgroundImage, showPalette),
                   )}
                   aria-label="Change color"
                 >
@@ -292,7 +324,14 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
               <button
                 type="button"
                 onClick={handleDeleteClick}
-                className="h-7 w-7 rounded-full flex items-center justify-center transition text-red-400 hover:bg-red-500/20 hover:text-red-500"
+                className={clsx(
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  backgroundImage?.brightness === 'light'
+                    ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
+                    : backgroundImage
+                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                      : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
+                )}
                 aria-label="Delete note"
               >
                 <Trash2 className="h-3.5 w-3.5" />

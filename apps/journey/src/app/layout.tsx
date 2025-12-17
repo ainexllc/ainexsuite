@@ -7,7 +7,7 @@ import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
 import { getServerTheme } from '@ainexsuite/theme/server';
 
 // Inline script to sync cookie → localStorage BEFORE next-themes runs
-const THEME_SYNC_SCRIPT = `(function(){try{var c=document.cookie.match(/(^| )ainex-theme=([^;]+)/);if(c&&c[2]){localStorage.setItem('ainex-theme',c[2]);console.log('[SYNC]',c[2])}}catch(e){}})();`;
+const THEME_SYNC_SCRIPT = `(function(){try{var c=document.cookie.match(/(^| )ainex-theme=([^;]+)/);if(c&&c[2]){localStorage.setItem('ainex-theme',c[2])}}catch(e){}})();`;
 import { Toaster } from '@ainexsuite/ui';
 import '@ainexsuite/ui/styles';
 import './globals.css';

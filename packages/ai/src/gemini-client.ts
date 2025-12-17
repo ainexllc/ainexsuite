@@ -191,7 +191,6 @@ export async function generateContent(
       // Fall back to OpenAI if available
       if (openaiApiKey) {
         try {
-          console.log('Falling back to OpenAI GPT-4o mini');
           return await generateWithOpenAI(sanitizedPrompt, openaiApiKey);
         } catch (openaiError) {
           console.error('OpenAI fallback failed:', openaiError);

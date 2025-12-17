@@ -78,11 +78,10 @@ export async function GET(request: NextRequest) {
             const userData = userDoc.data();
             if (userData?.preferences) {
               preferences = userData.preferences;
-              console.log('[Session GET] Loaded preferences from Firestore for uid:', decoded.uid);
             }
           }
-        } catch (firestoreError) {
-          console.log('[Session GET] Could not load from Firestore, using cookie preferences');
+        } catch {
+          // Could not load from Firestore, using cookie preferences
         }
 
         // Return full user data with Firestore preferences (or cookie fallback)
@@ -186,10 +185,8 @@ export async function PUT(request: NextRequest) {
             ...filteredUpdates,
             updatedAt: FieldValue.serverTimestamp(),
           });
-          console.log('[Session] Preferences saved to Firestore for uid:', decoded.uid);
-        } catch (firestoreError) {
+        } catch {
           // Firestore update failed - continue with cookie update only
-          console.log('[Session] Firestore update skipped (Admin SDK not available):', firestoreError instanceof Error ? firestoreError.message : firestoreError);
         }
 
         // Create new cookie with updated data
@@ -364,11 +361,10 @@ export async function POST(request: NextRequest) {
             const existingUser = userDoc.data();
             if (existingUser?.preferences) {
               existingPreferences = existingUser.preferences;
-              console.log('[Session] Loaded existing preferences from Firestore for uid:', userData.uid);
             }
           }
-        } catch (firestoreError) {
-          console.log('[Session] Could not load preferences from Firestore (Admin SDK not available)');
+        } catch {
+          // Could not load preferences from Firestore (Admin SDK not available)
         }
 
         // Create minimal user object for local dev
@@ -493,7 +489,6 @@ export async function POST(request: NextRequest) {
         suiteAccess: true, // Grant suite access during trial
       };
 
-      console.log('✅ New user created with 30-day trial access to all apps:', user.email);
       await userRef.set(user);
     } else {
       user = userDoc.data();
@@ -510,8 +505,6 @@ export async function POST(request: NextRequest) {
           suiteAccess: true,
           lastLoginAt: FieldValue.serverTimestamp(),
         });
-
-        console.log('✅ Existing user upgraded with 30-day trial access:', user.email);
 
         // Reload user data
         const updatedDoc = await userRef.get();
@@ -601,11 +594,9 @@ export async function CustomTokenPOST(request: NextRequest) {
         try {
           const adminAuth = getAdminAuth();
           const customToken = await adminAuth.createCustomToken(uid);
-          console.log('[CustomToken] Dev mode with Admin SDK: created real custom token for uid:', uid);
           return NextResponse.json({ customToken });
-        } catch (adminError) {
+        } catch {
           // Admin SDK not configured or failed - fall back to devMode hydration
-          console.log('[CustomToken] Admin SDK not available, using devMode hydration for uid:', uid);
 
           // Try to get latest preferences from Firestore and update the session cookie
           let updatedSessionCookie = sessionCookie;
@@ -618,11 +609,10 @@ export async function CustomTokenPOST(request: NextRequest) {
                 // Update the decoded session with Firestore preferences
                 decoded.preferences = userData.preferences;
                 updatedSessionCookie = Buffer.from(JSON.stringify(decoded)).toString('base64');
-                console.log('[CustomToken] Updated session cookie with Firestore preferences for uid:', uid);
               }
             }
-          } catch (firestoreError) {
-            console.log('[CustomToken] Could not fetch Firestore preferences, using cookie preferences');
+          } catch {
+            // Could not fetch Firestore preferences, using cookie preferences
           }
 
           return NextResponse.json({

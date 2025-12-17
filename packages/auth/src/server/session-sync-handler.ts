@@ -108,7 +108,6 @@ export async function POST(request: NextRequest) {
           { status: 500, headers: corsHeaders }
         );
       }
-      console.log('[Session Sync] Session stored in memory (dev mode)');
       return NextResponse.json({ success: true }, { headers: corsHeaders });
     }
 
@@ -120,8 +119,6 @@ export async function POST(request: NextRequest) {
 
     const cookieOptions = PROD_COOKIE_OPTIONS;
     response.cookies.set('__session', sessionCookie, cookieOptions);
-
-    console.log('[Session Sync] Session synced from another app (prod mode)');
 
     return response;
   } catch (error) {

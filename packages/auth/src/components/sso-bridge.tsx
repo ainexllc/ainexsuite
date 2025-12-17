@@ -62,15 +62,10 @@ export function SSOBridge({ onComplete, enabled = true, hydrateFromDevSession }:
     }
     checkingRef.current = true;
 
-    console.log('[SSOBridge] Checking Auth Hub for existing session...');
-
     checkAuthHub()
       .then(async (sessionCookie) => {
         if (sessionCookie) {
-          console.log('[SSOBridge] Found session on Auth Hub, bootstrapping...');
           await bootstrapWithSession(sessionCookie, hydrateFromDevSession);
-        } else {
-          console.log('[SSOBridge] No session found on Auth Hub');
         }
       })
       .catch((error) => {
@@ -147,7 +142,6 @@ async function bootstrapWithSession(
     // In development mode without admin SDK, server returns devMode=true with sessionCookie
     // Use hydrateFromDevSession callback to set user directly without reloading
     if (data.devMode && data.sessionCookie) {
-      console.log('[SSOBridge] Dev mode - hydrating user directly from session');
       // Store in localStorage for future page refreshes
       if (typeof window !== 'undefined') {
         localStorage.setItem('__cross_app_session', data.sessionCookie);
@@ -171,7 +165,6 @@ async function bootstrapWithSession(
 
     // Sign in with the custom token
     await signInWithCustomToken(auth, customToken);
-    console.log('[SSOBridge] Successfully signed in via SSO');
   } catch (error) {
     console.error('[SSOBridge] Bootstrap failed:', error);
   }

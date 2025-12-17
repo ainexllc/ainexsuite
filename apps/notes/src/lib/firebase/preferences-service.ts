@@ -19,6 +19,7 @@ export const DEFAULT_PREFERENCES: Omit<UserPreference, "id" | "createdAt" | "upd
   smartSuggestions: true,
   focusModePinned: true,
   viewMode: "masonry",
+  workspaceBackground: null,
 };
 
 /**
@@ -92,6 +93,7 @@ function mapPreferenceSnapshot(
       ? toRuntimeFilters(data.savedFilters as StoredFilterValue)
       : undefined,
     savedSort: data.savedSort as SortConfig | undefined,
+    workspaceBackground: data.workspaceBackground ?? null,
     createdAt: data.createdAt?.toDate?.() ?? new Date(),
     updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
   };

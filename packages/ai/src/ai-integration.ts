@@ -182,9 +182,6 @@ export async function generateAIContentBatch(
         result.error?.type === 'rate_limit' &&
         result.error?.retryAfter
       ) {
-        console.log(
-          `Rate limited. Retrying after ${result.error.retryAfter} seconds...`
-        );
         await new Promise((resolve) =>
           setTimeout(resolve, (result.error?.retryAfter || 0) * 1000 + retryDelay)
         );

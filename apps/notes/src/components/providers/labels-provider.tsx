@@ -60,15 +60,12 @@ export function LabelsProvider({ children }: LabelsProviderProps) {
 
   const handleCreate = useCallback(
     async (draft: LabelDraft) => {
-      console.log("[LabelsProvider] Creating label, userId:", userId, "draft:", draft);
       if (!userId) {
-        console.error("[LabelsProvider] No userId, cannot create label");
         return null;
       }
 
       try {
         const result = await createLabelMutation(userId, draft);
-        console.log("[LabelsProvider] Label created successfully:", result);
         return result;
       } catch (error) {
         console.error("[LabelsProvider] Failed to create label:", error);

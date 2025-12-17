@@ -25,6 +25,8 @@ export type UserPreferenceDoc = {
   // Filter persistence
   savedFilters?: StoredFilterValue;
   savedSort?: SortConfig;
+  // Workspace background
+  workspaceBackground?: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -36,4 +38,6 @@ export type UserPreference = Omit<UserPreferenceDoc, "createdAt" | "updatedAt" |
   smsNumber: string | null;
   // Runtime version with Date objects
   savedFilters?: FilterValue;
+  // Workspace background (can be null for no background)
+  workspaceBackground: string | null;
 };

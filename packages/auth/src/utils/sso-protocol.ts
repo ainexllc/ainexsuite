@@ -76,7 +76,6 @@ export function isAuthHub(): boolean {
 export async function syncSessionWithAuthHub(sessionCookie: string): Promise<boolean> {
   // Don't sync if we're already on the auth hub
   if (isAuthHub()) {
-    console.log('[SSO] Already on auth hub, no sync needed');
     return true;
   }
 
@@ -84,8 +83,6 @@ export async function syncSessionWithAuthHub(sessionCookie: string): Promise<boo
   const syncUrl = `${authHubUrl}/api/auth/session-sync`;
 
   try {
-    console.log('[SSO] Syncing session with Auth Hub:', authHubUrl);
-
     const response = await fetch(syncUrl, {
       method: 'POST',
       headers: {
@@ -95,15 +92,8 @@ export async function syncSessionWithAuthHub(sessionCookie: string): Promise<boo
       body: JSON.stringify({ sessionCookie }),
     });
 
-    if (response.ok) {
-      console.log('[SSO] Session synced with Auth Hub successfully');
-      return true;
-    } else {
-      console.warn('[SSO] Failed to sync session with Auth Hub:', response.status);
-      return false;
-    }
-  } catch (error) {
-    console.warn('[SSO] Error syncing session with Auth Hub:', error);
+    return response.ok;
+  } catch {
     return false;
   }
 }

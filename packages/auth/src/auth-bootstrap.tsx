@@ -138,7 +138,6 @@ export function AuthBootstrap() {
         .then(async (isValid) => {
           if (!isValid) {
             // Session was revoked (user logged out on another app)
-            console.log('[AuthBootstrap] Session revoked, signing out stale Firebase user');
             await signOut(auth);
             // Also clear dev localStorage session if present
             clearDevCrossAppSession();
@@ -161,7 +160,6 @@ export function AuthBootstrap() {
     if (process.env.NODE_ENV === 'development') {
       const crossAppSession = getDevCrossAppSession();
       if (crossAppSession) {
-        console.log('[AuthBootstrap] Found dev cross-app session, bootstrapping...');
         // Don't clear - keep it for page refreshes
         // The session has a 5-minute expiry built into getDevCrossAppSession()
 
@@ -172,7 +170,6 @@ export function AuthBootstrap() {
 
         bootstrapFromDevSessionFn(crossAppSession, hydrateFromDevSession)
           .then(() => {
-            console.log('[AuthBootstrap] Dev session bootstrap succeeded');
             // Refresh the timestamp to extend the session on successful bootstrap
             refreshDevCrossAppSession();
             setBootstrapped(true);
@@ -209,7 +206,6 @@ export function AuthBootstrap() {
             localStorage.setItem('__cross_app_timestamp', Date.now().toString());
           }
         }
-        console.log('[AuthBootstrap] Session bootstrap succeeded');
         setBootstrapped(true);
         setBootstrapStatus('complete');
       })
@@ -233,19 +229,13 @@ export function AuthBootstrap() {
  * The server reads the cookie and returns a custom token
  */
 async function bootstrapFromHttpOnlyCookie(): Promise<{ devMode?: boolean; sessionCookie?: string } | void> {
-  console.log('[AuthBootstrap] Attempting to bootstrap from httpOnly cookie...');
-  console.log('[AuthBootstrap] Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'SSR');
-
   const response = await fetch('/api/auth/custom-token', {
     method: 'POST',
     credentials: 'include', // Include httpOnly cookies
   });
 
-  console.log('[AuthBootstrap] custom-token response status:', response.status);
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    console.log('[AuthBootstrap] custom-token error:', errorData.error || response.status);
     throw new Error(errorData.error || `No valid session: ${response.status}`);
   }
 
@@ -253,21 +243,15 @@ async function bootstrapFromHttpOnlyCookie(): Promise<{ devMode?: boolean; sessi
 
   // Check if server returned devMode (can't create real custom token)
   if (data.devMode && data.sessionCookie) {
-    console.log('[AuthBootstrap] Dev mode - hydrating user directly from session');
     // In dev mode without proper admin SDK, we can't use signInWithCustomToken
     // Instead, directly hydrate the user from the session cookie
-    // We need to import hydrateFromDevSession from context or pass it in
-    // For now, we'll dispatch a custom event that auth provider listens to, 
-    // or better: refactor this function to be part of the component logic or accept callbacks
     return { devMode: true, sessionCookie: data.sessionCookie };
   }
 
   const { customToken } = data;
-  console.log('[AuthBootstrap] Got custom token, signing in...');
 
   // Sign in with custom token
   await signInWithCustomToken(auth, customToken);
-  console.log('[AuthBootstrap] Sign in with custom token complete');
 }
 
 /**
@@ -295,7 +279,6 @@ async function bootstrapFromDevSessionFn(
 
   // Check if server returned devMode (can't create real custom token)
   if (data.devMode && data.sessionCookie) {
-    console.log('[AuthBootstrap] Dev mode - hydrating user directly from session');
     // In dev mode without proper admin SDK, we can't use signInWithCustomToken
     // Instead, directly hydrate the user from the session cookie
     hydrateFromDevSession(data.sessionCookie);

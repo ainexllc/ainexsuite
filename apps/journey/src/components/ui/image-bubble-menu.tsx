@@ -16,6 +16,7 @@ import {
   Type,
   ChevronDown,
   Layers,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -108,6 +109,12 @@ export function ImageBubbleMenu({ editor, onOpenLightbox }: ImageBubbleMenuProps
   const toggleCaption = () => {
     const currentCaption = editor.getAttributes('image').caption;
     updateImageAttribute('caption', currentCaption ? null : 'Add caption...');
+  };
+
+  const handleClose = () => {
+    // Move selection to end of document to deselect image and close toolbar
+    const { doc } = editor.state;
+    editor.chain().focus().setTextSelection(doc.content.size - 1).run();
   };
 
   // Don't render if not active or no position
@@ -239,6 +246,15 @@ export function ImageBubbleMenu({ editor, onOpenLightbox }: ImageBubbleMenuProps
         className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
       >
         <Trash2 className="w-4 h-4" />
+      </MenuButton>
+
+      {/* Close */}
+      <MenuButton
+        onClick={handleClose}
+        title="Close Toolbar"
+        className="border-l border-white/10 ml-1 pl-1.5"
+      >
+        <X className="w-4 h-4" />
       </MenuButton>
     </div>
   );

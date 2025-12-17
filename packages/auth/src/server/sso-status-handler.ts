@@ -62,12 +62,10 @@ export async function GET(request: NextRequest) {
 
     // In development, also check the in-memory store (cross-origin cookies don't work)
     if (!sessionCookie && isDev) {
-      console.log('[SSO Status] No cookie, checking memory store...');
       sessionCookie = getLatestSession() ?? undefined;
     }
 
     if (!sessionCookie) {
-      console.log('[SSO Status] No session found');
       return NextResponse.json(
         { authenticated: false },
         { headers: corsHeaders }
@@ -88,7 +86,6 @@ export async function GET(request: NextRequest) {
         }
 
         // Return the session cookie so the calling app can use it
-        console.log('[SSO Status] Valid dev session found for uid:', uid);
         return NextResponse.json(
           {
             authenticated: true,
@@ -108,7 +105,6 @@ export async function GET(request: NextRequest) {
     const adminAuth = getAdminAuth();
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
 
-    console.log('[SSO Status] Valid session found for uid:', decodedClaims.uid);
     return NextResponse.json(
       {
         authenticated: true,

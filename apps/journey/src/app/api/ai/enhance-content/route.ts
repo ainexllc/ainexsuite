@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing content' }, { status: 400 });
     }
 
-    if (!style || !['clarity', 'concise', 'warmth', 'reflection'].includes(style)) {
+    if (!style || !['clarity', 'concise', 'warmth', 'reflection', 'expand', 'continue'].includes(style)) {
       return NextResponse.json({ error: 'Invalid style' }, { status: 400 });
     }
 

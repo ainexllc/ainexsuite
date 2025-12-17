@@ -2,7 +2,7 @@
 
 import { Node, mergeAttributes, CommandProps } from '@tiptap/core';
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from '@tiptap/react';
-import { X } from 'lucide-react';
+import { X, GripVertical } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { deleteFileByUrl } from '@/lib/firebase/storage';
 import { ImageResizeHandles } from './image-resize-handles';
@@ -59,7 +59,7 @@ const ALIGNMENT_CLASSES: Record<ImageAlignment, string> = {
   full: 'w-full clear-both',
 };
 
-function ImageComponent({ node, updateAttributes, deleteNode, selected }: NodeViewProps) {
+function ImageComponent({ node, updateAttributes, deleteNode, selected, editor, getPos }: NodeViewProps) {
   const attrs = node.attrs as ImageAttrs;
   const [showLightbox, setShowLightbox] = useState(false);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
@@ -116,9 +116,16 @@ function ImageComponent({ node, updateAttributes, deleteNode, selected }: NodeVi
   };
 
   const handleImageClick = (e: React.MouseEvent) => {
-    // Don't open lightbox if clicking caption or while resizing
+    // Don't interfere with caption clicks
     if ((e.target as HTMLElement).closest('figcaption')) return;
-    setShowLightbox(true);
+
+    // Select this image node to show the toolbar
+    if (editor && getPos) {
+      const pos = getPos();
+      if (typeof pos === 'number') {
+        editor.chain().focus().setNodeSelection(pos).run();
+      }
+    }
   };
 
   const alignment = attrs.alignment || 'center';
@@ -154,7 +161,40 @@ function ImageComponent({ node, updateAttributes, deleteNode, selected }: NodeVi
         style={wrapperStyle}
         data-alignment={alignment}
         data-frame-style={frameStyle}
+        draggable={true}
       >
+        {/* Drag handle - must be direct child of NodeViewWrapper for tiptap */}
+        <div
+          data-drag-handle
+          draggable={true}
+          className={cn(
+            'absolute top-2 left-2 h-8 w-8 rounded-full z-30',
+            'bg-black/60 text-white flex items-center justify-center',
+            'opacity-0 group-hover:opacity-100',
+            'hover:bg-zinc-700 transition-all backdrop-blur-sm cursor-grab active:cursor-grabbing'
+          )}
+          aria-label="Drag to reorder"
+          title="Drag to move"
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+
+        {/* Delete button - direct child for consistent z-index */}
+        <button
+          type="button"
+          onClick={handleDelete}
+          className={cn(
+            'absolute top-2 right-2 h-8 w-8 rounded-full z-30',
+            'bg-black/60 text-white flex items-center justify-center',
+            'opacity-0 group-hover:opacity-100',
+            'hover:bg-red-500 transition-all backdrop-blur-sm',
+            'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white/50'
+          )}
+          aria-label="Delete image"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
         <ImageResizeHandles
           initialWidth={currentWidth}
           containerWidth={containerWidth}
@@ -170,7 +210,7 @@ function ImageComponent({ node, updateAttributes, deleteNode, selected }: NodeVi
               title={attrs.title || ''}
               onClick={handleImageClick}
               className={cn(
-                'max-w-full h-auto cursor-zoom-in transition-all',
+                'max-w-full h-auto cursor-pointer transition-all',
                 selected && 'ring-2 ring-orange-500 ring-offset-2',
                 frameStyle === 'rounded' && 'rounded-2xl'
               )}
@@ -203,22 +243,6 @@ function ImageComponent({ node, updateAttributes, deleteNode, selected }: NodeVi
                 {attrs.caption || 'Add caption...'}
               </figcaption>
             )}
-
-            {/* Delete button */}
-            <button
-              type="button"
-              onClick={handleDelete}
-              className={cn(
-                'absolute top-2 right-2 h-8 w-8 rounded-full',
-                'bg-black/60 text-white flex items-center justify-center',
-                'opacity-0 group-hover:opacity-100',
-                'hover:bg-red-500 transition-all backdrop-blur-sm',
-                'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white/50'
-              )}
-              aria-label="Delete image"
-            >
-              <X className="h-4 w-4" />
-            </button>
           </figure>
         </ImageResizeHandles>
       </NodeViewWrapper>

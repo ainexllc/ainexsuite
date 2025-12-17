@@ -312,11 +312,7 @@ function AppearanceSettings({ preferences, onUpdatePreferences }: AppearanceSett
     preferences.theme || "dark"
   );
 
-  // Debug logging
-  console.log('[AppearanceSettings] selectedTheme:', selectedTheme, 'preferences.theme:', preferences.theme);
-
   const handleThemeChange = async (theme: "light" | "dark" | "system") => {
-    console.log('[AppearanceSettings] handleThemeChange called with:', theme);
     // Update local state immediately for visual feedback
     setSelectedTheme(theme);
     setSaving(true);

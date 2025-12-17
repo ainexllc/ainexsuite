@@ -34,8 +34,6 @@ export async function GET(_request: NextRequest) {
     const repo = process.env.GITHUB_REPO || 'ainexsuite/ainexsuite';
     const token = process.env.GITHUB_TOKEN;
 
-    console.log('Fetching commits for repo:', repo);
-
     // Parse repo format: owner/repo or full URL
     let owner: string;
     let repoName: string;
@@ -65,7 +63,7 @@ export async function GET(_request: NextRequest) {
     }
 
     const url = `https://api.github.com/repos/${owner}/${repoName}/commits?sha=main&per_page=20&page=1`;
-    
+
     const headers: HeadersInit = {
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'AINexSuite-Admin',
@@ -75,9 +73,7 @@ export async function GET(_request: NextRequest) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    console.log('Fetching from URL:', url);
     const response = await fetch(url, { headers });
-    console.log('Response status:', response.status, response.statusText);
 
     if (!response.ok) {
       let errorMessage = `GitHub API error: ${response.status}`;

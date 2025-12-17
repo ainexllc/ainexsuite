@@ -80,13 +80,6 @@ export function ProfileSidebar({
 
   const activeTheme = optimisticTheme;
 
-  console.log('[ProfileSidebar] Render:', {
-    mounted,
-    theme,
-    optimisticTheme,
-    activeTheme
-  });
-
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'feature': return 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]';

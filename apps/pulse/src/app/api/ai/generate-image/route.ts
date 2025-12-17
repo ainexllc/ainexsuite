@@ -21,9 +21,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // eslint-disable-next-line no-console
-    console.log('Sending image generation request to OpenRouter with prompt:', prompt);
-
     // Use Gemini 3 Pro with image generation capability
     // Requires modalities: ['image', 'text'] to enable image generation
     const response = await fetch(`${apiUrl}/chat/completions`, {
@@ -60,8 +57,6 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
-    // eslint-disable-next-line no-console
-    console.log('OpenRouter Response:', JSON.stringify(data, null, 2));
 
     // Extract image URL from response
     let imageUrl = null;

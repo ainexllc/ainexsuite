@@ -22,6 +22,9 @@ import {
   Brain,
   FolderOpen,
   Plus,
+  ImagePlus,
+  Ban,
+  Check,
 } from "lucide-react";
 import { clsx } from "clsx";
 import type {
@@ -45,6 +48,7 @@ import {
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
 import { InlineCalculator } from "./inline-calculator";
+import { getAllBackgrounds, getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses } from "@/lib/backgrounds";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
   if (a.length !== b.length) {
@@ -81,6 +85,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const { preferences } = usePreferences();
   const { spaces } = useSpaces();
 
+  // Get all available backgrounds (no theme filtering)
+  const availableBackgrounds = useMemo(() => {
+    return getAllBackgrounds();
+  }, []);
+
   const [title, setTitle] = useState(note.title);
   const [body, setBody] = useState(note.body);
   const [mode, setMode] = useState<"text" | "checklist">(
@@ -90,6 +99,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     note.checklist,
   );
   const [color, setColor] = useState<NoteColor>(note.color);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(note.backgroundImage ?? null);
+
+  // Get current background for display (must be after backgroundImage state)
+  const currentBackground = useMemo(() => {
+    return backgroundImage ? getBackgroundById(backgroundImage) ?? null : null;
+  }, [backgroundImage]);
+
   const [pinned, setPinned] = useState(note.pinned);
   const [archived, setArchived] = useState(note.archived);
   const [existingAttachments, setExistingAttachments] = useState<NoteAttachment[]>(
@@ -155,6 +171,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     setShowCalculator(false);
   }, []);
   const [showPalette, setShowPalette] = useState(false);
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
     note.labelIds ?? [],
@@ -340,6 +357,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     const titleChanged = title !== note.title;
     const bodyChanged = body !== note.body;
     const colorChanged = color !== note.color;
+    const backgroundImageChanged = backgroundImage !== (note.backgroundImage ?? null);
     const pinnedChanged = pinned !== note.pinned;
     const archivedChanged = archived !== note.archived;
     const attachmentsRemoved = removedAttachments.length > 0;
@@ -387,6 +405,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       !titleChanged &&
       !bodyChanged &&
       !colorChanged &&
+      !backgroundImageChanged &&
       !pinnedChanged &&
       !archivedChanged &&
       !checklistChanged &&
@@ -435,6 +454,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
       if (colorChanged) {
         updates.color = color;
+      }
+
+      if (backgroundImageChanged) {
+        updates.backgroundImage = backgroundImage;
       }
 
       if (labelsChanged) {
@@ -528,6 +551,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     note.body,
     color,
     note.color,
+    backgroundImage,
+    note.backgroundImage,
     pinned,
     note.pinned,
     archived,
@@ -752,25 +777,51 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
   const content = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 md:p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 md:p-6 lg:p-8"
       onClick={onClose}
     >
       <div
         ref={editorContainerRef}
         onClick={(e) => e.stopPropagation()}
         className={clsx(
-          "relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl",
-          currentColorConfig.cardClass,
+          "relative w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] max-w-6xl h-[90vh] sm:h-[88vh] md:h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden",
+          !currentBackground && currentColorConfig.cardClass,
           "border-zinc-200 dark:border-zinc-800",
         )}
       >
-        <div className="flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto">
+        {/* Background Image Layer */}
+        {currentBackground && (
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url(${currentBackground.fullImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Adaptive overlay for text readability */}
+            <div className={getOverlayClasses(currentBackground)} />
+          </div>
+        )}
+
+        <div className={clsx(
+          "relative z-10 flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto",
+          currentBackground && getTextColorClasses(currentBackground, 'body')
+        )}>
           <div className="flex items-start gap-2">
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Title"
-              className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+              className={clsx(
+                "w-full bg-transparent text-lg font-semibold focus:outline-none",
+                getTextColorClasses(currentBackground, 'title'),
+                currentBackground?.brightness === 'light'
+                  ? "placeholder:text-zinc-500"
+                  : currentBackground
+                    ? "placeholder:text-white/60"
+                    : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+              )}
             />
             <button
               type="button"
@@ -779,7 +830,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 "p-2 rounded-full transition-colors",
                 pinned
                   ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                  : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                  : getActionColorClasses(currentBackground),
               )}
               aria-label={pinned ? "Unpin note" : "Pin note"}
             >
@@ -788,7 +839,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className={clsx(
+                "p-2 rounded-full transition-colors",
+                getActionColorClasses(currentBackground)
+              )}
               aria-label="Close"
             >
               <X className="h-5 w-5" />
@@ -811,8 +865,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 }}
                 placeholder="Write your note…"
                 className={clsx(
-                  "min-h-[300px] sm:min-h-[400px] w-full resize-none overflow-hidden bg-transparent text-[15px] leading-7 tracking-[-0.01em] focus:outline-none transition-all duration-300",
-                  "text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
+                  "min-h-[40vh] sm:min-h-[45vh] md:min-h-[50vh] w-full resize-none overflow-hidden bg-transparent text-[15px] leading-7 tracking-[-0.01em] focus:outline-none transition-all duration-300",
+                  getTextColorClasses(currentBackground, 'body'),
+                  currentBackground?.brightness === 'light'
+                    ? "placeholder:text-zinc-500"
+                    : currentBackground
+                      ? "placeholder:text-white/50"
+                      : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
                   isEnhancing && !selectedText && "blur-sm opacity-50",
                   isEnhancing && selectedText && "opacity-0"
                 )}
@@ -961,7 +1020,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           ) : null}
 
           {(existingAttachments.length > 0 || newAttachments.length > 0) && (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {existingAttachments.map((attachment) => (
                 <figure
                   key={attachment.id}
@@ -1153,8 +1212,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
         {/* Bottom toolbar - anchored to bottom with color */}
         <div className={clsx(
-          "flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-200 dark:border-zinc-700/50",
-          currentColorConfig.footerClass
+          "relative z-10 flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t",
+          currentBackground?.brightness === 'light'
+            ? "bg-white/30 backdrop-blur-sm border-black/10"
+            : currentBackground
+              ? "bg-black/30 backdrop-blur-sm border-white/10"
+              : clsx(currentColorConfig.footerClass, "border-zinc-200 dark:border-zinc-700/50")
         )}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -1243,11 +1306,95 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   </div>
                 ) : null}
               </div>
+              {/* Background Image Picker */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBackgroundPicker((prev) => !prev);
+                    setShowPalette(false);
+                    setShowLabelPicker(false);
+                    setShowCalculator(false);
+                  }}
+                  className={clsx(
+                    "h-9 w-9 rounded-full flex items-center justify-center transition",
+                    showBackgroundPicker || backgroundImage
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
+                  )}
+                  aria-label="Change background"
+                  title="Change background image"
+                >
+                  <ImagePlus className="h-4 w-4" />
+                </button>
+                {showBackgroundPicker ? (
+                  <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 w-72 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Background Image</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {/* No background option */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBackgroundImage(null);
+                          setShowBackgroundPicker(false);
+                        }}
+                        className={clsx(
+                          "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
+                          backgroundImage === null
+                            ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20"
+                            : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                        )}
+                      >
+                        <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                          <Ban className="h-4 w-4 text-zinc-400" />
+                        </div>
+                        {backgroundImage === null && (
+                          <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                            <Check className="h-2.5 w-2.5 text-white" />
+                          </div>
+                        )}
+                      </button>
+                      {/* Background options */}
+                      {availableBackgrounds.map((bg) => (
+                        <button
+                          key={bg.id}
+                          type="button"
+                          onClick={() => {
+                            setBackgroundImage(bg.id);
+                            setShowBackgroundPicker(false);
+                          }}
+                          className={clsx(
+                            "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
+                            backgroundImage === bg.id
+                              ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20"
+                              : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                          )}
+                        >
+                          <img
+                            src={bg.thumbnail}
+                            alt={bg.name}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          {backgroundImage === bg.id && (
+                            <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 text-white" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    {availableBackgrounds.length === 0 && (
+                      <p className="text-xs text-zinc-400 text-center py-2">No backgrounds available</p>
+                    )}
+                  </div>
+                ) : null}
+              </div>
               <button
                 type="button"
                 onClick={() => {
                   setShowLabelPicker((prev) => !prev);
                   setShowPalette(false);
+                  setShowBackgroundPicker(false);
                   setShowCalculator(false);
                 }}
                 className={clsx(

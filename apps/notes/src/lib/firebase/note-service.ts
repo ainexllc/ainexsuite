@@ -99,6 +99,7 @@ export async function createNote(
     checklist?: ChecklistItem[];
     color?: NoteColor;
     pattern?: NotePattern;
+    backgroundImage?: string | null;
     pinned?: boolean;
     archived?: boolean;
     labelIds?: string[];
@@ -148,6 +149,10 @@ export async function updateNote(
 
   if (updates.pattern !== undefined) {
     payload.pattern = updates.pattern;
+  }
+
+  if (updates.backgroundImage !== undefined) {
+    payload.backgroundImage = updates.backgroundImage;
   }
 
   if (updates.labelIds !== undefined) {

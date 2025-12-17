@@ -36,3 +36,6 @@ export * from './app-registry';
 
 // Subscription types
 export * from './subscription';
+
+// Background types
+export * from './background';

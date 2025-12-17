@@ -33,7 +33,6 @@ export function setSessionCookie(_sessionCookie: string): void {
   // The session cookie is now managed entirely by the server via:
   // - /api/auth/session (creates cookie on login)
   // - /api/auth/custom-token (reads cookie for SSO)
-  console.log('🔐 Session: Server handles session cookie (httpOnly)');
 }
 
 /**

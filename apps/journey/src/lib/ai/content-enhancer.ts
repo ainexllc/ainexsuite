@@ -20,6 +20,10 @@ const STYLE_INSTRUCTIONS: Record<ContentEnhancementStyle, string> = {
     'Infuse a warmer, more encouraging tone. Keep it authentic, first-person, and grounded while softening sharp language.',
   reflection:
     'Highlight insights and reflective takeaways. Draw out personal realizations and gently suggest next steps or observations.',
+  expand:
+    'Elaborate on the content with more detail and depth. Add descriptive language, explore the emotions and context further, and flesh out the narrative while maintaining the original voice.',
+  continue:
+    'Continue writing from where the text ends. Maintain the same voice, tone, and style. Pick up the narrative naturally and add 2-3 more sentences or a short paragraph that flows seamlessly.',
 };
 
 export async function enhanceJournalContent(content: string, style: ContentEnhancementStyle) {
@@ -100,6 +104,16 @@ function fallbackEnhancement(content: string, style: ContentEnhancementStyle) {
       const base = renderParagraphs(paragraphs);
       const highlights = buildHighlights(paragraphs);
       return `${base}${highlights}`;
+    }
+    case 'expand': {
+      // Fallback: just return original with a note
+      const base = renderParagraphs(paragraphs);
+      return `${base}<p><em>(AI expansion unavailable - try again later)</em></p>`;
+    }
+    case 'continue': {
+      // Fallback: return original with continuation prompt
+      const base = renderParagraphs(paragraphs);
+      return `${base}<p><em>...</em></p>`;
     }
     default:
       return content;

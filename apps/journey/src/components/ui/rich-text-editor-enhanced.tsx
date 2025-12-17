@@ -6,6 +6,7 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { ImageWithDelete } from './image-with-delete';
 import { cn } from '@/lib/utils';
+import { plainText } from '@/lib/utils/text';
 import {
   Bold,
   Italic,
@@ -29,6 +30,7 @@ import { ImageUploadModal } from './image-upload-modal';
 import { ImageDropOverlay } from './image-drop-overlay';
 import { ImageBubbleMenu } from './image-bubble-menu';
 import { ImageLightbox } from './image-lightbox';
+import { AISelectionMenu } from './ai-selection-menu';
 
 interface RichTextEditorEnhancedProps {
   content: string;
@@ -83,8 +85,13 @@ export function RichTextEditorEnhanced({
       })
     ],
     content,
-    onCreate: () => {
+    onCreate: ({ editor: newEditor }) => {
       setIsInitialized(true);
+      // Ensure cursor starts at end, not on an image
+      requestAnimationFrame(() => {
+        const { doc } = newEditor.state;
+        newEditor.chain().setTextSelection(doc.content.size - 1).run();
+      });
     },
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
@@ -228,6 +235,11 @@ export function RichTextEditorEnhanced({
     // Only update if content prop is different from editor content
     if (content !== currentContent) {
       editor.commands.setContent(content);
+      // Ensure cursor is at end of text, not selecting an image
+      requestAnimationFrame(() => {
+        const { doc } = editor.state;
+        editor.chain().setTextSelection(doc.content.size - 1).run();
+      });
     }
   }, [content, editor, isInitialized]);
 
@@ -393,7 +405,7 @@ export function RichTextEditorEnhanced({
 
         <div
           {...getRootProps()}
-          className="bg-transparent relative"
+          className="relative rounded-b-lg bg-white dark:bg-zinc-900"
         >
           <input {...getInputProps()} />
           <ImageDropOverlay isDragActive={isDragActive} />
@@ -420,7 +432,28 @@ export function RichTextEditorEnhanced({
               }}
             />
           )}
+          {/* AI selection menu - appears when text is selected */}
+          {editor && <AISelectionMenu editor={editor} />}
         </div>
+
+        {/* Word count footer */}
+        {editor && (() => {
+          const text = plainText(editor.getHTML());
+          const words = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+          const chars = text.length;
+          const readingTime = Math.max(1, Math.ceil(words / 200));
+          return (
+            <div className="flex items-center justify-between px-4 py-2 border-t border-zinc-200/50 dark:border-zinc-700/30 text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-3">
+                <span>{words} {words === 1 ? 'word' : 'words'}</span>
+                <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                <span>{chars.toLocaleString()} chars</span>
+                <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                <span>~{readingTime} min read</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Lightbox for full-size image view */}

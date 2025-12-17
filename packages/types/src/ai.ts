@@ -2,7 +2,7 @@
  * AI and ML-related types for content enhancement and analysis
  */
 
-export type ContentEnhancementStyle = 'clarity' | 'concise' | 'warmth' | 'reflection';
+export type ContentEnhancementStyle = 'clarity' | 'concise' | 'warmth' | 'reflection' | 'expand' | 'continue';
 
 export interface ContentEnhancementRequest {
   content: string;

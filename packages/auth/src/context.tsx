@@ -362,15 +362,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      console.log('[Auth] Hydrating user from dev session, uid:', uid);
-      console.log('[Auth] Session cookie preferences:', decoded.preferences);
-
       // IMPORTANT: Use ainex-theme cookie as source of truth for theme
       // This cookie is shared across all apps (ports) and is the authoritative source
       const cookieTheme = getThemeCookie();
       const sessionTheme = decoded.preferences?.theme;
       const authorativeTheme = cookieTheme || sessionTheme || 'dark';
-      console.log('[Auth] Theme resolution: cookie=' + cookieTheme + ', session=' + sessionTheme + ', using=' + authorativeTheme);
 
       // Create a minimal user object with cookie theme taking precedence
       const now = Date.now();
@@ -415,7 +411,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(devUser);
       setDevHydrated(true);
       setLoading(false);
-      console.log('[Auth] Dev user hydrated successfully');
     } catch (error) {
       console.error('[Auth] Failed to hydrate from dev session:', error);
     }

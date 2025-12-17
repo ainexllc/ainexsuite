@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { JournalEntryFormData, ContentEnhancementStyle, MoodType } from '@ainexsuite/types';
 import { moodConfig } from '@/lib/utils/mood';
 import { cn } from '@/lib/utils';
-import { Loader2, Upload, X, Sparkles, Scissors, Compass, Copy } from 'lucide-react';
+import { Loader2, X, Sparkles, Scissors, Compass, Copy } from 'lucide-react';
 import { RichTextEditorEnhanced } from '@/components/ui/rich-text-editor-enhanced';
 // TODO: Port InlinePrompt component from journalnex-app
 // import { InlinePrompt } from '@/components/prompts/inline-prompt';
@@ -114,7 +114,6 @@ export interface JournalFormHandle {
 
 export const JournalForm = forwardRef<JournalFormHandle, JournalFormProps>(
 function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hideButtons = false, hideTitle = false, entryId }, ref) {
-  const [files, setFiles] = useState<File[]>([]);
   const [enhancingStyle, setEnhancingStyle] = useState<ContentEnhancementStyle | null>(null);
   const [lastEnhancedContent, setLastEnhancedContent] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -207,7 +206,7 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
         ...data,
         isDraft: mode === 'draft',
       },
-      files,
+      [], // No file attachments - images are inserted via toolbar
     );
   };
   const submitPublish = handleSubmit((data) => handleFormSubmit(data, 'publish'));
@@ -319,17 +318,6 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
         variant: 'error',
       });
     }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles([...files, ...newFiles]);
-    }
-  };
-
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -623,12 +611,12 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
         </div>
       )}
 
-      {/* Mood Picker */}
-      <div className="space-y-3">
+      {/* Mood Picker - compact inline layout */}
+      <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
           How are you feeling?
         </label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-wrap gap-2">
           {(Object.keys(moodConfig) as MoodType[]).map((mood) => {
             const config = moodConfig[mood];
             const Icon = config.icon;
@@ -640,20 +628,20 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
                 onClick={() => setValue('mood', mood)}
                 disabled={isSubmitting}
                 className={cn(
-                  'flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all',
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all',
                   isSelected
                     ? 'bg-orange-500/15 dark:bg-orange-400/10 ring-2 ring-orange-500 dark:ring-orange-400'
                     : 'bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10'
                 )}
               >
                 <Icon className={cn(
-                  'h-6 w-6',
+                  'h-4 w-4',
                   isSelected
                     ? 'text-orange-600 dark:text-orange-400'
                     : 'text-zinc-600 dark:text-zinc-400'
                 )} />
                 <span className={cn(
-                  'text-[11px] font-medium leading-tight',
+                  'text-xs font-medium',
                   isSelected
                     ? 'text-orange-600 dark:text-orange-400'
                     : 'text-zinc-600 dark:text-zinc-500'
@@ -666,90 +654,6 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-          Attachments
-        </label>
-        <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6">
-          <input
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            disabled={isSubmitting}
-            className="hidden"
-            id="file-upload"
-            accept="image/*,.pdf,.txt,.doc,.docx"
-          />
-          <label
-            htmlFor="file-upload"
-            className="flex flex-col items-center justify-center cursor-pointer"
-          >
-            <Upload className="w-8 h-8 text-gray-500 dark:text-gray-400 mb-2" />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              Click to upload or drag and drop
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Images, PDFs, and documents up to 10MB
-            </span>
-          </label>
-        </div>
-
-        {files.length > 0 && (
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            {files.map((file, index) => {
-              const isImage = file.type.startsWith('image/');
-              const previewUrl = isImage ? URL.createObjectURL(file) : null;
-
-              return isImage ? (
-                <figure
-                  key={index}
-                  className="relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={previewUrl!}
-                    alt={file.name}
-                    className="h-32 w-full object-cover opacity-90 hover:opacity-100 transition-opacity"
-                    onLoad={() => {
-                      // Revoke URL after image loads to free memory
-                      if (previewUrl) URL.revokeObjectURL(previewUrl);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeFile(index)}
-                    disabled={isSubmitting}
-                    className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm transition-colors"
-                    aria-label={`Remove ${file.name}`}
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1">
-                    <span className="text-xs text-white truncate block">{file.name}</span>
-                  </div>
-                </figure>
-              ) : (
-                <div
-                  key={index}
-                  className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
-                >
-                  <span className="text-sm text-zinc-900 dark:text-zinc-100 truncate">
-                    {file.name}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeFile(index)}
-                    disabled={isSubmitting}
-                    className="text-red-500 hover:text-red-600 ml-2"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
       {!hideButtons && (
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:gap-4 pt-4 mt-2 border-t border-border">
