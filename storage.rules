@@ -4,9 +4,17 @@ service firebase.storage {
     // Shared backgrounds (admin uploads, all authenticated users can read)
     // Write access controlled by admin app client-side + Firestore rules
     match /backgrounds/{fileName} {
-      allow read: if request.auth != null;
+      allow read: if true; // Public read
       allow write: if request.auth != null
         && request.resource.size <= 5 * 1024 * 1024; // 5MB max
+      allow delete: if request.auth != null;
+    }
+
+    // Also allow subfolder access for any nested paths
+    match /backgrounds/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size <= 5 * 1024 * 1024;
       allow delete: if request.auth != null;
     }
 
