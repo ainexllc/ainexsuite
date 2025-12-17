@@ -18,7 +18,8 @@ import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { NoteEditor } from "@/components/notes/note-editor";
 import { useLabels } from "@/components/providers/labels-provider";
-import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses } from "@/lib/backgrounds";
+import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
+import { useBackgrounds } from "@/hooks/use-backgrounds";
 
 type NoteCardProps = {
   note: Note;
@@ -28,6 +29,7 @@ type NoteCardProps = {
 export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
   const { togglePin, toggleArchive, deleteNote, updateNote } = useNotes();
   const { labels } = useLabels();
+  const { backgrounds: firestoreBackgrounds } = useBackgrounds();
   const [isEditing, setIsEditing] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -42,9 +44,14 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
       .filter((label): label is NonNullable<typeof label> => Boolean(label));
   }, [note.labelIds, labelMap]);
 
+  // Combine Firestore backgrounds with fallback
+  const availableBackgrounds = useMemo(() => {
+    return firestoreBackgrounds.length > 0 ? firestoreBackgrounds : FALLBACK_BACKGROUNDS;
+  }, [firestoreBackgrounds]);
+
   const noteColorConfig = NOTE_COLORS.find((c) => c.id === note.color);
   const cardClass = noteColorConfig?.cardClass || "bg-zinc-50 dark:bg-zinc-900";
-  const backgroundImage = note.backgroundImage ? getBackgroundById(note.backgroundImage) ?? null : null;
+  const backgroundImage = note.backgroundImage ? getBackgroundById(note.backgroundImage, availableBackgrounds) ?? null : null;
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();

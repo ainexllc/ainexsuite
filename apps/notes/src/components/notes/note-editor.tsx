@@ -48,7 +48,8 @@ import {
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
 import { InlineCalculator } from "./inline-calculator";
-import { getAllBackgrounds, getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses } from "@/lib/backgrounds";
+import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
+import { useBackgrounds } from "@/hooks/use-backgrounds";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
   if (a.length !== b.length) {
@@ -85,10 +86,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const { preferences } = usePreferences();
   const { spaces } = useSpaces();
 
-  // Get all available backgrounds (no theme filtering)
+  // Get backgrounds from Firestore (with fallback)
+  const { backgrounds: firestoreBackgrounds } = useBackgrounds();
   const availableBackgrounds = useMemo(() => {
-    return getAllBackgrounds();
-  }, []);
+    return firestoreBackgrounds.length > 0 ? firestoreBackgrounds : FALLBACK_BACKGROUNDS;
+  }, [firestoreBackgrounds]);
 
   const [title, setTitle] = useState(note.title);
   const [body, setBody] = useState(note.body);
@@ -103,8 +105,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
   // Get current background for display (must be after backgroundImage state)
   const currentBackground = useMemo(() => {
-    return backgroundImage ? getBackgroundById(backgroundImage) ?? null : null;
-  }, [backgroundImage]);
+    if (!backgroundImage) return null;
+    // Search in Firestore backgrounds first, then fallback
+    return getBackgroundById(backgroundImage, availableBackgrounds) ?? null;
+  }, [backgroundImage, availableBackgrounds]);
 
   const [pinned, setPinned] = useState(note.pinned);
   const [archived, setArchived] = useState(note.archived);
