@@ -121,7 +121,9 @@ export const OVERLAY_OPTIONS: { id: BackgroundOverlay; label: string; descriptio
   { id: 'dim', label: 'Dim', description: 'Light dark overlay' },
   { id: 'dimmer', label: 'Dimmer', description: 'Medium dark overlay' },
   { id: 'dimmest', label: 'Dimmest', description: 'Heavy dark overlay' },
-  { id: 'glass', label: 'Glass', description: 'Frosted glass effect' },
+  { id: 'glass', label: 'Glass', description: 'Light frosted glass' },
+  { id: 'frost', label: 'Frost', description: 'Heavy frosted glass' },
+  { id: 'gradient', label: 'Gradient', description: 'Dark gradient from bottom' },
 ];
 
 /**
@@ -150,8 +152,16 @@ export function getOverlayClasses(
       return 'absolute inset-0 bg-black/70';
 
     case 'glass':
-      // Frosted glass effect with blur and subtle tint
+      // Light frosted glass effect
       return 'absolute inset-0 bg-white/10 backdrop-blur-sm';
+
+    case 'frost':
+      // Heavy frosted glass effect
+      return 'absolute inset-0 bg-black/20 backdrop-blur-md';
+
+    case 'gradient':
+      // Dark gradient from bottom for text readability
+      return 'absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent';
 
     case 'auto':
     default:

@@ -63,7 +63,9 @@ export type BackgroundOverlay =
   | "dim"       // Light dark overlay
   | "dimmer"    // Medium dark overlay
   | "dimmest"   // Heavy dark overlay
-  | "glass";    // Frosted glass effect
+  | "glass"     // Frosted glass effect
+  | "frost"     // Heavy frosted glass
+  | "gradient"; // Dark gradient from bottom
 
 export type ChecklistItem = {
   id: string;

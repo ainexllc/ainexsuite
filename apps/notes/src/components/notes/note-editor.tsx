@@ -1403,7 +1403,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     {backgroundImage && (
                       <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
                         <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Overlay Style</p>
-                        <div className="grid grid-cols-3 gap-1.5">
+                        <div className="grid grid-cols-4 gap-1.5">
                           {OVERLAY_OPTIONS.map((option) => (
                             <button
                               key={option.id}
