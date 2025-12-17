@@ -1344,9 +1344,15 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     {/* Click outside to close */}
                     <div
                       className="fixed inset-0 z-20"
-                      onClick={() => setShowBackgroundPicker(false)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowBackgroundPicker(false);
+                      }}
                     />
-                    <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 w-72 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
+                    <div
+                      className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 w-72 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Background Image</p>
                         <button
