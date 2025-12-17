@@ -16,6 +16,7 @@ import {
   type FilterChip,
   type FilterChipType,
 } from '@ainexsuite/ui';
+import { X } from 'lucide-react';
 import { TimelineView } from '@/components/timeline-view';
 import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
@@ -96,6 +97,8 @@ export default function MomentsWorkspacePage() {
   const [view, setView] = useState<ViewType>('timeline');
   const [sort, setSort] = useState<SortConfig>({ field: 'date', direction: 'desc' });
   const [filters, setFilters] = useState<MomentsFilters>({});
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch moments when space changes
   useEffect(() => {
@@ -129,6 +132,18 @@ export default function MomentsWorkspacePage() {
   // Apply filters
   const filteredMoments = useMemo(() => {
     let result = [...moments];
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((m) =>
+        m.title.toLowerCase().includes(query) ||
+        m.caption?.toLowerCase().includes(query) ||
+        m.location?.toLowerCase().includes(query) ||
+        m.tags?.some((tag) => tag.toLowerCase().includes(query)) ||
+        m.people?.some((person) => person.toLowerCase().includes(query))
+      );
+    }
 
     // Filter by tags
     if (filters.tags && filters.tags.length > 0) {
@@ -189,7 +204,7 @@ export default function MomentsWorkspacePage() {
     });
 
     return result;
-  }, [moments, filters, sort]);
+  }, [moments, filters, sort, searchQuery]);
 
   // Calculate activity data for calendar view
   const activityData = useMemo(() => {
@@ -271,6 +286,16 @@ export default function MomentsWorkspacePage() {
     setFilters({});
   }, []);
 
+  const handleSearchToggle = useCallback(() => {
+    setIsSearchOpen((prev) => {
+      if (prev) {
+        // Clear search when closing
+        setSearchQuery('');
+      }
+      return !prev;
+    });
+  }, []);
+
   const handleRemoveChip = useCallback(
     (chipId: string, chipType: FilterChipType) => {
       switch (chipType) {
@@ -329,6 +354,28 @@ export default function MomentsWorkspacePage() {
         composerActions={<SpaceSwitcher />}
         toolbar={
           <div className="space-y-2">
+            {isSearchOpen && (
+              <div className="flex items-center gap-2 justify-center">
+                <div className="relative flex-1 max-w-md">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search moments..."
+                    autoFocus
+                    className="w-full px-4 py-2 pr-10 bg-surface-base border border-outline-subtle rounded-lg text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-hover rounded text-text-muted hover:text-text-primary"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             <WorkspaceToolbar
               viewMode={view}
               onViewModeChange={setView}
@@ -348,6 +395,8 @@ export default function MomentsWorkspacePage() {
               activeFilterCount={activeFilterCount}
               onFilterReset={handleFilterReset}
               viewPosition="right"
+              onSearchClick={handleSearchToggle}
+              isSearchActive={isSearchOpen || !!searchQuery}
               rightSlot={
                 <div className="flex items-center gap-1">
                   <button

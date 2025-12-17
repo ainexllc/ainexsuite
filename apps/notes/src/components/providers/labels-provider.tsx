@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth } from "@ainexsuite/auth";
 import type { Label, LabelDraft } from "@/lib/types/note";
 import {
   createLabel as createLabelMutation,
@@ -32,14 +32,18 @@ type LabelsProviderProps = {
 };
 
 export function LabelsProvider({ children }: LabelsProviderProps) {
-  const { status, user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const userId = user?.id ?? null;
+  const userId = user?.uid ?? null;
 
   useEffect(() => {
-    if (status !== "authenticated" || !userId) {
+    if (authLoading) {
+      return;
+    }
+
+    if (!userId) {
       setLabels([]);
       setLoading(false);
       return;
@@ -52,15 +56,24 @@ export function LabelsProvider({ children }: LabelsProviderProps) {
     });
 
     return () => unsubscribe();
-  }, [status, userId]);
+  }, [authLoading, userId]);
 
   const handleCreate = useCallback(
     async (draft: LabelDraft) => {
+      console.log("[LabelsProvider] Creating label, userId:", userId, "draft:", draft);
       if (!userId) {
+        console.error("[LabelsProvider] No userId, cannot create label");
         return null;
       }
 
-      return createLabelMutation(userId, draft);
+      try {
+        const result = await createLabelMutation(userId, draft);
+        console.log("[LabelsProvider] Label created successfully:", result);
+        return result;
+      } catch (error) {
+        console.error("[LabelsProvider] Failed to create label:", error);
+        throw error;
+      }
     },
     [userId],
   );

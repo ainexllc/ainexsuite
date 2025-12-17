@@ -18,6 +18,7 @@ export const labelConverter: FirestoreDataConverter<Label> = {
   },
   fromFirestore(snapshot, options) {
     const data = snapshot.data(options) as LabelDoc;
+    const now = new Date();
 
     return {
       id: snapshot.id,
@@ -25,8 +26,8 @@ export const labelConverter: FirestoreDataConverter<Label> = {
       name: data.name,
       color: data.color,
       parentId: data.parentId ?? null,
-      createdAt: data.createdAt.toDate(),
-      updatedAt: data.updatedAt.toDate(),
+      createdAt: data.createdAt?.toDate() ?? now,
+      updatedAt: data.updatedAt?.toDate() ?? now,
     } satisfies Label;
   },
 };

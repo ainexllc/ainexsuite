@@ -33,6 +33,8 @@ interface HealthMetricsContextValue {
   setFilters: (filters: HealthFilterValue) => void;
   sort: SortConfig;
   setSort: (sort: SortConfig) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
   refreshData: () => Promise<void>;
   createMetric: (data: Omit<CreateHealthMetricInput, "ownerId">) => Promise<HealthMetric>;
   updateMetric: (id: string, data: UpdateHealthMetricInput) => Promise<void>;
@@ -56,6 +58,7 @@ export function HealthMetricsProvider({ children }: HealthMetricsProviderProps) 
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<HealthFilterValue>(DEFAULT_FILTERS);
   const [sort, setSort] = useState<SortConfig>(DEFAULT_SORT);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const refreshData = useCallback(async () => {
     if (!user?.uid) return;
@@ -77,9 +80,17 @@ export function HealthMetricsProvider({ children }: HealthMetricsProviderProps) 
     }
   }, [user?.uid]);
 
-  // Apply filters and sorting
+  // Apply filters, search, and sorting
   const filteredMetrics = useMemo(() => {
     let result = [...metrics];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((m) =>
+        m.notes?.toLowerCase().includes(query)
+      );
+    }
 
     // Apply date filter
     if (filters.dateRange?.start || filters.dateRange?.end) {
@@ -147,7 +158,7 @@ export function HealthMetricsProvider({ children }: HealthMetricsProviderProps) 
     });
 
     return result;
-  }, [metrics, filters, sort]);
+  }, [metrics, filters, sort, searchQuery]);
 
   useEffect(() => {
     if (user) {
@@ -191,6 +202,8 @@ export function HealthMetricsProvider({ children }: HealthMetricsProviderProps) 
     setFilters,
     sort,
     setSort,
+    searchQuery,
+    setSearchQuery,
     refreshData,
     createMetric,
     updateMetric,

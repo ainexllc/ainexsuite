@@ -43,10 +43,10 @@ const QUICK_DATE_PRESETS: { value: QuickDatePreset; label: string }[] = [
 ];
 
 const MOOD_OPTIONS: { value: MoodType; icon: typeof Smile; label: string; color: string }[] = [
-  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-green-500' },
+  { value: 'excited', icon: Smile, label: 'Great', color: 'text-green-500' },
   { value: 'happy', icon: Smile, label: 'Good', color: 'text-green-400' },
   { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
-  { value: 'stressed', icon: Frown, label: 'Low', color: 'text-orange-500' },
+  { value: 'anxious', icon: Frown, label: 'Low', color: 'text-orange-500' },
   { value: 'tired', icon: Frown, label: 'Bad', color: 'text-red-500' },
 ];
 

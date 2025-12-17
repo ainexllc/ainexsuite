@@ -6,16 +6,31 @@ import { useAppColors } from '@ainexsuite/theme';
 import { groupMomentsByDate } from '@/lib/timeline-utils';
 import { PhotoGrid } from './photo-grid';
 
+type ViewMode = 'timeline' | 'masonry' | 'calendar';
+
 interface TimelineViewProps {
   moments: Moment[];
+  viewMode?: ViewMode;
   onDetail: (moment: Moment) => void;
   onEdit?: (moment: Moment) => void;
 }
 
-export function TimelineView({ moments, onDetail, onEdit }: TimelineViewProps) {
+export function TimelineView({ moments, viewMode = 'timeline', onDetail, onEdit }: TimelineViewProps) {
   const groups = groupMomentsByDate(moments);
   const { primary: primaryColor } = useAppColors();
 
+  // Masonry view: show all moments in a single grid without grouping
+  if (viewMode === 'masonry') {
+    return (
+      <PhotoGrid
+        moments={moments}
+        onDetail={onDetail}
+        onEdit={onEdit}
+      />
+    );
+  }
+
+  // Timeline view: group by date with section headers
   return (
     <div className="space-y-12">
       {groups.map((group) => (

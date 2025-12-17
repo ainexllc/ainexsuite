@@ -23,10 +23,10 @@ interface HealthCheckinFormProps {
 }
 
 const moodOptions: { value: MoodType; icon: typeof Smile; label: string; color: string }[] = [
-  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-primary' },
+  { value: 'excited', icon: Smile, label: 'Great', color: 'text-primary' },
   { value: 'happy', icon: Smile, label: 'Good', color: 'text-green-500' },
   { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
-  { value: 'stressed', icon: Frown, label: 'Bad', color: 'text-orange-500' },
+  { value: 'anxious', icon: Frown, label: 'Bad', color: 'text-orange-500' },
   { value: 'tired', icon: Frown, label: 'Terrible', color: 'text-red-500' },
 ];
 

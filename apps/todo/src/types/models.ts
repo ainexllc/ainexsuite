@@ -38,12 +38,31 @@ export interface Subtask {
   isCompleted: boolean;
 }
 
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+export interface TaskAttachment {
+  id: string;
+  url: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
+export type TaskType = 'text' | 'checklist';
+
 export interface Task {
   id: string;
   spaceId: string;
   listId: string; // Belongs to a column/list
   title: string;
   description?: string;
+  type?: TaskType; // 'text' (default) or 'checklist'
+  checklist?: ChecklistItem[]; // For checklist mode
+  attachments?: TaskAttachment[]; // Image attachments
   status: TaskStatus;
   priority: Priority;
   dueDate?: string; // ISO date

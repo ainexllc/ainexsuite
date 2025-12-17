@@ -7,7 +7,6 @@ import {
   CheckSquare,
   Image as ImageIcon,
   CalendarClock,
-  Calendar,
   Calculator,
   Palette,
   Pin,
@@ -18,6 +17,7 @@ import {
   X,
   Sparkles,
   Loader2,
+  Brain,
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useNotes } from "@/components/providers/notes-provider";
@@ -26,7 +26,6 @@ import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { useLabels } from "@/components/providers/labels-provider";
 import { QUICK_CAPTURE_EVENT } from "@/lib/constants/events";
 import { useReminders } from "@/components/providers/reminders-provider";
-import { InlineCalendar } from "@/components/notes/inline-calendar";
 import { InlineCalculator } from "@/components/notes/inline-calculator";
 import type { ReminderFrequency } from "@/lib/types/reminder";
 import type { ReminderChannel } from "@/lib/types/settings";
@@ -54,7 +53,7 @@ const checklistTemplate = (): ChecklistItem => ({
 
 
 export function NoteComposer() {
-  const { createNote, updateNote, allNotes } = useNotes();
+  const { createNote, updateNote } = useNotes();
   const { createReminder } = useReminders();
   const { preferences } = usePreferences();
   const { labels, createLabel } = useLabels();
@@ -80,9 +79,8 @@ export function NoteComposer() {
   );
   const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>("once");
   const [customCron, setCustomCron] = useState("");
-  const [showCalendar, setShowCalendar] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [noteDate, setNoteDate] = useState<Date | null>(null);
+  const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
   const [isCreatingLabel, setIsCreatingLabel] = useState(false);
 
@@ -175,9 +173,8 @@ export function NoteComposer() {
     setReminderChannels([...preferences.reminderChannels]);
     setReminderFrequency("once");
     setCustomCron("");
-    setShowCalendar(false);
     setShowCalculator(false);
-    setNoteDate(null);
+    setShowEnhanceMenu(false);
     setNewLabelName("");
     setIsCreatingLabel(false);
   }, [preferences.reminderChannels]);
@@ -210,15 +207,37 @@ export function NoteComposer() {
     });
   };
 
-  const handleEnhanceBody = async () => {
+  type EnhanceStyle = "professional" | "casual" | "concise" | "grammar";
+
+  const ENHANCE_STYLES: { id: EnhanceStyle; label: string; description: string }[] = [
+    { id: "professional", label: "Professional", description: "Polished & formal tone" },
+    { id: "casual", label: "Casual", description: "Friendly & conversational" },
+    { id: "concise", label: "Concise", description: "Brief & to the point" },
+    { id: "grammar", label: "Clean Grammar", description: "Fix spelling & grammar" },
+  ];
+
+  const handleEnhanceBody = async (style: EnhanceStyle) => {
     if (!body.trim() || isEnhancing) return;
+
+    setShowEnhanceMenu(false);
 
     try {
       setIsEnhancing(true);
+
+      // Map style to task and tone
+      const taskMap: Record<EnhanceStyle, { task: string; tone?: string }> = {
+        professional: { task: "improve", tone: "professional" },
+        casual: { task: "rewrite", tone: "casual" },
+        concise: { task: "simplify" },
+        grammar: { task: "grammar" },
+      };
+
+      const { task, tone } = taskMap[style];
+
       const response = await fetch("/api/ai/enhance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: body, task: "improve" }),
+        body: JSON.stringify({ text: body, task, tone }),
       });
 
       if (response.ok) {
@@ -228,6 +247,7 @@ export function NoteComposer() {
         }
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to enhance body:", error);
     } finally {
       setIsEnhancing(false);
@@ -269,7 +289,6 @@ export function NoteComposer() {
         archived,
         labelIds: selectedLabelIds,
         reminderAt: fireAt ?? null,
-        noteDate: noteDate ?? undefined,
         attachments: attachments.map((item) => item.file),
       });
 
@@ -317,7 +336,6 @@ export function NoteComposer() {
     archived,
     selectedLabelIds,
     attachments,
-    noteDate,
     createReminder,
     reminderFrequency,
     customCron,
@@ -402,13 +420,15 @@ export function NoteComposer() {
 
     try {
       setIsCreatingLabel(true);
+      console.log("[NoteComposer] Creating label with name:", name);
       const newLabelId = await createLabel({ name });
+      console.log("[NoteComposer] Created label with id:", newLabelId);
       if (newLabelId) {
         setSelectedLabelIds((prev) => [...prev, newLabelId]);
       }
       setNewLabelName("");
     } catch (error) {
-      console.error("Failed to create label:", error);
+      console.error("[NoteComposer] Failed to create label:", error);
     } finally {
       setIsCreatingLabel(false);
     }
@@ -435,10 +455,8 @@ export function NoteComposer() {
     );
   }, [labels, newLabelName]);
 
-  const backgroundClass =
-    color === "default"
-      ? "bg-[#1a1a1a] dark:bg-[#1a1a1a]"
-      : `bg-${color} dark:bg-${color}-dark`;
+  const colorConfig = NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
+  const backgroundClass = colorConfig.cardClass;
 
   const canUseSms = Boolean(preferences.smsNumber?.trim());
 
@@ -494,12 +512,12 @@ export function NoteComposer() {
           ref={composerRef}
           className={clsx(
             "w-full rounded-2xl shadow-lg border transition-all",
-            "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800",
-            color !== "default" && backgroundClass,
+            backgroundClass,
+            "border-zinc-200 dark:border-zinc-800",
           )}
         >
           <div className="flex flex-col gap-3 px-5 py-4">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2">
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -519,7 +537,15 @@ export function NoteComposer() {
                 )}
                 aria-label={pinned ? "Unpin note" : "Pin note"}
               >
-                {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                {pinned ? <PinOff className="h-5 w-5" /> : <Pin className="h-5 w-5" />}
+              </button>
+              <button
+                type="button"
+                onClick={resetState}
+                className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
               </button>
             </div>
 
@@ -536,28 +562,34 @@ export function NoteComposer() {
                   }}
                   placeholder="What's on your mind?..."
                   rows={attachments.length ? 3 : 5}
-                  className="min-h-[120px] w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] pr-10 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                  className={clsx(
+                    "min-h-[120px] w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all duration-300",
+                    isEnhancing && "blur-sm opacity-50"
+                  )}
+                  disabled={isEnhancing}
                 />
-                {body.trim() && (
-                  <button
-                    type="button"
-                    onClick={() => void handleEnhanceBody()}
-                    disabled={isEnhancing}
-                    className={clsx(
-                      "absolute bottom-2 right-0 p-1.5 rounded-full transition-all",
-                      isEnhancing
-                        ? "text-[var(--color-primary)] cursor-wait"
-                        : "text-zinc-400 dark:text-zinc-500 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                    )}
-                    aria-label="Enhance with AI"
-                    title="Enhance with AI"
-                  >
-                    {isEnhancing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
-                  </button>
+                {/* AI Enhancement overlay */}
+                {isEnhancing && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <div className="flex flex-col items-center gap-3 rounded-2xl bg-zinc-900 px-8 py-5 border border-[var(--color-primary)]/40 shadow-2xl">
+                      <div className="relative w-12 h-12 flex items-center justify-center">
+                        <div className="absolute inset-0 animate-ping opacity-20 flex items-center justify-center">
+                          <Brain className="h-10 w-10 text-[var(--color-primary)]" />
+                        </div>
+                        <Brain className="h-10 w-10 text-[var(--color-primary)] animate-pulse" />
+                        <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-[var(--color-primary)] animate-bounce" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-semibold text-white">AI is thinking...</p>
+                        <p className="text-xs text-white/60 mt-0.5">Enhancing your note</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (
@@ -877,8 +909,8 @@ export function NoteComposer() {
                     onClick={() => {
                       setShowPalette((prev) => !prev);
                       setShowLabelPicker(false);
-                      setShowCalendar(false);
                       setShowCalculator(false);
+                      setShowEnhanceMenu(false);
                     }}
                     aria-label="Choose color"
                   >
@@ -914,8 +946,8 @@ export function NoteComposer() {
                   onClick={() => {
                     setShowLabelPicker((prev) => !prev);
                     setShowPalette(false);
-                    setShowCalendar(false);
                     setShowCalculator(false);
+                    setShowEnhanceMenu(false);
                   }}
                   aria-label="Manage labels"
                 >
@@ -943,8 +975,8 @@ export function NoteComposer() {
                     });
                     setShowPalette(false);
                     setShowLabelPicker(false);
-                    setShowCalendar(false);
                     setShowCalculator(false);
+                    setShowEnhanceMenu(false);
                   }}
                   aria-label="Set reminder"
                 >
@@ -952,44 +984,6 @@ export function NoteComposer() {
                     className={clsx("h-5 w-5", reminderEnabled && "fill-current")}
                   />
                 </button>
-                <div className="relative">
-                  <button
-                    type="button"
-                    className={clsx(
-                      "p-2 rounded-full transition-colors",
-                      showCalendar
-                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                        : noteDate
-                          ? "text-[var(--color-primary)]"
-                          : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    )}
-                    onClick={() => {
-                      setShowCalendar((prev) => !prev);
-                      setShowPalette(false);
-                      setShowLabelPicker(false);
-                      setReminderPanelOpen(false);
-                      setShowCalculator(false);
-                    }}
-                    aria-label="Set date"
-                  >
-                    <Calendar className="h-5 w-5" />
-                  </button>
-                  {showCalendar && (
-                    <div className="absolute top-full left-0 mt-2 z-50">
-                      <InlineCalendar
-                        value={noteDate}
-                        onChange={(date) => {
-                          setNoteDate(date);
-                          setShowCalendar(false);
-                        }}
-                        onClose={() => setShowCalendar(false)}
-                        activeDates={allNotes
-                          .filter((n) => n.noteDate || n.createdAt)
-                          .map((n) => n.noteDate ?? n.createdAt)}
-                      />
-                    </div>
-                  )}
-                </div>
                 {/* Calculator */}
                 <div className="relative">
                   <button
@@ -1004,8 +998,8 @@ export function NoteComposer() {
                       setShowCalculator((prev) => !prev);
                       setShowPalette(false);
                       setShowLabelPicker(false);
-                      setShowCalendar(false);
                       setReminderPanelOpen(false);
+                      setShowEnhanceMenu(false);
                     }}
                     aria-label="Calculator"
                   >
@@ -1020,6 +1014,42 @@ export function NoteComposer() {
                     </div>
                   )}
                 </div>
+                {/* AI Enhance button */}
+                {mode === "text" && body.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEnhanceMenu((prev) => !prev);
+                      setShowPalette(false);
+                      setShowLabelPicker(false);
+                      setShowCalculator(false);
+                      setReminderPanelOpen(false);
+                    }}
+                    disabled={isEnhancing}
+                    className={clsx(
+                      "transition-all flex items-center gap-1.5 rounded-full h-9 px-3",
+                      isEnhancing
+                        ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
+                        : showEnhanceMenu
+                          ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
+                          : "text-zinc-500 dark:text-zinc-400 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                    )}
+                    aria-label="Enhance with AI"
+                    title="Enhance text with AI"
+                  >
+                    {isEnhancing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-xs font-medium">Enhancing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        <span className="text-xs font-medium">All</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-3">
@@ -1036,7 +1066,7 @@ export function NoteComposer() {
                   className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? "Adding..." : "Add note"}
                 </button>
               </div>
             </div>
@@ -1119,6 +1149,34 @@ export function NoteComposer() {
               </div>
             </div>
           ) : null}
+
+          {/* AI Enhance Style Menu */}
+          {showEnhanceMenu && !isEnhancing && (
+            <div className="border-t border-zinc-200 dark:border-zinc-800 px-5 py-3">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="h-4 w-4 text-[var(--color-primary)]" />
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  AI Enhance
+                </p>
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  Choose a style
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {ENHANCE_STYLES.map((style) => (
+                  <button
+                    key={style.id}
+                    type="button"
+                    onClick={() => void handleEnhanceBody(style.id)}
+                    className="text-left px-3 py-2 rounded-xl transition-colors bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700"
+                  >
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{style.label}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{style.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -34,8 +34,6 @@ export interface AIInsightsModalProps {
   commonThemes?: string[];
   /** Pending action items */
   pendingActions?: string[];
-  /** Top categories with counts */
-  topCategories?: Array<{ name: string; count: number }>;
   /** Connected topics */
   connections?: Array<{ topic: string; noteCount: number }>;
   /** Learning topics */
@@ -85,7 +83,6 @@ export function AIInsightsModal({
   mood,
   commonThemes = [],
   pendingActions = [],
-  topCategories = [],
   connections = [],
   learningTopics = [],
   quickTip,

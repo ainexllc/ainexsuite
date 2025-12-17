@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { List, LayoutGrid, Calendar, Activity } from 'lucide-react';
+import { List, LayoutGrid, Calendar, Activity, X } from 'lucide-react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import type { HealthMetric } from '@ainexsuite/types';
 import {
@@ -22,12 +22,26 @@ import { HealthEditModal } from '@/components/health-edit-modal';
 import { HealthBoard } from '@/components/health-board';
 import { HealthFilterContent } from '@/components/health-filter-content';
 import { SpaceSwitcher } from '@/components/spaces';
-import type { ViewMode } from '@/lib/types/settings';
+import type { ViewMode, SortField } from '@/lib/types/settings';
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
   { value: 'list', icon: List, label: 'List view' },
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
   { value: 'calendar', icon: Calendar, label: 'Calendar view' },
+];
+
+// Health-specific sort options
+interface HealthSortOption {
+  field: SortField;
+  label: string;
+}
+
+const SORT_OPTIONS: HealthSortOption[] = [
+  { field: 'date', label: 'Date' },
+  { field: 'weight', label: 'Weight' },
+  { field: 'sleep', label: 'Sleep' },
+  { field: 'water', label: 'Water' },
+  { field: 'energy', label: 'Energy' },
 ];
 
 const MOOD_LABELS: Record<string, string> = {
@@ -46,12 +60,17 @@ export default function HealthWorkspacePage() {
     loading,
     filters,
     setFilters,
+    sort,
+    setSort,
+    searchQuery,
+    setSearchQuery,
     createMetric,
     updateMetric,
     deleteMetric,
   } = useHealthMetrics();
   const { preferences, updatePreferences } = usePreferences();
   const [editingMetric, setEditingMetric] = useState<HealthMetric | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const handleSaveCheckin = async (data: Partial<HealthMetric>) => {
     try {
@@ -200,6 +219,16 @@ export default function HealthWorkspacePage() {
 
   const isCalendarView = preferences.viewMode === 'calendar';
 
+  const handleSearchToggle = useCallback(() => {
+    setIsSearchOpen((prev) => {
+      if (prev) {
+        // Clear search when closing
+        setSearchQuery('');
+      }
+      return !prev;
+    });
+  }, [setSearchQuery]);
+
   // Show standardized loading screen if internal data is loading
   if (loading) {
     return <WorkspaceLoadingScreen />;
@@ -221,15 +250,45 @@ export default function HealthWorkspacePage() {
         composerActions={<SpaceSwitcher />}
         toolbar={
           <div className="space-y-2">
+            {isSearchOpen && (
+              <div className="flex items-center gap-2 justify-center">
+                <div className="relative flex-1 max-w-md">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search check-ins..."
+                    autoFocus
+                    className="w-full h-9 px-4 pr-10 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
             <WorkspaceToolbar
               viewMode={preferences.viewMode}
               onViewModeChange={(mode) => updatePreferences({ viewMode: mode })}
               viewOptions={VIEW_OPTIONS}
+              onSearchClick={handleSearchToggle}
+              isSearchActive={isSearchOpen || !!searchQuery}
               filterContent={
                 <HealthFilterContent filters={filters} onFiltersChange={setFilters} />
               }
               activeFilterCount={activeFilterCount}
               onFilterReset={handleFilterReset}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              sort={sort as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onSortChange={setSort as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              sortOptions={SORT_OPTIONS as any}
               viewPosition="right"
             />
             {filterChips.length > 0 && (

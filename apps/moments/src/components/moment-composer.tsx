@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, MapPin, Calendar, Tag, X, Smile, Users, Cloud, Palette, Pin, PinOff } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { Camera, MapPin, Calendar, Tag, X, Smile, Users, Cloud, Palette, Pin, PinOff, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useAppColors } from '@ainexsuite/theme';
@@ -55,6 +55,22 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
+
+  // Filter tags based on search input
+  const filteredTags = useMemo(() => {
+    if (!tagInput.trim()) return tags;
+    return tags.filter(tag =>
+      tag.toLowerCase().includes(tagInput.trim().toLowerCase())
+    );
+  }, [tags, tagInput]);
+
+  // Filter people based on search input
+  const filteredPeople = useMemo(() => {
+    if (!peopleInput.trim()) return people;
+    return people.filter(person =>
+      person.toLowerCase().includes(peopleInput.trim().toLowerCase())
+    );
+  }, [people, peopleInput]);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -444,112 +460,42 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
                 </div>
 
                 {/* Add People Button */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    className={clsx(
-                      "p-2 rounded-full transition-colors",
-                      showPeopleInput
-                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                        : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    )}
-                    onClick={() => {
-                      setShowPeopleInput(!showPeopleInput);
-                      setShowTagInput(false);
-                    }}
-                    title="Add people"
-                  >
-                    <Users className="h-5 w-5" />
-                  </button>
-
-                  {showPeopleInput && (
-                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-surface-elevated border border-border shadow-2xl">
-                      <div className="flex gap-2">
-                        <input
-                          value={peopleInput}
-                          onChange={(e) => setPeopleInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddPerson();
-                            }
-                          }}
-                          placeholder="Who's with you?"
-                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                          style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
-                          onFocus={(e) => e.target.style.borderColor = primaryColor}
-                          onBlur={(e) => e.target.style.borderColor = ''}
-                          autoFocus
-                        />
-                        <button
-                          onClick={handleAddPerson}
-                          className="px-3 py-1.5 text-foreground rounded-lg text-xs font-medium transition-colors"
-                          style={{
-                            backgroundColor: primaryColor,
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                        >
-                          Add
-                        </button>
-                      </div>
-                    </div>
+                <button
+                  type="button"
+                  className={clsx(
+                    "p-2 rounded-full transition-colors",
+                    showPeopleInput
+                      ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                      : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   )}
-                </div>
+                  onClick={() => {
+                    setShowPeopleInput(!showPeopleInput);
+                    setShowTagInput(false);
+                    setShowPalette(false);
+                  }}
+                  title="Add people"
+                >
+                  <Users className="h-5 w-5" />
+                </button>
 
                 {/* Add Tags Button */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    className={clsx(
-                      "p-2 rounded-full transition-colors",
-                      showTagInput
-                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                        : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    )}
-                    onClick={() => {
-                      setShowTagInput(!showTagInput);
-                      setShowPeopleInput(false);
-                    }}
-                    title="Add tags"
-                  >
-                    <Tag className="h-5 w-5" />
-                  </button>
-
-                  {showTagInput && (
-                    <div className="absolute bottom-12 left-0 z-30 w-64 p-3 rounded-xl bg-surface-elevated border border-border shadow-2xl">
-                      <div className="flex gap-2">
-                        <input
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddTag();
-                            }
-                          }}
-                          placeholder="Add a tag..."
-                          className="flex-1 bg-background/20 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                          style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
-                          onFocus={(e) => e.target.style.borderColor = primaryColor}
-                          onBlur={(e) => e.target.style.borderColor = ''}
-                          autoFocus
-                        />
-                        <button
-                          onClick={handleAddTag}
-                          className="px-3 py-1.5 text-foreground rounded-lg text-xs font-medium transition-colors"
-                          style={{
-                            backgroundColor: primaryColor,
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                        >
-                          Add
-                        </button>
-                      </div>
-                    </div>
+                <button
+                  type="button"
+                  className={clsx(
+                    "p-2 rounded-full transition-colors",
+                    showTagInput
+                      ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                      : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                   )}
-                </div>
+                  onClick={() => {
+                    setShowTagInput(!showTagInput);
+                    setShowPeopleInput(false);
+                    setShowPalette(false);
+                  }}
+                  title="Add tags"
+                >
+                  <Tag className="h-5 w-5" />
+                </button>
               </div>
 
               <div className="flex items-center gap-3">
@@ -571,6 +517,153 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
               </div>
             </div>
           </div>
+
+          {/* Expandable Tags Panel */}
+          {showTagInput && (
+            <div className="border-t border-zinc-200 dark:border-zinc-800 px-5 py-3 space-y-3">
+              {/* New tag input */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddTag();
+                      }
+                    }}
+                    placeholder="Search or create a tag..."
+                    className="w-full rounded-full border px-4 py-2 text-sm focus:outline-none bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-300 dark:focus:border-zinc-600"
+                    autoFocus
+                  />
+                </div>
+                {tagInput.trim() && !tags.includes(tagInput.trim().toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={handleAddTag}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Create
+                  </button>
+                )}
+              </div>
+
+              {/* Existing tags */}
+              <div className="flex flex-wrap gap-2">
+                {filteredTags.length > 0 ? (
+                  filteredTags.map((tag) => {
+                    const isSelected = tags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            handleRemoveTag(tag);
+                          } else {
+                            setTags([...tags, tag]);
+                          }
+                        }}
+                        className={clsx(
+                          "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
+                          isSelected
+                            ? "border-zinc-400 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-800 dark:hover:text-zinc-200",
+                        )}
+                      >
+                        #{tag}
+                      </button>
+                    );
+                  })
+                ) : tagInput.trim() ? (
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                    No matching tags. Press Enter or click Create to add &quot;{tagInput.trim()}&quot;.
+                  </p>
+                ) : (
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                    No tags yet. Type above to create your first tag.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Expandable People Panel */}
+          {showPeopleInput && (
+            <div className="border-t border-zinc-200 dark:border-zinc-800 px-5 py-3 space-y-3">
+              {/* New person input */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={peopleInput}
+                    onChange={(e) => setPeopleInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddPerson();
+                      }
+                    }}
+                    placeholder="Who's with you?"
+                    className="w-full rounded-full border px-4 py-2 text-sm focus:outline-none bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-300 dark:focus:border-zinc-600"
+                    autoFocus
+                  />
+                </div>
+                {peopleInput.trim() && !people.includes(peopleInput.trim()) && (
+                  <button
+                    type="button"
+                    onClick={handleAddPerson}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add
+                  </button>
+                )}
+              </div>
+
+              {/* Existing people */}
+              <div className="flex flex-wrap gap-2">
+                {filteredPeople.length > 0 ? (
+                  filteredPeople.map((person) => {
+                    const isSelected = people.includes(person);
+                    return (
+                      <button
+                        key={person}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            handleRemovePerson(person);
+                          } else {
+                            setPeople([...people, person]);
+                          }
+                        }}
+                        className={clsx(
+                          "flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition",
+                          isSelected
+                            ? "border-zinc-400 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600 hover:text-zinc-800 dark:hover:text-zinc-200",
+                        )}
+                      >
+                        <Users className="h-3 w-3" />
+                        {person}
+                      </button>
+                    );
+                  })
+                ) : peopleInput.trim() ? (
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                    Press Enter or click Add to add &quot;{peopleInput.trim()}&quot;.
+                  </p>
+                ) : (
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                    No people added yet. Type a name above.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import {
   Archive,
@@ -15,9 +15,7 @@ import {
   X,
   BellRing,
   CalendarClock,
-  Calendar,
   Calculator,
-  Share2,
   Sparkles,
   Loader2,
   Undo2,
@@ -41,15 +39,11 @@ import { usePreferences } from "@/components/providers/preferences-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import type { ReminderFrequency } from "@/lib/types/reminder";
 import type { ReminderChannel } from "@/lib/types/settings";
-import type { CollaboratorRole, NoteCollaborator } from "@/lib/types/note";
-import { getFirebaseAuth } from "@/lib/firebase/client-app";
-import { useAuth } from "@/lib/auth/auth-context";
 import { REMINDER_CHANNELS, REMINDER_FREQUENCIES } from "@/components/reminders/reminder-constants";
 import {
   formatDateTimeLocalInput,
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
-import { InlineCalendar } from "./inline-calendar";
 import { InlineCalculator } from "./inline-calculator";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
@@ -85,7 +79,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const { labels, createLabel } = useLabels();
   const { reminders, createReminder, updateReminder, deleteReminder } = useReminders();
   const { preferences } = usePreferences();
-  const { user: sessionUser } = useAuth();
   const { spaces } = useSpaces();
 
   const [title, setTitle] = useState(note.title);
@@ -187,19 +180,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [customCron, setCustomCron] = useState("");
   const [reminderPrimed, setReminderPrimed] = useState(false);
   const [reminderPanelOpen, setReminderPanelOpen] = useState(false);
-  const [sharePanelOpen, setSharePanelOpen] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [noteDate, setNoteDate] = useState<Date | null>(note.noteDate ?? null);
-  const [collaborators, setCollaborators] = useState<NoteCollaborator[]>(note.sharedWith);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<CollaboratorRole>("viewer");
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(note.spaceId || "personal");
   const [showSpacePicker, setShowSpacePicker] = useState(false);
-  const [shareError, setShareError] = useState<string | null>(null);
-  const [isInviting, setIsInviting] = useState(false);
-  const [removingEmail, setRemovingEmail] = useState<string | null>(null);
-  const canManageSharing = sessionUser?.id === note.ownerId;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
@@ -254,107 +237,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       );
     });
   }, [checklist, note.checklist]);
-
-  const requestAuthToken = useCallback(async () => {
-    const auth = await getFirebaseAuth();
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      throw new Error("You must be signed in to manage sharing");
-    }
-    return currentUser.getIdToken();
-  }, []);
-
-  const handleInviteCollaborator = useCallback(async () => {
-    if (!canManageSharing) {
-      return;
-    }
-
-    const trimmedEmail = inviteEmail.trim();
-    if (!trimmedEmail) {
-      setShareError("Enter an email address to invite.");
-      return;
-    }
-
-    setIsInviting(true);
-    setShareError(null);
-
-    try {
-      const token = await requestAuthToken();
-      const response = await fetch(`/api/notes/${note.id}/share`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: trimmedEmail, role: inviteRole }),
-      });
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.error ?? "Unable to add collaborator");
-      }
-
-      const payload = await response.json();
-
-      setCollaborators((prev) => [
-        ...prev.filter((entry) => entry.email !== trimmedEmail),
-        {
-          email: trimmedEmail,
-          role: (payload.collaborator?.role as CollaboratorRole) ?? inviteRole,
-          userId: payload.collaborator?.userId ?? "",
-          invitedAt: new Date(),
-        },
-      ]);
-      setInviteEmail("");
-    } catch (error) {
-      setShareError(error instanceof Error ? error.message : "Unable to add collaborator");
-    } finally {
-      setIsInviting(false);
-    }
-  }, [canManageSharing, inviteEmail, inviteRole, note.id, requestAuthToken]);
-
-  const handleRemoveCollaborator = useCallback(
-    async (email: string) => {
-      if (!canManageSharing) {
-        return;
-      }
-
-      setRemovingEmail(email);
-      setShareError(null);
-
-      try {
-        const token = await requestAuthToken();
-        const response = await fetch(`/api/notes/${note.id}/share`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
-
-        if (!response.ok) {
-          const payload = await response.json().catch(() => ({}));
-          throw new Error(payload.error ?? "Unable to remove collaborator");
-        }
-
-        setCollaborators((prev) => prev.filter((entry) => entry.email !== email));
-      } catch (error) {
-        setShareError(error instanceof Error ? error.message : "Unable to remove collaborator");
-      } finally {
-        setRemovingEmail(null);
-      }
-    },
-    [canManageSharing, note.id, requestAuthToken],
-  );
-
-  const handleInviteSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      await handleInviteCollaborator();
-    },
-    [handleInviteCollaborator],
-  );
 
   type EnhanceStyle = "professional" | "casual" | "concise" | "grammar";
 
@@ -497,11 +379,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       reminderChannelsChanged ||
       reminderFrequencyChanged ||
       reminderCronChanged;
-    const noteDateChanged =
-      (noteDate === null && note.noteDate !== null && note.noteDate !== undefined) ||
-      (noteDate !== null && note.noteDate === null) ||
-      (noteDate !== null && note.noteDate !== null && note.noteDate !== undefined &&
-        noteDate.getTime() !== note.noteDate.getTime());
     // Check if space changed (convert "personal" selection to undefined for comparison)
     const currentNoteSpaceId = note.spaceId || "personal";
     const spaceIdChanged = selectedSpaceId !== currentNoteSpaceId;
@@ -518,7 +395,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       !labelsChanged &&
       !modeChanged &&
       !reminderChanged &&
-      !noteDateChanged &&
       !spaceIdChanged
     ) {
       onClose();
@@ -563,10 +439,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
       if (labelsChanged) {
         updates.labelIds = selectedLabelIds;
-      }
-
-      if (noteDateChanged) {
-        updates.noteDate = noteDate;
       }
 
       if (spaceIdChanged) {
@@ -668,8 +540,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     checklistChanged,
     selectedLabelIds,
     note.labelIds,
-    noteDate,
-    note.noteDate,
     selectedSpaceId,
     note.spaceId,
     updateNote,
@@ -735,10 +605,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       setReminderChannels([...preferences.reminderChannels]);
     }
   }, [preferences.reminderChannels, note.reminderId, reminderEnabled]);
-
-  useEffect(() => {
-    setCollaborators(note.sharedWith);
-  }, [note.sharedWith]);
 
   useEffect(() => {
     if (!pendingChecklistFocusId.current) {
@@ -899,162 +765,35 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         )}
       >
         <div className="flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2">
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Title"
               className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
             />
-            <div className="flex items-center gap-2 mr-14">
-              <button
-                type="button"
-                className={clsx(
-                  "icon-button h-9 w-9",
-                  reminderPanelOpen && "bg-accent-100 text-accent-600",
-                  reminderEnabled && !reminderPanelOpen && "text-accent-500",
-                )}
-                onClick={() => {
-                  setReminderPanelOpen((prev) => {
-                    const willOpen = !prev;
-                    // Auto-enable reminder when opening panel
-                    if (willOpen && !reminderEnabled) {
-                      const defaultTime = new Date();
-                      defaultTime.setMinutes(0, 0, 0);
-                      defaultTime.setHours(defaultTime.getHours() + 1);
-                      setReminderValue(formatDateTimeLocalInput(defaultTime));
-                      setReminderChannels([...preferences.reminderChannels]);
-                      setReminderEnabled(true);
-                    }
-                    return willOpen;
-                  });
-                  setSharePanelOpen(false);
-                }}
-                aria-label="Set reminder"
-              >
-                <BellRing
-                  className={clsx("h-4 w-4", reminderEnabled && "fill-current")}
-                />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSharePanelOpen((prev) => !prev);
-                  setReminderPanelOpen(false);
-                }}
-                className={clsx(
-                  "inline-flex items-center gap-2 rounded-full border border-outline-subtle px-3 py-1 text-xs font-medium transition",
-                  sharePanelOpen && "border-accent-500 bg-accent-100 text-accent-600",
-                )}
-                aria-expanded={sharePanelOpen}
-              >
-                <Share2 className="h-3.5 w-3.5" />
-                {collaborators.length ? `${collaborators.length} shared` : "Share"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setPinned((prev) => !prev)}
-                className={clsx(
-                  "icon-button h-9 w-9 rounded-full",
-                  pinned
-                    ? "bg-accent-100 text-accent-600"
-                    : "bg-surface-muted text-ink-500",
-                )}
-                aria-label={pinned ? "Unpin note" : "Pin note"}
-              >
-                {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-
-          {sharePanelOpen ? (
-            <div className="rounded-2xl border border-outline-subtle/70 bg-white/80 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-ink-800">Collaborators</h2>
-                {!canManageSharing ? (
-                  <span className="text-xs text-muted">View only</span>
-                ) : null}
-              </div>
-              {shareError ? (
-                <p className="mt-2 text-xs text-danger">{shareError}</p>
-              ) : null}
-
-              <ul className="mt-3 space-y-2">
-                {collaborators.length ? (
-                  collaborators.map((collaborator) => (
-                    <li
-                      key={collaborator.email}
-                      className="flex items-center justify-between rounded-xl border border-outline-subtle/60 bg-surface-muted/50 px-3 py-2"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-ink-800">
-                          {collaborator.email === sessionUser?.email
-                            ? `${collaborator.email} (you)`
-                            : collaborator.email}
-                        </p>
-                        <p className="text-xs text-muted">
-                          {collaborator.role === "editor" ? "Can edit" : "Can view"}
-                          {collaborator.invitedAt
-                            ? ` · invited ${collaborator.invitedAt.toLocaleDateString()}`
-                            : null}
-                        </p>
-                      </div>
-                      {canManageSharing ? (
-                        <button
-                          type="button"
-                          onClick={() => void handleRemoveCollaborator(collaborator.email)}
-                          disabled={removingEmail === collaborator.email}
-                          className="text-xs font-semibold text-danger hover:underline disabled:opacity-60"
-                        >
-                          {removingEmail === collaborator.email ? "Removing…" : "Remove"}
-                        </button>
-                      ) : null}
-                    </li>
-                  ))
-                ) : (
-                  <li className="rounded-xl border border-dashed border-outline-subtle/60 bg-surface-muted/40 px-3 py-3 text-xs text-muted">
-                    No collaborators yet.
-                  </li>
-                )}
-              </ul>
-
-              {canManageSharing ? (
-                <form
-                  onSubmit={handleInviteSubmit}
-                  className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center"
-                >
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(event) => setInviteEmail(event.target.value)}
-                    placeholder="teammate@example.com"
-                    className="flex-1 rounded-full border border-outline-subtle px-4 py-2 text-sm text-ink-700 shadow-sm focus:border-accent-500 focus:outline-none"
-                    disabled={isInviting}
-                  />
-                  <select
-                    value={inviteRole}
-                    onChange={(event) => setInviteRole(event.target.value as CollaboratorRole)}
-                    className="rounded-full border border-outline-subtle bg-white px-3 py-2 text-sm text-ink-700 focus:border-accent-500 focus:outline-none"
-                    disabled={isInviting}
-                  >
-                    <option value="viewer">Viewer</option>
-                    <option value="editor">Editor</option>
-                  </select>
-                  <button
-                    type="submit"
-                    disabled={isInviting}
-                    className="inline-flex items-center gap-2 rounded-full bg-accent-500 px-4 py-2 text-sm font-semibold text-ink-50 transition hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 disabled:opacity-70"
-                  >
-                    {isInviting ? "Inviting…" : "Invite"}
-                  </button>
-                </form>
-              ) : (
-                <p className="mt-4 text-xs text-muted">
-                  Only the note owner can manage collaborators.
-                </p>
+            <button
+              type="button"
+              onClick={() => setPinned((prev) => !prev)}
+              className={clsx(
+                "p-2 rounded-full transition-colors",
+                pinned
+                  ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                  : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
               )}
-            </div>
-          ) : null}
+              aria-label={pinned ? "Unpin note" : "Pin note"}
+            >
+              {pinned ? <PinOff className="h-5 w-5" /> : <Pin className="h-5 w-5" />}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
 
           {mode === "text" ? (
             <div className="relative">
@@ -1471,7 +1210,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   onClick={() => {
                     setShowPalette((prev) => !prev);
                     setShowLabelPicker(false);
-                    setShowCalendar(false);
                     setShowCalculator(false);
                   }}
                   className={clsx(
@@ -1510,7 +1248,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 onClick={() => {
                   setShowLabelPicker((prev) => !prev);
                   setShowPalette(false);
-                  setShowCalendar(false);
                   setShowCalculator(false);
                 }}
                 className={clsx(
@@ -1536,37 +1273,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               >
                 <Archive className="h-4 w-4" />
               </button>
-              {/* Calendar date picker */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCalendar((prev) => !prev);
-                    setShowPalette(false);
-                    setShowLabelPicker(false);
-                    setShowCalculator(false);
-                  }}
-                  className={clsx(
-                    "h-9 w-9 rounded-full flex items-center justify-center transition",
-                    (showCalendar || noteDate)
-                      ? "bg-[var(--color-primary)] text-white"
-                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700",
-                  )}
-                  aria-label="Set date"
-                  title={noteDate ? `Date: ${noteDate.toLocaleDateString()}` : "Add a date"}
-                >
-                  <Calendar className="h-4 w-4" />
-                </button>
-                {showCalendar && (
-                  <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
-                    <InlineCalendar
-                      value={noteDate}
-                      onChange={(date) => setNoteDate(date)}
-                      onClose={() => setShowCalendar(false)}
-                    />
-                  </div>
-                )}
-              </div>
               {/* Calculator */}
               <div className="relative">
                 <button
@@ -1575,7 +1281,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalculator((prev) => !prev);
                     setShowPalette(false);
                     setShowLabelPicker(false);
-                    setShowCalendar(false);
                   }}
                   className={clsx(
                     "h-9 w-9 rounded-full flex items-center justify-center transition",
@@ -1657,7 +1362,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       setShowSpacePicker((prev) => !prev);
                       setShowPalette(false);
                       setShowLabelPicker(false);
-                      setShowCalendar(false);
                       setShowCalculator(false);
                     }}
                     className={clsx(
@@ -1803,14 +1507,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           ) : null}
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full transition bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-          aria-label="Close editor"
-        >
-          <X className="h-5 w-5" />
-        </button>
       </div>
 
       <input

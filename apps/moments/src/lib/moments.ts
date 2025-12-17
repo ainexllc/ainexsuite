@@ -30,16 +30,30 @@ export async function getMoments(userId: string, spaceId?: string): Promise<Mome
 }
 
 export async function createMoment(userId: string, input: Omit<CreateMomentInput, 'ownerId'>): Promise<string> {
-  const momentData = {
-    ...input,
+  // Build moment data, excluding undefined values (Firestore doesn't accept undefined)
+  const momentData: Record<string, unknown> = {
+    title: input.title,
+    caption: input.caption,
+    location: input.location,
+    date: input.date,
+    tags: input.tags,
+    collectionId: input.collectionId,
     ownerId: userId,
     spaceId: input.spaceId || null,
-    thumbnailUrl: input.photoUrl, // Use full photo as thumbnail for now
     reactions: [],
     comments: [],
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
+
+  // Only add optional fields if they have values
+  if (input.photoUrl) {
+    momentData.photoUrl = input.photoUrl;
+    momentData.thumbnailUrl = input.photoUrl; // Use full photo as thumbnail
+  }
+  if (input.people?.length) momentData.people = input.people;
+  if (input.mood) momentData.mood = input.mood;
+  if (input.weather) momentData.weather = input.weather;
 
   const docRef = await addDoc(collection(db, MOMENTS_COLLECTION), momentData);
 

@@ -1,12 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar, Flag, Users, Save, Trash2, Loader2 } from 'lucide-react';
-import { EntryEditorShell, Textarea, ConfirmationDialog } from '@ainexsuite/ui';
+/* eslint-disable @next/next/no-img-element */
+
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  Calendar,
+  Flag,
+  Users,
+  Trash2,
+  Loader2,
+  X,
+  CheckSquare,
+  Image as ImageIcon,
+  Calculator,
+  Plus,
+  Pin,
+  PinOff,
+} from 'lucide-react';
+import { EntryEditorShell, ConfirmationDialog } from '@ainexsuite/ui';
 import type { EntryColor } from '@ainexsuite/types';
 import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '../../lib/store';
-import { Task, Priority, TaskList, Member } from '../../types/models';
+import { Task, Priority, TaskList, Member, ChecklistItem, TaskType } from '../../types/models';
+import { clsx } from 'clsx';
+import { InlineCalculator } from './inline-calculator';
+
+type AttachmentDraft = {
+  id: string;
+  file: File;
+  preview: string;
+};
+
+const checklistTemplate = (): ChecklistItem => ({
+  id: crypto.randomUUID(),
+  text: '',
+  completed: false,
+});
 
 interface TaskEditorProps {
   isOpen: boolean;
@@ -22,17 +51,42 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [mode, setMode] = useState<TaskType>('text');
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState('');
   const [assignees, setAssignees] = useState<string[]>([]);
   const [listId, setListId] = useState(defaultListId || '');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
 
   // Shell state
   const [color, setColor] = useState<EntryColor>('default');
   const [pinned, setPinned] = useState(false);
   const [archived, setArchived] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const checklistInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const pendingChecklistFocusId = useRef<string | null>(null);
+
+  // Focus new checklist item
+  useEffect(() => {
+    if (!pendingChecklistFocusId.current) return;
+    const target = checklistInputRefs.current[pendingChecklistFocusId.current];
+    if (target) {
+      target.focus();
+      pendingChecklistFocusId.current = null;
+    }
+  }, [checklist]);
+
+  // Cleanup attachment previews
+  useEffect(() => {
+    return () => {
+      attachments.forEach((item) => URL.revokeObjectURL(item.preview));
+    };
+  }, [attachments]);
 
   // Load data if editing
   useEffect(() => {
@@ -41,6 +95,8 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
       if (task) {
         setTitle(task.title);
         setDescription(task.description || '');
+        setMode(task.type || 'text');
+        setChecklist(task.checklist || []);
         setPriority(task.priority);
         setDueDate(task.dueDate || '');
         setAssignees(task.assigneeIds);
@@ -48,11 +104,14 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         setColor((task.color as EntryColor) || 'default');
         setPinned(task.pinned || false);
         setArchived(task.archived || false);
+        setAttachments([]);
       }
     } else if (isOpen && !editTaskId) {
       // Reset form for new task
       setTitle('');
       setDescription('');
+      setMode('text');
+      setChecklist([]);
       setPriority('medium');
       setDueDate('');
       setAssignees([]);
@@ -60,6 +119,8 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
       setColor('default');
       setPinned(false);
       setArchived(false);
+      setAttachments([]);
+      setShowCalculator(false);
     }
   }, [isOpen, editTaskId, tasks, defaultListId]);
 
@@ -69,6 +130,53 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
       setListId(currentSpace.lists[0].id);
     }
   }, [isOpen, listId, currentSpace]);
+
+  const handleChecklistChange = (itemId: string, next: Partial<ChecklistItem>) => {
+    setChecklist((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, ...next } : item
+      )
+    );
+  };
+
+  const handleAddChecklistItem = () => {
+    const newItem = checklistTemplate();
+    pendingChecklistFocusId.current = newItem.id;
+    setChecklist((prev) => [...prev, newItem]);
+  };
+
+  const handleRemoveChecklistItem = (itemId: string) => {
+    setChecklist((prev) => prev.filter((item) => item.id !== itemId));
+  };
+
+  const handleFilesSelected = (files: FileList | null) => {
+    if (!files || !files.length) return;
+
+    const drafts: AttachmentDraft[] = Array.from(files).map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setAttachments((prev) => [...prev, ...drafts]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAttachment = (attachmentId: string) => {
+    setAttachments((prev) => {
+      prev
+        .filter((item) => item.id === attachmentId)
+        .forEach((item) => URL.revokeObjectURL(item.preview));
+      return prev.filter((item) => item.id !== attachmentId);
+    });
+  };
+
+  const handleCalculatorInsert = useCallback((result: string) => {
+    setDescription((prev) => (prev ? `${prev} ${result}` : result));
+    setShowCalculator(false);
+  }, []);
 
   // Show message if no space is available
   if (!currentSpace) {
@@ -101,10 +209,15 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
     setIsSubmitting(true);
     try {
+      // TODO: Upload attachments to storage and get URLs
+      // For now, we'll skip actual file upload
+
       if (editTaskId) {
         await updateTask(editTaskId, {
           title,
-          description,
+          description: mode === 'text' ? description : '',
+          type: mode,
+          checklist: mode === 'checklist' ? checklist : [],
           priority,
           dueDate,
           assigneeIds: assignees,
@@ -119,7 +232,9 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           spaceId: currentSpace.id,
           listId,
           title,
-          description,
+          description: mode === 'text' ? description : '',
+          type: mode,
+          checklist: mode === 'checklist' ? checklist : [],
           status: 'todo',
           priority,
           dueDate,
@@ -178,173 +293,345 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         onClose={onClose}
         color={color}
         onColorChange={handleColorChange}
-        pinned={pinned}
-        onPinChange={handlePinChange}
         archived={archived}
         onArchiveChange={handleArchiveChange}
+        hideHeaderActions
         toolbarActions={
-          editTaskId ? (
+          <>
+            {/* Checklist Toggle */}
             <button
               type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="h-9 w-9 rounded-full flex items-center justify-center transition text-red-500 hover:bg-red-500/20"
-              aria-label="Delete task"
+              onClick={() => {
+                setMode((prev) => {
+                  if (prev === 'text') {
+                    if (description.trim()) {
+                      const lines = description.split('\n').filter((line) => line.trim());
+                      const items = lines.map((line) => ({
+                        id: crypto.randomUUID(),
+                        text: line.trim(),
+                        completed: false,
+                      }));
+                      setChecklist(items);
+                      setDescription('');
+                    }
+                    return 'checklist';
+                  } else {
+                    if (checklist.length) {
+                      const text = checklist.map((item) => item.text).filter((t) => t.trim()).join('\n');
+                      setDescription(text);
+                      setChecklist([]);
+                    }
+                    return 'text';
+                  }
+                });
+              }}
+              className={clsx(
+                'h-9 w-9 rounded-full flex items-center justify-center transition',
+                mode === 'checklist'
+                  ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+              )}
+              aria-label="Toggle checklist mode"
             >
-              <Trash2 className="h-4 w-4" />
+              <CheckSquare className="h-4 w-4" />
             </button>
-          ) : null
+
+            {/* Image Upload */}
+            <button
+              type="button"
+              className="h-9 w-9 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Add image"
+            >
+              <ImageIcon className="h-4 w-4" />
+            </button>
+
+            {/* Calculator */}
+            <div className="relative">
+              <button
+                type="button"
+                className={clsx(
+                  'h-9 w-9 rounded-full flex items-center justify-center transition',
+                  showCalculator
+                    ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                )}
+                onClick={() => setShowCalculator((prev) => !prev)}
+                aria-label="Calculator"
+              >
+                <Calculator className="h-4 w-4" />
+              </button>
+              {showCalculator && (
+                <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
+                  <InlineCalculator
+                    onInsert={handleCalculatorInsert}
+                    onClose={() => setShowCalculator(false)}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Delete button (only when editing) */}
+            {editTaskId && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="h-9 w-9 rounded-full flex items-center justify-center transition text-red-500 hover:bg-red-500/20"
+                aria-label="Delete task"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+          </>
         }
         footerRightContent={
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
               onClick={handleSubmit}
               disabled={!title.trim() || isSubmitting}
-              className="rounded-full bg-[var(--color-primary)] px-5 py-1.5 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-60 inline-flex items-center gap-2"
+              className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50 disabled:hover:translate-y-0 inline-flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
+                  {editTaskId ? 'Saving...' : 'Adding...'}
                 </>
               ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  {editTaskId ? 'Save Changes' : 'Create Task'}
-                </>
+                editTaskId ? 'Save Changes' : 'Add task'
               )}
             </button>
           </div>
         }
       >
-        <div className="space-y-6">
-          {/* Title Input */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">Task Title *</label>
+        <div className="flex flex-col gap-3">
+          {/* Title row with pin and close buttons */}
+          <div className="flex items-start gap-2">
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task title..."
-              className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-3 text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              placeholder="Task title"
+              className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
               autoFocus
             />
+            <button
+              type="button"
+              onClick={() => handlePinChange(!pinned)}
+              className={clsx(
+                'p-2 rounded-full transition-colors',
+                pinned
+                  ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
+                  : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              )}
+              aria-label={pinned ? 'Unpin task' : 'Pin task'}
+            >
+              {pinned ? <PinOff className="h-5 w-5" /> : <Pin className="h-5 w-5" />}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
-          {/* List/Status Selector */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">List</label>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {currentSpace.lists.map((list: TaskList) => (
-                <button
-                  key={list.id}
-                  type="button"
-                  onClick={() => setListId(list.id)}
-                  className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
-                    listId === list.id
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                  }`}
+          {/* Description or Checklist */}
+          {mode === 'text' ? (
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add details, subtasks, or notes..."
+              rows={4}
+              className="min-h-[100px] w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+            />
+          ) : (
+            <div className="space-y-2">
+              {checklist.map((item, idx) => (
+                <div key={item.id} className="group flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={item.completed}
+                    onChange={(e) =>
+                      handleChecklistChange(item.id, { completed: e.target.checked })
+                    }
+                    className="h-4 w-4 accent-[var(--color-primary)]"
+                  />
+                  <input
+                    value={item.text}
+                    onChange={(e) =>
+                      handleChecklistChange(item.id, { text: e.target.value })
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                        e.preventDefault();
+                        const nextItem = checklist[idx + 1];
+                        if (nextItem) {
+                          checklistInputRefs.current[nextItem.id]?.focus();
+                        } else {
+                          handleAddChecklistItem();
+                        }
+                      }
+                    }}
+                    placeholder={`Item ${idx + 1}`}
+                    ref={(el) => {
+                      if (el) {
+                        checklistInputRefs.current[item.id] = el;
+                      } else {
+                        delete checklistInputRefs.current[item.id];
+                      }
+                    }}
+                    className="flex-1 bg-transparent border-b border-transparent pb-1 text-sm focus:border-zinc-300 dark:focus:border-zinc-600 focus:outline-none text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                  />
+                  <button
+                    type="button"
+                    className="opacity-0 transition group-hover:opacity-100"
+                    onClick={() => handleRemoveChecklistItem(item.id)}
+                    aria-label="Remove item"
+                  >
+                    <X className="h-4 w-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={handleAddChecklistItem}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-300 dark:hover:border-zinc-600"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add item
+              </button>
+            </div>
+          )}
+
+          {/* Attachments Preview */}
+          {attachments.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {attachments.map((attachment) => (
+                <figure
+                  key={attachment.id}
+                  className="relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/60 shadow-sm"
                 >
-                  {list.title}
+                  <img
+                    src={attachment.preview}
+                    alt={attachment.file.name}
+                    className="h-24 w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveAttachment(attachment.id)}
+                    className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white shadow-lg transition hover:bg-black/70"
+                    aria-label="Remove attachment"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </figure>
+              ))}
+            </div>
+          )}
+
+          {/* List selector */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {currentSpace.lists.map((list: TaskList) => (
+              <button
+                key={list.id}
+                type="button"
+                onClick={() => setListId(list.id)}
+                className={clsx(
+                  "px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors",
+                  listId === list.id
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                )}
+              >
+                {list.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Properties row */}
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            {/* Priority buttons */}
+            <div className="flex items-center gap-1">
+              <Flag className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              {(['low', 'medium', 'high'] as Priority[]).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPriority(p)}
+                  className={clsx(
+                    "px-3 py-1 rounded-full text-xs capitalize transition-all",
+                    priority === p
+                      ? p === 'high'
+                        ? "bg-red-500/20 text-red-500"
+                        : "bg-[var(--color-primary)]/20 text-[var(--color-primary)]"
+                      : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  )}
+                >
+                  {p}
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Properties Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Priority */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2 flex items-center gap-1">
-                <Flag className="h-4 w-4" /> Priority
-              </label>
-              <div className="flex gap-2">
-                {['low', 'medium', 'high'].map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPriority(p as Priority)}
-                    className={`flex-1 py-2 rounded-lg text-sm capitalize transition-all ${
-                      priority === p
-                        ? p === 'high'
-                          ? 'bg-red-500/20 text-red-500 border-2 border-red-500/50'
-                          : 'bg-[var(--color-primary)]/20 text-[var(--color-primary)] border-2 border-[var(--color-primary)]/50'
-                        : 'bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Due Date */}
-            <div>
-              <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2 flex items-center gap-1">
-                <Calendar className="h-4 w-4" /> Due Date
-              </label>
+            {/* Due date */}
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                className="bg-transparent text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">Description</label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add details, subtasks, or notes..."
-              className="min-h-[120px]"
-            />
-          </div>
-
           {/* Assignees */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2 flex items-center gap-1">
-              <Users className="h-4 w-4" /> Assignees
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {currentSpace.members.map((member: Member) => (
-                <button
-                  key={member.uid}
-                  type="button"
-                  onClick={() => {
-                    setAssignees(prev =>
-                      prev.includes(member.uid)
-                        ? prev.filter(id => id !== member.uid)
-                        : [...prev, member.uid]
-                    );
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-full border-2 text-sm transition-all ${
-                    assignees.includes(member.uid)
-                      ? 'bg-[var(--color-primary)]/20 border-[var(--color-primary)]/50 text-[var(--color-primary)]'
-                      : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                  }`}
-                >
-                  <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs text-zinc-900 dark:text-zinc-100 font-medium">
-                    {member.displayName.slice(0, 1).toUpperCase()}
-                  </div>
-                  {member.displayName}
-                </button>
-              ))}
+          {currentSpace.members.length > 0 && (
+            <div className="flex items-center gap-2 pt-2">
+              <Users className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              <div className="flex flex-wrap gap-2">
+                {currentSpace.members.map((member: Member) => (
+                  <button
+                    key={member.uid}
+                    type="button"
+                    onClick={() => {
+                      setAssignees(prev =>
+                        prev.includes(member.uid)
+                          ? prev.filter(id => id !== member.uid)
+                          : [...prev, member.uid]
+                      );
+                    }}
+                    className={clsx(
+                      "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-all",
+                      assignees.includes(member.uid)
+                        ? "bg-[var(--color-primary)]/20 text-[var(--color-primary)]"
+                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    )}
+                  >
+                    <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs text-zinc-900 dark:text-zinc-100 font-medium">
+                      {member.displayName.slice(0, 1).toUpperCase()}
+                    </div>
+                    {member.displayName}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
         </div>
       </EntryEditorShell>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept="image/*"
+        multiple
+        onChange={(e) => handleFilesSelected(e.target.files)}
+      />
 
       <ConfirmationDialog
         isOpen={showDeleteConfirm}

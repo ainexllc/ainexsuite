@@ -22,24 +22,20 @@ interface HealthHistoryProps {
 
 function getMoodEmoji(mood: string | null): string {
   switch (mood) {
-    case 'energetic':
     case 'excited':
-      return '';
+      return '😄';
     case 'happy':
     case 'grateful':
-    case 'hopeful':
-      return '';
+      return '😊';
     case 'neutral':
     case 'peaceful':
-      return '';
-    case 'stressed':
+      return '😐';
     case 'anxious':
-    case 'confused':
-      return '';
+    case 'frustrated':
+      return '😟';
     case 'tired':
     case 'sad':
-    case 'angry':
-      return '';
+      return '😔';
     default:
       return '--';
   }

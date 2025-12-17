@@ -24,10 +24,10 @@ interface HealthCheckinComposerProps {
 }
 
 const moodOptions: { value: MoodType; icon: typeof Smile; label: string; color: string }[] = [
-  { value: 'energetic', icon: Smile, label: 'Great', color: 'text-[var(--color-primary)]' },
+  { value: 'excited', icon: Smile, label: 'Great', color: 'text-[var(--color-primary)]' },
   { value: 'happy', icon: Smile, label: 'Good', color: 'text-green-500' },
   { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
-  { value: 'stressed', icon: Frown, label: 'Low', color: 'text-orange-500' },
+  { value: 'anxious', icon: Frown, label: 'Low', color: 'text-orange-500' },
   { value: 'tired', icon: Frown, label: 'Bad', color: 'text-red-500' },
 ];
 
@@ -158,7 +158,7 @@ export function HealthCheckinComposer({
       {!expanded ? (
         <button
           type="button"
-          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
           onClick={() => setExpanded(true)}
         >
           <span>{existingMetric ? 'Update today\'s check-in...' : 'Log a health check-in...'}</span>
@@ -166,7 +166,7 @@ export function HealthCheckinComposer({
       ) : (
         <div
           ref={composerRef}
-          className="w-full rounded-2xl shadow-lg border transition-all bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+          className="w-full rounded-2xl shadow-xl bg-background border border-border backdrop-blur-xl transition-all"
         >
           <div className="flex flex-col gap-3 px-5 py-4">
             {/* Header - Title input + mood badge + pin (matches notes/journey) */}
@@ -175,7 +175,7 @@ export function HealthCheckinComposer({
                 value={formData.title || new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                 onChange={(e) => updateField('title', e.target.value)}
                 placeholder="Title"
-                className="w-full bg-transparent text-lg font-semibold text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none"
+                className="w-full bg-transparent text-lg font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none"
                 autoFocus
                 ref={titleInputRef}
               />
@@ -209,7 +209,7 @@ export function HealthCheckinComposer({
             {/* Health Metrics Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <div className="space-y-1">
-                <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <Scale className="h-3.5 w-3.5" />
                   Weight
                 </label>
@@ -219,12 +219,12 @@ export function HealthCheckinComposer({
                   value={formData.weight ?? ''}
                   onChange={(e) => updateField('weight', e.target.value ? parseFloat(e.target.value) : null)}
                   placeholder="lbs"
-                  className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:border-[var(--color-primary)] text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                  className="w-full px-3 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <Moon className="h-3.5 w-3.5" />
                   Sleep
                 </label>
@@ -288,8 +288,8 @@ export function HealthCheckinComposer({
                     className={clsx(
                       'flex-1 py-1.5 rounded-lg text-sm font-medium transition-colors',
                       formData.energy === level
-                        ? 'bg-[var(--color-primary)] text-white'
-                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     )}
                   >
                     {level}
@@ -305,13 +305,13 @@ export function HealthCheckinComposer({
                 onChange={(e) => updateField('notes', e.target.value)}
                 placeholder="Any notes about how you're feeling..."
                 rows={3}
-                className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:border-[var(--color-primary)] text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-600 resize-none"
+                className="w-full px-3 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground resize-none"
               />
             )}
 
             {/* Mood Picker Popup */}
             {showMoodPicker && (
-              <div className="flex gap-2 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+              <div className="flex gap-2 p-3 rounded-xl bg-muted border border-border">
                 {moodOptions.map(({ value, icon: Icon, label, color }) => (
                   <button
                     key={value}
@@ -323,19 +323,19 @@ export function HealthCheckinComposer({
                     className={clsx(
                       'flex-1 flex flex-col items-center gap-1 py-2 rounded-lg transition-colors',
                       formData.mood === value
-                        ? 'bg-[var(--color-primary)]/20'
-                        : 'hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        ? 'bg-primary/20'
+                        : 'hover:bg-muted'
                     )}
                   >
                     <Icon className={clsx('h-5 w-5', color)} />
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{label}</span>
+                    <span className="text-xs text-muted-foreground">{label}</span>
                   </button>
                 ))}
               </div>
             )}
 
             {/* Footer - Icon toolbar + Close/Save (matches notes/journey) */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -343,7 +343,7 @@ export function HealthCheckinComposer({
                     "p-2 rounded-full transition-colors",
                     showMoodPicker
                       ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                      : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                   onClick={() => setShowMoodPicker(!showMoodPicker)}
                   title="Set mood"
@@ -356,7 +356,7 @@ export function HealthCheckinComposer({
                     "p-2 rounded-full transition-colors",
                     showNotesField
                       ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                      : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                   onClick={() => setShowNotesField(!showNotesField)}
                   title="Add notes"
@@ -368,7 +368,7 @@ export function HealthCheckinComposer({
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                   onClick={resetState}
                 >
                   Close

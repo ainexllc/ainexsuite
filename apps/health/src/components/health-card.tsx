@@ -28,12 +28,16 @@ interface HealthCardProps {
 
 function getMoodIcon(mood: string | null) {
   switch (mood) {
-    case 'energetic':
+    case 'excited':
     case 'happy':
+    case 'grateful':
+    case 'peaceful':
       return Smile;
     case 'neutral':
       return Meh;
-    case 'stressed':
+    case 'anxious':
+    case 'sad':
+    case 'frustrated':
     case 'tired':
       return Frown;
     default:
@@ -43,14 +47,18 @@ function getMoodIcon(mood: string | null) {
 
 function getMoodColor(mood: string | null) {
   switch (mood) {
-    case 'energetic':
+    case 'excited':
       return 'text-green-500';
     case 'happy':
+    case 'grateful':
+    case 'peaceful':
       return 'text-green-400';
     case 'neutral':
       return 'text-yellow-500';
-    case 'stressed':
+    case 'anxious':
+    case 'frustrated':
       return 'text-orange-500';
+    case 'sad':
     case 'tired':
       return 'text-red-500';
     default:
@@ -60,14 +68,18 @@ function getMoodColor(mood: string | null) {
 
 function getMoodLabel(mood: string | null) {
   switch (mood) {
-    case 'energetic':
+    case 'excited':
       return 'Great';
     case 'happy':
+    case 'grateful':
+    case 'peaceful':
       return 'Good';
     case 'neutral':
       return 'Okay';
-    case 'stressed':
+    case 'anxious':
+    case 'frustrated':
       return 'Low';
+    case 'sad':
     case 'tired':
       return 'Bad';
     default:
@@ -78,6 +90,10 @@ function getMoodLabel(mood: string | null) {
 export function HealthCard({ metric, viewMode, onEdit, onDelete }: HealthCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleCardClick = () => {
+    onEdit(metric);
+  };
 
   const date = new Date(metric.date);
   const MoodIcon = getMoodIcon(metric.mood);
@@ -97,15 +113,16 @@ export function HealthCard({ metric, viewMode, onEdit, onDelete }: HealthCardPro
   return (
     <div
       className={clsx(
-        'group relative rounded-2xl border transition-all hover:shadow-md',
-        'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800',
+        'group relative rounded-2xl border transition-all hover:shadow-lg cursor-pointer',
+        'bg-card border-card',
         isListView ? 'p-4' : 'p-5'
       )}
+      onClick={handleCardClick}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="font-semibold text-card-foreground">
             {date.toLocaleDateString('en-US', {
               weekday: 'short',
               month: 'short',
@@ -123,22 +140,25 @@ export function HealthCard({ metric, viewMode, onEdit, onDelete }: HealthCardPro
         {/* Menu */}
         <div className="relative">
           <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-muted transition-all"
           >
-            <MoreHorizontal className="w-4 h-4 text-zinc-500" />
+            <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
           </button>
 
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-8 z-20 w-32 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-lg overflow-hidden">
+              <div className="absolute right-0 top-8 z-20 w-32 rounded-lg bg-popover border border-border shadow-lg overflow-hidden">
                 <button
                   onClick={() => {
                     onEdit(metric);
                     setShowMenu(false);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-accent"
                 >
                   <Edit2 className="w-4 h-4" />
                   Edit
@@ -146,7 +166,7 @@ export function HealthCard({ metric, viewMode, onEdit, onDelete }: HealthCardPro
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/5 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   {isDeleting ? 'Deleting...' : 'Delete'}
@@ -206,7 +226,7 @@ export function HealthCard({ metric, viewMode, onEdit, onDelete }: HealthCardPro
 
       {/* Notes */}
       {metric.notes && !isListView && (
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
           {metric.notes}
         </p>
       )}
@@ -230,14 +250,14 @@ function MetricBadge({
       className={clsx(
         'flex items-center gap-1.5 rounded-lg',
         isListView
-          ? 'px-2 py-1 bg-zinc-100 dark:bg-zinc-800'
-          : 'p-2 bg-zinc-100 dark:bg-zinc-800'
+          ? 'px-2 py-1 bg-muted'
+          : 'p-2 bg-muted'
       )}
     >
-      <Icon className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
-      <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+      <span className="text-sm font-medium text-foreground">
         {value}
-        <span className="text-xs text-zinc-500 dark:text-zinc-500 ml-0.5">{unit}</span>
+        <span className="text-xs text-muted-foreground ml-0.5">{unit}</span>
       </span>
     </div>
   );

@@ -27,6 +27,8 @@ import { useAuth } from '@ainexsuite/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { ImageUploadModal } from './image-upload-modal';
 import { ImageDropOverlay } from './image-drop-overlay';
+import { ImageBubbleMenu } from './image-bubble-menu';
+import { ImageLightbox } from './image-lightbox';
 
 interface RichTextEditorEnhancedProps {
   content: string;
@@ -51,6 +53,7 @@ export function RichTextEditorEnhanced({
   const [showImageModal, setShowImageModal] = useState(false);
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set());
   const [isInitialized, setIsInitialized] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt?: string; caption?: string } | null>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -401,8 +404,33 @@ export function RichTextEditorEnhanced({
               disabled && "opacity-60 cursor-not-allowed"
             )}
           />
+          {/* Image bubble menu - appears when image is selected */}
+          {editor && (
+            <ImageBubbleMenu
+              editor={editor}
+              onOpenLightbox={() => {
+                const attrs = editor.getAttributes('image');
+                if (attrs.src) {
+                  setLightboxImage({
+                    src: attrs.src,
+                    alt: attrs.alt,
+                    caption: attrs.caption,
+                  });
+                }
+              }}
+            />
+          )}
         </div>
       </div>
+
+      {/* Lightbox for full-size image view */}
+      <ImageLightbox
+        isOpen={!!lightboxImage}
+        onClose={() => setLightboxImage(null)}
+        src={lightboxImage?.src || ''}
+        alt={lightboxImage?.alt}
+        caption={lightboxImage?.caption}
+      />
 
       <ImageUploadModal
         isOpen={showImageModal}

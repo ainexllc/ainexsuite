@@ -2,7 +2,6 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import { Sparkles, RefreshCw, Loader2, ChevronLeft, ChevronRight, Pause, Play, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
 import {
   AIAnalyticsIcon,
@@ -90,8 +89,6 @@ export interface AIInsightsPulldownProps {
   sections: AIInsightsPulldownSection[];
   /** Primary accent color (hex) - used for handle tab only */
   accentColor: string;
-  /** Secondary accent color for gradient (hex) - defaults to accentColor */
-  accentColorSecondary?: string;
   /** Whether insights are loading */
   isLoading?: boolean;
   /** Loading message */
@@ -131,7 +128,6 @@ export interface AIInsightsPulldownProps {
 export function AIInsightsPulldown({
   sections,
   accentColor,
-  accentColorSecondary,
   isLoading = false,
   loadingMessage = "Analyzing...",
   error = null,
