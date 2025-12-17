@@ -1340,16 +1340,28 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   <ImagePlus className="h-4 w-4" />
                 </button>
                 {showBackgroundPicker ? (
-                  <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 w-72 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Background Image</p>
+                  <>
+                    {/* Click outside to close */}
+                    <div
+                      className="fixed inset-0 z-20"
+                      onClick={() => setShowBackgroundPicker(false)}
+                    />
+                    <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 w-72 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Background Image</p>
+                        <button
+                          type="button"
+                          onClick={() => setShowBackgroundPicker(false)}
+                          className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     <div className="grid grid-cols-3 gap-2">
                       {/* No background option */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setBackgroundImage(null);
-                          setShowBackgroundPicker(false);
-                        }}
+                        onClick={() => setBackgroundImage(null)}
                         className={clsx(
                           "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
                           backgroundImage === null
@@ -1371,10 +1383,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         <button
                           key={bg.id}
                           type="button"
-                          onClick={() => {
-                            setBackgroundImage(bg.id);
-                            setShowBackgroundPicker(false);
-                          }}
+                          onClick={() => setBackgroundImage(bg.id)}
                           className={clsx(
                             "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
                             backgroundImage === bg.id
@@ -1423,7 +1432,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         </div>
                       </div>
                     )}
-                  </div>
+                    </div>
+                  </>
                 ) : null}
               </div>
               <button
