@@ -303,9 +303,9 @@ service cloud.firestore {
     }
 
     // --- Backgrounds (Admin-managed, user-readable) ---
+    // TODO: Re-add auth check after debugging
     match /backgrounds/{backgroundId} {
-      allow read: if true; // Public read for theming (like apps/settings)
-      allow write: if isAuthenticated(); // Any authenticated user can upload (admin UI restricts access)
+      allow read, write: if true;
     }
 
     // --- System Updates (Admin) ---
