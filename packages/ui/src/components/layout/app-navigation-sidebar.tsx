@@ -50,11 +50,11 @@ const ANIMATED_ICONS: Record<string, React.ComponentType<{ size?: number; color?
   fit: FitCaloriesIcon,
   health: HealthActivityIcon,
   todo: TodoTargetIcon,
-  grow: GrowHabitIcon,
-  moments: MomentsCameraIcon,
-  journey: JourneyJournalIcon,
+  habits: GrowHabitIcon,
+  album: MomentsCameraIcon,
+  journal: JourneyJournalIcon,
   workflow: WorkflowProcessIcon,
-  pulse: PulseAmbientIcon,
+  display: PulseAmbientIcon,
 };
 
 // App subtitles
@@ -66,11 +66,11 @@ const APP_SUBTITLES: Record<string, string> = {
   fit: 'Burn calories',
   health: 'Track wellness',
   todo: 'Hit your goals',
-  grow: 'Build habits',
-  moments: 'Capture memories',
-  journey: 'Daily reflections',
+  habits: 'Build habits',
+  album: 'Capture memories',
+  journal: 'Daily reflections',
   workflow: 'Automate tasks',
-  pulse: 'Ambient display',
+  display: 'Ambient display',
 };
 
 export interface AppNavigationSidebarProps {

@@ -45,15 +45,15 @@ export interface AppContext {
     total: number;
     recentMetrics: Array<{ type: string; value: number | string | null; date: number }>;
   };
-  moments: {
+  album: {
     total: number;
     recentTags: string[];
   };
-  grow: {
+  habits: {
     total: number;
     inProgress: Array<{ title: string; progress: number }>;
   };
-  pulse: {
+  display: {
     latestMetrics: Array<{
       type: string;
       value: number | string | boolean | null;
@@ -171,29 +171,29 @@ export async function getAggregatedContext(): Promise<AppContext> {
     }
   });
 
-  // Moments context
-  const momentsRef = collection(db, 'moments');
-  const momentsQuery = query(
-    momentsRef,
+  // Album context (reads from 'moments' collection)
+  const albumRef = collection(db, 'moments');
+  const albumQuery = query(
+    albumRef,
     where('ownerId', '==', userId),
     orderBy('createdAt', 'desc'),
     firestoreLimit(10)
   );
-  const momentsSnapshot = await getDocs(momentsQuery);
-  const moments = {
-    total: momentsSnapshot.size,
+  const albumSnapshot = await getDocs(albumQuery);
+  const album = {
+    total: albumSnapshot.size,
     recentTags: [] as string[],
   };
   const tagSet = new Set<string>();
-  momentsSnapshot.forEach((doc) => {
+  albumSnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.tags) {
       data.tags.forEach((tag: string) => tagSet.add(tag));
     }
   });
-  moments.recentTags = Array.from(tagSet).slice(0, 5);
+  album.recentTags = Array.from(tagSet).slice(0, 5);
 
-  // Grow context
+  // Habits context (reads from 'learning_goals' collection)
   const goalsRef = collection(db, 'learning_goals');
   const goalsQuery = query(
     goalsRef,
@@ -202,21 +202,21 @@ export async function getAggregatedContext(): Promise<AppContext> {
     firestoreLimit(5)
   );
   const goalsSnapshot = await getDocs(goalsQuery);
-  const grow = {
+  const habits = {
     total: goalsSnapshot.size,
     inProgress: [] as Array<{ title: string; progress: number }>,
   };
   goalsSnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.progress < 100) {
-      grow.inProgress.push({
+      habits.inProgress.push({
         title: data.title,
         progress: data.progress,
       });
     }
   });
 
-  // Pulse context
+  // Display context (reads from 'health_metrics' collection)
   const metricsRef = collection(db, 'health_metrics');
   const metricsQuery = query(
     metricsRef,
@@ -225,7 +225,7 @@ export async function getAggregatedContext(): Promise<AppContext> {
     firestoreLimit(5)
   );
   const metricsSnapshot = await getDocs(metricsQuery);
-  const pulse = {
+  const display = {
     latestMetrics: [] as Array<{
       type: string;
       value: number | string | boolean | null;
@@ -235,7 +235,7 @@ export async function getAggregatedContext(): Promise<AppContext> {
   metricsSnapshot.forEach((doc) => {
     const data = doc.data();
     const metricValue = (data.value ?? null) as number | string | boolean | null;
-    pulse.latestMetrics.push({
+    display.latestMetrics.push({
       type: data.metricType,
       value: metricValue,
       date: data.date,
@@ -271,9 +271,9 @@ export async function getAggregatedContext(): Promise<AppContext> {
     journal,
     todo,
     health,
-    moments,
-    grow,
-    pulse,
+    album,
+    habits,
+    display,
     fit,
   };
 }
@@ -321,28 +321,28 @@ export function formatContextForAI(context: AppContext): string {
     }
   }
 
-  // Moments
-  if (context.moments.total > 0) {
+  // Album
+  if (context.album.total > 0) {
     parts.push(
-      `**Moments**: ${context.moments.total} memories captured.` +
-      (context.moments.recentTags.length > 0
-        ? ` Recent tags: ${context.moments.recentTags.join(', ')}`
+      `**Album**: ${context.album.total} memories captured.` +
+      (context.album.recentTags.length > 0
+        ? ` Recent tags: ${context.album.recentTags.join(', ')}`
         : '')
     );
   }
 
-  // Grow
-  if (context.grow.inProgress.length > 0) {
+  // Habits
+  if (context.habits.inProgress.length > 0) {
     parts.push(
-      `**Learning**: ${context.grow.inProgress.length} goals in progress (${context.grow.inProgress
+      `**Habits**: ${context.habits.inProgress.length} goals in progress (${context.habits.inProgress
         .map(g => `${g.title}: ${g.progress}%`)
         .join(', ')})`
     );
   }
 
-  // Pulse
-  if (context.pulse.latestMetrics.length > 0) {
-    parts.push(`**Health**: Tracking ${context.pulse.latestMetrics.length} recent metrics.`);
+  // Display
+  if (context.display.latestMetrics.length > 0) {
+    parts.push(`**Display**: Tracking ${context.display.latestMetrics.length} recent metrics.`);
   }
 
   // Fit
