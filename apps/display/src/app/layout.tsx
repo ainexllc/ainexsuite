@@ -48,8 +48,8 @@ const vt323 = VT323({
 });
 
 export const metadata: Metadata = {
-  title: 'Pulse - Health Metrics',
-  description: 'Track your health and wellness metrics',
+  title: 'Display - Dashboard Displays',
+  description: 'World clocks, weather, and ambient information displays',
   icons: {
     icon: '/favicon.svg',
   },

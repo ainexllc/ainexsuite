@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Family Dashboard | Grow',
+  title: 'Family Dashboard | Habits',
   description: 'Family habit dashboard for wall display',
 };
 

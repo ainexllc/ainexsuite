@@ -44,7 +44,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: 'Grow - Habit Tracker',
+  title: 'Habits - Habit Tracker',
   description: 'Build better habits and track your personal growth',
   icons: {
     icon: '/favicon.svg',
