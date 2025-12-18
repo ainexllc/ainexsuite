@@ -18,8 +18,6 @@ export async function getServerTheme(): Promise<ResolvedTheme> {
     const themeCookie = cookieStore.get('ainex-theme');
     const theme = themeCookie?.value;
 
-    console.log('[Theme Server] Cookie value:', theme);
-
     if (theme === 'light') {
       return 'light';
     }
@@ -30,8 +28,7 @@ export async function getServerTheme(): Promise<ResolvedTheme> {
 
     // For 'system' or missing, default to dark
     return 'dark';
-  } catch (e) {
-    console.log('[Theme Server] Error reading cookie:', e);
+  } catch {
     // cookies() might fail in some contexts
     return 'dark';
   }

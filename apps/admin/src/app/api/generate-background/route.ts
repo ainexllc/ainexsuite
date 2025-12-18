@@ -1,43 +1,163 @@
-import { NextResponse } from 'next/server';
-import type { BackgroundGenerationStyle } from '@ainexsuite/types';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Google Gemini API configuration
-const GEMINI_API_KEY = 'AIzaSyC5sXr68pNw29gnCctAQdFc1rfVeH9oFu0';
-const GEMINI_MODEL = 'gemini-2.0-flash-preview-image-generation';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_MODEL = 'gemini-3-pro-image-preview';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
+type BackgroundGenerationStyle =
+  | 'photorealistic'
+  | 'artistic'
+  | 'abstract'
+  | 'minimal'
+  | 'gradient'
+  | 'watercolor'
+  | '3d-render'
+  | 'cinematic'
+  | 'neon'
+  | 'vintage'
+  | 'geometric'
+  | 'bokeh'
+  | 'ethereal'
+  | 'cyberpunk'
+  | 'texture'
+  | 'oil-painting'
+  | 'digital-art'
+  | 'dreamy'
+  | 'noir'
+  | 'wool'
+  | 'lego'
+  | 'low-poly'
+  | 'clay'
+  | 'pixel-art'
+  | 'paper-craft'
+  | 'glass'
+  | 'marble';
+type BackgroundCategory = 'seasonal' | 'abstract' | 'nature' | 'minimal' | 'gradient' | 'festive' | 'other';
+type BackgroundBrightness = 'light' | 'dark';
+
+// Style-specific prompt enhancements
 const STYLE_GUIDES: Record<BackgroundGenerationStyle, string> = {
-  photorealistic: 'photorealistic, high-resolution photography style, natural lighting',
-  artistic: 'artistic, painterly, creative interpretation, fine art style',
-  abstract: 'abstract patterns, geometric shapes, modern art, creative composition',
-  minimal: 'minimalist, clean, simple composition, subtle details',
-  gradient: 'smooth color gradients, subtle transitions, soft blending',
+  photorealistic: 'photorealistic photography, sharp details, professional quality, natural lighting, DSLR quality',
+  artistic: 'artistic interpretation, painterly brushstrokes, fine art aesthetic, creative composition, museum quality',
+  abstract: 'abstract art, geometric patterns, flowing shapes, modern design, contemporary aesthetics',
+  minimal: 'minimalist design, clean composition, subtle textures, elegant simplicity, zen-like calm',
+  gradient: 'smooth gradient transitions, soft color blending, atmospheric depth, seamless color flow',
+  watercolor: 'watercolor painting, soft washes, bleeding edges, delicate textures, artistic fluidity, paper texture visible',
+  '3d-render': '3D rendered, smooth surfaces, volumetric lighting, ray-traced reflections, Blender/Cinema4D aesthetic',
+  cinematic: 'cinematic photography, dramatic lighting, film grain, anamorphic lens flare, movie poster quality, epic scale',
+  neon: 'neon lights, glowing effects, synthwave vibes, electric colors, night city aesthetic, LED illumination',
+  vintage: 'vintage aesthetic, retro color grading, film photography look, nostalgic mood, aged texture, faded tones',
+  geometric: 'geometric shapes, mathematical patterns, sacred geometry, precise lines, tessellations, modern graphic design',
+  bokeh: 'beautiful bokeh, soft focus, dreamy blur, light orbs, shallow depth of field, fairy lights effect',
+  ethereal: 'ethereal atmosphere, soft glowing light, mystical mood, heavenly quality, delicate and airy, otherworldly',
+  cyberpunk: 'cyberpunk aesthetic, holographic elements, tech noir, futuristic dystopia, rain-soaked streets, digital glitch',
+  texture: 'rich textures, tactile surfaces, material study, fabric/stone/wood grain, sensory detail, macro photography',
+  'oil-painting': 'oil painting technique, thick impasto brushwork, rich pigments, classical art style, canvas texture',
+  'digital-art': 'digital illustration, clean vectors, modern design, graphic art, polished aesthetic, contemporary illustration',
+  dreamy: 'dreamlike quality, surreal atmosphere, soft edges, fantasy elements, magical realism, cloud-like softness',
+  noir: 'film noir style, high contrast black and white, dramatic shadows, moody atmosphere, 1940s detective aesthetic',
+  wool: 'felted wool texture, soft fuzzy fibers, knitted aesthetic, cozy handcrafted look, yarn-like quality, textile art',
+  lego: 'LEGO brick style, plastic toy aesthetic, blocky construction, bright primary colors, playful 3D render',
+  'low-poly': 'low polygon 3D art, faceted geometric shapes, triangulated surfaces, stylized game art, angular minimal design',
+  clay: 'claymation style, sculpted clay texture, handmade stop-motion look, plasticine quality, soft rounded forms',
+  'pixel-art': '8-bit pixel art, retro video game aesthetic, crisp pixels, limited color palette, nostalgic gaming style',
+  'paper-craft': 'paper craft art, origami folds, layered paper cutouts, handmade collage, cardstock texture',
+  glass: 'glass material, transparent and reflective, refractive light effects, crystal clarity, stained glass elements',
+  marble: 'marble texture, veined stone patterns, polished surface, elegant natural stone, classical sculpture quality',
+};
+
+// Category-specific mood and atmosphere guidance
+const CATEGORY_MOODS: Record<BackgroundCategory, string> = {
+  seasonal: 'seasonal atmosphere, weather-appropriate mood, time-of-year feeling, holiday spirit if applicable',
+  abstract: 'thought-provoking visuals, creative interpretation, non-representational forms, artistic expression',
+  nature: 'natural landscapes, organic textures, earthy tones, peaceful outdoor scenes, connection to environment',
+  minimal: 'clean and uncluttered, breathing space, subtle sophistication, calming presence',
+  gradient: 'smooth transitions, atmospheric depth, soft color harmony, meditative quality',
+  festive: 'celebratory mood, warm and inviting, joyful atmosphere, festive colors and elements',
+  other: 'versatile aesthetic, balanced composition, universally appealing',
+};
+
+// Brightness-specific guidance
+const BRIGHTNESS_GUIDES: Record<BackgroundBrightness, string> = {
+  dark: 'dark color palette, deep rich tones, suitable for light text overlay, moody atmosphere, blacks and deep colors dominate',
+  light: 'light color palette, bright and airy, suitable for dark text overlay, uplifting atmosphere, whites and pale colors dominate',
 };
 
 function buildBackgroundPrompt(
-  prompt: string,
-  style?: BackgroundGenerationStyle,
-  colorHint?: string
+  userPrompt: string,
+  options: {
+    style?: BackgroundGenerationStyle;
+    category?: BackgroundCategory;
+    brightness?: BackgroundBrightness;
+    colorHint?: string;
+  }
 ): string {
-  let enhanced = `Create a beautiful, high-quality background image: ${prompt}.`;
+  const { style, category, brightness, colorHint } = options;
+
+  const parts: string[] = [
+    'Generate a high-quality background image for a mobile/desktop app.',
+    '',
+    '## COMPOSITION REQUIREMENTS (CRITICAL):',
+    '- Design with TEXT OVERLAY in mind - UI elements will be placed on top',
+    '- Keep the CENTER and EDGES relatively clean/simple for text readability',
+    '- Avoid busy patterns or high-contrast details in areas where text would appear',
+    '- Create visual interest through subtle gradients, soft textures, or peripheral details',
+    '- The background should ENHANCE readability, not compete with foreground content',
+    '',
+    '## ASPECT RATIO:',
+    '- Optimize for 16:9 landscape (desktop) but ensure it crops well to 9:16 portrait (mobile)',
+    '- Important elements should be centered to survive cropping to different ratios',
+    '',
+    `## USER REQUEST: ${userPrompt}`,
+  ];
 
   if (style && STYLE_GUIDES[style]) {
-    enhanced += ` Style: ${STYLE_GUIDES[style]}.`;
+    parts.push('', `## STYLE: ${STYLE_GUIDES[style]}`);
+  }
+
+  if (category && CATEGORY_MOODS[category]) {
+    parts.push('', `## MOOD/ATMOSPHERE: ${CATEGORY_MOODS[category]}`);
+  }
+
+  if (brightness && BRIGHTNESS_GUIDES[brightness]) {
+    parts.push(
+      '',
+      `## BRIGHTNESS (IMPORTANT): ${BRIGHTNESS_GUIDES[brightness]}`,
+      brightness === 'dark'
+        ? 'Ensure sufficient contrast for WHITE/LIGHT text to be readable.'
+        : 'Ensure sufficient contrast for BLACK/DARK text to be readable.'
+    );
   }
 
   if (colorHint) {
-    enhanced += ` Incorporate ${colorHint} tones.`;
+    parts.push('', `## COLOR PALETTE: Incorporate ${colorHint} tones as the dominant colors.`);
   }
 
-  enhanced +=
-    ' The image should work well as a desktop/mobile wallpaper background. No text, UI elements, or watermarks. High quality, visually appealing, full opaque image.';
+  parts.push(
+    '',
+    '## FINAL REQUIREMENTS:',
+    '- NO text, watermarks, logos, or UI elements in the image',
+    '- NO people or faces',
+    '- Fully opaque image (no transparency)',
+    '- High resolution, crisp quality',
+    '- Professional, polished aesthetic suitable for a premium app experience'
+  );
 
-  return enhanced;
+  return parts.join('\n');
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { prompt, style, colorHint } = await request.json();
+    if (!GEMINI_API_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'GEMINI_API_KEY environment variable is not set' },
+        { status: 500 }
+      );
+    }
+
+    const body = await request.json();
+    const { prompt, style, category, brightness, colorHint } = body;
 
     if (!prompt) {
       return NextResponse.json(
@@ -46,10 +166,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Build enhanced prompt for background generation
-    const enhancedPrompt = buildBackgroundPrompt(prompt, style, colorHint);
+    const enhancedPrompt = buildBackgroundPrompt(prompt, {
+      style,
+      category,
+      brightness,
+      colorHint,
+    });
 
-    // Call Google Gemini API directly
     const response = await fetch(GEMINI_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -73,7 +196,6 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      // eslint-disable-next-line no-console
       console.error('Gemini API error:', response.status, errorText);
       return NextResponse.json(
         {
@@ -87,8 +209,6 @@ export async function POST(request: Request) {
 
     const data = await response.json();
 
-    // Extract image from Gemini response
-    // Response structure: { candidates: [{ content: { parts: [...] } }] }
     let imageData: string | null = null;
 
     const candidates = data.candidates;
@@ -96,17 +216,13 @@ export async function POST(request: Request) {
       const parts = candidates[0]?.content?.parts;
       if (parts && Array.isArray(parts)) {
         for (const part of parts) {
-          // Check for inline image data
           if (part.inlineData) {
             const mimeType = part.inlineData.mimeType || 'image/png';
             const base64Data = part.inlineData.data;
             imageData = `data:${mimeType};base64,${base64Data}`;
             break;
           }
-          // Check for file data (alternative format)
           if (part.fileData) {
-            // If it's a file URI, we'd need to fetch it
-            // For now, handle inline data primarily
             imageData = part.fileData.fileUri;
             break;
           }
@@ -132,7 +248,6 @@ export async function POST(request: Request) {
       provider: 'google-gemini',
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Background generation error:', error);
     return NextResponse.json(
       {

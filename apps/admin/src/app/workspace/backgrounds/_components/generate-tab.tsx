@@ -46,6 +46,28 @@ const STYLES: { value: BackgroundGenerationStyle; label: string; description: st
   { value: 'abstract', label: 'Abstract', description: 'Geometric shapes, modern art' },
   { value: 'minimal', label: 'Minimal', description: 'Clean, simple composition' },
   { value: 'gradient', label: 'Gradient', description: 'Smooth color transitions' },
+  { value: 'watercolor', label: 'Watercolor', description: 'Soft washes, bleeding edges' },
+  { value: '3d-render', label: '3D Render', description: 'Volumetric lighting, ray-traced' },
+  { value: 'cinematic', label: 'Cinematic', description: 'Dramatic lighting, film grain' },
+  { value: 'neon', label: 'Neon', description: 'Glowing lights, synthwave vibes' },
+  { value: 'vintage', label: 'Vintage', description: 'Retro color grading, nostalgic' },
+  { value: 'geometric', label: 'Geometric', description: 'Mathematical patterns, tessellations' },
+  { value: 'bokeh', label: 'Bokeh', description: 'Soft focus, dreamy blur' },
+  { value: 'ethereal', label: 'Ethereal', description: 'Mystical, heavenly quality' },
+  { value: 'cyberpunk', label: 'Cyberpunk', description: 'Futuristic, holographic elements' },
+  { value: 'texture', label: 'Texture', description: 'Rich tactile surfaces' },
+  { value: 'oil-painting', label: 'Oil Painting', description: 'Classical art, thick brushwork' },
+  { value: 'digital-art', label: 'Digital Art', description: 'Modern illustration, clean vectors' },
+  { value: 'dreamy', label: 'Dreamy', description: 'Surreal, magical realism' },
+  { value: 'noir', label: 'Noir', description: 'High contrast, moody shadows' },
+  { value: 'wool', label: 'Wool', description: 'Felted wool, cozy texture' },
+  { value: 'lego', label: 'Lego', description: 'Plastic bricks, playful 3D' },
+  { value: 'low-poly', label: 'Low Poly', description: 'Faceted geometric 3D art' },
+  { value: 'clay', label: 'Clay', description: 'Claymation, sculpted look' },
+  { value: 'pixel-art', label: 'Pixel Art', description: '8-bit retro gaming style' },
+  { value: 'paper-craft', label: 'Paper Craft', description: 'Origami, layered cutouts' },
+  { value: 'glass', label: 'Glass', description: 'Transparent, refractive effects' },
+  { value: 'marble', label: 'Marble', description: 'Veined stone, polished surface' },
 ];
 
 type GenerationStep = 'idle' | 'generating' | 'preview' | 'processing' | 'uploading';
@@ -126,6 +148,8 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
         body: JSON.stringify({
           prompt: prompt.trim(),
           style,
+          category, // Pass category for mood/atmosphere guidance
+          brightness, // Pass brightness for text readability optimization
           colorHint: colorHint.trim() || undefined,
         }),
       });
@@ -296,12 +320,12 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
                 <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Style
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2">
                   {STYLES.map((s) => (
                     <button
                       key={s.value}
                       onClick={() => setStyle(s.value)}
-                      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${
+                      className={`px-2 py-2 rounded-lg border text-xs transition-colors ${
                         style === s.value
                           ? 'bg-white/10 border-white/30 text-white'
                           : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
@@ -311,6 +335,57 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
                       {s.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Category (for mood/atmosphere) */}
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Category (affects mood)
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as BackgroundCategory)}
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white"
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Brightness (critical for text readability) */}
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Brightness (for text overlay)
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBrightness('dark')}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                      brightness === 'dark'
+                        ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                        : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                    }`}
+                  >
+                    <Moon className="h-4 w-4" />
+                    Dark (light text)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBrightness('light')}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                      brightness === 'light'
+                        ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
+                        : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                    }`}
+                  >
+                    <Sun className="h-4 w-4" />
+                    Light (dark text)
+                  </button>
                 </div>
               </div>
 

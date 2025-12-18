@@ -53,6 +53,9 @@ type NotesContextValue = {
   others: Note[];
   allNotes: Note[];
   trashed: Note[];
+  archivedCount: number;
+  showArchived: boolean;
+  setShowArchived: (value: boolean) => void;
   loading: boolean;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
@@ -101,6 +104,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
     field: 'updatedAt',
     direction: 'desc',
   });
+  const [showArchived, setShowArchived] = useState(false);
   const [filtersInitialized, setFiltersInitialized] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const computedNotesRef = useRef<{
@@ -109,7 +113,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
     pinned: Note[];
     others: Note[];
     trashed: Note[];
-  }>({ merged: [], filtered: [], pinned: [], others: [], trashed: [] });
+    archivedCount: number;
+  }>({ merged: [], filtered: [], pinned: [], others: [], trashed: [], archivedCount: 0 });
 
   const userId = user?.uid ?? null;
 
@@ -446,6 +451,9 @@ export function NotesProvider({ children }: NotesProviderProps) {
 
     const activeNotes = merged.filter((note) => !note.deletedAt);
 
+    // Count archived notes for badge display
+    const archivedCount = activeNotes.filter((note) => note.archived).length;
+
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const hasQuery = normalizedQuery.length > 1;
     const hasColorFilter = filters.colors && filters.colors.length > 0;
@@ -453,9 +461,17 @@ export function NotesProvider({ children }: NotesProviderProps) {
     const hasNoteTypeFilter = filters.noteType && filters.noteType !== 'all';
 
     const filtered = activeNotes.filter((note) => {
-      // Exclude archived notes from workspace view
-      if (note.archived) {
-        return false;
+      // Filter by archived status based on showArchived toggle
+      if (showArchived) {
+        // When viewing archive, show ONLY archived notes
+        if (!note.archived) {
+          return false;
+        }
+      } else {
+        // When viewing workspace, exclude archived notes
+        if (note.archived) {
+          return false;
+        }
       }
 
       // Filter by current space
@@ -541,8 +557,9 @@ export function NotesProvider({ children }: NotesProviderProps) {
       pinned,
       others,
       trashed,
+      archivedCount,
     };
-  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort]);
+  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort, showArchived]);
 
   useEffect(() => {
     computedNotesRef.current = computedNotes;
@@ -556,6 +573,10 @@ export function NotesProvider({ children }: NotesProviderProps) {
     setActiveLabelIds(labels);
   }, []);
 
+  const updateShowArchived = useCallback((value: boolean) => {
+    setShowArchived(value);
+  }, []);
+
   const value = useMemo<NotesContextValue>(
     () => ({
       allNotes: computedNotes.merged,
@@ -563,6 +584,9 @@ export function NotesProvider({ children }: NotesProviderProps) {
       pinned: computedNotes.pinned,
       others: computedNotes.others,
       trashed: computedNotes.trashed,
+      archivedCount: computedNotes.archivedCount,
+      showArchived,
+      setShowArchived: updateShowArchived,
       loading,
       searchQuery,
       setSearchQuery: updateSearchQuery,
@@ -589,6 +613,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
       computedNotes.pinned,
       computedNotes.others,
       computedNotes.trashed,
+      computedNotes.archivedCount,
+      showArchived,
       loading,
       searchQuery,
       activeLabelIds,
@@ -606,6 +632,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       handleAttachFiles,
       updateSearchQuery,
       updateActiveLabelIds,
+      updateShowArchived,
     ],
   );
 

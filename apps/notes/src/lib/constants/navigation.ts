@@ -1,7 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BellRing,
-  Archive,
   Clock8,
   StickyNote,
   Trash2,
@@ -25,6 +24,5 @@ export const PRIMARY_NAV_ITEMS: AppNavItem[] = [
 
 export const SECONDARY_NAV_ITEMS: AppNavItem[] = [
   { label: "Ideas Lab", href: "/ideas", icon: Sparkles, badge: "AI" },
-  { label: "Archive", href: "/archive", icon: Archive },
   { label: "Trash", href: "/trash", icon: Trash2 },
 ];

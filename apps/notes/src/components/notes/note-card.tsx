@@ -5,7 +5,6 @@
 import { useMemo, useState } from "react";
 import {
   Archive,
-  Palette,
   Pin,
   Trash2,
   Users,
@@ -27,11 +26,10 @@ type NoteCardProps = {
 };
 
 export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
-  const { togglePin, toggleArchive, deleteNote, updateNote } = useNotes();
+  const { togglePin, toggleArchive, deleteNote } = useNotes();
   const { labels } = useLabels();
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
   const [isEditing, setIsEditing] = useState(false);
-  const [showPalette, setShowPalette] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const labelMap = useMemo(() => {
@@ -89,24 +87,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     await togglePin(note.id, !note.pinned);
   };
 
-  const handleOpenPalette = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setShowPalette((prev) => !prev);
-  };
-
-  const handleColorSelect = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-    color: Note["color"],
-  ) => {
-    event.stopPropagation();
-    if (color === note.color) {
-      setShowPalette(false);
-      return;
-    }
-    await updateNote(note.id, { color });
-    setShowPalette(false);
-  };
-
   return (
     <>
       <article
@@ -135,7 +115,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             }}
           >
             {/* Overlay for text readability */}
-            <div className={getOverlayClasses(backgroundImage, note.backgroundOverlay ?? 'auto')} />
+            <div className={clsx(getOverlayClasses(backgroundImage, note.backgroundOverlay ?? 'auto'), 'z-10')} />
           </div>
         )}
 
@@ -150,6 +130,14 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
             <div className="absolute top-0 right-0 bg-amber-500 group-hover/pin:bg-amber-600 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-colors" />
             <Pin className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
           </button>
+        )}
+
+        {/* Archived Badge */}
+        {note.archived && (
+          <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-semibold">
+            <Archive className="h-3 w-3" />
+            Archived
+          </div>
         )}
 
         <div className="relative z-10 w-full">
@@ -170,11 +158,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
               "overflow-y-auto pr-1",
               viewMode === "list" ? "flex-1 max-h-24" : "max-h-[480px]",
             )}
-            onScroll={() => {
-              if (showPalette) {
-                setShowPalette(false);
-              }
-            }}
           >
             {note.title ? (
               <h3 className={clsx(
@@ -269,70 +252,56 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           </div>
 
           <footer className={clsx("mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t-0")}>
+            {/* Glass pill for date/shared info */}
             <div className={clsx(
-              "flex items-center gap-2 text-[11px] uppercase tracking-wide",
+              "flex items-center gap-2 h-8 px-2.5 rounded-full backdrop-blur-xl border",
+              backgroundImage
+                ? backgroundImage.brightness === 'dark'
+                  ? "bg-white/10 border-white/20"
+                  : "bg-black/5 border-black/10"
+                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50",
               getTextColorClasses(backgroundImage, 'muted')
             )}>
               {note.sharedWithUserIds?.length ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
+                <span className="inline-flex items-center gap-1 text-[11px]">
                   <Users className="h-3 w-3" />
                   {note.sharedWithUserIds.length}
                 </span>
               ) : null}
-              <span>
-                {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-              </span>
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-[11px] font-medium">
+                  {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                </span>
+                <span className="text-[9px] opacity-70">
+                  {note.updatedAt.getTime() !== note.createdAt.getTime() ? 'Updated' : 'Created'}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
+            {/* Glass pill for actions */}
+            <div className={clsx(
+              "flex items-center gap-0.5 h-8 px-0.5 rounded-full backdrop-blur-xl border",
+              backgroundImage
+                ? backgroundImage.brightness === 'dark'
+                  ? "bg-white/10 border-white/20"
+                  : "bg-black/5 border-black/10"
+                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+            )}>
               <button
                 type="button"
                 onClick={handleArchive}
                 className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  "h-6 w-6 rounded-full flex items-center justify-center transition",
                   getActionColorClasses(backgroundImage)
                 )}
                 aria-label={note.archived ? "Unarchive note" : "Archive note"}
               >
                 <Archive className="h-3.5 w-3.5" />
               </button>
-              <div className="relative flex items-center">
-                <button
-                  type="button"
-                  onClick={handleOpenPalette}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    getActionColorClasses(backgroundImage, showPalette),
-                  )}
-                  aria-label="Change color"
-                >
-                  <Palette className="h-3.5 w-3.5" />
-                </button>
-                {showPalette ? (
-                  <div
-                    className="absolute bottom-10 right-0 z-30 flex gap-2 rounded-2xl bg-background/95 p-3 shadow-2xl backdrop-blur-xl border border-border"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    {NOTE_COLORS.map((option) => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        className={clsx(
-                          "h-6 w-6 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500",
-                          option.swatchClass,
-                          option.id === note.color && "ring-2 ring-foreground",
-                        )}
-                        onClick={(event) => handleColorSelect(event, option.id)}
-                        aria-label={`Set color ${option.label}`}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
               <button
                 type="button"
                 onClick={handleDeleteClick}
                 className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  "h-6 w-6 rounded-full flex items-center justify-center transition",
                   backgroundImage?.brightness === 'light'
                     ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
                     : backgroundImage

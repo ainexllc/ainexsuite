@@ -31,6 +31,8 @@ export interface WorkspaceToolbarProps<TViewMode extends string> {
   // Slots for app-specific additions
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
+  /** Content to render inside the view toggle pill after the view buttons */
+  viewTrailingContent?: ReactNode;
 
   // Layout control
   /**
@@ -58,6 +60,7 @@ export function WorkspaceToolbar<TViewMode extends string>({
   sortOptions,
   leftSlot,
   rightSlot,
+  viewTrailingContent,
   viewPosition = 'left',
   className,
 }: WorkspaceToolbarProps<TViewMode>) {
@@ -70,6 +73,7 @@ export function WorkspaceToolbar<TViewMode extends string>({
       value={viewMode}
       onChange={onViewModeChange}
       options={viewOptions}
+      trailingContent={viewTrailingContent}
     />
   );
 

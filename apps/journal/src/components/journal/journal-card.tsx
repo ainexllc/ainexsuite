@@ -229,9 +229,9 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
             <img
               src={currentBackground.thumbnail}
               alt=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover z-0"
             />
-            <div className={getOverlayClasses(currentBackground, entry.backgroundOverlay || 'auto')} />
+            <div className={clsx(getOverlayClasses(currentBackground, entry.backgroundOverlay || 'auto'), 'z-10')} />
           </div>
         )}
 

@@ -115,39 +115,41 @@ export function getOverlayClasses(
 ): string {
   if (!bg) return '';
 
+  const base = 'absolute inset-0 w-full h-full pointer-events-none';
+
   switch (overlay) {
     case 'none':
       return '';
 
     case 'dim':
       // Light dark overlay
-      return 'absolute inset-0 bg-black/30';
+      return `${base} bg-black/30`;
 
     case 'dimmer':
       // Medium dark overlay
-      return 'absolute inset-0 bg-black/50';
+      return `${base} bg-black/50`;
 
     case 'dimmest':
       // Heavy dark overlay
-      return 'absolute inset-0 bg-black/70';
+      return `${base} bg-black/70`;
 
     case 'glass':
       // Light frosted glass effect
-      return 'absolute inset-0 bg-white/10 backdrop-blur-sm';
+      return `${base} bg-white/10 backdrop-blur-sm`;
 
     case 'frost':
       // Heavy frosted glass effect
-      return 'absolute inset-0 bg-black/20 backdrop-blur-md';
+      return `${base} bg-black/20 backdrop-blur-md`;
 
     case 'gradient':
       // Dark gradient from bottom for text readability
-      return 'absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent';
+      return `${base} bg-gradient-to-t from-black/60 via-black/20 to-transparent`;
 
     case 'auto':
     default:
       // Adaptive: white overlay on light backgrounds, none on dark
       return bg.brightness === 'light'
-        ? 'absolute inset-0 bg-white/35'
+        ? `${base} bg-white/35`
         : '';
   }
 }

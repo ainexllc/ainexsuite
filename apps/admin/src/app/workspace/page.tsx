@@ -4,29 +4,16 @@
 import { useEffect, useState } from 'react';
 import {
   Users,
-  Activity,
   MessageSquare,
-  CheckCircle2,
-  Sparkles,
   ArrowUpRight,
-  Cpu,
-  Database,
-  HardDrive,
-  GitCommit,
   ExternalLink,
-  Loader2,
   Clock,
-  Server,
-  Globe,
-  Zap,
   LayoutGrid,
   FolderKanban,
   Palette,
   RefreshCw,
   Settings,
   ChevronRight,
-  Star,
-  Lightbulb,
   Image
 } from 'lucide-react';
 import Link from 'next/link';
@@ -69,7 +56,8 @@ interface PromotedFeedback {
 
 // --- Components ---
 
-function StatCard({
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _StatCard({
   title,
   value,
   icon: Icon,
@@ -110,7 +98,8 @@ function StatCard({
   );
 }
 
-function Gauge({ value, label, icon: Icon, colorClass }: { value: number; label: string; icon: React.ElementType; colorClass: string }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _Gauge({ value, label, icon: Icon, colorClass }: { value: number; label: string; icon: React.ElementType; colorClass: string }) {
   const radius = 32;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (value / 100) * circumference;
@@ -186,7 +175,8 @@ function AdminNavCard({ href, label, icon: Icon, description, color, bg, border 
   );
 }
 
-function CommitRow({ commit, onClick, expanded }: { commit: CommitActivity; onClick: () => void; expanded: boolean }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _CommitRow({ commit, onClick, expanded }: { commit: CommitActivity; onClick: () => void; expanded: boolean }) {
   const lower = commit.message.toLowerCase();
   let type = 'chore';
   let color = 'bg-muted/10 text-muted-foreground border-border/50';
@@ -245,10 +235,12 @@ export default function AdminWorkspacePage() {
   });
 
   const [commits, setCommits] = useState<CommitActivity[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [commitsLoading, setCommitsLoading] = useState(true);
   const [expandedCommits, setExpandedCommits] = useState<Set<string>>(new Set());
   const [insights, setInsights] = useState<DashboardInsights | null>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [promotedItems, setPromotedItems] = useState<PromotedFeedback[]>([]);
 
   useEffect(() => {
@@ -339,6 +331,7 @@ export default function AdminWorkspacePage() {
     }
   }, [commits, stats, insights, insightsLoading]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toggleCommit = (id: string) => {
     const next = new Set(expandedCommits);
     if (next.has(id)) next.delete(id);
@@ -369,35 +362,6 @@ export default function AdminWorkspacePage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Users"
-          value={stats.totalUsers.toLocaleString()}
-          icon={Users}
-          trend="+12%"
-          trendLabel="Growth this month"
-        />
-        <StatCard
-          title="Active Sessions"
-          value={stats.activeNow}
-          icon={Activity}
-          trend="+5%"
-          trendLabel="Current concurrency"
-        />
-        <StatCard
-          title="Feedback Items"
-          value={stats.totalFeedback.toLocaleString()}
-          icon={MessageSquare}
-        />
-        <StatCard
-          title="System Health"
-          value="99.9%"
-          icon={CheckCircle2}
-          trendLabel="Uptime (last 30 days)"
-        />
-      </div>
-
       {/* Admin Pages Navigation */}
       <section>
         <div className="flex items-center gap-3 mb-4">
@@ -410,196 +374,6 @@ export default function AdminWorkspacePage() {
           ))}
         </div>
       </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content Column */}
-        <div className="lg:col-span-2 space-y-6">
-
-          {/* Great Ideas / Promoted Feedback */}
-          {promotedItems.length > 0 && (
-            <section className="glass-card rounded-xl p-6 border border-yellow-500/20 bg-yellow-500/5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400">
-                  <Lightbulb className="w-5 h-5" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground">Great Ideas</h2>
-                <span className="text-xs font-medium text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
-                  Promoted Feedback
-                </span>
-              </div>
-              
-              <div className="grid gap-3">
-                {promotedItems.map(item => (
-                  <div key={item.id} className="p-4 rounded-lg bg-background/20 border border-border flex gap-4 hover:bg-background/30 transition-colors">
-                    <div className="pt-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-foreground leading-relaxed">{item.message}</p>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                        <span className="uppercase tracking-wider font-medium text-muted-foreground">{item.appId}</span>
-                        <span>•</span>
-                        <span>{item.authorEmail || 'Anonymous'}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* AI Insights */}
-          <section className="glass-card rounded-xl p-6 border border-indigo-500/20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
-              <Sparkles className="w-32 h-32 text-indigo-500" />
-            </div>
-
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground">AI Insights</h2>
-              </div>
-
-              {insightsLoading ? (
-                <div className="flex flex-col items-center py-12 text-muted-foreground gap-3">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  <span className="text-sm">Analyzing platform data...</span>
-                </div>
-              ) : insights ? (
-                <div className="space-y-6">
-                  <div className="p-4 rounded-lg bg-surface-base/50 border border-border">
-                    <p className="text-foreground/90 leading-relaxed text-balance">
-                      {insights.summary}
-                    </p>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Highlights</h3>
-                      <ul className="space-y-2">
-                        {insights.highlights.map((h, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
-                            <span className="mt-1.5 w-1 h-1 rounded-full bg-emerald-400 shrink-0" />
-                            <span>{h}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="space-y-3">
-                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Recommendations</h3>
-                      <ul className="space-y-2">
-                        {insights.recommendations.map((r, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
-                            <span className="mt-1.5 w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
-                            <span>{r}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-8 text-center text-muted-foreground text-sm">
-                  No insights available at this time.
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Recent Activity / Commits */}
-          <section className="glass-card rounded-xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-foreground/5 border border-border text-muted-foreground">
-                  <GitCommit className="w-5 h-5" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground">Development Activity</h2>
-              </div>
-              <span className="text-xs font-medium text-muted-foreground bg-surface-elevated px-2 py-1 rounded border border-border">
-                {commits.length} Events
-              </span>
-            </div>
-
-            <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
-              {commitsLoading ? (
-                <div className="space-y-3">
-                  {[1,2,3].map(i => (
-                    <div key={i} className="h-10 bg-foreground/5 rounded animate-pulse" />
-                  ))}
-                </div>
-              ) : (
-                commits.map(commit => (
-                  <CommitRow
-                    key={commit.id}
-                    commit={commit}
-                    expanded={expandedCommits.has(commit.id)}
-                    onClick={() => toggleCommit(commit.id)}
-                  />
-                ))
-              )}
-            </div>
-          </section>
-        </div>
-
-        {/* Sidebar / Vitals Column */}
-        <div className="space-y-6">
-          {/* System Status Panel */}
-          <section className="glass-card rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-foreground/5 border border-border text-muted-foreground">
-                <Server className="w-5 h-5" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">System Vitals</h2>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 py-4">
-              <Gauge value={12} label="CPU" icon={Cpu} colorClass="text-emerald-400" />
-              <Gauge value={45} label="Memory" icon={HardDrive} colorClass="text-blue-400" />
-              <Gauge value={89} label="Storage" icon={Database} colorClass="text-indigo-400" />
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-foreground/5">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Globe className="w-4 h-4" /> Region
-                </span>
-                <span className="text-foreground font-mono">us-east-1</span>
-              </div>
-              <div className="flex items-center justify-between text-sm p-3 rounded-lg bg-foreground/5">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Zap className="w-4 h-4" /> Latency
-                </span>
-                <span className="text-emerald-400 font-mono">24ms</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Deployment Info */}
-          <section className="glass-card rounded-xl p-6 bg-gradient-to-b from-surface-elevated/40 to-surface-base/40">
-             <h3 className="text-sm font-semibold text-foreground/90 mb-4 uppercase tracking-wider">
-               Deployment Info
-             </h3>
-             <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Version</span>
-                  <span className="text-foreground font-mono">v2.4.0-beta</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Build</span>
-                  <span className="text-foreground font-mono">8f2a1c9</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Environment</span>
-                  <span className="text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded text-xs border border-blue-500/20">
-                    PRODUCTION
-                  </span>
-                </div>
-             </div>
-          </section>
-        </div>
-      </div>
     </div>
   );
 }

@@ -2,22 +2,32 @@
 
 import { useMemo } from 'react';
 import { Activity } from 'lucide-react';
+import Masonry from 'react-masonry-css';
 import { EmptyState, ListSection } from '@ainexsuite/ui';
 import { HealthCard } from '@/components/health-card';
 import { useHealthMetrics } from '@/components/providers/health-metrics-provider';
 import { usePreferences } from '@/components/providers/preferences-provider';
 import type { HealthMetric } from '@ainexsuite/types';
 
+const masonryBreakpoints = {
+  default: 2,
+  640: 1,
+};
+
 function HealthSkeleton() {
   return (
-    <div className="columns-1 sm:columns-2 gap-4">
+    <Masonry
+      breakpointCols={masonryBreakpoints}
+      className="flex -ml-4 w-auto"
+      columnClassName="pl-4 bg-clip-padding"
+    >
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
-          className="mb-4 h-40 break-inside-avoid rounded-2xl bg-zinc-100 dark:bg-zinc-800 animate-pulse"
+          className="mb-4 h-40 rounded-2xl bg-zinc-100 dark:bg-zinc-800 animate-pulse"
         />
       ))}
-    </div>
+    </Masonry>
   );
 }
 
@@ -32,7 +42,7 @@ export function HealthBoard({ onEdit, onDelete }: HealthBoardProps) {
 
   const displayMetrics = filteredMetrics ?? metrics;
 
-  // Separate today's check-in from others
+  // Separate today's check-in from others, sorted by latest updated
   const { todayMetrics, pastMetrics } = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const todayItems: HealthMetric[] = [];
@@ -46,12 +56,58 @@ export function HealthBoard({ onEdit, onDelete }: HealthBoardProps) {
       }
     });
 
-    return { todayMetrics: todayItems, pastMetrics: pastItems };
+    // Sort by updatedAt descending (handles both Date and Firestore Timestamp)
+    const getTime = (date: Date | { toDate: () => Date } | number | undefined) => {
+      if (!date) return 0;
+      if (typeof date === 'number') return date;
+      if (date instanceof Date) return date.getTime();
+      if (typeof date.toDate === 'function') return date.toDate().getTime();
+      return 0;
+    };
+    const sortByUpdated = (a: HealthMetric, b: HealthMetric) =>
+      getTime(b.updatedAt) - getTime(a.updatedAt);
+
+    return {
+      todayMetrics: todayItems.sort(sortByUpdated),
+      pastMetrics: pastItems.sort(sortByUpdated)
+    };
   }, [displayMetrics]);
 
   const hasMetrics = displayMetrics.length > 0;
   const viewMode = preferences.viewMode;
-  const masonryClasses = 'columns-1 sm:columns-2 gap-4';
+
+  const renderMasonry = (items: HealthMetric[]) => (
+    <Masonry
+      breakpointCols={masonryBreakpoints}
+      className="flex -ml-4 w-auto"
+      columnClassName="pl-4 bg-clip-padding"
+    >
+      {items.map((metric) => (
+        <div key={metric.id} className="mb-4">
+          <HealthCard
+            metric={metric}
+            viewMode={viewMode}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        </div>
+      ))}
+    </Masonry>
+  );
+
+  const renderList = (items: HealthMetric[]) => (
+    <div className="space-y-2">
+      {items.map((metric) => (
+        <HealthCard
+          key={metric.id}
+          metric={metric}
+          viewMode={viewMode}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <div className="space-y-1 lg:px-0">
@@ -61,21 +117,7 @@ export function HealthBoard({ onEdit, onDelete }: HealthBoardProps) {
         <div className="space-y-10">
           {todayMetrics.length > 0 && (
             <ListSection title="Today" count={todayMetrics.length}>
-              <div className={viewMode === 'list' ? 'space-y-2' : masonryClasses}>
-                {todayMetrics.map((metric) => (
-                  <div
-                    key={metric.id}
-                    className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-                  >
-                    <HealthCard
-                      metric={metric}
-                      viewMode={viewMode}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                    />
-                  </div>
-                ))}
-              </div>
+              {viewMode === 'list' ? renderList(todayMetrics) : renderMasonry(todayMetrics)}
             </ListSection>
           )}
 
@@ -84,21 +126,7 @@ export function HealthBoard({ onEdit, onDelete }: HealthBoardProps) {
               title="History"
               count={todayMetrics.length > 0 ? pastMetrics.length : undefined}
             >
-              <div className={viewMode === 'list' ? 'space-y-2' : masonryClasses}>
-                {pastMetrics.map((metric) => (
-                  <div
-                    key={metric.id}
-                    className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-                  >
-                    <HealthCard
-                      metric={metric}
-                      viewMode={viewMode}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                    />
-                  </div>
-                ))}
-              </div>
+              {viewMode === 'list' ? renderList(pastMetrics) : renderMasonry(pastMetrics)}
             </ListSection>
           )}
         </div>

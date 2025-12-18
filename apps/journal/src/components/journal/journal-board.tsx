@@ -2,11 +2,18 @@
 
 import { useMemo } from 'react';
 import { BookOpen, Loader2 } from 'lucide-react';
+import Masonry from 'react-masonry-css';
 import type { JournalEntry } from '@ainexsuite/types';
 import { ListSection, EmptyState } from '@ainexsuite/ui';
 import { JournalCard } from './journal-card';
 
 type ViewMode = 'list' | 'masonry' | 'calendar';
+
+const masonryBreakpoints = {
+  default: 3,
+  1024: 2,
+  640: 1,
+};
 
 interface JournalBoardProps {
   entries: JournalEntry[];
@@ -27,17 +34,26 @@ export function JournalBoard({
   hasFilters = false,
   onClearFilters,
 }: JournalBoardProps) {
-  // Separate pinned and unpinned entries
+  // Separate and sort pinned and unpinned entries by latest updated
   const { pinned, others } = useMemo(() => {
-    const pinnedEntries = entries.filter((entry) => entry.pinned);
-    const otherEntries = entries.filter((entry) => !entry.pinned);
+    const getTime = (date: Date | { toDate: () => Date } | number | undefined) => {
+      if (!date) return 0;
+      if (typeof date === 'number') return date;
+      if (date instanceof Date) return date.getTime();
+      if (typeof date.toDate === 'function') return date.toDate().getTime();
+      return 0;
+    };
+
+    const pinnedEntries = entries
+      .filter((entry) => entry.pinned)
+      .sort((a, b) => getTime(b.updatedAt) - getTime(a.updatedAt));
+    const otherEntries = entries
+      .filter((entry) => !entry.pinned)
+      .sort((a, b) => getTime(b.updatedAt) - getTime(a.updatedAt));
     return { pinned: pinnedEntries, others: otherEntries };
   }, [entries]);
 
   const hasEntries = pinned.length + others.length > 0;
-
-  // Masonry layout uses CSS columns
-  const masonryClasses = 'columns-1 sm:columns-2 lg:columns-3 gap-4';
 
   if (loading) {
     return (
@@ -77,52 +93,47 @@ export function JournalBoard({
     );
   }
 
+  const renderMasonry = (items: JournalEntry[]) => (
+    <Masonry
+      breakpointCols={masonryBreakpoints}
+      className="flex -ml-4 w-auto"
+      columnClassName="pl-4 bg-clip-padding"
+    >
+      {items.map((entry) => (
+        <div key={entry.id} className="mb-4">
+          <JournalCard entry={entry} onUpdate={onEntryUpdated} />
+        </div>
+      ))}
+    </Masonry>
+  );
+
+  const renderList = (items: JournalEntry[]) => (
+    <div className="space-y-3">
+      {items.map((entry) => (
+        <JournalCard key={entry.id} entry={entry} onUpdate={onEntryUpdated} />
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-10">
       {/* Pinned Entries Section */}
       {pinned.length > 0 && (
         <ListSection title="Pinned" count={pinned.length}>
-          <div className={viewMode === 'list' ? 'space-y-3' : masonryClasses}>
-            {pinned.map((entry) => (
-              <div
-                key={entry.id}
-                className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-              >
-                <JournalCard entry={entry} onUpdate={onEntryUpdated} />
-              </div>
-            ))}
-          </div>
+          {viewMode === 'list' ? renderList(pinned) : renderMasonry(pinned)}
         </ListSection>
       )}
 
       {/* All Other Entries Section */}
       {others.length > 0 && pinned.length > 0 && (
         <ListSection title="All Entries" count={others.length}>
-          <div className={viewMode === 'list' ? 'space-y-3' : masonryClasses}>
-            {others.map((entry) => (
-              <div
-                key={entry.id}
-                className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-              >
-                <JournalCard entry={entry} onUpdate={onEntryUpdated} />
-              </div>
-            ))}
-          </div>
+          {viewMode === 'list' ? renderList(others) : renderMasonry(others)}
         </ListSection>
       )}
 
       {/* Entries without section header when no pinned entries */}
       {others.length > 0 && pinned.length === 0 && (
-        <div className={viewMode === 'list' ? 'space-y-3' : masonryClasses}>
-          {others.map((entry) => (
-            <div
-              key={entry.id}
-              className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-            >
-              <JournalCard entry={entry} onUpdate={onEntryUpdated} />
-            </div>
-          ))}
-        </div>
+        viewMode === 'list' ? renderList(others) : renderMasonry(others)
       )}
     </div>
   );

@@ -9,7 +9,6 @@ const COOKIE_NAME = "ainex-theme";
 // Simple cookie setter
 function setCookie(theme: string) {
   document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax`;
-  console.log('[Theme] Cookie set:', theme);
 }
 
 // Context for theme change callback
@@ -29,7 +28,6 @@ function ThemeCookieSync({ onThemeChange }: { onThemeChange?: ThemeChangeCallbac
 
       // Notify callback if theme actually changed (not just initial mount)
       if (prevThemeRef.current !== null && prevThemeRef.current !== themeToSave) {
-        console.log('[Theme] Theme changed:', prevThemeRef.current, '->', themeToSave);
         onThemeChange?.(themeToSave as 'light' | 'dark');
       }
       prevThemeRef.current = themeToSave;

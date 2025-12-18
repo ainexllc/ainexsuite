@@ -152,7 +152,29 @@ export type BackgroundGenerationStyle =
   | 'artistic'
   | 'abstract'
   | 'minimal'
-  | 'gradient';
+  | 'gradient'
+  | 'watercolor'
+  | '3d-render'
+  | 'cinematic'
+  | 'neon'
+  | 'vintage'
+  | 'geometric'
+  | 'bokeh'
+  | 'ethereal'
+  | 'cyberpunk'
+  | 'texture'
+  | 'oil-painting'
+  | 'digital-art'
+  | 'dreamy'
+  | 'noir'
+  | 'wool'
+  | 'lego'
+  | 'low-poly'
+  | 'clay'
+  | 'pixel-art'
+  | 'paper-craft'
+  | 'glass'
+  | 'marble';
 
 /**
  * Generation request payload

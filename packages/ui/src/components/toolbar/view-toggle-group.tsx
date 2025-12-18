@@ -1,5 +1,6 @@
 'use client';
 
+import { type ReactNode } from 'react';
 import { clsx } from 'clsx';
 import type { ViewOption } from './types';
 
@@ -9,6 +10,8 @@ export interface ViewToggleGroupProps<T extends string> {
   options: ViewOption<T>[];
   size?: 'sm' | 'md';
   className?: string;
+  /** Extra content to render inside the pill after the view toggles */
+  trailingContent?: ReactNode;
 }
 
 export function ViewToggleGroup<T extends string>({
@@ -17,6 +20,7 @@ export function ViewToggleGroup<T extends string>({
   options,
   size = 'md',
   className,
+  trailingContent,
 }: ViewToggleGroupProps<T>) {
   const iconSize = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4';
   const buttonSize = size === 'sm' ? 'h-7 w-7' : 'h-8 w-8';
@@ -50,6 +54,7 @@ export function ViewToggleGroup<T extends string>({
           </button>
         );
       })}
+      {trailingContent}
     </div>
   );
 }

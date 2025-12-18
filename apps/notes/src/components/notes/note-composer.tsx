@@ -53,7 +53,7 @@ const checklistTemplate = (): ChecklistItem => ({
 
 
 export function NoteComposer() {
-  const { createNote, updateNote } = useNotes();
+  const { createNote, updateNote, deleteNote } = useNotes();
   const { createReminder } = useReminders();
   const { preferences } = usePreferences();
   const { labels, createLabel } = useLabels();
@@ -67,6 +67,9 @@ export function NoteComposer() {
   const [archived, setArchived] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Auto-create: track created note ID for auto-save
+  const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
+  const isCreatingRef = useRef(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
@@ -177,7 +180,80 @@ export function NoteComposer() {
     setShowEnhanceMenu(false);
     setNewLabelName("");
     setIsCreatingLabel(false);
+    setCreatedNoteId(null);
+    isCreatingRef.current = false;
   }, [preferences.reminderChannels]);
+
+  // Auto-create note on first content
+  useEffect(() => {
+    if (!expanded || createdNoteId || isCreatingRef.current) return;
+
+    // Check if there's text content (not just attachments for initial create)
+    const hasTextContent = title.trim() || body.trim() ||
+      (mode === "checklist" && checklist.some((item) => item.text.trim()));
+
+    if (!hasTextContent) return;
+
+    const createDraftNote = async () => {
+      isCreatingRef.current = true;
+      try {
+        const noteId = await createNote({
+          title: title.trim(),
+          body: body.trim(),
+          type: mode,
+          checklist: mode === "checklist" ? checklist : [],
+          color,
+          pinned: false,
+          archived: false,
+          labelIds: [],
+          reminderAt: null,
+          attachments: [],
+        });
+        if (noteId) {
+          setCreatedNoteId(noteId);
+        }
+      } catch (error) {
+        console.error("[NoteComposer] Failed to auto-create note:", error);
+      } finally {
+        isCreatingRef.current = false;
+      }
+    };
+
+    void createDraftNote();
+  }, [expanded, createdNoteId, title, body, mode, checklist, color, createNote]);
+
+  // Auto-save changes to created note (debounced)
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!createdNoteId) return;
+
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Debounced save
+    autoSaveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await updateNote(createdNoteId, {
+          title: title.trim(),
+          body: mode === "text" ? body.trim() : "",
+          checklist: mode === "checklist" ? checklist : [],
+          color,
+          labelIds: selectedLabelIds,
+        });
+      } catch (error) {
+        console.error("[NoteComposer] Auto-save failed:", error);
+      }
+    }, 1500);
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [createdNoteId, title, body, mode, checklist, color, selectedLabelIds, updateNote]);
 
   const handleReminderToggle = () => {
     setReminderEnabled((prev) => {
@@ -262,37 +338,92 @@ export function NoteComposer() {
     setShowCalculator(false);
   }, []);
 
-  const handleSubmit = useCallback(async () => {
-    if (isSubmitting) {
-      return;
+  // Handle close: finalize note with attachments/reminders/pin or delete if empty
+  const handleClose = useCallback(async () => {
+    if (isSubmitting) return;
+
+    // Clear any pending auto-save
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
     }
 
-    if (!hasContent) {
+    // If no note was created and no content, just close
+    if (!createdNoteId && !hasContent) {
       resetState();
       return;
     }
 
-    const fireAt = reminderEnabled ? reminderFireAt : null;
-    const activeChannels = reminderChannels.length
-      ? reminderChannels
-      : preferences.reminderChannels;
+    // If note was created but now empty, delete it
+    if (createdNoteId && !hasContent) {
+      try {
+        await deleteNote(createdNoteId);
+      } catch (error) {
+        console.error("[NoteComposer] Failed to delete empty note:", error);
+      }
+      resetState();
+      return;
+    }
+
+    // If no note was created yet but there's content, create it now
+    let noteId = createdNoteId;
+    if (!noteId && hasContent) {
+      setIsSubmitting(true);
+      try {
+        noteId = await createNote({
+          title: title.trim(),
+          body: body.trim(),
+          type: mode,
+          checklist: mode === "checklist" ? checklist : [],
+          color,
+          pinned: false,
+          archived: false,
+          labelIds: selectedLabelIds,
+          reminderAt: null,
+          attachments: [],
+        });
+      } catch (error) {
+        console.error("[NoteComposer] Failed to create note on close:", error);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    if (!noteId) {
+      resetState();
+      return;
+    }
 
     try {
       setIsSubmitting(true);
-      const noteId = await createNote({
-        title: title.trim(),
-        body: body.trim(),
-        type: mode,
-        checklist: mode === "checklist" ? checklist : [],
-        color,
-        pinned,
-        archived,
-        labelIds: selectedLabelIds,
-        reminderAt: fireAt ?? null,
-        attachments: attachments.map((item) => item.file),
-      });
 
-      if (noteId && fireAt && reminderEnabled) {
+      // Finalize: handle pin, archive, attachments, reminders
+      const updates: Record<string, unknown> = {};
+
+      if (pinned) updates.pinned = true;
+      if (archived) updates.archived = true;
+
+      // Save any final state (in case auto-save didn't catch it)
+      updates.title = title.trim();
+      updates.body = mode === "text" ? body.trim() : "";
+      updates.checklist = mode === "checklist" ? checklist : [];
+      updates.color = color;
+      updates.labelIds = selectedLabelIds;
+
+      if (Object.keys(updates).length > 0) {
+        await updateNote(noteId, updates);
+      }
+
+      // Handle attachments
+      // Note: For simplicity, we're not handling attachment uploads in composer
+      // Users can add attachments by editing the note after creation
+
+      // Handle reminder
+      const fireAt = reminderEnabled ? reminderFireAt : null;
+      if (fireAt && reminderEnabled) {
+        const activeChannels = reminderChannels.length
+          ? reminderChannels
+          : preferences.reminderChannels;
+
         const reminderId = await createReminder({
           noteId,
           fireAt,
@@ -320,26 +451,27 @@ export function NoteComposer() {
     }
   }, [
     isSubmitting,
+    createdNoteId,
     hasContent,
     resetState,
-    reminderEnabled,
-    reminderFireAt,
-    reminderChannels,
-    preferences.reminderChannels,
+    deleteNote,
     createNote,
     title,
     body,
     mode,
     checklist,
     color,
+    selectedLabelIds,
     pinned,
     archived,
-    selectedLabelIds,
-    attachments,
+    updateNote,
+    reminderEnabled,
+    reminderFireAt,
+    reminderChannels,
+    preferences.reminderChannels,
     createReminder,
     reminderFrequency,
     customCron,
-    updateNote,
   ]);
 
   const handleChecklistChange = (itemId: string, next: Partial<ChecklistItem>) => {
@@ -482,18 +614,14 @@ export function NoteComposer() {
         return;
       }
 
-      if (hasContent) {
-        void handleSubmit();
-      } else {
-        resetState();
-      }
+      void handleClose();
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
+  }, [expanded, handleClose, isSubmitting]);
 
   return (
     <section className="w-full">
@@ -539,7 +667,7 @@ export function NoteComposer() {
               </button>
               <button
                 type="button"
-                onClick={resetState}
+                onClick={() => void handleClose()}
                 className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 aria-label="Close"
               >
@@ -555,7 +683,7 @@ export function NoteComposer() {
                   onKeyDown={(event) => {
                     if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
                       event.preventDefault();
-                      void handleSubmit();
+                      void handleClose();
                     }
                   }}
                   placeholder="What's on your mind?..."
@@ -1050,23 +1178,14 @@ export function NoteComposer() {
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                  onClick={resetState}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleSubmit()}
-                  className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Adding..." : "Add note"}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                onClick={() => void handleClose()}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Done"}
+              </button>
             </div>
           </div>
 

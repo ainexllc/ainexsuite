@@ -185,17 +185,16 @@ export function EntryEditorShell({
       >
         {/* Background image layer */}
         {backgroundImageUrl && (
-          <div className="absolute inset-0 -z-10">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={backgroundImageUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: 'center' }}
-            />
-            {backgroundOverlayClass && (
-              <div className={backgroundOverlayClass} />
-            )}
+          <div
+            className="absolute inset-0 -z-10"
+            style={{
+              backgroundImage: `url(${backgroundImageUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {/* Overlay for text readability */}
+            <div className={clsx(backgroundOverlayClass, 'z-10')} />
           </div>
         )}
         {/* Header row - title on left, actions on right */}

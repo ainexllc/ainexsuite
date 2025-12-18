@@ -2,10 +2,17 @@
 
 import { useMemo } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import Masonry from 'react-masonry-css';
 import { EmptyState, ListSection } from '@ainexsuite/ui';
 import { TaskCard } from './TaskCard';
 import { useTodoStore } from '../../lib/store';
 import type { Task } from '../../types/models';
+
+const masonryBreakpoints = {
+  default: 3,
+  1024: 2,
+  640: 1,
+};
 
 interface TaskBoardProps {
   viewMode: 'list' | 'masonry';
@@ -29,14 +36,18 @@ function TasksSkeleton({ viewMode }: { viewMode: 'list' | 'masonry' }) {
   }
 
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+    <Masonry
+      breakpointCols={masonryBreakpoints}
+      className="flex -ml-4 w-auto"
+      columnClassName="pl-4 bg-clip-padding"
+    >
       {Array.from({ length: 6 }).map((_, index) => (
         <div
           key={index}
-          className="mb-4 h-40 break-inside-avoid rounded-2xl bg-surface-muted/80 shadow-inner animate-pulse"
+          className="mb-4 h-40 rounded-2xl bg-surface-muted/80 shadow-inner animate-pulse"
         />
       ))}
-    </div>
+    </Masonry>
   );
 }
 
@@ -53,21 +64,55 @@ export function TaskBoard({ viewMode, onEditTask }: TaskBoardProps) {
     );
   }, [tasks, currentSpace]);
 
-  // Separate pinned and unpinned
+  // Helper to get time from Date or Firestore Timestamp
+  const getTime = (date: Date | { toDate: () => Date } | string | number | undefined) => {
+    if (!date) return 0;
+    if (typeof date === 'number') return date;
+    if (typeof date === 'string') return new Date(date).getTime();
+    if (date instanceof Date) return date.getTime();
+    if (typeof date.toDate === 'function') return date.toDate().getTime();
+    return 0;
+  };
+
+  // Separate pinned and unpinned, sorted by latest updated
   const pinnedTasks = useMemo(
-    () => spaceTasks.filter((t) => t.pinned),
+    () => spaceTasks
+      .filter((t) => t.pinned)
+      .sort((a, b) => getTime(b.updatedAt) - getTime(a.updatedAt)),
     [spaceTasks]
   );
   const unpinnedTasks = useMemo(
-    () => spaceTasks.filter((t) => !t.pinned),
+    () => spaceTasks
+      .filter((t) => !t.pinned)
+      .sort((a, b) => getTime(b.updatedAt) - getTime(a.updatedAt)),
     [spaceTasks]
   );
 
   const hasTasks = spaceTasks.length > 0;
 
-  const masonryClasses = 'columns-1 sm:columns-2 lg:columns-3 gap-4';
-
   if (!currentSpace) return null;
+
+  const renderMasonry = (items: Task[]) => (
+    <Masonry
+      breakpointCols={masonryBreakpoints}
+      className="flex -ml-4 w-auto"
+      columnClassName="pl-4 bg-clip-padding"
+    >
+      {items.map((task) => (
+        <div key={task.id} className="mb-4">
+          <TaskCard task={task} viewMode={viewMode} onEditTask={onEditTask} />
+        </div>
+      ))}
+    </Masonry>
+  );
+
+  const renderList = (items: Task[]) => (
+    <div className="space-y-3">
+      {items.map((task) => (
+        <TaskCard key={task.id} task={task} viewMode={viewMode} onEditTask={onEditTask} />
+      ))}
+    </div>
+  );
 
   return (
     <div className="space-y-1 lg:px-0 cq-board">
@@ -76,47 +121,20 @@ export function TaskBoard({ viewMode, onEditTask }: TaskBoardProps) {
           {/* Pinned Tasks */}
           {pinnedTasks.length > 0 && (
             <ListSection title="Pinned" count={pinnedTasks.length}>
-              <div className={viewMode === 'list' ? 'space-y-3' : masonryClasses}>
-                {pinnedTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-                  >
-                    <TaskCard task={task} viewMode={viewMode} onEditTask={onEditTask} />
-                  </div>
-                ))}
-              </div>
+              {viewMode === 'list' ? renderList(pinnedTasks) : renderMasonry(pinnedTasks)}
             </ListSection>
           )}
 
           {/* All Tasks */}
           {unpinnedTasks.length > 0 && pinnedTasks.length > 0 && (
             <ListSection title="All Tasks" count={unpinnedTasks.length}>
-              <div className={viewMode === 'list' ? 'space-y-3' : masonryClasses}>
-                {unpinnedTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-                  >
-                    <TaskCard task={task} viewMode={viewMode} onEditTask={onEditTask} />
-                  </div>
-                ))}
-              </div>
+              {viewMode === 'list' ? renderList(unpinnedTasks) : renderMasonry(unpinnedTasks)}
             </ListSection>
           )}
 
           {/* Tasks without section header when no pinned tasks */}
           {unpinnedTasks.length > 0 && pinnedTasks.length === 0 && (
-            <div className={viewMode === 'list' ? 'space-y-3' : masonryClasses}>
-              {unpinnedTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={viewMode === 'list' ? '' : 'mb-4 break-inside-avoid'}
-                >
-                  <TaskCard task={task} viewMode={viewMode} onEditTask={onEditTask} />
-                </div>
-              ))}
-            </div>
+            viewMode === 'list' ? renderList(unpinnedTasks) : renderMasonry(unpinnedTasks)
           )}
         </div>
       ) : (
