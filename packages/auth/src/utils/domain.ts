@@ -28,24 +28,24 @@ export function getCookieDomain(hostname?: string): string {
     return '.ainexnotes.com';
   }
 
-  if (host.includes('ainexjourney.com')) {
-    return '.ainexjourney.com';
+  if (host.includes('ainexjournal.com')) {
+    return '.ainexjournal.com';
   }
 
   if (host.includes('ainexfit.com')) {
     return '.ainexfit.com';
   }
 
-  if (host.includes('ainexgrow.com')) {
-    return '.ainexgrow.com';
+  if (host.includes('ainexhabits.com')) {
+    return '.ainexhabits.com';
   }
 
-  if (host.includes('ainexpulse.com')) {
-    return '.ainexpulse.com';
+  if (host.includes('ainexdisplay.com')) {
+    return '.ainexdisplay.com';
   }
 
-  if (host.includes('ainexmoments.com')) {
-    return '.ainexmoments.com';
+  if (host.includes('ainexalbum.com')) {
+    return '.ainexalbum.com';
   }
 
   if (host.includes('ainextrack.com')) {

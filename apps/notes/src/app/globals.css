@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent horizontal overflow/scrollbars */
+html, body {
+  overflow-x: hidden;
+}
+
 /* Notes App Theme - Amber (warm, paper-like) */
 :root {
   --app-primary: 38 92% 50%;       /* Amber-500 #f59e0b */

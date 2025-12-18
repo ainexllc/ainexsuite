@@ -4,7 +4,7 @@
 
 import type { User, SubscriptionStatus } from '@ainexsuite/types';
 
-export type AppName = 'notes' | 'journey' | 'todo' | 'health' | 'moments' | 'grow' | 'pulse' | 'fit';
+export type AppName = 'notes' | 'journal' | 'todo' | 'health' | 'album' | 'habits' | 'display' | 'fit';
 
 const TRIAL_DURATION_DAYS = 30;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;

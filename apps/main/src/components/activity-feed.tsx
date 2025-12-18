@@ -28,12 +28,12 @@ import {
 
 const APP_ICONS: Record<SearchableApp, React.ReactNode> = {
   notes: <FileText className="h-4 w-4" />,
-  journey: <BookOpen className="h-4 w-4" />,
+  journal: <BookOpen className="h-4 w-4" />,
   todo: <CheckSquare className="h-4 w-4" />,
   health: <ActivityIcon className="h-4 w-4" />,
-  moments: <ImageIcon className="h-4 w-4" />,
-  grow: <BookOpen className="h-4 w-4" />,
-  pulse: <ActivityIcon className="h-4 w-4" />,
+  album: <ImageIcon className="h-4 w-4" />,
+  habits: <BookOpen className="h-4 w-4" />,
+  display: <ActivityIcon className="h-4 w-4" />,
   fit: <Dumbbell className="h-4 w-4" />,
 };
 
@@ -48,12 +48,12 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 
 const APP_COLORS: Record<SearchableApp, string> = {
   notes: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-  journey: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  journal: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   todo: 'bg-green-500/10 text-green-500 border-green-500/20',
   health: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-  moments: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-  grow: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-  pulse: 'bg-red-500/10 text-red-500 border-red-500/20',
+  album: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+  habits: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+  display: 'bg-red-500/10 text-red-500 border-red-500/20',
   fit: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
 };
 

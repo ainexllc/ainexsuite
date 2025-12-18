@@ -1,7 +1,7 @@
-import type { BaseDocument, MoodType, EntryColor } from './common';
+import type { BaseDocument, MoodType, EntryColor, BackgroundOverlay } from './common';
 
-// Re-export EntryColor for backward compatibility
-export type { EntryColor } from './common';
+// Re-export types for backward compatibility
+export type { EntryColor, BackgroundOverlay } from './common';
 
 export interface Attachment {
   id: string;
@@ -28,6 +28,8 @@ export interface JournalEntry extends BaseDocument {
   color?: EntryColor; // Entry card background color
   archived?: boolean; // Whether entry is archived
   pinned?: boolean; // Whether entry is pinned to top
+  backgroundImage?: string | null; // ID of a predefined background image
+  backgroundOverlay?: BackgroundOverlay; // Overlay style for background images
 }
 
 export type CreateJournalEntryInput = Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt' | 'wordCount'>;
@@ -44,6 +46,8 @@ export interface JournalEntryFormData {
   isDraft?: boolean;
   date?: string | number | Date;
   pinned?: boolean;
+  backgroundImage?: string | null;
+  backgroundOverlay?: BackgroundOverlay;
 }
 
 export interface MoodPattern {

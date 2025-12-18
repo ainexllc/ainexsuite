@@ -34,7 +34,7 @@ export interface UserPreferences {
 export interface ActivityItem {
   id: string;
   userId: string;
-  app: 'notes' | 'journey' | 'todo' | 'health' | 'moments' | 'grow' | 'pulse' | 'fit';
+  app: 'notes' | 'journal' | 'todo' | 'health' | 'album' | 'habits' | 'display' | 'fit';
   action: 'created' | 'updated' | 'deleted' | 'completed';
   itemId: string;
   itemTitle: string;
@@ -99,9 +99,22 @@ export type EntryColor =
   | 'entry-moss'
   | 'entry-coal';
 
+// Background overlay options for background images
+export type BackgroundOverlay =
+  | 'none'      // No overlay
+  | 'auto'      // Adaptive based on brightness
+  | 'dim'       // Light dark overlay
+  | 'dimmer'    // Medium dark overlay
+  | 'dimmest'   // Heavy dark overlay
+  | 'glass'     // Light frosted glass
+  | 'frost'     // Heavy frosted glass
+  | 'gradient'; // Dark gradient from bottom
+
 // Standard fields for entries that can be pinned, archived, and colored
 export interface StandardEntryFields {
   pinned?: boolean;
   archived?: boolean;
   color?: EntryColor;
+  backgroundImage?: string | null;
+  backgroundOverlay?: BackgroundOverlay;
 }

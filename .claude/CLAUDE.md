@@ -8,12 +8,12 @@
 |-----|------|-------|---------|
 | main | 3000 | #f97316 | Central dashboard |
 | notes | 3001 | #eab308 | Colorful notes |
-| journey | 3002 | #f97316 | Mood/reflections |
+| journal | 3002 | #f97316 | Mood/reflections |
 | todo | 3003 | #8b5cf6 | Task management |
 | health | 3004 | #10b981 | Body metrics |
-| moments | 3005 | #ec4899 | Memory curation |
-| grow | 3006 | #14b8a6 | Personal development |
-| pulse | 3007 | #ef4444 | Vitality tracking |
+| album | 3005 | #ec4899 | Memory curation |
+| habits | 3006 | #14b8a6 | Personal development |
+| display | 3007 | #ef4444 | Vitality tracking |
 | fit | 3008 | #3b82f6 | Workout tracking |
 | projects | 3009 | #6366f1 | Project management |
 | workflow | 3010 | #06b6d4 | Visual automation |

@@ -5,14 +5,14 @@ export const SUITE_APPS = {
     description: 'Capture your thoughts and ideas',
     color: '#eab308', // yellow-500
   },
-  journey: {
-    name: 'Journey',
-    slug: 'journey',
-    description: 'Plan your path and track progress',
+  journal: {
+    name: 'Journal',
+    slug: 'journal',
+    description: 'Daily reflections and mood tracking',
     color: '#f97316', // orange-500
   },
   todo: {
-    name: 'Task',
+    name: 'Todo',
     slug: 'todo',
     description: 'Manage tasks and projects',
     color: '#8b5cf6', // violet-500
@@ -23,22 +23,22 @@ export const SUITE_APPS = {
     description: 'Track body metrics and wellness',
     color: '#10b981', // emerald-500
   },
-  moments: {
-    name: 'Moments',
-    slug: 'moments',
+  album: {
+    name: 'Album',
+    slug: 'album',
     description: 'Cherish your memories',
     color: '#ec4899', // pink-500
   },
-  grow: {
-    name: 'Grow',
-    slug: 'grow',
-    description: 'Personal development tools',
+  habits: {
+    name: 'Habits',
+    slug: 'habits',
+    description: 'Build better habits and routines',
     color: '#14b8a6', // teal-500
   },
-  pulse: {
-    name: 'Pulse',
-    slug: 'pulse',
-    description: 'Health and vitality tracking',
+  display: {
+    name: 'Display',
+    slug: 'display',
+    description: 'Dashboard displays and clocks',
     color: '#ef4444', // red-500
   },
   fit: {
@@ -86,12 +86,12 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
   const portMap: Record<string, number> = {
     main: 3000,
     notes: 3001,
-    journey: 3002,
+    journal: 3002,
     todo: 3003,
     health: 3004,
-    moments: 3005,
-    grow: 3006,
-    pulse: 3007,
+    album: 3005,
+    habits: 3006,
+    display: 3007,
     fit: 3008,
     project: 3009,
     workflow: 3010,
@@ -110,9 +110,9 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     return 'https://ainexsuite.com/workspace';
   }
 
-  // Map internal slugs to production domains
+  // Map internal slugs to production domains (if different from slug)
   const domainMap: Record<string, string> = {
-    todo: 'task', // todo app uses task.ainexsuite.com in production
+    // All apps now use their slug as domain
   };
   const domain = domainMap[slug] || slug;
 

@@ -55,8 +55,8 @@ module.exports = {
       min_uptime: 10000,
     },
     {
-      name: 'journey',
-      cwd: './apps/journey',
+      name: 'journal',
+      cwd: './apps/journal',
       script: 'pnpm',
       args: 'dev',
       env: { PORT: 3002, NODE_ENV: 'development', ...sharedEnv },
@@ -88,8 +88,8 @@ module.exports = {
       min_uptime: 10000,
     },
     {
-      name: 'moments',
-      cwd: './apps/moments',
+      name: 'album',
+      cwd: './apps/album',
       script: 'pnpm',
       args: 'dev',
       env: { PORT: 3005, NODE_ENV: 'development', ...sharedEnv },
@@ -99,8 +99,8 @@ module.exports = {
       min_uptime: 10000,
     },
     {
-      name: 'grow',
-      cwd: './apps/grow',
+      name: 'habits',
+      cwd: './apps/habits',
       script: 'pnpm',
       args: 'dev',
       env: { PORT: 3006, NODE_ENV: 'development', ...sharedEnv },
@@ -110,8 +110,8 @@ module.exports = {
       min_uptime: 10000,
     },
     {
-      name: 'pulse',
-      cwd: './apps/pulse',
+      name: 'display',
+      cwd: './apps/display',
       script: 'pnpm',
       args: 'dev',
       env: { PORT: 3007, NODE_ENV: 'development', ...sharedEnv },

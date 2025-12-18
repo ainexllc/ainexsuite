@@ -15,6 +15,8 @@ import {
   Eye,
   EyeOff,
   Image as ImageIcon,
+  Sparkles,
+  Layers,
 } from 'lucide-react';
 import {
   uploadBackground,
@@ -29,7 +31,9 @@ import type {
   BackgroundCategory,
   BackgroundAccessLevel,
   BackgroundBrightness,
+  BackgroundDocWithVariants,
 } from '@ainexsuite/types';
+import { GenerateTab } from './_components/generate-tab';
 
 const CATEGORIES: BackgroundCategory[] = [
   'seasonal',
@@ -47,12 +51,15 @@ const ACCESS_LEVELS: { value: BackgroundAccessLevel; label: string; color: strin
   { value: 'restricted', label: 'Enterprise', color: 'bg-purple-500' },
 ];
 
+type ActiveTab = 'library' | 'generate';
+
 export default function BackgroundsManagement() {
   const { user } = useAuth();
   const [backgrounds, setBackgrounds] = useState<BackgroundDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('library');
 
   // Modal states
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -248,6 +255,12 @@ export default function BackgroundsManagement() {
     );
   }
 
+  // Handler for when a background is generated successfully
+  const handleGenerationSuccess = (_background: BackgroundDocWithVariants) => {
+    setSuccess('Background generated and saved with 16 responsive variants!');
+    setActiveTab('library');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -261,12 +274,40 @@ export default function BackgroundsManagement() {
             Manage background images available across all apps
           </p>
         </div>
+        {activeTab === 'library' && (
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Upload Background
+          </button>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-white/10">
         <button
-          onClick={() => setShowUploadModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+          onClick={() => setActiveTab('library')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === 'library'
+              ? 'text-white border-white'
+              : 'text-muted-foreground hover:text-white border-transparent'
+          }`}
         >
-          <Plus className="h-4 w-4" />
-          Upload Background
+          <Layers className="h-4 w-4" />
+          Library
+        </button>
+        <button
+          onClick={() => setActiveTab('generate')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === 'generate'
+              ? 'text-white border-white'
+              : 'text-muted-foreground hover:text-white border-transparent'
+          }`}
+        >
+          <Sparkles className="h-4 w-4" />
+          Generate
         </button>
       </div>
 
@@ -284,38 +325,43 @@ export default function BackgroundsManagement() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex gap-4">
-        <select
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value as BackgroundCategory | 'all')}
-          className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
-        >
-          <option value="all">All Categories</option>
-          {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </option>
-          ))}
-        </select>
+      {/* Tab Content */}
+      {activeTab === 'generate' ? (
+        <GenerateTab userId={user?.uid || ''} onSuccess={handleGenerationSuccess} />
+      ) : (
+        <>
+          {/* Filters */}
+          <div className="flex gap-4">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value as BackgroundCategory | 'all')}
+              className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
+            >
+              <option value="all">All Categories</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </option>
+              ))}
+            </select>
 
-        <select
-          value={filterAccess}
-          onChange={(e) => setFilterAccess(e.target.value as BackgroundAccessLevel | 'all')}
-          className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
-        >
-          <option value="all">All Access Levels</option>
-          {ACCESS_LEVELS.map((level) => (
-            <option key={level.value} value={level.value}>
-              {level.label}
-            </option>
-          ))}
-        </select>
+            <select
+              value={filterAccess}
+              onChange={(e) => setFilterAccess(e.target.value as BackgroundAccessLevel | 'all')}
+              className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm"
+            >
+              <option value="all">All Access Levels</option>
+              {ACCESS_LEVELS.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
 
-        <div className="ml-auto text-muted-foreground text-sm">
-          {filteredBackgrounds.length} background{filteredBackgrounds.length !== 1 ? 's' : ''}
-        </div>
-      </div>
+            <div className="ml-auto text-muted-foreground text-sm">
+              {filteredBackgrounds.length} background{filteredBackgrounds.length !== 1 ? 's' : ''}
+            </div>
+          </div>
 
       {/* Backgrounds Grid */}
       {filteredBackgrounds.length === 0 ? (
@@ -763,41 +809,43 @@ export default function BackgroundsManagement() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="glass-card rounded-2xl w-full max-w-md mx-4 p-6">
-            <h2 className="text-lg font-semibold text-white mb-2">Delete Background?</h2>
-            <p className="text-muted-foreground mb-4">
-              This will permanently delete &quot;{showDeleteConfirm.name}&quot; from storage. This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="px-4 py-2 rounded-lg text-muted-foreground hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors disabled:opacity-50"
-              >
-                {deleting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </>
-                )}
-              </button>
+          {/* Delete Confirmation Modal */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+              <div className="glass-card rounded-2xl w-full max-w-md mx-4 p-6">
+                <h2 className="text-lg font-semibold text-white mb-2">Delete Background?</h2>
+                <p className="text-muted-foreground mb-4">
+                  This will permanently delete &quot;{showDeleteConfirm.name}&quot; from storage. This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(null)}
+                    className="px-4 py-2 rounded-lg text-muted-foreground hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors disabled:opacity-50"
+                  >
+                    {deleting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

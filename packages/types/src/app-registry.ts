@@ -6,12 +6,12 @@
 export type AppSlug =
   | 'main'
   | 'notes'
-  | 'journey'
+  | 'journal'
   | 'todo'
   | 'health'
-  | 'moments'
-  | 'grow'
-  | 'pulse'
+  | 'album'
+  | 'habits'
+  | 'display'
   | 'fit'
   | 'projects'
   | 'workflow'
@@ -67,29 +67,29 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['Quick Capture', 'Labels', 'AI Search', 'Rich Text Editor'],
     status: 'active',
   },
-  journey: {
-    name: 'Journey',
-    slug: 'journey',
+  journal: {
+    name: 'Journal',
+    slug: 'journal',
     description: 'Reflect on your daily experiences with guided prompts. Track mood and emotional growth.',
     icon: 'BookOpen',
     color: 'purple',
     gradient: 'from-purple-500 to-pink-500',
     devUrl: 'http://localhost:3002',
-    prodUrl: 'https://journey.ainexsuite.com',
+    prodUrl: 'https://journal.ainexsuite.com',
     devPort: 3002,
     category: 'health',
     features: ['Daily Journaling', 'Mood Tracking', 'Guided Prompts', 'Emotional Insights'],
     status: 'active',
   },
   todo: {
-    name: 'Task',
+    name: 'Todo',
     slug: 'todo',
     description: 'Manage your to-dos and projects. Set priorities, due dates, and never miss a deadline.',
     icon: 'CheckSquare',
     color: 'blue',
     gradient: 'from-blue-500 to-cyan-500',
     devUrl: 'http://localhost:3003',
-    prodUrl: 'https://task.ainexsuite.com',
+    prodUrl: 'https://todo.ainexsuite.com',
     devPort: 3003,
     category: 'productivity',
     features: ['Task Management', 'Projects', 'Due Dates', 'Priorities'],
@@ -109,46 +109,46 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['Weight Tracking', 'Sleep Monitoring', 'Vitals', 'Supplements', 'Body Metrics'],
     status: 'active',
   },
-  moments: {
-    name: 'Moments',
-    slug: 'moments',
+  album: {
+    name: 'Album',
+    slug: 'album',
     description: 'Capture life\'s beautiful moments with photos and captions. Create a visual timeline.',
     icon: 'Camera',
     color: 'pink',
     gradient: 'from-pink-500 to-rose-500',
     devUrl: 'http://localhost:3005',
-    prodUrl: 'https://moments.ainexsuite.com',
+    prodUrl: 'https://album.ainexsuite.com',
     devPort: 3005,
     category: 'creative',
     features: ['Photo Gallery', 'Timeline View', 'Captions', 'Albums'],
     status: 'active',
   },
-  grow: {
-    name: 'Grow',
-    slug: 'grow',
-    description: 'Track your learning journey and skill development. Set goals and celebrate milestones.',
+  habits: {
+    name: 'Habits',
+    slug: 'habits',
+    description: 'Build better habits and track your daily routines. Set goals and celebrate milestones.',
     icon: 'GraduationCap',
     color: 'indigo',
     gradient: 'from-indigo-500 to-purple-500',
     devUrl: 'http://localhost:3006',
-    prodUrl: 'https://grow.ainexsuite.com',
+    prodUrl: 'https://habits.ainexsuite.com',
     devPort: 3006,
     category: 'productivity',
-    features: ['Learning Paths', 'Skill Trees', 'Goal Setting', 'Progress Tracking'],
+    features: ['Habit Tracking', 'Daily Routines', 'Goal Setting', 'Progress Tracking'],
     status: 'active',
   },
-  pulse: {
-    name: 'Pulse',
-    slug: 'pulse',
-    description: 'Monitor your health metrics and wellness trends. Track symptoms, medications, and vitals.',
+  display: {
+    name: 'Display',
+    slug: 'display',
+    description: 'Dashboard displays for world clocks, weather, and ambient information.',
     icon: 'Activity',
     color: 'red',
     gradient: 'from-red-500 to-orange-500',
     devUrl: 'http://localhost:3007',
-    prodUrl: 'https://pulse.ainexsuite.com',
+    prodUrl: 'https://display.ainexsuite.com',
     devPort: 3007,
-    category: 'health',
-    features: ['Health Metrics', 'Symptom Tracker', 'Medications', 'Vital Signs'],
+    category: 'productivity',
+    features: ['World Clocks', 'Dashboard Display', 'Ambient Info'],
     status: 'active',
   },
   fit: {

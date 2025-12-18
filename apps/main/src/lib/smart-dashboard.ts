@@ -102,13 +102,13 @@ export class SmartDashboardService {
       if (insightsMap.journey.length === 0) {
         quickActions.push({
           id: 'log-mood-prompt',
-          appSlug: 'journey',
+          appSlug: 'journal',
           type: 'status' as InsightType,
           title: 'Daily Reflection',
           subtitle: 'How are you feeling today?',
           priority: 'low' as InsightPriority,
           timestamp: new Date(),
-          actionUrl: '/journey'
+          actionUrl: '/journal'
         });
       }
 
@@ -268,13 +268,13 @@ export class SmartDashboardService {
         const data = doc.data();
         return {
           id: doc.id,
-          appSlug: 'journey',
+          appSlug: 'journal',
           type: 'status' as InsightType,
           title: 'Latest Check-in',
           subtitle: `Mood: ${data.mood || 'Recorded'}`,
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.createdAt),
-          actionUrl: '/journey'
+          actionUrl: '/journal'
         };
       });
       callback(insights);
@@ -304,13 +304,13 @@ export class SmartDashboardService {
         if (data.progress < 100) {
           insights.push({
             id: doc.id,
-            appSlug: 'grow',
+            appSlug: 'habits',
             type: 'status' as InsightType,
             title: 'Current Goal',
             subtitle: `${data.title} (${data.progress}% done)`,
             priority: 'medium' as InsightPriority,
             timestamp: this.parseDate(data.updatedAt),
-            actionUrl: '/grow'
+            actionUrl: '/habits'
           });
         }
       });
@@ -339,13 +339,13 @@ export class SmartDashboardService {
         const data = doc.data();
         return {
           id: doc.id,
-          appSlug: 'pulse',
+          appSlug: 'display',
           type: 'status' as InsightType,
           title: 'Latest Vitals',
           subtitle: `${data.metricType}: ${data.value}`,
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.date),
-          actionUrl: '/pulse'
+          actionUrl: '/display'
         };
       });
       callback(insights);
@@ -396,13 +396,13 @@ export class SmartDashboardService {
         const data = doc.data();
         return {
           id: doc.id,
-          appSlug: 'moments',
+          appSlug: 'album',
           type: 'memory' as InsightType,
           title: 'Recent Memory',
           subtitle: data.title || 'Untitled Moment',
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.date),
-          actionUrl: '/moments'
+          actionUrl: '/album'
         };
       });
       callback(insights);

@@ -31,12 +31,12 @@ import { Workout } from './fitness';
  */
 export type SearchableApp =
   | 'notes'
-  | 'journey'
+  | 'journal'
   | 'todo'
   | 'health'
-  | 'moments'
-  | 'grow'
-  | 'pulse'
+  | 'album'
+  | 'habits'
+  | 'display'
   | 'fit';
 
 /**
@@ -155,7 +155,7 @@ export function journalToSearchResult(
 ): SearchResult {
   return {
     id,
-    app: 'journey',
+    app: 'journal',
     type: 'entry',
     title: new Date(entry.date).toLocaleDateString(),
     content: entry.content,
@@ -164,7 +164,7 @@ export function journalToSearchResult(
     },
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
-    url: `${getAppUrl('journey', 3002)}?entry=${id}`,
+    url: `${getAppUrl('journal', 3002)}?entry=${id}`,
   };
 }
 
@@ -187,10 +187,9 @@ export function taskToSearchResult(task: Todo, id: string): SearchResult {
 }
 
 export function habitToSearchResult(habit: Habit, id: string): SearchResult {
-  // Note: Habits are now in GROW app, but keeping for backwards compatibility
   return {
     id,
-    app: 'grow',
+    app: 'habits',
     type: 'habit',
     title: habit.name,
     content: habit.description || '',
@@ -200,7 +199,7 @@ export function habitToSearchResult(habit: Habit, id: string): SearchResult {
     },
     createdAt: habit.createdAt,
     updatedAt: habit.updatedAt,
-    url: `${getAppUrl('grow', 3006)}?habit=${id}`,
+    url: `${getAppUrl('habits', 3006)}?habit=${id}`,
   };
 }
 
@@ -230,7 +229,7 @@ export function healthToSearchResult(
 export function momentToSearchResult(moment: Moment, id: string): SearchResult {
   return {
     id,
-    app: 'moments',
+    app: 'album',
     type: 'moment',
     title: moment.title,
     content: moment.caption || '',
@@ -241,7 +240,7 @@ export function momentToSearchResult(moment: Moment, id: string): SearchResult {
     },
     createdAt: moment.createdAt,
     updatedAt: moment.updatedAt,
-    url: `${getAppUrl('moments', 3005)}?moment=${id}`,
+    url: `${getAppUrl('album', 3005)}?moment=${id}`,
   };
 }
 
@@ -251,7 +250,7 @@ export function learningGoalToSearchResult(
 ): SearchResult {
   return {
     id,
-    app: 'grow',
+    app: 'habits',
     type: 'goal',
     title: goal.title,
     content: goal.description || '',
@@ -262,7 +261,7 @@ export function learningGoalToSearchResult(
     },
     createdAt: goal.createdAt,
     updatedAt: goal.updatedAt,
-    url: `${getAppUrl('grow', 3006)}?goal=${id}`,
+    url: `${getAppUrl('habits', 3006)}?goal=${id}`,
   };
 }
 
@@ -272,7 +271,7 @@ export function healthMetricToSearchResult(
 ): SearchResult {
   return {
     id,
-    app: 'pulse',
+    app: 'display',
     type: 'metric',
     title: `Health Metric - ${metric.date}`,
     content: metric.notes || '',
@@ -284,7 +283,7 @@ export function healthMetricToSearchResult(
     },
     createdAt: metric.createdAt,
     updatedAt: metric.updatedAt,
-    url: `${getAppUrl('pulse', 3007)}`,
+    url: `${getAppUrl('display', 3007)}`,
   };
 }
 

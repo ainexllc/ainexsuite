@@ -31,7 +31,7 @@ import { FieldValue } from 'firebase-admin/firestore';
  * }
  */
 
-const VALID_APPS = ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit'];
+const VALID_APPS = ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit'];
 
 export async function POST(request: NextRequest) {
   try {

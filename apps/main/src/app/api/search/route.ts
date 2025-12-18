@@ -54,12 +54,12 @@ export async function GET(request: NextRequest) {
         totalCount: 0,
         appCounts: {
           notes: 0,
-          journey: 0,
+          journal: 0,
           todo: 0,
           health: 0,
-          moments: 0,
-          grow: 0,
-          pulse: 0,
+          album: 0,
+          habits: 0,
+          display: 0,
           fit: 0,
         },
         query: searchQuery,
@@ -69,24 +69,24 @@ export async function GET(request: NextRequest) {
     const searchLower = searchQuery.toLowerCase();
     const appsToSearch: SearchableApp[] = appsFilter || [
       'notes',
-      'journey',
+      'journal',
       'todo',
       'health',
-      'moments',
-      'grow',
-      'pulse',
+      'album',
+      'habits',
+      'display',
       'fit',
     ];
 
     const allResults: SearchResult[] = [];
     const appCounts: Record<SearchableApp, number> = {
       notes: 0,
-      journey: 0,
+      journal: 0,
       todo: 0,
       health: 0,
-      moments: 0,
-      grow: 0,
-      pulse: 0,
+      album: 0,
+      habits: 0,
+      display: 0,
       fit: 0,
     };
 
@@ -116,8 +116,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Search Journey
-    if (appsToSearch.includes('journey')) {
+    // Search Journal
+    if (appsToSearch.includes('journal')) {
       const journalRef = collection(db, 'journal_entries');
       const journalQuery = query(
         journalRef,
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
 
         if (matchesContent) {
           allResults.push(journalToSearchResult(entry, doc.id));
-          appCounts.journey++;
+          appCounts.journal++;
         }
       });
     }
@@ -185,8 +185,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Search Moments
-    if (appsToSearch.includes('moments')) {
+    // Search Album
+    if (appsToSearch.includes('album')) {
       const momentsRef = collection(db, 'moments');
       const momentsQuery = query(
         momentsRef,
@@ -211,13 +211,13 @@ export async function GET(request: NextRequest) {
 
         if (matchesTitle || matchesCaption || matchesTags || matchesLocation) {
           allResults.push(momentToSearchResult(moment, doc.id));
-          appCounts.moments++;
+          appCounts.album++;
         }
       });
     }
 
-    // Search Grow (Learning Goals)
-    if (appsToSearch.includes('grow')) {
+    // Search Habits (Learning Goals)
+    if (appsToSearch.includes('habits')) {
       const goalsRef = collection(db, 'learning_goals');
       const goalsQuery = query(
         goalsRef,
@@ -236,13 +236,13 @@ export async function GET(request: NextRequest) {
 
         if (matchesTitle || matchesDescription) {
           allResults.push(learningGoalToSearchResult(goal, doc.id));
-          appCounts.grow++;
+          appCounts.habits++;
         }
       });
     }
 
-    // Search Pulse (Health Metrics)
-    if (appsToSearch.includes('pulse')) {
+    // Search Display (Health Metrics)
+    if (appsToSearch.includes('display')) {
       const metricsRef = collection(db, 'health_metrics');
       const metricsQuery = query(
         metricsRef,
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest) {
 
         if (matchesDate || matchesNotes) {
           allResults.push(healthMetricToSearchResult(metric, doc.id));
-          appCounts.pulse++;
+          appCounts.display++;
         }
       });
     }

@@ -32,7 +32,14 @@ import type {
   BackgroundUpdateInput,
   BackgroundFilters,
   BackgroundOption,
+  BackgroundVariant,
+  BackgroundGenerationMeta,
+  BackgroundDocWithVariants,
+  BackgroundSourceType,
+  VariantResolution,
+  VariantAspectRatio,
 } from '@ainexsuite/types';
+import { VARIANT_CONFIGS } from '@ainexsuite/types';
 
 const COLLECTION_NAME = 'backgrounds';
 
@@ -273,4 +280,230 @@ export async function toggleBackgroundActive(
   active: boolean
 ): Promise<void> {
   await updateBackground(backgroundId, { active });
+}
+
+// ============================================
+// Variant Upload Functions (AI Generation)
+// ============================================
+
+export interface VariantUpload {
+  key: string;
+  blob: Blob;
+  width: number;
+  height: number;
+}
+
+export interface GeneratedBackgroundInput extends BackgroundCreateInput {
+  generationMeta?: BackgroundGenerationMeta;
+  sourceType: BackgroundSourceType;
+}
+
+/**
+ * Upload an AI-generated or uploaded background with responsive variants
+ */
+export async function uploadBackgroundWithVariants(
+  originalBlob: Blob,
+  variants: VariantUpload[],
+  metadata: GeneratedBackgroundInput,
+  uploadedBy: string
+): Promise<BackgroundDocWithVariants> {
+  const backgroundId = crypto.randomUUID();
+  const basePath = `backgrounds/${backgroundId}`;
+
+  // 1. Upload original image
+  const originalPath = `${basePath}/original.jpg`;
+  const originalRef = ref(storage, originalPath);
+  await uploadBytes(originalRef, originalBlob, {
+    contentType: 'image/jpeg',
+    customMetadata: {
+      brightness: metadata.brightness,
+      sourceType: metadata.sourceType,
+    },
+  });
+  const originalURL = await getDownloadURL(originalRef);
+
+  // 2. Upload all variants
+  const uploadedVariants: BackgroundVariant[] = [];
+
+  for (const variant of variants) {
+    const variantPath = `${basePath}/variants/${variant.key}.jpg`;
+    const variantRef = ref(storage, variantPath);
+
+    await uploadBytes(variantRef, variant.blob, {
+      contentType: 'image/jpeg',
+      customMetadata: {
+        variantKey: variant.key,
+        width: String(variant.width),
+        height: String(variant.height),
+      },
+    });
+
+    const variantURL = await getDownloadURL(variantRef);
+
+    // Parse resolution and aspect ratio from key (e.g., "mobile-16:9")
+    const [resolution, aspectRatio] = variant.key.split('-') as [
+      VariantResolution,
+      VariantAspectRatio,
+    ];
+
+    uploadedVariants.push({
+      resolution,
+      aspectRatio,
+      width: variant.width,
+      height: variant.height,
+      storagePath: variantPath,
+      downloadURL: variantURL,
+    });
+  }
+
+  // 3. Create Firestore document with variants
+  const backgroundDoc = {
+    name: metadata.name,
+    brightness: metadata.brightness,
+    storagePath: originalPath,
+    downloadURL: originalURL,
+    accessLevel: metadata.accessLevel,
+    tags: metadata.tags,
+    category: metadata.category,
+    seasonal: metadata.seasonal || null,
+    uploadedBy,
+    uploadedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    active: true,
+    sourceType: metadata.sourceType,
+    generationMeta: metadata.generationMeta
+      ? {
+          ...metadata.generationMeta,
+          baseImagePath: originalPath,
+          generatedAt: metadata.generationMeta.generatedAt,
+        }
+      : null,
+    variants: uploadedVariants,
+  };
+
+  await setDoc(doc(db, COLLECTION_NAME, backgroundId), backgroundDoc);
+
+  return {
+    id: backgroundId,
+    ...backgroundDoc,
+    uploadedAt: new Date(),
+    updatedAt: new Date(),
+  } as BackgroundDocWithVariants;
+}
+
+/**
+ * Delete a background with all its variants
+ */
+export async function deleteBackgroundWithVariants(
+  backgroundId: string
+): Promise<void> {
+  const docRef = doc(db, COLLECTION_NAME, backgroundId);
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    throw new Error('Background not found');
+  }
+
+  const data = docSnap.data();
+
+  // Delete original file
+  if (data.storagePath) {
+    try {
+      await deleteObject(ref(storage, data.storagePath as string));
+    } catch (error) {
+      console.warn('Failed to delete original:', error);
+    }
+  }
+
+  // Delete all variants
+  if (data.variants && Array.isArray(data.variants)) {
+    for (const variant of data.variants as BackgroundVariant[]) {
+      try {
+        await deleteObject(ref(storage, variant.storagePath));
+      } catch (error) {
+        console.warn('Failed to delete variant:', variant.storagePath, error);
+      }
+    }
+  }
+
+  // Delete Firestore document
+  await deleteDoc(docRef);
+}
+
+/**
+ * Get variant URL for a specific resolution and aspect ratio
+ */
+export function getVariantURL(
+  background: BackgroundDocWithVariants,
+  resolution: VariantResolution,
+  aspectRatio: VariantAspectRatio
+): string | null {
+  if (!background.variants) {
+    return background.downloadURL;
+  }
+
+  const variant = background.variants.find(
+    (v) => v.resolution === resolution && v.aspectRatio === aspectRatio
+  );
+
+  return variant?.downloadURL || background.downloadURL;
+}
+
+/**
+ * Get the best variant URL based on viewport dimensions
+ */
+export function getBestVariantURL(
+  background: BackgroundDocWithVariants,
+  viewportWidth: number,
+  viewportHeight: number
+): string {
+  if (!background.variants || background.variants.length === 0) {
+    return background.downloadURL;
+  }
+
+  // Determine resolution tier
+  let resolution: VariantResolution;
+  if (viewportWidth <= 640) {
+    resolution = 'mobile';
+  } else if (viewportWidth <= 1024) {
+    resolution = 'tablet';
+  } else if (viewportWidth <= 1920) {
+    resolution = 'desktop';
+  } else {
+    resolution = '4k';
+  }
+
+  // Determine aspect ratio (closest match)
+  const viewportAspect = viewportWidth / viewportHeight;
+  let aspectRatio: VariantAspectRatio;
+
+  if (viewportAspect < 0.75) {
+    aspectRatio = '9:16'; // Portrait
+  } else if (viewportAspect < 1.15) {
+    aspectRatio = '1:1'; // Square-ish
+  } else if (viewportAspect < 1.5) {
+    aspectRatio = '4:3'; // Standard
+  } else {
+    aspectRatio = '16:9'; // Wide
+  }
+
+  // Find matching variant
+  const variant = background.variants.find(
+    (v) => v.resolution === resolution && v.aspectRatio === aspectRatio
+  );
+
+  if (variant) {
+    return variant.downloadURL;
+  }
+
+  // Fallback: find any variant with matching resolution
+  const resolutionMatch = background.variants.find(
+    (v) => v.resolution === resolution
+  );
+  if (resolutionMatch) {
+    return resolutionMatch.downloadURL;
+  }
+
+  // Final fallback: original
+  return background.downloadURL;
 }

@@ -19,7 +19,7 @@ import type { AppSlug } from '../config/apps';
  * In development:
  * - Also syncs session to localStorage as fallback
  *
- * @param appSlug - The target app slug (e.g., 'notes', 'journey', 'pulse')
+ * @param appSlug - The target app slug (e.g., 'notes', 'journal', 'display')
  * @param currentAppSlug - Optional current app slug to avoid navigating to same app
  */
 export async function navigateToApp(appSlug: AppSlug | string, currentAppSlug?: string): Promise<void> {
@@ -211,12 +211,12 @@ export function getCurrentAppSlug(): AppSlug | 'main' | 'admin' | null {
   const portMap: Record<string, AppSlug | 'main' | 'admin'> = {
     '3000': 'main',
     '3001': 'notes',
-    '3002': 'journey',
+    '3002': 'journal',
     '3003': 'todo',
     '3004': 'health',
-    '3005': 'moments',
-    '3006': 'grow',
-    '3007': 'pulse',
+    '3005': 'album',
+    '3006': 'habits',
+    '3007': 'display',
     '3008': 'fit',
     '3009': 'project',
     '3010': 'workflow',

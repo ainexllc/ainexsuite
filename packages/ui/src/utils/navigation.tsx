@@ -25,12 +25,12 @@ const NotesAnimatedIcon = ({ className }: { className?: string }) => (
 
 const ICON_MAP = {
   notes: NotesAnimatedIcon,
-  journey: Map,
+  journal: Map,
   todo: CheckSquare,
   health: Heart,
-  moments: Camera,
-  grow: Sprout,
-  pulse: HeartPulse,
+  album: Camera,
+  habits: Sprout,
+  display: HeartPulse,
   fit: Dumbbell,
   project: Briefcase,
   workflow: Workflow,

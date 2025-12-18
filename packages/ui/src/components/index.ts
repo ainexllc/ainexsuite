@@ -3,6 +3,7 @@ export {
   TopNav,
   TopNavProfileButton,
   TopNavAiButton,
+  TopNavFullscreenButton,
   type TopNavProps,
   type TopNavProfileButtonProps,
   type TopNavAiButtonProps,

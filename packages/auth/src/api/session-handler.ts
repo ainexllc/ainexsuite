@@ -35,28 +35,28 @@ function detectCookieDomain(hostname: string): string {
     return '.ainexnotes.com';
   }
 
-  if (hostname.includes('ainexjourney.com')) {
-    return '.ainexjourney.com';
+  if (hostname.includes('ainexjournal.com')) {
+    return '.ainexjournal.com';
   }
 
-  if (hostname.includes('ainextasks.com')) {
-    return '.ainextasks.com';
+  if (hostname.includes('ainextodo.com')) {
+    return '.ainextodo.com';
   }
 
   if (hostname.includes('ainextrack.com')) {
     return '.ainextrack.com';
   }
 
-  if (hostname.includes('ainexmoments.com')) {
-    return '.ainexmoments.com';
+  if (hostname.includes('ainexalbum.com')) {
+    return '.ainexalbum.com';
   }
 
-  if (hostname.includes('ainexgrow.com')) {
-    return '.ainexgrow.com';
+  if (hostname.includes('ainexhabits.com')) {
+    return '.ainexhabits.com';
   }
 
-  if (hostname.includes('ainexpulse.com')) {
-    return '.ainexpulse.com';
+  if (hostname.includes('ainexdisplay.com')) {
+    return '.ainexdisplay.com';
   }
 
   if (hostname.includes('ainexfit.com')) {
@@ -117,18 +117,18 @@ async function createOrUpdateUser(firebaseUser: any): Promise<User> {
       lastLoginAt: now,
       // In dev mode, pre-activate all apps
       appsEligible: isDev
-        ? ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit']
+        ? ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit']
         : [],
       accountType: isDev ? 'suite' : 'single-app',
       appPermissions: {},
       apps: {
         notes: isDev,
-        journey: isDev,
+        journal: isDev,
         todo: isDev,
         health: isDev,
-        moments: isDev,
-        grow: isDev,
-        pulse: isDev,
+        album: isDev,
+        habits: isDev,
+        display: isDev,
         fit: isDev,
       },
       appsUsed: {},
@@ -178,17 +178,17 @@ export async function handleSessionCreation(req: NextRequest) {
         },
         createdAt: Date.now(),
         lastLoginAt: Date.now(),
-        appsEligible: ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit'],
+        appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit'],
         accountType: 'suite',
         appPermissions: {},
         apps: {
           notes: true,
-          journey: true,
+          journal: true,
           todo: true,
           health: true,
-          moments: true,
-          grow: true,
-          pulse: true,
+          album: true,
+          habits: true,
+          display: true,
           fit: true,
         },
         appsUsed: {},

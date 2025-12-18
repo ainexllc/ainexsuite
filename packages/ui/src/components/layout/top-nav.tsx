@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { Menu, ChevronDown } from "lucide-react";
+import { type ReactNode, useState, useEffect, useCallback } from "react";
+import { Menu, ChevronDown, Maximize, Minimize } from "lucide-react";
 import { AIVoiceIcon } from "../ai";
 import { clsx } from "clsx";
 import Image from "next/image";
@@ -167,6 +167,51 @@ export function TopNavAiButton({
       }}
     >
       <AIVoiceIcon size={18} color={accentColor} isAnimating={true} />
+    </button>
+  );
+}
+
+/**
+ * Reusable fullscreen toggle button for TopNav
+ */
+export function TopNavFullscreenButton() {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const checkFullscreen = useCallback(() => {
+    setIsFullscreen(!!document.fullscreenElement);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("fullscreenchange", checkFullscreen);
+    return () => {
+      document.removeEventListener("fullscreenchange", checkFullscreen);
+    };
+  }, [checkFullscreen]);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error("Fullscreen error:", err);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggleFullscreen}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-muted/80 shadow-sm transition hover:bg-muted text-foreground"
+      aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+    >
+      {isFullscreen ? (
+        <Minimize className="h-4 w-4" />
+      ) : (
+        <Maximize className="h-4 w-4" />
+      )}
     </button>
   );
 }

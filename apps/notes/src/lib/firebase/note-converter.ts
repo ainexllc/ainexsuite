@@ -61,6 +61,7 @@ export const noteConverter: FirestoreDataConverter<Note> = {
       color: (data.color ?? "default") as NoteDoc["color"],
       pattern: data.pattern ?? "none",
       backgroundImage: data.backgroundImage ?? null,
+      backgroundOverlay: data.backgroundOverlay ?? "auto",
       pinned: Boolean(data.pinned),
       archived: Boolean(data.archived),
       labelIds: data.labelIds ?? [],
@@ -95,6 +96,7 @@ export function createNotePayload(
     sharedWith?: NoteCollaborator[];
     spaceId?: string;
     backgroundImage?: string | null;
+    backgroundOverlay?: NoteDoc["backgroundOverlay"];
   },
 ) {
   const now = serverTimestamp();
@@ -109,6 +111,7 @@ export function createNotePayload(
     color: overrides.color ?? "default",
     pattern: overrides.pattern ?? "none",
     backgroundImage: overrides.backgroundImage ?? null,
+    backgroundOverlay: overrides.backgroundOverlay ?? "auto",
     pinned: overrides.pinned ?? false,
     archived: overrides.archived ?? false,
     labelIds: overrides.labelIds ?? [],

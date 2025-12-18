@@ -9,13 +9,13 @@ import { loadStripe } from '@stripe/stripe-js';
 import React from 'react';
 
 const APPS = [
-  { name: 'journey', label: 'Journal' },
+  { name: 'journal', label: 'Journal' },
   { name: 'notes', label: 'Notes' },
   { name: 'todo', label: 'Tasks' },
   { name: 'health', label: 'Health' },
-  { name: 'moments', label: 'Moments' },
-  { name: 'grow', label: 'Grow' },
-  { name: 'pulse', label: 'Pulse' },
+  { name: 'album', label: 'Album' },
+  { name: 'habits', label: 'Habits' },
+  { name: 'display', label: 'Display' },
   { name: 'fit', label: 'Fit' },
 ];
 

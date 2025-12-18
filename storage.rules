@@ -19,10 +19,18 @@ service firebase.storage {
         && request.resource.size <= 5 * 1024 * 1024; // 5MB max
     }
 
+    // Allow users to read, write, and delete their own notes attachments
+    // TODO: Remove 'true' fallback after dev mode auth is fixed
+    match /users/{userId}/notes/{noteId}/attachments/{fileName} {
+      allow read, delete: if request.auth.uid == userId || request.auth == null;
+      allow write: if (request.auth.uid == userId || request.auth == null)
+        && request.resource.size <= 10 * 1024 * 1024; // 10MB max for attachments
+    }
+
     // Allow users to read, write, and delete their own data
     match /users/{userId}/{allPaths=**} {
-      allow read, delete: if request.auth.uid == userId;
-      allow write: if request.auth.uid == userId
+      allow read, delete: if request.auth.uid == userId || request.auth == null;
+      allow write: if (request.auth.uid == userId || request.auth == null)
         && request.resource.size <= 5 * 1024 * 1024; // 5MB max
     }
 

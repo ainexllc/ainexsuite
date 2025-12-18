@@ -28,6 +28,12 @@ export interface EntryEditorShellProps {
   hideFooter?: boolean;
   /** Entry color for theming */
   color?: EntryColor;
+  /** Background image URL (full image, not thumbnail) */
+  backgroundImageUrl?: string | null;
+  /** CSS classes for the background overlay */
+  backgroundOverlayClass?: string;
+  /** Background brightness for adaptive text colors */
+  backgroundBrightness?: 'light' | 'dark' | null;
   /** Callback when color changes */
   onColorChange?: (color: EntryColor) => void;
   /** Whether the entry is pinned */
@@ -70,6 +76,57 @@ export interface EntryEditorShellProps {
   hideHeaderActions?: boolean;
 }
 
+// Helper to get adaptive button classes based on background brightness
+function getAdaptiveHeaderButtonClass(
+  brightness: 'light' | 'dark' | null | undefined,
+  isActive?: boolean
+): string {
+  if (brightness === 'dark') {
+    return isActive
+      ? 'bg-white/20 text-white'
+      : 'bg-white/10 text-white/80 hover:bg-white/20 hover:text-white';
+  }
+  if (brightness === 'light') {
+    return isActive
+      ? 'bg-black/15 text-zinc-900'
+      : 'bg-black/5 text-zinc-700 hover:bg-black/10 hover:text-zinc-900';
+  }
+  // No background - standard theme-aware
+  return isActive
+    ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
+    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200';
+}
+
+function getAdaptiveFooterClass(brightness: 'light' | 'dark' | null | undefined): string {
+  if (brightness === 'dark') {
+    return 'bg-black/30 backdrop-blur-sm border-white/10';
+  }
+  if (brightness === 'light') {
+    return 'bg-white/50 backdrop-blur-sm border-black/10';
+  }
+  return ''; // Use colorConfig.footerClass for no background
+}
+
+function getAdaptiveToolbarButtonClass(
+  brightness: 'light' | 'dark' | null | undefined,
+  isActive?: boolean
+): string {
+  if (brightness === 'dark') {
+    return isActive
+      ? 'bg-white/25 text-white'
+      : 'text-white/70 hover:text-white hover:bg-white/15';
+  }
+  if (brightness === 'light') {
+    return isActive
+      ? 'bg-black/15 text-zinc-900'
+      : 'text-zinc-600 hover:text-zinc-900 hover:bg-black/10';
+  }
+  // No background - standard theme-aware
+  return isActive
+    ? 'bg-[var(--color-primary)] text-white'
+    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700';
+}
+
 export function EntryEditorShell({
   isOpen,
   onClose,
@@ -77,6 +134,9 @@ export function EntryEditorShell({
   isSaving = false,
   hideFooter = false,
   color = 'default',
+  backgroundImageUrl,
+  backgroundOverlayClass,
+  backgroundBrightness,
   onColorChange,
   pinned = false,
   onPinChange,
@@ -118,11 +178,26 @@ export function EntryEditorShell({
       <div
         onMouseDown={(e) => e.stopPropagation()}
         className={clsx(
-          'relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl transition-colors duration-200',
-          colorConfig.cardClass,
+          'relative isolate w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl transition-colors duration-200 overflow-hidden',
+          !backgroundImageUrl && colorConfig.cardClass,
           'border-zinc-200 dark:border-zinc-800'
         )}
       >
+        {/* Background image layer */}
+        {backgroundImageUrl && (
+          <div className="absolute inset-0 -z-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={backgroundImageUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: 'center' }}
+            />
+            {backgroundOverlayClass && (
+              <div className={backgroundOverlayClass} />
+            )}
+          </div>
+        )}
         {/* Header row - title on left, actions on right */}
         <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-2 flex-shrink-0">
           {/* Title content slot */}
@@ -141,11 +216,7 @@ export function EntryEditorShell({
                 type="button"
                 className={clsx(
                   'h-9 w-9 rounded-full flex items-center justify-center transition',
-                  isReminderPanelOpen
-                    ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                    : reminderEnabled
-                      ? 'text-[var(--color-primary)]'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200'
+                  getAdaptiveHeaderButtonClass(backgroundBrightness, isReminderPanelOpen || reminderEnabled)
                 )}
                 onClick={onReminderClick}
                 aria-label="Set reminder"
@@ -165,7 +236,11 @@ export function EntryEditorShell({
                   'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition',
                   isSharePanelOpen
                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                    : 'border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500'
+                    : backgroundBrightness === 'dark'
+                      ? 'border-white/30 text-white/80 hover:border-white/50 hover:text-white'
+                      : backgroundBrightness === 'light'
+                        ? 'border-black/20 text-zinc-700 hover:border-black/30 hover:text-zinc-900'
+                        : 'border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500'
                 )}
                 aria-expanded={isSharePanelOpen}
               >
@@ -184,9 +259,7 @@ export function EntryEditorShell({
                 onClick={() => onPinChange(!pinned)}
                 className={clsx(
                   'h-9 w-9 rounded-full flex items-center justify-center transition',
-                  pinned
-                    ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200'
+                  getAdaptiveHeaderButtonClass(backgroundBrightness, pinned)
                 )}
                 aria-label={pinned ? 'Unpin' : 'Pin'}
               >
@@ -198,7 +271,10 @@ export function EntryEditorShell({
             <button
               type="button"
               onClick={onClose}
-              className="h-10 w-10 rounded-full flex items-center justify-center transition bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
+              className={clsx(
+                'h-10 w-10 rounded-full flex items-center justify-center transition',
+                getAdaptiveHeaderButtonClass(backgroundBrightness, false)
+              )}
               aria-label="Close editor"
             >
               <X className="h-5 w-5" />
@@ -216,8 +292,10 @@ export function EntryEditorShell({
         {!hideFooter && (
           <div
             className={clsx(
-              'flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t border-zinc-200 dark:border-zinc-700/50 transition-colors duration-200',
-              colorConfig.footerClass
+              'flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t transition-colors duration-200',
+              backgroundBrightness
+                ? getAdaptiveFooterClass(backgroundBrightness)
+                : clsx('border-zinc-200 dark:border-zinc-700/50', colorConfig.footerClass)
             )}
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -231,9 +309,7 @@ export function EntryEditorShell({
                       onClick={() => setShowPalette((prev) => !prev)}
                       className={clsx(
                         'h-9 w-9 rounded-full flex items-center justify-center transition',
-                        showPalette
-                          ? 'bg-[var(--color-primary)] text-white'
-                          : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        getAdaptiveToolbarButtonClass(backgroundBrightness, showPalette)
                       )}
                       aria-label="Change color"
                     >
@@ -268,9 +344,7 @@ export function EntryEditorShell({
                     type="button"
                     className={clsx(
                       'h-9 w-9 rounded-full flex items-center justify-center transition',
-                      archived
-                        ? 'bg-[var(--color-primary)] text-white'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                      getAdaptiveToolbarButtonClass(backgroundBrightness, archived)
                     )}
                     onClick={() => onArchiveChange(!archived)}
                     aria-label={archived ? 'Unarchive' : 'Archive'}
@@ -290,7 +364,14 @@ export function EntryEditorShell({
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
+                    className={clsx(
+                      "rounded-full border px-4 py-1.5 text-sm font-medium transition",
+                      backgroundBrightness === 'dark'
+                        ? 'border-white/30 text-white/80 hover:border-white/50 hover:text-white'
+                        : backgroundBrightness === 'light'
+                          ? 'border-black/20 text-zinc-700 hover:border-black/30 hover:text-zinc-900'
+                          : 'border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500'
+                    )}
                     onClick={onClose}
                   >
                     {cancelText}

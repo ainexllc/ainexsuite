@@ -37,12 +37,12 @@ export interface User {
   // User grants permission when accessing a new app
   appPermissions: {
     notes?: { approved: boolean; approvedAt: Timestamp };
-    journey?: { approved: boolean; approvedAt: Timestamp };
+    journal?: { approved: boolean; approvedAt: Timestamp };
     todo?: { approved: boolean; approvedAt: Timestamp };
     health?: { approved: boolean; approvedAt: Timestamp };
-    moments?: { approved: boolean; approvedAt: Timestamp };
-    grow?: { approved: boolean; approvedAt: Timestamp };
-    pulse?: { approved: boolean; approvedAt: Timestamp };
+    album?: { approved: boolean; approvedAt: Timestamp };
+    habits?: { approved: boolean; approvedAt: Timestamp };
+    display?: { approved: boolean; approvedAt: Timestamp };
     fit?: { approved: boolean; approvedAt: Timestamp };
     suite?: { approved: boolean; approvedAt: Timestamp };
   };
@@ -50,12 +50,12 @@ export interface User {
   // Legacy apps field (kept for backward compatibility)
   apps: {
     notes: boolean;
-    journey: boolean;
+    journal: boolean;
     todo: boolean;
     health: boolean;
-    moments: boolean;
-    grow: boolean;
-    pulse: boolean;
+    album: boolean;
+    habits: boolean;
+    display: boolean;
     fit: boolean;
     project?: boolean;
     workflow?: boolean;
@@ -65,12 +65,12 @@ export interface User {
   // Suite upsell tracking
   appsUsed: {
     notes?: Timestamp;
-    journey?: Timestamp;
+    journal?: Timestamp;
     todo?: Timestamp;
     health?: Timestamp;
-    moments?: Timestamp;
-    grow?: Timestamp;
-    pulse?: Timestamp;
+    album?: Timestamp;
+    habits?: Timestamp;
+    display?: Timestamp;
     fit?: Timestamp;
   };
 

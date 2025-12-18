@@ -207,6 +207,19 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(note.spaceId || "personal");
   const [showSpacePicker, setShowSpacePicker] = useState(false);
 
+  // Auto-save background and overlay changes
+  const handleBackgroundChange = useCallback(async (newBackgroundImage: string | null) => {
+    setBackgroundImage(newBackgroundImage);
+    // Auto-save to database
+    await updateNote(note.id, { backgroundImage: newBackgroundImage });
+  }, [note.id, updateNote]);
+
+  const handleOverlayChange = useCallback(async (newOverlay: BackgroundOverlay) => {
+    setBackgroundOverlay(newOverlay);
+    // Auto-save to database
+    await updateNote(note.id, { backgroundOverlay: newOverlay });
+  }, [note.id, updateNote]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const checklistInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -1367,7 +1380,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       {/* No background option */}
                       <button
                         type="button"
-                        onClick={() => setBackgroundImage(null)}
+                        onClick={() => void handleBackgroundChange(null)}
                         className={clsx(
                           "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
                           backgroundImage === null
@@ -1389,7 +1402,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         <button
                           key={bg.id}
                           type="button"
-                          onClick={() => setBackgroundImage(bg.id)}
+                          onClick={() => void handleBackgroundChange(bg.id)}
                           className={clsx(
                             "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
                             backgroundImage === bg.id
@@ -1423,7 +1436,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                             <button
                               key={option.id}
                               type="button"
-                              onClick={() => setBackgroundOverlay(option.id)}
+                              onClick={() => void handleOverlayChange(option.id)}
                               className={clsx(
                                 "px-2 py-1.5 rounded-lg text-xs font-medium transition-all",
                                 backgroundOverlay === option.id
@@ -1707,16 +1720,16 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           ) : null}
         </div>
 
+        {/* Hidden file input - inside modal to prevent click propagation issues */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept="image/*"
+          multiple
+          onChange={(event) => handleFilesSelected(event.target.files)}
+        />
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        accept="image/*"
-        multiple
-        onChange={(event) => handleFilesSelected(event.target.files)}
-      />
 
       {/* AI Enhance Style Menu */}
       {showEnhanceMenu && !isEnhancing && (

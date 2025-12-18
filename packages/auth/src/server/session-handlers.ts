@@ -379,12 +379,12 @@ export async function POST(request: NextRequest) {
           lastLoginAt: Date.now(),
           apps: {
             notes: true,
-            journey: true,
+            journal: true,
             todo: true,
             health: true,
-            moments: true,
-            grow: true,
-            pulse: true,
+            album: true,
+            habits: true,
+            display: true,
             fit: true,
             projects: true,
             workflow: true,
@@ -392,7 +392,7 @@ export async function POST(request: NextRequest) {
           },
           appPermissions: {},
           appsUsed: {},
-          appsEligible: ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'],
+          appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit', 'projects', 'workflow', 'calendar'],
           trialStartDate: Date.now(),
           subscriptionStatus: 'trial' as const,
           suiteAccess: true,
@@ -463,7 +463,7 @@ export async function POST(request: NextRequest) {
       const now = Date.now();
       const trialEndDate = now + (30 * 24 * 60 * 60 * 1000); // 30 days from now
 
-      const allApps = ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+      const allApps = ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit', 'projects', 'workflow', 'calendar'];
 
       user = {
         uid: decodedToken.uid,
@@ -495,7 +495,7 @@ export async function POST(request: NextRequest) {
 
       // Check if user needs trial access upgrade (for existing users)
       if (user && (!user.apps || Object.keys(user.apps).length === 0)) {
-        const allApps = ['notes', 'journey', 'todo', 'health', 'moments', 'grow', 'pulse', 'fit', 'projects', 'workflow', 'calendar'];
+        const allApps = ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit', 'projects', 'workflow', 'calendar'];
         const trialEndDate = (user.trialStartDate || Date.now()) + (30 * 24 * 60 * 60 * 1000);
 
         await userRef.update({

@@ -103,9 +103,9 @@ export const DEFAULT_QUICK_ACTIONS: Record<AppSlug, QuickAction[]> = {
     { id: 'new-note', label: 'New Note', description: 'Create a new note', icon: 'FileText', shortcut: 'N', app: 'notes', category: 'create' },
     { id: 'new-checklist', label: 'New Checklist', description: 'Create a checklist', icon: 'ListChecks', shortcut: 'C', app: 'notes', category: 'create' },
   ],
-  journey: [
-    { id: 'new-entry', label: 'New Entry', description: 'Write a journal entry', icon: 'BookOpen', shortcut: 'N', app: 'journey', category: 'create' },
-    { id: 'new-reflection', label: 'Quick Reflection', description: 'Capture a quick thought', icon: 'MessageCircle', app: 'journey', category: 'create' },
+  journal: [
+    { id: 'new-entry', label: 'New Entry', description: 'Write a journal entry', icon: 'BookOpen', shortcut: 'N', app: 'journal', category: 'create' },
+    { id: 'new-reflection', label: 'Quick Reflection', description: 'Capture a quick thought', icon: 'MessageCircle', app: 'journal', category: 'create' },
   ],
   todo: [
     { id: 'new-task', label: 'New Task', description: 'Add a new task', icon: 'Plus', shortcut: 'N', app: 'todo', category: 'create' },
@@ -114,14 +114,14 @@ export const DEFAULT_QUICK_ACTIONS: Record<AppSlug, QuickAction[]> = {
   health: [
     { id: 'log-metrics', label: 'Log Metrics', description: 'Record health metrics', icon: 'Heart', shortcut: 'L', app: 'health', category: 'create' },
   ],
-  moments: [
-    { id: 'capture-moment', label: 'Capture Moment', description: 'Add a new moment', icon: 'Camera', shortcut: 'M', app: 'moments', category: 'create' },
+  album: [
+    { id: 'capture-moment', label: 'Capture Moment', description: 'Add a new moment', icon: 'Camera', shortcut: 'M', app: 'album', category: 'create' },
   ],
-  grow: [
-    { id: 'add-goal', label: 'Add Goal', description: 'Set a learning goal', icon: 'Target', shortcut: 'G', app: 'grow', category: 'create' },
+  habits: [
+    { id: 'add-goal', label: 'Add Goal', description: 'Set a learning goal', icon: 'Target', shortcut: 'G', app: 'habits', category: 'create' },
   ],
-  pulse: [
-    { id: 'check-in', label: 'Check In', description: 'Daily health check-in', icon: 'Activity', shortcut: 'C', app: 'pulse', category: 'create' },
+  display: [
+    { id: 'check-in', label: 'Check In', description: 'Daily health check-in', icon: 'Activity', shortcut: 'C', app: 'display', category: 'create' },
   ],
   fit: [
     { id: 'log-workout', label: 'Log Workout', description: 'Record a workout', icon: 'Dumbbell', shortcut: 'W', app: 'fit', category: 'create' },

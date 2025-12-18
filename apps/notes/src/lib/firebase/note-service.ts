@@ -155,6 +155,10 @@ export async function updateNote(
     payload.backgroundImage = updates.backgroundImage;
   }
 
+  if (updates.backgroundOverlay !== undefined) {
+    payload.backgroundOverlay = updates.backgroundOverlay;
+  }
+
   if (updates.labelIds !== undefined) {
     payload.labelIds = updates.labelIds;
   }
