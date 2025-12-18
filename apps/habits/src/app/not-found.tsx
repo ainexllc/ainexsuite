@@ -1,9 +1,9 @@
 import { NotFound } from '@ainexsuite/ui';
 
-export default function GrowNotFound() {
+export default function HabitsNotFound() {
   return (
     <NotFound
-      appName="Grow"
+      appName="Habits"
       homeHref="/workspace"
       accentClass="text-teal-500"
     />

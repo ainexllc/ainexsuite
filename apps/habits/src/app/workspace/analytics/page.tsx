@@ -67,7 +67,7 @@ function AnalyticsContent() {
     <WorkspaceLayout
       user={user}
       onSignOut={handleSignOut}
-      appName="Grow"
+      appName="Habits"
     >
       <FirestoreSync />
 

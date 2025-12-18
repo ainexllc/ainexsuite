@@ -154,7 +154,7 @@ function JourneyHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="JOURNEY" appColor="#06b6d4" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="JOURNAL" appColor="#06b6d4" />}
         backgroundComponent={<LayeredBackground primaryColor="#06b6d4" secondaryColor="#22d3ee" variant="organic" />}
         appName="journal"
         accentColor="#06b6d4"
@@ -165,7 +165,7 @@ function JourneyHomePageContent() {
         hero={{
           badge: { icon: Shield, text: 'Private by design' },
           headline: 'Write your story.',
-          subheadline: 'AINex Journey reflects it back with clarity and warmth.',
+          subheadline: 'AINex Journal reflects it back with clarity and warmth.',
           description: 'Capture thoughts, track growth, and let AI surface the patterns that define your personal evolution.',
           highlights: [
             {

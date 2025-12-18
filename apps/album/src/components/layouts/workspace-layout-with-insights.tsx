@@ -67,7 +67,7 @@ export function WorkspaceLayoutWithInsights({
       <WorkspaceLayout
         user={user}
         onSignOut={onSignOut}
-        appName="MOMENTS"
+        appName="ALBUM"
         quickActions={quickActions}
         onQuickAction={onQuickAction}
         onAiAssistantClick={onAiAssistantClick}

@@ -157,7 +157,7 @@ function PulseHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="PULSE" appColor="#ef4444" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="DISPLAY" appColor="#ef4444" />}
         backgroundComponent={<LayeredBackground primaryColor="#ef4444" secondaryColor="#f87171" variant="energetic" />}
         appName="display"
         accentColor="#ef4444"
@@ -168,7 +168,7 @@ function PulseHomePageContent() {
         hero={{
           badge: { icon: Shield, text: 'Time Mastery' },
           headline: 'Master your time.',
-          subheadline: 'AINex Pulse transforms your screen into an intelligent focus companion.',
+          subheadline: 'AINex Display transforms your screen into an intelligent focus companion.',
           description: 'More than a clock. Pulse combines beautiful time displays with smart tools to help you focus, rest, and stay on schedule.',
           highlights: [
             {

@@ -145,7 +145,7 @@ function MomentsHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="MOMENTS" appColor="#ec4899" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="ALBUM" appColor="#ec4899" />}
         backgroundComponent={<LayeredBackground primaryColor="#ec4899" secondaryColor="#f472b6" variant="organic" />}
         appName="album"
         accentColor="#ec4899"
@@ -156,7 +156,7 @@ function MomentsHomePageContent() {
         hero={{
           badge: { icon: Shield, text: 'Private gallery vault' },
           headline: 'Capture the moment.',
-          subheadline: "AINex Moments organizes life's highlights into stories worth revisiting.",
+          subheadline: "AINex Album organizes life's highlights into stories worth revisiting.",
           description: 'From travel logs to family milestones, every memory gets context, tags, and a place in your personal timeline.',
           highlights: [
             {

@@ -6,7 +6,7 @@ import { Footer as SharedFooter } from '@ainexsuite/ui';
 type SharedFooterProps = ComponentProps<typeof SharedFooter>;
 
 export function Footer(props: SharedFooterProps) {
-  return <SharedFooter appName="AINex Pulse" {...props} />;
+  return <SharedFooter appName="AINex Display" {...props} />;
 }
 
 

@@ -144,7 +144,7 @@ function GrowHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="GROW" appColor="#8b5cf6" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="HABITS" appColor="#8b5cf6" />}
         backgroundComponent={<LayeredBackground primaryColor="#8b5cf6" secondaryColor="#a78bfa" variant="organic" />}
         appName="habits"
         accentColor="#8b5cf6"
@@ -155,7 +155,7 @@ function GrowHomePageContent() {
         hero={{
           badge: { icon: Shield, text: 'Consistency First' },
           headline: 'Build unbreakable habits.',
-          subheadline: 'AINex Grow helps you design, track, and stick to the routines that shape your life.',
+          subheadline: 'AINex Habits helps you design, track, and stick to the routines that shape your life.',
           description: "Transform your goals into daily actions. Grow provides the structure and accountability you need to make habits stick.",
           highlights: [
             {

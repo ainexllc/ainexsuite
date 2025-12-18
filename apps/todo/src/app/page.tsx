@@ -145,7 +145,7 @@ function TodoHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TASKS" appColor="#8b5cf6" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TODO" appColor="#8b5cf6" />}
         backgroundComponent={<LayeredBackground primaryColor="#8b5cf6" secondaryColor="#a78bfa" variant="structured" />}
         appName="todo"
         accentColor="#8b5cf6"
@@ -156,7 +156,7 @@ function TodoHomePageContent() {
         hero={{
           badge: { icon: Shield, text: 'Operational clarity' },
           headline: 'Plan boldly. Finish consistently.',
-          subheadline: 'AINex Tasks keeps your commitments aligned with your focus.',
+          subheadline: 'AINex Todo keeps your commitments aligned with your focus.',
           description: 'Combine projects, rituals, and meetings into one adaptive command center. AI ensures every priority has space to breathe—and gets done.',
           highlights: [
             {
