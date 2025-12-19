@@ -1,8 +1,25 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useMemo } from "react";
 import { Sparkles, RefreshCw, Loader2, ChevronLeft, ChevronRight, Pause, Play, ArrowRight } from "lucide-react";
 import { cn } from "../../lib/utils";
+
+/**
+ * Format a date as relative time (e.g., "just now", "5m ago", "2h ago", "Dec 18")
+ */
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 import {
   AIAnalyticsIcon,
   AIBrainIcon,
@@ -204,6 +221,12 @@ export function AIInsightsPulldown({
       localStorage.setItem(storageKey, String(newExpanded));
     }
   };
+
+  // Compute relative time for lastUpdated
+  const timeAgo = useMemo(() => {
+    if (!lastUpdated) return null;
+    return formatRelativeTime(lastUpdated);
+  }, [lastUpdated]);
 
   return (
     <div className={cn("flex flex-col flex-shrink-0 dark", className)}>
@@ -429,59 +452,51 @@ export function AIInsightsPulldown({
         </div>
       </div>
 
-      {/* Handle Tab - always visible, centered - responsive */}
+      {/* Handle - Compact floating pill when collapsed, simple line when expanded */}
       <div className="flex justify-center relative z-10">
-        <button
-          onClick={toggleExpanded}
-          className={cn(
-            "group flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 lg:px-5 rounded-b-lg sm:rounded-b-xl border border-t-0 transition-all duration-300",
-            isExpanded ? "h-5 sm:h-6 lg:h-7 py-0.5 sm:py-1" : "h-7 sm:h-8 lg:h-9 py-1 sm:py-1.5 hover:h-8 sm:hover:h-9 lg:hover:h-10"
-          )}
-          style={{
-            backgroundColor: isExpanded ? `${accentColor}20` : `${accentColor}15`,
-            borderColor: `${accentColor}40`,
-            boxShadow: isExpanded
-              ? `0 4px 15px ${accentColor}20`
-              : `0 4px 20px ${accentColor}30, 0 0 40px ${accentColor}15`,
-          }}
-        >
-          {isExpanded ? (
-            /* Simple handle line when expanded - responsive */
+        {isExpanded ? (
+          /* Simple handle line when expanded */
+          <button
+            onClick={toggleExpanded}
+            className="group flex items-center justify-center h-5 sm:h-6 px-4 sm:px-6 rounded-b-lg border border-t-0 transition-all duration-300"
+            style={{
+              backgroundColor: `${accentColor}20`,
+              borderColor: `${accentColor}40`,
+              boxShadow: `0 4px 15px ${accentColor}20`,
+            }}
+          >
             <div
-              className="w-6 sm:w-8 lg:w-10 h-0.5 sm:h-1 rounded-full transition-all duration-300"
+              className="w-8 sm:w-10 h-0.5 sm:h-1 rounded-full transition-all duration-300"
               style={{
                 background: `linear-gradient(90deg, ${gradientFrom}, ${gradientTo})`,
               }}
             />
-          ) : (
-            /* Animated Analytics Icon when collapsed - responsive */
-            <>
-              {/* Analytics Icon with glow */}
-              <div
-                className="relative [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5 lg:[&>svg]:w-6 lg:[&>svg]:h-6"
-                style={{
-                  filter: `drop-shadow(0 0 6px ${accentColor}60)`,
-                }}
-              >
-                <AIAnalyticsIcon size={20} color={accentColor} isAnimating={true} />
-              </div>
+          </button>
+        ) : (
+          /* Compact floating pill when collapsed - glass effect */
+          <button
+            onClick={toggleExpanded}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md bg-white/80 dark:bg-zinc-900/80 border shadow-sm hover:shadow-md transition-all duration-300"
+            style={{ borderColor: `${accentColor}30` }}
+          >
+            {/* Icon with accent background */}
+            <div
+              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: `${accentColor}25` }}
+            >
+              {isLoading ? (
+                <Loader2 className="h-3 w-3 animate-spin" style={{ color: accentColor }} />
+              ) : (
+                <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
+              )}
+            </div>
 
-              {/* AI Text - hidden on smallest screens */}
-              <span
-                className="hidden xs:inline text-[9px] sm:text-[10px] lg:text-xs font-bold tracking-wider opacity-80 group-hover:opacity-100 transition-opacity"
-                style={{ color: accentColor }}
-              >
-                AI
-              </span>
-
-              {/* Sparkles on hover */}
-              <Sparkles
-                className="h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-3.5 lg:w-3.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ color: accentColor }}
-              />
-            </>
-          )}
-        </button>
+            {/* Updated text */}
+            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+              {isLoading ? loadingMessage : timeAgo ? `Updated: ${timeAgo}` : "AI Insights"}
+            </span>
+          </button>
+        )}
       </div>
 
     </div>
