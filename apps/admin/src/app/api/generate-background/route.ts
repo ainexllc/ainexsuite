@@ -96,52 +96,62 @@ function buildBackgroundPrompt(
   const { style, category, brightness, colorHint } = options;
 
   const parts: string[] = [
-    'Generate a high-quality background image for a mobile/desktop app.',
+    'Role: Expert UI/UX Asset Designer.',
+    'Task: Generate a professional background image for a content-heavy app (Notes, Journal, Tasks).',
     '',
-    '## COMPOSITION REQUIREMENTS (CRITICAL):',
-    '- Design with TEXT OVERLAY in mind - UI elements will be placed on top',
-    '- Keep the CENTER and EDGES relatively clean/simple for text readability',
-    '- Avoid busy patterns or high-contrast details in areas where text would appear',
-    '- Create visual interest through subtle gradients, soft textures, or peripheral details',
-    '- The background should ENHANCE readability, not compete with foreground content',
+    '## CRITICAL COMPOSITION RULES (MUST FOLLOW):',
+    '1. **THE "SAFE ZONE" RULE:** The central 70% of the image MUST be visually quiet, clean, and uniform. This is where user text will sit.',
+    '   - NO distinct objects, sharp patterns, or high-contrast details in the center.',
+    '   - The center should be a solid color, a very soft gradient, or a subtle texture (like paper grain or smooth stone).',
+    '2. **EDGE DETAILS:** Push all artistic flourishes, stronger textures, or distinct shapes to the outer 15-20% edges (corners/borders).',
+    '   - Think "Vignette" or "Frame" style composition.',
+    '3. **CONTRAST CONTROL:**',
+    '   - Low local contrast in the center (smooth).',
+    '   - Global contrast should be managed to support text legibility.',
     '',
-    '## ASPECT RATIO:',
-    '- Optimize for 16:9 landscape (desktop) but ensure it crops well to 9:16 portrait (mobile)',
-    '- Important elements should be centered to survive cropping to different ratios',
+    '## STRICT NEGATIVE CONSTRAINTS:',
+    '- **ABSOLUTELY NO TEXT, LETTERS, CHARACTERS, OR SYMBOLS** in the image itself.',
+    '- **NO WATERMARKS** or logos.',
+    '- NO faces or people.',
+    '- NO busy patterns in the center.',
+    '',
+    '## ASPECT RATIO & SCALING:',
+    '- The image will be cropped to both 16:9 (Desktop) and 9:16 (Mobile).',
+    '- A uniform or gradient center ensures the image looks good in ANY crop.',
     '',
     `## USER REQUEST: ${userPrompt}`,
   ];
 
   if (style && STYLE_GUIDES[style]) {
     parts.push('', `## STYLE: ${STYLE_GUIDES[style]}`);
+    parts.push('- ADAPTATION: Adapt this style to be "background-friendly". Mute the effect in the center.');
   }
 
   if (category && CATEGORY_MOODS[category]) {
-    parts.push('', `## MOOD/ATMOSPHERE: ${CATEGORY_MOODS[category]}`);
+    parts.push('', `## MOOD: ${CATEGORY_MOODS[category]}`);
   }
 
   if (brightness && BRIGHTNESS_GUIDES[brightness]) {
     parts.push(
       '',
-      `## BRIGHTNESS (IMPORTANT): ${BRIGHTNESS_GUIDES[brightness]}`,
+      `## BRIGHTNESS MODE: ${brightness.toUpperCase()}`,
+      `GUIDE: ${BRIGHTNESS_GUIDES[brightness]}`,
       brightness === 'dark'
-        ? 'Ensure sufficient contrast for WHITE/LIGHT text to be readable.'
-        : 'Ensure sufficient contrast for BLACK/DARK text to be readable.'
+        ? '- TARGET: Deep, dark tones in the center (e.g., charcoal, navy, black, dark slate). The center must be dark enough for WHITE text.'
+        : '- TARGET: Bright, light tones in the center (e.g., white, cream, soft pastel, light grey). The center must be light enough for BLACK text.'
     );
   }
 
   if (colorHint) {
-    parts.push('', `## COLOR PALETTE: Incorporate ${colorHint} tones as the dominant colors.`);
+    parts.push('', `## COLOR PALETTE: ${colorHint}`);
   }
 
   parts.push(
     '',
-    '## FINAL REQUIREMENTS:',
-    '- NO text, watermarks, logos, or UI elements in the image',
-    '- NO people or faces',
-    '- Fully opaque image (no transparency)',
-    '- High resolution, crisp quality',
-    '- Professional, polished aesthetic suitable for a premium app experience'
+    '## FINAL OUTPUT:',
+    '- A polished, high-resolution image.',
+    '- Looks like a premium app background, not a stock photo.',
+    '- Opaque (no alpha channel).'
   );
 
   return parts.join('\n');
