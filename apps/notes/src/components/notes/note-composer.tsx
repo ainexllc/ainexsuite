@@ -656,7 +656,7 @@ export function NoteComposer() {
           >
             <span>Take a note...</span>
           </button>
-          {/* Compact space selector */}
+          {/* Compact space selector - responsive */}
           <div className="relative flex-shrink-0">
             <button
               type="button"
@@ -664,10 +664,10 @@ export function NoteComposer() {
                 e.stopPropagation();
                 setShowSpacePicker((prev) => !prev);
               }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
               <FolderOpen className="h-3.5 w-3.5" />
-              <span className="max-w-[80px] truncate">{currentSpaceName}</span>
+              <span className="hidden sm:inline max-w-[80px] truncate">{currentSpaceName}</span>
               <ChevronDown className="h-3 w-3" />
             </button>
             {showSpacePicker && (
