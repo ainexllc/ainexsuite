@@ -21,7 +21,6 @@ import { TaskBoard } from '@/components/views/TaskBoard';
 import { TaskKanban } from '@/components/views/TaskKanban';
 import { MyDayView } from '@/components/views/MyDayView';
 import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
-import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 import { TaskFilterContent, type TaskFilterValue } from '@/components/task-filter-content';
 
 import { useTodoStore } from '@/lib/store';
@@ -242,7 +241,6 @@ export default function TodoWorkspacePage() {
     <>
       <WorkspacePageLayout
         composer={<TaskComposer />}
-        composerActions={<SpaceSwitcher />}
         toolbar={
           <div className="space-y-2">
             {isSearchOpen && (

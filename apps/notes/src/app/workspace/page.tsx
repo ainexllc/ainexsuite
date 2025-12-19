@@ -15,7 +15,6 @@ import {
 } from '@ainexsuite/ui';
 import { NoteBoard } from '@/components/notes/note-board';
 import { NoteComposer } from "@/components/notes/note-composer";
-import { SpaceSwitcher } from "@/components/spaces";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useLabels } from "@/components/providers/labels-provider";
@@ -186,7 +185,6 @@ export default function NotesWorkspace() {
   return (
     <WorkspacePageLayout
       composer={showArchived ? null : <NoteComposer />}
-      composerActions={showArchived ? null : <SpaceSwitcher />}
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (

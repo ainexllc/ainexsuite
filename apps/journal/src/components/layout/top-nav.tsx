@@ -8,6 +8,7 @@ import {
   TopNav as SharedTopNav,
   TopNavProfileButton,
   TopNavAiButton,
+  TopNavFullscreenButton,
   ProfileDropdown,
 } from "@ainexsuite/ui";
 
@@ -32,6 +33,7 @@ export function TopNav({
       accentColor="147,51,234" // Purple accent for Journey
       actions={
         <>
+          <TopNavFullscreenButton />
           {onOpenAiAssistant && <TopNavAiButton onClick={onOpenAiAssistant} />}
           {user && !authLoading && (
             <div className="relative">

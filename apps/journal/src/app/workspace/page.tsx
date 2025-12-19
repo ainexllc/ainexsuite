@@ -16,7 +16,6 @@ import {
 } from '@ainexsuite/ui';
 import { DashboardView } from '@/components/dashboard/dashboard-view';
 import { JournalComposer } from '@/components/journal/journal-composer';
-import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 import {
   JournalFilterContent,
   type JournalFilterValue,
@@ -187,7 +186,6 @@ export default function WorkspacePage() {
   return (
     <WorkspacePageLayout
       composer={<JournalComposer onEntryCreated={handleEntryCreated} />}
-      composerActions={<SpaceSwitcher />}
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (

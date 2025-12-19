@@ -1,6 +1,7 @@
 'use client';
 
-import { Menu, ChevronDown, PanelTopClose, PanelTop } from 'lucide-react';
+import { Menu, ChevronDown, PanelTopClose, PanelTop, Maximize, Minimize } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { AIVoiceIcon } from '../ai';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
@@ -131,6 +132,32 @@ export function WorkspaceHeader({
   onQuickActionsToggle,
   onAiAssistantClick,
 }: WorkspaceHeaderProps) {
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const checkFullscreen = useCallback(() => {
+    setIsFullscreen(!!document.fullscreenElement);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('fullscreenchange', checkFullscreen);
+    return () => {
+      document.removeEventListener('fullscreenchange', checkFullscreen);
+    };
+  }, [checkFullscreen]);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  };
+
   // Render user avatar/initials (shared between header and floating controls)
   const renderUserAvatar = () => (
     user.photoURL ? (
@@ -246,6 +273,21 @@ export function WorkspaceHeader({
                 )}
               </button>
             )}
+
+            {/* Fullscreen Toggle */}
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-all text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? (
+                <Minimize className="h-4 w-4" />
+              ) : (
+                <Maximize className="h-4 w-4" />
+              )}
+            </button>
 
             {/* AI Assistant Button */}
             <button
