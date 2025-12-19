@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Image as ImageIcon,
   Wand2,
+  Trash2,
 } from 'lucide-react';
 import { uploadBackgroundWithVariants } from '@ainexsuite/firebase';
 import type {
@@ -243,6 +244,13 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
     setCategory('other');
     setAccessLevel('free');
     setTags('');
+    setError(null);
+  };
+
+  // Discard current generation but keep inputs
+  const handleDiscard = () => {
+    setStep('idle');
+    setPreviewImage(null);
     setError(null);
   };
 
@@ -599,13 +607,22 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
             </div>
 
             {/* Save Button */}
-            <button
-              onClick={handleApprove}
-              className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-medium transition-colors"
-            >
-              <Check className="h-4 w-4" />
-              Save Background (16 Responsive Variants)
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDiscard}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </button>
+              <button
+                onClick={handleApprove}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-medium transition-colors"
+              >
+                <Check className="h-4 w-4" />
+                Save Background (16 Responsive Variants)
+              </button>
+            </div>
           </div>
         </div>
       )}
