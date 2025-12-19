@@ -87,7 +87,8 @@ export function NoteCard({ note }: NoteCardProps) {
           // Use theme lab color system for light/dark mode
           !backgroundImage && cardClass,
           "border border-zinc-200 dark:border-zinc-800",
-          "group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200",
+          "group relative cursor-pointer overflow-hidden rounded-2xl",
+          "transition-[border-color,box-shadow] duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
           "break-inside-avoid px-6 py-6",
         )}
