@@ -6,9 +6,12 @@ import { useEffect, useRef, createContext, useContext } from "react";
 
 const COOKIE_NAME = "ainex-theme";
 
-// Simple cookie setter
+// Cookie setter with production domain support
 function setCookie(theme: string) {
-  document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax`;
+  const isProduction = typeof window !== 'undefined' &&
+    window.location.hostname.includes('ainexsuite.com');
+  const domain = isProduction ? '; domain=.ainexsuite.com' : '';
+  document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax${domain}`;
 }
 
 // Context for theme change callback
