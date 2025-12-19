@@ -517,10 +517,10 @@ export default function BackgroundsManagement() {
                 />
               </div>
 
-              {/* Brightness */}
+              {/* Display Mode */}
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  Brightness
+                  Display Mode
                 </label>
                 <div className="flex gap-2">
                   <button
@@ -533,7 +533,7 @@ export default function BackgroundsManagement() {
                     }`}
                   >
                     <Moon className="h-4 w-4" />
-                    Dark
+                    Dark Mode
                   </button>
                   <button
                     type="button"
@@ -545,7 +545,7 @@ export default function BackgroundsManagement() {
                     }`}
                   >
                     <Sun className="h-4 w-4" />
-                    Light
+                    Light Mode
                   </button>
                 </div>
               </div>
@@ -671,10 +671,10 @@ export default function BackgroundsManagement() {
                 />
               </div>
 
-              {/* Brightness */}
+              {/* Display Mode */}
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  Brightness
+                  Display Mode
                 </label>
                 <div className="flex gap-2">
                   <button
@@ -687,7 +687,7 @@ export default function BackgroundsManagement() {
                     }`}
                   >
                     <Moon className="h-4 w-4" />
-                    Dark
+                    Dark Mode
                   </button>
                   <button
                     type="button"
@@ -699,7 +699,7 @@ export default function BackgroundsManagement() {
                     }`}
                   >
                     <Sun className="h-4 w-4" />
-                    Light
+                    Light Mode
                   </button>
                 </div>
               </div>

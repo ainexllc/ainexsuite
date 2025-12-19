@@ -134,7 +134,7 @@ function buildBackgroundPrompt(
   if (brightness && BRIGHTNESS_GUIDES[brightness]) {
     parts.push(
       '',
-      `## BRIGHTNESS MODE: ${brightness.toUpperCase()}`,
+      `## APP THEME MODE: ${brightness === 'dark' ? 'DARK MODE' : 'LIGHT MODE'}`,
       `GUIDE: ${BRIGHTNESS_GUIDES[brightness]}`,
       brightness === 'dark'
         ? '- TARGET: Deep, dark tones in the center (e.g., charcoal, navy, black, dark slate). The center must be dark enough for WHITE text.'

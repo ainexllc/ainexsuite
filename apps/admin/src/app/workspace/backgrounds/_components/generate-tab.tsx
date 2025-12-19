@@ -364,10 +364,10 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
                 </select>
               </div>
 
-              {/* Brightness (critical for text readability) */}
+              {/* Mode Selection (Dark/Light) */}
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  Brightness (for text overlay)
+                  Target App Theme
                 </label>
                 <div className="flex gap-2">
                   <button
@@ -380,7 +380,7 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
                     }`}
                   >
                     <Moon className="h-4 w-4" />
-                    Dark (light text)
+                    Dark Mode
                   </button>
                   <button
                     type="button"
@@ -392,9 +392,12 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
                     }`}
                   >
                     <Sun className="h-4 w-4" />
-                    Light (dark text)
+                    Light Mode
                   </button>
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Optimizes image colors for {brightness === 'dark' ? 'white' : 'black'} text legibility.
+                </p>
               </div>
 
               {/* Color Hint (Optional) */}
@@ -523,10 +526,10 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
               />
             </div>
 
-            {/* Brightness */}
+            {/* Display Mode */}
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Brightness
+                Display Mode
               </label>
               <div className="flex gap-2">
                 <button
@@ -539,7 +542,7 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
                   }`}
                 >
                   <Moon className="h-4 w-4" />
-                  Dark
+                  Dark Mode
                 </button>
                 <button
                   type="button"
@@ -551,7 +554,7 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
                   }`}
                 >
                   <Sun className="h-4 w-4" />
-                  Light
+                  Light Mode
                 </button>
               </div>
             </div>
