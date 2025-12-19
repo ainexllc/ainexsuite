@@ -10,7 +10,7 @@ import {
   useRef,
 } from "react";
 import { useAuth } from "@ainexsuite/auth";
-import type { Note, NoteAttachment, NoteDraft, NoteType, NoteColor } from "@/lib/types/note";
+import type { Note, NoteAttachment, NoteDraft, NoteType, NoteColor, NotePriority } from "@/lib/types/note";
 import type { FilterValue, SortConfig } from "@ainexsuite/ui";
 import {
   addAttachments,
@@ -38,6 +38,7 @@ type CreateNoteInput = {
   checklist?: Note["checklist"];
   color?: NoteColor;
   pinned?: boolean;
+  priority?: NotePriority;
   archived?: boolean;
   labelIds?: string[];
   reminderAt?: Date | null;
@@ -53,9 +54,6 @@ type NotesContextValue = {
   others: Note[];
   allNotes: Note[];
   trashed: Note[];
-  archivedCount: number;
-  showArchived: boolean;
-  setShowArchived: (value: boolean) => void;
   loading: boolean;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
@@ -104,7 +102,6 @@ export function NotesProvider({ children }: NotesProviderProps) {
     field: 'updatedAt',
     direction: 'desc',
   });
-  const [showArchived, setShowArchived] = useState(false);
   const [filtersInitialized, setFiltersInitialized] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const computedNotesRef = useRef<{
@@ -441,6 +438,32 @@ export function NotesProvider({ children }: NotesProviderProps) {
         : (bValue as number) - (aValue as number);
     };
 
+    // Priority sort function for Focus notes
+    // Sort by: priority (high > medium > low > null), then createdAt desc, then updatedAt desc
+    const sortPinnedNotes = (a: Note, b: Note) => {
+      // Priority order: high=1, medium=2, low=3, null/undefined=4
+      const priorityOrder = { high: 1, medium: 2, low: 3 };
+      const aPriority = a.priority ? priorityOrder[a.priority] : 4;
+      const bPriority = b.priority ? priorityOrder[b.priority] : 4;
+
+      // First sort by priority (ascending - lower number = higher priority)
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+
+      // Then by createdAt desc (newest first)
+      const aCreated = a.createdAt.getTime();
+      const bCreated = b.createdAt.getTime();
+      if (aCreated !== bCreated) {
+        return bCreated - aCreated;
+      }
+
+      // Finally by updatedAt desc (newest first)
+      const aUpdated = a.updatedAt?.getTime() ?? aCreated;
+      const bUpdated = b.updatedAt?.getTime() ?? bCreated;
+      return bUpdated - aUpdated;
+    };
+
     const trashed = merged
       .filter((note) => Boolean(note.deletedAt))
       .sort((a, b) => {
@@ -461,17 +484,9 @@ export function NotesProvider({ children }: NotesProviderProps) {
     const hasNoteTypeFilter = filters.noteType && filters.noteType !== 'all';
 
     const filtered = activeNotes.filter((note) => {
-      // Filter by archived status based on showArchived toggle
-      if (showArchived) {
-        // When viewing archive, show ONLY archived notes
-        if (!note.archived) {
-          return false;
-        }
-      } else {
-        // When viewing workspace, exclude archived notes
-        if (note.archived) {
-          return false;
-        }
+      // Always exclude archived notes
+      if (note.archived) {
+        return false;
       }
 
       // Filter by current space
@@ -548,7 +563,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       return haystack.includes(normalizedQuery);
     });
 
-    const pinned = filtered.filter((note) => note.pinned).sort(sortNotes);
+    const pinned = filtered.filter((note) => note.pinned).sort(sortPinnedNotes);
     const others = filtered.filter((note) => !note.pinned).sort(sortNotes);
 
     return {
@@ -559,7 +574,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       trashed,
       archivedCount,
     };
-  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort, showArchived]);
+  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort]);
 
   useEffect(() => {
     computedNotesRef.current = computedNotes;
@@ -573,10 +588,6 @@ export function NotesProvider({ children }: NotesProviderProps) {
     setActiveLabelIds(labels);
   }, []);
 
-  const updateShowArchived = useCallback((value: boolean) => {
-    setShowArchived(value);
-  }, []);
-
   const value = useMemo<NotesContextValue>(
     () => ({
       allNotes: computedNotes.merged,
@@ -584,9 +595,6 @@ export function NotesProvider({ children }: NotesProviderProps) {
       pinned: computedNotes.pinned,
       others: computedNotes.others,
       trashed: computedNotes.trashed,
-      archivedCount: computedNotes.archivedCount,
-      showArchived,
-      setShowArchived: updateShowArchived,
       loading,
       searchQuery,
       setSearchQuery: updateSearchQuery,
@@ -613,8 +621,6 @@ export function NotesProvider({ children }: NotesProviderProps) {
       computedNotes.pinned,
       computedNotes.others,
       computedNotes.trashed,
-      computedNotes.archivedCount,
-      showArchived,
       loading,
       searchQuery,
       activeLabelIds,
@@ -632,7 +638,6 @@ export function NotesProvider({ children }: NotesProviderProps) {
       handleAttachFiles,
       updateSearchQuery,
       updateActiveLabelIds,
-      updateShowArchived,
     ],
   );
 

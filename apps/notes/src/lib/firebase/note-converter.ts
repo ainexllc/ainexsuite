@@ -63,6 +63,7 @@ export const noteConverter: FirestoreDataConverter<Note> = {
       backgroundImage: data.backgroundImage ?? null,
       backgroundOverlay: data.backgroundOverlay ?? "auto",
       pinned: Boolean(data.pinned),
+      priority: data.priority ?? null,
       archived: Boolean(data.archived),
       labelIds: data.labelIds ?? [],
       attachments: data.attachments ?? [],
@@ -113,6 +114,7 @@ export function createNotePayload(
     backgroundImage: overrides.backgroundImage ?? null,
     backgroundOverlay: overrides.backgroundOverlay ?? "auto",
     pinned: overrides.pinned ?? false,
+    priority: overrides.priority ?? null,
     archived: overrides.archived ?? false,
     labelIds: overrides.labelIds ?? [],
     reminderAt: overrides.reminderAt

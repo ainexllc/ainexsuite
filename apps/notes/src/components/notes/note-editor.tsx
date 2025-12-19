@@ -5,13 +5,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import {
-  Archive,
-  ArchiveRestore,
   CheckSquare,
   Image as ImageIcon,
   Palette,
-  Pin,
-  PinOff,
+  Target,
+  CircleOff,
   Tag,
   X,
   BellRing,
@@ -27,6 +25,7 @@ import {
   Ban,
   Check,
   Trash2,
+  Flame,
 } from "lucide-react";
 import { clsx } from "clsx";
 import type {
@@ -35,6 +34,7 @@ import type {
   NoteAttachment,
   NoteColor,
   NoteDraft,
+  NotePriority,
 } from "@/lib/types/note";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
@@ -79,13 +79,9 @@ type NoteEditorProps = {
 };
 
 export function NoteEditor({ note, onClose }: NoteEditorProps) {
-  // Read-only mode for archived notes
-  const isReadOnly = note.archived;
-
   const {
     updateNote,
     togglePin,
-    toggleArchive,
     removeAttachment,
     attachFiles,
     deleteNote,
@@ -121,7 +117,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   }, [backgroundImage, availableBackgrounds]);
 
   const [pinned, setPinned] = useState(note.pinned);
-  const [archived, setArchived] = useState(note.archived);
+  const [priority, setPriority] = useState<NotePriority>(note.priority ?? null);
+  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [existingAttachments, setExistingAttachments] = useState<NoteAttachment[]>(
     note.attachments,
   );
@@ -261,11 +258,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
   }, [note, updateNote]);
 
-  // Use auto-save hook (disabled for archived/read-only notes)
+  // Use auto-save hook
   const { status: saveStatus, flush: flushSave } = useAutoSave({
     data: autoSaveData,
     onSave: handleAutoSave,
-    enabled: !isReadOnly,
+    enabled: true,
     debounceMs: 1500,
   });
 
@@ -421,16 +418,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     // First flush any pending auto-save
     await flushSave();
 
-    // Handle pin/archive changes
+    // Handle pin changes
     const pinnedChanged = pinned !== note.pinned;
-    const archivedChanged = archived !== note.archived;
 
     if (pinnedChanged) {
       await togglePin(note.id, pinned);
     }
 
-    if (archivedChanged) {
-      await toggleArchive(note.id, archived);
+    // Handle priority changes
+    const priorityChanged = priority !== (note.priority ?? null);
+    if (priorityChanged) {
+      await updateNote(note.id, { priority });
     }
 
     // Handle attachments
@@ -525,13 +523,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     flushSave,
     pinned,
     note.pinned,
-    archived,
-    note.archived,
+    priority,
+    note.priority,
     removedAttachments,
     newAttachments,
     note.id,
     togglePin,
-    toggleArchive,
     removeAttachment,
     attachFiles,
     reminderEnabled,
@@ -776,17 +773,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           currentBackground && getTextColorClasses(currentBackground, 'body')
         )}>
           <div className="flex items-start gap-2">
-            {isReadOnly && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold shrink-0">
-                <Archive className="h-3.5 w-3.5" />
-                Archived
-              </div>
-            )}
             <input
               value={title}
-              onChange={(event) => !isReadOnly && setTitle(event.target.value)}
+              onChange={(event) => setTitle(event.target.value)}
               placeholder="Title"
-              readOnly={isReadOnly}
               className={clsx(
                 "w-full bg-transparent text-lg font-semibold focus:outline-none",
                 getTextColorClasses(currentBackground, 'title'),
@@ -794,15 +784,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   ? "placeholder:text-zinc-500"
                   : currentBackground
                     ? "placeholder:text-white/60"
-                    : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
-                isReadOnly && "cursor-default"
+                    : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
               )}
             />
             {/* Header actions */}
             <div className="flex items-center gap-2">
               {/* Pin button in its own glass pill */}
-              {!isReadOnly && (
-                <div className={clsx(
+              <div className={clsx(
                   "flex items-center px-1.5 py-1 rounded-full backdrop-blur-xl border",
                   currentBackground
                     ? currentBackground.brightness === 'dark'
@@ -814,19 +802,116 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     type="button"
                     onClick={() => setPinned((prev) => !prev)}
                     className={clsx(
-                      "h-8 w-8 rounded-full flex items-center justify-center transition",
+                      "h-7 w-7 rounded-full flex items-center justify-center transition",
                       pinned
                         ? "bg-[var(--color-primary)] text-white"
                         : getActionColorClasses(currentBackground),
                     )}
-                    aria-label={pinned ? "Unpin note" : "Pin note"}
+                    aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
                   >
-                    {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                    {pinned ? <CircleOff className="h-3.5 w-3.5" /> : <Target className="h-3.5 w-3.5" />}
                   </button>
                 </div>
-              )}
 
-              {/* Save status, archive, delete, close in glass pill */}
+              {/* Priority selector in its own glass pill */}
+              <div className="relative">
+                <div className={clsx(
+                    "flex items-center px-1.5 py-1 rounded-full backdrop-blur-xl border",
+                    currentBackground
+                      ? currentBackground.brightness === 'dark'
+                        ? "bg-white/10 border-white/20"
+                        : "bg-black/5 border-black/10"
+                      : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+                  )}>
+                    <button
+                      type="button"
+                      onClick={() => setShowPriorityPicker((prev) => !prev)}
+                      className={clsx(
+                        "h-7 w-7 rounded-full flex items-center justify-center transition",
+                        priority === "high"
+                          ? "bg-red-500/20 text-red-500"
+                          : priority === "medium"
+                            ? "bg-amber-500/20 text-amber-500"
+                            : priority === "low"
+                              ? "bg-blue-500/20 text-blue-500"
+                              : getActionColorClasses(currentBackground),
+                      )}
+                      aria-label="Set priority"
+                    >
+                      <Flame className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                {showPriorityPicker && (
+                  <div className="absolute top-10 right-0 z-50 flex flex-col gap-1 rounded-xl bg-zinc-900/95 border border-white/10 p-2 shadow-2xl backdrop-blur-xl min-w-[140px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("high");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        priority === "high"
+                          ? "bg-red-500/20 text-red-400"
+                          : "text-zinc-300 hover:bg-white/10"
+                      )}
+                    >
+                      <Flame className="h-4 w-4 text-red-500" />
+                      High
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("medium");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        priority === "medium"
+                          ? "bg-amber-500/20 text-amber-400"
+                          : "text-zinc-300 hover:bg-white/10"
+                      )}
+                    >
+                      <Flame className="h-4 w-4 text-amber-500" />
+                      Medium
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("low");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        priority === "low"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : "text-zinc-300 hover:bg-white/10"
+                      )}
+                    >
+                      <Flame className="h-4 w-4 text-blue-500" />
+                      Low
+                    </button>
+                    {priority && (
+                      <>
+                        <div className="h-px bg-white/10 my-1" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPriority(null);
+                            setShowPriorityPicker(false);
+                          }}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/10 transition"
+                        >
+                          <X className="h-4 w-4" />
+                          Clear
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Save status, delete, close in glass pill */}
               <div className={clsx(
                 "flex items-center gap-1 px-1.5 py-1 rounded-full backdrop-blur-xl border",
                 currentBackground
@@ -836,54 +921,37 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
               )}>
                 {/* Save status indicator - only render when saving/saved */}
-                {!isReadOnly && saveStatus !== "idle" && (
-                  <div className="flex items-center justify-center w-8 h-8">
+                {saveStatus !== "idle" && (
+                  <div className="flex items-center justify-center w-7 h-7">
                     {saveStatus === "saving" && (
                       <Loader2 className={clsx(
-                        "h-4 w-4 animate-spin",
+                        "h-3.5 w-3.5 animate-spin",
                         getTextColorClasses(currentBackground, 'muted')
                       )} />
                     )}
                     {saveStatus === "saved" && (
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-3.5 w-3.5 text-green-500" />
                     )}
                   </div>
                 )}
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => setArchived((prev) => !prev)}
-                    className={clsx(
-                      "h-8 w-8 rounded-full flex items-center justify-center transition",
-                      archived
-                        ? "bg-[var(--color-primary)] text-white"
-                        : getActionColorClasses(currentBackground),
-                    )}
-                    aria-label={archived ? "Unarchive note" : "Archive note"}
-                  >
-                    {archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                  </button>
-                )}
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className={clsx(
-                      "h-8 w-8 rounded-full flex items-center justify-center transition",
-                      currentBackground
-                        ? currentBackground.brightness === 'dark'
-                          ? "text-red-300 hover:bg-red-500/20 hover:text-red-200"
-                          : "text-red-500 hover:bg-red-500/10 hover:text-red-600"
-                        : "text-red-400 hover:bg-red-500/10 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
-                    )}
-                    aria-label="Delete note"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    currentBackground
+                      ? currentBackground.brightness === 'dark'
+                        ? "text-red-300 hover:bg-red-500/20 hover:text-red-200"
+                        : "text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                      : "text-red-400 hover:bg-red-500/10 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
+                  )}
+                  aria-label="Delete note"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
                 {/* Spacer */}
                 <div className={clsx(
-                  "w-px h-5",
+                  "w-px h-4",
                   currentBackground
                     ? currentBackground.brightness === 'dark'
                       ? "bg-white/20"
@@ -894,12 +962,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   type="button"
                   onClick={() => void handleFinalizeAndClose()}
                   className={clsx(
-                    "h-8 w-8 rounded-full flex items-center justify-center transition",
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
                     getActionColorClasses(currentBackground),
                   )}
                   aria-label="Close"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
@@ -910,9 +978,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               <textarea
                 ref={textareaRef}
                 value={body}
-                onChange={(event) => !isReadOnly && setBody(event.target.value)}
-                onSelect={isReadOnly ? undefined : handleTextSelect}
-                onContextMenu={isReadOnly ? undefined : handleContextMenu}
+                onChange={(event) => setBody(event.target.value)}
+                onSelect={handleTextSelect}
+                onContextMenu={handleContextMenu}
                 onBlur={() => {
                   // Delay clearing selection to allow button click
                   setTimeout(() => {
@@ -920,7 +988,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   }, 200);
                 }}
                 placeholder="Write your note…"
-                readOnly={isReadOnly}
                 className={clsx(
                   "min-h-[40vh] sm:min-h-[45vh] md:min-h-[50vh] w-full resize-none overflow-hidden bg-transparent text-[15px] leading-7 tracking-[-0.01em] focus:outline-none transition-all duration-300",
                   getTextColorClasses(currentBackground, 'body'),
@@ -930,8 +997,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       ? "placeholder:text-white/50"
                       : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
                   isEnhancing && !selectedText && "blur-sm opacity-50",
-                  isEnhancing && selectedText && "opacity-0",
-                  isReadOnly && "cursor-default"
+                  isEnhancing && selectedText && "opacity-0"
                 )}
                 disabled={isEnhancing}
               />
@@ -1277,39 +1343,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               ? "bg-black/30 backdrop-blur-sm border-white/10"
               : clsx(currentColorConfig.footerClass, "border-zinc-200 dark:border-zinc-700/50")
         )}>
-          {isReadOnly ? (
-            /* Read-only mode: Only show Unarchive button */
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                Unarchive this note to edit it
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
-                  onClick={onClose}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await toggleArchive(note.id, false);
-                    onClose();
-                  }}
-                  className="rounded-full bg-amber-500 px-5 py-1.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/20 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500 flex items-center gap-2"
-                >
-                  <ArchiveRestore className="h-4 w-4" />
-                  Unarchive
-                </button>
-              </div>
-            </div>
-          ) : (
-          <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Glass pill toolbar */}
             <div className={clsx(
-              "flex items-center gap-1 px-2 py-1.5 rounded-full backdrop-blur-xl border",
+              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
               currentBackground
                 ? currentBackground.brightness === 'dark'
                   ? "bg-white/10 border-white/20"
@@ -1345,25 +1382,25 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   });
                 }}
                 className={clsx(
-                  "h-8 w-8 rounded-full flex items-center justify-center transition",
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
                   mode === "checklist"
                     ? "bg-[var(--color-primary)] text-white"
                     : getActionColorClasses(currentBackground)
                 )}
                 aria-label="Toggle checklist mode"
               >
-                <CheckSquare className="h-4 w-4" />
+                <CheckSquare className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
                 className={clsx(
-                  "h-8 w-8 rounded-full flex items-center justify-center transition",
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
                   getActionColorClasses(currentBackground)
                 )}
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Add images"
               >
-                <ImageIcon className="h-4 w-4" />
+                <ImageIcon className="h-3.5 w-3.5" />
               </button>
               <div className="relative">
                 <button
@@ -1374,14 +1411,14 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalculator(false);
                   }}
                   className={clsx(
-                    "h-8 w-8 rounded-full flex items-center justify-center transition",
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
                     showPalette
                       ? "bg-[var(--color-primary)] text-white"
                       : getActionColorClasses(currentBackground),
                   )}
                   aria-label="Change color"
                 >
-                  <Palette className="h-4 w-4" />
+                  <Palette className="h-3.5 w-3.5" />
                 </button>
                 {showPalette ? (
                   <>
@@ -1428,7 +1465,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowCalculator(false);
                   }}
                   className={clsx(
-                    "h-8 w-8 rounded-full flex items-center justify-center transition",
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
                     showBackgroundPicker || backgroundImage
                       ? "bg-[var(--color-primary)] text-white"
                       : getActionColorClasses(currentBackground),
@@ -1436,7 +1473,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   aria-label="Change background"
                   title="Change background image"
                 >
-                  <ImagePlus className="h-4 w-4" />
+                  <ImagePlus className="h-3.5 w-3.5" />
                 </button>
                 {showBackgroundPicker ? (
                   <>
@@ -1550,14 +1587,14 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   setShowCalculator(false);
                 }}
                 className={clsx(
-                  "h-8 w-8 rounded-full flex items-center justify-center transition",
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
                   showLabelPicker
                     ? "bg-[var(--color-primary)] text-white"
                     : getActionColorClasses(currentBackground),
                 )}
                 aria-label="Manage labels"
               >
-                <Tag className="h-4 w-4" />
+                <Tag className="h-3.5 w-3.5" />
               </button>
               {/* Calculator */}
               <div className="relative">
@@ -1569,7 +1606,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowLabelPicker(false);
                   }}
                   className={clsx(
-                    "h-8 w-8 rounded-full flex items-center justify-center transition",
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
                     showCalculator
                       ? "bg-[var(--color-primary)] text-white"
                       : getActionColorClasses(currentBackground),
@@ -1577,7 +1614,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   aria-label="Calculator"
                   title="Open calculator"
                 >
-                  <Calculator className="h-4 w-4" />
+                  <Calculator className="h-3.5 w-3.5" />
                 </button>
                 {showCalculator && (
                   <>
@@ -1603,7 +1640,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </div>
               {/* Separator */}
               <div className={clsx(
-                "w-px h-5",
+                "w-px h-4",
                 currentBackground
                   ? currentBackground.brightness === 'dark'
                     ? "bg-white/20"
@@ -1616,14 +1653,14 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 onClick={handleUndo}
                 disabled={bodyHistory.length === 0}
                 className={clsx(
-                  "h-8 w-8 rounded-full flex items-center justify-center transition",
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
                   getActionColorClasses(currentBackground),
                   bodyHistory.length === 0 && "opacity-30 cursor-not-allowed"
                 )}
                 aria-label="Undo"
                 title={bodyHistory.length > 0 ? `Undo (${bodyHistory.length} available)` : "Nothing to undo"}
               >
-                <Undo2 className="h-4 w-4" />
+                <Undo2 className="h-3.5 w-3.5" />
               </button>
               {/* AI Enhance button */}
               {mode === "text" && body.trim() && (
@@ -1632,7 +1669,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   onClick={() => setShowEnhanceMenu((prev) => !prev)}
                   disabled={isEnhancing}
                   className={clsx(
-                    "transition-all flex items-center gap-1.5 rounded-full h-8 px-2.5",
+                    "transition-all flex items-center gap-1.5 rounded-full h-7 px-2.5",
                     isEnhancing
                       ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
                       : selectedText
@@ -1648,12 +1685,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 >
                   {isEnhancing ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       <span className="text-xs font-medium">Enhancing...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4 w-4" />
+                      <Sparkles className="h-3.5 w-3.5" />
                       <span className="text-xs font-medium">
                         {selectedText ? "Selected" : "All"}
                       </span>
@@ -1665,7 +1702,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
             {/* Glass pill for space selector and done */}
             <div className={clsx(
-              "flex items-center gap-1 px-2 py-1.5 rounded-full backdrop-blur-xl border",
+              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
               currentBackground
                 ? currentBackground.brightness === 'dark'
                   ? "bg-white/10 border-white/20"
@@ -1684,7 +1721,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       setShowCalculator(false);
                     }}
                     className={clsx(
-                      "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition",
+                      "h-7 flex items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition",
                       showSpacePicker
                         ? "bg-[var(--color-primary)] text-white"
                         : getActionColorClasses(currentBackground)
@@ -1772,7 +1809,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 type="button"
                 onClick={() => void handleFinalizeAndClose()}
                 className={clsx(
-                  "px-2.5 py-1 rounded-full text-xs font-medium transition",
+                  "h-7 px-2.5 rounded-full text-xs font-medium transition flex items-center",
                   getActionColorClasses(currentBackground)
                 )}
               >
@@ -1908,8 +1945,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </div>
             </div>
           ) : null}
-          </>
-          )}
         </div>
 
         {/* Hidden file input - inside modal to prevent click propagation issues */}

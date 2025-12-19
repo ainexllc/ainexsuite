@@ -374,15 +374,23 @@ export function WorkspaceLayout({
       )}
 
       {/* Main Content - adjusts padding based on header visibility and insights expanded state */}
+      {/* When expanded: panel height (100-180px responsive) + tab handle (28-36px responsive) + accent line (2px) */}
       <main
-        className="flex-1 transition-[padding-top] duration-300"
-        style={{
-          paddingTop: isNavVisible
-            ? (insightsSections && isInsightsExpanded ? 'calc(4rem + 180px)' : 'calc(4rem + 28px)')
-            : (insightsSections && isInsightsExpanded ? '180px' : '28px')
-        }}
+        className={`flex-1 transition-[padding-top] duration-300 ${
+          insightsSections
+            ? isInsightsExpanded
+              ? isNavVisible
+                ? 'pt-[calc(4rem+132px)] sm:pt-[calc(4rem+160px)] lg:pt-[calc(4rem+180px)] xl:pt-[calc(4rem+200px)] 2xl:pt-[calc(4rem+220px)]'
+                : 'pt-[132px] sm:pt-[160px] lg:pt-[180px] xl:pt-[200px] 2xl:pt-[220px]'
+              : isNavVisible
+                ? 'pt-[calc(4rem+24px)] sm:pt-[calc(4rem+36px)]'
+                : 'pt-[24px] sm:pt-[36px]'
+            : isNavVisible
+              ? 'pt-16'
+              : 'pt-0'
+        }`}
       >
-        <div className="mx-auto max-w-7xl px-4 pt-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
+        <div className="mx-auto max-w-7xl px-4 pt-2 sm:pt-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
           {children}
         </div>
       </main>

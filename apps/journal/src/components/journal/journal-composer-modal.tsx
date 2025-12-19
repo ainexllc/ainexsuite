@@ -429,25 +429,29 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
         </div>
       }
     >
-      {/* Journal Form */}
-      <BackgroundProvider brightness={currentBackground?.brightness || null}>
-        <JournalForm
-          ref={formRef}
-          initialData={{
-            title: '',
-            content: '',
-            tags: [],
-            mood: 'neutral',
-            links: [],
-            isPrivate: false,
-            isDraft: false,
-          }}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          hideButtons={true}
-          hideTitle={true}
-        />
-      </BackgroundProvider>
+      {/* Journal Form with spiral binding effect */}
+      <div className="journal-spiral-binding journal-spiral-modal">
+        <div className="journal-spiral-content">
+          <BackgroundProvider brightness={currentBackground?.brightness || null}>
+            <JournalForm
+              ref={formRef}
+              initialData={{
+                title: '',
+                content: '',
+                tags: [],
+                mood: 'neutral',
+                links: [],
+                isPrivate: false,
+                isDraft: false,
+              }}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+              hideButtons={true}
+              hideTitle={true}
+            />
+          </BackgroundProvider>
+        </div>
+      </div>
     </EntryEditorShell>
   );
 }

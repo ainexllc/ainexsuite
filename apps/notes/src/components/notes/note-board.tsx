@@ -5,18 +5,16 @@ import { FileText } from "lucide-react";
 import Masonry from "react-masonry-css";
 import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { NoteCard } from "@/components/notes/note-card";
+import { ColumnSelector } from "@/components/notes/column-selector";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
 
-const masonryBreakpoints = {
-  default: 2,
-  640: 1,
-};
+const SKELETON_BREAKPOINTS = { default: 2, 640: 1 };
 
 function NotesSkeleton() {
   return (
     <Masonry
-      breakpointCols={masonryBreakpoints}
+      breakpointCols={SKELETON_BREAKPOINTS}
       className="flex -ml-4 w-auto"
       columnClassName="pl-4 bg-clip-padding"
     >
@@ -33,6 +31,17 @@ function NotesSkeleton() {
 export function NoteBoard() {
   const { pinned, others, loading, notes, searchQuery } = useNotes();
   const { preferences } = usePreferences();
+
+  // Separate breakpoints for Focus and Library sections
+  const focusBreakpoints = useMemo(() => ({
+    default: preferences.focusColumns || 2,
+    640: 1,
+  }), [preferences.focusColumns]);
+
+  const libraryBreakpoints = useMemo(() => ({
+    default: preferences.libraryColumns || 2,
+    640: 1,
+  }), [preferences.libraryColumns]);
 
   // Helper to get time from Date or Firestore Timestamp
   const getTime = (date: Date | { toDate: () => Date } | undefined) => {
@@ -53,9 +62,6 @@ export function NoteBoard() {
 
   const hasNotes = useMemo(() => sortedPinned.length + sortedOthers.length > 0, [sortedPinned, sortedOthers]);
 
-  // Use preferences directly
-  const viewMode = preferences.viewMode;
-
   return (
     <div className="space-y-1 lg:px-0 cq-board">
       {loading ? (
@@ -63,50 +69,42 @@ export function NoteBoard() {
       ) : hasNotes ? (
         <div className="space-y-10">
           {sortedPinned.length ? (
-            <ListSection title="Pinned" count={sortedPinned.length}>
-              {viewMode === "list" ? (
-                <div className="space-y-2">
-                  {sortedPinned.map((note) => (
-                    <NoteCard key={note.id} note={note} viewMode={viewMode} />
-                  ))}
-                </div>
-              ) : (
-                <Masonry
-                  breakpointCols={masonryBreakpoints}
-                  className="flex -ml-4 w-auto"
-                  columnClassName="pl-4 bg-clip-padding"
-                >
-                  {sortedPinned.map((note) => (
-                    <div key={note.id} className="mb-4">
-                      <NoteCard note={note} viewMode={viewMode} />
-                    </div>
-                  ))}
-                </Masonry>
-              )}
+            <ListSection
+              title="Focus"
+              count={sortedPinned.length}
+              action={<ColumnSelector section="focus" />}
+            >
+              <Masonry
+                breakpointCols={focusBreakpoints}
+                className="flex -ml-4 w-auto"
+                columnClassName="pl-4 bg-clip-padding"
+              >
+                {sortedPinned.map((note) => (
+                  <div key={note.id} className="mb-4">
+                    <NoteCard note={note} />
+                  </div>
+                ))}
+              </Masonry>
             </ListSection>
           ) : null}
 
           {sortedOthers.length ? (
-            <ListSection title="All Notes" count={sortedPinned.length ? sortedOthers.length : undefined}>
-              {viewMode === "list" ? (
-                <div className="space-y-2">
-                  {sortedOthers.map((note) => (
-                    <NoteCard key={note.id} note={note} viewMode={viewMode} />
-                  ))}
-                </div>
-              ) : (
-                <Masonry
-                  breakpointCols={masonryBreakpoints}
-                  className="flex -ml-4 w-auto"
-                  columnClassName="pl-4 bg-clip-padding"
-                >
-                  {sortedOthers.map((note) => (
-                    <div key={note.id} className="mb-4">
-                      <NoteCard note={note} viewMode={viewMode} />
-                    </div>
-                  ))}
-                </Masonry>
-              )}
+            <ListSection
+              title="Library"
+              count={sortedPinned.length ? sortedOthers.length : undefined}
+              action={<ColumnSelector section="library" />}
+            >
+              <Masonry
+                breakpointCols={libraryBreakpoints}
+                className="flex -ml-4 w-auto"
+                columnClassName="pl-4 bg-clip-padding"
+              >
+                {sortedOthers.map((note) => (
+                  <div key={note.id} className="mb-4">
+                    <NoteCard note={note} />
+                  </div>
+                ))}
+              </Masonry>
             </ListSection>
           ) : null}
         </div>

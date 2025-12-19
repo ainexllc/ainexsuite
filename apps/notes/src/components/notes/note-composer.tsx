@@ -9,8 +9,8 @@ import {
   CalendarClock,
   Calculator,
   Palette,
-  Pin,
-  PinOff,
+  Target,
+  CircleOff,
   Plus,
   BellRing,
   Tag,
@@ -21,10 +21,11 @@ import {
   FolderOpen,
   ChevronDown,
   Check,
+  Flame,
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useNotes } from "@/components/providers/notes-provider";
-import type { ChecklistItem, NoteColor } from "@/lib/types/note";
+import type { ChecklistItem, NoteColor, NotePriority } from "@/lib/types/note";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { useLabels } from "@/components/providers/labels-provider";
 import { QUICK_CAPTURE_EVENT } from "@/lib/constants/events";
@@ -74,7 +75,8 @@ export function NoteComposer() {
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [color, setColor] = useState<NoteColor>("default");
   const [pinned, setPinned] = useState(false);
-  const [archived, setArchived] = useState(false);
+  const [priority, setPriority] = useState<NotePriority>(null);
+  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Auto-create: track created note ID for auto-save
@@ -174,7 +176,8 @@ export function NoteComposer() {
     setChecklist([]);
     setColor("default");
     setPinned(false);
-    setArchived(false);
+    setPriority(null);
+    setShowPriorityPicker(false);
     setAttachments((prev) => {
       prev.forEach((item) => URL.revokeObjectURL(item.preview));
       return [];
@@ -216,6 +219,7 @@ export function NoteComposer() {
           checklist: mode === "checklist" ? checklist : [],
           color,
           pinned: false,
+          priority: null,
           archived: false,
           labelIds: [],
           reminderAt: null,
@@ -388,6 +392,7 @@ export function NoteComposer() {
           checklist: mode === "checklist" ? checklist : [],
           color,
           pinned: false,
+          priority: null,
           archived: false,
           labelIds: selectedLabelIds,
           reminderAt: null,
@@ -408,11 +413,11 @@ export function NoteComposer() {
     try {
       setIsSubmitting(true);
 
-      // Finalize: handle pin, archive, attachments, reminders
+      // Finalize: handle pin, priority, attachments, reminders
       const updates: Record<string, unknown> = {};
 
       if (pinned) updates.pinned = true;
-      if (archived) updates.archived = true;
+      if (priority) updates.priority = priority;
 
       // Save any final state (in case auto-save didn't catch it)
       updates.title = title.trim();
@@ -475,7 +480,7 @@ export function NoteComposer() {
     color,
     selectedLabelIds,
     pinned,
-    archived,
+    priority,
     updateNote,
     reminderEnabled,
     reminderFireAt,
@@ -648,7 +653,7 @@ export function NoteComposer() {
   return (
     <section className="w-full">
       {!expanded ? (
-        <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+        <div className="flex w-full items-center gap-2 rounded-full border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
           <button
             type="button"
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
@@ -664,11 +669,11 @@ export function NoteComposer() {
                 e.stopPropagation();
                 setShowSpacePicker((prev) => !prev);
               }}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-full text-sm font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
-              <FolderOpen className="h-3.5 w-3.5" />
+              <FolderOpen className="h-4 w-4" />
               <span className="hidden sm:inline max-w-[80px] truncate">{currentSpaceName}</span>
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-3.5 w-3.5" />
             </button>
             {showSpacePicker && (
               <>
@@ -743,10 +748,104 @@ export function NoteComposer() {
                     ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
                     : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
                 )}
-                aria-label={pinned ? "Unpin note" : "Pin note"}
+                aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
               >
-                {pinned ? <PinOff className="h-5 w-5" /> : <Pin className="h-5 w-5" />}
+                {pinned ? <CircleOff className="h-5 w-5" /> : <Target className="h-5 w-5" />}
               </button>
+              {/* Priority Selector */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPriorityPicker((prev) => !prev);
+                    setShowPalette(false);
+                    setShowLabelPicker(false);
+                    setShowCalculator(false);
+                    setShowEnhanceMenu(false);
+                  }}
+                  className={clsx(
+                    "p-2 rounded-full transition-colors",
+                    priority === "high"
+                      ? "text-red-500 bg-red-500/10"
+                      : priority === "medium"
+                        ? "text-amber-500 bg-amber-500/10"
+                        : priority === "low"
+                          ? "text-blue-500 bg-blue-500/10"
+                          : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                  )}
+                  aria-label="Set priority"
+                >
+                  <Flame className="h-5 w-5" />
+                </button>
+                {showPriorityPicker && (
+                  <div className="absolute top-12 right-0 z-30 flex flex-col gap-1 rounded-xl bg-surface-elevated/95 p-2 shadow-floating backdrop-blur-xl min-w-[140px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("high");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        priority === "high"
+                          ? "bg-red-500/20 text-red-500"
+                          : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      )}
+                    >
+                      <Flame className="h-4 w-4 text-red-500" />
+                      High
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("medium");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        priority === "medium"
+                          ? "bg-amber-500/20 text-amber-500"
+                          : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      )}
+                    >
+                      <Flame className="h-4 w-4 text-amber-500" />
+                      Medium
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("low");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        priority === "low"
+                          ? "bg-blue-500/20 text-blue-500"
+                          : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      )}
+                    >
+                      <Flame className="h-4 w-4 text-blue-500" />
+                      Low
+                    </button>
+                    {priority && (
+                      <>
+                        <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPriority(null);
+                            setShowPriorityPicker(false);
+                          }}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                        >
+                          <X className="h-4 w-4" />
+                          Clear
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => void handleClose()}

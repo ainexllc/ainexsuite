@@ -159,6 +159,14 @@ export async function updateNote(
     payload.backgroundOverlay = updates.backgroundOverlay;
   }
 
+  if (updates.pinned !== undefined) {
+    payload.pinned = updates.pinned;
+  }
+
+  if (updates.priority !== undefined) {
+    payload.priority = updates.priority;
+  }
+
   if (updates.labelIds !== undefined) {
     payload.labelIds = updates.labelIds;
   }

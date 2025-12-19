@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth } from "@ainexsuite/auth";
 import type { UserPreference } from "@/lib/types/settings";
 import {
   DEFAULT_PREFERENCES,
@@ -38,14 +38,21 @@ const INITIAL_PREFERENCES: UserPreference = {
 };
 
 export function PreferencesProvider({ children }: PreferencesProviderProps) {
-  const { status, user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [preferences, setPreferences] = useState<UserPreference>(INITIAL_PREFERENCES);
   const [loading, setLoading] = useState(true);
 
-  const userId = user?.id ?? null;
+  // The shared auth package uses `uid`, not `id`
+  const userId = user?.uid ?? null;
 
   useEffect(() => {
-    if (status !== "authenticated" || !userId) {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return;
+    }
+
+    // No user = not authenticated
+    if (!userId) {
       setPreferences(INITIAL_PREFERENCES);
       setLoading(false);
       return;
@@ -59,7 +66,7 @@ export function PreferencesProvider({ children }: PreferencesProviderProps) {
     });
 
     return () => unsubscribe();
-  }, [status, userId]);
+  }, [authLoading, userId]);
 
   const handleUpdate = useCallback(
     async (updates: Partial<Omit<UserPreference, "id" | "createdAt" | "updatedAt">>) => {

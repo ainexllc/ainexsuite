@@ -231,49 +231,54 @@ export function JournalEntryViewer({ entry, onClose, onEdit }: JournalEntryViewe
         </div>
       }
     >
-      {/* Metadata row */}
-      <div className={clsx(
-        "flex flex-wrap items-center gap-4 text-sm mb-4",
-        currentBackground
-          ? getTextColorClasses(currentBackground, 'muted')
-          : "text-zinc-500 dark:text-zinc-400"
-      )}>
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          <span>{formatDate(new Date(entry.createdAt))}</span>
-        </div>
-
-        {entry.mood && MoodIcon && (
+      {/* Spiral binding wrapper */}
+      <div className="journal-spiral-binding journal-spiral-modal">
+        <div className="journal-spiral-content">
+          {/* Metadata row */}
           <div className={clsx(
-            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border",
+            "flex flex-wrap items-center gap-4 text-sm mb-4",
+            currentBackground
+              ? getTextColorClasses(currentBackground, 'muted')
+              : "text-zinc-500 dark:text-zinc-400"
+          )}>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>{formatDate(new Date(entry.createdAt))}</span>
+            </div>
+
+            {entry.mood && MoodIcon && (
+              <div className={clsx(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border",
+                currentBackground
+                  ? currentBackground.brightness === 'dark'
+                    ? "bg-white/10 border-white/20"
+                    : "bg-black/5 border-black/10"
+                  : "bg-white/5 dark:bg-white/5 border-zinc-200 dark:border-zinc-700"
+              )}>
+                <MoodIcon className="h-4 w-4" />
+                <span>{getMoodLabel(entry.mood)}</span>
+              </div>
+            )}
+
+            {entry.isDraft && (
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                Draft
+              </span>
+            )}
+          </div>
+
+          {/* Content - images are embedded inline via the rich text editor */}
+          <div className={clsx(
+            "prose prose-sm sm:prose max-w-none min-h-[300px]",
             currentBackground
               ? currentBackground.brightness === 'dark'
-                ? "bg-white/10 border-white/20"
-                : "bg-black/5 border-black/10"
-              : "bg-white/5 dark:bg-white/5 border-zinc-200 dark:border-zinc-700"
+                ? "prose-invert"
+                : ""
+              : "dark:prose-invert"
           )}>
-            <MoodIcon className="h-4 w-4" />
-            <span>{getMoodLabel(entry.mood)}</span>
+            <RichTextViewer content={entry.content} />
           </div>
-        )}
-
-        {entry.isDraft && (
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-            Draft
-          </span>
-        )}
-      </div>
-
-      {/* Content - images are embedded inline via the rich text editor */}
-      <div className={clsx(
-        "prose prose-sm sm:prose max-w-none min-h-[300px]",
-        currentBackground
-          ? currentBackground.brightness === 'dark'
-            ? "prose-invert"
-            : ""
-          : "dark:prose-invert"
-      )}>
-        <RichTextViewer content={entry.content} />
+        </div>
       </div>
     </EntryEditorShell>
   );

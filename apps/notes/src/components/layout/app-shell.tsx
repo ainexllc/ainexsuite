@@ -256,7 +256,7 @@ export function AppShell({ children }: AppShellProps) {
                             ) : (
                               <ListChecks className="h-3.5 w-3.5" aria-hidden />
                             )}
-                            {activity.pinned ? "Pinned" : activity.type === "checklist"
+                            {activity.pinned ? "Focus" : activity.type === "checklist"
                               ? "Checklist"
                               : "Note"}
                           </span>
@@ -276,7 +276,7 @@ export function AppShell({ children }: AppShellProps) {
 
                   <footer className="rounded-2xl bg-surface-muted px-4 py-3 text-xs text-muted">
                     <span>
-                      {pinned.length} pinned · {others.length} in progress
+                      {pinned.length} in focus · {others.length} in library
                     </span>
                   </footer>
                 </div>

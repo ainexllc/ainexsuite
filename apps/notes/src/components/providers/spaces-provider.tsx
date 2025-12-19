@@ -14,5 +14,5 @@ export const { SpacesProvider, useSpaces } = createSpacesProvider<NoteSpace>({
     name: "My Notes",
     type: "personal",
   },
-  allowedTypes: ["personal", "family", "work"],
+  allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
 });

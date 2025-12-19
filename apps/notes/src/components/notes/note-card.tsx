@@ -4,29 +4,27 @@
 
 import { useMemo, useState } from "react";
 import {
-  Archive,
-  Pin,
+  Target,
   Trash2,
   Users,
+  Flame,
 } from "lucide-react";
 import { clsx } from "clsx";
 import { ConfirmationDialog } from "@ainexsuite/ui";
 import type { Note } from "@/lib/types/note";
-import type { ViewMode } from "@/lib/types/settings";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { NoteEditor } from "@/components/notes/note-editor";
 import { useLabels } from "@/components/providers/labels-provider";
-import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
+import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
 import { useBackgrounds } from "@/hooks/use-backgrounds";
 
 type NoteCardProps = {
   note: Note;
-  viewMode?: ViewMode;
 };
 
-export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
-  const { togglePin, toggleArchive, deleteNote } = useNotes();
+export function NoteCard({ note }: NoteCardProps) {
+  const { togglePin, deleteNote } = useNotes();
   const { labels } = useLabels();
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
   const [isEditing, setIsEditing] = useState(false);
@@ -77,11 +75,6 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
     setShowDeleteConfirm(false);
   };
 
-  const handleArchive = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    await toggleArchive(note.id, !note.archived);
-  };
-
   const handlePin = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     await togglePin(note.id, !note.pinned);
@@ -96,9 +89,7 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           "border border-zinc-200 dark:border-zinc-800",
           "group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
-          viewMode === "list"
-            ? "flex items-start gap-4 px-5 py-3"
-            : "break-inside-avoid px-6 py-6",
+          "break-inside-avoid px-6 py-6",
         )}
         onClick={() => {
           setIsEditing(true);
@@ -119,45 +110,22 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           </div>
         )}
 
-        {/* Corner Pin Badge - clickable to unpin */}
+        {/* Corner Focus Badge - clickable to remove from focus */}
         {note.pinned && (
           <button
             type="button"
             onClick={handlePin}
             className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
-            aria-label="Unpin note"
+            aria-label="Remove from Focus"
           >
             <div className="absolute top-0 right-0 bg-amber-500 group-hover/pin:bg-amber-600 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-colors" />
-            <Pin className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
+            <Target className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
           </button>
         )}
 
-        {/* Archived Badge */}
-        {note.archived && (
-          <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-semibold">
-            <Archive className="h-3 w-3" />
-            Archived
-          </div>
-        )}
-
         <div className="relative z-10 w-full">
-          {/* Pin button - only shows on unpinned notes */}
-          {!note.pinned && (
-            <button
-              type="button"
-              onClick={handlePin}
-              className="absolute right-2 top-2 z-20 hidden rounded-full p-2 transition group-hover:flex bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-              aria-label="Pin note"
-            >
-              <Pin className="h-4 w-4" />
-            </button>
-          )}
-
           <div
-            className={clsx(
-              "overflow-y-auto pr-1",
-              viewMode === "list" ? "flex-1 max-h-24" : "max-h-[480px]",
-            )}
+            className="overflow-y-auto pr-1 max-h-[480px]"
           >
             {note.title ? (
               <h3 className={clsx(
@@ -254,54 +222,77 @@ export function NoteCard({ note, viewMode = "masonry" }: NoteCardProps) {
           <footer className={clsx("mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t-0")}>
             {/* Glass pill for date/shared info */}
             <div className={clsx(
-              "flex items-center gap-2 h-8 px-2.5 rounded-full backdrop-blur-xl border",
-              backgroundImage
-                ? backgroundImage.brightness === 'dark'
-                  ? "bg-white/10 border-white/20"
-                  : "bg-black/5 border-black/10"
-                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50",
-              getTextColorClasses(backgroundImage, 'muted')
-            )}>
-              {note.sharedWithUserIds?.length ? (
-                <span className="inline-flex items-center gap-1 text-[11px]">
-                  <Users className="h-3 w-3" />
-                  {note.sharedWithUserIds.length}
-                </span>
-              ) : null}
-              <div className="flex flex-col items-start leading-none">
-                <span className="text-[11px] font-medium">
-                  {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </span>
-                <span className="text-[9px] opacity-70">
-                  {note.updatedAt.getTime() !== note.createdAt.getTime() ? 'Updated' : 'Created'}
-                </span>
-              </div>
-            </div>
-            {/* Glass pill for actions */}
-            <div className={clsx(
-              "flex items-center gap-0.5 h-8 px-0.5 rounded-full backdrop-blur-xl border",
+              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
               backgroundImage
                 ? backgroundImage.brightness === 'dark'
                   ? "bg-white/10 border-white/20"
                   : "bg-black/5 border-black/10"
                 : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
             )}>
-              <button
-                type="button"
-                onClick={handleArchive}
-                className={clsx(
-                  "h-6 w-6 rounded-full flex items-center justify-center transition",
-                  getActionColorClasses(backgroundImage)
-                )}
-                aria-label={note.archived ? "Unarchive note" : "Archive note"}
-              >
-                <Archive className="h-3.5 w-3.5" />
-              </button>
+              {note.sharedWithUserIds?.length ? (
+                <span className={clsx(
+                  "h-7 flex items-center gap-1.5 rounded-full px-2.5 text-xs font-medium",
+                  getTextColorClasses(backgroundImage, 'muted')
+                )}>
+                  <Users className="h-3.5 w-3.5" />
+                  {note.sharedWithUserIds.length}
+                </span>
+              ) : null}
+              <span className={clsx(
+                "h-7 flex items-center px-2.5 rounded-full text-xs font-medium",
+                getTextColorClasses(backgroundImage, 'muted')
+              )}>
+                {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                {' · '}
+                {note.updatedAt.getTime() !== note.createdAt.getTime() ? 'Edited' : 'Created'}
+              </span>
+            </div>
+            {/* Glass pill for actions */}
+            <div className={clsx(
+              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
+              backgroundImage
+                ? backgroundImage.brightness === 'dark'
+                  ? "bg-white/10 border-white/20"
+                  : "bg-black/5 border-black/10"
+                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+            )}>
+              {/* Priority Indicator */}
+              {note.priority && (
+                <div
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center",
+                    note.priority === "high" && "text-red-500",
+                    note.priority === "medium" && "text-amber-500",
+                    note.priority === "low" && "text-blue-500",
+                  )}
+                  title={`${note.priority.charAt(0).toUpperCase() + note.priority.slice(1)} priority`}
+                >
+                  <Flame className="h-3.5 w-3.5" />
+                </div>
+              )}
+              {/* Focus button - only shows on non-focused notes */}
+              {!note.pinned && (
+                <button
+                  type="button"
+                  onClick={handlePin}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    backgroundImage?.brightness === 'light'
+                      ? "text-amber-600 hover:bg-amber-500/20 hover:text-amber-700"
+                      : backgroundImage
+                        ? "text-amber-300 hover:bg-amber-500/30 hover:text-amber-200"
+                        : "text-amber-500 hover:bg-amber-500/20 hover:text-amber-600"
+                  )}
+                  aria-label="Add to Focus"
+                >
+                  <Target className="h-3.5 w-3.5" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleDeleteClick}
                 className={clsx(
-                  "h-6 w-6 rounded-full flex items-center justify-center transition",
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
                   backgroundImage?.brightness === 'light'
                     ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
                     : backgroundImage

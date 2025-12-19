@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useState, useEffect, useMemo } from "react";
-import { Sparkles, RefreshCw, Loader2, ChevronLeft, ChevronRight, Pause, Play, ArrowRight } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, ChevronLeft, ChevronRight, Pause, Play, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 /**
@@ -120,7 +120,7 @@ export interface AIInsightsPulldownProps {
   refreshDisabled?: boolean;
   /** Storage key for collapse state persistence */
   storageKey?: string;
-  /** Default expanded state (default: false - collapsed) */
+  /** Default expanded state (default: true - expanded for new users) */
   defaultExpanded?: boolean;
   /** Additional class names for the wrapper */
   className?: string;
@@ -152,7 +152,7 @@ export function AIInsightsPulldown({
   onRefresh,
   refreshDisabled = false,
   storageKey,
-  defaultExpanded = false,
+  defaultExpanded = true,
   className,
   onViewDetails,
   onExpandedChange,
@@ -398,13 +398,13 @@ export function AIInsightsPulldown({
                   {/* View Details button - responsive sizing */}
                   <button
                     onClick={onViewDetails}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1.5 sm:py-2 lg:py-2.5 xl:py-3 rounded-lg font-semibold text-xs sm:text-sm lg:text-base xl:text-lg text-white transition-all hover:scale-105 hover:shadow-lg"
+                    className="flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 xl:py-3 rounded-lg font-semibold text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-white transition-all hover:scale-105 hover:shadow-lg"
                     style={{
                       background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
                     }}
                   >
-                    <span className="hidden xs:inline">View</span> Details
-                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                    Details
+                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                   </button>
                 </div>
               </>
@@ -452,51 +452,54 @@ export function AIInsightsPulldown({
         </div>
       </div>
 
-      {/* Handle - Compact floating pill when collapsed, simple line when expanded */}
+      {/* Grabbable tab handle - pull down to expand */}
       <div className="flex justify-center relative z-10">
-        {isExpanded ? (
-          /* Simple handle line when expanded */
-          <button
-            onClick={toggleExpanded}
-            className="group flex items-center justify-center h-5 sm:h-6 px-4 sm:px-6 rounded-b-lg border border-t-0 transition-all duration-300"
-            style={{
-              backgroundColor: `${accentColor}20`,
-              borderColor: `${accentColor}40`,
-              boxShadow: `0 4px 15px ${accentColor}20`,
-            }}
+        <button
+          onClick={toggleExpanded}
+          className={cn(
+            "inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-b-lg sm:rounded-b-xl backdrop-blur-md border border-t-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-grab active:cursor-grabbing",
+            isExpanded
+              ? "bg-black/60 border-white/20"
+              : "bg-white/80 dark:bg-zinc-900/80"
+          )}
+          style={{ borderColor: isExpanded ? `${gradientFrom}40` : `${accentColor}30` }}
+        >
+          {/* Icon with accent background */}
+          <div
+            className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: `${accentColor}25` }}
           >
-            <div
-              className="w-8 sm:w-10 h-0.5 sm:h-1 rounded-full transition-all duration-300"
-              style={{
-                background: `linear-gradient(90deg, ${gradientFrom}, ${gradientTo})`,
-              }}
-            />
-          </button>
-        ) : (
-          /* Compact floating pill when collapsed - glass effect */
-          <button
-            onClick={toggleExpanded}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md bg-white/80 dark:bg-zinc-900/80 border shadow-sm hover:shadow-md transition-all duration-300"
-            style={{ borderColor: `${accentColor}30` }}
-          >
-            {/* Icon with accent background */}
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${accentColor}25` }}
-            >
-              {isLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" style={{ color: accentColor }} />
-              ) : (
-                <Sparkles className="h-3 w-3" style={{ color: accentColor }} />
-              )}
-            </div>
+            {isLoading ? (
+              <Loader2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 animate-spin" style={{ color: accentColor }} />
+            ) : (
+              <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3" style={{ color: accentColor }} />
+            )}
+          </div>
 
-            {/* Updated text */}
-            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-              {isLoading ? loadingMessage : timeAgo ? `Updated: ${timeAgo}` : "AI Insights"}
-            </span>
-          </button>
-        )}
+          {/* AI Insights text with updated time */}
+          <span className={cn(
+            "text-[10px] sm:text-xs font-medium whitespace-nowrap",
+            isExpanded ? "text-white/80" : "text-zinc-600 dark:text-zinc-400"
+          )}>
+            AI Insights
+            {lastUpdated && !isLoading && (
+              <span className={cn(
+                "hidden sm:inline",
+                isExpanded ? "text-white/50" : "text-zinc-400 dark:text-zinc-500"
+              )}>
+                {" · "}{timeAgo}
+              </span>
+            )}
+          </span>
+
+          {/* Chevron indicator */}
+          <ChevronDown
+            className={cn(
+              "h-2.5 w-2.5 sm:h-3 sm:w-3 transition-transform duration-300",
+              isExpanded ? "rotate-180 text-white/50" : "text-zinc-400"
+            )}
+          />
+        </button>
       </div>
 
     </div>
@@ -510,16 +513,19 @@ export function useInsightsPulldownExpanded(storageKey: string | undefined): boo
   const [isExpanded, setIsExpanded] = useState(() => {
     // Initialize synchronously from localStorage to avoid flash/race conditions
     if (typeof window !== "undefined" && storageKey) {
-      return localStorage.getItem(storageKey) === "true";
+      const stored = localStorage.getItem(storageKey);
+      // Default to true (expanded) for new users, respect stored preference otherwise
+      return stored === null ? true : stored === "true";
     }
-    return false;
+    return true;
   });
 
   // Update if storageKey changes
   useEffect(() => {
     if (storageKey) {
       const stored = localStorage.getItem(storageKey);
-      setIsExpanded(stored === "true");
+      // Default to true (expanded) for new users
+      setIsExpanded(stored === null ? true : stored === "true");
     }
   }, [storageKey]);
 

@@ -19,6 +19,8 @@ export const DEFAULT_PREFERENCES: Omit<UserPreference, "id" | "createdAt" | "upd
   smartSuggestions: true,
   focusModePinned: true,
   viewMode: "masonry",
+  focusColumns: 2,
+  libraryColumns: 2,
   workspaceBackground: null,
 };
 
@@ -89,6 +91,8 @@ function mapPreferenceSnapshot(
         : DEFAULT_PREFERENCES.focusModePinned,
     viewMode: data.viewMode ?? DEFAULT_PREFERENCES.viewMode,
     calendarView: data.calendarView,
+    focusColumns: (data.focusColumns ?? data.masonryColumns ?? DEFAULT_PREFERENCES.focusColumns) as typeof DEFAULT_PREFERENCES.focusColumns,
+    libraryColumns: (data.libraryColumns ?? data.masonryColumns ?? DEFAULT_PREFERENCES.libraryColumns) as typeof DEFAULT_PREFERENCES.libraryColumns,
     savedFilters: data.savedFilters
       ? toRuntimeFilters(data.savedFilters as StoredFilterValue)
       : undefined,

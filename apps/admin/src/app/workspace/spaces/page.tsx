@@ -77,8 +77,8 @@ const DEFAULT_SPACE_TYPES: SpaceTypeConfig[] = [
   { id: 'family', label: 'Family', description: 'Share with family members', icon: 'users', color: '#a855f7', bgColor: 'rgba(168,85,247,0.1)', borderColor: 'rgba(168,85,247,0.2)', enabled: true },
   { id: 'work', label: 'Work', description: 'Team collaboration', icon: 'briefcase', color: '#3b82f6', bgColor: 'rgba(59,130,246,0.1)', borderColor: 'rgba(59,130,246,0.2)', enabled: true },
   { id: 'couple', label: 'Couple', description: 'Share with your partner', icon: 'heart', color: '#ec4899', bgColor: 'rgba(236,72,153,0.1)', borderColor: 'rgba(236,72,153,0.2)', enabled: true },
-  { id: 'buddy', label: 'Buddy', description: 'Partner up with a friend', icon: 'dumbbell', color: '#f97316', bgColor: 'rgba(249,115,22,0.1)', borderColor: 'rgba(249,115,22,0.2)', enabled: true },
-  { id: 'squad', label: 'Squad', description: 'Team accountability', icon: 'users', color: '#10b981', bgColor: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.2)', enabled: true },
+  { id: 'buddy', label: 'Buddy', description: 'Accountability partner', icon: 'sparkles', color: '#f97316', bgColor: 'rgba(249,115,22,0.1)', borderColor: 'rgba(249,115,22,0.2)', enabled: true },
+  { id: 'squad', label: 'Team', description: 'Team collaboration', icon: 'users', color: '#10b981', bgColor: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.2)', enabled: true },
   { id: 'project', label: 'Project', description: 'Dedicated project space', icon: 'folder', color: '#6366f1', bgColor: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.2)', enabled: true },
 ];
 

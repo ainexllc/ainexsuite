@@ -2,7 +2,7 @@ import type { Timestamp } from "firebase/firestore";
 import type { FilterValue, SortConfig } from "@ainexsuite/ui";
 
 export type ReminderChannel = "email" | "sms" | "push";
-export type ViewMode = "masonry" | "list" | "calendar";
+export type ViewMode = "masonry" | "calendar";
 
 // Stored version of FilterValue with Timestamps for dates
 export type StoredFilterValue = Omit<FilterValue, 'dateRange'> & {
@@ -11,6 +11,8 @@ export type StoredFilterValue = Omit<FilterValue, 'dateRange'> & {
     end: Timestamp | null;
   };
 };
+
+export type MasonryColumns = 1 | 2 | 3 | 4;
 
 export type UserPreferenceDoc = {
   reminderChannels: ReminderChannel[];
@@ -22,6 +24,9 @@ export type UserPreferenceDoc = {
   focusModePinned: boolean;
   viewMode: ViewMode;
   calendarView?: "month" | "week";
+  masonryColumns?: MasonryColumns; // deprecated, kept for backwards compat
+  focusColumns?: MasonryColumns;
+  libraryColumns?: MasonryColumns;
   // Filter persistence
   savedFilters?: StoredFilterValue;
   savedSort?: SortConfig;
@@ -31,7 +36,7 @@ export type UserPreferenceDoc = {
   updatedAt: Timestamp;
 };
 
-export type UserPreference = Omit<UserPreferenceDoc, "createdAt" | "updatedAt" | "savedFilters"> & {
+export type UserPreference = Omit<UserPreferenceDoc, "createdAt" | "updatedAt" | "savedFilters" | "masonryColumns" | "focusColumns" | "libraryColumns"> & {
   id: string;
   createdAt: Date;
   updatedAt: Date;
@@ -40,4 +45,7 @@ export type UserPreference = Omit<UserPreferenceDoc, "createdAt" | "updatedAt" |
   savedFilters?: FilterValue;
   // Workspace background (can be null for no background)
   workspaceBackground: string | null;
+  // Masonry column counts (default 2)
+  focusColumns: MasonryColumns;
+  libraryColumns: MasonryColumns;
 };

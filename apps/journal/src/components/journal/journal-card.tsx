@@ -219,7 +219,9 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           'border border-zinc-200 dark:border-zinc-800',
           'group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200',
           'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md',
-          'break-inside-avoid px-6 py-6',
+          'break-inside-avoid py-6',
+          // Spiral notebook binding effect
+          'journal-spiral-binding',
         )}
         onClick={handleCardClick}
       >
@@ -255,7 +257,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </button>
         )}
 
-        <div className="relative z-10 w-full">
+        <div className="relative z-10 w-full journal-spiral-content pr-6">
           {/* Pin button - only shows on unpinned entries */}
           {!entry.pinned && (
             <button
@@ -378,7 +380,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </div>
 
           {/* Footer with actions */}
-          <footer className="mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl">
+          <footer className="mt-4 flex items-center justify-between pt-3 -mr-6 -mb-6 pr-6 pb-4 rounded-b-2xl">
             <div className={clsx(
               "flex items-center gap-2 text-[11px] uppercase tracking-wide",
               hasBackground

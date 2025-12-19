@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo, useCallback, useState } from 'react';
-import { List, LayoutGrid, Calendar, X, Inbox, Archive } from 'lucide-react';
-import { clsx } from 'clsx';
+import { LayoutGrid, Calendar, X } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
@@ -22,7 +21,6 @@ import { NoteFilterContent } from "@/components/notes/note-filter-content";
 import type { ViewMode } from "@/lib/types/settings";
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
-  { value: 'list', icon: List, label: 'List view' },
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
   { value: 'calendar', icon: Calendar, label: 'Calendar view' },
 ];
@@ -51,7 +49,7 @@ const NOTE_COLOR_MAP: Record<string, string> = {
 
 export default function NotesWorkspace() {
   const { preferences, updatePreferences } = usePreferences();
-  const { notes, filters, setFilters, sort, setSort, searchQuery, setSearchQuery, showArchived, setShowArchived } = useNotes();
+  const { notes, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
   const { labels } = useLabels();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -184,7 +182,7 @@ export default function NotesWorkspace() {
 
   return (
     <WorkspacePageLayout
-      composer={showArchived ? null : <NoteComposer />}
+      composer={<NoteComposer />}
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (
@@ -223,37 +221,9 @@ export default function NotesWorkspace() {
               onSortChange={setSort}
               sortOptions={SORT_OPTIONS}
               viewPosition="right"
-              viewTrailingContent={
-                <button
-                  onClick={() => setShowArchived(!showArchived)}
-                  className={clsx(
-                    'h-8 w-8 inline-flex items-center justify-center rounded-full transition-all',
-                    showArchived
-                      ? 'bg-[#f97316] text-white shadow-md'
-                      : 'text-zinc-400 hover:bg-white/10 hover:text-white'
-                  )}
-                  title={showArchived ? 'Exit archive view' : 'View archived notes'}
-                  aria-label={showArchived ? 'Exit archive view' : 'View archived notes'}
-                >
-                  <Inbox className="h-4 w-4" />
-                </button>
-              }
             />
           </div>
-          {showArchived && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300">
-              <Archive className="h-4 w-4" />
-              <span className="text-sm font-medium">Viewing archived notes</span>
-              <span className="text-xs text-amber-600 dark:text-amber-400">({notes.length} notes)</span>
-              <button
-                onClick={() => setShowArchived(false)}
-                className="ml-auto text-xs font-medium hover:underline"
-              >
-                Back to notes
-              </button>
-            </div>
-          )}
-          {filterChips.length > 0 && !showArchived && (
+          {filterChips.length > 0 && (
             <ActiveFilterChips
               chips={filterChips}
               onRemove={handleRemoveChip}

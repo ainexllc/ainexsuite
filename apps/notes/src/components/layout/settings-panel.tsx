@@ -10,7 +10,7 @@ import {
   Mail,
   Moon,
   Phone,
-  Pin,
+  Target,
   Shield,
   Sparkles,
 } from "lucide-react";
@@ -64,9 +64,9 @@ const PREFERENCE_TOGGLES = [
   },
   {
     key: "focusModePinned" as const,
-    label: "Pin favorites in Focus Mode",
-    description: "Keep pinned notes visible when you switch to Focus Mode.",
-    icon: Pin,
+    label: "Keep Focus notes visible",
+    description: "Keep your Focus notes visible when filtering or searching.",
+    icon: Target,
   },
 ];
 

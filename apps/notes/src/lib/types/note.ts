@@ -67,6 +67,8 @@ export type BackgroundOverlay =
   | "frost"     // Heavy frosted glass
   | "gradient"; // Dark gradient from bottom
 
+export type NotePriority = "high" | "medium" | "low" | null;
+
 export type ChecklistItem = {
   id: string;
   text: string;
@@ -110,6 +112,7 @@ export type NoteDoc = {
   backgroundImage?: string | null; // ID of a predefined background image
   backgroundOverlay?: BackgroundOverlay; // Overlay style for background images
   pinned: boolean;
+  priority?: NotePriority;
   archived: boolean;
   labelIds: string[];
   reminderAt?: Timestamp | null;
@@ -134,6 +137,7 @@ export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "not
   noteDate?: Date | null;
   deletedAt?: Date | null;
   sharedWith: NoteCollaborator[];
+  priority?: NotePriority;
 };
 
 export type NoteDraft = {
@@ -155,6 +159,9 @@ export type NoteDraft = {
   deletedAt?: Date | null;
   width?: number;
   height?: number;
+  pinned?: boolean;
+  priority?: NotePriority;
+  archived?: boolean;
 };
 
 export type LabelDoc = {

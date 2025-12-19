@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Plus, User, Users, Briefcase, Heart, Folder, Dumbbell, Sparkles } from 'lucide-react';
+import { ChevronDown, Plus, User, Users, Briefcase, Heart, Folder, Dumbbell, Sparkles, Settings2 } from 'lucide-react';
 import type { SpaceType } from '@ainexsuite/types';
 import { useSpacesConfig, type SpaceTypeConfig } from '../../hooks/use-spaces-config';
 
@@ -34,6 +34,8 @@ export interface SpaceSwitcherProps {
   onSpaceChange: (spaceId: string) => void;
   /** Callback when user clicks "Create New Space" */
   onCreateSpace?: () => void;
+  /** Callback when user clicks "Manage Spaces" */
+  onManageSpaces?: () => void;
   /** Label shown above the spaces list (default from admin config or "My Spaces") */
   spacesLabel?: string;
   /** Default name shown when no space is selected (default from admin config or "Personal") */
@@ -63,7 +65,7 @@ const SPACE_TYPE_ICONS: Record<SpaceType, typeof User> = {
   family: Users,
   work: Briefcase,
   couple: Heart,
-  buddy: Dumbbell,
+  buddy: Sparkles,
   squad: Users,
   project: Folder,
 };
@@ -87,6 +89,7 @@ export function SpaceSwitcher({
   currentSpaceId,
   onSpaceChange,
   onCreateSpace,
+  onManageSpaces,
   spacesLabel,
   defaultSpaceName,
   className = '',
@@ -224,15 +227,29 @@ export function SpaceSwitcher({
               })}
             </div>
 
-            {showCreateButton && (
+            {(showCreateButton || onManageSpaces) && (
               <div className="border-t border-outline-subtle p-1">
-                <button
-                  onClick={handleCreateSpace}
-                  className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-[#f97316] hover:bg-surface-hover ${transitionClass}`}
-                >
-                  <Plus className="h-4 w-4" />
-                  Create New Space
-                </button>
+                {showCreateButton && (
+                  <button
+                    onClick={handleCreateSpace}
+                    className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-[#f97316] hover:bg-surface-hover ${transitionClass}`}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create New Space
+                  </button>
+                )}
+                {onManageSpaces && (
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      onManageSpaces();
+                    }}
+                    className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-sm text-ink-600 hover:bg-surface-hover hover:text-ink-900 ${transitionClass}`}
+                  >
+                    <Settings2 className="h-4 w-4" />
+                    Manage Spaces
+                  </button>
+                )}
               </div>
             )}
           </div>
