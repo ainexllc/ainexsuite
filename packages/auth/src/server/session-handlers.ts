@@ -552,6 +552,7 @@ export async function POST(request: NextRequest) {
  * In production: verifies Firebase session cookie and creates custom token
  */
 export async function CustomTokenPOST(request: NextRequest) {
+  const corsHeaders = getCorsHeaders(request);
   const isDev = process.env.NODE_ENV === 'development';
 
   try {
@@ -571,7 +572,7 @@ export async function CustomTokenPOST(request: NextRequest) {
     if (!sessionCookie) {
       return NextResponse.json(
         { error: 'No session cookie found' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders }
       );
     }
 
@@ -586,7 +587,7 @@ export async function CustomTokenPOST(request: NextRequest) {
         if (!uid) {
           return NextResponse.json(
             { error: 'Invalid session cookie: no uid' },
-            { status: 401 }
+            { status: 401, headers: corsHeaders }
           );
         }
 
@@ -594,7 +595,7 @@ export async function CustomTokenPOST(request: NextRequest) {
         try {
           const adminAuth = getAdminAuth();
           const customToken = await adminAuth.createCustomToken(uid);
-          return NextResponse.json({ customToken });
+          return NextResponse.json({ customToken }, { headers: corsHeaders });
         } catch {
           // Admin SDK not configured or failed - fall back to devMode hydration
 
@@ -619,12 +620,12 @@ export async function CustomTokenPOST(request: NextRequest) {
             customToken: null,
             sessionCookie: updatedSessionCookie,
             devMode: true,
-          });
+          }, { headers: corsHeaders });
         }
       } catch (parseError) {
         return NextResponse.json(
           { error: 'Invalid session cookie format' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
     }
@@ -636,7 +637,7 @@ export async function CustomTokenPOST(request: NextRequest) {
     // Create custom token for this user
     const customToken = await adminAuth.createCustomToken(decodedClaims.uid);
 
-    return NextResponse.json({ customToken });
+    return NextResponse.json({ customToken }, { headers: corsHeaders });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('[CustomToken] Error:', errorMessage);
@@ -651,7 +652,26 @@ export async function CustomTokenPOST(request: NextRequest) {
 
     return NextResponse.json(
       { error: userMessage },
-      { status: 401 }
+      { status: 401, headers: corsHeaders }
     );
   }
+}
+
+/**
+ * OPTIONS /api/auth/custom-token
+ * Handle CORS preflight requests for custom-token endpoint
+ */
+export async function CustomTokenOPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin');
+  const isAllowed = isAllowedOrigin(origin);
+
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': isAllowed && origin ? origin : '',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }

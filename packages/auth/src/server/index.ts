@@ -4,7 +4,15 @@
  */
 
 export * from './admin';
-export * from './session-handlers';
+export {
+  GET,
+  POST,
+  PUT,
+  DELETE,
+  OPTIONS,
+  CustomTokenPOST,
+  CustomTokenOPTIONS,
+} from './session-handlers';
 
 // SSO status handler exports with prefixed names to avoid conflicts
 export {
