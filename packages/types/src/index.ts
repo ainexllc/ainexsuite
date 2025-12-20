@@ -39,3 +39,6 @@ export * from './subscription';
 
 // Background types
 export * from './background';
+
+// Cover types
+export * from './cover';

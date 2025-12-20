@@ -30,6 +30,8 @@ export interface JournalEntry extends BaseDocument {
   pinned?: boolean; // Whether entry is pinned to top
   backgroundImage?: string | null; // ID of a predefined background image
   backgroundOverlay?: BackgroundOverlay; // Overlay style for background images
+  coverImage?: string | null; // ID of a cover image from Firestore (for card covers)
+  coverSummary?: string | null; // AI-generated summary for cover display
 }
 
 export type CreateJournalEntryInput = Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt' | 'wordCount'>;

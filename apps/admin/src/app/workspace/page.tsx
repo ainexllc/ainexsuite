@@ -14,7 +14,8 @@ import {
   RefreshCw,
   Settings,
   ChevronRight,
-  Image
+  Image,
+  BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { collection, getCountFromServer } from 'firebase/firestore';
@@ -150,6 +151,7 @@ const adminPages = [
   { href: '/workspace/feedback', label: 'Feedback', icon: MessageSquare, description: 'User feedback & reports', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
   { href: '/workspace/spaces', label: 'Spaces', icon: FolderKanban, description: 'Workspace spaces config', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
   { href: '/workspace/backgrounds', label: 'Backgrounds', icon: Image, description: 'Manage background images', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+  { href: '/workspace/covers', label: 'Covers', icon: BookOpen, description: 'Journal cover images', color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
   { href: '/workspace/theme', label: 'Theme', icon: Palette, description: 'Theme & appearance', color: 'text-pink-400', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
   { href: '/workspace/updates', label: 'Updates', icon: RefreshCw, description: 'Platform updates & changelog', color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
   { href: '/workspace/settings', label: 'Settings', icon: Settings, description: 'System configuration', color: 'text-muted-foreground', bg: 'bg-muted/10', border: 'border-border/50' },

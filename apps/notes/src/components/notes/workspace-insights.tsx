@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Zap, Target } from "lucide-react";
+import { Zap } from "lucide-react";
+import { FocusIcon } from "@/components/icons/focus-icon";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAppColors } from "@ainexsuite/theme";
@@ -148,7 +149,7 @@ export function WorkspaceInsights({ className }: WorkspaceInsightsProps) {
     return [
       // Focus - short text, truncated
       {
-        icon: <Target className="h-3.5 w-3.5" />,
+        icon: <FocusIcon className="h-3.5 w-3.5" />,
         label: "Focus",
         content: <span className="truncate max-w-[400px] block">{data.weeklyFocus}</span>,
         summary: data.weeklyFocus,

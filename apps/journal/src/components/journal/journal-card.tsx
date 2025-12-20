@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
 import type { JournalEntry, EntryColor } from '@ainexsuite/types';
 import { getMoodIcon, getMoodLabel } from '@/lib/utils/mood';
-import { deleteJournalEntry, toggleEntryPin, toggleEntryArchive, updateEntryColor } from '@/lib/firebase/firestore';
+import { deleteJournalEntry, toggleEntryPin, toggleEntryArchive, updateEntryColor, updateJournalEntry } from '@/lib/firebase/firestore';
 import { deleteAllEntryFiles } from '@/lib/firebase/storage';
 import { useToast, ConfirmationDialog, ENTRY_COLORS } from '@ainexsuite/ui';
 import { useRouter } from 'next/navigation';
@@ -18,10 +18,13 @@ import {
   Archive,
   Palette,
   ImageIcon,
+  Loader2,
 } from 'lucide-react';
 import { usePrivacy, BlurredContent, PasscodeModal } from '@ainexsuite/privacy';
 import { JournalEntryEditor } from './journal-entry-editor';
 import { useBackgrounds } from '@/hooks/use-backgrounds';
+import { useCovers } from '@/hooks/use-covers';
+import { useCoverSettings } from '@/contexts/cover-settings-context';
 import { getBackgroundById, getOverlayClasses, getTextColorClasses, FALLBACK_BACKGROUNDS } from '@/lib/backgrounds';
 
 interface JournalCardProps {
@@ -50,6 +53,12 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
   // Fetch backgrounds from Firestore
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
 
+  // Fetch covers from Firestore
+  const { covers } = useCovers();
+
+  // Cover settings (AI summary toggle)
+  const { showAiSummary } = useCoverSettings();
+
   // Merge Firestore backgrounds with fallbacks
   const availableBackgrounds = useMemo(() => {
     if (firestoreBackgrounds.length > 0) {
@@ -66,6 +75,69 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
 
   // Determine if we're using a background image
   const hasBackground = currentBackground !== null;
+
+  // Get current cover object
+  const currentCover = useMemo(() => {
+    if (!entry.coverImage) return null;
+    return covers.find((c) => c.id === entry.coverImage) || null;
+  }, [entry.coverImage, covers]);
+
+  // Determine if we're using a cover image
+  const hasCover = currentCover !== null;
+
+  // Summary generation state
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  // Track which entry ID we've attempted to generate for (to prevent duplicate attempts)
+  const attemptedEntryRef = useRef<string | null>(null);
+
+  // Auto-generate summary when cover exists but summary is missing (and AI summary is enabled)
+  useEffect(() => {
+    // Reset if entry now has a summary or entry changed
+    if (entry.coverSummary || attemptedEntryRef.current !== entry.id) {
+      if (entry.coverSummary) {
+        attemptedEntryRef.current = null; // Reset so we can regenerate if summary is cleared later
+      }
+    }
+
+    // Only generate if: AI summary enabled, has cover, no summary, has content, not already generating, not already attempted for this entry
+    const alreadyAttempted = attemptedEntryRef.current === entry.id;
+    if (showAiSummary && hasCover && !entry.coverSummary && entry.content && !isGeneratingSummary && !alreadyAttempted) {
+      attemptedEntryRef.current = entry.id;
+      setIsGeneratingSummary(true);
+
+      const generateSummary = async () => {
+        try {
+          const response = await fetch('/api/generate-summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: entry.content,
+              title: entry.title || '',
+            }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.summary) {
+              // Update the entry with the generated summary
+              await updateJournalEntry(entry.id, { coverSummary: result.summary });
+              onUpdate(); // Trigger refresh to show the new summary
+            }
+          }
+        } catch (error) {
+          console.error('Failed to generate cover summary:', error);
+        } finally {
+          setIsGeneratingSummary(false);
+        }
+      };
+
+      generateSummary();
+    }
+  }, [showAiSummary, hasCover, entry.coverSummary, entry.content, entry.title, entry.id, isGeneratingSummary, onUpdate]);
+
+  // Leather cover check - special handling for leather card style
+  const isLeatherCover = entry.color === 'entry-leather';
+  const leatherCoverUrl = '/images/leather-cover.png';
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -215,19 +287,32 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
     <>
       <article
         className={clsx(
-          !hasBackground && cardClass,
+          !hasBackground && !isLeatherCover && !hasCover && cardClass,
           'border border-zinc-200 dark:border-zinc-800',
           'group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200',
           'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md',
-          'break-inside-avoid py-6',
-          // Spiral notebook binding effect
-          'journal-spiral-binding',
+          'break-inside-avoid px-6 py-6',
         )}
         onClick={handleCardClick}
       >
-        {/* Background image layer */}
-        {hasBackground && currentBackground && (
+        {/* Cover image layer - highest priority, shows selected cover texture */}
+        {hasCover && currentCover && (
           <div className="absolute inset-0 overflow-hidden rounded-2xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={currentCover.thumbnail}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover z-0"
+            />
+            {/* Subtle overlay for text readability */}
+            <div className="absolute inset-0 bg-black/30 z-10" />
+          </div>
+        )}
+
+        {/* Background image layer - second priority */}
+        {!hasCover && hasBackground && currentBackground && (
+          <div className="absolute inset-0 overflow-hidden rounded-2xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={currentBackground.thumbnail}
               alt=""
@@ -237,8 +322,29 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </div>
         )}
 
-        {/* Background indicator badge */}
-        {hasBackground && (
+        {/* Leather cover layer - shows leather texture as card cover */}
+        {isLeatherCover && !hasCover && !hasBackground && (
+          <div className="absolute inset-0 overflow-hidden rounded-2xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={leatherCoverUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover z-0"
+            />
+            {/* Subtle overlay for text readability */}
+            <div className="absolute inset-0 bg-black/20 z-10" />
+          </div>
+        )}
+
+        {/* Cover indicator badge - show when cover is set */}
+        {hasCover && (
+          <div className="absolute top-2 left-2 z-20 h-6 w-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center" title="Has cover image">
+            <ImageIcon className="h-3 w-3 text-white/80" />
+          </div>
+        )}
+
+        {/* Background indicator badge - only show if no cover */}
+        {!hasCover && hasBackground && (
           <div className="absolute top-2 left-2 z-20 h-6 w-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center" title="Has background image">
             <ImageIcon className="h-3 w-3 text-white/80" />
           </div>
@@ -257,7 +363,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </button>
         )}
 
-        <div className="relative z-10 w-full journal-spiral-content pr-6">
+        <div className="relative z-10 w-full">
           {/* Pin button - only shows on unpinned entries */}
           {!entry.pinned && (
             <button
@@ -311,24 +417,57 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
             {entry.title && (
               <h3 className={clsx(
                 "pr-8 text-[17px] font-semibold tracking-[-0.02em]",
-                hasBackground
-                  ? getTextColorClasses(currentBackground, 'title')
-                  : "text-zinc-900 dark:text-zinc-50"
+                hasCover
+                  ? "text-white"
+                  : hasBackground
+                    ? getTextColorClasses(currentBackground, 'title')
+                    : isLeatherCover
+                      ? "text-amber-100"
+                      : "text-zinc-900 dark:text-zinc-50"
               )}>
                 {entry.title}
               </h3>
             )}
 
-            {/* Content */}
+            {/* Content - show AI summary when cover exists and AI summary enabled, otherwise truncated content */}
             <BlurredContent isLocked={isLocked} onClick={handleView} className="mt-3">
-              <p className={clsx(
-                "whitespace-pre-wrap text-[15px] leading-7 tracking-[-0.01em] line-clamp-4",
-                hasBackground
-                  ? getTextColorClasses(currentBackground, 'body')
-                  : "text-zinc-600 dark:text-zinc-400"
-              )}>
-                {truncateContent(entry.content, 200)}
-              </p>
+              {showAiSummary && hasCover && isGeneratingSummary ? (
+                <div className="flex items-center gap-2 py-2">
+                  <Loader2 className={clsx(
+                    "h-4 w-4 animate-spin",
+                    hasCover ? "text-white/70" : "text-zinc-400"
+                  )} />
+                  <span className={clsx(
+                    "text-sm italic",
+                    hasCover
+                      ? "text-white/70"
+                      : hasBackground
+                        ? getTextColorClasses(currentBackground, 'muted')
+                        : isLeatherCover
+                          ? "text-amber-200/70"
+                          : "text-zinc-400 dark:text-zinc-500"
+                  )}>
+                    Generating summary...
+                  </span>
+                </div>
+              ) : (
+                <p className={clsx(
+                  "whitespace-pre-wrap text-[15px] leading-7 tracking-[-0.01em]",
+                  // Responsive line-clamp based on view
+                  "line-clamp-2 sm:line-clamp-3 md:line-clamp-4",
+                  hasCover
+                    ? "text-white/90"
+                    : hasBackground
+                      ? getTextColorClasses(currentBackground, 'body')
+                      : isLeatherCover
+                        ? "text-amber-100/90"
+                        : "text-zinc-600 dark:text-zinc-400"
+                )}>
+                  {showAiSummary && hasCover && entry.coverSummary
+                    ? entry.coverSummary
+                    : truncateContent(entry.content, 200)}
+                </p>
+              )}
             </BlurredContent>
 
             {/* Mood and Tags */}
@@ -338,11 +477,15 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                 return (
                   <span className={clsx(
                     "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                    hasBackground
-                      ? currentBackground?.brightness === 'dark'
-                        ? "bg-white/10 text-white/90"
-                        : "bg-black/5 text-zinc-800"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                    hasCover
+                      ? "bg-white/10 text-white/90"
+                      : hasBackground
+                        ? currentBackground?.brightness === 'dark'
+                          ? "bg-white/10 text-white/90"
+                          : "bg-black/5 text-zinc-800"
+                        : isLeatherCover
+                          ? "bg-amber-950/50 text-amber-100/90"
+                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                   )}>
                     <Icon className="h-3.5 w-3.5" />
                     <span>{getMoodLabel(entry.mood)}</span>
@@ -355,11 +498,15 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                   key={tag}
                   className={clsx(
                     "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium",
-                    hasBackground
-                      ? currentBackground?.brightness === 'dark'
-                        ? "bg-white/10 text-white/90"
-                        : "bg-black/5 text-zinc-800"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                    hasCover
+                      ? "bg-white/10 text-white/90"
+                      : hasBackground
+                        ? currentBackground?.brightness === 'dark'
+                          ? "bg-white/10 text-white/90"
+                          : "bg-black/5 text-zinc-800"
+                        : isLeatherCover
+                          ? "bg-amber-950/50 text-amber-100/90"
+                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                   )}
                 >
                   {tag}
@@ -369,9 +516,13 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
               {entry.tags && entry.tags.length > 3 && (
                 <span className={clsx(
                   "text-xs",
-                  hasBackground
-                    ? getTextColorClasses(currentBackground, 'muted')
-                    : "text-zinc-400 dark:text-zinc-500"
+                  hasCover
+                    ? "text-white/70"
+                    : hasBackground
+                      ? getTextColorClasses(currentBackground, 'muted')
+                      : isLeatherCover
+                        ? "text-amber-200/70"
+                        : "text-zinc-400 dark:text-zinc-500"
                 )}>
                   +{entry.tags.length - 3} more
                 </span>
@@ -380,22 +531,30 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </div>
 
           {/* Footer with actions */}
-          <footer className="mt-4 flex items-center justify-between pt-3 -mr-6 -mb-6 pr-6 pb-4 rounded-b-2xl">
+          <footer className="mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl">
             <div className={clsx(
               "flex items-center gap-2 text-[11px] uppercase tracking-wide",
-              hasBackground
-                ? getTextColorClasses(currentBackground, 'muted')
-                : "text-zinc-500 dark:text-zinc-400"
+              hasCover
+                ? "text-white/70"
+                : hasBackground
+                  ? getTextColorClasses(currentBackground, 'muted')
+                  : isLeatherCover
+                    ? "text-amber-200/70"
+                    : "text-zinc-500 dark:text-zinc-400"
             )}>
               {/* Attachments indicator */}
               {entry.attachments && entry.attachments.length > 0 && (
                 <span className={clsx(
                   "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                  hasBackground
-                    ? currentBackground?.brightness === 'dark'
-                      ? "bg-white/10 text-white/80"
-                      : "bg-black/5 text-zinc-700"
-                    : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                  hasCover
+                    ? "bg-white/10 text-white/80"
+                    : hasBackground
+                      ? currentBackground?.brightness === 'dark'
+                        ? "bg-white/10 text-white/80"
+                        : "bg-black/5 text-zinc-700"
+                      : isLeatherCover
+                        ? "bg-amber-950/50 text-amber-100/80"
+                        : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
                 )}>
                   <Paperclip className="h-3 w-3" />
                   {entry.attachments.length}
@@ -405,11 +564,15 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
               {entry.links && entry.links.length > 0 && (
                 <span className={clsx(
                   "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                  hasBackground
-                    ? currentBackground?.brightness === 'dark'
-                      ? "bg-white/10 text-white/80"
-                      : "bg-black/5 text-zinc-700"
-                    : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                  hasCover
+                    ? "bg-white/10 text-white/80"
+                    : hasBackground
+                      ? currentBackground?.brightness === 'dark'
+                        ? "bg-white/10 text-white/80"
+                        : "bg-black/5 text-zinc-700"
+                      : isLeatherCover
+                        ? "bg-amber-950/50 text-amber-100/80"
+                        : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
                 )}>
                   <LinkIcon className="h-3 w-3" />
                   {entry.links.length}
@@ -427,11 +590,15 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                 onClick={handleArchive}
                 className={clsx(
                   "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  hasBackground
-                    ? currentBackground?.brightness === 'dark'
-                      ? "text-white/70 hover:bg-white/20 hover:text-white"
-                      : "text-zinc-600 hover:bg-black/10 hover:text-zinc-900"
-                    : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
+                  hasCover
+                    ? "text-white/70 hover:bg-white/20 hover:text-white"
+                    : hasBackground
+                      ? currentBackground?.brightness === 'dark'
+                        ? "text-white/70 hover:bg-white/20 hover:text-white"
+                        : "text-zinc-600 hover:bg-black/10 hover:text-zinc-900"
+                      : isLeatherCover
+                        ? "text-amber-200/70 hover:bg-amber-950/50 hover:text-amber-100"
+                        : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
                 )}
                 aria-label={entry.archived ? 'Unarchive entry' : 'Archive entry'}
               >
@@ -445,20 +612,30 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                   onClick={handleOpenPalette}
                   className={clsx(
                     'h-7 w-7 rounded-full flex items-center justify-center transition',
-                    hasBackground
-                      ? currentBackground?.brightness === 'dark'
-                        ? clsx(
-                            "text-white/70 hover:bg-white/20 hover:text-white",
-                            showPalette && "bg-white/20 text-white"
-                          )
-                        : clsx(
-                            "text-zinc-600 hover:bg-black/10 hover:text-zinc-900",
-                            showPalette && "bg-black/10 text-zinc-900"
-                          )
-                      : clsx(
-                          'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200',
-                          showPalette && 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200'
-                        ),
+                    hasCover
+                      ? clsx(
+                          "text-white/70 hover:bg-white/20 hover:text-white",
+                          showPalette && "bg-white/20 text-white"
+                        )
+                      : hasBackground
+                        ? currentBackground?.brightness === 'dark'
+                          ? clsx(
+                              "text-white/70 hover:bg-white/20 hover:text-white",
+                              showPalette && "bg-white/20 text-white"
+                            )
+                          : clsx(
+                              "text-zinc-600 hover:bg-black/10 hover:text-zinc-900",
+                              showPalette && "bg-black/10 text-zinc-900"
+                            )
+                        : isLeatherCover
+                          ? clsx(
+                              "text-amber-200/70 hover:bg-amber-950/50 hover:text-amber-100",
+                              showPalette && "bg-amber-950/50 text-amber-100"
+                            )
+                          : clsx(
+                              'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200',
+                              showPalette && 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200'
+                            ),
                   )}
                   aria-label="Change color"
                 >

@@ -12,3 +12,4 @@ export * from './use-sso-auth';
 export * from './sso-handler';
 export * from './use-user-preferences-listener';
 export * from './backgrounds';
+export * from './covers';

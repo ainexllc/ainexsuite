@@ -97,7 +97,8 @@ export type EntryColor =
   | 'entry-blush'
   | 'entry-sky'
   | 'entry-moss'
-  | 'entry-coal';
+  | 'entry-coal'
+  | 'entry-leather';
 
 // Background overlay options for background images
 export type BackgroundOverlay =
@@ -117,4 +118,5 @@ export interface StandardEntryFields {
   color?: EntryColor;
   backgroundImage?: string | null;
   backgroundOverlay?: BackgroundOverlay;
+  coverImage?: string | null; // ID of a cover image from Firestore (for card covers)
 }

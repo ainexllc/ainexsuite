@@ -11,6 +11,8 @@ import {
   Palette,
   Share2,
   BellRing,
+  Check,
+  Ban,
 } from 'lucide-react';
 import { ENTRY_COLORS, getEntryColorConfig } from '../../constants/entry-colors';
 import type { EntryColor } from '@ainexsuite/types';
@@ -107,6 +109,16 @@ function getAdaptiveFooterClass(brightness: 'light' | 'dark' | null | undefined)
   return ''; // Use colorConfig.footerClass for no background
 }
 
+function getAdaptiveHeaderContainerClass(brightness: 'light' | 'dark' | null | undefined): string {
+  if (brightness === 'dark') {
+    return 'bg-black/30 backdrop-blur-sm border-white/10';
+  }
+  if (brightness === 'light') {
+    return 'bg-white/50 backdrop-blur-sm border-black/10';
+  }
+  return ''; // Use default styling for no background
+}
+
 function getAdaptiveToolbarButtonClass(
   brightness: 'light' | 'dark' | null | undefined,
   isActive?: boolean
@@ -198,7 +210,12 @@ export function EntryEditorShell({
           </div>
         )}
         {/* Header row - title on left, actions on right */}
-        <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-2 flex-shrink-0">
+        <div className={clsx(
+          'flex items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4 rounded-t-2xl border-b transition-colors duration-200 flex-shrink-0',
+          backgroundBrightness
+            ? getAdaptiveHeaderContainerClass(backgroundBrightness)
+            : 'border-zinc-200 dark:border-zinc-700/50 bg-zinc-50/80 dark:bg-zinc-900/80'
+        )}>
           {/* Title content slot */}
           {titleContent && (
             <div className="flex-1 min-w-0 min-h-[40px] flex items-center">
@@ -315,24 +332,98 @@ export function EntryEditorShell({
                       <Palette className="h-4 w-4" />
                     </button>
                     {showPalette && (
-                      <div className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-                        {ENTRY_COLORS.map((option) => (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => {
-                              onColorChange(option.id);
-                              setShowPalette(false);
-                            }}
-                            className={clsx(
-                              'inline-flex shrink-0 h-8 w-8 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)]',
-                              option.swatchClass,
-                              option.id === color && 'ring-2 ring-[var(--color-primary)]'
-                            )}
-                            aria-label={`Set color ${option.label}`}
-                          />
-                        ))}
-                      </div>
+                      <>
+                        {/* Click outside to close */}
+                        <div
+                          className="fixed inset-0 z-20"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowPalette(false);
+                          }}
+                        />
+                        <div className="absolute bottom-12 left-0 z-30 w-72 max-h-[60vh] overflow-y-auto rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
+                          {/* Covers Section */}
+                          <div className="mb-3">
+                            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Cover</p>
+                            <div className="grid grid-cols-3 gap-2">
+                              {/* No cover option */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onColorChange('default');
+                                  setShowPalette(false);
+                                }}
+                                className={clsx(
+                                  'relative aspect-video rounded-lg overflow-hidden border-2 transition-all',
+                                  color === 'default'
+                                    ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20'
+                                    : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                                )}
+                              >
+                                <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                  <Ban className="h-4 w-4 text-zinc-400" />
+                                </div>
+                                {color === 'default' && (
+                                  <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                                    <Check className="h-2.5 w-2.5 text-white" />
+                                  </div>
+                                )}
+                              </button>
+                              {/* Leather cover option */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onColorChange('entry-leather');
+                                  setShowPalette(false);
+                                }}
+                                className={clsx(
+                                  'relative aspect-video rounded-lg overflow-hidden border-2 transition-all',
+                                  color === 'entry-leather'
+                                    ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20'
+                                    : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                                )}
+                                title="Leather"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src="/images/leather-cover.png"
+                                  alt="Leather"
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                />
+                                {color === 'entry-leather' && (
+                                  <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                                    <Check className="h-2.5 w-2.5 text-white" />
+                                  </div>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Colors Section */}
+                          <div className="pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Colors</p>
+                            <div className="grid grid-cols-6 gap-2">
+                              {ENTRY_COLORS.filter(c => c.id !== 'default' && c.id !== 'entry-leather').map((option) => (
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  onClick={() => {
+                                    onColorChange(option.id);
+                                    setShowPalette(false);
+                                  }}
+                                  className={clsx(
+                                    'relative h-8 w-8 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)]',
+                                    option.swatchClass,
+                                    option.id === color && 'ring-2 ring-[var(--color-primary)]'
+                                  )}
+                                  aria-label={option.label}
+                                  title={option.label}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     )}
                   </div>
                 )}

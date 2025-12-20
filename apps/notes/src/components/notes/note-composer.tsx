@@ -9,8 +9,6 @@ import {
   CalendarClock,
   Calculator,
   Palette,
-  Target,
-  CircleOff,
   Plus,
   BellRing,
   Tag,
@@ -23,6 +21,7 @@ import {
   Check,
   Flame,
 } from "lucide-react";
+import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
 import { useNotes } from "@/components/providers/notes-provider";
 import type { ChecklistItem, NoteColor, NotePriority } from "@/lib/types/note";
@@ -750,7 +749,7 @@ export function NoteComposer() {
                 )}
                 aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
               >
-                {pinned ? <CircleOff className="h-5 w-5" /> : <Target className="h-5 w-5" />}
+                <FocusIcon focused={pinned} className="h-5 w-5" />
               </button>
               {/* Priority Selector */}
               <div className="relative">

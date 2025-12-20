@@ -131,7 +131,7 @@ export function getOverlayClasses(
 
     case 'dimmest':
       // Heavy dark overlay
-      return `${base} bg-black/70`;
+      return `${base} bg-black/80`;
 
     case 'glass':
       // Light frosted glass effect

@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useState, useRef, useMemo } from "react";
-import { X, Lock, Tag, Plus, Loader2, ImagePlus, Check, Ban } from "lucide-react";
+import { X, Lock, Tag, Plus, Loader2, ImagePlus, Check, Ban, BookOpen, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
 import type { JournalEntryFormData, EntryColor, BackgroundOverlay } from "@ainexsuite/types";
 import { useBackgrounds } from "@/hooks/use-backgrounds";
+import { useCovers } from "@/hooks/use-covers";
 import { getBackgroundById, getOverlayClasses, OVERLAY_OPTIONS, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
 import { BackgroundProvider } from "@/contexts/background-context";
+import { useCoverSettings } from "@/contexts/cover-settings-context";
 import { getAdaptiveInputClass } from "@/lib/adaptive-styles";
 import { useAuth } from "@ainexsuite/auth";
 import { createJournalEntry, updateJournalEntry } from "@/lib/firebase/firestore";
@@ -44,8 +46,18 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
   const [backgroundOverlay, setBackgroundOverlay] = useState<BackgroundOverlay>('auto');
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
 
+  // Cover state
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [showCoverPicker, setShowCoverPicker] = useState(false);
+
   // Fetch backgrounds from Firestore
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
+
+  // Fetch covers from Firestore
+  const { covers } = useCovers();
+
+  // Cover settings (AI summary toggle)
+  const { showAiSummary, setShowAiSummary } = useCoverSettings();
 
   // Merge Firestore backgrounds with fallbacks
   const availableBackgrounds = useMemo(() => {
@@ -92,6 +104,8 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
     setBackgroundImage(null);
     setBackgroundOverlay('auto');
     setShowBackgroundPicker(false);
+    setCoverImage(null);
+    setShowCoverPicker(false);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -108,6 +122,29 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
     try {
       const isDraft = data.isDraft ?? false;
 
+      // Generate AI summary if cover image is set and AI summary is enabled
+      let coverSummary: string | null = null;
+      if (showAiSummary && coverImage && data.content) {
+        try {
+          const response = await fetch('/api/generate-summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: data.content,
+              title: data.title || title,
+            }),
+          });
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.summary) {
+              coverSummary = result.summary;
+            }
+          }
+        } catch {
+          // Summary generation is optional, continue without it
+        }
+      }
+
       // Create the entry with form data + footer state
       const entryId = await createJournalEntry(user.uid, {
         ...data,
@@ -117,12 +154,14 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
       }, currentSpaceId);
 
       // Update with additional properties not in form data type
-      if (archived || color !== 'default' || backgroundImage) {
+      if (archived || color !== 'default' || backgroundImage || coverImage || coverSummary) {
         await updateJournalEntry(entryId, {
           archived,
           color,
           backgroundImage,
           backgroundOverlay,
+          coverImage,
+          coverSummary,
         });
       }
 
@@ -145,7 +184,7 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, pinned, archived, color, tags, isPrivate, currentSpaceId, toast, onEntryCreated, handleClose, backgroundImage, backgroundOverlay]);
+  }, [user, pinned, archived, color, tags, isPrivate, currentSpaceId, toast, onEntryCreated, handleClose, backgroundImage, backgroundOverlay, coverImage, title, showAiSummary]);
 
   if (!isOpen) return null;
 
@@ -205,7 +244,7 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
                   }}
                 />
                 <div
-                  className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 w-72 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                  className="absolute bottom-12 left-0 z-30 w-72 max-h-[60vh] overflow-y-auto rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -294,6 +333,131 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
                       </div>
                     </div>
                   )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Cover picker */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowCoverPicker((prev) => !prev)}
+              className={clsx(
+                'h-9 w-9 rounded-full flex items-center justify-center transition',
+                showCoverPicker || coverImage
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+              )}
+              aria-label="Set cover image"
+              title="Set cover image"
+            >
+              <BookOpen className="h-4 w-4" />
+            </button>
+            {showCoverPicker && (
+              <>
+                {/* Click outside to close */}
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowCoverPicker(false);
+                  }}
+                />
+                <div
+                  className="absolute bottom-12 left-0 z-30 w-72 max-h-[60vh] overflow-y-auto rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Cover Image</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowCoverPicker(false)}
+                      className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* No cover option */}
+                    <button
+                      type="button"
+                      onClick={() => setCoverImage(null)}
+                      className={clsx(
+                        'relative aspect-[2/3] rounded-lg overflow-hidden border-2 transition-all',
+                        coverImage === null
+                          ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20'
+                          : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                      )}
+                    >
+                      <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                        <Ban className="h-4 w-4 text-zinc-400" />
+                      </div>
+                      {coverImage === null && (
+                        <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                          <Check className="h-2.5 w-2.5 text-white" />
+                        </div>
+                      )}
+                    </button>
+                    {/* Cover options */}
+                    {covers.map((cover) => (
+                      <button
+                        key={cover.id}
+                        type="button"
+                        onClick={() => setCoverImage(cover.id)}
+                        className={clsx(
+                          'relative aspect-[2/3] rounded-lg overflow-hidden border-2 transition-all',
+                          coverImage === cover.id
+                            ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20'
+                            : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                        )}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={cover.thumbnail}
+                          alt={cover.name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        {coverImage === cover.id && (
+                          <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                            <Check className="h-2.5 w-2.5 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {covers.length === 0 && (
+                    <p className="text-xs text-zinc-400 text-center py-2">No covers available</p>
+                  )}
+
+                  {/* AI Summary Toggle */}
+                  <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                    <button
+                      type="button"
+                      onClick={() => setShowAiSummary(!showAiSummary)}
+                      className="w-full flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Sparkles className={clsx(
+                          "h-4 w-4",
+                          showAiSummary ? "text-[var(--color-primary)]" : "text-zinc-400"
+                        )} />
+                        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">AI Summary</span>
+                      </div>
+                      <div className={clsx(
+                        "w-8 h-5 rounded-full transition-colors relative",
+                        showAiSummary ? "bg-[var(--color-primary)]" : "bg-zinc-300 dark:bg-zinc-600"
+                      )}>
+                        <div className={clsx(
+                          "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
+                          showAiSummary ? "translate-x-3.5" : "translate-x-0.5"
+                        )} />
+                      </div>
+                    </button>
+                    <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 px-2">
+                      Show AI-generated summary on cards with covers
+                    </p>
+                  </div>
                 </div>
               </>
             )}
@@ -429,29 +593,25 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
         </div>
       }
     >
-      {/* Journal Form with spiral binding effect */}
-      <div className="journal-spiral-binding journal-spiral-modal">
-        <div className="journal-spiral-content">
-          <BackgroundProvider brightness={currentBackground?.brightness || null}>
-            <JournalForm
-              ref={formRef}
-              initialData={{
-                title: '',
-                content: '',
-                tags: [],
-                mood: 'neutral',
-                links: [],
-                isPrivate: false,
-                isDraft: false,
-              }}
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-              hideButtons={true}
-              hideTitle={true}
-            />
-          </BackgroundProvider>
-        </div>
-      </div>
+      {/* Journal Form */}
+      <BackgroundProvider brightness={currentBackground?.brightness || null}>
+        <JournalForm
+          ref={formRef}
+          initialData={{
+            title: '',
+            content: '',
+            tags: [],
+            mood: 'neutral',
+            links: [],
+            isPrivate: false,
+            isDraft: false,
+          }}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          hideButtons={true}
+          hideTitle={true}
+        />
+      </BackgroundProvider>
     </EntryEditorShell>
   );
 }

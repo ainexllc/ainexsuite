@@ -111,6 +111,14 @@ export const ENTRY_COLORS: Array<{
     cardClass: 'bg-zinc-100 dark:bg-zinc-800',
     footerClass: 'bg-zinc-200 dark:bg-zinc-700/70',
   },
+  {
+    id: 'entry-leather',
+    label: 'Leather',
+    swatchClass: 'bg-amber-900 dark:bg-amber-950 border border-amber-700 dark:border-amber-800',
+    iconClass: 'text-amber-200 dark:text-amber-300',
+    cardClass: 'bg-amber-900 dark:bg-amber-950',
+    footerClass: 'bg-amber-950 dark:bg-amber-900/70',
+  },
 ];
 
 /**
@@ -136,4 +144,5 @@ export const ENTRY_COLOR_SWATCHES: { value: EntryColor; label: string; className
   { value: 'entry-sky', label: 'Sky', className: 'bg-[#b3e5fc]' },
   { value: 'entry-moss', label: 'Moss', className: 'bg-[#dcedc8]' },
   { value: 'entry-coal', label: 'Coal', className: 'bg-[#455a64]' },
+  { value: 'entry-leather', label: 'Leather', className: 'bg-[#78350f]' },
 ];

@@ -12,6 +12,16 @@ service firebase.storage {
       allow read, write, delete: if true;
     }
 
+    // Shared covers (admin uploads, all users can read)
+    match /covers/{coverId}/{fileName} {
+      allow read, write, delete: if true;
+    }
+
+    // Also allow nested paths for covers
+    match /covers/{allPaths=**} {
+      allow read, write, delete: if true;
+    }
+
     // Allow users to read, write, and delete their own backgrounds
     match /users/{userId}/backgrounds/{allPaths=**} {
       allow read, delete: if request.auth.uid == userId;

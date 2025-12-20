@@ -111,6 +111,7 @@ export type NoteDoc = {
   pattern?: NotePattern;
   backgroundImage?: string | null; // ID of a predefined background image
   backgroundOverlay?: BackgroundOverlay; // Overlay style for background images
+  coverImage?: string | null; // ID of a cover image from covers collection
   pinned: boolean;
   priority?: NotePriority;
   archived: boolean;
@@ -149,6 +150,7 @@ export type NoteDraft = {
   pattern?: NotePattern;
   backgroundImage?: string | null;
   backgroundOverlay?: BackgroundOverlay;
+  coverImage?: string | null;
   reminderAt?: Date | null;
   reminderId?: string | null;
   noteDate?: Date | null;

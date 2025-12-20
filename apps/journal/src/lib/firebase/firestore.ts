@@ -49,6 +49,14 @@ function convertTimestampToDate(data: any): any {
   if (data?.backgroundOverlay === undefined) {
     data.backgroundOverlay = 'auto';
   }
+  // Ensure backward compatibility for entries without coverImage field
+  if (data?.coverImage === undefined) {
+    data.coverImage = null;
+  }
+  // Ensure backward compatibility for entries without coverSummary field
+  if (data?.coverSummary === undefined) {
+    data.coverSummary = null;
+  }
   return data;
 }
 
@@ -104,6 +112,8 @@ export async function updateJournalEntry(
     color?: JournalEntry['color'];
     backgroundImage?: JournalEntry['backgroundImage'];
     backgroundOverlay?: JournalEntry['backgroundOverlay'];
+    coverImage?: JournalEntry['coverImage'];
+    coverSummary?: JournalEntry['coverSummary'];
   }
 ): Promise<void> {
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
@@ -111,6 +121,7 @@ export async function updateJournalEntry(
   if (sanitizedData.isDraft === undefined) {
     delete sanitizedData.isDraft;
   }
+  console.log('[updateJournalEntry] backgroundOverlay in data:', data.backgroundOverlay, '| in sanitized:', sanitizedData.backgroundOverlay);
   await updateDoc(docRef, {
     ...sanitizedData,
     updatedAt: Date.now()
@@ -173,6 +184,7 @@ export async function getJournalEntry(entryId: string): Promise<JournalEntry | n
 
   if (docSnap.exists()) {
     const data = convertTimestampToDate(docSnap.data());
+    console.log('[getJournalEntry] Retrieved backgroundOverlay:', data.backgroundOverlay);
     return {
       id: docSnap.id,
       ...data

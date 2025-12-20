@@ -8,8 +8,6 @@ import {
   CheckSquare,
   Image as ImageIcon,
   Palette,
-  Target,
-  CircleOff,
   Tag,
   X,
   BellRing,
@@ -27,6 +25,7 @@ import {
   Trash2,
   Flame,
 } from "lucide-react";
+import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
 import type {
   ChecklistItem,
@@ -748,7 +747,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         ref={editorContainerRef}
         onMouseDown={(e) => e.stopPropagation()}
         className={clsx(
-          "relative w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] max-w-6xl h-[90vh] sm:h-[88vh] md:h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden",
+          "relative w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] max-w-6xl min-h-[450px] max-h-[90vh] sm:max-h-[88vh] md:max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden",
           !currentBackground && currentColorConfig.cardClass,
           "border-zinc-200 dark:border-zinc-800",
         )}
@@ -768,11 +767,16 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           </div>
         )}
 
+        {/* Header row - title and actions */}
         <div className={clsx(
-          "relative z-10 flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto",
-          currentBackground && getTextColorClasses(currentBackground, 'body')
+          "relative z-20 flex items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4 rounded-t-2xl border-b flex-shrink-0",
+          currentBackground?.brightness === 'light'
+            ? "bg-white/30 backdrop-blur-sm border-black/10"
+            : currentBackground
+              ? "bg-black/30 backdrop-blur-sm border-white/10"
+              : "bg-zinc-50/80 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-700/50"
         )}>
-          <div className="flex items-start gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -809,7 +813,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     )}
                     aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
                   >
-                    {pinned ? <CircleOff className="h-3.5 w-3.5" /> : <Target className="h-3.5 w-3.5" />}
+                    <FocusIcon focused={pinned} className="h-3.5 w-3.5" />
                   </button>
                 </div>
 
@@ -972,7 +976,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Content area */}
+        <div className={clsx(
+          "relative z-10 flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto",
+          currentBackground && getTextColorClasses(currentBackground, 'body')
+        )}>
           {mode === "text" ? (
             <div className="relative">
               <textarea
@@ -989,7 +999,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 }}
                 placeholder="Write your note…"
                 className={clsx(
-                  "min-h-[40vh] sm:min-h-[45vh] md:min-h-[50vh] w-full resize-none overflow-hidden bg-transparent text-[15px] leading-7 tracking-[-0.01em] focus:outline-none transition-all duration-300",
+                  "min-h-[20vh] sm:min-h-[22vh] md:min-h-[25vh] w-full resize-none overflow-hidden bg-transparent text-[15px] leading-7 tracking-[-0.01em] focus:outline-none transition-all duration-300",
                   getTextColorClasses(currentBackground, 'body'),
                   currentBackground?.brightness === 'light'
                     ? "placeholder:text-zinc-500"
@@ -1486,7 +1496,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       }}
                     />
                     <div
-                      className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2 w-72 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                      className="absolute bottom-12 left-0 z-30 w-[480px] rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -1499,7 +1509,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           <X className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-6 gap-2">
                       {/* No background option */}
                       <button
                         type="button"

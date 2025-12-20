@@ -1,24 +1,24 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BellRing,
-  Clock8,
   StickyNote,
   Trash2,
   Users,
   Sparkles,
 } from "lucide-react";
+import { FocusIconNav } from "@/components/icons/focus-icon";
 
 export type AppNavItem = {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: LucideIcon | typeof FocusIconNav;
   badge?: string;
 };
 
 export const PRIMARY_NAV_ITEMS: AppNavItem[] = [
   { label: "Notes", href: "/workspace", icon: StickyNote },
   { label: "Reminders", href: "/reminders", icon: BellRing },
-  { label: "Focus Mode", href: "/focus", icon: Clock8 },
+  { label: "Focus Mode", href: "/focus", icon: FocusIconNav },
   { label: "Shared", href: "/shared", icon: Users },
 ];
 

@@ -108,7 +108,7 @@ export function JournalBoard({
   );
 
   const renderList = (items: JournalEntry[]) => (
-    <div className="space-y-3">
+    <div className="space-y-3 max-w-2xl mx-auto">
       {items.map((entry) => (
         <JournalCard key={entry.id} entry={entry} onUpdate={onEntryUpdated} />
       ))}

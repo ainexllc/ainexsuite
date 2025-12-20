@@ -20,6 +20,9 @@ export interface UserSettings {
   privacy?: {
     personalizedWelcome: boolean;
   };
+  covers?: {
+    showAiSummary: boolean;
+  };
   lastUpdated: Date;
 }
 
@@ -31,6 +34,9 @@ const DEFAULT_SETTINGS: Omit<UserSettings, 'userId' | 'lastUpdated'> = {
   },
   privacy: {
     personalizedWelcome: false,
+  },
+  covers: {
+    showAiSummary: true,
   },
 };
 
@@ -101,4 +107,12 @@ export async function updatePrivacySettings(
   privacy: UserSettings['privacy']
 ): Promise<void> {
   return updateUserSettings(userId, { privacy });
+}
+
+// Update covers settings
+export async function updateCoversSettings(
+  userId: string,
+  covers: UserSettings['covers']
+): Promise<void> {
+  return updateUserSettings(userId, { covers });
 }

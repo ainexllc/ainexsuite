@@ -7,6 +7,7 @@ import { WorkspaceLoadingScreen, SettingsModal, useFontPreference } from '@ainex
 import { SpacesProvider } from '@/components/providers/spaces-provider';
 import { EntriesProvider, useEntries } from '@/components/providers/entries-provider';
 import { PrivacyProvider } from '@ainexsuite/privacy';
+import { CoverSettingsProvider } from '@/contexts/cover-settings-context';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 import { BookOpen } from 'lucide-react';
@@ -120,15 +121,17 @@ export default function WorkspaceRootLayout({
   return (
     <SpacesProvider>
       <PrivacyProvider config={{ appName: 'journal' }}>
-        <EntriesProvider>
-          <WorkspaceLayoutInner
-            user={user}
-            handleSignOut={handleSignOut}
-            updatePreferences={updatePreferences}
-          >
-            {children}
-          </WorkspaceLayoutInner>
-        </EntriesProvider>
+        <CoverSettingsProvider>
+          <EntriesProvider>
+            <WorkspaceLayoutInner
+              user={user}
+              handleSignOut={handleSignOut}
+              updatePreferences={updatePreferences}
+            >
+              {children}
+            </WorkspaceLayoutInner>
+          </EntriesProvider>
+        </CoverSettingsProvider>
       </PrivacyProvider>
     </SpacesProvider>
   );
