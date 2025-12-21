@@ -223,7 +223,7 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onNavigationToggle}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-all bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
               aria-label="Toggle navigation"
             >
               <Menu className="h-4 w-4" />
@@ -258,7 +258,7 @@ export function WorkspaceHeader({
               <button
                 type="button"
                 onClick={onAutoHideToggle}
-                className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
                   autoHideEnabled
                     ? 'bg-amber-200 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
                     : 'text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300'
@@ -278,7 +278,7 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-all text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
             >
@@ -293,7 +293,7 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onAiAssistantClick}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-all bg-amber-200 hover:bg-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500/30"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors bg-amber-200 hover:bg-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500/30"
               aria-label="AI Assistant"
               style={{
                 filter: 'drop-shadow(0 0 4px rgba(245, 158, 11, 0.4))',
@@ -305,7 +305,7 @@ export function WorkspaceHeader({
             {/* Profile Sidebar Toggle */}
             <button
               type="button"
-              className="flex items-center gap-2 h-9 rounded-full transition-all px-2 bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              className="flex items-center gap-2 h-9 rounded-full transition-colors px-2 bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
               aria-label="Profile menu"
               onClick={onProfileToggle}
             >
