@@ -51,7 +51,7 @@ import {
 import { InlineCalculator } from "./inline-calculator";
 import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS, OVERLAY_OPTIONS } from "@/lib/backgrounds";
 import type { BackgroundOverlay } from "@/lib/types/note";
-import { useBackgrounds } from "@/hooks/use-backgrounds";
+import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { ConfirmationDialog } from "@ainexsuite/ui";
 

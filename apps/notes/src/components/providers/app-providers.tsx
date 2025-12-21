@@ -6,6 +6,8 @@ import { RemindersProvider } from "@/components/providers/reminders-provider";
 import { PreferencesProvider } from "@/components/providers/preferences-provider";
 import { SpacesProvider } from "@/components/providers/spaces-provider";
 import { FilterPresetsProvider } from "@/components/providers/filter-presets-provider";
+import { CoversProvider } from "@/components/providers/covers-provider";
+import { BackgroundsProvider } from "@/components/providers/backgrounds-provider";
 
 type AppProvidersProps = {
   children: React.ReactNode;
@@ -23,7 +25,11 @@ export function AppProviders({ children }: AppProvidersProps) {
         <PreferencesProvider>
           <FilterPresetsProvider>
             <RemindersProvider>
-              <NotesProvider>{children}</NotesProvider>
+              <CoversProvider>
+                <BackgroundsProvider>
+                  <NotesProvider>{children}</NotesProvider>
+                </BackgroundsProvider>
+              </CoversProvider>
             </RemindersProvider>
           </FilterPresetsProvider>
         </PreferencesProvider>
