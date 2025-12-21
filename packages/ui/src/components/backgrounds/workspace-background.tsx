@@ -106,7 +106,7 @@ export function WorkspaceBackground({
       <>
         {/* Base gradient - more subtle in light mode */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-40 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-40"
           style={{
             background: `
               radial-gradient(ellipse 100% 40% at 50% 0%, ${hexToRgba(color, intensity * 0.8)}, transparent 50%),
@@ -117,7 +117,7 @@ export function WorkspaceBackground({
         />
         {/* Subtle animated shimmer - very subtle in light mode */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 opacity-20 dark:opacity-30 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 opacity-20 dark:opacity-30"
           style={{
             background: `radial-gradient(ellipse 40% 20% at 60% 0%, ${hexToRgba(color, intensity * 0.6)}, transparent 50%)`,
           }}
@@ -132,7 +132,7 @@ export function WorkspaceBackground({
       <>
         {/* Grid pattern - visible in both modes */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-30 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-30"
           style={{
             backgroundImage: `
               linear-gradient(${hexToRgba(color, intensity * 0.15)} 1px, transparent 1px),
@@ -143,14 +143,14 @@ export function WorkspaceBackground({
         />
         {/* Accent glow at intersections - top area */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
           style={{
             background: `radial-gradient(ellipse 60% 40% at 50% 0%, ${hexToRgba(color, intensity * 0.3)}, transparent 50%)`,
           }}
         />
         {/* Vignette effect - only in dark mode */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-0 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-0"
           style={{
             background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 100%)',
           }}
@@ -165,7 +165,7 @@ export function WorkspaceBackground({
       <>
         {/* Dot pattern - subtle in light mode */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-40 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-40"
           style={{
             backgroundImage: `radial-gradient(${hexToRgba(color, intensity * 0.4)} 1px, transparent 1px)`,
             backgroundSize: '24px 24px',
@@ -173,7 +173,7 @@ export function WorkspaceBackground({
         />
         {/* Top highlight */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
           style={{
             background: `radial-gradient(ellipse 70% 35% at 50% 0%, ${hexToRgba(color, intensity * 0.2)}, transparent 50%)`,
           }}
@@ -188,7 +188,7 @@ export function WorkspaceBackground({
       <>
         {/* Animated mesh background - more subtle in light mode */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50 transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
           style={{
             background: `
               radial-gradient(at 40% 20%, ${hexToRgba(color, intensity * 0.4)} 0px, transparent 50%),
@@ -201,7 +201,7 @@ export function WorkspaceBackground({
         />
         {/* Noise texture overlay for depth */}
         <div
-          className="pointer-events-none fixed inset-0 -z-10 opacity-[0.03] dark:opacity-[0.03] transition-opacity duration-300"
+          className="pointer-events-none fixed inset-0 -z-10 opacity-[0.03] dark:opacity-[0.03]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
           }}
@@ -222,7 +222,7 @@ export function WorkspaceBackground({
       />
       {/* Subtle corner accent */}
       <div
-        className="pointer-events-none fixed -top-20 -right-20 h-[400px] w-[400px] -z-10 rounded-full blur-[120px] dark:opacity-100 opacity-40 transition-opacity duration-300"
+        className="pointer-events-none fixed -top-20 -right-20 h-[400px] w-[400px] -z-10 rounded-full blur-[120px] dark:opacity-100 opacity-40"
         style={{
           backgroundColor: hexToRgba(color, intensity * 0.6),
         }}

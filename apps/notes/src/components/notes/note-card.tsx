@@ -17,8 +17,8 @@ import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { NoteEditor } from "@/components/notes/note-editor";
 import { useLabels } from "@/components/providers/labels-provider";
 import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
-import { useBackgrounds } from "@/hooks/use-backgrounds";
-import { useCovers } from "@/hooks/use-covers";
+import { useBackgrounds } from "@/components/providers/backgrounds-provider";
+import { useCovers } from "@/components/providers/covers-provider";
 
 type NoteCardProps = {
   note: Note;
