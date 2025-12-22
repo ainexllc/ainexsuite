@@ -93,7 +93,7 @@ export function WorkspaceBackground({
   if (variant === 'minimal') {
     return (
       <div
-        className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50 transition-opacity duration-300"
+        className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
         style={{
           background: `radial-gradient(ellipse 80% 50% at 50% -20%, ${hexToRgba(color, intensity)}, transparent 70%)`,
         }}
@@ -215,7 +215,7 @@ export function WorkspaceBackground({
     <>
       {/* Main radial gradient from top - subtle in light mode */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50 transition-opacity duration-300"
+        className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
         style={{
           background: `radial-gradient(ellipse 80% 50% at 50% -10%, ${hexToRgba(color, intensity)}, transparent 60%)`,
         }}
@@ -229,7 +229,7 @@ export function WorkspaceBackground({
       />
       {/* Very subtle bottom glow for depth */}
       <div
-        className="pointer-events-none fixed inset-x-0 bottom-0 h-[200px] -z-10 dark:opacity-100 opacity-30 transition-opacity duration-300"
+        className="pointer-events-none fixed inset-x-0 bottom-0 h-[200px] -z-10 dark:opacity-100 opacity-30"
         style={{
           background: `linear-gradient(to top, ${hexToRgba(color, intensity * 0.05)}, transparent)`,
         }}
