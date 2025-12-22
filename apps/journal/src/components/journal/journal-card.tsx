@@ -43,8 +43,8 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
   const [pendingAction, setPendingAction] = useState<'view' | 'edit' | null>(null);
   const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode } = usePrivacy();
 
-  // Private entries logic
-  const isLocked = entry.isPrivate && hasPasscode && !isUnlocked;
+  // Private entries logic - blur content when private, regardless of passcode setup
+  const isLocked = entry.isPrivate && !isUnlocked;
 
   // Get color configuration
   const entryColorConfig = ENTRY_COLORS.find((c) => c.id === (entry.color || 'default'));

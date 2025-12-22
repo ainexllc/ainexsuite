@@ -101,9 +101,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Production: Verify session cookie before returning it
+    // Production: Verify session cookie before returning it (throws if invalid)
     const adminAuth = getAdminAuth();
-    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    await adminAuth.verifySessionCookie(sessionCookie, true);
 
     return NextResponse.json(
       {

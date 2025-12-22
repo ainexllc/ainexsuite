@@ -340,14 +340,6 @@ export function WorkflowFlowIcon({ size = 24, color = "#06b6d4", isAnimating = t
     },
   };
 
-  const dotVariants: Variants = {
-    idle: { offsetDistance: "0%" },
-    animate: {
-      offsetDistance: ["0%", "100%"],
-      transition: { duration: 2, repeat: Infinity, ease: "linear" },
-    },
-  };
-
   return (
     <motion.svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
       <path d="M3 12h7l3-6 4 12 3-6h3" opacity={0.3} />

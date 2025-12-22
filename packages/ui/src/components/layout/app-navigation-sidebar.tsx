@@ -35,12 +35,6 @@ const getColorPair = (hexColor: string | undefined): { base: string; light: stri
   return { base, light };
 };
 
-// Get icon color based on active state
-const getIconColor = (hexColor: string | undefined, isActive: boolean): string => {
-  const { base, light } = getColorPair(hexColor);
-  return isActive ? light : base;
-};
-
 // Map app slugs to their animated icons
 const ANIMATED_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string; isAnimating?: boolean }>> = {
   notes: NotesStickyIcon,

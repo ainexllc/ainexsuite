@@ -53,7 +53,7 @@ export function SpacesHubModal({
   onClose,
   spaces,
   currentSpaceId,
-  currentUserId,
+  currentUserId: _currentUserId,
   onSelectSpace,
   onCreateSpace,
   onSpaceSettings,

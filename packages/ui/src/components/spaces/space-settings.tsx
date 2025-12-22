@@ -137,7 +137,7 @@ export function SpaceSettings({
   const [icon, setIcon] = useState<SpaceIcon | undefined>(space.icon);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [, setIsDeleting] = useState(false);
 
   // Member invite state
   const [inviteEmail, setInviteEmail] = useState('');

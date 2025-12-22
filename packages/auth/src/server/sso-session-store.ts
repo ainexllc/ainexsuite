@@ -138,12 +138,9 @@ export function getSessionCount(): number {
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const now = Date.now();
-    let removed = 0;
-
     for (const [sessionId, session] of sessionStore.entries()) {
       if (session.expiresAt < now) {
         sessionStore.delete(sessionId);
-        removed++;
       }
     }
 

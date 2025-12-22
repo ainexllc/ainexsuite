@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Users, Briefcase, Heart, Home, Star, Folder, Sparkles, Globe, Settings, MoreHorizontal } from 'lucide-react';
+import { User, Users, Briefcase, Heart, Home, Star, Folder, Sparkles, Globe, Settings } from 'lucide-react';
 import type { SpaceType, SpaceColor, SpaceIcon, SpaceRole } from '@ainexsuite/types';
 import { cn } from '../../lib/utils';
 
@@ -85,7 +85,7 @@ const SPACE_TYPE_LABELS: Record<SpaceType, string> = {
  * SpaceCard - Visual card for displaying a space in lists
  */
 export function SpaceCard({
-  id,
+  id: _id,
   name,
   type,
   color = 'default',

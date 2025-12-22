@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, type ReactNode, useCallback } from "react";
+import { useRef, useEffect, useState, type ReactNode } from "react";
 import { Moon, Sun, Monitor, LogOut } from "lucide-react";
 import { clsx } from "clsx";
 import Image from "next/image";

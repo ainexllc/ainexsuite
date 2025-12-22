@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { createPortal } from "react-dom";
-import { X, Lock, Tag, Edit, Calendar, ImagePlus } from "lucide-react";
+import { Lock, Tag, Edit, Calendar, ImagePlus } from "lucide-react";
 import { clsx } from "clsx";
 import type { JournalEntry, EntryColor } from "@ainexsuite/types";
 import { EntryEditorShell } from "@ainexsuite/ui";
-import { usePrivacy, PasscodeModal } from "@ainexsuite/privacy";
+import { usePrivacy, PasscodeModal, BlurredContent } from "@ainexsuite/privacy";
 import { RichTextViewer } from "@/components/ui/rich-text-viewer";
 import { getMoodIcon, getMoodLabel } from "@/lib/utils/mood";
 import { formatDate } from "@/lib/utils/date";
@@ -40,7 +39,8 @@ export function JournalEntryViewer({ entry, onClose, onEdit }: JournalEntryViewe
     return getBackgroundById(entry.backgroundImage, availableBackgrounds) || null;
   }, [entry.backgroundImage, availableBackgrounds]);
 
-  const isLocked = entry.isPrivate && hasPasscode && !isUnlocked;
+  // Private entries logic - blur content when private, regardless of passcode setup
+  const isLocked = entry.isPrivate && !isUnlocked;
 
   // Show passcode modal if entry is private and locked
   useEffect(() => {
@@ -75,54 +75,6 @@ export function JournalEntryViewer({ entry, onClose, onEdit }: JournalEntryViewe
       return success;
     }
   };
-
-  // Locked state content
-  if (isLocked) {
-    const content = (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 md:p-6"
-        onClick={onClose}
-      >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-4xl h-[calc(100vh-24px)] sm:h-[calc(100vh-32px)] md:h-[calc(100vh-48px)] max-h-[900px] flex flex-col rounded-2xl border shadow-2xl overflow-hidden bg-background border-border"
-        >
-          <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <Lock className="w-16 h-16 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">Private Entry</h2>
-            <p className="text-muted-foreground text-center mb-6">
-              This entry is private. Enter your passcode to view.
-            </p>
-            <button
-              onClick={() => setShowPasscodeModal(true)}
-              className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:brightness-110 transition"
-            >
-              Unlock to View
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full transition bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-            aria-label="Close viewer"
-          >
-            <X className="h-5 w-5" />
-          </button>
-
-          <PasscodeModal
-            isOpen={showPasscodeModal}
-            onClose={onClose}
-            onSubmit={handlePasscodeSubmit}
-            mode={hasPasscode ? "verify" : "setup"}
-            title={hasPasscode ? "Unlock Private Entry" : "Set Privacy Passcode"}
-          />
-        </div>
-      </div>
-    );
-
-    return createPortal(content, document.body);
-  }
 
   const MoodIcon = entry.mood ? getMoodIcon(entry.mood) : null;
 
@@ -234,50 +186,65 @@ export function JournalEntryViewer({ entry, onClose, onEdit }: JournalEntryViewe
         </div>
       }
     >
-      {/* Metadata row */}
-      <div className={clsx(
-        "flex flex-wrap items-center gap-4 text-sm mb-4",
-        currentBackground
-          ? getTextColorClasses(currentBackground, 'muted')
-          : "text-zinc-500 dark:text-zinc-400"
-      )}>
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          <span>{formatDate(new Date(entry.createdAt))}</span>
+      {/* Blurred content when locked - title remains visible */}
+      <BlurredContent
+        isLocked={isLocked}
+        onClick={() => setShowPasscodeModal(true)}
+      >
+        {/* Metadata row */}
+        <div className={clsx(
+          "flex flex-wrap items-center gap-4 text-sm mb-4",
+          currentBackground
+            ? getTextColorClasses(currentBackground, 'muted')
+            : "text-zinc-500 dark:text-zinc-400"
+        )}>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            <span>{formatDate(new Date(entry.createdAt))}</span>
+          </div>
+
+          {entry.mood && MoodIcon && (
+            <div className={clsx(
+              "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border",
+              currentBackground
+                ? currentBackground.brightness === 'dark'
+                  ? "bg-white/10 border-white/20"
+                  : "bg-black/5 border-black/10"
+                : "bg-white/5 dark:bg-white/5 border-zinc-200 dark:border-zinc-700"
+            )}>
+              <MoodIcon className="h-4 w-4" />
+              <span>{getMoodLabel(entry.mood)}</span>
+            </div>
+          )}
+
+          {entry.isDraft && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+              Draft
+            </span>
+          )}
         </div>
 
-        {entry.mood && MoodIcon && (
-          <div className={clsx(
-            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border",
-            currentBackground
-              ? currentBackground.brightness === 'dark'
-                ? "bg-white/10 border-white/20"
-                : "bg-black/5 border-black/10"
-              : "bg-white/5 dark:bg-white/5 border-zinc-200 dark:border-zinc-700"
-          )}>
-            <MoodIcon className="h-4 w-4" />
-            <span>{getMoodLabel(entry.mood)}</span>
-          </div>
-        )}
+        {/* Content - images are embedded inline via the rich text editor */}
+        <div className={clsx(
+          "prose prose-sm sm:prose max-w-none min-h-[300px]",
+          currentBackground
+            ? currentBackground.brightness === 'dark'
+              ? "prose-invert"
+              : ""
+            : "dark:prose-invert"
+        )}>
+          <RichTextViewer content={entry.content} />
+        </div>
+      </BlurredContent>
 
-        {entry.isDraft && (
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-            Draft
-          </span>
-        )}
-      </div>
-
-      {/* Content - images are embedded inline via the rich text editor */}
-      <div className={clsx(
-        "prose prose-sm sm:prose max-w-none min-h-[300px]",
-        currentBackground
-          ? currentBackground.brightness === 'dark'
-            ? "prose-invert"
-            : ""
-          : "dark:prose-invert"
-      )}>
-        <RichTextViewer content={entry.content} />
-      </div>
+      {/* Passcode modal for unlocking private entries */}
+      <PasscodeModal
+        isOpen={showPasscodeModal}
+        onClose={() => setShowPasscodeModal(false)}
+        onSubmit={handlePasscodeSubmit}
+        mode={hasPasscode ? "verify" : "setup"}
+        title={hasPasscode ? "Unlock Private Entry" : "Set Privacy Passcode"}
+      />
     </EntryEditorShell>
   );
 }

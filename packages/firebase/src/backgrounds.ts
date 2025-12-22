@@ -39,7 +39,6 @@ import type {
   VariantResolution,
   VariantAspectRatio,
 } from '@ainexsuite/types';
-import { VARIANT_CONFIGS } from '@ainexsuite/types';
 
 const COLLECTION_NAME = 'backgrounds';
 

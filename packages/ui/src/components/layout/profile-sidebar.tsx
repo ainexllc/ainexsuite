@@ -10,8 +10,7 @@ import {
   Monitor,
   Bell,
   CreditCard,
-  Sparkles,
-  Loader2
+  Sparkles
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';

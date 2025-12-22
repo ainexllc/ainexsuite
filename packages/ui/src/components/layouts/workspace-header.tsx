@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
 import { NotificationBell } from '../navigation/notification-bell';
-import { QuickActionsMenu } from '../navigation/quick-actions-menu';
 import type { BreadcrumbItem, QuickAction } from '@ainexsuite/types';
 
 interface WorkspaceHeaderProps {
@@ -126,10 +125,10 @@ export function WorkspaceHeader({
   notificationCount = 0,
   onNotificationsClick,
   isNotificationsOpen = false,
-  quickActions = [],
-  onQuickAction,
-  isQuickActionsOpen = false,
-  onQuickActionsToggle,
+  quickActions: _quickActions = [],
+  onQuickAction: _onQuickAction,
+  isQuickActionsOpen: _isQuickActionsOpen = false,
+  onQuickActionsToggle: _onQuickActionsToggle,
   onAiAssistantClick,
 }: WorkspaceHeaderProps) {
   // Fullscreen state

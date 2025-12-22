@@ -162,7 +162,6 @@ export async function deleteCover(coverId: string): Promise<void> {
     throw new Error('Cover not found');
   }
 
-  const data = docSnap.data();
   const basePath = `covers/${coverId}`;
 
   // Delete original

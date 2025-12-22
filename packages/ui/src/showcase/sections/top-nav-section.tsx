@@ -1,7 +1,6 @@
 'use client';
 
 import { Menu, ChevronDown, Sparkles, Bell, Search } from 'lucide-react';
-import Image from 'next/image';
 
 /**
  * TopNav Mockup Section - Shows the shared top navigation in light and dark mode

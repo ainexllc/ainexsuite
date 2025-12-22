@@ -30,7 +30,7 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
-  const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode } = usePrivacy();
+  const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode, lockNow } = usePrivacy();
   const formRef = useRef<JournalFormHandle>(null);
 
   // Entry state that can be modified via shell buttons
@@ -224,9 +224,12 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
       }
       return success;
     } else {
+      // Setting up passcode for the first time - also lock the entry
       const success = await setupPasscode(passcode);
       if (success) {
         setShowPasscodeModal(false);
+        setIsPrivate(true); // Mark entry as private
+        lockNow(); // Immediately lock so content blurs
       }
       return success;
     }
@@ -575,7 +578,19 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
           {/* Private toggle */}
           <button
             type="button"
-            onClick={() => setIsPrivate((prev) => !prev)}
+            onClick={() => {
+              if (!isPrivate && !hasPasscode) {
+                // Trying to lock but no passcode set - prompt to set one up
+                setShowPasscodeModal(true);
+              } else if (!isPrivate) {
+                // Locking - mark as private and lock session
+                setIsPrivate(true);
+                lockNow();
+              } else {
+                // Unlocking - just toggle off (they'll need passcode to view again)
+                setIsPrivate(false);
+              }
+            }}
             className={clsx(
               'h-9 w-9 rounded-full flex items-center justify-center transition',
               isPrivate

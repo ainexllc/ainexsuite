@@ -15,6 +15,7 @@ import { createJournalEntry, updateJournalEntry } from "@/lib/firebase/firestore
 import { JournalForm, JournalFormHandle } from "@/components/journal/journal-form";
 import { useToast, EntryEditorShell } from "@ainexsuite/ui";
 import { useSpaces } from "@/components/providers/spaces-provider";
+import { usePrivacy, PasscodeModal } from "@ainexsuite/privacy";
 
 type JournalComposerModalProps = {
   isOpen: boolean;
@@ -26,7 +27,9 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
   const { user } = useAuth();
   const { toast } = useToast();
   const { currentSpaceId } = useSpaces();
+  const { hasPasscode, setupPasscode, lockNow } = usePrivacy();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPasscodeModal, setShowPasscodeModal] = useState(false);
   const formRef = useRef<JournalFormHandle>(null);
 
   // Entry state
@@ -112,6 +115,17 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
     resetState();
     onClose();
   }, [resetState, onClose]);
+
+  // Handle passcode setup when locking for the first time
+  const handlePasscodeSubmit = async (passcode: string) => {
+    const success = await setupPasscode(passcode);
+    if (success) {
+      setShowPasscodeModal(false);
+      setIsPrivate(true); // Mark entry as private
+      lockNow(); // Immediately lock so content blurs
+    }
+    return success;
+  };
 
   // Images are uploaded directly to Firebase Storage via the rich text editor toolbar
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -481,7 +495,19 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
           {/* Private toggle */}
           <button
             type="button"
-            onClick={() => setIsPrivate((prev) => !prev)}
+            onClick={() => {
+              if (!isPrivate && !hasPasscode) {
+                // Trying to lock but no passcode set - prompt to set one up
+                setShowPasscodeModal(true);
+              } else if (!isPrivate) {
+                // Locking - mark as private and lock session
+                setIsPrivate(true);
+                lockNow();
+              } else {
+                // Unlocking - just toggle off
+                setIsPrivate(false);
+              }
+            }}
             className={clsx(
               'h-9 w-9 rounded-full flex items-center justify-center transition',
               isPrivate
@@ -612,6 +638,15 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
           hideTitle={true}
         />
       </BackgroundProvider>
+
+      {/* Passcode modal for setting up privacy PIN */}
+      <PasscodeModal
+        isOpen={showPasscodeModal}
+        onClose={() => setShowPasscodeModal(false)}
+        onSubmit={handlePasscodeSubmit}
+        mode="setup"
+        title="Set Privacy Passcode"
+      />
     </EntryEditorShell>
   );
 }
