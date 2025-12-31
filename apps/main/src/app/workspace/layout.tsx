@@ -97,11 +97,7 @@ export default function WorkspaceRootLayout({
   if (!user) return null;
 
   return (
-    <div className="dark relative isolate min-h-screen overflow-x-hidden bg-background text-foreground">
-      {/* Atmospheric glows - kept here as they seem specific to Main's look, but placed under layout control */}
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#f97316]/40 blur-[150px]" />
-      <div className="pointer-events-none absolute top-1/3 right-[-12%] h-[460px] w-[460px] rounded-full bg-[#ea580c]/30 blur-[160px]" />
-
+    <>
       <WorkspaceLayoutWithInsights
         user={user}
         onSignOut={handleSignOut}
@@ -116,7 +112,7 @@ export default function WorkspaceRootLayout({
         {children}
       </WorkspaceLayoutWithInsights>
 
-      {/* Right Panels */}
+      {/* Right Panels - rendered outside WorkspaceLayout for proper z-index */}
       {activePanel && (
         <div
           className="fixed inset-0 z-30 bg-overlay/60 backdrop-blur-sm"
@@ -147,6 +143,6 @@ export default function WorkspaceRootLayout({
         isOpen={isQuickCreateOpen}
         onClose={() => setIsQuickCreateOpen(false)}
       />
-    </div>
+    </>
   );
 }

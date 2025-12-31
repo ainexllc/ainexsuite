@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, Crown, UserMinus, UserPlus, X, Baby, User, Monitor, Link, Copy, Check, RefreshCw } from 'lucide-react';
+import { Mail, Crown, UserMinus, UserPlus, X, Baby, User, Monitor, Link, Copy, Check, RefreshCw, Send, Loader2 } from 'lucide-react';
 import { useGrowStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
 import { Member, MemberAgeGroup, HabitCreationPolicy } from '../../types/models';
@@ -13,31 +13,95 @@ interface MemberManagerProps {
   onClose: () => void;
 }
 
+type InviteTab = 'quick' | 'email';
+
 export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
   const { user } = useAuth();
   const { getCurrentSpace, updateSpace } = useGrowStore();
   const currentSpace = getCurrentSpace();
+
+  // Quick add state
+  const [quickName, setQuickName] = useState('');
+  const [quickAgeGroup, setQuickAgeGroup] = useState<MemberAgeGroup>('adult');
+
+  // Email invite state
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteAgeGroup, setInviteAgeGroup] = useState<MemberAgeGroup>('adult');
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  // UI state
+  const [inviteTab, setInviteTab] = useState<InviteTab>('quick');
   const [copied, setCopied] = useState(false);
 
   if (!isOpen || !currentSpace || !user) return null;
 
   const canManage = isSpaceAdmin(currentSpace, user.uid);
+  const isFamilySpace = currentSpace.type === 'family';
 
-  const handleInvite = (e: React.FormEvent) => {
+  // Quick add member (no email needed - for household members)
+  const handleQuickAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock invite logic
+    if (!quickName.trim()) return;
+
     const newMember: Member = {
-      uid: `user_${Date.now()}`, // Mock ID
-      displayName: inviteEmail.split('@')[0],
+      uid: `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      displayName: quickName.trim(),
       role: 'member',
       joinedAt: new Date().toISOString(),
+      ...(isFamilySpace ? { ageGroup: quickAgeGroup } : {}),
     };
-    
+
     updateSpace(currentSpace.id, {
-      members: [...currentSpace.members, newMember]
+      members: [...currentSpace.members, newMember],
+      memberUids: [...currentSpace.memberUids, newMember.uid],
     });
-    setInviteEmail('');
+
+    setQuickName('');
+    setQuickAgeGroup('adult');
+  };
+
+  // Email invite (sends real invite)
+  const handleEmailInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+
+    setInviteSending(true);
+    setInviteError(null);
+    setInviteSuccess(false);
+
+    try {
+      const response = await fetch('/api/invites/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          spaceId: currentSpace.id,
+          spaceName: currentSpace.name,
+          spaceType: currentSpace.type,
+          inviteeEmail: inviteEmail.trim(),
+          inviterName: user.displayName || 'Someone',
+          inviterId: user.uid,
+          ageGroup: isFamilySpace ? inviteAgeGroup : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to send invite');
+      }
+
+      setInviteSuccess(true);
+      setInviteEmail('');
+      setInviteAgeGroup('adult');
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setInviteSuccess(false), 3000);
+    } catch (error) {
+      setInviteError(error instanceof Error ? error.message : 'Failed to send invite');
+    } finally {
+      setInviteSending(false);
+    }
   };
 
   const handleRemoveMember = (uid: string) => {
@@ -111,32 +175,183 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
         </div>
 
         <div className="p-4 space-y-6 overflow-y-auto flex-1">
-          {/* Invite Section */}
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-2">
-              Invite New Member
-            </label>
-            <form onSubmit={handleInvite} className="flex gap-2">
-              <div className="relative flex-1">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-foreground/40" />
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  className="w-full bg-foreground/5 border border-border rounded-lg py-2 pl-9 pr-4 text-sm text-foreground focus:outline-none focus:border-indigo-500"
-                  required
-                />
+          {/* Add Member Section */}
+          {canManage && (
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-2">
+                Add Member
+              </label>
+
+              {/* Tab Switcher */}
+              <div className="flex gap-1 p-1 bg-foreground/5 rounded-lg mb-3">
+                <button
+                  onClick={() => setInviteTab('quick')}
+                  className={cn(
+                    'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                    inviteTab === 'quick'
+                      ? 'bg-indigo-500 text-white'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <UserPlus className="h-3.5 w-3.5 inline mr-1.5" />
+                  Quick Add
+                </button>
+                <button
+                  onClick={() => setInviteTab('email')}
+                  className={cn(
+                    'flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                    inviteTab === 'email'
+                      ? 'bg-indigo-500 text-white'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <Mail className="h-3.5 w-3.5 inline mr-1.5" />
+                  Email Invite
+                </button>
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"
-              >
-                <UserPlus className="h-4 w-4" />
-                Invite
-              </button>
-            </form>
-          </div>
+
+              {/* Quick Add Form */}
+              {inviteTab === 'quick' && (
+                <form onSubmit={handleQuickAdd} className="space-y-3">
+                  <input
+                    type="text"
+                    value={quickName}
+                    onChange={(e) => setQuickName(e.target.value)}
+                    placeholder="Member name"
+                    className="w-full bg-foreground/5 border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-indigo-500"
+                    required
+                  />
+
+                  {/* Age Group Selector (Family spaces) */}
+                  {isFamilySpace && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setQuickAgeGroup('adult')}
+                        className={cn(
+                          'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors',
+                          quickAgeGroup === 'adult'
+                            ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300'
+                            : 'bg-foreground/5 border border-border text-muted-foreground hover:bg-foreground/10'
+                        )}
+                      >
+                        <User className="h-4 w-4" />
+                        Adult
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQuickAgeGroup('child')}
+                        className={cn(
+                          'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors',
+                          quickAgeGroup === 'child'
+                            ? 'bg-pink-500/20 border border-pink-500/50 text-pink-300'
+                            : 'bg-foreground/5 border border-border text-muted-foreground hover:bg-foreground/10'
+                        )}
+                      >
+                        <Baby className="h-4 w-4" />
+                        Child
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    Add {isFamilySpace && quickAgeGroup === 'child' ? 'Child' : 'Member'}
+                  </button>
+                  <p className="text-xs text-foreground/40 text-center">
+                    For household members who share this device
+                  </p>
+                </form>
+              )}
+
+              {/* Email Invite Form */}
+              {inviteTab === 'email' && (
+                <form onSubmit={handleEmailInvite} className="space-y-3">
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-foreground/40" />
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      className="w-full bg-foreground/5 border border-border rounded-lg py-2 pl-9 pr-4 text-sm text-foreground focus:outline-none focus:border-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Age Group Selector (Family spaces) */}
+                  {isFamilySpace && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setInviteAgeGroup('adult')}
+                        className={cn(
+                          'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors',
+                          inviteAgeGroup === 'adult'
+                            ? 'bg-blue-500/20 border border-blue-500/50 text-blue-300'
+                            : 'bg-foreground/5 border border-border text-muted-foreground hover:bg-foreground/10'
+                        )}
+                      >
+                        <User className="h-4 w-4" />
+                        Adult
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setInviteAgeGroup('child')}
+                        className={cn(
+                          'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors',
+                          inviteAgeGroup === 'child'
+                            ? 'bg-pink-500/20 border border-pink-500/50 text-pink-300'
+                            : 'bg-foreground/5 border border-border text-muted-foreground hover:bg-foreground/10'
+                        )}
+                      >
+                        <Baby className="h-4 w-4" />
+                        Child
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={inviteSending}
+                    className="w-full px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    {inviteSending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Send Invite
+                      </>
+                    )}
+                  </button>
+
+                  {/* Success/Error Messages */}
+                  {inviteSuccess && (
+                    <p className="text-xs text-emerald-400 text-center flex items-center justify-center gap-1">
+                      <Check className="h-3.5 w-3.5" />
+                      Invite sent successfully!
+                    </p>
+                  )}
+                  {inviteError && (
+                    <p className="text-xs text-red-400 text-center">
+                      {inviteError}
+                    </p>
+                  )}
+
+                  <p className="text-xs text-foreground/40 text-center">
+                    They&apos;ll receive an email to join this space
+                  </p>
+                </form>
+              )}
+            </div>
+          )}
 
           {/* Members List */}
           <div>

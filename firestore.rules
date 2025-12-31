@@ -373,7 +373,11 @@ service cloud.firestore {
     match /users/{userId}/filterPresets/{presetId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
-    
+
+    match /users/{userId}/health_preferences/{settingId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     match /feedback/{feedbackId} {
       allow create: if isAuthenticated();
       // Allow public read for admin dashboard (admin role checked client-side)

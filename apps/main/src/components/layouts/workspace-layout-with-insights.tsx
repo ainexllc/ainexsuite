@@ -77,7 +77,6 @@ export function WorkspaceLayoutWithInsights({
         onSignOut={onSignOut}
         appName="Suite"
         appColor="#f97316"
-        showBackground={false}
         quickActions={quickActions}
         onQuickAction={onQuickAction}
         onAiAssistantClick={onAiAssistantClick}

@@ -30,6 +30,27 @@ export interface Space {
   dashboardToken?: string; // For family dashboard access without auth
 }
 
+// Invite system
+export type InviteStatus = 'pending' | 'accepted' | 'declined' | 'expired';
+
+export interface SpaceInvite {
+  id: string;
+  spaceId: string;
+  spaceName: string;
+  spaceType: SpaceType;
+  invitedBy: string; // User ID of inviter
+  inviterName: string;
+  inviteeEmail: string;
+  inviteeUserId?: string; // Filled if invitee is existing user
+  role: 'member' | 'observer';
+  ageGroup?: MemberAgeGroup; // For family spaces
+  status: InviteStatus;
+  token: string; // Unique token for invite link
+  createdAt: string;
+  expiresAt: string;
+  respondedAt?: string;
+}
+
 export type FrequencyType = 'daily' | 'weekly' | 'interval' | 'specific_days';
 
 // Habit categories for organization

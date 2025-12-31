@@ -133,7 +133,7 @@ export function WorkspacePageLayout({
 
       {/* Toolbar Area */}
       {toolbar && (
-        <div className="relative z-20 w-full !mt-1.5">
+        <div className="relative z-20 w-full !mt-4 md:!mt-6">
           {toolbar}
         </div>
       )}

@@ -1,18 +1,50 @@
 'use client';
 
-import { Medal } from 'lucide-react';
+import { Medal, Users, Heart, Home, Settings } from 'lucide-react';
 import { MemberContribution } from '../../lib/analytics-utils';
+import type { SpaceType } from '@/types/models';
 
 interface TeamLeaderboardProps {
   data: MemberContribution[];
+  spaceType?: SpaceType;
+  onSettingsClick?: () => void;
 }
 
-export function TeamLeaderboard({ data }: TeamLeaderboardProps) {
+const getLeaderboardTitle = (spaceType?: SpaceType): { title: string; icon: typeof Users } => {
+  switch (spaceType) {
+    case 'family':
+      return { title: 'Family Progress', icon: Home };
+    case 'couple':
+      return { title: 'Partner Progress', icon: Heart };
+    case 'squad':
+      return { title: 'Squad Leaderboard', icon: Users };
+    default:
+      return { title: 'Progress', icon: Users };
+  }
+};
+
+export function TeamLeaderboard({ data, spaceType, onSettingsClick }: TeamLeaderboardProps) {
+  const { title, icon: Icon } = getLeaderboardTitle(spaceType);
+
   return (
     <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
       <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
-        <h3 className="text-sm font-bold text-white">Squad Leaderboard</h3>
-        <span className="text-xs text-white/40">This Week</span>
+        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <Icon className="h-4 w-4 text-white/60" />
+          {title}
+        </h3>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-white/40">This Week</span>
+          {onSettingsClick && (
+            <button
+              onClick={onSettingsClick}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors"
+              title="Manage Members"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
       
       <div className="divide-y divide-white/5">

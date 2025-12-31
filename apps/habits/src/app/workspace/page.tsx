@@ -118,12 +118,12 @@ export default function GrowWorkspacePage() {
         }
       >
 
-        {/* Quests Section (Squad/Couple Only) */}
+        {/* Quests Section (Non-personal spaces) */}
         {currentSpace?.type !== 'personal' && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Crown className="h-5 w-5 text-yellow-400" />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <Crown className="h-4 w-4 text-yellow-400" />
                 Active Quests
               </h2>
               <button
@@ -154,13 +154,17 @@ export default function GrowWorkspacePage() {
 
         {/* Team Leaderboard - Only for non-personal spaces */}
         {currentSpace?.type !== 'personal' && (
-          <TeamLeaderboard data={teamStats} />
+          <TeamLeaderboard
+            data={teamStats}
+            spaceType={currentSpace?.type}
+            onSettingsClick={() => setShowMemberManager(true)}
+          />
         )}
 
         {/* Activity Feed - Only for non-personal spaces */}
         {currentSpace?.type !== 'personal' && currentSpace && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-white/70 uppercase tracking-wider flex items-center gap-2">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">
               Recent Activity
             </h3>
             <ActivityFeed
@@ -168,7 +172,7 @@ export default function GrowWorkspacePage() {
               habits={habits}
               members={currentSpace.members}
               currentUserId={user?.uid || ''}
-              limit={8}
+              limit={5}
             />
           </div>
         )}
@@ -176,10 +180,10 @@ export default function GrowWorkspacePage() {
         {/* Achievement Badges */}
         <AchievementBadges habits={habits} completions={completions} />
 
-        {/* Active Wagers - Full Width */}
+        {/* Active Wagers - Couple Only */}
         {currentSpace?.type === 'couple' && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-white/70 uppercase tracking-wider">Active Wagers</h3>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">Active Wagers</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {habits.filter((h: Habit) => h.wager?.isActive).map((habit: Habit) => (
                 <WagerCard key={habit.id} habit={habit} />
@@ -203,10 +207,10 @@ export default function GrowWorkspacePage() {
           }}
         />
 
-        {/* Main Habits List - Full Width */}
-        <div className="space-y-6">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Layout className="h-5 w-5 text-indigo-400" />
+        {/* Main Habits List */}
+        <div className="space-y-4">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Layout className="h-4 w-4 text-indigo-400" />
             Today&apos;s Focus
           </h2>
 
