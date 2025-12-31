@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import {
   Trash2,
   Users,
@@ -21,6 +21,7 @@ import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BAC
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useCovers } from "@/components/providers/covers-provider";
 import { ImageModal } from "@/components/ui/image-modal";
+import { HeartBurst } from "@/components/ui/heart-burst";
 
 type NoteCardProps = {
   note: Note;
@@ -38,6 +39,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
 
   const labelMap = useMemo(() => {
     return new Map(labels.map((label) => [label.id, label]));
@@ -93,10 +95,18 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
     setShowDeleteConfirm(false);
   };
 
-  const handlePin = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handlePin = useCallback(async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    // Only show burst when adding to Focus (not removing)
+    if (!note.pinned) {
+      setShowHeartBurst(true);
+    }
     await togglePin(note.id, !note.pinned);
-  };
+  }, [note.id, note.pinned, togglePin]);
+
+  const handleBurstComplete = useCallback(() => {
+    setShowHeartBurst(false);
+  }, []);
 
   return (
     <>
@@ -106,11 +116,11 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           !backgroundImage && !hasCover && cardClass,
           "border border-zinc-200 dark:border-zinc-800",
           "group relative cursor-pointer overflow-hidden rounded-2xl",
-          "transition-[border-color,box-shadow] duration-200",
+          "transition-[border-color,box-shadow,transform] duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
           "break-inside-avoid px-6 py-6",
-          // Selection styles
-          isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+          // Selection styles - glow effect and scale
+          isSelected && "border-primary dark:border-primary ring-4 ring-primary/20 scale-[0.98]",
         )}
         onClick={(event) => {
           if (isSelectMode && onSelect) {
@@ -132,18 +142,35 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
               onSelect(note.id, event);
             }}
             className={clsx(
-              "absolute top-3 left-3 z-30 h-6 w-6 rounded-full border-2 transition-all",
+              "absolute z-30 h-5 w-5 rounded-full transition-all duration-200",
               "flex items-center justify-center",
+              "backdrop-blur-xl border shadow-sm",
+              // Position in title row, right side but left of pin corner
+              "top-4 right-[42px]",
               isSelected
-                ? "bg-primary border-primary"
-                : "border-zinc-300 dark:border-zinc-600 bg-white/80 dark:bg-zinc-800/80",
+                ? "bg-primary border-primary scale-110"
+                : clsx(
+                    "border-white/30 dark:border-zinc-600/50",
+                    backgroundImage || hasCover
+                      ? "bg-black/20"
+                      : "bg-white/80 dark:bg-zinc-800/80"
+                  ),
               isSelectMode
                 ? "opacity-100"
-                : "opacity-0 group-hover:opacity-100",
+                : "opacity-0 group-hover:opacity-100 hover:scale-110",
             )}
             aria-label={isSelected ? "Deselect note" : "Select note"}
           >
-            {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+            {isSelected ? (
+              <Check className="h-3 w-3 text-white" />
+            ) : (
+              <div className={clsx(
+                "h-2 w-2 rounded-full border-[1.5px]",
+                backgroundImage || hasCover
+                  ? "border-white/50"
+                  : "border-zinc-400 dark:border-zinc-500"
+              )} />
+            )}
           </button>
         )}
 
@@ -183,7 +210,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
             className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
             aria-label="Remove from Focus"
           >
-            <div className="absolute top-0 right-0 bg-amber-500 group-hover/pin:bg-amber-600 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-colors" />
+            <div className="absolute top-0 right-0 bg-[var(--color-primary)] group-hover/pin:brightness-90 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all" />
             <FocusIcon focused className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
           </button>
         )}
@@ -322,7 +349,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           </div>
 
           <footer className={clsx(
-            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t",
+            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t overflow-visible",
             backgroundImage?.brightness === 'light'
               ? "bg-white/30 backdrop-blur-sm border-black/10"
               : backgroundImage
@@ -366,7 +393,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
             </div>
             {/* Glass pill for actions */}
             <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
+              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border overflow-visible",
               backgroundImage
                 ? backgroundImage.brightness === 'dark'
                   ? "bg-white/10 border-white/20"
@@ -389,25 +416,30 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                   <Flame className="h-3.5 w-3.5" />
                 </div>
               )}
-              {/* Focus button - only shows on non-focused notes */}
-              {!note.pinned && (
-                <button
-                  type="button"
-                  onClick={handlePin}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    backgroundImage?.brightness === 'light'
-                      ? "text-amber-600 hover:bg-amber-500/20 hover:text-amber-700"
-                      : backgroundImage
-                        ? "text-amber-300 hover:bg-amber-500/30 hover:text-amber-200"
-                        : hasCover
-                          ? "text-amber-300 hover:bg-amber-500/30 hover:text-amber-200"
-                          : "text-amber-500 hover:bg-amber-500/20 hover:text-amber-600"
-                  )}
-                  aria-label="Add to Focus"
-                >
-                  <FocusIcon className="h-3.5 w-3.5" />
-                </button>
+              {/* Focus button area - burst persists after pin */}
+              {(!note.pinned || showHeartBurst) && (
+              <div className="relative h-7 w-7 flex items-center justify-center overflow-visible">
+                {!note.pinned && (
+                  <button
+                    type="button"
+                    onClick={handlePin}
+                    className={clsx(
+                      "h-7 w-7 rounded-full flex items-center justify-center transition",
+                      backgroundImage?.brightness === 'light'
+                        ? "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                        : backgroundImage
+                          ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30"
+                          : hasCover
+                            ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30"
+                            : "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                    )}
+                    aria-label="Add to Focus"
+                  >
+                    <FocusIcon className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <HeartBurst trigger={showHeartBurst} onComplete={handleBurstComplete} />
+              </div>
               )}
               <button
                 type="button"
