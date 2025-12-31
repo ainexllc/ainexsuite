@@ -11,8 +11,13 @@ import { WeatherTile } from './tiles/weather-tile';
 import { MarketTile } from './tiles/market-tile';
 import { TimerTile } from './tiles/timer-tile';
 import { AlarmClockTile } from './tiles/alarm-clock-tile';
+import { HabitsTile } from './tiles/habits-tile';
+import { HealthTile } from './tiles/health-tile';
+import { TasksTile } from './tiles/tasks-tile';
+import { JournalTile } from './tiles/journal-tile';
 import { ClockService, ClockStyle, type ClockSettings } from '@/lib/clock-settings';
 import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
+import { Preset } from '@/lib/presets';
 import { BackgroundEffects, EffectType } from './background-effects';
 import { usePulseStore } from '@/lib/store';
 
@@ -563,6 +568,33 @@ export function DigitalClock() {
     updateSettings(tiles, url);
   };
 
+  const handleApplyPreset = (preset: Preset) => {
+    const targetLayout = LAYOUTS[preset.layoutId];
+    if (!targetLayout) return;
+
+    // Create new tiles mapping from preset
+    const newTiles: Record<string, string | null> = {};
+    const targetSlots = targetLayout.slots.map(s => s.id);
+
+    // Fill slots with preset tiles
+    preset.tiles.forEach((tileType, index) => {
+      if (index < targetSlots.length) {
+        // Generate unique ID for each tile
+        newTiles[targetSlots[index]] = `${tileType}-${Date.now()}-${index}`;
+      }
+    });
+
+    // Fill remaining slots with null
+    targetSlots.forEach(slotId => {
+      if (!(slotId in newTiles)) {
+        newTiles[slotId] = null;
+      }
+    });
+
+    // Apply preset settings
+    updateSettings(newTiles, backgroundImage, undefined, preset.layoutId);
+  };
+
   const renderTile = (tileId: string | null, slot: string, size: SlotSize) => {
     if (!tileId) return null;
     
@@ -586,6 +618,10 @@ export function DigitalClock() {
     if (tileId.includes('spark')) return <SparkTile {...props} />;
     if (tileId.includes('weather')) return <WeatherTile {...props} weatherZipcode={weatherZipcode} onZipcodeChange={handleZipcodeChange} />;
     if (tileId.includes('market')) return <MarketTile {...props} />;
+    if (tileId.includes('habits')) return <HabitsTile {...props} />;
+    if (tileId.includes('health')) return <HealthTile {...props} />;
+    if (tileId.includes('tasks')) return <TasksTile {...props} />;
+    if (tileId.includes('journal')) return <JournalTile {...props} />;
     if (tileId.includes('timer')) {
         return (
             <TimerTile
@@ -924,8 +960,8 @@ export function DigitalClock() {
         style={{ opacity: backgroundDim / 100 }}
       />
 
-      {/* Render Atmospheric Effects - Placed ABOVE the dimmer layer so they remain bright */}
-      <div className="absolute inset-0 z-30 pointer-events-none">
+      {/* Render Atmospheric Effects - Behind content but above dimmer */}
+      <div className="absolute inset-0 z-5 pointer-events-none">
         <BackgroundEffects effect={backgroundEffect} />
       </div>
 
@@ -1017,6 +1053,7 @@ export function DigitalClock() {
               onToggleShowClock={handleToggleShowClock}
               showTiles={showTiles}
               onToggleShowTiles={handleToggleShowTiles}
+              onApplyPreset={handleApplyPreset}
             />
           </div>
         </div>

@@ -45,12 +45,12 @@ export function TileBase({
       draggable={isDraggable}
       onDragStart={handleDragStart}
       onTouchStart={handleTouchStart}
-      className={`group relative bg-foreground/5 hover:bg-foreground/10 border border-border rounded-xl p-4 transition-all duration-200 backdrop-blur-sm select-none touch-none flex flex-col h-full ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${className}`}
+      className={`group relative bg-background/85 hover:bg-background/95 border border-border/30 rounded-xl p-3 transition-all duration-300 backdrop-blur-md shadow-lg select-none touch-none flex flex-col h-full hover:shadow-xl hover:scale-[1.01] ${isDraggable ? 'cursor-grab active:cursor-grabbing active:scale-[0.99]' : ''} ${className}`}
     >
-      <div className="flex items-center justify-between mb-2 opacity-50 group-hover:opacity-100 transition-opacity">
-        <div className="flex items-center gap-2">
-          {isDraggable && <GripVertical className="w-3 h-3" />}
-          <span className="text-xs font-medium uppercase tracking-wider text-foreground/70">{title}</span>
+      <div className="flex items-center justify-between mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center gap-1.5">
+          {isDraggable && <GripVertical className="w-2.5 h-2.5 text-foreground/40" />}
+          <span className="text-[10px] font-medium uppercase tracking-wider text-foreground/50">{title}</span>
         </div>
         {onRemove && (
           <button
@@ -58,9 +58,9 @@ export function TileBase({
               e.stopPropagation();
               onRemove();
             }}
-            className="text-muted-foreground hover:text-red-400 transition-colors"
+            className="text-muted-foreground/50 hover:text-red-400 transition-colors p-0.5 rounded hover:bg-red-500/10"
           >
-            <X className="w-3 h-3" />
+            <X className="w-2.5 h-2.5" />
           </button>
         )}
       </div>
