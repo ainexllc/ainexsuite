@@ -15,8 +15,6 @@ import {
   BackgroundVariant,
   ReactFlowProvider,
   type ReactFlowInstance,
-  MarkerType,
-  EdgeLabelRenderer,
   SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -26,6 +24,7 @@ import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '@ainexsuite/auth';
 import { db } from '@ainexsuite/firebase';
 
+// Node components
 import RectangleNode from './nodes/RectangleNode';
 import DiamondNode from './nodes/DiamondNode';
 import OvalNode from './nodes/OvalNode';
@@ -36,11 +35,32 @@ import StickyNoteNode from './nodes/StickyNoteNode';
 import IconNode from './nodes/IconNode';
 import DatabaseNode from './nodes/DatabaseNode';
 import DocumentsNode from './nodes/DocumentsNode';
+
+// Edge components
 import { SmartEdge } from './edges/SmartEdge';
+
+// UI components
 import { ShapePalette } from './ShapePalette';
 import { ConfirmationModal } from './ConfirmationModal';
-import { useUndoRedo } from './hooks/useUndoRedo';
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { EdgeLabelOverlay, EmptyCanvasOverlay } from './components';
+
+// Hooks
+import { useUndoRedo, useKeyboardShortcuts, useThemeColors, useNodeAlignment } from './hooks';
+
+// Utilities
+import {
+  validateEdges,
+  sanitizeForFirestore,
+  getMarkerConfig,
+  isAnimatedStyle,
+  createEdgeStyle,
+  paletteNodeTypes,
+  defaultNodeData,
+  getNodeDimensions,
+  type LineStyleType,
+  type ArrowType,
+  type EdgeStyleType,
+} from './utils';
 
 // Define nodeTypes outside component to prevent re-creation
 const nodeTypes = {
@@ -56,133 +76,32 @@ const nodeTypes = {
   documents: DocumentsNode,
 };
 
-/**
- * Validates edges to ensure source and target nodes exist
- * Filters out any orphaned edges that reference non-existent nodes
- */
-const validateEdges = (edges: Edge[], nodes: Node[]) => {
-  const nodeIds = new Set(nodes.map(n => n.id));
-  const orphanedEdges: string[] = [];
-
-  const validEdges = edges.filter(edge => {
-    const sourceExists = nodeIds.has(edge.source);
-    const targetExists = nodeIds.has(edge.target);
-
-    if (!sourceExists || !targetExists) {
-      orphanedEdges.push(
-        `${edge.id} (${edge.source} → ${edge.target}): ` +
-        `${!sourceExists ? `source node "${edge.source}" missing` : ''} ` +
-        `${!targetExists ? `target node "${edge.target}" missing` : ''}`
-      );
-      console.warn(
-        `Removing orphaned edge: ${edge.id} (${edge.source} → ${edge.target})`
-      );
-      return false;
-    }
-
-    return true;
-  });
-
-  return { validEdges, orphanedEdges };
-};
-
-/**
- * Firestore does not allow undefined values, so we serialize and parse objects
- * before saving to strip any `undefined` keys React Flow may add.
- */
-const sanitizeForFirestore = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
-
-const paletteNodeTypes = [
-  'rectangle',
-  'diamond',
-  'oval',
-  'parallelogram',
-  'swimlane',
-  'subprocess',
-  'sticky-note',
-  'icon',
-  'database',
-  'documents',
-] as const;
-
-const defaultNodeData: Record<string, Record<string, unknown>> = {
-  rectangle: { label: 'Process' },
-  diamond: { label: 'Decision?' },
-  oval: { label: 'Start' },
-  parallelogram: { label: 'Input' },
-  swimlane: { label: 'Swimlane', orientation: 'horizontal', lanes: 3 },
-  subprocess: { label: 'Subprocess', detail: 'Describe the nested flow...' },
-  'sticky-note': { label: 'Quick note...' },
-  icon: { label: 'Service', emoji: '🧩' },
-  database: { label: 'Database' },
-  documents: { label: 'Documents' },
-};
-
-const getNodeDimensions = (nodeType: string) => {
-  switch (nodeType) {
-    case 'diamond':
-      return { width: 140, height: 140 };
-    case 'oval':
-      return { width: 120, height: 120 };
-    case 'swimlane':
-      return { width: 320, height: 220 };
-    case 'subprocess':
-      return { width: 220, height: 140 };
-    case 'sticky-note':
-      return { width: 180, height: 140 };
-    case 'icon':
-      return { width: 160, height: 160 };
-    case 'database':
-      return { width: 180, height: 180 };
-    case 'documents':
-      return { width: 200, height: 140 };
-    default:
-      return { width: 160, height: 80 };
-  }
-};
-
 function WorkflowCanvasInner() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const nodeIdCounter = useRef(0);
   const getId = useCallback(() => `node_${nodeIdCounter.current++}`, []);
-  // const edgeIdCounter = useRef(0);
-  // const getEdgeId = useCallback(() => `edge_${edgeIdCounter.current++}`, []);
+
+  // React Flow state
   const [nodes, setNodesState, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdgesState, onEdgesChange] = useEdgesState<Edge>([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
-  const [edgeType, setEdgeType] = useState<'default' | 'straight' | 'step' | 'smoothstep'>('smoothstep');
-  const [arrowType, setArrowType] = useState<'none' | 'end' | 'start' | 'both'>('end');
-  const [lineStyle, setLineStyle] = useState<'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted'>('solid');
+
+  // Edge styling state
+  const [edgeType, setEdgeType] = useState<EdgeStyleType>('smoothstep');
+  const [arrowType, setArrowType] = useState<ArrowType>('end');
+  const [lineStyle, setLineStyle] = useState<LineStyleType>('solid');
+
+  // UI state
   const [snapToGrid, setSnapToGrid] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [editingEdge, setEditingEdge] = useState<string | null>(null);
+
   const { user } = useAuth();
 
-  // Get theme colors from CSS variables set by AppColorProvider
-  const [themePrimary, setThemePrimary] = useState('#06b6d4');
-  const [themePrimaryRgb, setThemePrimaryRgb] = useState('6, 182, 212');
-  const [themePrimaryLight, setThemePrimaryLight] = useState('#22d3ee');
+  // Theme colors from CSS variables
+  const { themePrimary, themePrimaryRgb, themePrimaryLight } = useThemeColors();
 
-  useEffect(() => {
-    const updateThemeColors = () => {
-      const primary = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary').trim() || '#06b6d4';
-      const primaryRgb = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary-rgb').trim() || '6, 182, 212';
-      const primaryLight = getComputedStyle(document.documentElement).getPropertyValue('--theme-primary-light').trim() || '#22d3ee';
-      setThemePrimary(primary);
-      setThemePrimaryRgb(primaryRgb);
-      setThemePrimaryLight(primaryLight);
-    };
-
-    updateThemeColors();
-
-    // Watch for CSS variable changes
-    const observer = new MutationObserver(updateThemeColors);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Track if we have selected edges
+  // Track selected edges
   const hasSelectedEdges = useMemo(() => edges.some(e => e.selected), [edges]);
 
   // Get selected node color
@@ -190,122 +109,49 @@ function WorkflowCanvasInner() {
     const selectedNodes = nodes.filter((n) => n.selected);
     if (selectedNodes.length === 0) return null;
 
-    // If all selected nodes have the same color, return it
     const firstColor = (selectedNodes[0].data as { color?: string }).color || themePrimary;
-    const allSameColor = selectedNodes.every((n) => ((n.data as { color?: string }).color || themePrimary) === firstColor);
+    const allSameColor = selectedNodes.every(
+      (n) => ((n.data as { color?: string }).color || themePrimary) === firstColor
+    );
 
     return allSameColor ? firstColor : null;
   }, [nodes, themePrimary]);
 
-  // Undo/Redo hook
-  const {
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    takeSnapshot,
-  } = useUndoRedo(nodes, edges, setNodesState, setEdgesState);
-
-  // Get selected nodes/edges count
-  const selectedCount = useMemo(() => {
-    const selectedNodes = nodes.filter((n) => n.selected).length;
-    const selectedEdges = edges.filter((e) => e.selected).length;
-    return selectedNodes + selectedEdges;
-  }, [nodes, edges]);
-
-  // Debug effect to log edge and node state
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    // eslint-disable-next-line no-console
-    // eslint-disable-next-line no-console
-
-    // Check if edges reference valid nodes
-    let orphanedCount = 0;
-    const nodeIds = new Set(nodes.map(n => n.id));
-
-    edges.forEach(edge => {
-      const sourceExists = nodeIds.has(edge.source);
-      const targetExists = nodeIds.has(edge.target);
-
-      if (!sourceExists || !targetExists) {
-        orphanedCount++;
-        // eslint-disable-next-line no-console
-        console.warn(
-          `❌ Edge ${edge.id} references non-existent node(s): ` +
-          `${!sourceExists ? `source "${edge.source}"` : ''} ` +
-          `${!targetExists ? `target "${edge.target}"` : ''}`
-        );
-      } else {
-        // eslint-disable-next-line no-console
-      }
-    });
-
-    if (orphanedCount > 0) {
-      // eslint-disable-next-line no-console
-    }
-  }, [nodes, edges]);
-
-  // Helper to get marker config based on arrow direction
-  const getMarkerConfig = useCallback((direction: 'end' | 'start' | 'both' | 'none') => {
-    const markerConfig = {
-      type: MarkerType.ArrowClosed,
-      width: 16,
-      height: 16,
-      color: themePrimary,
-    };
-
-    // Always return both properties, set to undefined if not needed
-    // This ensures old markers are removed when changing direction
-    return {
-      markerEnd: (direction === 'end' || direction === 'both') ? markerConfig : undefined,
-      markerStart: (direction === 'start' || direction === 'both') ? markerConfig : undefined,
-    };
-  }, [themePrimary]);
-
-  // Helper to get stroke dash array based on line style
-  const getStrokeDashArray = useCallback((style: 'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted') => {
-    switch (style) {
-      case 'dashed':
-      case 'animated-dashed':
-        return '10 5'; // 10px dash, 5px gap
-      case 'dotted':
-      case 'animated-dotted':
-        return '2 4'; // 2px dot, 4px gap
-      case 'solid':
-      case 'animated-solid':
-      default:
-        return undefined; // No dash array = solid line
-    }
-  }, []);
-
-  // Helper to determine if line style should be animated
-  const isAnimatedStyle = useCallback((style: 'solid' | 'dashed' | 'dotted' | 'animated-solid' | 'animated-dashed' | 'animated-dotted') => {
-    return style.startsWith('animated-');
-  }, []);
-
-  const edgeTypes = useMemo(
-    () => ({
-      smart: SmartEdge,
-    }),
-    []
+  // Undo/Redo
+  const { undo, redo, canUndo, canRedo, takeSnapshot } = useUndoRedo(
+    nodes,
+    edges,
+    setNodesState,
+    setEdgesState
   );
 
-  // Stable default edge options with proper marker configuration
+  // Node alignment
+  const { handleAlignNodes, handleDistributeNodes } = useNodeAlignment({
+    nodes,
+    setNodes: setNodesState,
+    takeSnapshot,
+  });
+
+  // Selected count for toolbar
+  const selectedCount = useMemo(() => {
+    return nodes.filter((n) => n.selected).length + edges.filter((e) => e.selected).length;
+  }, [nodes, edges]);
+
+  // Edge types
+  const edgeTypes = useMemo(() => ({ smart: SmartEdge }), []);
+
+  // Default edge options
   const defaultEdgeOptions = useMemo(
     () => ({
       type: edgeType as Edge['type'],
-      animated: isAnimatedStyle(lineStyle), // Animate based on style prefix
-      style: {
-        stroke: themePrimary,
-        strokeWidth: 2,
-        strokeDasharray: getStrokeDashArray(lineStyle),
-      },
-      ...getMarkerConfig(arrowType),
+      animated: isAnimatedStyle(lineStyle),
+      style: createEdgeStyle(themePrimary, lineStyle),
+      ...getMarkerConfig(arrowType, themePrimary),
     }),
-    [themePrimary, edgeType, arrowType, lineStyle, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]
+    [themePrimary, edgeType, arrowType, lineStyle]
   );
 
-  // Load workflow from Firestore (only on mount/user change)
+  // Load workflow from Firestore
   useEffect(() => {
     if (!user || !reactFlowInstance) return;
 
@@ -316,69 +162,47 @@ function WorkflowCanvasInner() {
 
         if (workflowSnap.exists()) {
           const data = workflowSnap.data();
-          // Use setNodesState/setEdgesState for initial load (no history)
+
           if (data.nodes) {
             setNodesState(data.nodes);
 
             // Update ID counter to prevent duplicate IDs
             const maxId = data.nodes.reduce((max: number, node: Node) => {
               const match = node.id.match(/node_(\d+)/);
-              if (match) {
-                const nodeId = parseInt(match[1], 10);
-                return Math.max(max, nodeId);
-              }
-              return max;
+              return match ? Math.max(max, parseInt(match[1], 10)) : max;
             }, -1);
             nodeIdCounter.current = maxId + 1;
           }
 
-          // Restore edge type, arrow type, and line style preferences
-          if (data.edgeType) {
-            setEdgeType(data.edgeType);
-          }
-          if (data.arrowType) {
-            setArrowType(data.arrowType);
-          }
-          if (data.lineStyle) {
-            setLineStyle(data.lineStyle);
-          }
+          // Restore preferences
+          if (data.edgeType) setEdgeType(data.edgeType);
+          if (data.arrowType) setArrowType(data.arrowType);
+          if (data.lineStyle) setLineStyle(data.lineStyle);
 
           if (data.edges) {
-            // Validate edges before loading - filter out orphaned edges
             const { validEdges, orphanedEdges } = validateEdges(data.edges, data.nodes || []);
 
+            // Clean up orphaned edges
             if (orphanedEdges.length > 0) {
-              // eslint-disable-next-line no-console
-
-              // Clean up orphaned edges from Firestore
               try {
-                await updateDoc(workflowRef, {
-                  edges: validEdges,
-                });
-                // eslint-disable-next-line no-console
+                await updateDoc(workflowRef, { edges: validEdges });
               } catch (updateError) {
-                // eslint-disable-next-line no-console
+                console.error('Failed to clean orphaned edges:', updateError);
               }
             }
 
-            // Use saved preferences or defaults
             const savedArrowType = data.arrowType || 'end';
             const savedLineStyle = data.lineStyle || 'solid';
 
-            // Apply current theme color, arrow markers, and line style to valid edges
             const edgesWithTheme = validEdges.map((edge: Edge) => ({
               ...edge,
               animated: isAnimatedStyle(savedLineStyle),
-              style: {
-                ...edge.style,
-                stroke: themePrimary,
-                strokeWidth: 2,
-                strokeDasharray: getStrokeDashArray(savedLineStyle),
-              },
-              ...getMarkerConfig(savedArrowType),
+              style: createEdgeStyle(themePrimary, savedLineStyle),
+              ...getMarkerConfig(savedArrowType, themePrimary),
             }));
             setEdgesState(edgesWithTheme);
           }
+
           if (data.viewport && reactFlowInstance) {
             reactFlowInstance.setViewport(data.viewport);
           }
@@ -390,52 +214,38 @@ function WorkflowCanvasInner() {
 
     loadWorkflow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, reactFlowInstance]); // Only load once when user/instance changes
+  }, [user, reactFlowInstance]);
 
-  // Update edges when theme, edge type, arrow type, or line style changes
+  // Update edges when style changes
   useEffect(() => {
-    // If there are selected edges, only update those
-    // Otherwise update all edges
     setEdgesState((eds) =>
       eds.map((edge) => {
-        // Skip non-selected edges if there are selected edges
         const shouldUpdate = !hasSelectedEdges || edge.selected;
-
-        if (!shouldUpdate) {
-          return edge;
-        }
+        if (!shouldUpdate) return edge;
 
         return {
           ...edge,
           type: edgeType as Edge['type'],
           animated: isAnimatedStyle(lineStyle),
-          style: {
-            stroke: themePrimary,
-            strokeWidth: 2,
-            strokeDasharray: getStrokeDashArray(lineStyle),
-          },
-          ...getMarkerConfig(arrowType),
+          style: createEdgeStyle(themePrimary, lineStyle),
+          ...getMarkerConfig(arrowType, themePrimary),
         };
       })
     );
-  }, [themePrimary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState, getMarkerConfig, getStrokeDashArray, isAnimatedStyle]); // Run when any edge style changes
+  }, [themePrimary, edgeType, arrowType, lineStyle, hasSelectedEdges, setEdgesState]);
 
-  // Periodic edge validation - clean up orphaned edges when nodes change
-  // Only trigger on nodes changes, not edges changes, to avoid interfering with edge creation
+  // Validate edges when nodes change
   useEffect(() => {
     if (edges.length === 0 || nodes.length === 0) return;
 
     const { validEdges, orphanedEdges } = validateEdges(edges, nodes);
-
     if (orphanedEdges.length > 0) {
-      // eslint-disable-next-line no-console
       setEdgesState(validEdges);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes]); // Only run when nodes change (not edges)
+  }, [nodes]);
 
-  // Auto-save workflow to Firestore (1-second debounce)
-  // Includes viewport (zoom level and position)
+  // Auto-save workflow (1-second debounce)
   useEffect(() => {
     if (!user || !reactFlowInstance) return;
 
@@ -444,17 +254,19 @@ function WorkflowCanvasInner() {
         const viewport = reactFlowInstance.getViewport();
         const workflowRef = doc(db, 'workflows', user.uid);
 
-        const payload = sanitizeForFirestore({
-          nodes,
-          edges,
-          viewport,
-          edgeType,
-          arrowType,
-          lineStyle,
-          updatedAt: new Date().toISOString(),
-        });
-
-        await setDoc(workflowRef, payload, { merge: true });
+        await setDoc(
+          workflowRef,
+          sanitizeForFirestore({
+            nodes,
+            edges,
+            viewport,
+            edgeType,
+            arrowType,
+            lineStyle,
+            updatedAt: new Date().toISOString(),
+          }),
+          { merge: true }
+        );
       } catch (error) {
         console.error('Failed to auto-save workflow:', error);
       }
@@ -467,28 +279,15 @@ function WorkflowCanvasInner() {
   const handleDelete = useCallback(() => {
     const selectedNodes = nodes.filter((n) => n.selected);
     const selectedEdges = edges.filter((e) => e.selected);
-
     if (selectedNodes.length === 0 && selectedEdges.length === 0) return;
 
     takeSnapshot();
 
-    // Get IDs of nodes being deleted
-    const deletedNodeIds = new Set(selectedNodes.map(n => n.id));
-
-    // Filter out selected nodes
+    const deletedNodeIds = new Set(selectedNodes.map((n) => n.id));
     const remainingNodes = nodes.filter((n) => !n.selected);
-
-    // Filter out selected edges AND edges connected to deleted nodes
     const remainingEdges = edges.filter((e) => {
-      // Remove if edge is selected
       if (e.selected) return false;
-
-      // Remove if edge connects to a deleted node
-      if (deletedNodeIds.has(e.source) || deletedNodeIds.has(e.target)) {
-        // eslint-disable-next-line no-console
-        return false;
-      }
-
+      if (deletedNodeIds.has(e.source) || deletedNodeIds.has(e.target)) return false;
       return true;
     });
 
@@ -496,7 +295,7 @@ function WorkflowCanvasInner() {
     setEdgesState(remainingEdges);
   }, [nodes, edges, setNodesState, setEdgesState, takeSnapshot]);
 
-  // Clear entire canvas
+  // Clear canvas
   const handleClearCanvas = useCallback(() => {
     if (nodes.length === 0 && edges.length === 0) return;
     setShowClearModal(true);
@@ -508,215 +307,57 @@ function WorkflowCanvasInner() {
     setEdgesState([]);
   }, [setNodesState, setEdgesState, takeSnapshot]);
 
-  // Zoom controls (using reactFlowInstance)
+  // Zoom controls
   const handleFitView = useCallback(() => {
-    if (reactFlowInstance) {
-      reactFlowInstance.fitView({ padding: 0.2, maxZoom: 1 });
-    }
+    reactFlowInstance?.fitView({ padding: 0.2, maxZoom: 1 });
   }, [reactFlowInstance]);
 
   const handleZoomIn = useCallback(() => {
-    if (reactFlowInstance) {
-      reactFlowInstance.zoomIn();
-    }
+    reactFlowInstance?.zoomIn();
   }, [reactFlowInstance]);
 
   const handleZoomOut = useCallback(() => {
-    if (reactFlowInstance) {
-      reactFlowInstance.zoomOut();
-    }
+    reactFlowInstance?.zoomOut();
   }, [reactFlowInstance]);
 
-  // Handle node color change
-  const handleNodeColorChange = useCallback((color: string) => {
-    takeSnapshot();
-    setNodesState((nds) =>
-      nds.map((node) => {
-        if (node.selected) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              color,
-            },
-          };
-        }
-        return node;
-      })
-    );
-  }, [setNodesState, takeSnapshot]);
-
-  const handleNodeBgColorChange = useCallback((bgColor: string) => {
-    takeSnapshot();
-    setNodesState((nds) =>
-      nds.map((node) => {
-        if (node.selected) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              bgColor,
-            },
-          };
-        }
-        return node;
-      })
-    );
-  }, [setNodesState, takeSnapshot]);
-
-  // Alignment functions
-  const handleAlignNodes = useCallback((alignment: 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v') => {
-    const selectedNodes = nodes.filter((n) => n.selected);
-    if (selectedNodes.length < 2) return;
-
-    takeSnapshot();
-
-    if (alignment === 'left') {
-      const minX = Math.min(...selectedNodes.map((n) => n.position.x));
+  // Node color change
+  const handleNodeColorChange = useCallback(
+    (color: string) => {
+      takeSnapshot();
       setNodesState((nds) =>
-        nds.map((node) => {
-          if (node.selected) {
-            return { ...node, position: { ...node.position, x: minX } };
-          }
-          return node;
-        })
+        nds.map((node) =>
+          node.selected ? { ...node, data: { ...node.data, color } } : node
+        )
       );
-    } else if (alignment === 'right') {
-      const maxX = Math.max(...selectedNodes.map((n) => n.position.x + (n.width || 0)));
+    },
+    [setNodesState, takeSnapshot]
+  );
+
+  const handleNodeBgColorChange = useCallback(
+    (bgColor: string) => {
+      takeSnapshot();
       setNodesState((nds) =>
-        nds.map((node) => {
-          if (node.selected) {
-            return { ...node, position: { ...node.position, x: maxX - (node.width || 0) } };
-          }
-          return node;
-        })
+        nds.map((node) =>
+          node.selected ? { ...node, data: { ...node.data, bgColor } } : node
+        )
       );
-    } else if (alignment === 'top') {
-      const minY = Math.min(...selectedNodes.map((n) => n.position.y));
-      setNodesState((nds) =>
-        nds.map((node) => {
-          if (node.selected) {
-            return { ...node, position: { ...node.position, y: minY } };
-          }
-          return node;
-        })
+    },
+    [setNodesState, takeSnapshot]
+  );
+
+  // Edge label change
+  const handleEdgeLabelChange = useCallback(
+    (edgeId: string, label: string) => {
+      setEdgesState((eds) =>
+        eds.map((edge) =>
+          edge.id === edgeId
+            ? { ...edge, label, data: { ...edge.data, label } }
+            : edge
+        )
       );
-    } else if (alignment === 'bottom') {
-      const maxY = Math.max(...selectedNodes.map((n) => n.position.y + (n.height || 0)));
-      setNodesState((nds) =>
-        nds.map((node) => {
-          if (node.selected) {
-            return { ...node, position: { ...node.position, y: maxY - (node.height || 0) } };
-          }
-          return node;
-        })
-      );
-    } else if (alignment === 'center-h') {
-      const centerX = selectedNodes.reduce((sum, n) => sum + n.position.x + (n.width || 0) / 2, 0) / selectedNodes.length;
-      setNodesState((nds) =>
-        nds.map((node) => {
-          if (node.selected) {
-            return { ...node, position: { ...node.position, x: centerX - (node.width || 0) / 2 } };
-          }
-          return node;
-        })
-      );
-    } else if (alignment === 'center-v') {
-      const centerY = selectedNodes.reduce((sum, n) => sum + n.position.y + (n.height || 0) / 2, 0) / selectedNodes.length;
-      setNodesState((nds) =>
-        nds.map((node) => {
-          if (node.selected) {
-            return { ...node, position: { ...node.position, y: centerY - (node.height || 0) / 2 } };
-          }
-          return node;
-        })
-      );
-    }
-  }, [nodes, setNodesState, takeSnapshot]);
-
-  // Distribute nodes evenly
-  const handleDistributeNodes = useCallback((direction: 'horizontal' | 'vertical') => {
-    const selectedNodes = nodes.filter((n) => n.selected);
-    if (selectedNodes.length < 3) return;
-
-    takeSnapshot();
-
-    if (direction === 'horizontal') {
-      // Sort nodes by X position
-      const sortedNodes = [...selectedNodes].sort((a, b) => a.position.x - b.position.x);
-      const minX = sortedNodes[0].position.x;
-      const maxX = sortedNodes[sortedNodes.length - 1].position.x + (sortedNodes[sortedNodes.length - 1].width || 0);
-      const totalSpace = maxX - minX;
-      const totalNodeWidth = sortedNodes.reduce((sum, n) => sum + (n.width || 0), 0);
-      const gap = (totalSpace - totalNodeWidth) / (sortedNodes.length - 1);
-
-      let currentX = minX;
-      const nodePositions = new Map();
-      sortedNodes.forEach((node) => {
-        nodePositions.set(node.id, currentX);
-        currentX += (node.width || 0) + gap;
-      });
-
-      setNodesState((nds) =>
-        nds.map((node) => {
-          const newX = nodePositions.get(node.id);
-          if (newX !== undefined) {
-            return { ...node, position: { ...node.position, x: newX } };
-          }
-          return node;
-        })
-      );
-    } else {
-      // Sort nodes by Y position
-      const sortedNodes = [...selectedNodes].sort((a, b) => a.position.y - b.position.y);
-      const minY = sortedNodes[0].position.y;
-      const maxY = sortedNodes[sortedNodes.length - 1].position.y + (sortedNodes[sortedNodes.length - 1].height || 0);
-      const totalSpace = maxY - minY;
-      const totalNodeHeight = sortedNodes.reduce((sum, n) => sum + (n.height || 0), 0);
-      const gap = (totalSpace - totalNodeHeight) / (sortedNodes.length - 1);
-
-      let currentY = minY;
-      const nodePositions = new Map();
-      sortedNodes.forEach((node) => {
-        nodePositions.set(node.id, currentY);
-        currentY += (node.height || 0) + gap;
-      });
-
-      setNodesState((nds) =>
-        nds.map((node) => {
-          const newY = nodePositions.get(node.id);
-          if (newY !== undefined) {
-            return { ...node, position: { ...node.position, y: newY } };
-          }
-          return node;
-        })
-      );
-    }
-  }, [nodes, setNodesState, takeSnapshot]);
-
-  // Handle edge label update
-  const handleEdgeLabelChange = useCallback((edgeId: string, label: string) => {
-    setEdgesState((eds) =>
-      eds.map((edge) => {
-        if (edge.id === edgeId) {
-          return {
-            ...edge,
-            label,
-            data: {
-              ...edge.data,
-              label,
-            },
-          };
-        }
-        return edge;
-      })
-    );
-  }, [setEdgesState]);
-
-  // Handle edge double click to start editing
-  const handleEdgeDoubleClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
-    setEditingEdge(edge.id);
-  }, []);
+    },
+    [setEdgesState]
+  );
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -725,27 +366,14 @@ function WorkflowCanvasInner() {
     onDelete: handleDelete,
   });
 
+  // Connect handler
   const onConnect = useCallback(
     (params: Connection) => {
-      // eslint-disable-next-line no-console
-      // eslint-disable-next-line no-console
+      if (!params.source || !params.target) return;
 
-      if (!params.source || !params.target) {
-        // eslint-disable-next-line no-console
-        return;
-      }
-
-      const sourceNode = nodes.find(n => n.id === params.source);
-      const targetNode = nodes.find(n => n.id === params.target);
-
-      if (!sourceNode || !targetNode) {
-        // eslint-disable-next-line no-console
-        return;
-      }
-
-      const strokeDasharray = getStrokeDashArray(lineStyle);
-      const markerConfig = getMarkerConfig(arrowType);
-      const animated = isAnimatedStyle(lineStyle);
+      const sourceNode = nodes.find((n) => n.id === params.source);
+      const targetNode = nodes.find((n) => n.id === params.target);
+      if (!sourceNode || !targetNode) return;
 
       setEdgesState((eds) => {
         const isDuplicate = eds.some(
@@ -755,64 +383,33 @@ function WorkflowCanvasInner() {
             edge.sourceHandle === params.sourceHandle &&
             edge.targetHandle === params.targetHandle
         );
-
-        if (isDuplicate) {
-          // eslint-disable-next-line no-console
-          return eds;
-        }
+        if (isDuplicate) return eds;
 
         const newEdges = addEdge(params, eds).map((edge) => ({
           ...edge,
           type: edgeType as Edge['type'],
-          animated,
-          style: {
-            stroke: themePrimary,
-            strokeWidth: 2,
-            strokeDasharray,
-          },
-          ...markerConfig,
+          animated: isAnimatedStyle(lineStyle),
+          style: createEdgeStyle(themePrimary, lineStyle),
+          ...getMarkerConfig(arrowType, themePrimary),
         }));
 
-        // eslint-disable-next-line no-console
         takeSnapshot();
         return newEdges;
       });
     },
-    [
-      nodes,
-      setEdgesState,
-      takeSnapshot,
-      edgeType,
-      lineStyle,
-      themePrimary,
-      getMarkerConfig,
-      getStrokeDashArray,
-      isAnimatedStyle,
-      arrowType,
-    ]
+    [nodes, setEdgesState, takeSnapshot, edgeType, lineStyle, themePrimary, arrowType]
   );
 
-  // Click on edge to select it (not delete)
+  // Edge click handler
   const onEdgeClick = useCallback(
     (_event: React.MouseEvent, edge: Edge) => {
-      // Select the clicked edge, deselect all others
-      setEdgesState((eds) =>
-        eds.map((e) => ({
-          ...e,
-          selected: e.id === edge.id,
-        }))
-      );
-      // Deselect all nodes when clicking an edge
-      setNodesState((nds) =>
-        nds.map((n) => ({
-          ...n,
-          selected: false,
-        }))
-      );
+      setEdgesState((eds) => eds.map((e) => ({ ...e, selected: e.id === edge.id })));
+      setNodesState((nds) => nds.map((n) => ({ ...n, selected: false })));
     },
     [setEdgesState, setNodesState]
   );
 
+  // Drag and drop handlers
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'copy';
@@ -824,18 +421,9 @@ function WorkflowCanvasInner() {
       event.stopPropagation();
 
       const type = event.dataTransfer.getData('application/reactflow');
+      if (!type || !reactFlowInstance) return;
+      if (!(paletteNodeTypes as readonly string[]).includes(type)) return;
 
-      // Validate we have a proper type from the palette
-      if (typeof type === 'undefined' || !type || !reactFlowInstance) {
-        return;
-      }
-
-      // Only handle drops for supported node types
-      if (!(paletteNodeTypes as readonly string[]).includes(type)) {
-        return;
-      }
-
-      // Use screenToFlowPosition instead of deprecated project method
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -851,7 +439,6 @@ function WorkflowCanvasInner() {
         style: getNodeDimensions(type),
       };
 
-      // Take snapshot before adding new node
       takeSnapshot();
       setNodesState((nds) => [...nds, newNode]);
     },
@@ -863,8 +450,9 @@ function WorkflowCanvasInner() {
     event.dataTransfer.effectAllowed = 'copy';
   }, []);
 
-  // Dynamic theme styles for React Flow
-  const themeStyles = useMemo(() => `
+  // Dynamic theme styles
+  const themeStyles = useMemo(
+    () => `
     .react-flow-dark {
       --xy-edge-stroke: ${themePrimary};
       --xy-edge-stroke-selected: ${themePrimaryLight};
@@ -873,11 +461,13 @@ function WorkflowCanvasInner() {
       --xy-node-border-selected: ${themePrimary};
       --xy-node-boxshadow-selected: 0 0 0 2px rgba(${themePrimaryRgb}, 0.5);
     }
-  `, [themePrimary, themePrimaryLight, themePrimaryRgb]);
+  `,
+    [themePrimary, themePrimaryLight, themePrimaryRgb]
+  );
 
   return (
     <div className="flex h-full w-full">
-      <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
+      <style>{themeStyles}</style>
 
       <ShapePalette
         onDragStart={onDragStart}
@@ -914,7 +504,7 @@ function WorkflowCanvasInner() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={onEdgeClick}
-          onEdgeDoubleClick={handleEdgeDoubleClick}
+          onEdgeDoubleClick={(_e, edge) => setEditingEdge(edge.id)}
           onInit={setReactFlowInstance}
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -946,122 +536,20 @@ function WorkflowCanvasInner() {
             }}
           />
 
-          {/* Edge Label Editor */}
-          <EdgeLabelRenderer>
-            {edges.map((edge) => {
-              if (editingEdge === edge.id) {
-                // Calculate label position at edge midpoint
-                const sourceNode = nodes.find((n) => n.id === edge.source);
-                const targetNode = nodes.find((n) => n.id === edge.target);
-
-                if (!sourceNode || !targetNode) return null;
-
-                const sourceX = sourceNode.position.x + (sourceNode.width || 0) / 2;
-                const sourceY = sourceNode.position.y + (sourceNode.height || 0) / 2;
-                const targetX = targetNode.position.x + (targetNode.width || 0) / 2;
-                const targetY = targetNode.position.y + (targetNode.height || 0) / 2;
-
-                const labelX = (sourceX + targetX) / 2;
-                const labelY = (sourceY + targetY) / 2;
-
-                return (
-                  <div
-                    key={edge.id}
-                    style={{
-                      position: 'absolute',
-                      transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-                      pointerEvents: 'all',
-                    }}
-                  >
-                    <input
-                      autoFocus
-                      type="text"
-                      defaultValue={(edge.label as string) || ''}
-                      onBlur={(e) => {
-                        handleEdgeLabelChange(edge.id, e.target.value);
-                        setEditingEdge(null);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleEdgeLabelChange(edge.id, e.currentTarget.value);
-                          setEditingEdge(null);
-                        } else if (e.key === 'Escape') {
-                          setEditingEdge(null);
-                        }
-                      }}
-                      className="nodrag nopan px-2 py-1 text-xs rounded border-2 outline-none"
-                      style={{
-                        backgroundColor: 'rgba(10, 10, 10, 0.95)',
-                        borderColor: themePrimary,
-                        color: '#fff',
-                        minWidth: '100px',
-                      }}
-                      placeholder="Label..."
-                    />
-                  </div>
-                );
-              }
-
-              // Show non-editable label if it exists
-              if (edge.label) {
-                const sourceNode = nodes.find((n) => n.id === edge.source);
-                const targetNode = nodes.find((n) => n.id === edge.target);
-
-                if (!sourceNode || !targetNode) return null;
-
-                const sourceX = sourceNode.position.x + (sourceNode.width || 0) / 2;
-                const sourceY = sourceNode.position.y + (sourceNode.height || 0) / 2;
-                const targetX = targetNode.position.x + (targetNode.width || 0) / 2;
-                const targetY = targetNode.position.y + (targetNode.height || 0) / 2;
-
-                const labelX = (sourceX + targetX) / 2;
-                const labelY = (sourceY + targetY) / 2;
-
-                return (
-                  <div
-                    key={edge.id}
-                    style={{
-                      position: 'absolute',
-                      transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-                      pointerEvents: 'all',
-                      padding: '4px 8px',
-                      backgroundColor: 'rgba(10, 10, 10, 0.85)',
-                      border: `1px solid rgba(${themePrimaryRgb}, 0.3)`,
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      color: '#fff',
-                      cursor: 'pointer',
-                    }}
-                    onDoubleClick={() => setEditingEdge(edge.id)}
-                  >
-                    {edge.label as string}
-                  </div>
-                );
-              }
-
-              return null;
-            })}
-          </EdgeLabelRenderer>
+          <EdgeLabelOverlay
+            edges={edges}
+            nodes={nodes}
+            editingEdge={editingEdge}
+            setEditingEdge={setEditingEdge}
+            onLabelChange={handleEdgeLabelChange}
+            themePrimary={themePrimary}
+            themePrimaryRgb={themePrimaryRgb}
+          />
         </ReactFlow>
 
-        {nodes.length === 0 && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
-            <div className="bg-background/40 backdrop-blur-sm border border-border rounded-2xl p-8 text-center max-w-md animate-fade-in">
-              <div className="text-4xl mb-4">✨</div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Start Designing</h3>
-              <p className="text-muted-foreground mb-4">
-                Drag shapes from the palette on the left to begin mapping your workflow.
-              </p>
-              <div className="flex justify-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><kbd className="bg-foreground/10 px-1.5 py-0.5 rounded">Del</kbd> to remove</span>
-                <span className="flex items-center gap-1"><kbd className="bg-foreground/10 px-1.5 py-0.5 rounded">⌘Z</kbd> to undo</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {nodes.length === 0 && <EmptyCanvasOverlay />}
       </div>
 
-      {/* Clear Canvas Confirmation Modal */}
       <ConfirmationModal
         isOpen={showClearModal}
         onClose={() => setShowClearModal(false)}

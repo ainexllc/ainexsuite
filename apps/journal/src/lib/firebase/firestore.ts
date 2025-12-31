@@ -114,6 +114,7 @@ export async function updateJournalEntry(
     backgroundImage?: JournalEntry['backgroundImage'];
     backgroundOverlay?: JournalEntry['backgroundOverlay'];
     coverImage?: JournalEntry['coverImage'];
+    coverOverlay?: JournalEntry['coverOverlay'];
     coverSummary?: JournalEntry['coverSummary'];
   }
 ): Promise<void> {

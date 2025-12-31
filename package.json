@@ -45,7 +45,8 @@
     "pm2:delete": "pm2 delete all",
     "pm2:logs": "pm2 logs",
     "pm2:status": "pm2 status",
-    "pm2:monit": "pm2 monit"
+    "pm2:monit": "pm2 monit",
+    "prepare": "husky"
   },
   "workspaces": [
     "apps/*",
@@ -53,12 +54,14 @@
     "packages/generators/*"
   ],
   "devDependencies": {
-    "pm2": "^5.3.0",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "eslint": "^8.56.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "next": "15.5.9",
+    "pm2": "^5.3.0",
     "prettier": "^3.2.4",
     "turbo": "^1.11.3",
     "typescript": "^5.3.3"
@@ -67,6 +70,14 @@
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --cache --fix --max-warnings 0"
+    ],
+    "*.{js,jsx,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
