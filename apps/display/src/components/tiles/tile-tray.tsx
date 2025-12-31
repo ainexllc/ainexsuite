@@ -16,6 +16,7 @@ import { EffectType } from '../background-effects';
 import { ClockStyle } from '@/lib/clock-settings';
 import { useAuth } from '@ainexsuite/auth';
 import { UserBackgroundsService, UserBackground } from '@/lib/user-backgrounds';
+import { Preset } from '@/lib/presets';
 
 // Confirmation Modal Component
 function ConfirmationModal({ 
@@ -182,6 +183,7 @@ interface TileTrayProps {
   onToggleShowClock?: (show: boolean) => void;
   showTiles?: boolean;
   onToggleShowTiles?: (show: boolean) => void;
+  onApplyPreset?: (preset: Preset) => void;
 }
 
 export function TileTray({
@@ -203,7 +205,8 @@ export function TileTray({
   showClock = true,
   onToggleShowClock,
   showTiles = true,
-  onToggleShowTiles
+  onToggleShowTiles,
+  onApplyPreset: _onApplyPreset
 }: TileTrayProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'widgets' | 'layout' | 'appearance' | 'clock'>('widgets');

@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import {
   Trash2,
   Users,
@@ -21,7 +21,6 @@ import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BAC
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useCovers } from "@/components/providers/covers-provider";
 import { ImageModal } from "@/components/ui/image-modal";
-import { HeartBurst } from "@/components/ui/heart-burst";
 
 type NoteCardProps = {
   note: Note;
@@ -39,7 +38,6 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [showHeartBurst, setShowHeartBurst] = useState(false);
 
   const labelMap = useMemo(() => {
     return new Map(labels.map((label) => [label.id, label]));
@@ -95,18 +93,10 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
     setShowDeleteConfirm(false);
   };
 
-  const handlePin = useCallback(async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handlePin = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    // Only show burst when adding to Focus (not removing)
-    if (!note.pinned) {
-      setShowHeartBurst(true);
-    }
     await togglePin(note.id, !note.pinned);
-  }, [note.id, note.pinned, togglePin]);
-
-  const handleBurstComplete = useCallback(() => {
-    setShowHeartBurst(false);
-  }, []);
+  };
 
   return (
     <>
@@ -349,7 +339,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           </div>
 
           <footer className={clsx(
-            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t overflow-visible",
+            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t",
             backgroundImage?.brightness === 'light'
               ? "bg-white/30 backdrop-blur-sm border-black/10"
               : backgroundImage
@@ -393,7 +383,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
             </div>
             {/* Glass pill for actions */}
             <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border overflow-visible",
+              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
               backgroundImage
                 ? backgroundImage.brightness === 'dark'
                   ? "bg-white/10 border-white/20"
@@ -416,30 +406,25 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                   <Flame className="h-3.5 w-3.5" />
                 </div>
               )}
-              {/* Focus button area - burst persists after pin */}
-              {(!note.pinned || showHeartBurst) && (
-              <div className="relative h-7 w-7 flex items-center justify-center overflow-visible">
-                {!note.pinned && (
-                  <button
-                    type="button"
-                    onClick={handlePin}
-                    className={clsx(
-                      "h-7 w-7 rounded-full flex items-center justify-center transition",
-                      backgroundImage?.brightness === 'light'
-                        ? "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
-                        : backgroundImage
+              {/* Focus button - only shows on non-focused notes */}
+              {!note.pinned && (
+                <button
+                  type="button"
+                  onClick={handlePin}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    backgroundImage?.brightness === 'light'
+                      ? "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                      : backgroundImage
+                        ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30"
+                        : hasCover
                           ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30"
-                          : hasCover
-                            ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30"
-                            : "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
-                    )}
-                    aria-label="Add to Focus"
-                  >
-                    <FocusIcon className="h-3.5 w-3.5" />
-                  </button>
-                )}
-                <HeartBurst trigger={showHeartBurst} onComplete={handleBurstComplete} />
-              </div>
+                          : "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                  )}
+                  aria-label="Add to Focus"
+                >
+                  <FocusIcon className="h-3.5 w-3.5" />
+                </button>
               )}
               <button
                 type="button"

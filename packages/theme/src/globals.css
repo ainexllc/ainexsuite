@@ -55,3 +55,25 @@
   --border-primary: 249 115 22 / 0.3;
   --border-secondary: 229 231 235;
 }
+
+/* Font Size Scaling */
+:root {
+  --font-scale: 1;
+}
+
+[data-font-size="sm"] {
+  --font-scale: 0.9;
+}
+
+[data-font-size="md"] {
+  --font-scale: 1;
+}
+
+[data-font-size="lg"] {
+  --font-scale: 1.1;
+}
+
+/* Apply font scale to base font size */
+html {
+  font-size: calc(16px * var(--font-scale));
+}

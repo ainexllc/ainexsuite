@@ -21,7 +21,7 @@
     "@xyflow/react": "^12.9.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "firebase-admin": "^12.0.0",
+    "firebase-admin": "^12.7.0",
     "geist": "^1.2.0",
     "lucide-react": "^0.312.0",
     "next": "15.5.9",

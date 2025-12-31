@@ -302,6 +302,7 @@ export function TaskComposer() {
         <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
           <button
             type="button"
+            data-composer-expand
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
             onClick={() => setExpanded(true)}
           >
@@ -380,6 +381,7 @@ export function TaskComposer() {
             <div className="flex items-start gap-2">
               <input
                 ref={titleInputRef}
+                data-composer-input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Task title"

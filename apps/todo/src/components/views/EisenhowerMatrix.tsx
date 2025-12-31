@@ -8,19 +8,32 @@ import { AlertCircle, Calendar, Clock, Archive } from 'lucide-react';
 
 interface EisenhowerMatrixProps {
   onEditTask: (taskId: string) => void;
+  searchQuery?: string;
 }
 
-export function EisenhowerMatrix({ onEditTask }: EisenhowerMatrixProps) {
+export function EisenhowerMatrix({ onEditTask, searchQuery = '' }: EisenhowerMatrixProps) {
   const { tasks, getCurrentSpace } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
   const matrixTasks = useMemo(() => {
     if (!currentSpace) return { q1: [], q2: [], q3: [], q4: [] };
 
-    const spaceTasks = tasks.filter(t => 
-      (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && 
+    let spaceTasks = tasks.filter(t =>
+      (currentSpace.id === 'all' || t.spaceId === currentSpace.id) &&
       t.status !== 'done'
     );
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      spaceTasks = spaceTasks.filter(
+        (task) =>
+          task.title.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.tags?.some((tag) => tag.toLowerCase().includes(query)) ||
+          task.subtasks?.some((st) => st.title.toLowerCase().includes(query))
+      );
+    }
     
     const q1: Task[] = []; // Urgent & Important
     const q2: Task[] = []; // Not Urgent & Important
@@ -45,7 +58,7 @@ export function EisenhowerMatrix({ onEditTask }: EisenhowerMatrixProps) {
     });
 
     return { q1, q2, q3, q4 };
-  }, [tasks, currentSpace]);
+  }, [tasks, currentSpace, searchQuery]);
 
   const Quadrant = ({ title, subtitle, tasks, color, icon: Icon }: { title: string, subtitle: string, tasks: Task[], color: string, icon: React.ElementType }) => (
     <div className={`flex flex-col h-full rounded-xl border ${color} bg-surface-card overflow-hidden`}>

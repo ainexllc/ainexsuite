@@ -9,6 +9,7 @@ import {
 } from '@ainexsuite/ui';
 import type { AIInsightsSection } from '@ainexsuite/ui';
 import { useTodoStore } from '@/lib/store';
+import { useAppColors } from '@ainexsuite/theme';
 import { Task } from '@/types/models';
 
 interface InsightData {
@@ -24,6 +25,7 @@ interface TaskInsightsProps {
 
 export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProps) {
   const { tasks } = useTodoStore();
+  const { primary } = useAppColors();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
   const [storeReady, setStoreReady] = useState(false);
   const initialCheckRef = useRef(false);
 
-  const accentColor = '#6366f1'; // indigo-500 (Todo app accent)
+  const accentColor = primary;
 
   // Wait for store to be hydrated (tasks loaded from Firestore)
   useEffect(() => {
@@ -203,7 +205,7 @@ export function TaskInsights({ variant = 'default', onExpand }: TaskInsightsProp
     }
 
     return items;
-  }, [data, productivityScore]);
+  }, [data, productivityScore, accentColor]);
 
   const condensedSummary = useMemo(() => {
     if (!data) return undefined;

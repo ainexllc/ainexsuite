@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { HealthMetric, MoodType } from '@ainexsuite/types';
+import type { HealthMetric, MoodType, SpaceType } from '@ainexsuite/types';
 import {
   Scale,
   Moon,
@@ -13,9 +13,15 @@ import {
   Frown,
   Pin,
   PinOff,
-  StickyNote,
+  FolderOpen,
+  ChevronDown,
+  Check,
+  Plus,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useSpaces } from '@/components/providers/spaces-provider';
+import { SpaceEditor } from '@ainexsuite/ui';
+import { useAuth } from '@ainexsuite/auth';
 
 interface HealthCheckinComposerProps {
   existingMetric?: HealthMetric | null;
@@ -36,11 +42,18 @@ export function HealthCheckinComposer({
   date,
   onSave,
 }: HealthCheckinComposerProps) {
+  const { user } = useAuth();
+  const { spaces, currentSpaceId, setCurrentSpace, createSpace } = useSpaces();
   const [expanded, setExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const composerRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const [showSpacePicker, setShowSpacePicker] = useState(false);
+  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
+
+  const currentSpace = spaces.find((s) => s.id === currentSpaceId);
+  const currentSpaceName = currentSpace?.name || 'My Health';
 
   const [formData, setFormData] = useState({
     title: '',
@@ -55,7 +68,6 @@ export function HealthCheckinComposer({
   });
 
   const [showMoodPicker, setShowMoodPicker] = useState(false);
-  const [showNotesField, setShowNotesField] = useState(!!existingMetric?.notes);
 
   // Sync form data when existingMetric changes
   useEffect(() => {
@@ -71,7 +83,6 @@ export function HealthCheckinComposer({
         notes: existingMetric.notes ?? '',
         pinned: false,
       });
-      if (existingMetric.notes) setShowNotesField(true);
     }
   }, [existingMetric]);
 
@@ -105,7 +116,6 @@ export function HealthCheckinComposer({
       pinned: false,
     });
     setShowMoodPicker(false);
-    setShowNotesField(!!existingMetric?.notes);
     isSubmittingRef.current = false;
   }, [existingMetric]);
 
@@ -134,6 +144,11 @@ export function HealthCheckinComposer({
     }
   }, [hasContent, date, formData, onSave, resetState]);
 
+  const handleCreateSpace = async (data: { name: string; type: SpaceType }) => {
+    if (!user) return;
+    await createSpace({ name: data.name, type: data.type });
+  };
+
   // Handle click outside
   useEffect(() => {
     if (!expanded) return;
@@ -156,13 +171,73 @@ export function HealthCheckinComposer({
   return (
     <section className="w-full">
       {!expanded ? (
-        <button
-          type="button"
-          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-          onClick={() => setExpanded(true)}
-        >
-          <span>{existingMetric ? 'Update today\'s check-in...' : 'Log a health check-in...'}</span>
-        </button>
+        <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+          <button
+            type="button"
+            className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
+            onClick={() => setExpanded(true)}
+          >
+            <span>{existingMetric ? 'Update today\'s check-in...' : 'Log a health check-in...'}</span>
+          </button>
+          {/* Compact space selector - responsive */}
+          <div className="relative flex-shrink-0">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowSpacePicker((prev) => !prev);
+              }}
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+            >
+              <FolderOpen className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline max-w-[80px] truncate">{currentSpaceName}</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            {showSpacePicker && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={() => setShowSpacePicker(false)}
+                />
+                <div className="absolute right-0 top-full mt-1 z-30 min-w-[160px] rounded-xl border shadow-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 py-1">
+                  {spaces.map((space) => (
+                    <button
+                      key={space.id}
+                      type="button"
+                      onClick={() => {
+                        setCurrentSpace(space.id);
+                        setShowSpacePicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-2 w-full px-3 py-2 text-sm text-left transition",
+                        space.id === currentSpaceId
+                          ? "text-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      )}
+                    >
+                      <FolderOpen className="h-4 w-4" />
+                      <span className="flex-1 truncate">{space.name}</span>
+                      {space.id === currentSpaceId && <Check className="h-4 w-4" />}
+                    </button>
+                  ))}
+                  <div className="border-t border-zinc-200 dark:border-zinc-700 mt-1 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowSpacePicker(false);
+                        setShowSpaceEditor(true);
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>New Space</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       ) : (
         <div
           ref={composerRef}
@@ -183,7 +258,7 @@ export function HealthCheckinComposer({
                 <button
                   onClick={() => setShowMoodPicker(!showMoodPicker)}
                   className={clsx(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0",
                     "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
                   )}
                 >
@@ -191,19 +266,6 @@ export function HealthCheckinComposer({
                   {selectedMood.label}
                 </button>
               )}
-              <button
-                type="button"
-                onClick={() => updateField('pinned', !formData.pinned)}
-                className={clsx(
-                  "p-2 rounded-full transition-colors flex-shrink-0",
-                  formData.pinned
-                    ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                    : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                )}
-                aria-label={formData.pinned ? "Unpin" : "Pin"}
-              >
-                {formData.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-              </button>
             </div>
 
             {/* Health Metrics Grid */}
@@ -298,16 +360,14 @@ export function HealthCheckinComposer({
               </div>
             </div>
 
-            {/* Notes field (toggleable) */}
-            {showNotesField && (
-              <textarea
-                value={formData.notes}
-                onChange={(e) => updateField('notes', e.target.value)}
-                placeholder="Any notes about how you're feeling..."
-                rows={3}
-                className="w-full px-3 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground resize-none"
-              />
-            )}
+            {/* Notes field (always visible) */}
+            <textarea
+              value={formData.notes}
+              onChange={(e) => updateField('notes', e.target.value)}
+              placeholder="Any notes about how you're feeling..."
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:border-primary text-foreground text-sm placeholder:text-muted-foreground resize-none"
+            />
 
             {/* Mood Picker Popup */}
             {showMoodPicker && (
@@ -334,7 +394,7 @@ export function HealthCheckinComposer({
               </div>
             )}
 
-            {/* Footer - Icon toolbar + Close/Save (matches notes/journey) */}
+            {/* Footer - Icon toolbar + Close/Save (matches journal) */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
               <div className="flex items-center gap-1">
                 <button
@@ -348,20 +408,20 @@ export function HealthCheckinComposer({
                   onClick={() => setShowMoodPicker(!showMoodPicker)}
                   title="Set mood"
                 >
-                  <Smile className="h-5 w-5" />
+                  <Smile className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
+                  onClick={() => updateField('pinned', !formData.pinned)}
                   className={clsx(
                     "p-2 rounded-full transition-colors",
-                    showNotesField
+                    formData.pinned
                       ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
-                  onClick={() => setShowNotesField(!showNotesField)}
-                  title="Add notes"
+                  title={formData.pinned ? "Unpin" : "Pin"}
                 >
-                  <StickyNote className="h-5 w-5" />
+                  {formData.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
                 </button>
               </div>
 
@@ -386,6 +446,17 @@ export function HealthCheckinComposer({
           </div>
         </div>
       )}
+
+      <SpaceEditor
+        isOpen={showSpaceEditor}
+        onClose={() => setShowSpaceEditor(false)}
+        onSubmit={handleCreateSpace}
+        spaceTypes={[
+          { value: "personal", label: "Personal", description: "Track your personal health metrics privately" },
+          { value: "family", label: "Family", description: "Share health tracking with family members" },
+          { value: "couple", label: "Couple", description: "Track health together with your partner" },
+        ]}
+      />
     </section>
   );
 }

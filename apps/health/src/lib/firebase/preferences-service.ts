@@ -13,6 +13,8 @@ import type { HealthFilterValue } from '@/components/health-filter-content';
 
 export const DEFAULT_PREFERENCES: Omit<UserPreference, 'id' | 'createdAt' | 'updatedAt'> = {
   viewMode: 'masonry',
+  todayColumns: 2,
+  historyColumns: 2,
   weightUnit: 'kg',
   waterUnit: 'glasses',
   showGoals: true,
@@ -84,6 +86,9 @@ function mapPreferenceSnapshot(
       ? toRuntimeFilters(data.savedFilters as StoredHealthFilterValue)
       : undefined,
     savedSort: data.savedSort as SortConfig | undefined,
+    // Masonry column preferences
+    todayColumns: data.todayColumns ?? DEFAULT_PREFERENCES.todayColumns,
+    historyColumns: data.historyColumns ?? DEFAULT_PREFERENCES.historyColumns,
     // Unit preferences
     weightUnit: data.weightUnit ?? DEFAULT_PREFERENCES.weightUnit,
     waterUnit: data.waterUnit ?? DEFAULT_PREFERENCES.waterUnit,

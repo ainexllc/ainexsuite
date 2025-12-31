@@ -21,7 +21,6 @@ import { HealthCheckinComposer } from '@/components/health-checkin-composer';
 import { HealthEditModal } from '@/components/health-edit-modal';
 import { HealthBoard } from '@/components/health-board';
 import { HealthFilterContent } from '@/components/health-filter-content';
-import { SpaceSwitcher } from '@/components/spaces';
 import type { ViewMode, SortField } from '@/lib/types/settings';
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
@@ -247,7 +246,6 @@ export default function HealthWorkspacePage() {
             onSave={handleSaveCheckin}
           />
         }
-        composerActions={<SpaceSwitcher />}
         toolbar={
           <div className="space-y-2">
             {isSearchOpen && (

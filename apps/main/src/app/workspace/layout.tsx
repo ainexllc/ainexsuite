@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, useFontPreference } from '@ainexsuite/ui/components';
+import { WorkspaceLayout, useFontPreference, useFontSizePreference } from '@ainexsuite/ui/components';
 import { Loader2 } from 'lucide-react';
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
@@ -18,8 +18,9 @@ export default function WorkspaceRootLayout({
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
+  // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
+  useFontSizePreference(user?.preferences?.fontSize);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
 
   // Get quick actions for Main app

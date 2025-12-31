@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { X, User, Heart, Users, Home, Check, Sparkles } from 'lucide-react';
+import { X, User, Heart, Users, Home, Check, Sparkles, ArrowRight, SkipForward } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { useGrowStore } from '@/lib/store';
 import { SpaceType, MemberAgeGroup, HabitCreationPolicy } from '@/types/models';
+import { FamilyHabitTemplates } from '@/components/family/FamilyHabitTemplates';
 import { cn } from '@/lib/utils';
 
 interface SpaceCreatorModalProps {
@@ -58,11 +59,12 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
   const { user } = useAuth();
   const { addSpace } = useGrowStore();
 
-  const [step, setStep] = useState<'type' | 'details'>('type');
+  const [step, setStep] = useState<'type' | 'details' | 'templates'>('type');
   const [selectedType, setSelectedType] = useState<SpaceType | null>(null);
   const [spaceName, setSpaceName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [habitsAdded, setHabitsAdded] = useState(0);
 
   const handleSelectType = (type: SpaceType) => {
     setSelectedType(type);
@@ -118,11 +120,15 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
 
       await addSpace(newSpace);
 
-      // Reset and close
-      setStep('type');
-      setSelectedType(null);
-      setSpaceName('');
-      onClose();
+      // For family spaces, go to templates step
+      if (selectedType === 'family') {
+        setStep('templates');
+        setIsCreating(false);
+        return;
+      }
+
+      // Reset and close for other space types
+      resetAndClose();
     } catch (err) {
       setError('Failed to create space. Please try again.');
       console.error('Space creation error:', err);
@@ -131,15 +137,29 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
     }
   };
 
+  const resetAndClose = () => {
+    setStep('type');
+    setSelectedType(null);
+    setSpaceName('');
+    setHabitsAdded(0);
+    onClose();
+  };
+
   const handleClose = () => {
     setStep('type');
     setSelectedType(null);
     setSpaceName('');
+    setHabitsAdded(0);
     setError(null);
     onClose();
   };
 
   const handleBack = () => {
+    if (step === 'templates') {
+      // From templates, just close since space is already created
+      resetAndClose();
+      return;
+    }
     setStep('type');
     setError(null);
   };
@@ -158,7 +178,11 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-indigo-400" />
             <h2 id="modal-title" className="text-lg font-semibold text-foreground">
-              {step === 'type' ? 'Create New Space' : 'Name Your Space'}
+              {step === 'type'
+                ? 'Create New Space'
+                : step === 'details'
+                ? 'Name Your Space'
+                : 'Add Family Habits'}
             </h2>
           </div>
           <button
@@ -218,7 +242,7 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                 );
               })}
             </div>
-          ) : (
+          ) : step === 'details' ? (
             <div className="space-y-4">
               {/* Selected type preview */}
               {selectedType && (
@@ -286,12 +310,33 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                 </div>
               )}
             </div>
+          ) : (
+            /* Templates step for family spaces */
+            <div className="space-y-4">
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
+                <p className="text-sm text-amber-300 font-medium">
+                  Your family space is ready!
+                </p>
+                <p className="text-xs text-amber-300/70 mt-1">
+                  Get started quickly by adding some pre-made habits below, or skip to set up your own later.
+                </p>
+              </div>
+              <FamilyHabitTemplates
+                onHabitsAdded={(count) => setHabitsAdded((prev) => prev + count)}
+              />
+            </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-border bg-foreground/5">
-          {step === 'details' ? (
+          {step === 'type' ? (
+            <div className="w-full text-center">
+              <p className="text-xs text-foreground/40">
+                Select a space type to continue
+              </p>
+            </div>
+          ) : step === 'details' ? (
             <>
               <button
                 onClick={handleBack}
@@ -314,6 +359,11 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
                     <span className="h-4 w-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
                     Creating...
                   </>
+                ) : selectedType === 'family' ? (
+                  <>
+                    <ArrowRight className="h-4 w-4" />
+                    Continue
+                  </>
                 ) : (
                   <>
                     <Check className="h-4 w-4" />
@@ -323,11 +373,23 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
               </button>
             </>
           ) : (
-            <div className="w-full text-center">
-              <p className="text-xs text-foreground/40">
-                Select a space type to continue
-              </p>
-            </div>
+            /* Templates step footer */
+            <>
+              <button
+                onClick={resetAndClose}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <SkipForward className="h-4 w-4" />
+                Skip for now
+              </button>
+              <button
+                onClick={resetAndClose}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-all"
+              >
+                <Check className="h-4 w-4" />
+                Done{habitsAdded > 0 && ` (${habitsAdded} added)`}
+              </button>
+            </>
           )}
         </div>
       </div>

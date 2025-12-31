@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { clsx } from 'clsx';
 import {
   CheckCircle2,
@@ -24,6 +24,22 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
   const { updateTask, toggleTaskPin, deleteTask } = useTodoStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitle, setEditTitle] = useState(task.title);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isEditingTitle]);
+
+  // Reset edit title when task changes
+  useEffect(() => {
+    setEditTitle(task.title);
+  }, [task.title]);
 
   // Default card styling
   const cardClass = 'bg-zinc-50 dark:bg-zinc-900';
@@ -70,7 +86,34 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
   };
 
   const handleCardClick = () => {
+    if (isEditingTitle) return;
     onEditTask(task.id);
+  };
+
+  const handleTitleDoubleClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setIsEditingTitle(true);
+  };
+
+  const handleTitleSave = useCallback(async () => {
+    const trimmedTitle = editTitle.trim();
+    if (trimmedTitle && trimmedTitle !== task.title) {
+      await updateTask(task.id, { title: trimmedTitle });
+    } else {
+      setEditTitle(task.title);
+    }
+    setIsEditingTitle(false);
+  }, [editTitle, task.id, task.title, updateTask]);
+
+  const handleTitleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleTitleSave();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      setEditTitle(task.title);
+      setIsEditingTitle(false);
+    }
   };
 
   return (
@@ -142,16 +185,36 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3
-                    className={clsx(
-                      'text-[17px] font-semibold tracking-[-0.02em]',
-                      task.status === 'done'
-                        ? 'text-zinc-400 dark:text-zinc-500 line-through'
-                        : 'text-zinc-900 dark:text-zinc-50'
-                    )}
-                  >
-                    {task.title}
-                  </h3>
+                  {isEditingTitle ? (
+                    <input
+                      ref={titleInputRef}
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onBlur={handleTitleSave}
+                      onKeyDown={handleTitleKeyDown}
+                      onClick={(e) => e.stopPropagation()}
+                      className={clsx(
+                        'flex-1 min-w-0 text-[17px] font-semibold tracking-[-0.02em] bg-transparent border-b-2 border-[var(--color-primary)] outline-none',
+                        task.status === 'done'
+                          ? 'text-zinc-400 dark:text-zinc-500'
+                          : 'text-zinc-900 dark:text-zinc-50'
+                      )}
+                    />
+                  ) : (
+                    <h3
+                      onDoubleClick={handleTitleDoubleClick}
+                      className={clsx(
+                        'text-[17px] font-semibold tracking-[-0.02em] cursor-text',
+                        task.status === 'done'
+                          ? 'text-zinc-400 dark:text-zinc-500 line-through'
+                          : 'text-zinc-900 dark:text-zinc-50'
+                      )}
+                      title="Double-click to edit"
+                    >
+                      {task.title}
+                    </h3>
+                  )}
                   {/* Priority flags */}
                   {task.priority === 'high' && (
                     <Flag className="h-3.5 w-3.5 text-amber-500 fill-amber-500/20 flex-shrink-0" />

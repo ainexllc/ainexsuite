@@ -68,16 +68,37 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
 
   const [step, setStep] = useState<Step>('welcome');
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
-  const [selectedSpace, setSelectedSpace] = useState<SpaceType>('personal');
+  const [selectedSpaces, setSelectedSpaces] = useState<SpaceType[]>(['personal']);
   const [selectedHabits, setSelectedHabits] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
   const currentGoal = goalOptions.find((g) => g.id === selectedGoal);
 
+  const toggleSpace = (spaceType: SpaceType) => {
+    setSelectedSpaces((prev) => {
+      if (prev.includes(spaceType)) {
+        // Don't allow deselecting if it's the only one
+        if (prev.length === 1) return prev;
+        return prev.filter((s) => s !== spaceType);
+      }
+      return [...prev, spaceType];
+    });
+  };
+
   const toggleHabit = (habit: string) => {
     setSelectedHabits((prev) =>
       prev.includes(habit) ? prev.filter((h) => h !== habit) : [...prev, habit]
     );
+  };
+
+  const getSpaceName = (type: SpaceType): string => {
+    switch (type) {
+      case 'personal': return 'My Growth';
+      case 'couple': return 'Our Journey';
+      case 'family': return 'Family Habits';
+      case 'squad': return 'Team Goals';
+      default: return 'My Space';
+    }
   };
 
   const handleComplete = async () => {
@@ -86,55 +107,68 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
     setIsCreating(true);
 
     try {
-      // Create space if none exists
-      if (spaces.length === 0) {
-        const spaceName =
-          selectedSpace === 'personal'
-            ? 'My Growth'
-            : selectedSpace === 'couple'
-            ? 'Our Journey'
-            : selectedSpace === 'family'
-            ? 'Family Habits'
-            : 'Team Goals';
+      // Create spaces if none exist
+      if (spaces.length === 0 && selectedSpaces.length > 0) {
+        let primarySpaceId: string | null = null;
 
-        const newSpace = {
-          id: `space_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
-          name: spaceName,
-          type: selectedSpace,
-          members: [
-            {
-              uid: user.uid,
-              displayName: user.displayName || 'You',
-              photoURL: user.photoURL || undefined,
-              role: 'admin' as const,
-              joinedAt: new Date().toISOString(),
-            },
-          ],
-          memberUids: [user.uid],
-          createdAt: new Date().toISOString(),
-          createdBy: user.uid,
-        };
-
-        await addSpace(newSpace);
-
-        // Create selected habits
-        for (const habitTitle of selectedHabits) {
-          const newHabit: Habit = {
-            id: `habit_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
-            spaceId: newSpace.id,
-            title: habitTitle,
-            description: '',
-            schedule: { type: 'daily' },
-            assigneeIds: [user.uid],
-            currentStreak: 0,
-            bestStreak: 0,
-            isFrozen: false,
+        // Create each selected space
+        for (let i = 0; i < selectedSpaces.length; i++) {
+          const spaceType = selectedSpaces[i];
+          const newSpace = {
+            id: `space_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 9)}`,
+            name: getSpaceName(spaceType),
+            type: spaceType,
+            members: [
+              {
+                uid: user.uid,
+                displayName: user.displayName || 'You',
+                photoURL: user.photoURL || undefined,
+                role: 'admin' as const,
+                joinedAt: new Date().toISOString(),
+                // For family spaces, mark creator as adult
+                ...(spaceType === 'family' ? { ageGroup: 'adult' as const } : {}),
+              },
+            ],
+            memberUids: [user.uid],
             createdAt: new Date().toISOString(),
+            createdBy: user.uid,
           };
 
-          await addHabit(newHabit);
-          // Small delay to ensure unique IDs
+          await addSpace(newSpace);
+
+          // First space (or personal if selected) gets the habits
+          if (!primarySpaceId) {
+            primarySpaceId = newSpace.id;
+          }
+          // Prefer personal space for habits
+          if (spaceType === 'personal') {
+            primarySpaceId = newSpace.id;
+          }
+
+          // Small delay between space creation
           await new Promise((r) => setTimeout(r, 50));
+        }
+
+        // Create selected habits in the primary space
+        if (primarySpaceId) {
+          for (const habitTitle of selectedHabits) {
+            const newHabit: Habit = {
+              id: `habit_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+              spaceId: primarySpaceId,
+              title: habitTitle,
+              description: '',
+              schedule: { type: 'daily' },
+              assigneeIds: [user.uid],
+              currentStreak: 0,
+              bestStreak: 0,
+              isFrozen: false,
+              createdAt: new Date().toISOString(),
+            };
+
+            await addHabit(newHabit);
+            // Small delay to ensure unique IDs
+            await new Promise((r) => setTimeout(r, 50));
+          }
         }
       }
 
@@ -254,47 +288,60 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-xl font-bold text-white mb-2">
-                How do you want to track?
+                Where do you want to track habits?
               </h2>
               <p className="text-sm text-white/50">
-                You can add partners or team members later
+                Select all that apply — you can add more later
               </p>
             </div>
             <div className="space-y-3">
               {spaceOptions.map((option) => {
                 const Icon = option.icon;
+                const isSelected = selectedSpaces.includes(option.type);
                 return (
                   <button
                     key={option.type}
-                    onClick={() => setSelectedSpace(option.type)}
+                    onClick={() => toggleSpace(option.type)}
                     className={cn(
                       'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all',
-                      selectedSpace === option.type
+                      isSelected
                         ? 'bg-indigo-500/20 border-indigo-500/50'
                         : 'bg-white/5 border-white/10 hover:bg-white/10'
                     )}
                   >
                     <div
                       className={cn(
-                        'h-12 w-12 rounded-xl bg-gradient-to-br flex items-center justify-center',
+                        'h-6 w-6 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0',
+                        isSelected
+                          ? 'bg-indigo-500 border-indigo-500'
+                          : 'border-white/30'
+                      )}
+                    >
+                      {isSelected && (
+                        <Check className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                    <div
+                      className={cn(
+                        'h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0',
                         option.color
                       )}
                     >
-                      <Icon className="h-6 w-6 text-white" />
+                      <Icon className="h-5 w-5 text-white" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-medium text-white">
                         {option.title}
                       </p>
                       <p className="text-xs text-white/50">{option.description}</p>
                     </div>
-                    {selectedSpace === option.type && (
-                      <Check className="h-5 w-5 text-indigo-400 ml-auto" />
-                    )}
                   </button>
                 );
               })}
             </div>
+            <p className="text-center text-xs text-white/40">
+              {selectedSpaces.length} space{selectedSpaces.length !== 1 ? 's' : ''} selected
+            </p>
             <div className="flex justify-between">
               <button
                 onClick={() => setStep('goal')}
@@ -304,7 +351,13 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
               </button>
               <button
                 onClick={() => setStep('habits')}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition-all"
+                disabled={selectedSpaces.length === 0}
+                className={cn(
+                  'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all',
+                  selectedSpaces.length > 0
+                    ? 'bg-indigo-500 hover:bg-indigo-600 text-white'
+                    : 'bg-white/10 text-white/30 cursor-not-allowed'
+                )}
               >
                 Continue
                 <ArrowRight className="h-4 w-4" />

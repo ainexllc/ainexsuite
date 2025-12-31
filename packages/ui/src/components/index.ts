@@ -625,7 +625,7 @@ export {
 } from "./settings";
 
 // Re-export hooks for convenience (main export is from '../hooks')
-export { useFontPreference, useThemePreference } from "../hooks";
+export { useFontPreference, useFontSizePreference, useThemePreference } from "../hooks";
 
 // Error Pages
 export {

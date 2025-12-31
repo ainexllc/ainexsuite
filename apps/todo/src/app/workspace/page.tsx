@@ -1,18 +1,21 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { LayoutGrid, List, Calendar, Sun, Grid2X2, Columns, X } from 'lucide-react';
+import { LayoutGrid, List, Calendar, Sun, Grid2X2, Columns, X, CheckCircle2, Circle, ArrowLeft } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   ActivityCalendar,
   ActiveFilterChips,
+  ListItem,
+  EmptyState,
   type ViewOption,
   type SortOption,
   type SortConfig,
   type FilterChip,
   type FilterChipType,
 } from '@ainexsuite/ui';
+import { format, isSameDay, parseISO } from 'date-fns';
 
 // Components
 import { TaskEditor } from '@/components/tasks/TaskEditor';
@@ -22,6 +25,8 @@ import { TaskKanban } from '@/components/views/TaskKanban';
 import { MyDayView } from '@/components/views/MyDayView';
 import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
 import { TaskFilterContent, type TaskFilterValue } from '@/components/task-filter-content';
+import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 
 import { useTodoStore } from '@/lib/store';
 import type { TaskStatus } from '@/types/models';
@@ -79,26 +84,64 @@ export default function TodoWorkspacePage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
 
   // Resolve view from preference or default
   const view = (viewPreferences[currentSpaceId] as ViewType) || 'list';
 
-  const handleSetView = (newView: ViewType) => {
+  const handleSetView = useCallback((newView: ViewType) => {
     if (currentSpaceId) {
       setViewPreference(currentSpaceId, newView);
     }
-  };
+  }, [currentSpaceId, setViewPreference]);
 
-  // Calculate activity data for calendar view
+  // Calculate activity data for calendar view (based on due dates)
   const activityData = useMemo(() => {
     const data: Record<string, number> = {};
-    tasks.forEach((task) => {
-      if (task.createdAt) {
-        const date = new Date(task.createdAt).toISOString().split('T')[0];
+    const spaceTasks = currentSpace
+      ? tasks.filter((t) =>
+          (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
+        )
+      : tasks;
+
+    spaceTasks.forEach((task) => {
+      // Use dueDate for calendar view
+      if (task.dueDate) {
+        const date = task.dueDate.split('T')[0];
         data[date] = (data[date] || 0) + 1;
       }
     });
     return data;
+  }, [tasks, currentSpace]);
+
+  // Get tasks for the selected calendar date
+  const tasksForSelectedDate = useMemo(() => {
+    if (!selectedCalendarDate) return [];
+    const spaceTasks = currentSpace
+      ? tasks.filter((t) =>
+          (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
+        )
+      : tasks;
+
+    return spaceTasks.filter((task) => {
+      if (!task.dueDate) return false;
+      const dueDate = parseISO(task.dueDate);
+      return isSameDay(dueDate, selectedCalendarDate);
+    });
+  }, [tasks, currentSpace, selectedCalendarDate]);
+
+  const handleCalendarDateSelect = useCallback((date: Date) => {
+    setSelectedCalendarDate((prev) =>
+      prev && isSameDay(prev, date) ? null : date
+    );
+  }, []);
+
+  const handleToggleTaskComplete = useCallback(async (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const { updateTask } = useTodoStore.getState();
+    const newStatus = task.status === 'done' ? 'todo' : 'done';
+    await updateTask(taskId, { status: newStatus });
   }, [tasks]);
 
   // Generate filter chips for active filters
@@ -235,6 +278,71 @@ export default function TodoWorkspacePage() {
     });
   }, []);
 
+  // Keyboard shortcuts
+  const keyboardShortcuts = useMemo(() => [
+    {
+      key: 'n',
+      action: () => {
+        // Try to focus the composer input (expanded state)
+        const composerInput = document.querySelector('[data-composer-input]') as HTMLInputElement;
+        if (composerInput) {
+          composerInput.focus();
+        } else {
+          // Composer is collapsed - click expand button, then focus
+          const expandButton = document.querySelector('[data-composer-expand]') as HTMLButtonElement;
+          expandButton?.click();
+          // Input will auto-focus when composer expands
+        }
+      },
+      description: 'Create new task',
+    },
+    {
+      key: '/',
+      action: () => {
+        if (!isSearchOpen) {
+          setIsSearchOpen(true);
+        }
+        // Focus will happen automatically due to autoFocus
+      },
+      description: 'Focus search',
+    },
+    {
+      key: '1',
+      action: () => handleSetView('list'),
+      description: 'List view',
+    },
+    {
+      key: '2',
+      action: () => handleSetView('masonry'),
+      description: 'Masonry view',
+    },
+    {
+      key: '3',
+      action: () => handleSetView('board'),
+      description: 'Board view',
+    },
+    {
+      key: '4',
+      action: () => handleSetView('my-day'),
+      description: 'My Day view',
+    },
+    {
+      key: '5',
+      action: () => handleSetView('matrix'),
+      description: 'Matrix view',
+    },
+    {
+      key: '6',
+      action: () => handleSetView('calendar'),
+      description: 'Calendar view',
+    },
+  ], [handleSetView, isSearchOpen]);
+
+  const { showHelp, closeHelp } = useKeyboardShortcuts({
+    enabled: !showEditor,
+    shortcuts: keyboardShortcuts,
+  });
+
   const isCalendarView = view === 'calendar';
 
   return (
@@ -294,31 +402,102 @@ export default function TodoWorkspacePage() {
         {/* Content Area */}
         <div className="min-h-[60vh]">
           {isCalendarView ? (
-            <ActivityCalendar
-              activityData={activityData}
-              size="large"
-            />
+            <div className="space-y-6">
+              <ActivityCalendar
+                activityData={activityData}
+                size="large"
+                selectedDate={selectedCalendarDate ?? undefined}
+                onDateSelect={handleCalendarDateSelect}
+              />
+
+              {/* Date drill-down: show tasks for selected date */}
+              {selectedCalendarDate && (
+                <div className="bg-background/40 backdrop-blur-sm rounded-xl border border-border p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setSelectedCalendarDate(null)}
+                        className="p-1.5 hover:bg-foreground/10 rounded-full transition-colors"
+                      >
+                        <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        Tasks for {format(selectedCalendarDate, 'MMMM d, yyyy')}
+                      </h3>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {tasksForSelectedDate.length} task{tasksForSelectedDate.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {tasksForSelectedDate.length > 0 ? (
+                    <div className="space-y-2">
+                      {tasksForSelectedDate.map((task) => (
+                        <ListItem
+                          key={task.id}
+                          variant="default"
+                          title={
+                            <span className={task.status === 'done' ? 'line-through text-muted-foreground' : ''}>
+                              {task.title}
+                            </span>
+                          }
+                          subtitle={task.description || undefined}
+                          icon={task.status === 'done' ? CheckCircle2 : Circle}
+                          onClick={(e) => {
+                            const target = e.target as HTMLElement;
+                            const isIconClick = target.closest('svg')?.parentElement?.classList.contains('flex-shrink-0');
+                            if (isIconClick) {
+                              handleToggleTaskComplete(task.id);
+                            } else {
+                              setSelectedTaskId(task.id);
+                              setShowEditor(true);
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={Calendar}
+                      title="No tasks due"
+                      description="No tasks are due on this date. Click the + button to add one."
+                      variant="default"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
           ) : (
             <>
               {(view === 'list' || view === 'masonry') && (
                 <TaskBoard
                   viewMode={view}
                   onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
+                  searchQuery={searchQuery}
                 />
               )}
 
               {view === 'board' && (
                 <div className="overflow-x-auto">
-                  <TaskKanban onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
+                  <TaskKanban
+                    onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
+                    searchQuery={searchQuery}
+                  />
                 </div>
               )}
 
               {view === 'my-day' && (
-                <MyDayView onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
+                <MyDayView
+                  onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
+                  searchQuery={searchQuery}
+                />
               )}
 
               {view === 'matrix' && (
-                <EisenhowerMatrix onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }} />
+                <EisenhowerMatrix
+                  onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
+                  searchQuery={searchQuery}
+                />
               )}
             </>
           )}
@@ -331,6 +510,9 @@ export default function TodoWorkspacePage() {
         onClose={() => setShowEditor(false)}
         editTaskId={selectedTaskId}
       />
+
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp isOpen={showHelp} onClose={closeHelp} />
     </>
   );
 }

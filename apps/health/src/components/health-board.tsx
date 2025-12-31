@@ -5,26 +5,38 @@ import { Activity } from 'lucide-react';
 import Masonry from 'react-masonry-css';
 import { EmptyState, ListSection } from '@ainexsuite/ui';
 import { HealthCard } from '@/components/health-card';
+import { ColumnSelector } from '@/components/column-selector';
 import { useHealthMetrics } from '@/components/providers/health-metrics-provider';
 import { usePreferences } from '@/components/providers/preferences-provider';
 import type { HealthMetric } from '@ainexsuite/types';
+import type { MasonryColumns } from '@/lib/types/settings';
 
-const masonryBreakpoints = {
-  default: 2,
-  640: 1,
-};
+function getMasonryBreakpoints(columns: MasonryColumns): { default: number; [key: number]: number } {
+  switch (columns) {
+    case 1:
+      return { default: 1 };
+    case 2:
+      return { default: 2, 640: 1 };
+    case 3:
+      return { default: 3, 1024: 2, 640: 1 };
+    case 4:
+      return { default: 4, 1280: 3, 1024: 2, 640: 1 };
+    default:
+      return { default: 2, 640: 1 };
+  }
+}
 
 function HealthSkeleton() {
   return (
     <Masonry
-      breakpointCols={masonryBreakpoints}
+      breakpointCols={{ default: 2, 640: 1 }}
       className="flex -ml-4 w-auto"
       columnClassName="pl-4 bg-clip-padding"
     >
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
-          className="mb-4 h-40 rounded-2xl bg-zinc-100 dark:bg-zinc-800 animate-pulse"
+          className="mb-4 h-48 rounded-2xl bg-zinc-100 dark:bg-zinc-800 animate-pulse"
         />
       ))}
     </Masonry>
@@ -75,10 +87,12 @@ export function HealthBoard({ onEdit, onDelete }: HealthBoardProps) {
 
   const hasMetrics = displayMetrics.length > 0;
   const viewMode = preferences.viewMode;
+  const todayColumns = preferences.todayColumns ?? 2;
+  const historyColumns = preferences.historyColumns ?? 2;
 
-  const renderMasonry = (items: HealthMetric[]) => (
+  const renderMasonry = (items: HealthMetric[], columns: MasonryColumns) => (
     <Masonry
-      breakpointCols={masonryBreakpoints}
+      breakpointCols={getMasonryBreakpoints(columns)}
       className="flex -ml-4 w-auto"
       columnClassName="pl-4 bg-clip-padding"
     >
@@ -116,8 +130,12 @@ export function HealthBoard({ onEdit, onDelete }: HealthBoardProps) {
       ) : hasMetrics ? (
         <div className="space-y-10">
           {todayMetrics.length > 0 && (
-            <ListSection title="Today" count={todayMetrics.length}>
-              {viewMode === 'list' ? renderList(todayMetrics) : renderMasonry(todayMetrics)}
+            <ListSection
+              title="Today"
+              count={todayMetrics.length}
+              action={viewMode === 'masonry' ? <ColumnSelector section="today" /> : undefined}
+            >
+              {viewMode === 'list' ? renderList(todayMetrics) : renderMasonry(todayMetrics, todayColumns as MasonryColumns)}
             </ListSection>
           )}
 
@@ -125,8 +143,9 @@ export function HealthBoard({ onEdit, onDelete }: HealthBoardProps) {
             <ListSection
               title="History"
               count={todayMetrics.length > 0 ? pastMetrics.length : undefined}
+              action={viewMode === 'masonry' ? <ColumnSelector section="history" /> : undefined}
             >
-              {viewMode === 'list' ? renderList(pastMetrics) : renderMasonry(pastMetrics)}
+              {viewMode === 'list' ? renderList(pastMetrics) : renderMasonry(pastMetrics, historyColumns as MasonryColumns)}
             </ListSection>
           )}
         </div>

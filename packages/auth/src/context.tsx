@@ -5,7 +5,7 @@
  * Manages authentication state across the application
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { auth, SSOHandler } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
@@ -57,6 +57,72 @@ function checkForSSOToken(): boolean {
   return new URLSearchParams(window.location.search).has('auth_token');
 }
 
+/**
+ * Check for dev session in localStorage synchronously (for initial render)
+ */
+function getInitialDevSession(): { user: User; session: string } | null {
+  if (typeof window === 'undefined' || process.env.NODE_ENV !== 'development') {
+    return null;
+  }
+
+  try {
+    const session = localStorage.getItem('__cross_app_session');
+    const timestamp = localStorage.getItem('__cross_app_timestamp');
+
+    if (!session || !timestamp) {
+      return null;
+    }
+
+    // Check if session is less than 5 minutes old
+    const age = Date.now() - parseInt(timestamp, 10);
+    if (age > 5 * 60 * 1000) {
+      return null;
+    }
+
+    // Parse session to create user
+    const decoded = JSON.parse(Buffer.from(session, 'base64').toString());
+    const uid = decoded.uid;
+    if (!uid) return null;
+
+    const cookieTheme = typeof document !== 'undefined' ? getThemeCookie() : null;
+    const now = Date.now();
+    const basePreferences = decoded.preferences || {
+      theme: 'dark',
+      language: 'en',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      notifications: { email: true, push: false, inApp: true },
+    };
+
+    const user: User = {
+      uid,
+      email: decoded.email || '',
+      displayName: decoded.displayName || decoded.email || 'Dev User',
+      photoURL: decoded.photoURL || '',
+      preferences: {
+        ...basePreferences,
+        theme: cookieTheme || basePreferences.theme || 'dark',
+      },
+      createdAt: now,
+      lastLoginAt: now,
+      apps: {
+        notes: true, journal: true, todo: true, health: true,
+        album: true, habits: true, display: true, fit: true,
+        project: true, workflow: true, calendar: true,
+      },
+      appPermissions: {},
+      appsUsed: {},
+      appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit', 'projects', 'workflow', 'calendar'],
+      trialStartDate: now,
+      subscriptionStatus: 'trial',
+      suiteAccess: true,
+    };
+
+    return { user, session };
+  } catch {
+    return null;
+  }
+}
+
 // Helper function to create fallback user object
 function createFallbackUser(firebaseUser: FirebaseUser): User {
   const now = Date.now();
@@ -104,7 +170,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
-  // Start as 'pending' - bootstrap must check for session before we can show public pages
   const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('pending');
 
   // Track SSO status - initialized synchronously to detect auth_token before first render
@@ -115,6 +180,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Track if we used dev hydration (no Firebase auth, just UI-level user)
   const [devHydrated, setDevHydrated] = useState(false);
+
+  // Use useLayoutEffect to hydrate from dev session BEFORE paint
+  // This runs synchronously after DOM mutations but before browser paint
+  // Prevents visible loading flash while maintaining SSR compatibility
+  const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+  useIsomorphicLayoutEffect(() => {
+    const devSession = getInitialDevSession();
+    if (devSession) {
+      setUser(devSession.user);
+      setLoading(false);
+      setBootstrapStatus('complete');
+      setDevHydrated(true);
+      // Refresh timestamp
+      localStorage.setItem('__cross_app_timestamp', Date.now().toString());
+    }
+  }, []);
 
   // Callback for SSOHandler to signal completion
   const setSsoComplete = useCallback(() => {

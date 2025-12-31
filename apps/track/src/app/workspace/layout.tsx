@@ -1,7 +1,7 @@
 'use client';
 
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 
 export default function WorkspaceRootLayout({
   children,
@@ -10,8 +10,9 @@ export default function WorkspaceRootLayout({
 }) {
   const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
 
-  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
+  // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
+  useFontSizePreference(user?.preferences?.fontSize);
 
   // Show standardized loading screen
   if (isLoading) {

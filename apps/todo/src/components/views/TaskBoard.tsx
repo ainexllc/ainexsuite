@@ -17,6 +17,7 @@ const masonryBreakpoints = {
 interface TaskBoardProps {
   viewMode: 'list' | 'masonry';
   onEditTask: (taskId: string) => void;
+  searchQuery?: string;
 }
 
 // Skeleton loader for lazy loading (reserved for future use)
@@ -51,18 +52,32 @@ function TasksSkeleton({ viewMode }: { viewMode: 'list' | 'masonry' }) {
   );
 }
 
-export function TaskBoard({ viewMode, onEditTask }: TaskBoardProps) {
+export function TaskBoard({ viewMode, onEditTask, searchQuery = '' }: TaskBoardProps) {
   const { getCurrentSpace, tasks } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
   // Filter tasks for current space, excluding archived
   const spaceTasks = useMemo(() => {
     if (!currentSpace) return [];
-    return tasks.filter(
+    let filtered = tasks.filter(
       (t: Task) =>
         (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
     );
-  }, [tasks, currentSpace]);
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (task) =>
+          task.title.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.tags?.some((tag) => tag.toLowerCase().includes(query)) ||
+          task.subtasks?.some((st) => st.title.toLowerCase().includes(query))
+      );
+    }
+
+    return filtered;
+  }, [tasks, currentSpace, searchQuery]);
 
   // Helper to get time from Date or Firestore Timestamp
   const getTime = (date: Date | { toDate: () => Date } | string | number | undefined) => {

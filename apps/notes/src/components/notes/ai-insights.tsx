@@ -101,7 +101,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
           {/* Summary */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              <FileText className="h-3 w-3" />
+              <FileText className="h-3.5 w-3.5" />
               <span>Summary</span>
             </div>
             <p className="text-foreground/80 leading-relaxed pl-5">
@@ -114,7 +114,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 <div className="flex items-center gap-2">
-                  <ListTodo className="h-3 w-3" />
+                  <ListTodo className="h-3.5 w-3.5" />
                   <span>Suggested Actions</span>
                 </div>
                 {onAddChecklistItems && (
@@ -142,7 +142,7 @@ export function AiInsights({ title, content, onAddChecklistItems, onAddTags }: A
             <div className="space-y-1.5">
                <div className="flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 <div className="flex items-center gap-2">
-                  <Tags className="h-3 w-3" />
+                  <Tags className="h-3.5 w-3.5" />
                   <span>Suggested Tags</span>
                 </div>
                 {onAddTags && (

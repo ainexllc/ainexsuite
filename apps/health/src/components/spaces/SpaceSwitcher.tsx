@@ -43,7 +43,9 @@ export function SpaceSwitcher() {
         onClose={() => setShowSpaceEditor(false)}
         onSubmit={handleCreateSpace}
         spaceTypes={[
-          { value: "family", label: "Family", description: "Track health with family members" },
+          { value: "personal", label: "Personal", description: "Track your personal health metrics privately" },
+          { value: "family", label: "Family", description: "Share health tracking with family members" },
+          { value: "couple", label: "Couple", description: "Track health together with your partner" },
         ]}
       />
     </>

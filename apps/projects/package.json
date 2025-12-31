@@ -19,7 +19,7 @@
     "@ainexsuite/types": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "@xyflow/react": "^12.9.2",
-    "firebase-admin": "^12.0.0",
+    "firebase-admin": "^12.7.0",
     "geist": "^1.2.0",
     "lucide-react": "^0.312.0",
     "next": "15.5.9",

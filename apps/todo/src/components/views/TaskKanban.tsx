@@ -1,6 +1,24 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useTodoStore } from '../../lib/store';
 import type { Task, TaskStatus } from '../../types/models';
 import {
@@ -9,6 +27,7 @@ import {
   Clock,
   Eye,
   Flag,
+  GripVertical,
 } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import { clsx } from 'clsx';
@@ -16,6 +35,7 @@ import { getEntryColorConfig } from '@ainexsuite/ui';
 
 interface TaskKanbanProps {
   onEditTask: (taskId: string) => void;
+  searchQuery?: string;
 }
 
 interface StatusColumn {
@@ -32,18 +52,45 @@ const STATUS_COLUMNS: StatusColumn[] = [
   { id: 'done', title: 'Done', icon: CheckCircle2, color: 'text-green-500' },
 ];
 
-export function TaskKanban({ onEditTask }: TaskKanbanProps) {
+export function TaskKanban({ onEditTask, searchQuery = '' }: TaskKanbanProps) {
   const { getCurrentSpace, tasks, updateTask } = useTodoStore();
   const currentSpace = getCurrentSpace();
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Filter tasks for current space, excluding archived
   const spaceTasks = useMemo(() => {
     if (!currentSpace) return [];
-    return tasks.filter(
+    let filtered = tasks.filter(
       (t: Task) =>
         (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
     );
-  }, [tasks, currentSpace]);
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (task) =>
+          task.title.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.tags?.some((tag) => tag.toLowerCase().includes(query)) ||
+          task.subtasks?.some((st) => st.title.toLowerCase().includes(query))
+      );
+    }
+
+    return filtered;
+  }, [tasks, currentSpace, searchQuery]);
 
   // Group tasks by status
   const tasksByStatus = useMemo(() => {
@@ -58,7 +105,6 @@ export function TaskKanban({ onEditTask }: TaskKanbanProps) {
       if (grouped[task.status]) {
         grouped[task.status].push(task);
       } else {
-        // Default to todo if status is unknown
         grouped.todo.push(task);
       }
     });
@@ -71,84 +117,248 @@ export function TaskKanban({ onEditTask }: TaskKanbanProps) {
     await updateTask(task.id, { status: newStatus });
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const taskId = event.active.id as string;
+    const task = spaceTasks.find((t) => t.id === taskId);
+    if (task) {
+      setActiveTask(task);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveTask(null);
+
+    if (!over) return;
+
+    const taskId = active.id as string;
+    const overId = over.id as string;
+
+    // Check if dropped on a column
+    const targetColumn = STATUS_COLUMNS.find((col) => col.id === overId);
+    if (targetColumn) {
+      const task = spaceTasks.find((t) => t.id === taskId);
+      if (task && task.status !== targetColumn.id) {
+        await updateTask(taskId, { status: targetColumn.id });
+      }
+      return;
+    }
+
+    // Check if dropped on another task - get that task's column
+    const targetTask = spaceTasks.find((t) => t.id === overId);
+    if (targetTask) {
+      const task = spaceTasks.find((t) => t.id === taskId);
+      if (task && task.status !== targetTask.status) {
+        await updateTask(taskId, { status: targetTask.status });
+      }
+    }
+  };
+
   if (!currentSpace) return null;
 
   return (
-    <div className="flex gap-4 h-full overflow-x-auto pb-4 -mx-4 px-4">
-      {STATUS_COLUMNS.map((column) => {
-        const columnTasks = tasksByStatus[column.id];
-        const Icon = column.icon;
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex gap-4 h-full overflow-x-auto pb-4 -mx-4 px-4">
+        {STATUS_COLUMNS.map((column) => {
+          const columnTasks = tasksByStatus[column.id];
+          const Icon = column.icon;
 
-        return (
-          <div key={column.id} className="w-72 shrink-0 flex flex-col">
-            {/* Column Header */}
-            <div className="flex items-center gap-2 mb-3 px-1">
-              <Icon className={clsx('h-4 w-4', column.color)} />
-              <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                {column.title}
-              </h3>
-              <span className="ml-auto bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded-full text-xs font-medium">
-                {columnTasks.length}
-              </span>
-            </div>
+          return (
+            <KanbanColumn
+              key={column.id}
+              column={column}
+              tasks={columnTasks}
+              icon={Icon}
+              onEditTask={onEditTask}
+              onToggleComplete={handleToggleComplete}
+            />
+          );
+        })}
+      </div>
 
-            {/* Column Content */}
-            <div className="flex-1 space-y-3 overflow-y-auto min-h-[200px] pb-2">
-              {columnTasks.map((task) => (
-                <KanbanCard
-                  key={task.id}
-                  task={task}
-                  onEditTask={onEditTask}
-                  onToggleComplete={handleToggleComplete}
-                />
-              ))}
-
-              {/* Empty state for column */}
-              {columnTasks.length === 0 && (
-                <div className="flex items-center justify-center h-20 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600 text-sm">
-                  No tasks
-                </div>
-              )}
-            </div>
+      {/* Drag overlay - shows the card being dragged */}
+      <DragOverlay>
+        {activeTask ? (
+          <div className="opacity-90 rotate-3">
+            <KanbanCardContent
+              task={activeTask}
+              isDragging
+            />
           </div>
-        );
-      })}
+        ) : null}
+      </DragOverlay>
+    </DndContext>
+  );
+}
+
+// Droppable column component
+interface KanbanColumnProps {
+  column: StatusColumn;
+  tasks: Task[];
+  icon: React.ElementType;
+  onEditTask: (id: string) => void;
+  onToggleComplete: (task: Task) => void;
+}
+
+function KanbanColumn({ column, tasks, icon: Icon, onEditTask, onToggleComplete }: KanbanColumnProps) {
+  const { setNodeRef, isOver } = useSortable({
+    id: column.id,
+    data: {
+      type: 'column',
+      column,
+    },
+  });
+
+  return (
+    <div className="w-72 shrink-0 flex flex-col">
+      {/* Column Header */}
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <Icon className={clsx('h-4 w-4', column.color)} />
+        <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+          {column.title}
+        </h3>
+        <span className="ml-auto bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded-full text-xs font-medium">
+          {tasks.length}
+        </span>
+      </div>
+
+      {/* Column Content - Droppable area */}
+      <div
+        ref={setNodeRef}
+        className={clsx(
+          'flex-1 space-y-3 overflow-y-auto min-h-[200px] pb-2 rounded-xl p-2 transition-colors',
+          isOver && 'bg-[var(--color-primary)]/10 ring-2 ring-[var(--color-primary)]/30'
+        )}
+      >
+        <SortableContext
+          items={tasks.map((t) => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {tasks.map((task) => (
+            <SortableKanbanCard
+              key={task.id}
+              task={task}
+              onEditTask={onEditTask}
+              onToggleComplete={onToggleComplete}
+            />
+          ))}
+        </SortableContext>
+
+        {/* Empty state for column */}
+        {tasks.length === 0 && (
+          <div className={clsx(
+            "flex items-center justify-center h-20 rounded-xl border-2 border-dashed text-sm transition-colors",
+            isOver
+              ? "border-[var(--color-primary)]/50 text-[var(--color-primary)]"
+              : "border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600"
+          )}>
+            {isOver ? 'Drop here' : 'No tasks'}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-// Simplified card for Kanban view
-interface KanbanCardProps {
+// Sortable/Draggable card wrapper
+interface SortableKanbanCardProps {
   task: Task;
   onEditTask: (id: string) => void;
   onToggleComplete: (task: Task) => void;
 }
 
-function KanbanCard({ task, onEditTask, onToggleComplete }: KanbanCardProps) {
+function SortableKanbanCard({ task, onEditTask, onToggleComplete }: SortableKanbanCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
+    data: {
+      type: 'task',
+      task,
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={clsx(isDragging && 'opacity-50')}
+    >
+      <KanbanCardContent
+        task={task}
+        onEditTask={onEditTask}
+        onToggleComplete={onToggleComplete}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+    </div>
+  );
+}
+
+// Card content component (used for both regular and overlay)
+interface KanbanCardContentProps {
+  task: Task;
+  onEditTask?: (id: string) => void;
+  onToggleComplete?: (task: Task) => void;
+  isDragging?: boolean;
+  dragHandleProps?: Record<string, unknown>;
+}
+
+function KanbanCardContent({
+  task,
+  onEditTask,
+  onToggleComplete,
+  isDragging,
+  dragHandleProps
+}: KanbanCardContentProps) {
   const date = task.dueDate ? parseISO(task.dueDate) : null;
   const isOverdue = date && isPast(date) && !isToday(date) && task.status !== 'done';
   const colorConfig = getEntryColorConfig(task.color);
 
-  // Subtask progress
   const completedSubtasks = task.subtasks?.filter((s) => s.isCompleted).length || 0;
   const totalSubtasks = task.subtasks?.length || 0;
 
   return (
     <div
       className={clsx(
-        'group rounded-xl p-3 shadow-sm transition-all cursor-pointer',
+        'group rounded-xl p-3 shadow-sm transition-all',
         'border border-zinc-200 dark:border-zinc-800',
-        'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md',
+        isDragging
+          ? 'shadow-lg border-[var(--color-primary)]'
+          : 'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md cursor-pointer',
         colorConfig?.cardClass || 'bg-white dark:bg-zinc-900'
       )}
-      onClick={() => onEditTask(task.id)}
+      onClick={() => onEditTask?.(task.id)}
     >
       <div className="flex items-start gap-2">
+        {/* Drag handle */}
+        <button
+          {...dragHandleProps}
+          className="mt-0.5 shrink-0 text-zinc-300 dark:text-zinc-700 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+
         {/* Checkbox */}
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onToggleComplete(task);
+            onToggleComplete?.(task);
           }}
           className={clsx(
             'mt-0.5 shrink-0 transition-colors',

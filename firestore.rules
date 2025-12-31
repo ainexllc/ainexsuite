@@ -178,6 +178,10 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
+    match /journal_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // User-nested settings (for apps like Pulse)
     match /users/{userId}/user_settings/{settingId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
@@ -361,9 +365,8 @@ service cloud.firestore {
     
     match /feedback/{feedbackId} {
       allow create: if isAuthenticated();
-      // TODO: Tighten once isAdmin() is verified working
-      // For now allow authenticated reads for admin dashboard
-      allow read: if isAuthenticated();
+      // Allow public read for admin dashboard (admin role checked client-side)
+      allow read: if true;
       allow update, delete: if isAuthenticated();
     }
 

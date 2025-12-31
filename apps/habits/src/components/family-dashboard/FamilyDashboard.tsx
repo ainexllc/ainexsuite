@@ -7,6 +7,8 @@ import { Space, Habit, Completion, Member } from '@/types/models';
 import { getTodayDateString } from '@/lib/date-utils';
 import { DashboardHeader } from './DashboardHeader';
 import { FamilyMemberColumn } from './FamilyMemberColumn';
+import { CelebrationOverlay, CELEBRATION_PRESETS } from './CelebrationOverlay';
+import { FamilyStreakTracker } from './FamilyStreakTracker';
 
 interface FamilyDashboardProps {
   space: Space;
@@ -17,6 +19,17 @@ export function FamilyDashboard({ space, token }: FamilyDashboardProps) {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [completions, setCompletions] = useState<Completion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Celebration overlay state
+  const [celebrationState, setCelebrationState] = useState<{
+    isOpen: boolean;
+    type: 'achievement' | 'all_done' | 'challenge_complete';
+    title: string;
+    subtitle?: string;
+    emoji: string;
+    memberName?: string;
+    memberPhotoURL?: string;
+  } | null>(null);
 
   // Subscribe to habits
   useEffect(() => {
@@ -130,6 +143,53 @@ export function FamilyDashboard({ space, token }: FamilyDashboardProps) {
   );
   const totalCompletedToday = completions.length;
 
+  // Get total completions per member
+  const getMemberTotalCompletions = (memberId: string) => {
+    return completions.filter((c) => c.userId === memberId).length;
+  };
+
+  // Check if member has completed all their habits today
+  const isMemberAllDone = (memberId: string) => {
+    const memberHabits = getMemberHabits(memberId);
+    if (memberHabits.length === 0) return false;
+    return memberHabits.every((h) => isCompleted(h.id, memberId));
+  };
+
+  // Handle celebration trigger from child cards
+  const handleCelebration = useCallback(
+    (member: Member, achievement?: { name: string; icon: string }) => {
+      if (achievement) {
+        // Achievement celebration
+        const preset = CELEBRATION_PRESETS.achievement(
+          achievement.name,
+          achievement.icon,
+          member.displayName
+        );
+        setCelebrationState({
+          isOpen: true,
+          ...preset,
+          memberName: member.displayName,
+          memberPhotoURL: member.photoURL,
+        });
+      } else if (isMemberAllDone(member.uid)) {
+        // All done celebration
+        const preset = CELEBRATION_PRESETS.allDone(member.displayName);
+        setCelebrationState({
+          isOpen: true,
+          ...preset,
+          memberName: member.displayName,
+          memberPhotoURL: member.photoURL,
+        });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [completions, habits]
+  );
+
+  const closeCelebration = useCallback(() => {
+    setCelebrationState(null);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -139,28 +199,56 @@ export function FamilyDashboard({ space, token }: FamilyDashboardProps) {
   }
 
   return (
-    <div className="h-screen flex flex-col p-4 lg:p-6">
-      {/* Header */}
-      <DashboardHeader
-        spaceName={space.name}
-        progress={{ completed: totalCompletedToday, total: totalHabitsToday }}
-      />
+    <>
+      <div className="h-screen flex flex-col p-4 lg:p-6">
+        {/* Header */}
+        <DashboardHeader
+          spaceName={space.name}
+          progress={{ completed: totalCompletedToday, total: totalHabitsToday }}
+        />
 
-      {/* Members Grid */}
-      <div className="flex-1 grid gap-4 lg:gap-6 overflow-hidden mt-4" style={{
-        gridTemplateColumns: `repeat(${Math.min(space.members.length, 4)}, 1fr)`
-      }}>
-        {space.members.map((member: Member) => (
-          <FamilyMemberColumn
-            key={member.uid}
-            member={member}
-            habits={getMemberHabits(member.uid)}
-            isCompleted={(habitId) => isCompleted(habitId, member.uid)}
-            onComplete={(habitId) => handleComplete(habitId, member.uid)}
-            onUndoComplete={(habitId) => handleUndoComplete(habitId, member.uid)}
+        {/* Streak Tracker (Compact) */}
+        <div className="mt-4">
+          <FamilyStreakTracker
+            members={space.members}
+            habits={habits}
+            completions={completions}
+            compact
           />
-        ))}
+        </div>
+
+        {/* Members Grid */}
+        <div className="flex-1 grid gap-4 lg:gap-6 overflow-hidden mt-4" style={{
+          gridTemplateColumns: `repeat(${Math.min(space.members.length, 4)}, 1fr)`
+        }}>
+          {space.members.map((member: Member) => (
+            <FamilyMemberColumn
+              key={member.uid}
+              member={member}
+              habits={getMemberHabits(member.uid)}
+              isCompleted={(habitId) => isCompleted(habitId, member.uid)}
+              onComplete={(habitId) => handleComplete(habitId, member.uid)}
+              onUndoComplete={(habitId) => handleUndoComplete(habitId, member.uid)}
+              totalCompletions={getMemberTotalCompletions(member.uid)}
+              onCelebrate={handleCelebration}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+
+      {/* Celebration Overlay */}
+      {celebrationState && (
+        <CelebrationOverlay
+          isOpen={celebrationState.isOpen}
+          onClose={closeCelebration}
+          type={celebrationState.type}
+          title={celebrationState.title}
+          subtitle={celebrationState.subtitle}
+          emoji={celebrationState.emoji}
+          memberName={celebrationState.memberName}
+          memberPhotoURL={celebrationState.memberPhotoURL}
+        />
+      )}
+    </>
   );
 }

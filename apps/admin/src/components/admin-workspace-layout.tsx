@@ -7,7 +7,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLayout, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { db } from '@ainexsuite/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -21,8 +21,9 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
 
-  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
+  // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
+  useFontSizePreference(user?.preferences?.fontSize);
 
   // Check admin role
   useEffect(() => {
@@ -71,7 +72,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
     try {
       const { auth } = await import('@ainexsuite/firebase');
       const firebaseAuth = await import('firebase/auth');
-      await (firebaseAuth as any).signOut(auth);
+      await firebaseAuth.signOut(auth);
       const isDev = process.env.NODE_ENV === 'development';
       window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexsuite.com';
     } catch {

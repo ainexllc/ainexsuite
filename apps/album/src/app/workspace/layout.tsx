@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { SpacesProvider } from '@/components/providers/spaces-provider';
 import { PreferencesProvider, usePreferences } from '@/components/providers/preferences-provider';
@@ -100,8 +100,9 @@ export default function WorkspaceRootLayout({
 }) {
   const { user, isLoading, isReady } = useWorkspaceAuth();
 
-  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
+  // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
+  useFontSizePreference(user?.preferences?.fontSize);
 
   // Show standardized loading screen
   if (isLoading) {

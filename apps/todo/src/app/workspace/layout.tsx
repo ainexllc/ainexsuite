@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, useFontPreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts';
 import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
 import { getQuickActionsForApp } from '@ainexsuite/types';
@@ -35,8 +35,9 @@ export default function WorkspaceRootLayout({
     taskSortOrder: 'manual',
   });
 
-  // Sync user font preference from Firestore (theme sync is handled by WorkspaceLayout)
+  // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
+  useFontSizePreference(user?.preferences?.fontSize);
 
   // Get quick actions for Todo app
   const quickActions = getQuickActionsForApp('todo');

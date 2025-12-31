@@ -8,13 +8,27 @@ import { ListSection, ListItem, EmptyState } from '@ainexsuite/ui';
 
 interface MyDayViewProps {
   onEditTask: (taskId: string) => void;
+  searchQuery?: string;
 }
 
-export function MyDayView({ onEditTask }: MyDayViewProps) {
+export function MyDayView({ onEditTask, searchQuery = '' }: MyDayViewProps) {
   const { myTasks, updateTask, spaces } = useTodoStore();
 
+  // Filter tasks based on search query
+  const filteredTasks = searchQuery.trim()
+    ? myTasks.filter((task) => {
+        const query = searchQuery.toLowerCase().trim();
+        return (
+          task.title.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.tags?.some((tag: string) => tag.toLowerCase().includes(query)) ||
+          task.subtasks?.some((st) => st.title.toLowerCase().includes(query))
+        );
+      })
+    : myTasks;
+
   // Sort by: Overdue -> Today -> Upcoming -> No Date
-  const sortedTasks = [...myTasks].sort((a, b) => {
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
     if (!a.dueDate) return 1;
     if (!b.dueDate) return -1;
     return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();

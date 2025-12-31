@@ -2,6 +2,7 @@ import type { Timestamp } from 'firebase/firestore';
 import type { HealthFilterValue } from '@/components/health-filter-content';
 
 export type ViewMode = 'masonry' | 'list' | 'calendar';
+export type MasonryColumns = 1 | 2 | 3 | 4;
 
 // Sort configuration for health metrics
 export type SortField = 'date' | 'weight' | 'sleep' | 'water' | 'energy';
@@ -29,6 +30,9 @@ export type UserPreferenceDoc = {
   calendarView?: 'month' | 'week';
   savedFilters?: StoredHealthFilterValue;
   savedSort?: SortConfig;
+  // Masonry column preferences
+  todayColumns?: MasonryColumns;
+  historyColumns?: MasonryColumns;
   // Unit preferences
   weightUnit?: WeightUnit;
   waterUnit?: WaterUnit;

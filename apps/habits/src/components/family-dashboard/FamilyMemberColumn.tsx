@@ -2,7 +2,8 @@
 
 import { Member, Habit } from '@/types/models';
 import { TouchHabitCard } from './TouchHabitCard';
-import { Baby, User, PartyPopper } from 'lucide-react';
+import { ChildHabitCard } from './ChildHabitCard';
+import { Baby, User, PartyPopper, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FamilyMemberColumnProps {
@@ -11,6 +12,10 @@ interface FamilyMemberColumnProps {
   isCompleted: (habitId: string) => boolean;
   onComplete: (habitId: string) => void;
   onUndoComplete: (habitId: string) => void;
+  /** Total completions for this member (for achievement tracking) */
+  totalCompletions?: number;
+  /** Callback when celebration should trigger */
+  onCelebrate?: (member: Member, achievement?: { name: string; icon: string }) => void;
 }
 
 export function FamilyMemberColumn({
@@ -19,10 +24,17 @@ export function FamilyMemberColumn({
   isCompleted,
   onComplete,
   onUndoComplete,
+  totalCompletions = 0,
+  onCelebrate,
 }: FamilyMemberColumnProps) {
   const completedCount = habits.filter((h) => isCompleted(h.id)).length;
   const allDone = habits.length > 0 && completedCount === habits.length;
   const isChild = member.ageGroup === 'child';
+
+  // Handle celebration when completing a habit
+  const handleCelebrate = (achievement?: { name: string; icon: string }) => {
+    onCelebrate?.(member, achievement);
+  };
 
   return (
     <div className="flex flex-col h-full bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
@@ -74,17 +86,40 @@ export function FamilyMemberColumn({
             <p>No habits assigned</p>
           </div>
         ) : (
-          habits.map((habit) => (
-            <TouchHabitCard
-              key={habit.id}
-              habit={habit}
-              isCompleted={isCompleted(habit.id)}
-              onComplete={() => onComplete(habit.id)}
-              onUndoComplete={() => onUndoComplete(habit.id)}
-            />
-          ))
+          habits.map((habit) =>
+            isChild ? (
+              <ChildHabitCard
+                key={habit.id}
+                habit={habit}
+                isCompleted={isCompleted(habit.id)}
+                onComplete={() => onComplete(habit.id)}
+                onUndoComplete={() => onUndoComplete(habit.id)}
+                totalCompletions={totalCompletions}
+                onCelebrate={handleCelebrate}
+              />
+            ) : (
+              <TouchHabitCard
+                key={habit.id}
+                habit={habit}
+                isCompleted={isCompleted(habit.id)}
+                onComplete={() => onComplete(habit.id)}
+                onUndoComplete={() => onUndoComplete(habit.id)}
+              />
+            )
+          )
         )}
       </div>
+
+      {/* All Done Celebration for children */}
+      {isChild && allDone && (
+        <div className="p-3 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-t border-emerald-500/30">
+          <div className="flex items-center justify-center gap-2 text-emerald-400">
+            <Sparkles className="h-5 w-5 animate-pulse" />
+            <span className="font-bold">Amazing job!</span>
+            <Sparkles className="h-5 w-5 animate-pulse" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,9 +11,9 @@ import {
   useInsightsCollapsed,
   type AIInsightsSection,
 } from "@ainexsuite/ui";
+import { useAppColors } from "@ainexsuite/theme";
 
 const INSIGHTS_STORAGE_KEY = "suite-insights-collapsed";
-const SUITE_PRIMARY_COLOR = "#f97316"; // Orange - main app color
 
 interface SuiteInsightData {
   dailySummary: string;
@@ -29,6 +29,7 @@ interface SuiteInsightsProps {
 
 export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsProps) {
   const { user } = useAuth();
+  const { primary } = useAppColors();
   const isCollapsed = useInsightsCollapsed(INSIGHTS_STORAGE_KEY);
 
   const [loading, setLoading] = useState(false);
@@ -159,7 +160,7 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
         content: (
           <AIInsightsBulletList
             items={data.topPriorities}
-            accentColor={SUITE_PRIMARY_COLOR}
+            accentColor={primary}
           />
         ),
       },
@@ -169,12 +170,12 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
         content: (
           <AIInsightsBulletList
             items={data.suggestions}
-            accentColor={SUITE_PRIMARY_COLOR}
+            accentColor={primary}
           />
         ),
       },
     ];
-  }, [data]);
+  }, [data, primary]);
 
   // Condensed summary
   const condensedSummary = useMemo(() => {
@@ -206,9 +207,9 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
         <div className="flex items-center gap-3">
           <div
             className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${SUITE_PRIMARY_COLOR}20` }}
+            style={{ backgroundColor: `${primary}20` }}
           >
-            <Sparkles className="h-4 w-4" style={{ color: SUITE_PRIMARY_COLOR }} />
+            <Sparkles className="h-4 w-4" style={{ color: primary }} />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">AI Suite Insights</p>
@@ -225,7 +226,7 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
     <AIInsightsCard
       title="AI Suite Insights"
       sections={sections}
-      accentColor={SUITE_PRIMARY_COLOR}
+      accentColor={primary}
       variant={variant}
       isLoading={loading}
       loadingMessage="Analyzing your suite activity..."

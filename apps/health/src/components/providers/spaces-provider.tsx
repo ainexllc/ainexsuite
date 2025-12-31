@@ -33,5 +33,5 @@ export const { SpacesProvider, useSpaces } = createSpacesProvider<HealthSpace>({
     name: "My Health",
     type: "personal",
   },
-  allowedTypes: ["personal", "family"],
+  allowedTypes: ["personal", "family", "couple"],
 });
