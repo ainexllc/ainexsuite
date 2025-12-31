@@ -6,18 +6,11 @@ import {
   CheckCircle2,
   Circle,
   Flag,
-  Pin,
-  Archive,
-  Palette,
+  Heart,
   Trash2,
 } from 'lucide-react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
-import {
-  ConfirmationDialog,
-  ENTRY_COLORS,
-  getEntryColorConfig,
-} from '@ainexsuite/ui';
-import type { EntryColor } from '@ainexsuite/types';
+import { ConfirmationDialog } from '@ainexsuite/ui';
 import { useTodoStore } from '../../lib/store';
 import type { Task } from '../../types/models';
 
@@ -28,20 +21,12 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardProps) {
-  const {
-    updateTask,
-    toggleTaskPin,
-    toggleTaskArchive,
-    updateTaskColor,
-    deleteTask,
-  } = useTodoStore();
-  const [showPalette, setShowPalette] = useState(false);
+  const { updateTask, toggleTaskPin, deleteTask } = useTodoStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Get color configuration
-  const colorConfig = getEntryColorConfig(task.color);
-  const cardClass = colorConfig?.cardClass || 'bg-zinc-50 dark:bg-zinc-900';
+  // Default card styling
+  const cardClass = 'bg-zinc-50 dark:bg-zinc-900';
 
   // Due date logic
   const date = task.dueDate ? parseISO(task.dueDate) : null;
@@ -79,32 +64,9 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
     setShowDeleteConfirm(false);
   };
 
-  const handleArchive = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    await toggleTaskArchive(task.id, !task.archived);
-  };
-
   const handlePin = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     await toggleTaskPin(task.id, !task.pinned);
-  };
-
-  const handleOpenPalette = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setShowPalette((prev) => !prev);
-  };
-
-  const handleColorSelect = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-    color: EntryColor
-  ) => {
-    event.stopPropagation();
-    if (color === task.color) {
-      setShowPalette(false);
-      return;
-    }
-    await updateTaskColor(task.id, color);
-    setShowPalette(false);
   };
 
   const handleCardClick = () => {
@@ -125,29 +87,29 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
         )}
         onClick={handleCardClick}
       >
-        {/* Corner Pin Badge - clickable to unpin */}
+        {/* Corner Heart Badge - clickable to unfavorite */}
         {task.pinned && (
           <button
             type="button"
             onClick={handlePin}
             className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
-            aria-label="Unpin task"
+            aria-label="Remove from favorites"
           >
-            <div className="absolute top-0 right-0 bg-amber-500 group-hover/pin:bg-amber-600 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-colors" />
-            <Pin className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
+            <div className="absolute top-0 right-0 bg-[var(--color-primary)] group-hover/pin:brightness-90 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all" />
+            <Heart className="absolute top-1.5 right-1.5 h-3 w-3 text-white fill-white" />
           </button>
         )}
 
         <div className="relative z-10 w-full">
-          {/* Pin button - only shows on unpinned tasks */}
+          {/* Heart button - only shows on unpinned tasks */}
           {!task.pinned && (
             <button
               type="button"
               onClick={handlePin}
-              className="absolute right-2 top-2 z-20 hidden rounded-full p-2 transition group-hover:flex bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-              aria-label="Pin task"
+              className="absolute right-2 top-2 z-20 hidden rounded-full p-2 transition group-hover:flex bg-zinc-100 dark:bg-zinc-800 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 hover:brightness-110"
+              aria-label="Add to favorites"
             >
-              <Pin className="h-4 w-4" />
+              <Heart className="h-4 w-4" />
             </button>
           )}
 
@@ -156,11 +118,6 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
               'overflow-y-auto pr-1',
               viewMode === 'list' ? 'flex-1 max-h-24' : 'max-h-[480px]'
             )}
-            onScroll={() => {
-              if (showPalette) {
-                setShowPalette(false);
-              }
-            }}
           >
             {/* Title with checkbox and priority */}
             <div className="flex items-start gap-3 pr-8">
@@ -301,52 +258,17 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
 
             {/* Action buttons */}
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={handleArchive}
-                className="h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-                aria-label={task.archived ? 'Unarchive task' : 'Archive task'}
-              >
-                <Archive className="h-3.5 w-3.5" />
-              </button>
-
-              {/* Color picker */}
-              <div className="relative flex items-center">
+              {/* Heart/Pin button - only shows on non-pinned tasks */}
+              {!task.pinned && (
                 <button
                   type="button"
-                  onClick={handleOpenPalette}
-                  className={clsx(
-                    'h-7 w-7 rounded-full flex items-center justify-center transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200',
-                    showPalette &&
-                      'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200'
-                  )}
-                  aria-label="Change color"
+                  onClick={handlePin}
+                  className="h-7 w-7 rounded-full flex items-center justify-center transition text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 hover:brightness-110"
+                  aria-label="Add to favorites"
                 >
-                  <Palette className="h-3.5 w-3.5" />
+                  <Heart className="h-3.5 w-3.5" />
                 </button>
-                {showPalette && (
-                  <div
-                    className="absolute bottom-10 right-0 z-30 flex gap-2 rounded-2xl bg-background/95 p-3 shadow-2xl backdrop-blur-xl border border-border"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    {ENTRY_COLORS.map((option) => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        className={clsx(
-                          'h-6 w-6 rounded-full border border-transparent transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500',
-                          option.swatchClass,
-                          option.id === (task.color || 'default') &&
-                            'ring-2 ring-foreground'
-                        )}
-                        onClick={(event) => handleColorSelect(event, option.id)}
-                        aria-label={`Set color ${option.label}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
+              )}
               <button
                 type="button"
                 onClick={handleDeleteClick}
