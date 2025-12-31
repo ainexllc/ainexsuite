@@ -168,14 +168,25 @@ export function AuthBootstrap() {
         setIsBootstrapping(true);
         setBootstrapStatus('running');
 
+        // Add timeout to prevent stuck loading states
+        const devTimeoutId = setTimeout(() => {
+          console.warn('[AuthBootstrap] Dev bootstrap timed out after 5s');
+          setIsBootstrapping(false);
+          setBootstrapped(true);
+          setBootstrapStatus('complete');
+          setBootstrapping(false);
+        }, 5000);
+
         bootstrapFromDevSessionFn(crossAppSession, hydrateFromDevSession)
           .then(() => {
+            clearTimeout(devTimeoutId);
             // Refresh the timestamp to extend the session on successful bootstrap
             refreshDevCrossAppSession();
             setBootstrapped(true);
             setBootstrapStatus('complete');
           })
           .catch((error) => {
+            clearTimeout(devTimeoutId);
             console.error('[AuthBootstrap] Dev session bootstrap failed:', error);
             // Clear the session if it failed (invalid/corrupted)
             clearDevCrossAppSession();
@@ -196,8 +207,18 @@ export function AuthBootstrap() {
     setIsBootstrapping(true);
     setBootstrapStatus('running');
 
+    // Add timeout to prevent stuck loading states
+    const timeoutId = setTimeout(() => {
+      console.warn('[AuthBootstrap] Bootstrap timed out after 5s');
+      setIsBootstrapping(false);
+      setBootstrapped(true);
+      setBootstrapStatus('complete');
+      setBootstrapping(false);
+    }, 5000);
+
     bootstrapFromHttpOnlyCookie()
       .then((result) => {
+        clearTimeout(timeoutId);
         if (result && result.devMode && result.sessionCookie) {
           hydrateFromDevSession(result.sessionCookie);
           // Store in localStorage so page refreshes work on this port
@@ -210,6 +231,7 @@ export function AuthBootstrap() {
         setBootstrapStatus('complete');
       })
       .catch(() => {
+        clearTimeout(timeoutId);
         // No session cookie or invalid - proceed to normal auth flow (this is normal for new visitors)
         setIsBootstrapping(false);
         setBootstrapped(true);

@@ -1,7 +1,9 @@
 'use client';
 
-import { Sparkles, X } from 'lucide-react';
+import { Sparkles, X, ChevronDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useSystemUpdates } from '../../hooks/use-system-updates';
+import { clsx } from 'clsx';
 
 export interface Update {
   id: string;
@@ -13,32 +15,66 @@ export interface Update {
 }
 
 export interface WhatsNewProps {
+  // updates prop is now optional and mainly for overriding/testing
+  // If not provided, it fetches from the hook
   updates?: Update[];
 }
 
-const defaultUpdates: Update[] = [
-  {
-    id: '1',
-    title: 'Enhanced Profile Sidebar',
-    description: 'New activity stats, connected apps, and usage tracking.',
-    date: '2025-01-23',
-    badge: 'NEW',
-    badgeColor: 'blue',
-  },
-  {
-    id: '2',
-    title: 'AI Query Tracking',
-    description: 'Monitor your AI usage with visual progress meters.',
-    date: '2025-01-23',
-    badge: 'NEW',
-    badgeColor: 'purple',
-  },
-];
-
-export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
+export function WhatsNew({ updates: propUpdates }: WhatsNewProps) {
+  const { updates: systemUpdates, loading, loadMore, hasMore, loadingMore } = useSystemUpdates(7);
   const [dismissed, setDismissed] = useState<string[]>([]);
 
-  const visibleUpdates = updates.filter((update) => !dismissed.includes(update.id));
+  // Convert system updates to display format if prop updates are not provided
+  const displayUpdates = propUpdates || systemUpdates.map(u => {
+    let badge = 'NEW';
+    let badgeColor = 'blue';
+
+    switch (u.type) {
+      case 'feature':
+        badge = 'NEW';
+        badgeColor = 'purple';
+        break;
+      case 'improvement':
+        badge = 'IMPROVED';
+        badgeColor = 'blue';
+        break;
+      case 'fix':
+        badge = 'FIXED';
+        badgeColor = 'orange';
+        break;
+      case 'announcement':
+        badge = 'NEWS';
+        badgeColor = 'green';
+        break;
+    }
+
+    return {
+      id: u.id,
+      title: u.title,
+      description: u.description,
+      date: u.date?.toDate ? u.date.toDate().toISOString() : new Date().toISOString(),
+      badge,
+      badgeColor
+    };
+  });
+
+  const visibleUpdates = displayUpdates.filter((update) => !dismissed.includes(update.id));
+
+  if (loading && !propUpdates) {
+    return (
+      <div className="space-y-3 px-1">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+          <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="space-y-2">
+           {[1, 2].map(i => (
+             <div key={i} className="h-24 bg-muted/10 animate-pulse rounded-lg border border-border/50" />
+           ))}
+        </div>
+      </div>
+    );
+  }
 
   if (visibleUpdates.length === 0) {
     return null;
@@ -66,17 +102,17 @@ export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
             orange: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
           };
 
-          const badgeColor = update.badgeColor as keyof typeof badgeColors || 'blue';
+          const badgeColor = (update.badgeColor as keyof typeof badgeColors) || 'blue';
 
           return (
             <div
               key={update.id}
-              className="relative rounded-lg bg-gradient-to-br from-foreground/5 to-foreground/[0.02] border border-border p-3"
+              className="relative rounded-lg bg-gradient-to-br from-foreground/5 to-foreground/[0.02] border border-border p-3 group"
             >
               {/* Dismiss Button */}
               <button
                 onClick={() => handleDismiss(update.id)}
-                className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded hover:bg-foreground/10 transition"
+                className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded hover:bg-foreground/10 transition opacity-0 group-hover:opacity-100"
                 aria-label="Dismiss"
               >
                 <X className="h-3 w-3 text-muted-foreground" />
@@ -85,7 +121,10 @@ export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
               {/* Badge */}
               {update.badge && (
                 <span
-                  className={`inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border mb-2 ${badgeColors[badgeColor]}`}
+                  className={clsx(
+                    "inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border mb-2",
+                    badgeColors[badgeColor]
+                  )}
                 >
                   {update.badge}
                 </span>
@@ -95,7 +134,7 @@ export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
               <h4 className="text-sm font-semibold text-foreground pr-6 mb-1">
                 {update.title}
               </h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
                 {update.description}
               </p>
 
@@ -110,7 +149,23 @@ export function WhatsNew({ updates = defaultUpdates }: WhatsNewProps) {
             </div>
           );
         })}
+        
+        {!propUpdates && hasMore && (
+            <button 
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg transition-colors"
+            >
+                {loadingMore ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                    <ChevronDown className="h-3 w-3" />
+                )}
+                {loadingMore ? 'Loading...' : 'Show More Updates'}
+            </button>
+        )}
       </div>
     </div>
   );
 }
+

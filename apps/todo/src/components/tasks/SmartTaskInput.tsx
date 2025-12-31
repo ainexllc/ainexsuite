@@ -90,7 +90,7 @@ export function SmartTaskInput({ onOpenFullEditor }: SmartTaskInputProps) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Add a task..."
+          placeholder="Add a todo..."
           className="flex-1 bg-transparent border-none outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
         />
         <div className="flex items-center gap-2 ml-3">

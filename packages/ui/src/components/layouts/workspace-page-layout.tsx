@@ -133,13 +133,15 @@ export function WorkspacePageLayout({
 
       {/* Toolbar Area */}
       {toolbar && (
-        <div className="w-full">
+        <div className="relative z-20 w-full !mt-1.5">
           {toolbar}
         </div>
       )}
 
       {/* Main Content */}
-      {children}
+      <div className="relative z-0">
+        {children}
+      </div>
     </div>
   );
 }

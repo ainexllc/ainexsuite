@@ -6,6 +6,7 @@ import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, useFontPreference } from '@ainexsuite/ui';
 import { SpacesProvider } from '@/components/providers/spaces-provider';
 import { EntriesProvider, useEntries } from '@/components/providers/entries-provider';
+import { PreferencesProvider } from '@/components/providers/preferences-provider';
 import { PrivacyProvider } from '@ainexsuite/privacy';
 import { CoverSettingsProvider } from '@/contexts/cover-settings-context';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
@@ -122,15 +123,17 @@ export default function WorkspaceRootLayout({
     <SpacesProvider>
       <PrivacyProvider config={{ appName: 'journal' }}>
         <CoverSettingsProvider>
-          <EntriesProvider>
-            <WorkspaceLayoutInner
-              user={user}
-              handleSignOut={handleSignOut}
-              updatePreferences={updatePreferences}
-            >
-              {children}
-            </WorkspaceLayoutInner>
-          </EntriesProvider>
+          <PreferencesProvider>
+            <EntriesProvider>
+              <WorkspaceLayoutInner
+                user={user}
+                handleSignOut={handleSignOut}
+                updatePreferences={updatePreferences}
+              >
+                {children}
+              </WorkspaceLayoutInner>
+            </EntriesProvider>
+          </PreferencesProvider>
         </CoverSettingsProvider>
       </PrivacyProvider>
     </SpacesProvider>

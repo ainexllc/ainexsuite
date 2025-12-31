@@ -112,6 +112,7 @@ export interface JournalFormHandle {
   setTitle: (value: string) => void;
   submitPublish: () => void;
   submitDraft: () => void;
+  focusEditor: () => void;
 }
 
 export const JournalForm = forwardRef<JournalFormHandle, JournalFormProps>(
@@ -197,6 +198,9 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
     },
     submitDraft: () => {
       submitDraft();
+    },
+    focusEditor: () => {
+      editorFocusRef.current?.();
     },
   }));
 

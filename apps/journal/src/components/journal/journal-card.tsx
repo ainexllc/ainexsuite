@@ -12,8 +12,6 @@ import {
   Paperclip,
   Trash2,
   Link as LinkIcon,
-  Lock,
-  Unlock,
   Pin,
   Archive,
   Palette,
@@ -291,7 +289,9 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           'border border-zinc-200 dark:border-zinc-800',
           'group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200',
           'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md',
-          'break-inside-avoid px-6 py-6',
+          'break-inside-avoid px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6',
+          // Responsive heights: taller on mobile (single column), shorter with more columns
+          'h-[240px] sm:h-[260px] lg:h-[280px]',
         )}
         onClick={handleCardClick}
       >
@@ -302,10 +302,17 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
             <img
               src={currentCover.thumbnail}
               alt=""
+              loading="lazy"
               className="absolute inset-0 w-full h-full object-cover z-0"
             />
-            {/* Subtle overlay for text readability */}
-            <div className="absolute inset-0 bg-black/30 z-10" />
+            {/* Apply overlay styles from user selection */}
+            <div className={clsx(
+              getOverlayClasses(
+                { id: 'cover', name: 'cover', thumbnail: '', fullImage: '', brightness: 'dark' },
+                entry.backgroundOverlay || 'auto'
+              ),
+              'z-10'
+            )} />
           </div>
         )}
 
@@ -316,6 +323,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
             <img
               src={currentBackground.thumbnail}
               alt=""
+              loading="lazy"
               className="absolute inset-0 w-full h-full object-cover z-0"
             />
             <div className={clsx(getOverlayClasses(currentBackground, entry.backgroundOverlay || 'auto'), 'z-10')} />
@@ -329,6 +337,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
             <img
               src={leatherCoverUrl}
               alt=""
+              loading="lazy"
               className="absolute inset-0 w-full h-full object-cover z-0"
             />
             {/* Subtle overlay for text readability */}
@@ -363,7 +372,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </button>
         )}
 
-        <div className="relative z-10 w-full">
+        <div className="relative z-10 w-full h-full flex flex-col">
           {/* Pin button - only shows on unpinned entries */}
           {!entry.pinned && (
             <button
@@ -377,7 +386,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           )}
 
           <div
-            className="overflow-y-auto pr-1 max-h-[480px]"
+            className="overflow-hidden pr-1 flex-1"
             onScroll={() => {
               if (showPalette) {
                 setShowPalette(false);
@@ -386,26 +395,6 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           >
             {/* Header with badges */}
             <div className="mb-3 flex items-center gap-2 flex-wrap pr-8">
-              {entry.isPrivate && (
-                <div
-                  className="flex items-center"
-                  title={
-                    !hasPasscode
-                      ? 'Private entry (no passcode set)'
-                      : isLocked
-                        ? 'Private entry (locked)'
-                        : 'Private entry (unlocked)'
-                  }
-                >
-                  {!hasPasscode ? (
-                    <Lock className="h-4 w-4 text-amber-500" />
-                  ) : isLocked ? (
-                    <Lock className="h-4 w-4 text-red-500" />
-                  ) : (
-                    <Unlock className="h-4 w-4 text-green-500" />
-                  )}
-                </div>
-              )}
               {entry.isDraft && (
                 <span className="rounded-full border border-dashed border-border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                   Draft
@@ -416,7 +405,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
             {/* Title */}
             {entry.title && (
               <h3 className={clsx(
-                "pr-8 text-[17px] font-semibold tracking-[-0.02em]",
+                "pr-8 text-base sm:text-[17px] font-semibold tracking-[-0.02em] line-clamp-2",
                 hasCover
                   ? "text-white"
                   : hasBackground
@@ -429,7 +418,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
               </h3>
             )}
 
-            {/* Content - show AI summary when cover exists and AI summary enabled, otherwise truncated content */}
+            {/* Content - compact in list view with covers, show AI summary when cover exists and AI summary enabled, otherwise truncated content */}
             <BlurredContent isLocked={isLocked} onClick={handleView} className="mt-3">
               {showAiSummary && hasCover && isGeneratingSummary ? (
                 <div className="flex items-center gap-2 py-2">
@@ -452,9 +441,8 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                 </div>
               ) : (
                 <p className={clsx(
-                  "whitespace-pre-wrap text-[15px] leading-7 tracking-[-0.01em]",
-                  // Responsive line-clamp based on view
-                  "line-clamp-2 sm:line-clamp-3 md:line-clamp-4",
+                  "whitespace-pre-wrap text-sm sm:text-[15px] leading-6 sm:leading-7 tracking-[-0.01em]",
+                  "line-clamp-2 sm:line-clamp-3 lg:line-clamp-4",
                   hasCover
                     ? "text-white/90"
                     : hasBackground
@@ -465,7 +453,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                 )}>
                   {showAiSummary && hasCover && entry.coverSummary
                     ? entry.coverSummary
-                    : truncateContent(entry.content, 200)}
+                    : truncateContent(entry.content, 150)}
                 </p>
               )}
             </BlurredContent>
@@ -531,7 +519,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </div>
 
           {/* Footer with actions */}
-          <footer className="mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl">
+          <footer className="mt-auto flex items-center justify-between pt-3">
             <div className={clsx(
               "flex items-center gap-2 text-[11px] uppercase tracking-wide",
               hasCover

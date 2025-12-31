@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, RefObject, useCallback } from 'react';
+import { Loader2, ArrowUp } from 'lucide-react';
 import type { JournalEntry } from '@ainexsuite/types';
 import { OnThisDayCard } from '@/components/dashboard/on-this-day-card';
 import { JournalBoard } from '@/components/journal/journal-board';
 import { usePersonalizedWelcome } from '@/hooks/usePersonalizedWelcome';
 import { getUserSettings, UserSettings } from '@/lib/firebase/settings';
-
-type ViewMode = 'list' | 'masonry' | 'calendar';
 
 interface DashboardStats {
   streak: number;
@@ -26,18 +25,17 @@ interface NotebookLiteDashboardProps {
   onClearFilters: () => void;
   onOpenFilters: () => void;
   entries: JournalEntry[];
-  paginatedEntries: JournalEntry[];
+  displayEntries: JournalEntry[];
   totalEntries: number;
-  totalPages: number;
-  page: number;
-  onPageChange: (page: number) => void;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  sentinelRef?: RefObject<HTMLDivElement | null>;
   onEntryUpdated: () => void;
   latestEntry?: JournalEntry | null;
   latestDraft?: JournalEntry | null;
   stats: DashboardStats;
   isLoadingEntries: boolean;
   onThisDayEntries: JournalEntry[];
-  viewMode?: ViewMode;
 }
 
 export function NotebookLiteDashboard({
@@ -51,20 +49,20 @@ export function NotebookLiteDashboard({
   onClearFilters,
   onOpenFilters: _onOpenFilters,
   entries,
-  paginatedEntries,
+  displayEntries,
   totalEntries,
-  totalPages,
-  page,
-  onPageChange,
+  hasMore,
+  isLoadingMore,
+  sentinelRef,
   onEntryUpdated,
   latestEntry: _latestEntry,
   latestDraft: _latestDraft,
   stats: _stats,
   isLoadingEntries,
   onThisDayEntries,
-  viewMode = 'masonry',
 }: NotebookLiteDashboardProps) {
   const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Fetch user settings
   useEffect(() => {
@@ -72,6 +70,20 @@ export function NotebookLiteDashboard({
       getUserSettings(userId).then(setSettings);
     }
   }, [userId]);
+
+  // Track scroll position for Back to Top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   // Get personalized welcome message based on recent entries
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -84,15 +96,14 @@ export function NotebookLiteDashboard({
   const hasFilters = searchTerm.length > 0 || selectedTags.length > 0;
 
   return (
-    <div className="min-h-screen transition-colors duration-500">
+    <div className="min-h-screen">
       <div className="mx-auto max-w-7xl space-y-6 pb-20">
         {/* On This Day - Full Width */}
         {onThisDayEntries.length > 0 && <OnThisDayCard entries={onThisDayEntries} />}
 
         {/* Journal Board with Pinned Section */}
         <JournalBoard
-          entries={paginatedEntries}
-          viewMode={viewMode}
+          entries={displayEntries}
           loading={isLoadingEntries}
           onEntryUpdated={onEntryUpdated}
           searchTerm={searchTerm}
@@ -100,31 +111,38 @@ export function NotebookLiteDashboard({
           onClearFilters={onClearFilters}
         />
 
-        {/* Pagination */}
-        {!isLoadingEntries && totalPages > 1 && (
-          <div className="flex items-center justify-between rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground">
-            <button
-              type="button"
-              disabled={page === 0}
-              onClick={() => onPageChange(Math.max(0, page - 1))}
-              className="rounded-full px-3 py-1 text-sm font-semibold text-muted-foreground transition hover:bg-accent/10 disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <span className="text-xs">
-              Page {page + 1} of {totalPages} ({totalEntries} entries)
+        {/* Infinite scroll sentinel and loading indicator */}
+        {sentinelRef && (
+          <div ref={sentinelRef} className="h-4" aria-hidden="true" />
+        )}
+
+        {isLoadingMore && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-sm text-muted-foreground">Loading more entries...</span>
+          </div>
+        )}
+
+        {/* End of entries indicator */}
+        {!isLoadingEntries && !isLoadingMore && !hasMore && totalEntries > 0 && (
+          <div className="flex items-center justify-center py-4">
+            <span className="text-xs text-muted-foreground">
+              {totalEntries} {totalEntries === 1 ? 'entry' : 'entries'}
             </span>
-            <button
-              type="button"
-              disabled={page >= totalPages - 1}
-              onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-              className="rounded-full px-3 py-1 text-sm font-semibold text-muted-foreground transition hover:bg-accent/10 disabled:opacity-40"
-            >
-              Next
-            </button>
           </div>
         )}
       </div>
+
+      {/* Back to Top button */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          aria-label="Back to top"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </button>
+      )}
     </div>
   );
 }

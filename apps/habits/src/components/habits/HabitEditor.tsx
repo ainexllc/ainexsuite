@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Snowflake, Save, Trash2, Check, Flame, X } from 'lucide-react';
+import { Calendar, Users, Snowflake, Save, Trash2, Check, Flame, X, Target, Link2 } from 'lucide-react';
 import { useGrowStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
-import { Habit, FrequencyType, Schedule, Wager, Member } from '../../types/models';
+import { Habit, FrequencyType, Schedule, Wager, Member, HabitCategory, HABIT_CATEGORIES } from '../../types/models';
 import { ConfirmationDialog } from '@ainexsuite/ui';
 import { useAppColors } from '@ainexsuite/theme';
 
@@ -32,11 +32,15 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<HabitCategory | undefined>(undefined);
   const [schedule, setSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
   const [assignees, setAssignees] = useState<string[]>([]);
   const [isFrozen, setIsFrozen] = useState(false);
   const [wager, setWager] = useState<Wager | undefined>(undefined);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [targetValue, setTargetValue] = useState<number | undefined>(undefined);
+  const [targetUnit, setTargetUnit] = useState<string>('mins');
+  const [chainedTo, setChainedTo] = useState<string | undefined>(undefined);
   
   // Load data if editing
   useEffect(() => {
@@ -45,10 +49,14 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
       if (habit) {
         setTitle(habit.title);
         setDescription(habit.description || '');
+        setCategory(habit.category);
         setSchedule(habit.schedule);
         setAssignees(habit.assigneeIds);
         setIsFrozen(habit.isFrozen);
         setWager(habit.wager);
+        setTargetValue(habit.targetValue);
+        setTargetUnit(habit.targetUnit || 'mins');
+        setChainedTo(habit.chainedTo);
       }
     } else if (isOpen && currentSpace) {
       // Default to assigning to self
@@ -56,8 +64,12 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
       setSchedule(DEFAULT_SCHEDULE);
       setTitle('');
       setDescription('');
+      setCategory(undefined);
       setIsFrozen(false);
       setWager(undefined);
+      setTargetValue(undefined);
+      setTargetUnit('mins');
+      setChainedTo(undefined);
     }
   }, [editHabitId, isOpen, habits, currentSpace]);
 
@@ -68,29 +80,46 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
     const habitData: Partial<Habit> = {
       title,
       description,
+      category,
       schedule,
       assigneeIds: assignees,
       isFrozen,
       wager,
+      targetValue,
+      targetUnit: targetValue ? targetUnit : undefined,
+      chainedTo,
     };
 
     if (editHabitId) {
       updateHabit(editHabitId, habitData);
+      // Update the "chainedFrom" field on the linked habit
+      if (chainedTo) {
+        updateHabit(chainedTo, { chainedFrom: editHabitId });
+      }
     } else {
+      const newId = `habit_${Date.now()}`;
       addHabit({
-        id: `habit_${Date.now()}`,
+        id: newId,
         spaceId: currentSpace.id,
         title,
         description,
+        category,
         schedule,
         assigneeIds: assignees,
         currentStreak: 0,
         bestStreak: 0,
         isFrozen,
         wager,
+        targetValue,
+        targetUnit: targetValue ? targetUnit : undefined,
+        chainedTo,
         createdAt: new Date().toISOString(),
         createdBy: user.uid,
       });
+      // Update the "chainedFrom" field on the linked habit
+      if (chainedTo) {
+        updateHabit(chainedTo, { chainedFrom: newId });
+      }
     }
     onClose();
   };
@@ -145,60 +174,93 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
           {/* Basic Info */}
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">What</label>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Habit Name <span className="text-destructive">*</span>
+              </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Morning Run"
-                className="w-full bg-foreground/5 border border-border rounded-xl p-3 text-lg text-foreground focus:outline-none"
-                style={{ '--tw-ring-color': primary } as React.CSSProperties}
+                placeholder="e.g., Morning Run, Read 20 Pages, Meditate..."
+                className="w-full bg-foreground/5 border border-border rounded-2xl px-4 py-3.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                style={{ '--tw-ring-color': `${primary}50` } as React.CSSProperties}
                 required
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Description <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add details..."
-                className="w-full bg-foreground/5 border border-border rounded-xl p-3 text-sm text-muted-foreground focus:outline-none min-h-[80px]"
-                style={{ '--tw-ring-color': primary } as React.CSSProperties}
+                placeholder="Why is this habit important? Any tips or reminders for yourself?"
+                className="w-full bg-foreground/5 border border-border rounded-2xl px-4 py-3 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition-all min-h-[80px] resize-none"
+                style={{ '--tw-ring-color': `${primary}50` } as React.CSSProperties}
               />
+            </div>
+          </div>
+
+          {/* Category Picker */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-3">Category</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {HABIT_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setCategory(category === cat.value ? undefined : cat.value)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                    category === cat.value
+                      ? 'text-white border-transparent shadow-md'
+                      : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/10 hover:text-foreground'
+                  }`}
+                  style={category === cat.value ? { backgroundColor: cat.color, boxShadow: `0 4px 12px ${cat.color}40` } : undefined}
+                >
+                  <span className="text-base">{cat.icon}</span>
+                  <span>{cat.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Schedule */}
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
-              <Calendar className="h-4 w-4" /> When
+            <label className="block text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" /> Schedule
             </label>
 
-            <div className="flex gap-2 mb-4">
-              {['daily', 'specific_days', 'interval', 'weekly'].map((type: string) => (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[
+                { value: 'daily', label: 'Every Day' },
+                { value: 'specific_days', label: 'Specific Days' },
+                { value: 'interval', label: 'Every X Days' },
+                { value: 'weekly', label: 'X Times/Week' }
+              ].map((option) => (
                 <button
-                  key={type}
+                  key={option.value}
                   type="button"
-                  onClick={() => setSchedule({ type: type as FrequencyType, daysOfWeek: type === 'specific_days' ? [] : undefined })}
-                  className={`px-3 py-2 rounded-lg text-sm capitalize transition-colors ${
-                    schedule.type === type
-                      ? 'text-white'
-                      : 'bg-foreground/5 text-muted-foreground hover:bg-foreground/10'
+                  onClick={() => setSchedule({ type: option.value as FrequencyType, daysOfWeek: option.value === 'specific_days' ? [] : undefined })}
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                    schedule.type === option.value
+                      ? 'text-white border-transparent shadow-md'
+                      : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/10 hover:text-foreground'
                   }`}
-                  style={schedule.type === type ? { backgroundColor: primary } : undefined}
+                  style={schedule.type === option.value ? { backgroundColor: primary, boxShadow: `0 4px 12px ${primary}40` } : undefined}
                 >
-                  {type.replace('_', ' ')}
+                  {option.label}
                 </button>
               ))}
             </div>
 
             {/* Specific Days UI */}
             {schedule.type === 'specific_days' && (
-              <div className="flex justify-between gap-2 bg-foreground/5 p-4 rounded-xl">
+              <div className="flex justify-between gap-2 bg-foreground/5 p-4 rounded-2xl border border-border">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day: string, idx: number) => (
                   <button
                     key={idx}
@@ -206,10 +268,10 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                     onClick={() => toggleDay(idx)}
                     className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                       schedule.daysOfWeek?.includes(idx)
-                        ? 'text-white scale-110'
+                        ? 'text-white scale-110 shadow-md'
                         : 'bg-foreground/10 text-foreground/40 hover:bg-foreground/20'
                     }`}
-                    style={schedule.daysOfWeek?.includes(idx) ? { backgroundColor: primary } : undefined}
+                    style={schedule.daysOfWeek?.includes(idx) ? { backgroundColor: primary, boxShadow: `0 4px 12px ${primary}40` } : undefined}
                   >
                     {day}
                   </button>
@@ -220,8 +282,8 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
           {/* Assignees */}
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
-              <Users className="h-4 w-4" /> Who
+            <label className="block text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" /> Assign To
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentSpace.members.map((member: Member) => (
@@ -229,23 +291,32 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   key={member.uid}
                   type="button"
                   onClick={() => toggleAssignee(member.uid)}
-                  className={`flex items-center gap-3 p-2 rounded-lg border transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                     assignees.includes(member.uid)
-                      ? ''
-                      : 'bg-foreground/5 border-border hover:bg-foreground/10'
+                      ? 'shadow-md'
+                      : 'bg-foreground/5 border-border hover:bg-foreground/10 hover:border-border'
                   }`}
                   style={assignees.includes(member.uid) ? {
-                    backgroundColor: `${primary}20`,
-                    borderColor: `${primary}80`
+                    backgroundColor: `${primary}15`,
+                    borderColor: primary
                   } : undefined}
                 >
-                  <div className="h-8 w-8 rounded-full surface-elevated flex items-center justify-center text-xs text-foreground">
+                  <div
+                    className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-medium"
+                    style={assignees.includes(member.uid) ? {
+                      backgroundColor: `${primary}30`,
+                      color: primary
+                    } : {
+                      backgroundColor: 'rgb(255 255 255 / 0.1)',
+                      color: 'inherit'
+                    }}
+                  >
                     {member.displayName.slice(0, 2).toUpperCase()}
                   </div>
-                  <span className={`text-sm ${assignees.includes(member.uid) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <span className={`text-sm font-medium flex-1 text-left ${assignees.includes(member.uid) ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {member.displayName}
                   </span>
-                  {assignees.includes(member.uid) && <Check className="h-4 w-4 ml-auto" style={{ color: primary }} />}
+                  {assignees.includes(member.uid) && <Check className="h-4 w-4 flex-shrink-0" style={{ color: primary }} />}
                 </button>
               ))}
             </div>
@@ -254,7 +325,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
           {/* Gamification (Couples Only) */}
           {currentSpace.type === 'couple' && (
             <div
-              className="border rounded-xl p-4 transition-colors"
+              className="border rounded-2xl p-4 transition-colors"
               style={wager?.isActive ? {
                 backgroundColor: `${secondary}10`,
                 borderColor: `${secondary}30`
@@ -318,7 +389,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                       value={wager.description}
                       onChange={(e) => setWager({ ...wager, description: e.target.value })}
                       placeholder="e.g. Loser cooks dinner"
-                      className="w-full bg-background/20 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none"
+                      className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
                       style={{ '--tw-ring-color': secondary } as React.CSSProperties}
                     />
                   </div>
@@ -329,7 +400,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                       min="3"
                       value={wager.targetStreak}
                       onChange={(e) => setWager({ ...wager, targetStreak: parseInt(e.target.value) })}
-                      className="w-full bg-background/20 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none"
+                      className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
                       style={{ '--tw-ring-color': secondary } as React.CSSProperties}
                     />
                   </div>
@@ -338,14 +409,104 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
             </div>
           )}
 
+          {/* Target Value (Optional - for tracking quantities) */}
+          <div className="bg-foreground/5 border border-border p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex gap-3">
+                <div className="h-10 w-10 rounded-xl bg-foreground/10 flex items-center justify-center text-muted-foreground">
+                  <Target className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-foreground">Track Progress</h4>
+                  <p className="text-xs text-muted-foreground">Set a daily/weekly target to measure</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTargetValue(targetValue ? undefined : 30)}
+                className="w-12 h-6 rounded-full p-1 transition-colors"
+                style={{ backgroundColor: targetValue ? primary : 'rgb(255 255 255 / 0.1)' }}
+              >
+                <div className={`h-4 w-4 rounded-full bg-foreground transition-transform ${
+                  targetValue ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </button>
+            </div>
+
+            {targetValue !== undefined && (
+              <div className="flex gap-3 animate-fade-in">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Target</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={targetValue}
+                    onChange={(e) => setTargetValue(parseInt(e.target.value) || 0)}
+                    className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+                    placeholder="30"
+                  />
+                </div>
+                <div className="w-32">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Unit</label>
+                  <select
+                    value={targetUnit}
+                    onChange={(e) => setTargetUnit(e.target.value)}
+                    className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+                  >
+                    <option value="mins">minutes</option>
+                    <option value="hours">hours</option>
+                    <option value="pages">pages</option>
+                    <option value="reps">reps</option>
+                    <option value="miles">miles</option>
+                    <option value="km">km</option>
+                    <option value="steps">steps</option>
+                    <option value="glasses">glasses</option>
+                    <option value="items">items</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Habit Chaining */}
+          <div className="bg-foreground/5 border border-border p-4 rounded-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex gap-3">
+                <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+                  <Link2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-foreground">Chain to Next</h4>
+                  <p className="text-xs text-muted-foreground">Link this habit to another for routines</p>
+                </div>
+              </div>
+            </div>
+            <select
+              value={chainedTo || ''}
+              onChange={(e) => setChainedTo(e.target.value || undefined)}
+              className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+            >
+              <option value="">None (end of chain)</option>
+              {habits
+                .filter((h: Habit) =>
+                  h.id !== editHabitId &&
+                  h.spaceId === currentSpace?.id &&
+                  !h.chainedFrom // Not already following another habit
+                )
+                .map((h: Habit) => (
+                  <option key={h.id} value={h.id}>{h.title}</option>
+                ))}
+            </select>
+          </div>
+
           {/* Freezer Toggle */}
-          <div className="surface-elevated border border-surface-hover p-4 rounded-xl flex items-center justify-between">
+          <div className="bg-foreground/5 border border-border p-4 rounded-2xl flex items-center justify-between">
             <div className="flex gap-3">
-              <div className="h-10 w-10 rounded-lg surface-card flex items-center justify-center text-muted-foreground">
+              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
                 <Snowflake className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-medium">Habit Freezer</h4>
+                <h4 className="text-sm font-medium text-foreground">Habit Freezer</h4>
                 <p className="text-xs text-muted-foreground">Pause streaks without penalty (e.g. vacation)</p>
               </div>
             </div>
@@ -353,7 +514,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
               type="button"
               onClick={() => setIsFrozen(!isFrozen)}
               className="w-12 h-6 rounded-full p-1 transition-colors"
-              style={{ backgroundColor: isFrozen ? primary : 'rgb(255 255 255 / 0.1)' }}
+              style={{ backgroundColor: isFrozen ? '#3b82f6' : 'rgb(255 255 255 / 0.1)' }}
             >
               <div className={`h-4 w-4 rounded-full bg-foreground transition-transform ${
                 isFrozen ? 'translate-x-6' : 'translate-x-0'

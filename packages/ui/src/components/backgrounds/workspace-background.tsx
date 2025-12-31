@@ -79,7 +79,7 @@ export function WorkspaceBackground({
         className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
         style={{
           background: `radial-gradient(ellipse 80% 50% at 50% -20%, ${hexToRgba(color, intensity)}, transparent 70%)`,
-          willChange: 'opacity',
+          contain: 'strict',
         }}
       />
     );
@@ -97,7 +97,7 @@ export function WorkspaceBackground({
               radial-gradient(ellipse 60% 30% at 70% 10%, ${hexToRgba(color, intensity * 0.5)}, transparent 40%),
               radial-gradient(ellipse 50% 25% at 30% 5%, ${hexToRgba(color, intensity * 0.4)}, transparent 35%)
             `,
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
         {/* Subtle animated shimmer - very subtle in light mode */}
@@ -105,7 +105,7 @@ export function WorkspaceBackground({
           className="pointer-events-none fixed inset-0 -z-10 opacity-20 dark:opacity-30"
           style={{
             background: `radial-gradient(ellipse 40% 20% at 60% 0%, ${hexToRgba(color, intensity * 0.6)}, transparent 50%)`,
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
       </>
@@ -125,7 +125,7 @@ export function WorkspaceBackground({
               linear-gradient(90deg, ${hexToRgba(color, intensity * 0.15)} 1px, transparent 1px)
             `,
             backgroundSize: '60px 60px',
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
         {/* Accent glow at intersections - top area */}
@@ -133,7 +133,7 @@ export function WorkspaceBackground({
           className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
           style={{
             background: `radial-gradient(ellipse 60% 40% at 50% 0%, ${hexToRgba(color, intensity * 0.3)}, transparent 50%)`,
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
         {/* Vignette effect - only in dark mode */}
@@ -141,7 +141,7 @@ export function WorkspaceBackground({
           className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-0"
           style={{
             background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 100%)',
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
       </>
@@ -158,7 +158,7 @@ export function WorkspaceBackground({
           style={{
             backgroundImage: `radial-gradient(${hexToRgba(color, intensity * 0.4)} 1px, transparent 1px)`,
             backgroundSize: '24px 24px',
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
         {/* Top highlight */}
@@ -166,7 +166,7 @@ export function WorkspaceBackground({
           className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
           style={{
             background: `radial-gradient(ellipse 70% 35% at 50% 0%, ${hexToRgba(color, intensity * 0.2)}, transparent 50%)`,
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
       </>
@@ -188,7 +188,7 @@ export function WorkspaceBackground({
               radial-gradient(at 80% 50%, ${hexToRgba(color, intensity * 0.15)} 0px, transparent 50%),
               radial-gradient(at 0% 100%, ${hexToRgba(color, intensity * 0.1)} 0px, transparent 50%)
             `,
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
         {/* Noise texture overlay for depth */}
@@ -196,7 +196,7 @@ export function WorkspaceBackground({
           className="pointer-events-none fixed inset-0 -z-10 opacity-[0.03] dark:opacity-[0.03]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-            willChange: 'opacity',
+            contain: 'strict',
           }}
         />
       </>
@@ -211,7 +211,7 @@ export function WorkspaceBackground({
         className="pointer-events-none fixed inset-0 -z-10 dark:opacity-100 opacity-50"
         style={{
           background: `radial-gradient(ellipse 80% 50% at 50% -10%, ${hexToRgba(color, intensity)}, transparent 60%)`,
-          willChange: 'opacity',
+          contain: 'strict',
         }}
       />
       {/* Subtle corner accent */}
@@ -219,7 +219,7 @@ export function WorkspaceBackground({
         className="pointer-events-none fixed -top-20 -right-20 h-[400px] w-[400px] -z-10 rounded-full blur-[120px] dark:opacity-100 opacity-40"
         style={{
           backgroundColor: hexToRgba(color, intensity * 0.6),
-          willChange: 'opacity',
+          contain: 'layout paint',
         }}
       />
       {/* Very subtle bottom glow for depth */}
@@ -227,7 +227,7 @@ export function WorkspaceBackground({
         className="pointer-events-none fixed inset-x-0 bottom-0 h-[200px] -z-10 dark:opacity-100 opacity-30"
         style={{
           background: `linear-gradient(to top, ${hexToRgba(color, intensity * 0.05)}, transparent)`,
-          willChange: 'opacity',
+          contain: 'strict',
         }}
       />
     </>

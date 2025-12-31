@@ -100,6 +100,11 @@ export async function deleteCompletionInDb(completionId: string) {
   await deleteDoc(compRef);
 }
 
+export async function updateCompletionInDb(completionId: string, updates: Partial<Completion>) {
+  const compRef = doc(db, 'completions', completionId);
+  await updateDoc(compRef, removeUndefined(updates));
+}
+
 export function subscribeToCompletions(spaceId: string, callback: (completions: Completion[]) => void) {
   const q = query(
     collection(db, 'completions'),

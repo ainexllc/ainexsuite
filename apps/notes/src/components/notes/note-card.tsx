@@ -7,6 +7,7 @@ import {
   Trash2,
   Users,
   Flame,
+  Check,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
@@ -19,12 +20,16 @@ import { useLabels } from "@/components/providers/labels-provider";
 import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useCovers } from "@/components/providers/covers-provider";
+import { ImageModal } from "@/components/ui/image-modal";
 
 type NoteCardProps = {
   note: Note;
+  isSelectMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (noteId: string, event: React.MouseEvent) => void;
 };
 
-export function NoteCard({ note }: NoteCardProps) {
+export function NoteCard({ note, isSelectMode = false, isSelected = false, onSelect }: NoteCardProps) {
   const { togglePin, deleteNote } = useNotes();
   const { labels } = useLabels();
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
@@ -32,6 +37,8 @@ export function NoteCard({ note }: NoteCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const labelMap = useMemo(() => {
     return new Map(labels.map((label) => [label.id, label]));
   }, [labels]);
@@ -102,11 +109,44 @@ export function NoteCard({ note }: NoteCardProps) {
           "transition-[border-color,box-shadow] duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
           "break-inside-avoid px-6 py-6",
+          // Selection styles
+          isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background",
         )}
-        onClick={() => {
-          setIsEditing(true);
+        onClick={(event) => {
+          if (isSelectMode && onSelect) {
+            event.preventDefault();
+            event.stopPropagation();
+            onSelect(note.id, event);
+          } else {
+            setIsEditing(true);
+          }
         }}
       >
+        {/* Selection Checkbox - shows on hover or in select mode */}
+        {onSelect && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onSelect(note.id, event);
+            }}
+            className={clsx(
+              "absolute top-3 left-3 z-30 h-6 w-6 rounded-full border-2 transition-all",
+              "flex items-center justify-center",
+              isSelected
+                ? "bg-primary border-primary"
+                : "border-zinc-300 dark:border-zinc-600 bg-white/80 dark:bg-zinc-800/80",
+              isSelectMode
+                ? "opacity-100"
+                : "opacity-0 group-hover:opacity-100",
+            )}
+            aria-label={isSelected ? "Deselect note" : "Select note"}
+          >
+            {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+          </button>
+        )}
+
         {/* Cover Image Layer */}
         {hasCover && !backgroundImage && currentCover && (
           <div className="absolute inset-0 overflow-hidden rounded-2xl">
@@ -233,7 +273,11 @@ export function NoteCard({ note }: NoteCardProps) {
                 {note.attachments.slice(0, 4).map((attachment) => (
                   <figure
                     key={attachment.id}
-                    className="overflow-hidden rounded-2xl bg-foreground/10 shadow-sm border border-border"
+                    className="overflow-hidden rounded-2xl bg-foreground/10 shadow-sm border border-border cursor-zoom-in hover:brightness-95 transition-all"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewImage(attachment.downloadURL);
+                    }}
                   >
                     <img
                       src={attachment.downloadURL}
@@ -399,6 +443,11 @@ export function NoteCard({ note }: NoteCardProps) {
         confirmText="Delete note"
         cancelText="Keep note"
         variant="danger"
+      />
+      <ImageModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        src={previewImage || ""}
       />
     </>
   );

@@ -51,6 +51,7 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
 
   // Cover state
   const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [coverOverlay, setCoverOverlay] = useState<BackgroundOverlay>('auto');
   const [showCoverPicker, setShowCoverPicker] = useState(false);
 
   // Fetch backgrounds from Firestore
@@ -108,6 +109,7 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
     setBackgroundOverlay('auto');
     setShowBackgroundPicker(false);
     setCoverImage(null);
+    setCoverOverlay('auto');
     setShowCoverPicker(false);
   }, []);
 
@@ -175,6 +177,7 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
           backgroundImage,
           backgroundOverlay,
           coverImage,
+          coverOverlay,
           coverSummary,
         });
       }
@@ -198,7 +201,7 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, pinned, archived, color, tags, isPrivate, currentSpaceId, toast, onEntryCreated, handleClose, backgroundImage, backgroundOverlay, coverImage, title, showAiSummary]);
+  }, [user, pinned, archived, color, tags, isPrivate, currentSpaceId, toast, onEntryCreated, handleClose, backgroundImage, backgroundOverlay, coverImage, coverOverlay, title, showAiSummary]);
 
   if (!isOpen) return null;
 
@@ -442,6 +445,31 @@ export function JournalComposerModal({ isOpen, onClose, onEntryCreated }: Journa
                   </div>
                   {covers.length === 0 && (
                     <p className="text-xs text-zinc-400 text-center py-2">No covers available</p>
+                  )}
+
+                  {/* Cover Overlay selector - only show when cover is selected */}
+                  {coverImage && (
+                    <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Cover Overlay Style</p>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {OVERLAY_OPTIONS.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => setCoverOverlay(option.id)}
+                            className={clsx(
+                              'px-2 py-1.5 rounded-lg text-xs font-medium transition-all',
+                              coverOverlay === option.id
+                                ? 'bg-[var(--color-primary)] text-white'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                            )}
+                            title={option.description}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
 
                   {/* AI Summary Toggle */}

@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
-import { FileText } from "lucide-react";
+import { useMemo, useCallback } from "react";
+import { FileText, Loader2 } from "lucide-react";
 import Masonry from "react-masonry-css";
 import { EmptyState, ListSection } from "@ainexsuite/ui";
 import { NoteCard } from "@/components/notes/note-card";
 import { ColumnSelector } from "@/components/notes/column-selector";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
+import { useNoteSelection } from "@/components/providers/selection-provider";
 
 const SKELETON_BREAKPOINTS = { default: 2, 640: 1 };
 
@@ -29,8 +30,19 @@ function NotesSkeleton() {
 }
 
 export function NoteBoard() {
-  const { pinned, others, loading, notes, searchQuery } = useNotes();
+  const {
+    pinned,
+    displayedOthers,
+    loading,
+    notes,
+    searchQuery,
+    hasMore,
+    isLoadingMore,
+    totalCount,
+    sentinelRef,
+  } = useNotes();
   const { preferences } = usePreferences();
+  const { isSelected, isSelectMode, handleSelect } = useNoteSelection();
 
   // Separate breakpoints for Focus and Library sections
   const focusBreakpoints = useMemo(() => ({
@@ -51,16 +63,26 @@ export function NoteBoard() {
     return 0;
   };
 
-  // Sort both pinned and others by latest updated
+  // Sort both pinned and displayedOthers by latest updated
   const sortedPinned = useMemo(() => {
     return [...pinned].sort((a, b) => getTime(b.updatedAt) - getTime(a.updatedAt));
   }, [pinned]);
 
   const sortedOthers = useMemo(() => {
-    return [...others].sort((a, b) => getTime(b.updatedAt) - getTime(a.updatedAt));
-  }, [others]);
+    return [...displayedOthers].sort((a, b) => getTime(b.updatedAt) - getTime(a.updatedAt));
+  }, [displayedOthers]);
 
   const hasNotes = useMemo(() => sortedPinned.length + sortedOthers.length > 0, [sortedPinned, sortedOthers]);
+
+  // Get all note IDs for range selection
+  const allNoteIds = useMemo(() => {
+    return [...sortedPinned, ...sortedOthers].map(note => note.id);
+  }, [sortedPinned, sortedOthers]);
+
+  // Callback for handling selection
+  const onSelect = useCallback((noteId: string, event: React.MouseEvent) => {
+    handleSelect(noteId, event, allNoteIds);
+  }, [handleSelect, allNoteIds]);
 
   return (
     <div className="space-y-1 lg:px-0 cq-board">
@@ -81,7 +103,12 @@ export function NoteBoard() {
               >
                 {sortedPinned.map((note) => (
                   <div key={note.id} className="mb-4">
-                    <NoteCard note={note} />
+                    <NoteCard
+                      note={note}
+                      isSelectMode={isSelectMode}
+                      isSelected={isSelected(note.id)}
+                      onSelect={onSelect}
+                    />
                   </div>
                 ))}
               </Masonry>
@@ -91,7 +118,7 @@ export function NoteBoard() {
           {sortedOthers.length ? (
             <ListSection
               title="Library"
-              count={sortedPinned.length ? sortedOthers.length : undefined}
+              count={sortedPinned.length ? totalCount : undefined}
               action={<ColumnSelector section="library" />}
             >
               <Masonry
@@ -101,10 +128,35 @@ export function NoteBoard() {
               >
                 {sortedOthers.map((note) => (
                   <div key={note.id} className="mb-4">
-                    <NoteCard note={note} />
+                    <NoteCard
+                      note={note}
+                      isSelectMode={isSelectMode}
+                      isSelected={isSelected(note.id)}
+                      onSelect={onSelect}
+                    />
                   </div>
                 ))}
               </Masonry>
+
+              {/* Infinite scroll sentinel */}
+              <div ref={sentinelRef} className="h-4" aria-hidden="true" />
+
+              {/* Loading more indicator */}
+              {isLoadingMore && (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading more notes...</span>
+                </div>
+              )}
+
+              {/* End of notes indicator */}
+              {!loading && !isLoadingMore && !hasMore && totalCount > 0 && (
+                <div className="flex items-center justify-center py-4">
+                  <span className="text-xs text-muted-foreground">
+                    {totalCount} {totalCount === 1 ? 'note' : 'notes'} in Library
+                  </span>
+                </div>
+              )}
             </ListSection>
           ) : null}
         </div>

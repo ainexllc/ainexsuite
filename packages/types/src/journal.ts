@@ -31,6 +31,7 @@ export interface JournalEntry extends BaseDocument {
   backgroundImage?: string | null; // ID of a predefined background image
   backgroundOverlay?: BackgroundOverlay; // Overlay style for background images
   coverImage?: string | null; // ID of a cover image from Firestore (for card covers)
+  coverOverlay?: BackgroundOverlay; // Overlay style for cover images
   coverSummary?: string | null; // AI-generated summary for cover display
 }
 

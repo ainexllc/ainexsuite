@@ -6,18 +6,11 @@ import Masonry from 'react-masonry-css';
 import type { JournalEntry } from '@ainexsuite/types';
 import { ListSection, EmptyState } from '@ainexsuite/ui';
 import { JournalCard } from './journal-card';
-
-type ViewMode = 'list' | 'masonry' | 'calendar';
-
-const masonryBreakpoints = {
-  default: 3,
-  1024: 2,
-  640: 1,
-};
+import { ColumnSelector } from './column-selector';
+import { usePreferences } from '@/components/providers/preferences-provider';
 
 interface JournalBoardProps {
   entries: JournalEntry[];
-  viewMode?: ViewMode;
   loading?: boolean;
   onEntryUpdated: () => void;
   searchTerm?: string;
@@ -27,13 +20,27 @@ interface JournalBoardProps {
 
 export function JournalBoard({
   entries,
-  viewMode = 'masonry',
   loading = false,
   onEntryUpdated,
   searchTerm = '',
   hasFilters = false,
   onClearFilters,
 }: JournalBoardProps) {
+  const { preferences } = usePreferences();
+
+  // Separate breakpoints for Pinned and All Entries sections
+  const pinnedBreakpoints = useMemo(() => ({
+    default: preferences.pinnedColumns || 3,
+    1024: Math.min(preferences.pinnedColumns || 3, 2),
+    640: 1,
+  }), [preferences.pinnedColumns]);
+
+  const allEntriesBreakpoints = useMemo(() => ({
+    default: preferences.allEntriesColumns || 3,
+    1024: Math.min(preferences.allEntriesColumns || 3, 2),
+    640: 1,
+  }), [preferences.allEntriesColumns]);
+
   // Separate and sort pinned and unpinned entries by latest updated
   const { pinned, others } = useMemo(() => {
     const getTime = (date: Date | { toDate: () => Date } | number | undefined) => {
@@ -93,9 +100,9 @@ export function JournalBoard({
     );
   }
 
-  const renderMasonry = (items: JournalEntry[]) => (
+  const renderMasonry = (items: JournalEntry[], breakpoints: Record<string, number>) => (
     <Masonry
-      breakpointCols={masonryBreakpoints}
+      breakpointCols={breakpoints}
       className="flex -ml-4 w-auto"
       columnClassName="pl-4 bg-clip-padding"
     >
@@ -107,33 +114,39 @@ export function JournalBoard({
     </Masonry>
   );
 
-  const renderList = (items: JournalEntry[]) => (
-    <div className="space-y-3 max-w-2xl mx-auto">
-      {items.map((entry) => (
-        <JournalCard key={entry.id} entry={entry} onUpdate={onEntryUpdated} />
-      ))}
-    </div>
-  );
-
   return (
     <div className="space-y-10">
       {/* Pinned Entries Section */}
       {pinned.length > 0 && (
-        <ListSection title="Pinned" count={pinned.length}>
-          {viewMode === 'list' ? renderList(pinned) : renderMasonry(pinned)}
+        <ListSection
+          title="Pinned"
+          count={pinned.length}
+          action={<ColumnSelector section="pinned" />}
+        >
+          {renderMasonry(pinned, pinnedBreakpoints)}
         </ListSection>
       )}
 
       {/* All Other Entries Section */}
       {others.length > 0 && pinned.length > 0 && (
-        <ListSection title="All Entries" count={others.length}>
-          {viewMode === 'list' ? renderList(others) : renderMasonry(others)}
+        <ListSection
+          title="All Entries"
+          count={others.length}
+          action={<ColumnSelector section="allEntries" />}
+        >
+          {renderMasonry(others, allEntriesBreakpoints)}
         </ListSection>
       )}
 
       {/* Entries without section header when no pinned entries */}
       {others.length > 0 && pinned.length === 0 && (
-        viewMode === 'list' ? renderList(others) : renderMasonry(others)
+        <ListSection
+          title="All Entries"
+          count={others.length}
+          action={<ColumnSelector section="allEntries" />}
+        >
+          {renderMasonry(others, allEntriesBreakpoints)}
+        </ListSection>
       )}
     </div>
   );

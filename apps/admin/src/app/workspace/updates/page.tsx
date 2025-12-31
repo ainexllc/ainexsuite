@@ -21,14 +21,17 @@ import {
   Calendar,
   Megaphone,
   Zap,
-Wrench,
+  Wrench,
   Edit,
   X,
   Eye,
   Send,
-  FileText
+  FileText,
+  GitCommit,
+  Check
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { GlassModal, GlassModalContent, GlassModalHeader, GlassModalTitle, WhatsNew } from '@ainexsuite/ui';
 
 interface UpdateItem {
   id: string;
@@ -40,6 +43,15 @@ interface UpdateItem {
   date: any;
 }
 
+interface GitCommitItem {
+  id: string;
+  originalMessage: string;
+  title: string;
+  date: string;
+  author: string;
+  type: string;
+}
+
 export default function UpdatesPage() {
   const [updates, setUpdates] = useState<UpdateItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +59,12 @@ export default function UpdatesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'published' | 'drafts'>('all');
+
+  // Git Sync State
+  const [showGitModal, setShowGitModal] = useState(false);
+  const [gitCommits, setGitCommits] = useState<GitCommitItem[]>([]);
+  const [loadingGit, setLoadingGit] = useState(false);
+  const [importedCommits, setImportedCommits] = useState<Set<string>>(new Set());
 
   // Form state
   const [title, setTitle] = useState('');
@@ -72,6 +90,39 @@ export default function UpdatesPage() {
       console.error("Error fetching updates:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchGitCommits = async () => {
+    setLoadingGit(true);
+    setShowGitModal(true);
+    try {
+      const res = await fetch('/api/git-updates');
+      const data = await res.json();
+      if (data.commits) {
+        setGitCommits(data.commits);
+      }
+    } catch (e) {
+      console.error("Error fetching git commits:", e);
+    } finally {
+      setLoadingGit(false);
+    }
+  };
+
+  const handleImportCommit = async (commit: GitCommitItem) => {
+    try {
+      await addDoc(collection(db, 'system_updates'), {
+        title: commit.title,
+        description: commit.originalMessage,
+        type: commit.type as any,
+        status: 'draft',
+        date: serverTimestamp()
+      });
+      
+      setImportedCommits(prev => new Set(prev).add(commit.id));
+      fetchUpdates();
+    } catch (error) {
+      console.error("Error importing commit:", error);
     }
   };
 
@@ -216,6 +267,13 @@ export default function UpdatesPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
+            onClick={fetchGitCommits}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-elevated hover:bg-white/10 text-foreground/90 hover:text-white rounded-lg transition-colors border border-white/5 text-sm font-medium"
+          >
+            <GitCommit className="h-4 w-4" />
+            Sync from Git
+          </button>
+          <button
             onClick={() => setShowPreview(!showPreview)}
             className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-foreground/90 hover:text-white rounded-lg transition-colors border border-white/5 text-sm font-medium"
           >
@@ -351,20 +409,41 @@ export default function UpdatesPage() {
             <Eye className="h-4 w-4" />
             Sidebar Preview
           </h3>
-          <div className="space-y-3 max-w-md bg-surface-base p-4 rounded-lg border border-white/5">
-            {publishedUpdates.slice(0, 5).map((update) => (
-              <div key={update.id} className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/5">
-                <div className={clsx("p-1.5 rounded-lg border flex-shrink-0", getTypeColor(update.type))}>
-                  {getTypeIcon(update.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium text-white leading-snug">{update.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{update.description}</p>
-                </div>
-              </div>
-            ))}
+          <div className="max-w-sm bg-surface-base p-4 rounded-xl border border-white/5">
+            <WhatsNew updates={publishedUpdates.slice(0, 7).map(u => {
+              let badge = 'NEW';
+              let badgeColor = 'blue';
+
+              switch (u.type) {
+                case 'feature':
+                  badge = 'NEW';
+                  badgeColor = 'purple';
+                  break;
+                case 'improvement':
+                  badge = 'IMPROVED';
+                  badgeColor = 'blue';
+                  break;
+                case 'fix':
+                  badge = 'FIXED';
+                  badgeColor = 'orange';
+                  break;
+                case 'announcement':
+                  badge = 'NEWS';
+                  badgeColor = 'green';
+                  break;
+              }
+
+              return {
+                id: u.id,
+                title: u.title,
+                description: u.description,
+                date: u.date?.toDate ? u.date.toDate().toISOString() : new Date().toISOString(),
+                badge,
+                badgeColor
+              };
+            })} />
             {publishedUpdates.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-4">No published updates to preview yet</p>
+              <p className="text-xs text-muted-foreground text-center py-4 italic">No published updates to preview yet</p>
             )}
           </div>
         </div>
@@ -393,7 +472,7 @@ export default function UpdatesPage() {
           )}
         >
           <Send className="h-3.5 w-3.5" />
-          Published ({publishedCount})
+          Live ({publishedCount})
         </button>
         <button
           onClick={() => setActiveTab('drafts')}
@@ -405,7 +484,7 @@ export default function UpdatesPage() {
           )}
         >
           <FileText className="h-3.5 w-3.5" />
-          Drafts ({draftCount})
+          Pending ({draftCount})
         </button>
       </div>
 
@@ -417,7 +496,7 @@ export default function UpdatesPage() {
         ) : filteredUpdates.length === 0 ? (
           <div className="text-center py-12 glass-card rounded-xl">
             <p className="text-muted-foreground">
-              {activeTab === 'drafts' ? 'No drafts yet.' : activeTab === 'published' ? 'No published updates yet.' : 'No updates yet.'}
+              {activeTab === 'drafts' ? 'No pending updates.' : activeTab === 'published' ? 'No live updates.' : 'No updates found.'}
             </p>
           </div>
         ) : (
@@ -466,7 +545,7 @@ export default function UpdatesPage() {
                     <button
                       onClick={() => handlePublish(update.id)}
                       className="p-2 text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                      title="Publish Update"
+                      title="Publish (Go Live)"
                     >
                       <Send className="h-4 w-4" />
                     </button>
@@ -474,7 +553,7 @@ export default function UpdatesPage() {
                     <button
                       onClick={() => handleUnpublish(update.id)}
                       className="p-2 text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
-                      title="Unpublish Update"
+                      title="Unpublish (Move to Pending)"
                     >
                       <FileText className="h-4 w-4" />
                     </button>
@@ -499,6 +578,67 @@ export default function UpdatesPage() {
           ))
         )}
       </div>
+
+      <GlassModal isOpen={showGitModal} onClose={() => setShowGitModal(false)}>
+        <GlassModalContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <GlassModalHeader>
+            <GlassModalTitle className="flex items-center gap-2">
+              <GitCommit className="h-5 w-5 text-indigo-400" />
+              Recent Commits
+            </GlassModalTitle>
+          </GlassModalHeader>
+          
+          <div className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3">
+            {loadingGit ? (
+              <div className="flex justify-center py-8">
+                <div className="h-8 w-8 animate-spin text-muted-foreground border-2 border-current border-t-transparent rounded-full" />
+              </div>
+            ) : gitCommits.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No commits found or unable to access git log.
+              </div>
+            ) : (
+              gitCommits.map((commit) => {
+                const isImported = importedCommits.has(commit.id);
+                return (
+                  <div key={commit.id} className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group">
+                    <div className={clsx("p-1.5 rounded-md border mt-0.5", getTypeColor(commit.type))}>
+                      {getTypeIcon(commit.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className="text-sm font-medium text-white truncate">{commit.title}</h4>
+                        <span className="text-[10px] text-muted-foreground font-mono bg-black/20 px-1.5 py-0.5 rounded">
+                          {commit.id.substring(0, 7)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mb-1">{commit.originalMessage}</p>
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span>{commit.author}</span>
+                        <span>•</span>
+                        <span>{new Date(commit.date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => !isImported && handleImportCommit(commit)}
+                      disabled={isImported}
+                      className={clsx(
+                        "p-2 rounded-lg transition-colors",
+                        isImported
+                          ? "text-emerald-400 bg-emerald-500/10 cursor-default"
+                          : "text-muted-foreground hover:text-indigo-400 hover:bg-indigo-500/10"
+                      )}
+                      title={isImported ? "Imported" : "Import as Draft"}
+                    >
+                      {isImported ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </GlassModalContent>
+      </GlassModal>
     </div>
   );
 }

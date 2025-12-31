@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useRef } from 'react';
 import { LayoutGrid, Calendar, X } from 'lucide-react';
 import {
   WorkspacePageLayout,
@@ -18,7 +18,14 @@ import { usePreferences } from "@/components/providers/preferences-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useLabels } from "@/components/providers/labels-provider";
 import { NoteFilterContent } from "@/components/notes/note-filter-content";
+import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
+import { BulkActionBar } from "@/components/bulk-action-bar";
+import { SelectionProvider, useNoteSelection } from "@/components/providers/selection-provider";
+import { useKeyboardShortcuts, type KeyboardShortcut } from "@/hooks/use-keyboard-shortcuts";
+import { batchDeleteNotes, batchUpdateNotes } from "@/lib/firebase/note-service";
+import { useAuth } from "@ainexsuite/auth";
 import type { ViewMode } from "@/lib/types/settings";
+import type { NoteColor } from "@/lib/types/note";
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
@@ -47,11 +54,79 @@ const NOTE_COLOR_MAP: Record<string, string> = {
   'note-coal': '#455a64',
 };
 
+// Wrapper component that provides selection context
 export default function NotesWorkspace() {
+  return (
+    <SelectionProvider>
+      <NotesWorkspaceContent />
+    </SelectionProvider>
+  );
+}
+
+function NotesWorkspaceContent() {
+  const { user } = useAuth();
   const { preferences, updatePreferences } = usePreferences();
-  const { notes, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
+  const { notes, others, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
   const { labels } = useLabels();
+  const {
+    selectedIds,
+    selectionCount,
+    selectAll,
+    deselectAll,
+  } = useNoteSelection();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Bulk action handlers
+  const handleBulkDelete = useCallback(async () => {
+    if (!user?.uid || selectionCount === 0) return;
+    await batchDeleteNotes(user.uid, Array.from(selectedIds));
+    deselectAll();
+  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
+
+  const handleBulkPin = useCallback(async () => {
+    if (!user?.uid || selectionCount === 0) return;
+    await batchUpdateNotes(user.uid, Array.from(selectedIds), { pinned: true });
+    deselectAll();
+  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
+
+  const handleBulkUnpin = useCallback(async () => {
+    if (!user?.uid || selectionCount === 0) return;
+    await batchUpdateNotes(user.uid, Array.from(selectedIds), { pinned: false });
+    deselectAll();
+  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
+
+  const handleBulkArchive = useCallback(async () => {
+    if (!user?.uid || selectionCount === 0) return;
+    await batchUpdateNotes(user.uid, Array.from(selectedIds), { archived: true });
+    deselectAll();
+  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
+
+  const handleBulkColorChange = useCallback(async (color: NoteColor) => {
+    if (!user?.uid || selectionCount === 0) return;
+    await batchUpdateNotes(user.uid, Array.from(selectedIds), { color });
+    deselectAll();
+  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
+
+  const handleBulkLabelAdd = useCallback(async (labelId: string) => {
+    if (!user?.uid || selectionCount === 0) return;
+    // For adding labels, we need to get current labels and add the new one
+    // This is a simplified version - in production you'd want to handle this more carefully
+    const noteIds = Array.from(selectedIds);
+    for (const noteId of noteIds) {
+      const note = notes.find(n => n.id === noteId);
+      if (note && !note.labelIds.includes(labelId)) {
+        await batchUpdateNotes(user.uid, [noteId], { labelIds: [...note.labelIds, labelId] });
+      }
+    }
+    deselectAll();
+  }, [user?.uid, selectedIds, selectionCount, notes, deselectAll]);
+
+  const handleSelectAll = useCallback(() => {
+    selectAll(others.map(note => note.id));
+  }, [selectAll, others]);
 
   // Calculate activity data for calendar view
   const activityData = useMemo(() => {
@@ -138,6 +213,81 @@ export default function NotesWorkspace() {
     });
   }, [setFilters]);
 
+  // Define keyboard shortcuts
+  const shortcuts = useMemo<KeyboardShortcut[]>(() => [
+    {
+      key: 'n',
+      modifiers: { meta: true },
+      action: () => {
+        // Focus the composer
+        composerRef.current?.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+      description: 'Create new note',
+      category: 'actions',
+      label: 'New Note',
+    },
+    {
+      key: 'f',
+      modifiers: { meta: true, shift: true },
+      action: () => {
+        setIsSearchOpen(true);
+        setTimeout(() => searchInputRef.current?.focus(), 100);
+      },
+      description: 'Focus search',
+      category: 'navigation',
+      label: 'Search',
+    },
+    {
+      key: '/',
+      modifiers: { meta: true },
+      action: () => setIsShortcutsModalOpen(true),
+      description: 'Show keyboard shortcuts',
+      category: 'navigation',
+      label: 'Shortcuts',
+    },
+    {
+      key: 'Escape',
+      action: () => {
+        if (isShortcutsModalOpen) {
+          setIsShortcutsModalOpen(false);
+        } else if (isSearchOpen) {
+          setIsSearchOpen(false);
+          setSearchQuery('');
+        }
+      },
+      description: 'Close modal / Clear search',
+      category: 'navigation',
+      label: 'Escape',
+    },
+    {
+      key: '1',
+      modifiers: { meta: true },
+      action: () => updatePreferences({ viewMode: 'masonry' }),
+      description: 'Switch to masonry view',
+      category: 'navigation',
+      label: 'Masonry View',
+    },
+    {
+      key: '2',
+      modifiers: { meta: true },
+      action: () => updatePreferences({ viewMode: 'calendar' }),
+      description: 'Switch to calendar view',
+      category: 'navigation',
+      label: 'Calendar View',
+    },
+    {
+      key: 'r',
+      modifiers: { meta: true, shift: true },
+      action: handleFilterReset,
+      description: 'Reset all filters',
+      category: 'actions',
+      label: 'Reset Filters',
+    },
+  ], [isShortcutsModalOpen, isSearchOpen, setSearchQuery, updatePreferences, handleFilterReset]);
+
+  useKeyboardShortcuts({ shortcuts });
+
   const handleRemoveChip = useCallback((chipId: string, chipType: FilterChipType) => {
     switch (chipType) {
       case 'label':
@@ -189,6 +339,7 @@ export default function NotesWorkspace() {
             <div className="flex items-center gap-2 justify-center">
               <div className="relative flex-1 max-w-md">
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -245,6 +396,27 @@ export default function NotesWorkspace() {
       ) : (
         <NoteBoard />
       )}
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsModalOpen}
+        onClose={() => setIsShortcutsModalOpen(false)}
+        shortcuts={shortcuts}
+      />
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectionCount}
+        totalCount={others.length}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={deselectAll}
+        onDelete={handleBulkDelete}
+        onPin={handleBulkPin}
+        onUnpin={handleBulkUnpin}
+        onArchive={handleBulkArchive}
+        onColorChange={handleBulkColorChange}
+        onLabelAdd={handleBulkLabelAdd}
+      />
     </WorkspacePageLayout>
   );
 }

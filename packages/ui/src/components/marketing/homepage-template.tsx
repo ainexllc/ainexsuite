@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Footer } from '../footer';
+import { VideoBackground } from '../backgrounds/video-background';
 import { auth } from '@ainexsuite/firebase';
 import {
   signInWithPopup,
@@ -61,11 +62,24 @@ export type AppCard = {
   href: string;
 };
 
+export type VideoBackgroundConfig = {
+  /** Video source URL (Firebase Storage or CDN) */
+  src: string;
+  /** Fallback image shown while loading */
+  poster?: string;
+  /** Dark overlay opacity (0-1, default 0.4) */
+  overlayOpacity?: number;
+  /** Overlay color (default 'black') */
+  overlayColor?: string;
+};
+
 export type HomepageTemplateProps = {
   /** App branding (logo component) */
   logo: ReactNode;
-  /** Background animation component */
+  /** Background animation component (use this OR videoBackground) */
   backgroundComponent?: ReactNode;
+  /** Video background config (alternative to backgroundComponent) */
+  videoBackground?: VideoBackgroundConfig;
   /** App name for login form */
   appName: string;
   /** Demo steps for animation */
@@ -242,9 +256,19 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
   return (
     <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-foreground">
-      {/* Background placeholder - component will be passed from parent */}
+      {/* Background - video takes priority over component */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        {props.backgroundComponent}
+        {props.videoBackground ? (
+          <VideoBackground
+            src={props.videoBackground.src}
+            poster={props.videoBackground.poster}
+            overlayOpacity={props.videoBackground.overlayOpacity}
+            overlayColor={props.videoBackground.overlayColor}
+            fallbackComponent={props.backgroundComponent}
+          />
+        ) : (
+          props.backgroundComponent
+        )}
       </div>
 
       {/* Header */}

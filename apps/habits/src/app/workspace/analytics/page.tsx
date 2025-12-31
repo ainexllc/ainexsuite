@@ -12,6 +12,7 @@ import { HeatmapCalendar } from '@/components/analytics/HeatmapCalendar';
 import { StreakStats } from '@/components/analytics/StreakStats';
 import { ConsistencyChart } from '@/components/analytics/ConsistencyChart';
 import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
+import { HabitTrends } from '@/components/analytics/HabitTrends';
 
 // Store & Utils
 import { useGrowStore } from '@/lib/store';
@@ -164,6 +165,9 @@ function AnalyticsContent() {
         <div className="space-y-6">
           {/* Streak Stats */}
           <StreakStats habits={habits} completions={completions} />
+
+          {/* Habit Trends */}
+          <HabitTrends habits={habits} completions={completions} />
 
           {/* Team Leaderboard (if applicable) */}
           {currentSpace?.type !== 'personal' && teamStats.length > 0 && (

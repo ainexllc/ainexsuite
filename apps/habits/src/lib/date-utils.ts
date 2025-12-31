@@ -386,6 +386,59 @@ export function getHabitStatus(
 }
 
 /**
+ * Check if a habit's streak is in danger (due but not completed today, with active streak).
+ * Returns danger level: 'critical' (will break today), 'warning' (at risk), or null (safe).
+ */
+export function getStreakDangerLevel(
+  habit: Habit,
+  completions: Completion[]
+): 'critical' | 'warning' | null {
+  if (habit.isFrozen) return null;
+
+  const streak = calculateStreak(habit, completions);
+  if (streak === 0) return null; // No streak to lose
+
+  const status = getHabitStatus(habit, completions);
+
+  // If due today and not completed, streak is at risk
+  if (status === 'due') {
+    // Critical if it's late in the day or streak is significant
+    if (streak >= 7) return 'critical';
+    return 'warning';
+  }
+
+  return null;
+}
+
+/**
+ * Get habits that are at risk of breaking their streak.
+ */
+export function getHabitsAtRisk(
+  habits: Habit[],
+  completions: Completion[]
+): { habit: Habit; dangerLevel: 'critical' | 'warning'; streak: number }[] {
+  return habits
+    .filter(h => !h.isFrozen)
+    .map(habit => {
+      const dangerLevel = getStreakDangerLevel(habit, completions);
+      if (!dangerLevel) return null;
+      return {
+        habit,
+        dangerLevel,
+        streak: calculateStreak(habit, completions),
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null)
+    .sort((a, b) => {
+      // Critical first, then by streak length (higher first)
+      if (a.dangerLevel !== b.dangerLevel) {
+        return a.dangerLevel === 'critical' ? -1 : 1;
+      }
+      return b.streak - a.streak;
+    });
+}
+
+/**
  * Get all scheduled dates for a habit within a range.
  */
 export function getScheduledDates(

@@ -1,38 +1,64 @@
 'use client';
 
 import { useState } from 'react';
-import { Flame, Settings, Snowflake, Check, RotateCcw } from 'lucide-react';
-import { Habit, Completion, SpaceType } from '@/types/models';
-import { getHabitStatus, calculateStreak } from '@/lib/date-utils';
+import { Flame, Settings, Snowflake, Check, RotateCcw, Link2, ArrowRight } from 'lucide-react';
+import type { Habit, Completion, SpaceType, ReactionEmoji } from '@/types/models';
+import { HABIT_CATEGORIES } from '@/types/models';
+import { getHabitStatus, calculateStreak, getTodayDateString } from '@/lib/date-utils';
 import { NudgeButton } from '@/components/gamification/NudgeButton';
+import { ReactionPicker } from '@/components/gamification/ReactionPicker';
 import { cn } from '@/lib/utils';
+import { isInChain, getNextInChain, getChainPositionLabel } from '@/lib/chain-utils';
 
 interface HabitCardProps {
   habit: Habit;
   completions: Completion[];
+  allHabits?: Habit[]; // For chain detection
   onComplete: (habitId: string) => void;
   onUndoComplete: (habitId: string) => void;
   onEdit: (habitId: string) => void;
+  onChainNext?: (habitId: string) => void; // Scroll to next in chain
   spaceType: SpaceType;
   partnerId?: string;
+  currentUserId?: string;
+  onReact?: (completionId: string, emoji: ReactionEmoji) => void;
+  onRemoveReaction?: (completionId: string) => void;
 }
 
 export function HabitCard({
   habit,
   completions,
+  allHabits = [],
   onComplete,
   onUndoComplete,
   onEdit,
+  onChainNext,
   spaceType,
-  partnerId
+  partnerId,
+  currentUserId,
+  onReact,
+  onRemoveReaction
 }: HabitCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showUndo, setShowUndo] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
+  const [showNextPrompt, setShowNextPrompt] = useState(false);
 
   const status = getHabitStatus(habit, completions);
   const isCompleted = status === 'completed';
   const streak = calculateStreak(habit, completions);
+
+  // Chain detection
+  const inChain = isInChain(habit);
+  const nextHabit = getNextInChain(habit, allHabits);
+  const chainPosition = getChainPositionLabel(habit, allHabits);
+
+  // Calculate today's progress toward target
+  const todayStr = getTodayDateString();
+  const todayCompletion = completions.find(c => c.habitId === habit.id && c.date === todayStr);
+  const todayValue = todayCompletion?.value || 0;
+  const hasTarget = habit.targetValue && habit.targetValue > 0;
+  const progressPercent = hasTarget ? Math.min(100, (todayValue / habit.targetValue!) * 100) : 0;
 
   // Handle completion with animation
   const handleComplete = () => {
@@ -48,6 +74,12 @@ export function HabitCard({
       setShowUndo(false);
       setJustCompleted(false);
     }, 5000);
+
+    // Show "next in chain" prompt if applicable
+    if (nextHabit) {
+      setShowNextPrompt(true);
+      setTimeout(() => setShowNextPrompt(false), 8000);
+    }
 
     // Reset animation
     setTimeout(() => setIsAnimating(false), 600);
@@ -68,10 +100,10 @@ export function HabitCard({
       case 'frozen':
         return 'bg-blue-900/10 border-blue-500/20 opacity-70';
       case 'not_due':
-        return 'bg-foreground border-border opacity-60';
+        return 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 opacity-60';
       case 'due':
       default:
-        return 'bg-foreground border-border hover:border-border hover:shadow-md';
+        return 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md';
     }
   };
 
@@ -113,11 +145,16 @@ export function HabitCard({
     }
   };
 
+  // Get category info
+  const categoryInfo = habit.category
+    ? HABIT_CATEGORIES.find(c => c.value === habit.category)
+    : null;
+
   return (
     <div
       id={`habit-${habit.id}`}
       className={cn(
-        'group relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300',
+        'group relative flex items-center justify-between p-4 rounded-2xl border transition-all duration-300',
         getCardStyles(),
         isAnimating && 'scale-[1.02]'
       )}
@@ -151,7 +188,7 @@ export function HabitCard({
           <h3
             className={cn(
               'text-sm font-medium flex items-center gap-2 transition-all',
-              isCompleted ? 'text-emerald-300 line-through opacity-70' : 'text-foreground'
+              isCompleted ? 'text-emerald-300 line-through opacity-70' : 'text-zinc-900 dark:text-zinc-50'
             )}
           >
             <span className="truncate">{habit.title}</span>
@@ -160,16 +197,49 @@ export function HabitCard({
                 Frozen
               </span>
             )}
+            {inChain && chainPosition && (
+              <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded flex-shrink-0 flex items-center gap-1">
+                <Link2 className="h-3 w-3" />
+                {chainPosition}
+              </span>
+            )}
           </h3>
 
-          <div className="flex items-center gap-2 mt-0.5">
-            {habit.description && (
-              <p className="text-xs text-foreground/40 truncate">{habit.description}</p>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            {categoryInfo && (
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: `${categoryInfo.color}20`, color: categoryInfo.color }}
+              >
+                {categoryInfo.icon} {categoryInfo.label}
+              </span>
             )}
-            <span className="text-[10px] text-foreground/30 flex-shrink-0">
+            {habit.description && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{habit.description}</p>
+            )}
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 flex-shrink-0">
               {getScheduleLabel()}
             </span>
           </div>
+
+          {/* Progress bar for habits with targets */}
+          {hasTarget && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 mb-1">
+                <span>{todayValue} / {habit.targetValue} {habit.targetUnit}</span>
+                <span>{Math.round(progressPercent)}%</span>
+              </div>
+              <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all duration-500',
+                    progressPercent >= 100 ? 'bg-emerald-500' : 'bg-indigo-500'
+                  )}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -179,7 +249,7 @@ export function HabitCard({
         {showUndo && (
           <button
             onClick={handleUndo}
-            className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 rounded-md transition-all"
+            className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-all"
           >
             <RotateCcw className="h-3 w-3" />
             Undo
@@ -200,21 +270,30 @@ export function HabitCard({
           </div>
         )}
 
-        {/* Nudge Button (Team/Couple only) */}
+        {/* Nudge Button (Team/Couple only) - Always visible */}
         {spaceType !== 'personal' && partnerId && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <NudgeButton
-              targetName="Partner"
-              targetId={partnerId}
-              habitTitle={habit.title}
-            />
-          </div>
+          <NudgeButton
+            targetName="Partner"
+            targetId={partnerId}
+            habitTitle={habit.title}
+          />
+        )}
+
+        {/* Reactions (Team/Couple/Family only, when completed) */}
+        {spaceType !== 'personal' && isCompleted && todayCompletion && currentUserId && onReact && onRemoveReaction && (
+          <ReactionPicker
+            reactions={todayCompletion.reactions}
+            currentUserId={currentUserId}
+            onReact={(emoji) => onReact(todayCompletion.id, emoji)}
+            onRemoveReaction={() => onRemoveReaction(todayCompletion.id)}
+            size="sm"
+          />
         )}
 
         {/* Edit Button */}
         <button
           onClick={() => onEdit(habit.id)}
-          className="opacity-0 group-hover:opacity-100 p-1.5 text-foreground/30 hover:text-foreground transition-all rounded-md hover:bg-foreground/5"
+          className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 transition-all rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
           aria-label="Edit habit"
         >
           <Settings className="h-4 w-4" />
@@ -223,8 +302,24 @@ export function HabitCard({
 
       {/* Completion celebration effect */}
       {isAnimating && (
-        <div className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/20 to-emerald-500/0 animate-shimmer" />
+        </div>
+      )}
+
+      {/* Next in chain prompt */}
+      {showNextPrompt && nextHabit && (
+        <div className="absolute -bottom-12 left-0 right-0 animate-fade-in">
+          <button
+            onClick={() => {
+              setShowNextPrompt(false);
+              onChainNext?.(nextHabit.id);
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-500/20 text-purple-300 rounded-lg text-sm hover:bg-purple-500/30 transition-colors"
+          >
+            <ArrowRight className="h-4 w-4" />
+            Next: {nextHabit.title}
+          </button>
         </div>
       )}
     </div>

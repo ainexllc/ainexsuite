@@ -35,7 +35,7 @@ export function TouchHabitCard({
       onClick={handleTap}
       className={cn(
         // Base styles - large touch target
-        'w-full min-h-[80px] lg:min-h-[90px] p-4 rounded-xl border-2 transition-all duration-200',
+        'w-full min-h-[80px] lg:min-h-[90px] p-4 rounded-2xl border-2 transition-all duration-200',
         // Touch feedback
         'active:scale-[0.97] select-none',
         // States
@@ -50,7 +50,7 @@ export function TouchHabitCard({
         {/* Large Checkbox */}
         <div
           className={cn(
-            'h-12 w-12 lg:h-14 lg:w-14 rounded-xl flex-shrink-0 flex items-center justify-center transition-all duration-300',
+            'h-12 w-12 lg:h-14 lg:w-14 rounded-2xl flex-shrink-0 flex items-center justify-center transition-all duration-300',
             isCompleted
               ? 'bg-emerald-500 text-white'
               : 'bg-white/10 border-2 border-white/20'

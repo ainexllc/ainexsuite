@@ -30,6 +30,7 @@ import { useLabels } from "@/components/providers/labels-provider";
 import { QUICK_CAPTURE_EVENT } from "@/lib/constants/events";
 import { useReminders } from "@/components/providers/reminders-provider";
 import { InlineCalculator } from "@/components/notes/inline-calculator";
+import { RichTextEditor, type RichTextEditorRef } from "@/components/editor";
 import type { ReminderFrequency } from "@/lib/types/reminder";
 import type { ReminderChannel } from "@/lib/types/settings";
 import {
@@ -104,6 +105,7 @@ export function NoteComposer() {
   const newLabelInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<HTMLDivElement | null>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const richTextEditorRef = useRef<RichTextEditorRef>(null);
   const checklistInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const pendingChecklistFocusId = useRef<string | null>(null);
 
@@ -351,6 +353,13 @@ export function NoteComposer() {
       return newBody;
     });
     setShowCalculator(false);
+  }, []);
+
+  // Handler for rich text editor content changes
+  const handleRichTextChange = useCallback((html: string, text: string) => {
+    // Store the plain text for backward compatibility
+    // The HTML is what gets rendered, but we save the text version for search/compatibility
+    setBody(text);
   }, []);
 
   // Handle close: finalize note with attachments/reminders/pin or delete if empty
@@ -652,7 +661,7 @@ export function NoteComposer() {
   return (
     <section className="w-full">
       {!expanded ? (
-        <div className="flex w-full items-center gap-2 rounded-full border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+        <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
           <button
             type="button"
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
@@ -857,22 +866,19 @@ export function NoteComposer() {
 
             {mode === "text" ? (
               <div className="relative">
-                <textarea
-                  value={body}
-                  onChange={(event) => setBody(event.target.value)}
-                  onKeyDown={(event) => {
-                    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-                      event.preventDefault();
-                      void handleClose();
-                    }
-                  }}
+                <RichTextEditor
+                  ref={richTextEditorRef}
+                  content={body}
                   placeholder="What's on your mind?..."
-                  rows={attachments.length ? 3 : 5}
+                  onChange={handleRichTextChange}
+                  editable={!isEnhancing}
+                  showToolbar={true}
+                  minHeight={attachments.length ? "80px" : "120px"}
                   className={clsx(
-                    "min-h-[120px] w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-all duration-300",
+                    "transition-all duration-300",
                     isEnhancing && "blur-sm opacity-50"
                   )}
-                  disabled={isEnhancing}
+                  editorClassName="text-[15px] leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300"
                 />
                 {/* AI Enhancement overlay */}
                 {isEnhancing && (

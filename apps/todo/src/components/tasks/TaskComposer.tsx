@@ -305,7 +305,7 @@ export function TaskComposer() {
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
             onClick={() => setExpanded(true)}
           >
-            <span>Add a task...</span>
+            <span>Add a todo...</span>
           </button>
           {/* Compact space selector - responsive */}
           <div className="relative flex-shrink-0">

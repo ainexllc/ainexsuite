@@ -54,6 +54,7 @@ import type { BackgroundOverlay } from "@/lib/types/note";
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { ConfirmationDialog } from "@ainexsuite/ui";
+import { ImageModal } from "@/components/ui/image-modal";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
   if (a.length !== b.length) {
@@ -123,7 +124,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   );
   const [removedAttachments, setRemovedAttachments] = useState<NoteAttachment[]>([]);
   const [newAttachments, setNewAttachments] = useState<AttachmentDraft[]>([]);
-    const [isEnhancing, setIsEnhancing] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
@@ -1158,7 +1160,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               {existingAttachments.map((attachment) => (
                 <figure
                   key={attachment.id}
-                  className="relative overflow-hidden rounded-2xl border border-outline-subtle/60 bg-white/60 shadow-sm"
+                  className="relative overflow-hidden rounded-2xl border border-outline-subtle/60 bg-white/60 shadow-sm cursor-zoom-in hover:brightness-95 transition-all"
+                  onClick={() => setPreviewImage(attachment.downloadURL)}
                 >
                   <img
                     src={attachment.downloadURL}
@@ -1167,8 +1170,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white shadow-lg"
-                    onClick={() => handleRemoveExistingAttachment(attachment)}
+                    className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white shadow-lg z-10 hover:bg-black/70 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveExistingAttachment(attachment);
+                    }}
                     aria-label="Remove attachment"
                   >
                     <X className="h-4 w-4" />
@@ -1178,7 +1184,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               {newAttachments.map((attachment) => (
                 <figure
                   key={attachment.id}
-                  className="relative overflow-hidden rounded-2xl border border-outline-subtle/60 bg-white/60 shadow-sm"
+                  className="relative overflow-hidden rounded-2xl border border-outline-subtle/60 bg-white/60 shadow-sm cursor-zoom-in hover:brightness-95 transition-all"
+                  onClick={() => setPreviewImage(attachment.preview)}
                 >
                   <img
                     src={attachment.preview}
@@ -1187,8 +1194,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white shadow-lg"
-                    onClick={() => handleRemoveNewAttachment(attachment.id)}
+                    className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white shadow-lg z-10 hover:bg-black/70 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveNewAttachment(attachment.id);
+                    }}
                     aria-label="Remove attachment"
                   >
                     <X className="h-4 w-4" />
@@ -2053,6 +2063,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         confirmText="Delete note"
         cancelText="Keep note"
         variant="danger"
+      />
+      <ImageModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        src={previewImage || ""}
       />
     </div>
   );

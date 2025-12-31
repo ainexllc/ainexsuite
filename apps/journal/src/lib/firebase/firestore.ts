@@ -104,6 +104,7 @@ export async function createJournalEntry(
 }
 
 // Update an existing journal entry
+// Note: updatedAt only changes when title or content is modified
 export async function updateJournalEntry(
   entryId: string,
   data: Partial<JournalEntryFormData> & {
@@ -121,10 +122,13 @@ export async function updateJournalEntry(
   if (sanitizedData.isDraft === undefined) {
     delete sanitizedData.isDraft;
   }
-  console.log('[updateJournalEntry] backgroundOverlay in data:', data.backgroundOverlay, '| in sanitized:', sanitizedData.backgroundOverlay);
+
+  // Only update updatedAt if title or content changed
+  const shouldUpdateTimestamp = 'title' in data || 'content' in data;
+
   await updateDoc(docRef, {
     ...sanitizedData,
-    updatedAt: Date.now()
+    ...(shouldUpdateTimestamp ? { updatedAt: Date.now() } : {})
   });
 
   // Log activity
@@ -184,7 +188,6 @@ export async function getJournalEntry(entryId: string): Promise<JournalEntry | n
 
   if (docSnap.exists()) {
     const data = convertTimestampToDate(docSnap.data());
-    console.log('[getJournalEntry] Retrieved backgroundOverlay:', data.backgroundOverlay);
     return {
       id: docSnap.id,
       ...data
@@ -363,21 +366,17 @@ export async function getJournalStats(userId: string) {
 }
 
 // Toggle pin status of an entry
+// Note: Does not update updatedAt - only content changes should affect that
 export async function toggleEntryPin(entryId: string, pinned: boolean): Promise<void> {
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
-  await updateDoc(docRef, {
-    pinned,
-    updatedAt: Date.now()
-  });
+  await updateDoc(docRef, { pinned });
 }
 
 // Toggle archive status of an entry
+// Note: Does not update updatedAt - only content changes should affect that
 export async function toggleEntryArchive(entryId: string, archived: boolean): Promise<void> {
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
-  await updateDoc(docRef, {
-    archived,
-    updatedAt: Date.now()
-  });
+  await updateDoc(docRef, { archived });
 
   // Log activity (only for archiving, not unarchiving)
   if (archived) {
@@ -400,10 +399,8 @@ export async function toggleEntryArchive(entryId: string, archived: boolean): Pr
 }
 
 // Update entry color
+// Note: Does not update updatedAt - only content changes should affect that
 export async function updateEntryColor(entryId: string, color: string): Promise<void> {
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
-  await updateDoc(docRef, {
-    color,
-    updatedAt: Date.now()
-  });
+  await updateDoc(docRef, { color });
 }

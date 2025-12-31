@@ -13,3 +13,4 @@ export * from './sso-handler';
 export * from './use-user-preferences-listener';
 export * from './backgrounds';
 export * from './covers';
+export * from './video-backgrounds';

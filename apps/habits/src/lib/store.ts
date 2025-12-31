@@ -1,7 +1,7 @@
 // apps/grow/src/lib/store.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Space, Habit, Quest, Completion, Notification } from '../types/models';
+import { Space, Habit, Quest, Completion, Notification, Reaction, ReactionEmoji } from '../types/models';
 import {
   createSpaceInDb,
   updateSpaceInDb,
@@ -10,6 +10,7 @@ import {
   deleteHabitInDb,
   createCompletionInDb,
   deleteCompletionInDb,
+  updateCompletionInDb,
   createQuestInDb,
   createNotificationInDb,
   markNotificationReadInDb
@@ -42,6 +43,8 @@ interface GrowState {
   toggleHabitFreeze: (habitId: string, currentStatus: boolean) => Promise<void>;
   addCompletion: (completion: Completion) => Promise<void>;
   removeCompletion: (habitId: string) => Promise<void>;
+  addReaction: (completionId: string, emoji: ReactionEmoji, userId: string, userName: string) => Promise<void>;
+  removeReaction: (completionId: string, userId: string) => Promise<void>;
   addQuest: (quest: Quest) => Promise<void>;
   sendNotification: (notification: Notification) => Promise<void>;
   markNotificationRead: (notificationId: string) => Promise<void>;
@@ -173,6 +176,48 @@ export const useGrowStore = create<GrowState>()(
         }
 
         await deleteCompletionInDb(completionToRemove.id);
+      },
+
+      addReaction: async (completionId, emoji, userId, userName) => {
+        const state = get();
+        const completion = state.completions.find(c => c.id === completionId);
+        if (!completion) return;
+
+        const newReaction: Reaction = {
+          emoji,
+          userId,
+          userName,
+          createdAt: new Date().toISOString()
+        };
+
+        // Remove existing reaction from same user, then add new one
+        const existingReactions = completion.reactions || [];
+        const filteredReactions = existingReactions.filter(r => r.userId !== userId);
+        const updatedReactions = [...filteredReactions, newReaction];
+
+        set((s) => ({
+          completions: s.completions.map(c =>
+            c.id === completionId ? { ...c, reactions: updatedReactions } : c
+          )
+        }));
+
+        await updateCompletionInDb(completionId, { reactions: updatedReactions });
+      },
+
+      removeReaction: async (completionId, userId) => {
+        const state = get();
+        const completion = state.completions.find(c => c.id === completionId);
+        if (!completion || !completion.reactions) return;
+
+        const updatedReactions = completion.reactions.filter(r => r.userId !== userId);
+
+        set((s) => ({
+          completions: s.completions.map(c =>
+            c.id === completionId ? { ...c, reactions: updatedReactions } : c
+          )
+        }));
+
+        await updateCompletionInDb(completionId, { reactions: updatedReactions });
       },
 
       addQuest: async (quest) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Plus, Loader2, RefreshCw, X, Lightbulb, Target } from 'lucide-react';
+import { Sparkles, Plus, Loader2, RefreshCw, X } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { useGrowStore } from '@/lib/store';
 import { Habit, FrequencyType } from '@/types/models';
@@ -280,63 +280,74 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-xl bg-foreground border border-border rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-foreground" />
+        <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">AI Habit Suggester</h2>
-              <p className="text-xs text-muted-foreground">Get personalized habit recommendations</p>
+              <h2 className="text-lg font-semibold text-foreground">Get Habit Ideas</h2>
+              <p className="text-sm text-muted-foreground">AI will suggest habits based on your goals</p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-5">
           {step === 'goals' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Step 1: Choose categories */}
               <div>
-                <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-                  <Target className="h-4 w-4 text-indigo-400" />
-                  What do you want to improve?
-                </h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-500 text-white text-xs font-bold">1</span>
+                  <h3 className="text-base font-semibold text-foreground">Choose areas to improve</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4 ml-7">Select one or more categories</p>
                 <div className="grid grid-cols-2 gap-2">
                   {goalPresets.map((goal) => (
                     <button
                       key={goal.id}
                       onClick={() => toggleGoal(goal.id)}
                       className={cn(
-                        'flex items-center gap-2 p-3 rounded-xl border text-left transition-all',
+                        'flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all',
                         selectedGoals.includes(goal.id)
-                          ? 'bg-indigo-500/20 border-indigo-500/50 text-foreground'
-                          : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/10 hover:text-foreground'
+                          ? 'bg-indigo-500/20 border-indigo-500/50 text-foreground ring-2 ring-indigo-500/30'
+                          : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/10 hover:text-foreground hover:border-foreground/20'
                       )}
                     >
-                      <span className="text-xl">{goal.icon}</span>
+                      <span className="text-2xl">{goal.icon}</span>
                       <span className="text-sm font-medium">{goal.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground font-medium">OR</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {/* Step 2: Custom goal */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-yellow-400" />
-                  Or describe your own goal
-                </label>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-amber-500 text-white text-xs font-bold">2</span>
+                  <h3 className="text-base font-semibold text-foreground">Describe your goal</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3 ml-7">Tell us what you want to achieve</p>
                 <input
                   type="text"
                   value={customGoal}
                   onChange={(e) => setCustomGoal(e.target.value)}
-                  placeholder="e.g., I want to learn guitar, sleep better..."
-                  className="w-full mt-2 px-4 py-3 rounded-xl bg-foreground/5 border border-border text-foreground placeholder-foreground/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  placeholder="e.g., Learn to play guitar, Sleep better, Be more organized..."
+                  className="w-full px-4 py-3.5 rounded-xl bg-foreground/5 border border-border text-foreground placeholder-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50"
                 />
               </div>
 

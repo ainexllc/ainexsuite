@@ -8,7 +8,10 @@ import {
   useState,
   useEffect,
   useRef,
+  type RefObject,
 } from "react";
+
+const DISPLAY_BATCH_SIZE = 20;
 import { useAuth } from "@ainexsuite/auth";
 import type { Note, NoteAttachment, NoteDraft, NoteType, NoteColor, NotePriority } from "@/lib/types/note";
 import type { FilterValue, SortConfig } from "@ainexsuite/ui";
@@ -52,6 +55,7 @@ type NotesContextValue = {
   notes: Note[];
   pinned: Note[];
   others: Note[];
+  displayedOthers: Note[];
   allNotes: Note[];
   trashed: Note[];
   loading: boolean;
@@ -73,6 +77,12 @@ type NotesContextValue = {
   destroyAllNotes: () => Promise<void>;
   removeAttachment: (noteId: string, attachment: NoteAttachment) => Promise<void>;
   attachFiles: (noteId: string, files: File[]) => Promise<void>;
+  // Infinite scroll
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  loadMore: () => void;
+  totalCount: number;
+  sentinelRef: RefObject<HTMLDivElement | null>;
 };
 
 const NotesContext = createContext<NotesContextValue | null>(null);
@@ -93,6 +103,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
   const [pendingNotes, setPendingNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLabelIds, setActiveLabelIds] = useState<string[]>([]);
+  const [deletedNoteIds, setDeletedNoteIds] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<FilterValue>({
     labels: [],
     colors: [],
@@ -104,14 +115,22 @@ export function NotesProvider({ children }: NotesProviderProps) {
   });
   const [filtersInitialized, setFiltersInitialized] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Infinite scroll state
+  const [displayLimit, setDisplayLimit] = useState(DISPLAY_BATCH_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const computedNotesRef = useRef<{
     merged: Note[];
     filtered: Note[];
     pinned: Note[];
     others: Note[];
+    displayedOthers: Note[];
+    hasMore: boolean;
     trashed: Note[];
     archivedCount: number;
-  }>({ merged: [], filtered: [], pinned: [], others: [], trashed: [], archivedCount: 0 });
+    totalCount: number;
+  }>({ merged: [], filtered: [], pinned: [], others: [], displayedOthers: [], hasMore: false, trashed: [], archivedCount: 0, totalCount: 0 });
 
   const userId = user?.uid ?? null;
 
@@ -315,7 +334,24 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return;
       }
 
-      await deleteNoteMutation(userId, noteId);
+      // Optimistic update
+      setDeletedNoteIds((prev) => {
+        const next = new Set(prev);
+        next.add(noteId);
+        return next;
+      });
+
+      try {
+        await deleteNoteMutation(userId, noteId);
+      } catch (error) {
+        // Revert on error
+        console.error("Failed to delete note:", error);
+        setDeletedNoteIds((prev) => {
+          const next = new Set(prev);
+          next.delete(noteId);
+          return next;
+        });
+      }
     },
     [userId],
   );
@@ -386,6 +422,21 @@ export function NotesProvider({ children }: NotesProviderProps) {
     },
     [userId],
   );
+
+  // Load more notes for progressive rendering
+  const loadMore = useCallback(() => {
+    setIsLoadingMore(true);
+    // Simulate a brief loading state for smooth UX
+    setTimeout(() => {
+      setDisplayLimit((prev) => prev + DISPLAY_BATCH_SIZE);
+      setIsLoadingMore(false);
+    }, 100);
+  }, []);
+
+  // Reset display limit when filters or search changes
+  useEffect(() => {
+    setDisplayLimit(DISPLAY_BATCH_SIZE);
+  }, [searchQuery, activeLabelIds, filters, currentSpaceId]);
 
   const computedNotes = useMemo(() => {
     const combined = [...ownedNotes, ...sharedNotes];
@@ -472,7 +523,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return bDeleted - aDeleted;
       });
 
-    const activeNotes = merged.filter((note) => !note.deletedAt);
+    const activeNotes = merged.filter((note) => !note.deletedAt && !deletedNoteIds.has(note.id));
 
     // Count archived notes for badge display
     const archivedCount = activeNotes.filter((note) => note.archived).length;
@@ -566,19 +617,52 @@ export function NotesProvider({ children }: NotesProviderProps) {
     const pinned = filtered.filter((note) => note.pinned).sort(sortPinnedNotes);
     const others = filtered.filter((note) => !note.pinned).sort(sortNotes);
 
+    // Progressive rendering: only display up to displayLimit notes in Library
+    const displayedOthers = others.slice(0, displayLimit);
+    const hasMore = others.length > displayLimit;
+
     return {
       merged: activeNotes,
       filtered,
       pinned,
       others,
+      displayedOthers,
+      hasMore,
       trashed,
       archivedCount,
+      totalCount: others.length,
     };
-  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort]);
+  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort, displayLimit, deletedNoteIds]);
 
   useEffect(() => {
     computedNotesRef.current = computedNotes;
   }, [computedNotes]);
+
+  // Intersection observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && computedNotes.hasMore && !isLoadingMore && !loading) {
+          loadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '200px', // Start loading before sentinel is visible
+        threshold: 0,
+      }
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [computedNotes.hasMore, isLoadingMore, loading, loadMore]);
 
   const updateSearchQuery = useCallback((value: string) => {
     setSearchQuery(value);
@@ -594,6 +678,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       notes: computedNotes.filtered,
       pinned: computedNotes.pinned,
       others: computedNotes.others,
+      displayedOthers: computedNotes.displayedOthers,
       trashed: computedNotes.trashed,
       loading,
       searchQuery,
@@ -614,14 +699,25 @@ export function NotesProvider({ children }: NotesProviderProps) {
       destroyAllNotes: handleDestroyAll,
       removeAttachment: handleRemoveAttachment,
       attachFiles: handleAttachFiles,
+      // Infinite scroll
+      hasMore: computedNotes.hasMore,
+      isLoadingMore,
+      loadMore,
+      totalCount: computedNotes.totalCount,
+      sentinelRef,
     }),
     [
       computedNotes.merged,
       computedNotes.filtered,
       computedNotes.pinned,
       computedNotes.others,
+      computedNotes.displayedOthers,
       computedNotes.trashed,
+      computedNotes.hasMore,
+      computedNotes.totalCount,
       loading,
+      isLoadingMore,
+      loadMore,
       searchQuery,
       activeLabelIds,
       filters,

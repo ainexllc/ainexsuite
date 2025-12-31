@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { List, LayoutGrid, Calendar, X } from 'lucide-react';
+import { LayoutGrid, Calendar, X } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import {
   WorkspacePageLayout,
@@ -22,10 +22,9 @@ import {
 } from '@/components/journal/journal-filter-content';
 import { moodConfig } from '@/lib/utils/mood';
 
-type ViewMode = 'list' | 'masonry' | 'calendar';
+type ViewMode = 'masonry' | 'calendar';
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
-  { value: 'list', icon: List, label: 'List view' },
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
   { value: 'calendar', icon: Calendar, label: 'Calendar view' },
 ];
@@ -43,6 +42,7 @@ const DEFAULT_FILTERS: JournalFilterValue = {
   dateRange: { start: null, end: null },
   datePreset: undefined,
   dateField: 'createdAt',
+  status: 'all',
 };
 
 const ENTRY_COLOR_MAP: Record<string, string> = {
@@ -134,6 +134,15 @@ export default function WorkspacePage() {
       });
     }
 
+    // Status chip (only show when not 'all')
+    if (filters.status && filters.status !== 'all') {
+      chips.push({
+        id: `status:${filters.status}`,
+        label: filters.status === 'drafts' ? 'Drafts' : 'Published',
+        type: 'label' as FilterChipType,
+      });
+    }
+
     return chips;
   }, [filters]);
 
@@ -144,6 +153,7 @@ export default function WorkspacePage() {
     if (filters.tags && filters.tags.length > 0) count++;
     if (filters.colors && filters.colors.length > 0) count++;
     if (filters.dateRange?.start || filters.dateRange?.end) count++;
+    if (filters.status && filters.status !== 'all') count++;
     return count;
   }, [filters]);
 
@@ -164,6 +174,11 @@ export default function WorkspacePage() {
       setFilters({
         ...filters,
         tags: filters.tags?.filter((t) => t !== tag) || [],
+      });
+    } else if (chipId.startsWith('status:')) {
+      setFilters({
+        ...filters,
+        status: 'all',
       });
     } else if (chipType === 'color') {
       setFilters({

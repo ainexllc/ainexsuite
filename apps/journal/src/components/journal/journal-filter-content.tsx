@@ -1,7 +1,7 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { Calendar, FileText } from 'lucide-react';
+import { Calendar, FileText, FileEdit, CalendarSearch } from 'lucide-react';
 import type { FilterValue, QuickDatePreset, DateRangeField, SortConfig } from '@ainexsuite/ui';
 import { ENTRY_COLOR_SWATCHES } from '@ainexsuite/ui';
 import type { MoodType } from '@ainexsuite/types';
@@ -11,6 +11,7 @@ import { getMoodIcon, getMoodLabel } from '@/lib/utils/mood';
 export interface JournalFilterValue extends FilterValue {
   moods?: MoodType[];
   tags?: string[];
+  status?: 'all' | 'published' | 'drafts';
 }
 
 const QUICK_DATE_PRESETS: { value: QuickDatePreset; label: string }[] = [
@@ -148,8 +149,45 @@ export function JournalFilterContent({
     onFiltersChange({ ...filters, dateField });
   };
 
+  const STATUS_OPTIONS: { value: 'all' | 'published' | 'drafts'; label: string }[] = [
+    { value: 'all', label: 'All Entries' },
+    { value: 'published', label: 'Published' },
+    { value: 'drafts', label: 'Drafts' },
+  ];
+
+  const setStatus = (status: 'all' | 'published' | 'drafts') => {
+    onFiltersChange({ ...filters, status });
+  };
+
   return (
     <div className="space-y-5">
+      {/* Status Filter */}
+      <div>
+        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
+          <FileEdit className="w-3.5 h-3.5" />
+          Status
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          {STATUS_OPTIONS.map((option) => {
+            const isSelected = (filters.status || 'all') === option.value;
+            return (
+              <button
+                key={option.value}
+                onClick={() => setStatus(option.value)}
+                className={clsx(
+                  'px-3 py-1.5 text-xs rounded-full transition-all border',
+                  isSelected
+                    ? 'bg-primary/20 text-primary border-primary/30'
+                    : 'bg-background/50 border-border hover:border-primary/30 text-muted-foreground hover:text-primary'
+                )}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Quick Date Presets */}
       <div>
         <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
@@ -284,6 +322,48 @@ export function JournalFilterContent({
             );
           })}
         </div>
+      </div>
+
+      {/* Jump to Date */}
+      <div>
+        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
+          <CalendarSearch className="w-3.5 h-3.5" />
+          Jump to Date
+        </h4>
+        <p className="text-xs text-muted-foreground mb-2">
+          Show entries from a specific date
+        </p>
+        <input
+          type="date"
+          value={
+            filters.datePreset === 'custom' &&
+            filters.dateRange?.start &&
+            filters.dateRange?.end &&
+            filters.dateRange.start.toISOString().split('T')[0] === filters.dateRange.end.toISOString().split('T')[0]
+              ? filters.dateRange.start.toISOString().split('T')[0]
+              : ''
+          }
+          onChange={(e) => {
+            if (e.target.value) {
+              const date = new Date(e.target.value);
+              const endOfDay = new Date(date);
+              endOfDay.setHours(23, 59, 59, 999);
+              onFiltersChange({
+                ...filters,
+                datePreset: 'custom',
+                dateRange: { start: date, end: endOfDay },
+              });
+            } else {
+              // Clear the date filter
+              onFiltersChange({
+                ...filters,
+                datePreset: undefined,
+                dateRange: undefined,
+              });
+            }
+          }}
+          className="w-full px-3 py-2 text-sm rounded-lg bg-primary/10 border border-primary/20 focus:border-primary/40 focus:outline-none text-foreground placeholder:text-muted-foreground transition-colors"
+        />
       </div>
 
       {/* Custom Date Range Section */}

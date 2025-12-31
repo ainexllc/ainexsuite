@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '@ainexsuite/auth';
 import { useToast, ActivityCalendar, type SortConfig } from '@ainexsuite/ui';
-import { getUserJournalEntries, getOnThisDayEntries } from '@/lib/firebase/firestore';
+import { getOnThisDayEntries } from '@/lib/firebase/firestore';
 import type { JournalEntry, MoodType } from '@ainexsuite/types';
 import { FilterModal } from '@/components/journal/filter-modal';
 import { getMoodLabel } from '@/lib/utils/mood';
@@ -13,6 +13,7 @@ import { plainText } from '@/lib/utils/text';
 import { NotebookLiteDashboard } from '@/components/dashboard/notebook-lite-dashboard';
 import { useSpaces } from '@/components/providers/spaces-provider';
 import type { JournalFilterValue } from '@/components/journal/journal-filter-content';
+import { useInfiniteEntries } from '@/hooks/use-infinite-entries';
 
 // Updated to match reduced analytically meaningful mood set
 const POSITIVE_MOODS: Set<MoodType> = new Set([
@@ -46,7 +47,7 @@ interface DashboardViewProps {
   /** Whether search is open */
   isSearchOpen?: boolean;
   /** View mode */
-  viewMode?: 'list' | 'masonry' | 'calendar';
+  viewMode?: 'masonry' | 'calendar';
 }
 
 export function DashboardView({
@@ -62,80 +63,56 @@ export function DashboardView({
   const { toast } = useToast();
   const { currentSpaceId } = useSpaces();
 
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  // Use infinite scroll hook for entries
+  const {
+    entries,
+    isLoading: loading,
+    isLoadingMore,
+    hasMore,
+    error,
+    refresh: loadEntries,
+    sentinelRef,
+  } = useInfiniteEntries({
+    userId: user?.uid,
+    spaceId: currentSpaceId,
+    enabled: !!user?.uid,
+  });
+
   const [onThisDayEntries, setOnThisDayEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState('Loading your journal...');
-  const [error, setError] = useState<string | null>(null);
   // Use external search if provided, otherwise local
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const searchTerm = searchQuery ?? localSearchTerm;
   const setSearchTerm = onSearchQueryChange ?? setLocalSearchTerm;
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [page, setPage] = useState(0);
   // Calendar view state
   const [calendarView, setCalendarView] = useState<'month' | 'week'>('month');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
 
-  const loadEntries = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Set a timeout to show a helpful message if loading takes too long
-      const timeoutId = setTimeout(() => {
-        setLoadingMessage('Still loading... This is taking longer than expected');
-      }, 3000);
-
-      const [ { entries: fetchedEntries }, onThisDay ] = await Promise.all([
-        getUserJournalEntries(user.uid, {
-          limit: 100,
-          sortBy: 'createdAt',
-          sortOrder: 'desc',
-          spaceId: currentSpaceId,
-        }),
-        getOnThisDayEntries(user.uid, currentSpaceId)
-      ]);
-
-      clearTimeout(timeoutId);
-      setEntries(fetchedEntries);
-      setOnThisDayEntries(onThisDay);
-      setLoadingMessage('Loaded successfully!');
-    } catch (err) {
-      console.error('Failed to load journal entries:', err);
-      setError('Failed to load journal entries. Please try refreshing the page.');
-      toast({
-        title: 'Error',
-        description: 'Failed to load journal entries. Please refresh the page.',
-        variant: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Load "On This Day" entries separately
+  useEffect(() => {
+    if (!user?.uid) return;
+    getOnThisDayEntries(user.uid, currentSpaceId).then(setOnThisDayEntries);
   }, [user?.uid, currentSpaceId]);
 
+  // Refresh when refreshKey changes
   useEffect(() => {
-    if (!user?.uid) {
-      setLoading(false);
-      return;
+    if (refreshKey !== undefined && refreshKey > 0) {
+      void loadEntries();
     }
-
-    setLoadingMessage('Loading your journal entries...');
-    // Add timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-      setEntries([]);
-    }, 10000); // 10 second timeout
-
-    void loadEntries().finally(() => clearTimeout(timeoutId));
-
-    return () => clearTimeout(timeoutId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, dateFilter, currentSpaceId, refreshKey]);
+  }, [refreshKey]);
+
+  // Show error toast
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error,
+        variant: 'error',
+      });
+    }
+  }, [error, toast]);
 
   const filteredEntries = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -199,6 +176,19 @@ export function DashboardView({
           return true;
         });
       }
+
+      // Status filter (drafts/published)
+      if (filters.status && filters.status !== 'all') {
+        currentEntries = currentEntries.filter(entry => {
+          if (filters.status === 'drafts') {
+            return entry.isDraft === true;
+          }
+          if (filters.status === 'published') {
+            return entry.isDraft !== true;
+          }
+          return true;
+        });
+      }
     }
 
     // Text search filter
@@ -241,7 +231,7 @@ export function DashboardView({
         aDate = new Date(a.createdAt).getTime();
         bDate = new Date(b.createdAt).getTime();
       }
-      return sortDir * (bDate - aDate);
+      return sortDir * (aDate - bDate);
     });
 
     return currentEntries;
@@ -294,34 +284,16 @@ export function DashboardView({
   const handleClearFilters = () => {
     setSelectedTags([]);
     setSearchTerm('');
-    setPage(0);
   };
 
-  useEffect(() => {
-    setPage(0);
-  }, [searchTerm, selectedTags]);
-
-  useEffect(() => {
-    const maxPage = Math.max(0, Math.ceil(filteredEntries.length / 10) - 1);
-    if (page > maxPage) {
-      setPage(maxPage);
-    }
-  }, [filteredEntries.length, page]);
-
-  const PAGE_SIZE = 10;
   const totalEntries = filteredEntries.length;
-  const totalPages = Math.max(1, Math.ceil(totalEntries / PAGE_SIZE));
-  const paginatedEntries = useMemo(() => {
-    const start = page * PAGE_SIZE;
-    return filteredEntries.slice(start, start + PAGE_SIZE);
-  }, [filteredEntries, page]);
 
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
-          <p className="text-sm text-muted-foreground">{loadingMessage}</p>
+          <p className="text-sm text-muted-foreground">Loading your journal...</p>
         </div>
       </div>
     );
@@ -393,15 +365,13 @@ export function DashboardView({
                   onClearFilters={handleClearFilters}
                   onOpenFilters={() => setShowFilterModal(true)}
                   entries={entries}
-                  paginatedEntries={dateEntries}
+                  displayEntries={dateEntries}
                   totalEntries={dateEntries.length}
-                  totalPages={1}
-                  page={0}
-                  onPageChange={() => {}}
+                  hasMore={false}
+                  isLoadingMore={false}
                   onEntryUpdated={loadEntries}
                   isLoadingEntries={loading}
                   onThisDayEntries={[]}
-                  viewMode="list"
                 />
               </div>
             ) : (
@@ -441,15 +411,14 @@ export function DashboardView({
         onClearFilters={handleClearFilters}
         onOpenFilters={() => setShowFilterModal(true)}
         entries={entries}
-        paginatedEntries={paginatedEntries}
+        displayEntries={filteredEntries}
         totalEntries={totalEntries}
-        totalPages={totalPages}
-        page={page}
-        onPageChange={setPage}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        sentinelRef={sentinelRef}
         onEntryUpdated={loadEntries}
         isLoadingEntries={loading}
         onThisDayEntries={onThisDayEntries}
-        viewMode={viewMode}
       />
 
       <FilterModal

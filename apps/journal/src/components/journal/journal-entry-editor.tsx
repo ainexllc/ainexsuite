@@ -82,6 +82,14 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
     formRef.current?.setTitle(title);
   }, [title]);
 
+  // Handle Tab key to focus editor
+  const handleTitleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Tab' && !event.shiftKey) {
+      event.preventDefault();
+      formRef.current?.focusEditor();
+    }
+  };
+
   // Determine button labels
   const publishLabel = entry.isDraft ? 'Publish Entry' : 'Save Changes';
   const draftLabel = entry.isDraft ? 'Update Draft' : 'Save as Draft';
@@ -180,7 +188,6 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
         coverImage,
         coverSummary,
       };
-      console.log('[JournalEntryEditor] Saving backgroundOverlay:', backgroundOverlay);
       await updateJournalEntry(entry.id, updatePayload);
 
       // Trigger sentiment re-analysis in the background
@@ -304,6 +311,7 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={handleTitleKeyDown}
           placeholder="Title"
           className={clsx(
             "w-full text-lg font-semibold focus:outline-none",
@@ -515,6 +523,18 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
                           alt={cover.name}
                           className="absolute inset-0 w-full h-full object-cover"
                         />
+                        {/* Overlay preview on selected cover */}
+                        {coverImage === cover.id && (
+                          <>
+                            <div className={getOverlayClasses(
+                              { id: 'cover', name: 'cover', thumbnail: '', fullImage: '', brightness: 'dark' },
+                              backgroundOverlay || 'auto'
+                            )} />
+                            <div className="absolute inset-0 flex items-center justify-center z-10">
+                              <span className="text-white text-xs font-medium">Aa</span>
+                            </div>
+                          </>
+                        )}
                         {coverImage === cover.id && (
                           <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
                             <Check className="h-2.5 w-2.5 text-white" />
@@ -525,6 +545,31 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
                   </div>
                   {covers.length === 0 && (
                     <p className="text-xs text-zinc-400 text-center py-2">No covers available</p>
+                  )}
+
+                  {/* Overlay selector - only show when cover is selected */}
+                  {coverImage && (
+                    <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Overlay Style</p>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {OVERLAY_OPTIONS.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => setBackgroundOverlay(option.id)}
+                            className={clsx(
+                              'px-2 py-1.5 rounded-lg text-xs font-medium transition-all',
+                              backgroundOverlay === option.id
+                                ? 'bg-[var(--color-primary)] text-white'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                            )}
+                            title={option.description}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
 
                   {/* AI Summary Toggle */}

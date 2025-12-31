@@ -154,6 +154,7 @@ export {
 export { LayeredBackground } from "./backgrounds/layered-background";
 export { CanvasWaveBackground } from "./backgrounds/canvas-wave-background";
 export { WorkspaceBackground } from "./backgrounds/workspace-background";
+export { VideoBackground, type VideoBackgroundProps } from "./backgrounds/video-background";
 
 // Branding Components
 export { AinexStudiosLogo, type AinexStudiosLogoProps } from "./branding/ainex-studios-logo";
@@ -277,6 +278,7 @@ export {
 export {
   HomepageTemplate,
   type HomepageTemplateProps,
+  type VideoBackgroundConfig,
   type DemoStep,
   type NavLink,
   type FeatureCard,

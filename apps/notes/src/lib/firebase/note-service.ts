@@ -5,6 +5,7 @@ import {
   collectionGroup,
   deleteDoc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -12,7 +13,12 @@ import {
   Timestamp,
   updateDoc,
   where,
+  limit,
+  startAfter,
   type Unsubscribe,
+  type DocumentSnapshot,
+  type QueryConstraint,
+  writeBatch,
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -326,4 +332,103 @@ export async function deleteAttachment(storagePath: string) {
   const storage = getFirebaseStorage();
   const fileRef = ref(storage, storagePath);
   await deleteObject(fileRef);
+}
+
+// Paginated query for infinite scroll
+export interface GetNotesOptions {
+  limit?: number;
+  startAfter?: DocumentSnapshot;
+  sortBy?: "createdAt" | "updatedAt";
+  sortOrder?: "asc" | "desc";
+  spaceId?: string;
+}
+
+export interface GetNotesResult {
+  notes: Note[];
+  lastDoc: DocumentSnapshot | null;
+}
+
+export async function getUserNotes(
+  userId: string,
+  options: GetNotesOptions = {},
+): Promise<GetNotesResult> {
+  const {
+    limit: limitCount = 20,
+    startAfter: startAfterDoc,
+    sortBy = "updatedAt",
+    sortOrder = "desc",
+    spaceId,
+  } = options;
+
+  // Build query constraints
+  const constraints: QueryConstraint[] = [
+    orderBy("pinned", "desc"),
+    orderBy(sortBy, sortOrder),
+    limit(limitCount),
+  ];
+
+  // Add cursor pagination
+  if (startAfterDoc) {
+    constraints.push(startAfter(startAfterDoc));
+  }
+
+  const notesRef = query(
+    clientNoteCollection(userId).withConverter(noteConverter),
+    ...constraints,
+  );
+
+  const snapshot = await getDocs(notesRef);
+
+  let notes = snapshot.docs.map((doc) => doc.data());
+
+  // Filter by space (client-side for now, similar to Journal)
+  if (spaceId && spaceId !== "personal") {
+    notes = notes.filter((note) => note.spaceId === spaceId);
+  } else {
+    // Personal space: notes without spaceId
+    notes = notes.filter((note) => !note.spaceId || note.spaceId === "personal");
+  }
+
+  // Filter out deleted and archived notes
+  notes = notes.filter((note) => !note.deletedAt && !note.archived);
+
+  const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+
+  return { notes, lastDoc };
+}
+
+// Batch update notes
+export async function batchUpdateNotes(
+  userId: string,
+  noteIds: string[],
+  updates: Partial<NoteDraft>,
+) {
+  const db = getFirebaseFirestore();
+  const batch = writeBatch(db);
+
+  for (const noteId of noteIds) {
+    const noteRef = clientNoteDoc(userId, noteId);
+    batch.update(noteRef, {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  await batch.commit();
+}
+
+// Batch delete notes (soft delete)
+export async function batchDeleteNotes(userId: string, noteIds: string[]) {
+  const db = getFirebaseFirestore();
+  const batch = writeBatch(db);
+
+  for (const noteId of noteIds) {
+    const noteRef = clientNoteDoc(userId, noteId);
+    batch.update(noteRef, {
+      deletedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  await batch.commit();
 }
