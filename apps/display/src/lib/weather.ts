@@ -183,6 +183,71 @@ const getWeatherInfo = (code: number): { condition: string; icon: string } => {
   return { condition: 'Unknown', icon: '🌡️' };
 };
 
+// Reverse geocode coordinates to get location name
+export async function reverseGeocode(latitude: number, longitude: number): Promise<string> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`;
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'AinexSuite-Weather-App',
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      return `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+    }
+
+    const data = await response.json();
+    const address = data.address || {};
+    const city = address.city || address.town || address.village || address.county || 'Unknown';
+    const state = address.state || '';
+
+    return state ? `${city}, ${state}` : city;
+  } catch (err) {
+    console.error('Reverse geocoding error:', err);
+    return `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+  }
+}
+
+// Get weather by coordinates (used for geolocation)
+export async function getWeatherByCoords(latitude: number, longitude: number, isCelsius = false): Promise<WeatherData> {
+  try {
+    // Get location name first
+    const locationName = await reverseGeocode(latitude, longitude);
+
+    const url = new URL('https://api.open-meteo.com/v1/forecast');
+    url.searchParams.set('latitude', latitude.toString());
+    url.searchParams.set('longitude', longitude.toString());
+    url.searchParams.set('current', 'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m');
+    url.searchParams.set('temperature_unit', isCelsius ? 'celsius' : 'fahrenheit');
+
+    const response = await fetch(url.toString());
+
+    if (!response.ok) {
+      throw new Error(`Weather API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const current = data.current;
+
+    const { condition, icon } = getWeatherInfo(current.weather_code);
+
+    return {
+      temperature: Math.round(current.temperature_2m),
+      condition,
+      icon,
+      location: locationName,
+      humidity: current.relative_humidity_2m,
+      windSpeed: Math.round(current.wind_speed_10m),
+    };
+  } catch (error) {
+    console.error('Failed to fetch weather by coords:', error);
+    throw error;
+  }
+}
+
 export async function getWeather(location?: string, isCelsius = false): Promise<WeatherData> {
   let latitude = DEFAULT_LOCATION.latitude;
   let longitude = DEFAULT_LOCATION.longitude;

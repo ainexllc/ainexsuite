@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, useFontPreference, useFontSizePreference } from '@ainexsuite/ui/components';
+import { useFontPreference, useFontSizePreference } from '@ainexsuite/ui/components';
 import { Loader2 } from 'lucide-react';
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
+import { KeyboardShortcutsModal } from '@/components/keyboard-shortcuts-modal';
+import { QuickCreateMenu } from '@/components/quick-create-menu';
+import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 
 export default function WorkspaceRootLayout({
@@ -23,6 +27,21 @@ export default function WorkspaceRootLayout({
   useFontSizePreference(user?.preferences?.fontSize);
   const [activePanel, setActivePanel] = useState<'activity' | 'settings' | 'ai-assistant' | null>(null);
 
+  // Keyboard shortcuts
+  const {
+    shortcuts,
+    isShortcutsModalOpen,
+    setIsShortcutsModalOpen,
+    isQuickCreateOpen,
+    setIsQuickCreateOpen,
+  } = useKeyboardShortcuts({
+    onOpenSearch: () => setIsSearchOpen(true),
+    onOpenShortcutsHelp: () => setIsShortcutsModalOpen(true),
+    onOpenQuickCreate: () => setIsQuickCreateOpen(true),
+    onOpenAiAssistant: () => setActivePanel('ai-assistant'),
+    onOpenSettings: () => setActivePanel('settings'),
+  });
+
   // Get quick actions for Main app
   const quickActions = getQuickActionsForApp('main');
 
@@ -32,18 +51,6 @@ export default function WorkspaceRootLayout({
       router.push('/');
     }
   }, [user, loading, ssoInProgress, bootstrapStatus, router]);
-
-  // Cmd+K search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsSearchOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   // Escape key for panels
   useEffect(() => {
@@ -66,10 +73,13 @@ export default function WorkspaceRootLayout({
       case 'go-to-app':
         setIsSearchOpen(true);
         break;
+      case 'quick-create':
+        setIsQuickCreateOpen(true);
+        break;
       default:
         break;
     }
-  }, []);
+  }, [setIsQuickCreateOpen]);
 
   // Handle AI assistant
   const handleAiAssistantClick = useCallback(() => {
@@ -92,12 +102,9 @@ export default function WorkspaceRootLayout({
       <div className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#f97316]/40 blur-[150px]" />
       <div className="pointer-events-none absolute top-1/3 right-[-12%] h-[460px] w-[460px] rounded-full bg-[#ea580c]/30 blur-[160px]" />
 
-      <WorkspaceLayout
+      <WorkspaceLayoutWithInsights
         user={user}
         onSignOut={handleSignOut}
-        appName="Suite"
-        appColor="#f97316"
-        showBackground={false}
         onSettingsClick={() => setActivePanel('settings')}
         onActivityClick={() => setActivePanel('activity')}
         quickActions={quickActions}
@@ -107,9 +114,9 @@ export default function WorkspaceRootLayout({
         onUpdatePreferences={updatePreferences}
       >
         {children}
-      </WorkspaceLayout>
+      </WorkspaceLayoutWithInsights>
 
-      {/* Panels */}
+      {/* Right Panels */}
       {activePanel && (
         <div
           className="fixed inset-0 z-30 bg-overlay/60 backdrop-blur-sm"
@@ -122,9 +129,23 @@ export default function WorkspaceRootLayout({
         onClose={() => setActivePanel(null)}
       />
 
+      {/* Search Modal */}
       <UniversalSearch
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+      />
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsModalOpen}
+        onClose={() => setIsShortcutsModalOpen(false)}
+        shortcuts={shortcuts}
+      />
+
+      {/* Quick Create Menu */}
+      <QuickCreateMenu
+        isOpen={isQuickCreateOpen}
+        onClose={() => setIsQuickCreateOpen(false)}
       />
     </div>
   );

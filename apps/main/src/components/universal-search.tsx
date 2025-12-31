@@ -88,28 +88,29 @@ export default function UniversalSearch({ isOpen, onClose }: UniversalSearchProp
 
     setLoading(true);
     try {
-      // TODO: Replace with real cross-app search API
-      // For now, we'll simulate empty results or basic mock results
-      // In a real app, this would hit an endpoint that aggregates Algolia/Elasticsearch results
-      
-      // Mock results for demonstration
-      if (searchQuery.toLowerCase().includes('note')) {
-        setResults([
-          { id: '1', app: 'notes', type: 'note', title: 'Meeting Notes', content: 'Discussed Q4 roadmap...', url: 'https://notes.ainexsuite.com/1', createdAt: Date.now(), updatedAt: Date.now() },
-          { id: '2', app: 'notes', type: 'note', title: 'Ideas', content: 'App ideas: Smart workspace...', url: 'https://notes.ainexsuite.com/2', createdAt: Date.now(), updatedAt: Date.now() }
-        ]);
-      } else if (searchQuery.toLowerCase().includes('task')) {
-         setResults([
-          { id: '3', app: 'todo', type: 'task', title: 'Finish design', content: 'Due tomorrow', url: 'https://tasks.ainexsuite.com/3', createdAt: Date.now(), updatedAt: Date.now() }
-        ]);
-      } else {
-        setResults([]);
+      // Call real search API
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=20`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // User not authenticated - show empty results
+          setResults([]);
+          setAppCounts({});
+          return;
+        }
+        throw new Error('Search failed');
       }
-      
-      setAppCounts({ notes: 2, todo: 1 });
+
+      const data = await response.json();
+      setResults(data.results || []);
+      setAppCounts(data.appCounts || {});
       setSelectedIndex(0);
     } catch (error) {
+      console.error('Search error:', error);
       setResults([]);
+      setAppCounts({});
     } finally {
       setLoading(false);
     }

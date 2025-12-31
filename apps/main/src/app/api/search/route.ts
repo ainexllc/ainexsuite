@@ -29,6 +29,37 @@ import {
 } from '@ainexsuite/types';
 
 /**
+ * Get user ID from session cookie
+ */
+async function getUserIdFromSession(request: NextRequest): Promise<string | null> {
+  const sessionCookie = request.cookies.get('__session')?.value;
+
+  if (!sessionCookie) {
+    return null;
+  }
+
+  // Development: base64-encoded JSON
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
+      return decoded.uid || null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Production: verify with Firebase Admin
+  try {
+    const { getAdminAuth } = await import('@ainexsuite/auth/server');
+    const adminAuth = getAdminAuth();
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    return decodedClaims.uid;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * GET /api/search
  * Universal search across all 8 productivity apps
  */
@@ -44,9 +75,15 @@ export async function GET(request: NextRequest) {
       | 'relevance'
       | 'date';
 
-    // Get userId from session (for now, we'll skip auth for testing)
-    // TODO: Add proper auth check
-    const userId = 'test-user-id';
+    // Get userId from session
+    const userId = await getUserIdFromSession(request);
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - please sign in' },
+        { status: 401 }
+      );
+    }
 
     if (!searchQuery || searchQuery.length < 2) {
       return NextResponse.json<SearchResponse>({

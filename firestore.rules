@@ -23,9 +23,12 @@ service cloud.firestore {
     }
 
     match /habits/{habitId} {
-      allow read: if isAuthenticated() &&
-        exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
-        request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
+      // Allow read if user is in space OR is assigned to the habit
+      allow read: if isAuthenticated() && (
+        request.auth.uid in resource.data.assigneeIds ||
+        (exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
 
       // Create: member of space + must set createdBy to their own uid
       allow create: if isAuthenticated() &&
@@ -49,7 +52,14 @@ service cloud.firestore {
     }
 
     match /completions/{completionId} {
-      allow read, update, delete: if isAuthenticated() &&
+      // Allow read if user created the completion OR is in the space
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      allow update, delete: if isAuthenticated() &&
         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
 
@@ -132,8 +142,9 @@ service cloud.firestore {
       // Allow read if user is owner OR assigned OR in the space
       allow read: if isAuthenticated() && (
         resource.data.ownerId == request.auth.uid ||
-        request.auth.uid in resource.data.assigneeIds ||
-        (exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
+        (resource.data.assigneeIds != null && request.auth.uid in resource.data.assigneeIds) ||
+        (resource.data.spaceId != null &&
+         exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
          request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)).data.memberUids)
       );
 
@@ -372,9 +383,15 @@ service cloud.firestore {
 
 
     // --- Calendar App Rules ---
-    // Rules for calendar event access
+    // Rules for calendar event access (nested under users)
     match /users/{userId}/calendar_events/{eventId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Root-level calendar events (used by display app)
+    match /calendar_events/{eventId} {
+      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
     }
 
     // --- Projects App Rules ---

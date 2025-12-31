@@ -52,7 +52,12 @@ export function SmartGrid() {
     const service = new SmartDashboardService(user.uid);
     
     const unsubscribe = service.subscribeToInsights((data) => {
-      setInsights(data);
+      // Filter out actionable items - those are shown in DailyFocus
+      // Keep only status, memory, streak, and update types
+      const nonActionableInsights = data.filter(
+        insight => insight.type !== 'actionable'
+      );
+      setInsights(nonActionableInsights);
       setLoading(false);
     });
 
@@ -76,7 +81,7 @@ export function SmartGrid() {
   return (
     <div className="mb-10">
       <h3 className="text-lg font-semibold text-foreground mb-4 px-1">
-        Daily Briefing
+        Activity Overview
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {insights.map((insight, index) => (

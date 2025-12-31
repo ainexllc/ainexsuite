@@ -10,13 +10,17 @@ import { WeatherTile } from './weather-tile';
 import { MarketTile } from './market-tile';
 import { TimerTile } from './timer-tile';
 import { AlarmClockTile } from './alarm-clock-tile';
+import { HabitsTile } from './habits-tile';
+import { HealthTile } from './health-tile';
+import { TasksTile } from './tasks-tile';
+import { JournalTile } from './journal-tile';
 import { BACKGROUND_OPTIONS } from '@/lib/backgrounds';
 import { LAYOUTS } from '@/lib/layouts';
+import { PRESET_LIST, Preset } from '@/lib/presets';
 import { EffectType } from '../background-effects';
 import { ClockStyle } from '@/lib/clock-settings';
 import { useAuth } from '@ainexsuite/auth';
 import { UserBackgroundsService, UserBackground } from '@/lib/user-backgrounds';
-import { Preset } from '@/lib/presets';
 
 // Confirmation Modal Component
 function ConfirmationModal({ 
@@ -206,7 +210,7 @@ export function TileTray({
   onToggleShowClock,
   showTiles = true,
   onToggleShowTiles,
-  onApplyPreset: _onApplyPreset
+  onApplyPreset
 }: TileTrayProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'widgets' | 'layout' | 'appearance' | 'clock'>('widgets');
@@ -525,6 +529,18 @@ export function TileTray({
               </div>
 
               <div className="grid grid-cols-1 gap-3">
+                  <div onClick={() => onAddTile?.('habits')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
+                  <HabitsTile id="habits-tray" isDraggable={true} />
+                  </div>
+                  <div onClick={() => onAddTile?.('health')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
+                  <HealthTile id="health-tray" isDraggable={true} />
+                  </div>
+                  <div onClick={() => onAddTile?.('tasks')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
+                  <TasksTile id="tasks-tray" isDraggable={true} />
+                  </div>
+                  <div onClick={() => onAddTile?.('journal')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
+                  <JournalTile id="journal-tray" isDraggable={true} />
+                  </div>
                   <div onClick={() => onAddTile?.('alarm-clock')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
                   <AlarmClockTile id="alarm-clock-tray" isDraggable={true} />
                   </div>
@@ -551,7 +567,45 @@ export function TileTray({
           )}
 
           {activeTab === 'layout' && (
-              <div className="grid grid-cols-1 gap-3">
+              <div className="flex flex-col gap-6">
+                {/* Presets Section */}
+                {onApplyPreset && (
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <Sparkles className="w-3 h-3" />
+                      Quick Presets
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PRESET_LIST.map((preset) => (
+                        <button
+                          key={preset.id}
+                          onClick={() => onApplyPreset(preset)}
+                          className="group flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-foreground/5 hover:bg-foreground/10 hover:border-primary/50 transition-all text-center"
+                        >
+                          <span className="text-2xl group-hover:scale-110 transition-transform">
+                            {preset.icon}
+                          </span>
+                          <div>
+                            <h5 className="text-xs font-medium text-foreground">
+                              {preset.name}
+                            </h5>
+                            <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-2">
+                              {preset.description}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Layouts Section */}
+                <div className="space-y-3">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <Layout className="w-3 h-3" />
+                    Layout
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3">
                   {Object.values(LAYOUTS).map((layout) => (
                       <button
                           key={layout.id}
@@ -574,6 +628,8 @@ export function TileTray({
                           </div>
                       </button>
                   ))}
+                  </div>
+                </div>
               </div>
           )}
 

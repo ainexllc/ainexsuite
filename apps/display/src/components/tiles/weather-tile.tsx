@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Settings, RefreshCw } from 'lucide-react';
+import { Settings, RefreshCw, MapPin, Loader2 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { TileBase } from './tile-base';
 import { ClockService } from '@/lib/clock-settings';
-import { getWeather, getLocationSuggestions, getLocationFromSearch, type WeatherData } from '@/lib/weather';
+import { getWeather, getLocationSuggestions, getLocationFromSearch, getWeatherByCoords, reverseGeocode, type WeatherData } from '@/lib/weather';
 
 interface WeatherTileProps {
   id?: string;
@@ -34,6 +34,8 @@ export function WeatherTile({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [geolocationError, setGeolocationError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Keep input zipcode in sync with prop
@@ -152,6 +154,64 @@ export function WeatherTile({
     }
   };
 
+  const handleUseMyLocation = async () => {
+    if (!navigator.geolocation) {
+      setGeolocationError('Geolocation not supported');
+      return;
+    }
+
+    setIsLocating(true);
+    setGeolocationError(null);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes cache
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+
+      // Get weather for this location
+      const data = await getWeatherByCoords(latitude, longitude);
+      setWeather(data);
+
+      // Get location name and save it
+      const locationName = await reverseGeocode(latitude, longitude);
+      onZipcodeChange?.(locationName);
+
+      if (user) {
+        await ClockService.saveSettings(user.uid, { weatherZipcode: locationName });
+      }
+
+      setShowSettings(false);
+      setError(null);
+    } catch (err) {
+      if (err instanceof GeolocationPositionError) {
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            setGeolocationError('Location access denied');
+            break;
+          case err.POSITION_UNAVAILABLE:
+            setGeolocationError('Location unavailable');
+            break;
+          case err.TIMEOUT:
+            setGeolocationError('Location request timed out');
+            break;
+          default:
+            setGeolocationError('Unable to get location');
+        }
+      } else {
+        setGeolocationError('Failed to get weather');
+        console.error('Geolocation error:', err);
+      }
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
   return (
     <TileBase
       id={id}
@@ -216,6 +276,35 @@ export function WeatherTile({
               <p className="text-xs text-muted-foreground/80">
                 Search by city, state, or zipcode
               </p>
+            </div>
+
+            {/* Use My Location Button */}
+            <button
+              onClick={handleUseMyLocation}
+              disabled={isLocating}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg text-foreground transition-all duration-200 disabled:opacity-50"
+            >
+              {isLocating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Locating...
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-4 h-4" />
+                  Use my location
+                </>
+              )}
+            </button>
+
+            {geolocationError && (
+              <p className="text-xs text-destructive text-center">{geolocationError}</p>
+            )}
+
+            <div className="flex items-center gap-3 text-muted-foreground/50">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[10px] uppercase tracking-wider">or search</span>
+              <div className="flex-1 h-px bg-border" />
             </div>
 
             <div className="flex gap-2 relative">
