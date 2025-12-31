@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useCallback, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -146,50 +146,50 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       editor,
     }));
 
+    // State for triggering link input in toolbar
+    const [showLinkInput, setShowLinkInput] = useState(false);
+
     // Helper to execute editor commands safely
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const runCommand = useCallback((fn: (chain: any) => any) => {
-    if (!editor) return;
-    fn(editor.chain().focus()).run();
-  }, [editor]);
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      // Markdown shortcuts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const runCommand = useCallback((fn: (chain: any) => any) => {
       if (!editor) return;
+      fn(editor.chain().focus()).run();
+    }, [editor]);
 
-      // Handle Cmd/Ctrl + shortcuts
-      if (event.metaKey || event.ctrlKey) {
-        switch (event.key) {
-          case 'b':
-            event.preventDefault();
-            runCommand((c) => c.toggleBold());
-            break;
-          case 'i':
-            event.preventDefault();
-            runCommand((c) => c.toggleItalic());
-            break;
-          case 'u':
-            event.preventDefault();
-            runCommand((c) => c.toggleUnderline());
-            break;
-          case 'k':
-            event.preventDefault();
-            // Toggle link - if link exists, remove it; otherwise prompt for URL
-            if (editor.isActive('link')) {
-              runCommand((c) => c.unsetLink());
-            } else {
-              const url = window.prompt('Enter URL:');
-              if (url) {
-                runCommand((c) => c.setLink({ href: url }));
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent) => {
+        // Markdown shortcuts
+        if (!editor) return;
+
+        // Handle Cmd/Ctrl + shortcuts
+        if (event.metaKey || event.ctrlKey) {
+          switch (event.key) {
+            case 'b':
+              event.preventDefault();
+              runCommand((c) => c.toggleBold());
+              break;
+            case 'i':
+              event.preventDefault();
+              runCommand((c) => c.toggleItalic());
+              break;
+            case 'u':
+              event.preventDefault();
+              runCommand((c) => c.toggleUnderline());
+              break;
+            case 'k':
+              event.preventDefault();
+              // Toggle link - if link exists, remove it; otherwise show toolbar link input
+              if (editor.isActive('link')) {
+                runCommand((c) => c.unsetLink());
+              } else if (showToolbar) {
+                setShowLinkInput(true);
               }
-            }
-            break;
+              break;
+          }
         }
-      }
-    },
-    [editor, runCommand]
-  );
+      },
+      [editor, runCommand, showToolbar]
+    );
 
     if (!editor) {
       return null;
@@ -198,7 +198,12 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     return (
       <div className={clsx('rich-text-editor flex flex-col', className)}>
         {showToolbar && (
-          <EditorToolbar editor={editor} className={toolbarClassName} />
+          <EditorToolbar
+            editor={editor}
+            className={toolbarClassName}
+            showLinkInputExternal={showLinkInput}
+            onLinkInputClosed={() => setShowLinkInput(false)}
+          />
         )}
         <div
           className="flex-1 overflow-y-auto"

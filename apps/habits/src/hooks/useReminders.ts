@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { useGrowStore } from '@/lib/store';
 import { getTodayDateString } from '@/lib/date-utils';
@@ -13,9 +13,18 @@ import {
   isWithinQuietHours,
   REMINDER_TIME_PRESETS,
 } from '@/lib/notifications';
-import { ReminderSettings, UserReminderPreferences, Habit } from '@/types/models';
+import {
+  subscribeToUserReminders,
+  subscribeToReminderPreferences,
+  createReminderInDb,
+  updateReminderInDb,
+  deleteReminderInDb,
+  saveReminderPreferencesInDb,
+  updateReminderPreferencesInDb,
+} from '@/lib/firebase-service';
+import { ReminderSettings, UserReminderPreferences, Habit, HabitReminder } from '@/types/models';
 
-// Store reminders in localStorage for persistence
+// LocalStorage keys for fallback/cache
 const REMINDERS_STORAGE_KEY = 'grow_habit_reminders';
 const PREFERENCES_STORAGE_KEY = 'grow_reminder_preferences';
 
@@ -29,25 +38,57 @@ export function useReminders() {
   const currentSpace = getCurrentSpace();
   const scheduledRef = useRef(false);
 
-  // Load stored reminders
-  const getStoredReminders = useCallback((): StoredReminders => {
-    if (typeof window === 'undefined') return {};
-    try {
-      const stored = localStorage.getItem(REMINDERS_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
+  // State for Firestore data
+  const [reminders, setReminders] = useState<HabitReminder[]>([]);
+  const [preferences, setPreferences] = useState<UserReminderPreferences | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Subscribe to Firestore reminders and preferences
+  useEffect(() => {
+    if (!user?.uid) {
+      setIsLoading(false);
+      return;
     }
-  }, []);
 
-  // Save reminders
-  const saveReminders = useCallback((reminders: StoredReminders) => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(reminders));
-  }, []);
+    setIsLoading(true);
 
-  // Get preferences
+    // Subscribe to reminders
+    const unsubReminders = subscribeToUserReminders(user.uid, (fetchedReminders) => {
+      setReminders(fetchedReminders);
+      // Cache in localStorage for offline access
+      const remindersMap: StoredReminders = {};
+      fetchedReminders.forEach((r) => {
+        remindersMap[r.habitId] = {
+          enabled: r.enabled,
+          time: r.time,
+          customTime: r.customTime,
+          daysOfWeek: r.daysOfWeek,
+        };
+      });
+      localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(remindersMap));
+    });
+
+    // Subscribe to preferences
+    const unsubPrefs = subscribeToReminderPreferences(user.uid, (fetchedPrefs) => {
+      setPreferences(fetchedPrefs);
+      setIsLoading(false);
+      // Cache in localStorage for offline access
+      if (fetchedPrefs) {
+        localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(fetchedPrefs));
+      }
+    });
+
+    return () => {
+      unsubReminders();
+      unsubPrefs();
+    };
+  }, [user?.uid]);
+
+  // Get preferences (from state or localStorage fallback)
   const getPreferences = useCallback((): UserReminderPreferences | null => {
+    if (preferences) return preferences;
+
+    // Fallback to localStorage
     if (typeof window === 'undefined') return null;
     try {
       const stored = localStorage.getItem(PREFERENCES_STORAGE_KEY);
@@ -55,11 +96,12 @@ export function useReminders() {
     } catch {
       return null;
     }
-  }, []);
+  }, [preferences]);
 
-  // Save preferences
-  const savePreferences = useCallback((prefs: Partial<UserReminderPreferences>) => {
-    if (typeof window === 'undefined' || !user) return;
+  // Save preferences to Firestore
+  const savePreferences = useCallback(async (prefs: Partial<UserReminderPreferences>) => {
+    if (!user?.uid) return;
+
     const existing = getPreferences();
     const updated: UserReminderPreferences = {
       userId: user.uid,
@@ -71,25 +113,96 @@ export function useReminders() {
       soundEnabled: prefs.soundEnabled ?? existing?.soundEnabled ?? true,
       vibrationEnabled: prefs.vibrationEnabled ?? existing?.vibrationEnabled ?? true,
     };
-    localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(updated));
-  }, [user, getPreferences]);
+
+    try {
+      if (existing) {
+        await updateReminderPreferencesInDb(user.uid, prefs);
+      } else {
+        await saveReminderPreferencesInDb(updated);
+      }
+      // Also update localStorage cache
+      localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.error('Failed to save preferences to Firestore:', error);
+      // Fallback to localStorage only
+      localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(updated));
+    }
+  }, [user?.uid, getPreferences]);
 
   // Get reminder for specific habit
   const getHabitReminder = useCallback((habitId: string): ReminderSettings | null => {
-    const reminders = getStoredReminders();
-    return reminders[habitId] || null;
-  }, [getStoredReminders]);
+    const reminder = reminders.find((r) => r.habitId === habitId);
+    if (reminder) {
+      return {
+        enabled: reminder.enabled,
+        time: reminder.time,
+        customTime: reminder.customTime,
+        daysOfWeek: reminder.daysOfWeek,
+      };
+    }
+
+    // Fallback to localStorage
+    try {
+      const stored = localStorage.getItem(REMINDERS_STORAGE_KEY);
+      const remindersMap: StoredReminders = stored ? JSON.parse(stored) : {};
+      return remindersMap[habitId] || null;
+    } catch {
+      return null;
+    }
+  }, [reminders]);
 
   // Update reminder for specific habit
-  const updateHabitReminder = useCallback((habitId: string, settings: ReminderSettings | null) => {
-    const reminders = getStoredReminders();
-    if (settings) {
-      reminders[habitId] = settings;
-    } else {
-      delete reminders[habitId];
+  const updateHabitReminder = useCallback(async (habitId: string, settings: ReminderSettings | null) => {
+    if (!user?.uid) return;
+
+    try {
+      if (settings) {
+        // Check if reminder exists
+        const existing = reminders.find((r) => r.habitId === habitId);
+        const reminderId = existing?.id || `reminder_${user.uid}_${habitId}`;
+
+        const reminderData: HabitReminder = {
+          id: reminderId,
+          userId: user.uid,
+          habitId,
+          enabled: settings.enabled,
+          time: settings.time,
+          customTime: settings.customTime,
+          daysOfWeek: settings.daysOfWeek,
+          createdAt: existing?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        if (existing) {
+          await updateReminderInDb(reminderId, {
+            enabled: settings.enabled,
+            time: settings.time,
+            customTime: settings.customTime,
+            daysOfWeek: settings.daysOfWeek,
+          });
+        } else {
+          await createReminderInDb(reminderData);
+        }
+      } else {
+        // Delete reminder
+        const existing = reminders.find((r) => r.habitId === habitId);
+        if (existing) {
+          await deleteReminderInDb(existing.id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update reminder in Firestore:', error);
+      // Fallback to localStorage
+      const stored = localStorage.getItem(REMINDERS_STORAGE_KEY);
+      const remindersMap: StoredReminders = stored ? JSON.parse(stored) : {};
+      if (settings) {
+        remindersMap[habitId] = settings;
+      } else {
+        delete remindersMap[habitId];
+      }
+      localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(remindersMap));
     }
-    saveReminders(reminders);
-  }, [getStoredReminders, saveReminders]);
+  }, [user?.uid, reminders]);
 
   // Check if habit is completed today
   const isHabitCompletedToday = useCallback((habitId: string): boolean => {
@@ -100,9 +213,9 @@ export function useReminders() {
   }, [completions]);
 
   // Show reminder notification
-  const showHabitReminder = useCallback((habit: Habit, preferences: UserReminderPreferences | null) => {
+  const showHabitReminder = useCallback((habit: Habit, prefs: UserReminderPreferences | null) => {
     // Check quiet hours
-    if (preferences && isWithinQuietHours(preferences.quietHoursStart, preferences.quietHoursEnd)) {
+    if (prefs && isWithinQuietHours(prefs.quietHoursStart, prefs.quietHoursEnd)) {
       return;
     }
 
@@ -126,16 +239,15 @@ export function useReminders() {
 
     cancelAllReminders();
 
-    const reminders = getStoredReminders();
-    const preferences = getPreferences();
+    const currentPrefs = getPreferences();
 
     // Only schedule if globally enabled
-    if (!preferences?.globalEnabled) return;
+    if (!currentPrefs?.globalEnabled) return;
 
     const spaceHabits = habits.filter((h) => h.spaceId === currentSpace.id);
 
     spaceHabits.forEach((habit) => {
-      const settings = reminders[habit.id];
+      const settings = getHabitReminder(habit.id);
       if (!settings?.enabled) return;
 
       // Check if today is a reminder day
@@ -148,15 +260,15 @@ export function useReminders() {
       // Schedule it
       scheduleReminder(
         `habit-${habit.id}`,
-        () => showHabitReminder(habit, preferences),
+        () => showHabitReminder(habit, currentPrefs),
         nextTime
       );
     });
-  }, [currentSpace, habits, getStoredReminders, getPreferences, showHabitReminder]);
+  }, [currentSpace, habits, getPreferences, getHabitReminder, showHabitReminder]);
 
   // Initial setup
   useEffect(() => {
-    if (!scheduledRef.current && user && currentSpace) {
+    if (!scheduledRef.current && user && currentSpace && !isLoading) {
       scheduledRef.current = true;
       scheduleAllReminders();
     }
@@ -164,14 +276,14 @@ export function useReminders() {
     return () => {
       cancelAllReminders();
     };
-  }, [user, currentSpace, scheduleAllReminders]);
+  }, [user, currentSpace, isLoading, scheduleAllReminders]);
 
   // Reschedule when habits or reminders change
   useEffect(() => {
-    if (scheduledRef.current) {
+    if (scheduledRef.current && !isLoading) {
       scheduleAllReminders();
     }
-  }, [habits, scheduleAllReminders]);
+  }, [habits, reminders, isLoading, scheduleAllReminders]);
 
   return {
     getPreferences,
@@ -179,6 +291,7 @@ export function useReminders() {
     getHabitReminder,
     updateHabitReminder,
     scheduleAllReminders,
+    isLoading,
   };
 }
 

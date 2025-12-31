@@ -144,7 +144,21 @@ export interface Completion {
   reactions?: Reaction[]; // Emoji reactions from other users
 }
 
-export type NotificationType = 'nudge' | 'wager_update' | 'wager_won' | 'wager_lost' | 'quest_update' | 'system';
+export type NotificationType =
+  | 'nudge'
+  | 'wager_update'
+  | 'wager_won'
+  | 'wager_lost'
+  | 'quest_update'
+  | 'system'
+  // Family-specific notifications
+  | 'child_completed'
+  | 'child_all_done'
+  | 'daily_summary'
+  | 'streak_danger_family'
+  | 'challenge_progress'
+  | 'challenge_complete'
+  | 'sticker_earned';
 
 export interface Notification {
   id: string;
@@ -157,6 +171,23 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   data?: Record<string, unknown>; // Flexible payload for deep links
+}
+
+// Family notification settings
+export interface FamilyNotificationSettings {
+  userId: string;
+  spaceId: string;
+  // Parent notification preferences
+  childCompletionAlerts: boolean;
+  childAllDoneAlerts: boolean;
+  dailySummary: boolean;
+  dailySummaryTime: string; // HH:mm format
+  streakDangerAlerts: boolean;
+  challengeAlerts: boolean;
+  // Preferences
+  quietHoursEnabled: boolean;
+  quietHoursStart: string; // HH:mm
+  quietHoursEnd: string;   // HH:mm
 }
 
 // Reminder types
@@ -173,7 +204,11 @@ export interface HabitReminder {
   id: string;
   habitId: string;
   userId: string;
-  settings: ReminderSettings;
+  // Flattened reminder settings for simpler Firestore storage
+  enabled: boolean;
+  time: ReminderTime;
+  customTime?: string;
+  daysOfWeek: number[];
   lastNotifiedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -240,3 +275,188 @@ export interface ComputedAchievement {
   unlocked: boolean;
   unlockedAt?: string;
 }
+
+// ===== FAMILY-SPECIFIC TYPES =====
+
+// Family rewards for child-friendly gamification
+export type FamilyRewardType = 'sticker' | 'badge' | 'celebration';
+
+export interface FamilyReward {
+  id: string;
+  type: FamilyRewardType;
+  name: string;
+  icon: string;
+  description?: string;
+  unlockedAt?: string;
+  memberId: string;
+  spaceId: string;
+}
+
+// Child-specific achievements (simpler, more encouraging)
+export interface ChildAchievement {
+  threshold: number;
+  name: string;
+  icon: string;
+  description: string;
+  celebrationEmoji: string;
+}
+
+export const CHILD_ACHIEVEMENTS: ChildAchievement[] = [
+  { threshold: 1, name: 'First Step!', icon: '⭐', description: 'You did your first habit!', celebrationEmoji: '🎉' },
+  { threshold: 3, name: 'Hat Trick!', icon: '🎩', description: '3 habits complete!', celebrationEmoji: '✨' },
+  { threshold: 5, name: 'High Five!', icon: '🖐️', description: '5 habits complete!', celebrationEmoji: '🌟' },
+  { threshold: 7, name: 'Week Warrior', icon: '🌟', description: 'A whole week of habits!', celebrationEmoji: '🏆' },
+  { threshold: 14, name: 'Super Star', icon: '💫', description: '2 weeks strong!', celebrationEmoji: '🎊' },
+  { threshold: 21, name: 'Habit Hero', icon: '🦸', description: '3 weeks of awesomeness!', celebrationEmoji: '🥳' },
+  { threshold: 30, name: 'Monthly Master', icon: '🏆', description: 'A whole month!', celebrationEmoji: '👑' },
+  { threshold: 50, name: 'Golden Streak', icon: '👑', description: '50 habits complete!', celebrationEmoji: '🌈' },
+  { threshold: 100, name: 'Legend!', icon: '🌈', description: '100 habits! Amazing!', celebrationEmoji: '🎆' },
+];
+
+// Sticker collection for kids
+export interface StickerType {
+  id: string;
+  emoji: string;
+  name: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  category: 'animals' | 'nature' | 'space' | 'food' | 'sports' | 'magic';
+}
+
+export const STICKER_COLLECTION: StickerType[] = [
+  // Animals (common)
+  { id: 'sticker_dog', emoji: '🐕', name: 'Good Pup', rarity: 'common', category: 'animals' },
+  { id: 'sticker_cat', emoji: '🐱', name: 'Cool Cat', rarity: 'common', category: 'animals' },
+  { id: 'sticker_bunny', emoji: '🐰', name: 'Hoppy Friend', rarity: 'common', category: 'animals' },
+  { id: 'sticker_bear', emoji: '🐻', name: 'Bear Hug', rarity: 'common', category: 'animals' },
+
+  // Nature (common/rare)
+  { id: 'sticker_flower', emoji: '🌸', name: 'Bloom', rarity: 'common', category: 'nature' },
+  { id: 'sticker_tree', emoji: '🌳', name: 'Tree Friend', rarity: 'common', category: 'nature' },
+  { id: 'sticker_rainbow', emoji: '🌈', name: 'Rainbow', rarity: 'rare', category: 'nature' },
+  { id: 'sticker_butterfly', emoji: '🦋', name: 'Flutter', rarity: 'rare', category: 'nature' },
+
+  // Space (rare/epic)
+  { id: 'sticker_star', emoji: '⭐', name: 'Shiny Star', rarity: 'rare', category: 'space' },
+  { id: 'sticker_moon', emoji: '🌙', name: 'Sleepy Moon', rarity: 'rare', category: 'space' },
+  { id: 'sticker_rocket', emoji: '🚀', name: 'Rocket', rarity: 'epic', category: 'space' },
+  { id: 'sticker_ufo', emoji: '🛸', name: 'Alien Friend', rarity: 'epic', category: 'space' },
+
+  // Food (common/rare)
+  { id: 'sticker_pizza', emoji: '🍕', name: 'Pizza Party', rarity: 'common', category: 'food' },
+  { id: 'sticker_icecream', emoji: '🍦', name: 'Sweet Treat', rarity: 'common', category: 'food' },
+  { id: 'sticker_cake', emoji: '🎂', name: 'Celebration Cake', rarity: 'rare', category: 'food' },
+
+  // Sports (rare/epic)
+  { id: 'sticker_trophy', emoji: '🏆', name: 'Champion', rarity: 'rare', category: 'sports' },
+  { id: 'sticker_medal', emoji: '🥇', name: 'Gold Medal', rarity: 'epic', category: 'sports' },
+  { id: 'sticker_soccer', emoji: '⚽', name: 'Goal!', rarity: 'common', category: 'sports' },
+
+  // Magic (epic/legendary)
+  { id: 'sticker_sparkles', emoji: '✨', name: 'Magic Sparkles', rarity: 'epic', category: 'magic' },
+  { id: 'sticker_crystal', emoji: '💎', name: 'Crystal Power', rarity: 'epic', category: 'magic' },
+  { id: 'sticker_unicorn', emoji: '🦄', name: 'Unicorn', rarity: 'legendary', category: 'magic' },
+  { id: 'sticker_dragon', emoji: '🐉', name: 'Dragon', rarity: 'legendary', category: 'magic' },
+];
+
+// Member sticker collection (stored in Firestore)
+export interface MemberStickerCollection {
+  memberId: string;
+  spaceId: string;
+  stickers: {
+    stickerId: string;
+    count: number;
+    firstEarnedAt: string;
+    lastEarnedAt: string;
+  }[];
+  totalStickers: number;
+  updatedAt: string;
+}
+
+// Family Challenge types
+export type FamilyChallengeType = 'streak' | 'completion' | 'participation';
+export type FamilyChallengeStatus = 'active' | 'completed' | 'failed' | 'expired';
+
+export interface FamilyChallenge {
+  id: string;
+  spaceId: string;
+  title: string;
+  description: string;
+  emoji: string;
+  challengeType: FamilyChallengeType;
+  targetCompletions: number;
+  currentProgress: number;
+  participantProgress: Record<string, number>; // memberId -> completions
+  reward?: string;
+  rewardStickerId?: string; // Optional sticker reward for completing
+  startDate: string;
+  endDate?: string;
+  status: FamilyChallengeStatus;
+  createdBy: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+// Pre-made family challenge templates
+export interface FamilyChallengeTemplate {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  challengeType: FamilyChallengeType;
+  defaultTarget: number;
+  defaultDuration: number; // in days
+  suggestedReward?: string;
+}
+
+export const FAMILY_CHALLENGE_TEMPLATES: FamilyChallengeTemplate[] = [
+  {
+    id: 'challenge_week_streak',
+    title: 'Week Warriors',
+    description: 'Everyone maintains their streak for a full week',
+    emoji: '🔥',
+    challengeType: 'streak',
+    defaultTarget: 7,
+    defaultDuration: 7,
+    suggestedReward: 'Family movie night!',
+  },
+  {
+    id: 'challenge_100_club',
+    title: '100 Club',
+    description: 'Complete 100 habits as a family',
+    emoji: '💯',
+    challengeType: 'completion',
+    defaultTarget: 100,
+    defaultDuration: 14,
+    suggestedReward: 'Pizza party!',
+  },
+  {
+    id: 'challenge_all_together',
+    title: 'All Together Now',
+    description: 'Every family member completes their habits today',
+    emoji: '👨‍👩‍👧‍👦',
+    challengeType: 'participation',
+    defaultTarget: 1,
+    defaultDuration: 1,
+    suggestedReward: 'Ice cream treats!',
+  },
+  {
+    id: 'challenge_morning_masters',
+    title: 'Morning Masters',
+    description: 'Complete all morning habits for 5 days',
+    emoji: '🌅',
+    challengeType: 'streak',
+    defaultTarget: 5,
+    defaultDuration: 5,
+    suggestedReward: 'Sleep in on Saturday!',
+  },
+  {
+    id: 'challenge_perfect_week',
+    title: 'Perfect Week',
+    description: 'Complete every assigned habit this week',
+    emoji: '🌟',
+    challengeType: 'completion',
+    defaultTarget: 50,
+    defaultDuration: 7,
+    suggestedReward: 'Game night!',
+  },
+];

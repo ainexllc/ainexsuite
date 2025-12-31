@@ -4,6 +4,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
+  getDoc,
   query,
   where,
   onSnapshot,
@@ -11,7 +13,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
-import { Habit, Space, Quest, Completion, Notification } from '../types/models';
+import { Habit, Space, Quest, Completion, Notification, HabitReminder, UserReminderPreferences } from '../types/models';
 
 // Helper to deeply remove undefined values from objects (Firestore doesn't accept undefined)
 function removeUndefined<T>(obj: T): T {
@@ -159,5 +161,88 @@ export function subscribeToUserNotifications(userId: string, callback: (notifica
   return onSnapshot(q, (snapshot) => {
     const notifications = snapshot.docs.map(doc => doc.data() as Notification);
     callback(notifications);
+  });
+}
+
+// --- Reminders ---
+
+export async function createReminderInDb(reminder: HabitReminder) {
+  const reminderRef = doc(collection(db, 'habitReminders'), reminder.id);
+  await setDoc(reminderRef, removeUndefined(reminder));
+}
+
+export async function updateReminderInDb(reminderId: string, updates: Partial<HabitReminder>) {
+  const reminderRef = doc(db, 'habitReminders', reminderId);
+  await updateDoc(reminderRef, removeUndefined({
+    ...updates,
+    updatedAt: new Date().toISOString()
+  }));
+}
+
+export async function deleteReminderInDb(reminderId: string) {
+  const reminderRef = doc(db, 'habitReminders', reminderId);
+  await deleteDoc(reminderRef);
+}
+
+export function subscribeToUserReminders(userId: string, callback: (reminders: HabitReminder[]) => void) {
+  const q = query(
+    collection(db, 'habitReminders'),
+    where('userId', '==', userId)
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const reminders = snapshot.docs.map(doc => doc.data() as HabitReminder);
+    callback(reminders);
+  });
+}
+
+export async function getUserReminders(userId: string): Promise<HabitReminder[]> {
+  const q = query(
+    collection(db, 'habitReminders'),
+    where('userId', '==', userId)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => doc.data() as HabitReminder);
+}
+
+export async function getReminderByHabitId(userId: string, habitId: string): Promise<HabitReminder | null> {
+  const q = query(
+    collection(db, 'habitReminders'),
+    where('userId', '==', userId),
+    where('habitId', '==', habitId)
+  );
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  return snapshot.docs[0].data() as HabitReminder;
+}
+
+export async function getReminderPreferences(userId: string): Promise<UserReminderPreferences | null> {
+  const prefsRef = doc(db, 'userReminderPreferences', userId);
+  const snapshot = await getDoc(prefsRef);
+  if (!snapshot.exists()) return null;
+  return snapshot.data() as UserReminderPreferences;
+}
+
+// --- User Reminder Preferences ---
+
+export async function saveReminderPreferencesInDb(preferences: UserReminderPreferences) {
+  const prefsRef = doc(db, 'userReminderPreferences', preferences.userId);
+  await setDoc(prefsRef, removeUndefined(preferences));
+}
+
+export async function updateReminderPreferencesInDb(userId: string, updates: Partial<UserReminderPreferences>) {
+  const prefsRef = doc(db, 'userReminderPreferences', userId);
+  await updateDoc(prefsRef, removeUndefined(updates));
+}
+
+export function subscribeToReminderPreferences(userId: string, callback: (preferences: UserReminderPreferences | null) => void) {
+  const prefsRef = doc(db, 'userReminderPreferences', userId);
+
+  return onSnapshot(prefsRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.data() as UserReminderPreferences);
+    } else {
+      callback(null);
+    }
   });
 }

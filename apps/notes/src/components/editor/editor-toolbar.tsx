@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   Bold,
@@ -20,8 +20,19 @@ import {
   Undo2,
   Redo2,
   Minus,
+  ChevronDown,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+
+// Highlight color options
+const HIGHLIGHT_COLORS = [
+  { name: 'Yellow', color: '#fef08a' },
+  { name: 'Green', color: '#bbf7d0' },
+  { name: 'Blue', color: '#bfdbfe' },
+  { name: 'Pink', color: '#fbcfe8' },
+  { name: 'Orange', color: '#fed7aa' },
+  { name: 'Purple', color: '#ddd6fe' },
+] as const;
 
 // Helper to execute editor commands safely
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +43,8 @@ const runCommand = (editor: Editor, fn: (chain: any) => any) => {
 interface EditorToolbarProps {
   editor: Editor;
   className?: string;
+  showLinkInputExternal?: boolean;
+  onLinkInputClosed?: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -66,13 +79,48 @@ function ToolbarDivider() {
   return <div className="w-px h-5 bg-border mx-1" />;
 }
 
-export function EditorToolbar({ editor, className }: EditorToolbarProps) {
+export function EditorToolbar({ editor, className, showLinkInputExternal, onLinkInputClosed }: EditorToolbarProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  const [showHighlightColors, setShowHighlightColors] = useState(false);
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const linkInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle external trigger to show link input (from keyboard shortcut)
+  useEffect(() => {
+    if (showLinkInputExternal && !showLinkInput) {
+      setShowLinkInput(true);
+    }
+  }, [showLinkInputExternal, showLinkInput]);
+
+  // Focus link input when it opens
+  useEffect(() => {
+    if (showLinkInput && linkInputRef.current) {
+      linkInputRef.current.focus();
+    }
+  }, [showLinkInput]);
+
+  // Close highlight picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (highlightRef.current && !highlightRef.current.contains(event.target as Node)) {
+        setShowHighlightColors(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const closeLinkInput = useCallback(() => {
+    setShowLinkInput(false);
+    setLinkUrl('');
+    onLinkInputClosed?.();
+  }, [onLinkInputClosed]);
 
   const setLink = useCallback(() => {
     if (!linkUrl) {
       runCommand(editor, (c) => c.unsetLink());
+      closeLinkInput();
       return;
     }
 
@@ -80,19 +128,26 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
     const url = linkUrl.match(/^https?:\/\//) ? linkUrl : `https://${linkUrl}`;
 
     runCommand(editor, (c) => c.setLink({ href: url }));
-    setLinkUrl('');
-    setShowLinkInput(false);
-  }, [editor, linkUrl]);
+    closeLinkInput();
+  }, [editor, linkUrl, closeLinkInput]);
 
   const handleLinkKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       setLink();
     } else if (e.key === 'Escape') {
-      setShowLinkInput(false);
-      setLinkUrl('');
+      closeLinkInput();
     }
   };
+
+  const setHighlightColor = useCallback((color: string | null) => {
+    if (color === null) {
+      runCommand(editor, (c) => c.unsetHighlight());
+    } else {
+      runCommand(editor, (c) => c.toggleHighlight({ color }));
+    }
+    setShowHighlightColors(false);
+  }, [editor]);
 
   return (
     <div className={clsx(
@@ -132,13 +187,49 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
         <Strikethrough className="h-4 w-4" />
       </ToolbarButton>
 
-      <ToolbarButton
-        onClick={() => runCommand(editor, (c) => c.toggleHighlight())}
-        isActive={editor.isActive('highlight')}
-        title="Highlight"
-      >
-        <Highlighter className="h-4 w-4" />
-      </ToolbarButton>
+      {/* Highlight with color picker */}
+      <div className="relative" ref={highlightRef}>
+        <button
+          type="button"
+          onClick={() => setShowHighlightColors(!showHighlightColors)}
+          title="Highlight"
+          className={clsx(
+            'flex items-center gap-0.5 p-1.5 rounded-md transition-colors',
+            editor.isActive('highlight')
+              ? 'bg-primary/20 text-primary'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-muted'
+          )}
+        >
+          <Highlighter className="h-4 w-4" />
+          <ChevronDown className="h-3 w-3" />
+        </button>
+
+        {showHighlightColors && (
+          <div className="absolute top-full left-0 mt-1 z-50 p-2 bg-surface border border-border rounded-lg shadow-lg">
+            <div className="grid grid-cols-3 gap-1.5">
+              {HIGHLIGHT_COLORS.map((item) => (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() => setHighlightColor(item.color)}
+                  title={item.name}
+                  className="w-6 h-6 rounded border border-border hover:scale-110 transition-transform"
+                  style={{ backgroundColor: item.color }}
+                />
+              ))}
+            </div>
+            {editor.isActive('highlight') && (
+              <button
+                type="button"
+                onClick={() => setHighlightColor(null)}
+                className="w-full mt-2 px-2 py-1 text-xs text-muted-foreground hover:text-foreground bg-surface-muted rounded"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       <ToolbarButton
         onClick={() => runCommand(editor, (c) => c.toggleCode())}
@@ -239,12 +330,12 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
         {showLinkInput && (
           <div className="absolute top-full left-0 mt-1 z-50 flex items-center gap-1 p-2 bg-surface border border-border rounded-lg shadow-lg">
             <input
+              ref={linkInputRef}
               type="url"
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
               onKeyDown={handleLinkKeyDown}
               placeholder="Enter URL..."
-              autoFocus
               className="w-48 px-2 py-1 text-sm bg-surface-muted border border-border rounded focus:outline-none focus:border-primary"
             />
             <button
@@ -253,6 +344,13 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
               className="px-2 py-1 text-sm bg-primary text-white rounded hover:brightness-110"
             >
               Add
+            </button>
+            <button
+              type="button"
+              onClick={closeLinkInput}
+              className="px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              Cancel
             </button>
           </div>
         )}
