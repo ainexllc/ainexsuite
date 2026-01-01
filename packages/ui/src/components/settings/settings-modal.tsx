@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import { clsx } from "clsx";
-import { X, User, Palette, Bell } from "lucide-react";
+import { X, User, Palette, Bell, Globe, Plus, Settings2, Eye, EyeOff } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
-import type { UserPreferences, FontFamily } from "@ainexsuite/types";
+import type { UserPreferences, FontFamily, SpaceType } from "@ainexsuite/types";
 
-export type SettingsTab = "profile" | "appearance" | "notifications" | "app";
+export type SettingsTab = "profile" | "appearance" | "notifications" | "spaces" | "app";
 
 export interface SettingsUser {
   uid: string;
@@ -15,6 +15,17 @@ export interface SettingsUser {
   email?: string | null;
   photoURL?: string | null;
   emailVerified?: boolean;
+}
+
+/** Space item for settings management */
+export interface SpaceSettingsItem {
+  id: string;
+  name: string;
+  type: SpaceType;
+  isGlobal?: boolean;
+  hiddenInApps?: string[];
+  memberCount?: number;
+  isOwner?: boolean;
 }
 
 export interface SettingsModalProps {
@@ -30,6 +41,16 @@ export interface SettingsModalProps {
   onUpdatePreferences: (updates: Partial<UserPreferences>) => Promise<void>;
   /** Update profile handler */
   onUpdateProfile?: (updates: { displayName?: string; photoURL?: string }) => Promise<void>;
+  /** User's spaces for management */
+  spaces?: SpaceSettingsItem[];
+  /** Callback when user wants to create a new space */
+  onCreateSpace?: () => void;
+  /** Callback when user wants to edit a space */
+  onEditSpace?: (spaceId: string) => void;
+  /** Callback when user updates space visibility */
+  onUpdateSpaceVisibility?: (spaceId: string, hiddenInApps: string[]) => Promise<void>;
+  /** Current app ID for highlighting in spaces tab */
+  currentAppId?: string;
   /** App-specific settings content */
   appSettings?: React.ReactNode;
   /** App-specific settings tab label */
@@ -44,6 +65,7 @@ const tabs: Array<{ id: SettingsTab; label: string; icon: React.ReactNode }> = [
   { id: "profile", label: "Profile", icon: <User className="h-4 w-4" /> },
   { id: "appearance", label: "Appearance", icon: <Palette className="h-4 w-4" /> },
   { id: "notifications", label: "Notifications", icon: <Bell className="h-4 w-4" /> },
+  { id: "spaces", label: "Spaces", icon: <Globe className="h-4 w-4" /> },
 ];
 
 export function SettingsModal({
@@ -53,6 +75,11 @@ export function SettingsModal({
   preferences,
   onUpdatePreferences,
   onUpdateProfile,
+  spaces,
+  onCreateSpace,
+  onEditSpace,
+  onUpdateSpaceVisibility,
+  currentAppId,
   appSettings,
   appSettingsLabel,
   appSettingsIcon,
@@ -172,6 +199,15 @@ export function SettingsModal({
                 onUpdatePreferences={onUpdatePreferences}
               />
             )}
+            {activeTab === "spaces" && (
+              <SpacesSettings
+                spaces={spaces || []}
+                currentAppId={currentAppId}
+                onCreateSpace={onCreateSpace}
+                onEditSpace={onEditSpace}
+                onUpdateSpaceVisibility={onUpdateSpaceVisibility}
+              />
+            )}
             {activeTab === "app" && appSettings}
           </div>
         </div>
@@ -215,6 +251,7 @@ function ProfileSettings({ user, onUpdateProfile }: ProfileSettingsProps) {
       {/* Avatar */}
       <div className="flex items-center gap-4">
         {user?.photoURL ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.photoURL}
             alt={user.displayName || "User"}
@@ -663,6 +700,225 @@ function ToggleRow({ label, description, checked, onChange, disabled }: ToggleRo
           )}
         />
       </button>
+    </div>
+  );
+}
+
+// ============================================================================
+// Spaces Settings Tab
+// ============================================================================
+
+/** Available apps for visibility configuration */
+const AVAILABLE_APPS = [
+  { id: "notes", label: "Notes", icon: "📝" },
+  { id: "journal", label: "Journal", icon: "📔" },
+  { id: "todo", label: "Todo", icon: "✓" },
+  { id: "health", label: "Health", icon: "❤️" },
+  { id: "fit", label: "Fit", icon: "💪" },
+  { id: "album", label: "Moments", icon: "📷" },
+  { id: "habits", label: "Habits", icon: "🌱" },
+  { id: "calendar", label: "Calendar", icon: "📅" },
+  { id: "projects", label: "Projects", icon: "📊" },
+] as const;
+
+const SPACE_TYPE_LABELS: Record<SpaceType, string> = {
+  personal: "Personal",
+  family: "Family",
+  work: "Work",
+  couple: "Couple",
+  buddy: "Buddy",
+  squad: "Squad",
+  project: "Project",
+};
+
+interface SpacesSettingsProps {
+  spaces: SpaceSettingsItem[];
+  currentAppId?: string;
+  onCreateSpace?: () => void;
+  onEditSpace?: (spaceId: string) => void;
+  onUpdateSpaceVisibility?: (spaceId: string, hiddenInApps: string[]) => Promise<void>;
+}
+
+function SpacesSettings({
+  spaces,
+  currentAppId,
+  onCreateSpace,
+  onEditSpace,
+  onUpdateSpaceVisibility,
+}: SpacesSettingsProps) {
+  const [expandedSpaceId, setExpandedSpaceId] = React.useState<string | null>(null);
+  const [saving, setSaving] = React.useState(false);
+
+  const handleToggleAppVisibility = async (spaceId: string, appId: string, currentHiddenApps: string[]) => {
+    if (!onUpdateSpaceVisibility) return;
+    setSaving(true);
+    try {
+      const isCurrentlyHidden = currentHiddenApps.includes(appId);
+      const newHiddenApps = isCurrentlyHidden
+        ? currentHiddenApps.filter((id) => id !== appId)
+        : [...currentHiddenApps, appId];
+      await onUpdateSpaceVisibility(spaceId, newHiddenApps);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header with Create Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="text-sm font-medium text-foreground">Your Spaces</h4>
+          <p className="text-xs text-muted-foreground">
+            Manage spaces and their visibility across apps
+          </p>
+        </div>
+        {onCreateSpace && (
+          <button
+            type="button"
+            onClick={onCreateSpace}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New Space
+          </button>
+        )}
+      </div>
+
+      {/* Spaces List */}
+      <div className="space-y-2">
+        {spaces.length === 0 ? (
+          <div className="text-center py-8 text-sm text-muted-foreground">
+            <Globe className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            No spaces yet. Create your first space!
+          </div>
+        ) : (
+          spaces.map((space) => {
+            const isExpanded = expandedSpaceId === space.id;
+            const hiddenApps = space.hiddenInApps || [];
+
+            return (
+              <div
+                key={space.id}
+                className="rounded-xl border border-border bg-muted/30 overflow-hidden"
+              >
+                {/* Space Header */}
+                <div
+                  className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => setExpandedSpaceId(isExpanded ? null : space.id)}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Globe className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground truncate">
+                        {space.name}
+                      </span>
+                      {space.isGlobal && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-medium">
+                          Global
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{SPACE_TYPE_LABELS[space.type]}</span>
+                      {space.memberCount && space.memberCount > 1 && (
+                        <>
+                          <span>•</span>
+                          <span>{space.memberCount} members</span>
+                        </>
+                      )}
+                      {!space.isGlobal && hiddenApps.length > 0 && (
+                        <>
+                          <span>•</span>
+                          <span className="text-amber-500">
+                            Hidden in {hiddenApps.length} app{hiddenApps.length !== 1 ? "s" : ""}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {space.isOwner && onEditSpace && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditSpace(space.id);
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                        title="Edit space"
+                      >
+                        <Settings2 className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    )}
+                    <span
+                      className={clsx(
+                        "transition-transform",
+                        isExpanded && "rotate-180"
+                      )}
+                    >
+                      ▼
+                    </span>
+                  </div>
+                </div>
+
+                {/* Expanded: App Visibility */}
+                {isExpanded && !space.isGlobal && (
+                  <div className="px-3 pb-3 border-t border-border pt-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                      Show in Apps
+                    </p>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {AVAILABLE_APPS.map((app) => {
+                        const isVisible = !hiddenApps.includes(app.id);
+                        const isCurrentApp = app.id === currentAppId;
+                        return (
+                          <button
+                            key={app.id}
+                            type="button"
+                            onClick={() =>
+                              handleToggleAppVisibility(space.id, app.id, hiddenApps)
+                            }
+                            disabled={saving}
+                            className={clsx(
+                              "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs transition-all",
+                              isVisible
+                                ? "bg-primary/10 text-foreground"
+                                : "bg-muted text-muted-foreground",
+                              isCurrentApp && "ring-1 ring-primary",
+                              saving && "opacity-50 cursor-not-allowed"
+                            )}
+                          >
+                            {isVisible ? (
+                              <Eye className="h-3 w-3 text-primary" />
+                            ) : (
+                              <EyeOff className="h-3 w-3" />
+                            )}
+                            <span>{app.icon}</span>
+                            <span className="font-medium">{app.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Global spaces can't have per-app visibility */}
+                {isExpanded && space.isGlobal && (
+                  <div className="px-3 pb-3 border-t border-border pt-3">
+                    <p className="text-xs text-muted-foreground">
+                      This is a global space. It&apos;s visible in all apps.
+                      To manage per-app visibility, disable the global setting when editing.
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }

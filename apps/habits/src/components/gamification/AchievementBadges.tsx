@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 interface AchievementBadgesProps {
   habits: Habit[];
   completions: Completion[];
-  variant?: 'compact' | 'full';
+  variant?: 'compact' | 'full' | 'mini';
 }
 
 export function AchievementBadges({
@@ -24,61 +24,118 @@ export function AchievementBadges({
   const nextAchievements = getNextAchievements(habits, completions);
   const unlockedAchievements = achievements.filter(a => a.unlocked);
 
-  if (variant === 'compact') {
+  // Mini variant - ultra compact for mobile
+  if (variant === 'mini') {
     return (
-      <div className="bg-foreground/5 border border-border rounded-xl p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
+        <div className="p-2.5 flex items-center justify-between gap-3">
+          {/* Left: Icon and title */}
           <div className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-400" />
-            <h3 className="font-semibold text-foreground">Achievements</h3>
+            <div className="p-1 rounded-lg bg-amber-500/20">
+              <Trophy className="h-3.5 w-3.5 text-amber-400" />
+            </div>
+            <span className="text-xs font-bold text-white">Achievements</span>
           </div>
-          <span className="text-sm text-muted-foreground">
-            {stats.unlocked}/{stats.total}
-          </span>
-        </div>
 
-        {/* Progress bar */}
-        <div className="h-2 bg-foreground/10 rounded-full mb-4 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full transition-all duration-500"
-            style={{ width: `${stats.percentage}%` }}
-          />
-        </div>
-
-        {/* Unlocked badges */}
-        {unlockedAchievements.length > 0 ? (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {unlockedAchievements.slice(0, 6).map((achievement) => (
-              <AchievementBadge key={achievement.milestone.id} achievement={achievement} size="sm" />
-            ))}
-            {unlockedAchievements.length > 6 && (
-              <button
-                onClick={() => setShowAll(true)}
-                className="flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                +{unlockedAchievements.length - 6} more
-                <ChevronRight className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground mb-3">
-            Complete habits to unlock achievements!
-          </p>
-        )}
-
-        {/* Next achievement preview */}
-        {nextAchievements.length > 0 && (
-          <div className="pt-3 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-2">Next up:</p>
-            <div className="flex gap-2">
-              {nextAchievements.slice(0, 2).map((achievement) => (
-                <NextAchievementCard key={achievement.milestone.id} achievement={achievement} />
-              ))}
+          {/* Center: Progress bar */}
+          <div className="flex-1 max-w-[120px]">
+            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full"
+                style={{ width: `${stats.percentage}%` }}
+              />
             </div>
           </div>
-        )}
+
+          {/* Right: Stats and badges */}
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-1">
+              {unlockedAchievements.slice(0, 3).map((achievement) => (
+                <div
+                  key={achievement.milestone.id}
+                  className="h-6 w-6 rounded-full bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center ring-1 ring-black"
+                >
+                  <span className="text-xs">{achievement.milestone.icon}</span>
+                </div>
+              ))}
+            </div>
+            <span className="text-xs font-medium text-amber-400 tabular-nums">
+              {stats.unlocked}/{stats.total}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === 'compact') {
+    return (
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
+        {/* Header */}
+        <div className="p-3 border-b border-white/10 bg-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-amber-500/20">
+              <Trophy className="h-3.5 w-3.5 text-amber-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-white">Achievements</h3>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium text-white/80">{stats.unlocked}</span>
+            <span className="text-sm text-white/40">/{stats.total}</span>
+          </div>
+        </div>
+
+        <div className="p-3 space-y-3">
+          {/* Progress bar with percentage */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] text-white/50">Progress</span>
+              <span className="text-[10px] font-medium text-amber-400">{stats.percentage}%</span>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full transition-all duration-500 relative"
+                style={{ width: `${stats.percentage}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 animate-pulse" />
+              </div>
+            </div>
+          </div>
+
+          {/* Unlocked badges - horizontal scroll on mobile */}
+          {unlockedAchievements.length > 0 ? (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+              {unlockedAchievements.slice(0, 8).map((achievement) => (
+                <AchievementBadge key={achievement.milestone.id} achievement={achievement} size="sm" />
+              ))}
+              {unlockedAchievements.length > 8 && (
+                <button
+                  onClick={() => setShowAll(true)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] text-white/50 bg-white/5 hover:bg-white/10 hover:text-white transition-colors flex-shrink-0"
+                >
+                  +{unlockedAchievements.length - 8}
+                  <ChevronRight className="h-2.5 w-2.5" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-white/40">
+              Complete habits to unlock!
+            </p>
+          )}
+
+          {/* Next achievement preview - single row */}
+          {nextAchievements.length > 0 && (
+            <div className="pt-2 border-t border-white/10">
+              <p className="text-[10px] text-white/40 uppercase tracking-wide mb-2">Next up:</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {nextAchievements.slice(0, 2).map((achievement) => (
+                  <NextAchievementCard key={achievement.milestone.id} achievement={achievement} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -129,18 +186,18 @@ function AchievementBadge({ achievement, size = 'sm', showProgress }: Achievemen
     return (
       <div
         className={cn(
-          'group relative flex items-center justify-center h-10 w-10 rounded-full transition-all',
+          'group relative flex items-center justify-center h-8 w-8 rounded-full transition-all flex-shrink-0',
           unlocked
             ? 'bg-gradient-to-br from-yellow-500/20 to-amber-500/20 hover:scale-110'
             : 'bg-foreground/5 opacity-40'
         )}
         title={`${milestone.title}: ${milestone.description}`}
       >
-        <span className="text-lg">{milestone.icon}</span>
+        <span className="text-sm">{milestone.icon}</span>
         {unlocked && (
           <div
             className="absolute inset-0 rounded-full"
-            style={{ boxShadow: `0 0 0 2px ${milestone.color}` }}
+            style={{ boxShadow: `0 0 0 1.5px ${milestone.color}` }}
           />
         )}
       </div>
@@ -214,25 +271,34 @@ interface NextAchievementCardProps {
 function NextAchievementCard({ achievement }: NextAchievementCardProps) {
   const { milestone, progress } = achievement;
   const progressPercent = Math.min(100, (progress / milestone.threshold) * 100);
+  const isNearComplete = progressPercent >= 75;
 
   return (
-    <div className="flex-1 flex items-center gap-3 p-2 rounded-lg bg-foreground/5">
+    <div className={cn(
+      "flex items-center gap-2 p-2 rounded-lg border transition-all min-w-[160px] flex-shrink-0",
+      isNearComplete
+        ? "bg-amber-500/5 border-amber-500/20"
+        : "bg-white/5 border-white/10"
+    )}>
       <div
-        className="h-8 w-8 rounded-full flex items-center justify-center"
+        className={cn(
+          "h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0",
+          isNearComplete && "ring-1 ring-amber-500/30"
+        )}
         style={{ backgroundColor: `${milestone.color}20` }}
       >
         <span className="text-sm">{milestone.icon}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-foreground truncate">{milestone.title}</p>
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-1 bg-foreground/10 rounded-full overflow-hidden">
+        <p className="text-[11px] font-medium text-white truncate mb-1">{milestone.title}</p>
+        <div className="flex items-center gap-1.5">
+          <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full"
+              className="h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%`, backgroundColor: milestone.color }}
             />
           </div>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[9px] text-white/50 tabular-nums flex-shrink-0">
             {progress}/{milestone.threshold}
           </span>
         </div>

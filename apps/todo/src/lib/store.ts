@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { EntryColor } from '@ainexsuite/types';
-import { TaskSpace, Task } from '../types/models';
+import { TaskSpace, Task, TaskStatus } from '../types/models';
 import {
   createTodoSpaceInDb,
   updateTodoSpaceInDb,
@@ -10,13 +10,16 @@ import {
   deleteTaskFromDb
 } from './firebase-service';
 
+// Default columns that are collapsed
+const DEFAULT_COLLAPSED_COLUMNS: TaskStatus[] = ['blocked', 'done'];
+
 interface TodoState {
   // State
   spaces: TaskSpace[];
   currentSpaceId: string;
   tasks: Task[];
   myTasks: Task[]; // "My Day" view across all spaces
-  
+
   // Setters (Sync)
   setSpaces: (spaces: TaskSpace[]) => void;
   setTasks: (tasks: Task[]) => void;
@@ -39,6 +42,11 @@ interface TodoState {
   viewPreferences: Record<string, string>; // spaceId -> viewType
   setViewPreference: (spaceId: string, view: string) => void;
 
+  // Kanban Settings
+  kanbanCollapsedColumns: TaskStatus[];
+  setKanbanCollapsedColumns: (columns: TaskStatus[]) => void;
+  toggleKanbanColumnCollapse: (columnId: TaskStatus) => void;
+
   // Getters
   getCurrentSpace: () => TaskSpace | undefined;
   getTasksByList: (listId: string) => Task[];
@@ -52,6 +60,7 @@ export const useTodoStore = create<TodoState>()(
       tasks: [],
       myTasks: [],
       viewPreferences: {},
+      kanbanCollapsedColumns: DEFAULT_COLLAPSED_COLUMNS,
 
       setSpaces: (spaces) => {
         const currentId = get().currentSpaceId;
@@ -69,6 +78,17 @@ export const useTodoStore = create<TodoState>()(
       setViewPreference: (spaceId, view) => set((state) => ({
         viewPreferences: { ...state.viewPreferences, [spaceId]: view }
       })),
+
+      setKanbanCollapsedColumns: (columns) => set({ kanbanCollapsedColumns: columns }),
+
+      toggleKanbanColumnCollapse: (columnId) => set((state) => {
+        const isCollapsed = state.kanbanCollapsedColumns.includes(columnId);
+        return {
+          kanbanCollapsedColumns: isCollapsed
+            ? state.kanbanCollapsedColumns.filter((id) => id !== columnId)
+            : [...state.kanbanCollapsedColumns, columnId]
+        };
+      }),
 
       addSpace: async (space) => {
         set((state) => ({ spaces: [...state.spaces, space], currentSpaceId: space.id }));

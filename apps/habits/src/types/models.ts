@@ -1,6 +1,8 @@
 // apps/grow/src/types/models.ts
 
-export type SpaceType = 'personal' | 'couple' | 'family' | 'squad';
+import type { SpaceType } from '@ainexsuite/types';
+
+export type { SpaceType };
 
 // Member age group for family spaces
 export type MemberAgeGroup = 'adult' | 'child';
@@ -64,11 +66,13 @@ export type HabitCategory =
   | 'finance'
   | 'creativity'
   | 'self-care'
+  | 'medicine'
   | 'other';
 
 export const HABIT_CATEGORIES: { value: HabitCategory; label: string; icon: string; color: string }[] = [
   { value: 'health', label: 'Health', icon: '💚', color: '#10b981' },
   { value: 'fitness', label: 'Fitness', icon: '💪', color: '#3b82f6' },
+  { value: 'medicine', label: 'Medicine', icon: '💊', color: '#ef4444' },
   { value: 'productivity', label: 'Productivity', icon: '⚡', color: '#f59e0b' },
   { value: 'mindfulness', label: 'Mindfulness', icon: '🧘', color: '#8b5cf6' },
   { value: 'learning', label: 'Learning', icon: '📚', color: '#06b6d4' },
@@ -154,6 +158,9 @@ export interface Reaction {
   createdAt: string;
 }
 
+// Source of completion - for cross-app integration
+export type CompletionSource = 'manual' | 'medication_auto' | 'workout_auto';
+
 export interface Completion {
   id: string;
   habitId: string;
@@ -163,6 +170,11 @@ export interface Completion {
   value?: number;
   completedAt: string;
   reactions?: Reaction[]; // Emoji reactions from other users
+
+  // Cross-app integration
+  source?: CompletionSource; // How this completion was created
+  sourceMedicationId?: string; // Link to medication if auto-completed
+  sourceWorkoutId?: string; // Link to workout if auto-completed
 }
 
 export type NotificationType =

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { Plus, Layout, Crown, Rocket } from 'lucide-react';
+import { Plus, Layout, Crown, Rocket, ChevronDown, Settings, Trophy, Users } from 'lucide-react';
 
 // Core Components
 import { WorkspacePageLayout, EmptyState } from '@ainexsuite/ui';
@@ -18,7 +18,6 @@ import { FirestoreSync } from '@/components/FirestoreSync';
 import { QuestEditor } from '@/components/gamification/QuestEditor';
 import { StreakDangerAlert } from '@/components/gamification/StreakDangerAlert';
 import { AchievementBadges } from '@/components/gamification/AchievementBadges';
-import { ActivityFeed } from '@/components/gamification/ActivityFeed';
 import { HabitSuggester } from '@/components/ai/HabitSuggester';
 import { BottomNav } from '@/components/mobile/BottomNav';
 
@@ -31,10 +30,11 @@ import { getHabitStatus, getTodayDateString } from '@/lib/date-utils';
 import { Habit, Member, Quest, ReactionEmoji } from '@/types/models';
 import { getTeamContribution } from '@/lib/analytics-utils';
 import { canCreateHabit } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
 
 export default function GrowWorkspacePage() {
   const { user } = useWorkspaceAuth();
-  
+
   // Zustand Store
   const {
     getCurrentSpace,
@@ -66,6 +66,10 @@ export default function GrowWorkspacePage() {
   const [showQuestEditor, setShowQuestEditor] = useState(false);
   const [showAISuggester, setShowAISuggester] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState<string | undefined>(undefined);
+
+  // Collapsible section states
+  const [questsExpanded, setQuestsExpanded] = useState(true);
+  const [statsExpanded, setStatsExpanded] = useState(true);
 
   const handleCompleteHabit = (habitId: string) => {
     if (!user || !currentSpace) return;
@@ -106,6 +110,8 @@ export default function GrowWorkspacePage() {
 
   if (!user) return null;
 
+  const isTeamSpace = currentSpace?.type !== 'personal';
+
   return (
     <>
       <FirestoreSync />
@@ -117,102 +123,194 @@ export default function GrowWorkspacePage() {
           ) : null
         }
       >
+        {/* Main content with consistent section spacing */}
+        <div className="space-y-4">
+          {/* Family/Team Settings - Always visible for non-personal spaces */}
+          {isTeamSpace && (
+            <button
+              onClick={() => setShowMemberManager(true)}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/15 transition-colors group"
+            >
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-indigo-500/20">
+                  <Users className="h-4 w-4 text-indigo-400" />
+                </div>
+                <span className="text-sm font-medium text-white">
+                  {currentSpace?.type === 'family' ? 'Family' : currentSpace?.type === 'couple' ? 'Partner' : 'Team'} Settings
+                </span>
+                <span className="text-xs text-white/40">
+                  {currentSpace?.members.length} {currentSpace?.members.length === 1 ? 'member' : 'members'}
+                </span>
+              </div>
+              <Settings className="h-4 w-4 text-indigo-400 group-hover:rotate-45 transition-transform" />
+            </button>
+          )}
 
-        {/* Quests Section (Non-personal spaces) */}
-        {currentSpace?.type !== 'personal' && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Crown className="h-4 w-4 text-yellow-400" />
-                Active Quests
-              </h2>
+          {/* Quests Section (Non-personal spaces) - Collapsible */}
+          {isTeamSpace && (
+            <section className="space-y-2">
               <button
-                onClick={() => setShowQuestEditor(true)}
-                className="text-xs font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
+                onClick={() => setQuestsExpanded(!questsExpanded)}
+                className="w-full flex items-center justify-between py-1"
               >
-                + New Quest
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-yellow-500/20">
+                    <Crown className="h-3.5 w-3.5 text-yellow-400" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-white">Active Quests</h2>
+                  {quests.length > 0 && (
+                    <span className="text-xs text-yellow-400/80 bg-yellow-500/10 px-1.5 py-0.5 rounded-full">
+                      {quests.length}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowQuestEditor(true);
+                    }}
+                    className="text-xs font-medium text-yellow-400 hover:text-yellow-300 transition-colors px-2 py-1 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20"
+                  >
+                    + New
+                  </button>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 text-white/40 transition-transform duration-200",
+                      questsExpanded ? "rotate-0" : "-rotate-90"
+                    )}
+                  />
+                </div>
               </button>
-            </div>
 
-            {quests.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {quests.map((quest: Quest) => (
-                  <QuestBar key={quest.id} quest={quest} />
+              <div className={cn(
+                "transition-all duration-200 overflow-hidden",
+                questsExpanded ? "opacity-100" : "opacity-0 h-0"
+              )}>
+                {quests.length > 0 ? (
+                  <div className="space-y-2">
+                    {/* Compact quests on mobile, regular on larger screens */}
+                    <div className="block md:hidden space-y-2">
+                      {quests.map((quest: Quest) => (
+                        <QuestBar key={quest.id} quest={quest} compact />
+                      ))}
+                    </div>
+                    <div className="hidden md:grid md:grid-cols-2 gap-2">
+                      {quests.map((quest: Quest) => (
+                        <QuestBar key={quest.id} quest={quest} />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => setShowQuestEditor(true)}
+                    className="border border-dashed border-white/10 rounded-xl p-4 flex items-center justify-center text-center bg-white/5 hover:bg-white/10 hover:border-yellow-500/30 transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-white/5 border border-white/10 group-hover:border-yellow-500/30 transition-all">
+                        <Crown className="h-4 w-4 text-white/30 group-hover:text-yellow-400 transition-colors" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-white/60">No active quests</p>
+                        <p className="text-xs text-white/30">Start a team challenge!</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Team Stats Row - Collapsible with compact mobile view */}
+          {isTeamSpace && currentSpace && (
+            <section className="space-y-2">
+              <button
+                onClick={() => setStatsExpanded(!statsExpanded)}
+                className="w-full flex items-center justify-between py-1"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-amber-500/20">
+                    <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-white">Progress & Achievements</h2>
+                </div>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-white/40 transition-transform duration-200",
+                    statsExpanded ? "rotate-0" : "-rotate-90"
+                  )}
+                />
+              </button>
+
+              <div className={cn(
+                "transition-all duration-200 overflow-hidden",
+                statsExpanded ? "opacity-100" : "opacity-0 h-0"
+              )}>
+                {/* Mobile: Stacked compact cards */}
+                <div className="block lg:hidden space-y-2">
+                  <TeamLeaderboard
+                    data={teamStats}
+                    spaceType={currentSpace?.type}
+                    onSettingsClick={() => setShowMemberManager(true)}
+                    compact
+                  />
+                  <AchievementBadges habits={habits} completions={completions} variant="mini" />
+                </div>
+                {/* Desktop: Side by side */}
+                <div className="hidden lg:grid lg:grid-cols-2 gap-3">
+                  <TeamLeaderboard
+                    data={teamStats}
+                    spaceType={currentSpace?.type}
+                    onSettingsClick={() => setShowMemberManager(true)}
+                  />
+                  <AchievementBadges habits={habits} completions={completions} />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Achievement Badges - Personal spaces only */}
+          {currentSpace?.type === 'personal' && (
+            <section>
+              <AchievementBadges habits={habits} completions={completions} variant="mini" />
+            </section>
+          )}
+
+          {/* Active Wagers - Couple Only */}
+          {currentSpace?.type === 'couple' && (
+            <section className="space-y-2">
+              <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wide">Active Wagers</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {habits.filter((h: Habit) => h.wager?.isActive).map((habit: Habit) => (
+                  <WagerCard key={habit.id} habit={habit} />
                 ))}
               </div>
-            ) : (
-              <div
-                onClick={() => setShowQuestEditor(true)}
-                className="border border-dashed border-border rounded-xl p-6 flex flex-col items-center justify-center text-center bg-foreground/5 hover:bg-foreground/10 transition-colors cursor-pointer group"
-              >
-                <Crown className="h-8 w-8 text-foreground/20 group-hover:text-yellow-400/50 mb-2 transition-colors" />
-                <p className="text-sm text-muted-foreground group-hover:text-muted-foreground">No active quests. Start a team challenge!</p>
-              </div>
-            )}
-          </div>
-        )}
+              {habits.filter((h: Habit) => h.wager?.isActive).length === 0 && (
+                <div className="p-4 rounded-xl bg-white/5 border border-dashed border-white/10 text-center">
+                  <p className="text-sm text-white/40">No active bets. Spice things up!</p>
+                </div>
+              )}
+            </section>
+          )}
 
-        {/* Team Leaderboard - Only for non-personal spaces */}
-        {currentSpace?.type !== 'personal' && (
-          <TeamLeaderboard
-            data={teamStats}
-            spaceType={currentSpace?.type}
-            onSettingsClick={() => setShowMemberManager(true)}
+          {/* Streak Danger Alert */}
+          <StreakDangerAlert
+            habits={habits}
+            completions={completions}
+            onHabitClick={(habitId) => {
+              const el = document.getElementById(`habit-${habitId}`);
+              el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
           />
-        )}
 
-        {/* Activity Feed - Only for non-personal spaces */}
-        {currentSpace?.type !== 'personal' && currentSpace && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">
-              Recent Activity
-            </h3>
-            <ActivityFeed
-              completions={completions}
-              habits={habits}
-              members={currentSpace.members}
-              currentUserId={user?.uid || ''}
-              limit={5}
-            />
-          </div>
-        )}
-
-        {/* Achievement Badges */}
-        <AchievementBadges habits={habits} completions={completions} />
-
-        {/* Active Wagers - Couple Only */}
-        {currentSpace?.type === 'couple' && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wide">Active Wagers</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {habits.filter((h: Habit) => h.wager?.isActive).map((habit: Habit) => (
-                <WagerCard key={habit.id} habit={habit} />
-              ))}
-            </div>
-            {habits.filter((h: Habit) => h.wager?.isActive).length === 0 && (
-              <div className="p-4 rounded-xl bg-foreground/5 border border-dashed border-border text-center">
-                <p className="text-xs text-foreground/40">No active bets. Spice things up!</p>
+          {/* Main Habits List */}
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-indigo-500/20">
+                <Layout className="h-3.5 w-3.5 text-indigo-400" />
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Streak Danger Alert */}
-        <StreakDangerAlert
-          habits={habits}
-          completions={completions}
-          onHabitClick={(habitId) => {
-            const el = document.getElementById(`habit-${habitId}`);
-            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }}
-        />
-
-        {/* Main Habits List */}
-        <div className="space-y-4">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <Layout className="h-4 w-4 text-indigo-400" />
-            Today&apos;s Focus
-          </h2>
+              Today&apos;s Focus
+            </h2>
 
           {habits.length === 0 ? (
             <EmptyState
@@ -225,7 +323,7 @@ export default function GrowWorkspacePage() {
               }}
             />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Due habits first */}
               {habits
                 .filter((habit: Habit) => {
@@ -268,9 +366,9 @@ export default function GrowWorkspacePage() {
 
           {/* Not due today (collapsed section) */}
           {habits.filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due').length > 0 && (
-            <div className="pt-4 border-t border-white/5">
+            <div className="pt-4 mt-2 border-t border-white/5">
               <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Not scheduled today</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {habits
                   .filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due')
                   .map((habit: Habit) => (
@@ -306,9 +404,9 @@ export default function GrowWorkspacePage() {
 
           {/* Frozen habits */}
           {habits.filter((habit: Habit) => habit.isFrozen).length > 0 && (
-            <div className="pt-4 border-t border-white/5">
+            <div className="pt-4 mt-2 border-t border-white/5">
               <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Frozen</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {habits
                   .filter((habit: Habit) => habit.isFrozen)
                   .map((habit: Habit) => (
@@ -339,16 +437,17 @@ export default function GrowWorkspacePage() {
               </div>
             </div>
           )}
+          </section>
         </div>
       </WorkspacePageLayout>
 
       {/* Modals */}
-      <HabitEditor 
-        isOpen={showHabitEditor} 
+      <HabitEditor
+        isOpen={showHabitEditor}
         onClose={() => setShowHabitEditor(false)}
         editHabitId={selectedHabitId}
       />
-      
+
       <MemberManager
         isOpen={showMemberManager}
         onClose={() => setShowMemberManager(false)}

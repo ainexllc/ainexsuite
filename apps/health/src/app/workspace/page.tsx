@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { List, LayoutGrid, Calendar, Activity, X } from 'lucide-react';
+import { List, LayoutGrid, Calendar, Activity, X, Sparkles, Pill } from 'lucide-react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import type { HealthMetric } from '@ainexsuite/types';
 import {
@@ -21,9 +21,13 @@ import { HealthCheckinComposer } from '@/components/health-checkin-composer';
 import { HealthEditModal } from '@/components/health-edit-modal';
 import { HealthBoard } from '@/components/health-board';
 import { HealthFilterContent } from '@/components/health-filter-content';
+import { WellnessBoard } from '@/components/wellness-board';
+import { MedicationDashboard } from '@/components/medications';
 import type { ViewMode, SortField } from '@/lib/types/settings';
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
+  { value: 'wellness', icon: Sparkles, label: 'Wellness hub' },
+  { value: 'medications', icon: Pill, label: 'Medications' },
   { value: 'list', icon: List, label: 'List view' },
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
   { value: 'calendar', icon: Calendar, label: 'Calendar view' },
@@ -217,6 +221,8 @@ export default function HealthWorkspacePage() {
   );
 
   const isCalendarView = preferences.viewMode === 'calendar';
+  const isWellnessView = preferences.viewMode === 'wellness';
+  const isMedicationsView = preferences.viewMode === 'medications';
 
   const handleSearchToggle = useCallback(() => {
     setIsSearchOpen((prev) => {
@@ -300,8 +306,8 @@ export default function HealthWorkspacePage() {
           </div>
         }
       >
-        {/* Empty State */}
-        {metrics.length === 0 && (
+        {/* Empty State (not shown in wellness or medications view) */}
+        {!isWellnessView && !isMedicationsView && metrics.length === 0 && (
           <div className="text-center py-12 rounded-2xl bg-foreground/5 border border-border">
             <Activity className="h-16 w-16 mx-auto mb-4 text-primary/50" />
             <p className="text-foreground/70 mb-2">No health data yet</p>
@@ -311,8 +317,14 @@ export default function HealthWorkspacePage() {
           </div>
         )}
 
-        {/* Views */}
-        {metrics.length > 0 && (
+        {/* Wellness Hub View */}
+        {isWellnessView && <WellnessBoard />}
+
+        {/* Medications View */}
+        {isMedicationsView && <MedicationDashboard />}
+
+        {/* Health Data Views */}
+        {!isWellnessView && !isMedicationsView && metrics.length > 0 && (
           isCalendarView ? (
             <ActivityCalendar
               activityData={activityData}

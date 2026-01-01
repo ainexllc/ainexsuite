@@ -73,9 +73,9 @@ function getInitialDevSession(): { user: User; session: string } | null {
       return null;
     }
 
-    // Check if session is less than 5 minutes old
+    // Check if session is less than 30 minutes old
     const age = Date.now() - parseInt(timestamp, 10);
-    if (age > 5 * 60 * 1000) {
+    if (age > 30 * 60 * 1000) {
       return null;
     }
 
@@ -310,10 +310,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const { sessionCookie, user: userData } = await response.json();
             initializeSession(sessionCookie);
             setUser(userData);
-            // Sync session with Auth Hub for cross-app SSO (fire and forget)
-            syncSessionWithAuthHub(sessionCookie).catch(() => {
-              // Silent fail - SSO sync is not critical
-            });
+            // Sync session with Auth Hub for cross-app SSO
+            syncSessionWithAuthHub(sessionCookie)
+              .then((success) => {
+                if (success) {
+                  // eslint-disable-next-line no-console
+                  console.debug('[Auth] Session synced to Auth Hub');
+                } else {
+                  console.warn('[Auth] Session sync to Auth Hub returned false');
+                }
+              })
+              .catch((err) => {
+                console.warn('[Auth] Session sync failed:', err);
+              });
           } else {
             // Log the full error response to help debug
             try {

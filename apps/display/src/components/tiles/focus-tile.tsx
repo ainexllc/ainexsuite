@@ -11,20 +11,20 @@ interface FocusTileProps {
 
 export function FocusTile({ id = 'focus', onRemove, isDraggable = true }: FocusTileProps) {
   return (
-    <TileBase 
-      id={id} 
-      title="Focus" 
-      onRemove={onRemove} 
+    <TileBase
+      id={id}
+      title="Focus"
+      onRemove={onRemove}
       isDraggable={isDraggable}
-      className="min-w-[200px]"
+      className="min-w-[150px]"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <button className="shrink-0 text-muted-foreground hover:text-success transition-colors">
-          <CheckCircle2 className="w-5 h-5" />
+          <CheckCircle2 className="w-3.5 h-3.5" />
         </button>
         <div>
-          <div className="font-medium line-clamp-1">Review Q3 Goals</div>
-          <div className="text-xs text-muted-foreground mt-0.5">High Priority</div>
+          <div className="text-[11px] font-medium line-clamp-1">Review Q3 Goals</div>
+          <div className="text-[9px] text-muted-foreground">High Priority</div>
         </div>
       </div>
     </TileBase>

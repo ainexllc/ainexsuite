@@ -1,6 +1,8 @@
 // apps/fit/src/types/models.ts
 
-export type SpaceType = 'personal' | 'buddy' | 'squad';
+import type { SpaceType } from '@ainexsuite/types';
+
+export type { SpaceType };
 
 export interface Member {
   uid: string;

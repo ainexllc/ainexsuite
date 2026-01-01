@@ -16,11 +16,10 @@ import type { Task } from '../../types/models';
 
 interface TaskCardProps {
   task: Task;
-  viewMode?: 'list' | 'masonry';
   onEditTask: (taskId: string) => void;
 }
 
-export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardProps) {
+export function TaskCard({ task, onEditTask }: TaskCardProps) {
   const { updateTask, toggleTaskPin, deleteTask } = useTodoStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -124,9 +123,7 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
           'border border-zinc-200 dark:border-zinc-800',
           'group relative cursor-pointer overflow-hidden rounded-2xl transition-all duration-200',
           'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md',
-          viewMode === 'list'
-            ? 'flex items-start gap-4 px-5 py-3'
-            : 'break-inside-avoid px-6 py-6'
+          'flex items-start gap-4 px-5 py-3'
         )}
         onClick={handleCardClick}
       >
@@ -156,12 +153,7 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
             </button>
           )}
 
-          <div
-            className={clsx(
-              'overflow-y-auto pr-1',
-              viewMode === 'list' ? 'flex-1 max-h-24' : 'max-h-[480px]'
-            )}
-          >
+          <div className="overflow-y-auto pr-1 flex-1 max-h-24">
             {/* Title with checkbox and priority */}
             <div className="flex items-start gap-3 pr-8">
               {/* Checkbox */}
@@ -233,38 +225,6 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
               </div>
             </div>
 
-            {/* Subtasks preview (masonry only) */}
-            {viewMode === 'masonry' && task.subtasks && task.subtasks.length > 0 && (
-              <ul className="mt-3 space-y-2 pl-8">
-                {task.subtasks.slice(0, 4).map((subtask) => (
-                  <li
-                    key={subtask.id}
-                    className={clsx(
-                      'flex items-start gap-2 text-sm',
-                      subtask.isCompleted
-                        ? 'text-zinc-400 dark:text-zinc-600 line-through'
-                        : 'text-zinc-700 dark:text-zinc-300'
-                    )}
-                  >
-                    <span
-                      className={clsx(
-                        'mt-1.5 h-2 w-2 rounded-full flex-shrink-0',
-                        subtask.isCompleted
-                          ? 'bg-zinc-300 dark:bg-zinc-700'
-                          : 'bg-violet-500'
-                      )}
-                    />
-                    <span>{subtask.title}</span>
-                  </li>
-                ))}
-                {task.subtasks.length > 4 && (
-                  <li className="text-xs text-zinc-400 dark:text-zinc-500 pl-4">
-                    +{task.subtasks.length - 4} more
-                  </li>
-                )}
-              </ul>
-            )}
-
             {/* Tags */}
             {task.tags && task.tags.length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-2 pl-8">
@@ -286,12 +246,7 @@ export function TaskCard({ task, viewMode = 'masonry', onEditTask }: TaskCardPro
           </div>
 
           {/* Footer with actions */}
-          <footer
-            className={clsx(
-              'mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl',
-              viewMode === 'list' && '-mx-5 -mb-3 px-5 pb-3'
-            )}
-          >
+          <footer className="mt-4 flex items-center justify-between pt-3 -mx-5 -mb-3 px-5 pb-3 rounded-b-2xl">
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               {/* Subtask progress */}
               {totalSubtasks > 0 && (

@@ -11,25 +11,25 @@ interface MarketTileProps {
 
 export function MarketTile({ id = 'market', onRemove, isDraggable = true }: MarketTileProps) {
   return (
-    <TileBase 
-      id={id} 
-      title="Market" 
-      onRemove={onRemove} 
+    <TileBase
+      id={id}
+      title="Market"
+      onRemove={onRemove}
       isDraggable={isDraggable}
-      className="min-w-[200px]"
+      className="min-w-[120px]"
     >
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-sm font-bold">BTC</span>
-          <div className="flex items-center text-success text-xs gap-1">
-            <TrendingUp className="w-3 h-3" />
+          <span className="font-mono text-[11px] font-bold">BTC</span>
+          <div className="flex items-center text-success text-[10px] gap-0.5">
+            <TrendingUp className="w-2.5 h-2.5" />
             <span>+2.4%</span>
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <span className="font-mono text-sm font-bold">ETH</span>
-          <div className="flex items-center text-destructive text-xs gap-1">
-            <TrendingDown className="w-3 h-3" />
+          <span className="font-mono text-[11px] font-bold">ETH</span>
+          <div className="flex items-center text-destructive text-[10px] gap-0.5">
+            <TrendingDown className="w-2.5 h-2.5" />
             <span>-0.8%</span>
           </div>
         </div>

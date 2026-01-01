@@ -161,14 +161,14 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         confirmText="Delete"
         variant="danger"
       />
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-        <div className="w-full max-w-2xl bg-foreground border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="w-full max-w-2xl bg-white dark:bg-[#1a1a1a] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
           {/* Header */}
-        <div className="p-6 border-b border-border flex items-center justify-between shrink-0">
-          <h3 className="text-xl font-bold text-foreground">
+        <div className="p-6 border-b border-zinc-200 dark:border-white/10 flex items-center justify-between shrink-0">
+          <h3 className="text-xl font-bold text-zinc-900 dark:text-white">
             {editHabitId ? 'Edit Habit' : 'New Habit'}
           </h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:text-white/50 dark:hover:text-white">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -179,28 +179,28 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
           {/* Basic Info */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Habit Name <span className="text-destructive">*</span>
+              <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                Habit Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Morning Run, Read 20 Pages, Meditate..."
-                className="w-full bg-foreground/5 border border-border rounded-2xl px-4 py-3.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 py-3.5 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                 style={{ '--tw-ring-color': `${primary}50` } as React.CSSProperties}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Description <span className="text-muted-foreground font-normal">(optional)</span>
+              <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-2">
+                Description <span className="text-zinc-500 dark:text-white/50 font-normal">(optional)</span>
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Why is this habit important? Any tips or reminders for yourself?"
-                className="w-full bg-foreground/5 border border-border rounded-2xl px-4 py-3 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:border-transparent transition-all min-h-[80px] resize-none"
+                className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 py-3 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:border-transparent transition-all min-h-[80px] resize-none"
                 style={{ '--tw-ring-color': `${primary}50` } as React.CSSProperties}
               />
             </div>
@@ -208,7 +208,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
           {/* Category Picker */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-3">Category</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-3">Category</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {HABIT_CATEGORIES.map((cat) => (
                 <button
@@ -218,7 +218,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                     category === cat.value
                       ? 'text-white border-transparent shadow-md'
-                      : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/10 hover:text-foreground'
+                      : 'bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-white/50 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'
                   }`}
                   style={category === cat.value ? { backgroundColor: cat.color, boxShadow: `0 4px 12px ${cat.color}40` } : undefined}
                 >
@@ -231,8 +231,8 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
           {/* Schedule */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" /> Schedule
+            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-zinc-500 dark:text-white/50" /> Schedule
             </label>
 
             <div className="flex flex-wrap gap-2 mb-4">
@@ -249,7 +249,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all border ${
                     schedule.type === option.value
                       ? 'text-white border-transparent shadow-md'
-                      : 'bg-foreground/5 border-border text-muted-foreground hover:bg-foreground/10 hover:text-foreground'
+                      : 'bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-white/50 hover:bg-zinc-200 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'
                   }`}
                   style={schedule.type === option.value ? { backgroundColor: primary, boxShadow: `0 4px 12px ${primary}40` } : undefined}
                 >
@@ -260,7 +260,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
             {/* Specific Days UI */}
             {schedule.type === 'specific_days' && (
-              <div className="flex justify-between gap-2 bg-foreground/5 p-4 rounded-2xl border border-border">
+              <div className="flex justify-between gap-2 bg-zinc-100 dark:bg-white/5 p-4 rounded-2xl border border-zinc-200 dark:border-white/10">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day: string, idx: number) => (
                   <button
                     key={idx}
@@ -269,7 +269,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                     className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                       schedule.daysOfWeek?.includes(idx)
                         ? 'text-white scale-110 shadow-md'
-                        : 'bg-foreground/10 text-foreground/40 hover:bg-foreground/20'
+                        : 'bg-zinc-200 dark:bg-white/10 text-zinc-400 dark:text-white/40 hover:bg-zinc-300 dark:hover:bg-white/20'
                     }`}
                     style={schedule.daysOfWeek?.includes(idx) ? { backgroundColor: primary, boxShadow: `0 4px 12px ${primary}40` } : undefined}
                   >
@@ -282,8 +282,8 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
           {/* Assignees */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" /> Assign To
+            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+              <Users className="h-4 w-4 text-zinc-500 dark:text-white/50" /> Assign To
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {currentSpace.members.map((member: Member) => (
@@ -294,7 +294,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                     assignees.includes(member.uid)
                       ? 'shadow-md'
-                      : 'bg-foreground/5 border-border hover:bg-foreground/10 hover:border-border'
+                      : 'bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-white/10'
                   }`}
                   style={assignees.includes(member.uid) ? {
                     backgroundColor: `${primary}15`,
@@ -313,7 +313,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   >
                     {member.displayName.slice(0, 2).toUpperCase()}
                   </div>
-                  <span className={`text-sm font-medium flex-1 text-left ${assignees.includes(member.uid) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <span className={`text-sm font-medium flex-1 text-left ${assignees.includes(member.uid) ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-white/50'}`}>
                     {member.displayName}
                   </span>
                   {assignees.includes(member.uid) && <Check className="h-4 w-4 flex-shrink-0" style={{ color: primary }} />}
@@ -349,10 +349,10 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                     <Flame className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium" style={wager?.isActive ? { color: `${secondary}cc` } : undefined}>
+                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white" style={wager?.isActive ? { color: `${secondary}cc` } : undefined}>
                       Friendly Wager
                     </h4>
-                    <p className="text-xs text-foreground/40">Add stakes to build streaks together</p>
+                    <p className="text-xs text-zinc-400 dark:text-white/40">Add stakes to build streaks together</p>
                   </div>
                 </div>
                 <button
@@ -374,7 +374,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   className="w-12 h-6 rounded-full p-1 transition-colors"
                   style={{ backgroundColor: wager?.isActive ? secondary : 'rgb(255 255 255 / 0.1)' }}
                 >
-                  <div className={`h-4 w-4 rounded-full bg-foreground transition-transform ${
+                  <div className={`h-4 w-4 rounded-full bg-white transition-transform ${
                     wager?.isActive ? 'translate-x-6' : 'translate-x-0'
                   }`} />
                 </button>
@@ -383,24 +383,24 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
               {wager?.isActive && (
                 <div className="space-y-3 animate-fade-in">
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Stakes</label>
+                    <label className="block text-xs font-medium text-zinc-500 dark:text-white/50 mb-1.5">Stakes</label>
                     <input
                       type="text"
                       value={wager.description}
                       onChange={(e) => setWager({ ...wager, description: e.target.value })}
                       placeholder="e.g. Loser cooks dinner"
-                      className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+                      className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/30 focus:outline-none"
                       style={{ '--tw-ring-color': secondary } as React.CSSProperties}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">Target Streak (Days)</label>
+                    <label className="block text-xs font-medium text-zinc-500 dark:text-white/50 mb-1.5">Target Streak (Days)</label>
                     <input
                       type="number"
                       min="3"
                       value={wager.targetStreak}
                       onChange={(e) => setWager({ ...wager, targetStreak: parseInt(e.target.value) })}
-                      className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+                      className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none"
                       style={{ '--tw-ring-color': secondary } as React.CSSProperties}
                     />
                   </div>
@@ -410,15 +410,15 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
           )}
 
           {/* Target Value (Optional - for tracking quantities) */}
-          <div className="bg-foreground/5 border border-border p-4 rounded-2xl">
+          <div className="bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-4 rounded-2xl">
             <div className="flex items-center justify-between mb-3">
               <div className="flex gap-3">
-                <div className="h-10 w-10 rounded-xl bg-foreground/10 flex items-center justify-center text-muted-foreground">
+                <div className="h-10 w-10 rounded-xl bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-zinc-500 dark:text-white/50">
                   <Target className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-foreground">Track Progress</h4>
-                  <p className="text-xs text-muted-foreground">Set a daily/weekly target to measure</p>
+                  <h4 className="text-sm font-medium text-zinc-900 dark:text-white">Track Progress</h4>
+                  <p className="text-xs text-zinc-500 dark:text-white/50">Set a daily/weekly target to measure</p>
                 </div>
               </div>
               <button
@@ -427,7 +427,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                 className="w-12 h-6 rounded-full p-1 transition-colors"
                 style={{ backgroundColor: targetValue ? primary : 'rgb(255 255 255 / 0.1)' }}
               >
-                <div className={`h-4 w-4 rounded-full bg-foreground transition-transform ${
+                <div className={`h-4 w-4 rounded-full bg-white transition-transform ${
                   targetValue ? 'translate-x-6' : 'translate-x-0'
                 }`} />
               </button>
@@ -436,22 +436,22 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
             {targetValue !== undefined && (
               <div className="flex gap-3 animate-fade-in">
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Target</label>
+                  <label className="block text-xs font-medium text-zinc-500 dark:text-white/50 mb-1.5">Target</label>
                   <input
                     type="number"
                     min="1"
                     value={targetValue}
                     onChange={(e) => setTargetValue(parseInt(e.target.value) || 0)}
-                    className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+                    className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/30 focus:outline-none"
                     placeholder="30"
                   />
                 </div>
                 <div className="w-32">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Unit</label>
+                  <label className="block text-xs font-medium text-zinc-500 dark:text-white/50 mb-1.5">Unit</label>
                   <select
                     value={targetUnit}
                     onChange={(e) => setTargetUnit(e.target.value)}
-                    className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+                    className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none"
                   >
                     <option value="mins">minutes</option>
                     <option value="hours">hours</option>
@@ -469,22 +469,22 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
           </div>
 
           {/* Habit Chaining */}
-          <div className="bg-foreground/5 border border-border p-4 rounded-2xl">
+          <div className="bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-4 rounded-2xl">
             <div className="flex items-center justify-between mb-3">
               <div className="flex gap-3">
                 <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
                   <Link2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-foreground">Chain to Next</h4>
-                  <p className="text-xs text-muted-foreground">Link this habit to another for routines</p>
+                  <h4 className="text-sm font-medium text-zinc-900 dark:text-white">Chain to Next</h4>
+                  <p className="text-xs text-zinc-500 dark:text-white/50">Link this habit to another for routines</p>
                 </div>
               </div>
             </div>
             <select
               value={chainedTo || ''}
               onChange={(e) => setChainedTo(e.target.value || undefined)}
-              className="w-full bg-background/20 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
+              className="w-full bg-zinc-100 dark:bg-black/20 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none"
             >
               <option value="">None (end of chain)</option>
               {habits
@@ -500,14 +500,14 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
           </div>
 
           {/* Freezer Toggle */}
-          <div className="bg-foreground/5 border border-border p-4 rounded-2xl flex items-center justify-between">
+          <div className="bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-4 rounded-2xl flex items-center justify-between">
             <div className="flex gap-3">
               <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
                 <Snowflake className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-medium text-foreground">Habit Freezer</h4>
-                <p className="text-xs text-muted-foreground">Pause streaks without penalty (e.g. vacation)</p>
+                <h4 className="text-sm font-medium text-zinc-900 dark:text-white">Habit Freezer</h4>
+                <p className="text-xs text-zinc-500 dark:text-white/50">Pause streaks without penalty (e.g. vacation)</p>
               </div>
             </div>
             <button
@@ -516,7 +516,7 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
               className="w-12 h-6 rounded-full p-1 transition-colors"
               style={{ backgroundColor: isFrozen ? '#3b82f6' : 'rgb(255 255 255 / 0.1)' }}
             >
-              <div className={`h-4 w-4 rounded-full bg-foreground transition-transform ${
+              <div className={`h-4 w-4 rounded-full bg-white transition-transform ${
                 isFrozen ? 'translate-x-6' : 'translate-x-0'
               }`} />
             </button>
@@ -525,19 +525,19 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-border flex justify-end gap-3 shrink-0">
+        <div className="p-6 border-t border-zinc-200 dark:border-white/10 flex justify-end gap-3 shrink-0">
           {editHabitId && (
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
-              className="mr-auto text-destructive hover:opacity-80 text-sm flex items-center gap-2 px-3 py-2 rounded-lg surface-hover transition-colors"
+              className="mr-auto text-red-500 hover:opacity-80 text-sm flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors"
             >
               <Trash2 className="h-4 w-4" /> Delete
             </button>
           )}
           <button
             onClick={onClose}
-            className="px-6 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+            className="px-6 py-2 rounded-xl text-zinc-500 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5 transition-colors"
           >
             Cancel
           </button>

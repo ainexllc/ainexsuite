@@ -14,6 +14,7 @@ import { HabitsTile } from './habits-tile';
 import { HealthTile } from './health-tile';
 import { TasksTile } from './tasks-tile';
 import { JournalTile } from './journal-tile';
+import { ClockTile } from './clock-tile';
 import { BACKGROUND_OPTIONS } from '@/lib/backgrounds';
 import { LAYOUTS } from '@/lib/layouts';
 import { PRESET_LIST, Preset } from '@/lib/presets';
@@ -163,7 +164,21 @@ function LayoutPreview({ id, isActive }: { id: string; isActive: boolean }) {
       </div>
     );
   }
-  
+
+  if (id === 'freeform') {
+    return (
+      <div className={`${containerClass} relative`}>
+        {/* Scattered widgets to represent freeform layout */}
+        <div className={`absolute left-1 top-0.5 w-4 h-3 rounded-[1px] ${baseColor} opacity-60`} />
+        <div className={`absolute right-1 top-2 w-3 h-2.5 rounded-[1px] ${baseColor} opacity-50`} />
+        <div className={`absolute left-2 bottom-1 w-5 h-2 rounded-[1px] ${baseColor} opacity-70`} />
+        <div className={`absolute right-2 bottom-2 w-2.5 h-2.5 rounded-[1px] ${baseColor} opacity-40`} />
+        {/* Resize handle indicator */}
+        <div className="absolute right-0.5 bottom-0.5 w-1.5 h-1.5 border-r border-b border-current opacity-60" />
+      </div>
+    );
+  }
+
   return <div className={`w-12 h-9 bg-white/10 rounded border ${borderColor}`} />;
 }
 
@@ -561,6 +576,9 @@ export function TileTray({
                   </div>
                   <div onClick={() => onAddTile?.('timer')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
                   <TimerTile id="timer-tray" isDraggable={true} />
+                  </div>
+                  <div onClick={() => onAddTile?.('clock')} className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95">
+                  <ClockTile id="clock-tray" isDraggable={true} />
                   </div>
               </div>
             </div>

@@ -33,9 +33,9 @@ export interface Space {
   color?: SpaceColor;
   icon?: SpaceIcon;
 
-  // Global space (accessible from all apps)
-  isGlobal?: boolean;
-  appId?: string; // Which app created this space (null for global)
+  // Cross-app visibility
+  isGlobal?: boolean; // true = visible in all apps, ignores hiddenInApps
+  hiddenInApps?: string[]; // Array of app IDs where this space is hidden (e.g., ['notes', 'fit'])
 
   // Access Control
   ownerId: string;

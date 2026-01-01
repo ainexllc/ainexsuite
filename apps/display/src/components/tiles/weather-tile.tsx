@@ -221,30 +221,30 @@ export function WeatherTile({
       onDragStart={onDragStart}
       className="min-w-[200px]"
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         {/* Weather Display */}
-        <div className="flex items-center gap-4">
-          <div className="p-2 rounded-lg bg-primary/20">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded bg-primary/20">
             {loading ? (
-              <div className="text-3xl animate-pulse">🌡️</div>
+              <div className="text-xl animate-pulse">🌡️</div>
             ) : (
-              <span className="text-3xl">{weather?.icon || '🌡️'}</span>
+              <span className="text-xl">{weather?.icon || '🌡️'}</span>
             )}
           </div>
           <div className="flex-1">
             {loading ? (
-              <div className="space-y-2">
-                <div className="h-6 bg-white/10 rounded animate-pulse w-20"></div>
-                <div className="h-4 bg-white/10 rounded animate-pulse w-32"></div>
+              <div className="space-y-1">
+                <div className="h-4 bg-white/10 rounded animate-pulse w-16"></div>
+                <div className="h-3 bg-white/10 rounded animate-pulse w-24"></div>
               </div>
             ) : error ? (
-              <div className="text-sm text-destructive">{error}</div>
+              <div className="text-[10px] text-destructive">{error}</div>
             ) : weather ? (
               <>
-                <div className="text-2xl font-bold">{weather.temperature}°</div>
-                <div className="text-xs text-muted-foreground">{weather.location} • {weather.condition}</div>
+                <div className="text-lg font-bold">{weather.temperature}°</div>
+                <div className="text-[10px] text-muted-foreground">{weather.location} • {weather.condition}</div>
                 {weather.humidity !== undefined && (
-                  <div className="text-xs text-muted-foreground/80 mt-1">💧 {weather.humidity}% humidity</div>
+                  <div className="text-[9px] text-muted-foreground/80">💧 {weather.humidity}%</div>
                 )}
               </>
             ) : null}
@@ -252,29 +252,29 @@ export function WeatherTile({
           <button
             onClick={handleRefresh}
             disabled={isRefreshing || loading}
-            className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors disabled:opacity-50"
+            className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors disabled:opacity-50"
             aria-label="Refresh"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded transition-colors"
+            className="p-1 text-muted-foreground hover:text-foreground hover:bg-foreground/10 rounded transition-colors"
             aria-label="Settings"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-3 h-3" />
           </button>
         </div>
 
         {/* Settings Panel */}
         {showSettings && (
-          <div className="border-t border-border pt-4 space-y-3 animate-in fade-in duration-200">
-            <div className="space-y-2">
-              <label className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block">
+          <div className="border-t border-border pt-2 space-y-2 animate-in fade-in duration-200">
+            <div className="space-y-1">
+              <label className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider block">
                 📍 Location
               </label>
-              <p className="text-xs text-muted-foreground/80">
-                Search by city, state, or zipcode
+              <p className="text-[9px] text-muted-foreground/80">
+                Search by city or zip
               </p>
             </div>
 
@@ -282,40 +282,40 @@ export function WeatherTile({
             <button
               onClick={handleUseMyLocation}
               disabled={isLocating}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg text-foreground transition-all duration-200 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[10px] font-medium bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded text-foreground transition-all duration-200 disabled:opacity-50"
             >
               {isLocating ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin" />
                   Locating...
                 </>
               ) : (
                 <>
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="w-3 h-3" />
                   Use my location
                 </>
               )}
             </button>
 
             {geolocationError && (
-              <p className="text-xs text-destructive text-center">{geolocationError}</p>
+              <p className="text-[9px] text-destructive text-center">{geolocationError}</p>
             )}
 
-            <div className="flex items-center gap-3 text-muted-foreground/50">
+            <div className="flex items-center gap-2 text-muted-foreground/50">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-[10px] uppercase tracking-wider">or search</span>
+              <span className="text-[9px] uppercase tracking-wider">or</span>
               <div className="flex-1 h-px bg-border" />
             </div>
 
-            <div className="flex gap-2 relative">
+            <div className="flex gap-1.5 relative">
               <div className="flex-1 relative">
                 <input
                   ref={inputRef}
                   type="text"
                   value={inputZipcode}
                   onChange={(e) => handleInputChange(e.target.value)}
-                  placeholder="e.g., San Diego, CA"
-                  className="w-full px-3 py-2.5 text-sm bg-foreground/5 border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-foreground/10 focus:ring-1 focus:ring-primary/30 transition-all duration-200"
+                  placeholder="San Diego, CA"
+                  className="w-full px-2 py-1.5 text-[10px] bg-foreground/5 border border-border rounded text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-foreground/10 focus:ring-1 focus:ring-primary/30 transition-all duration-200"
                   autoComplete="off"
                 />
                 {inputZipcode && (
@@ -325,7 +325,7 @@ export function WeatherTile({
                       setSuggestions([]);
                       setShowSuggestions(false);
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors text-[10px]"
                     aria-label="Clear input"
                   >
                     ✕
@@ -335,7 +335,7 @@ export function WeatherTile({
               <button
                 onClick={handleSaveZipcode}
                 disabled={!inputZipcode.trim()}
-                className="px-4 py-2.5 text-xs font-semibold bg-primary/30 hover:bg-primary/50 disabled:bg-foreground/10 disabled:text-muted-foreground border border-primary/50 disabled:border-border rounded-lg text-foreground transition-all duration-200 disabled:cursor-not-allowed"
+                className="px-2 py-1.5 text-[9px] font-semibold bg-primary/30 hover:bg-primary/50 disabled:bg-foreground/10 disabled:text-muted-foreground border border-primary/50 disabled:border-border rounded text-foreground transition-all duration-200 disabled:cursor-not-allowed"
               >
                 Save
               </button>
@@ -350,16 +350,16 @@ export function WeatherTile({
                   />
 
                   {/* Suggestions Container */}
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-gradient-to-b from-background/80 to-background border border-border rounded-xl max-h-56 overflow-y-auto z-[9999] shadow-2xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gradient-to-b from-background/80 to-background border border-border rounded max-h-36 overflow-y-auto z-[9999] shadow-2xl backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-200">
                     {/* Mobile Header */}
-                    <div className="sticky top-0 bg-background/90 border-b border-border px-4 py-3 md:hidden backdrop-blur-sm">
+                    <div className="sticky top-0 bg-background/90 border-b border-border px-2 py-1.5 md:hidden backdrop-blur-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-foreground/70 font-semibold uppercase tracking-wider">
+                        <span className="text-[9px] text-foreground/70 font-semibold uppercase tracking-wider">
                           🔍 Results
                         </span>
                         <button
                           onClick={() => setShowSuggestions(false)}
-                          className="text-muted-foreground hover:text-foreground/80 transition-colors"
+                          className="text-muted-foreground hover:text-foreground/80 transition-colors text-[10px]"
                           aria-label="Close suggestions"
                         >
                           ✕
@@ -368,11 +368,11 @@ export function WeatherTile({
                     </div>
 
                     {isLoadingSuggestions ? (
-                      <div className="px-4 py-6 text-center">
+                      <div className="px-2 py-3 text-center">
                         <div className="inline-block">
-                          <div className="w-5 h-5 border-2 border-border border-t-primary rounded-full animate-spin" />
+                          <div className="w-3 h-3 border border-border border-t-primary rounded-full animate-spin" />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2">Searching locations...</p>
+                        <p className="text-[9px] text-muted-foreground mt-1">Searching...</p>
                       </div>
                     ) : suggestions.length > 0 ? (
                       <div className="divide-y divide-border">
@@ -380,20 +380,19 @@ export function WeatherTile({
                           <button
                             key={index}
                             onClick={() => handleSelectSuggestion(suggestion)}
-                            className="w-full text-left px-4 py-3 md:py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-foreground/10 active:bg-foreground/20 transition-all duration-150 group flex items-center justify-between"
+                            className="w-full text-left px-2 py-1.5 text-[10px] text-foreground/80 hover:text-foreground hover:bg-foreground/10 active:bg-foreground/20 transition-all duration-150 group flex items-center justify-between"
                           >
-                            <span className="flex items-center gap-2">
+                            <span className="flex items-center gap-1">
                               <span className="text-muted-foreground group-hover:text-foreground/60">📍</span>
-                              <span>{suggestion.name}</span>
+                              <span className="truncate">{suggestion.name}</span>
                             </span>
                             <span className="text-foreground/20 group-hover:text-foreground/40 transition-colors">→</span>
                           </button>
                         ))}
                       </div>
                     ) : (
-                      <div className="px-4 py-6 text-center">
-                        <p className="text-xs text-muted-foreground">No locations found</p>
-                        <p className="text-xs text-muted-foreground/80 mt-1">Try a different search</p>
+                      <div className="px-2 py-3 text-center">
+                        <p className="text-[9px] text-muted-foreground">No locations found</p>
                       </div>
                     )}
                   </div>

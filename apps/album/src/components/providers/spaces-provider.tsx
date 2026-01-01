@@ -30,11 +30,12 @@ export interface MomentsSpace {
  * Uses the shared spaces factory from @ainexsuite/ui
  */
 export const { SpacesProvider, useSpaces } = createSpacesProvider<MomentsSpace>({
-  collectionName: "moments_spaces",
+  appId: "album",
+  collectionName: "spaces",
   storageKey: "moments-current-space",
   defaultSpace: {
     name: "My Memories",
     type: "personal",
   },
-  allowedTypes: ["personal", "family", "squad"],
+  allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
 });

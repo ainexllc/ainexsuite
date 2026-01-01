@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@ainexsuite/auth';
-import { Check, X, Loader2, Users, Home, Heart, UserPlus } from 'lucide-react';
+import { Check, X, Loader2, Users, Home, Heart, UserPlus, Briefcase, FolderKanban } from 'lucide-react';
 import { SpaceInvite, SpaceType } from '@/types/models';
 
 const spaceTypeIcons: Record<SpaceType, typeof Users> = {
@@ -11,6 +11,9 @@ const spaceTypeIcons: Record<SpaceType, typeof Users> = {
   couple: Heart,
   family: Home,
   squad: Users,
+  work: Briefcase,
+  buddy: UserPlus,
+  project: FolderKanban,
 };
 
 const spaceTypeLabels: Record<SpaceType, string> = {
@@ -18,6 +21,9 @@ const spaceTypeLabels: Record<SpaceType, string> = {
   couple: 'Couple Space',
   family: 'Family Space',
   squad: 'Squad Space',
+  work: 'Work Space',
+  buddy: 'Buddy Space',
+  project: 'Project Space',
 };
 
 export default function InvitePage() {

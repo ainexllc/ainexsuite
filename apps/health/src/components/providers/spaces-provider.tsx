@@ -27,11 +27,12 @@ export interface HealthSpace {
  * Uses the shared spaces factory from @ainexsuite/ui
  */
 export const { SpacesProvider, useSpaces } = createSpacesProvider<HealthSpace>({
-  collectionName: "healthSpaces",
+  appId: "health",
+  collectionName: "spaces",
   storageKey: "health-current-space",
   defaultSpace: {
     name: "My Health",
     type: "personal",
   },
-  allowedTypes: ["personal", "family", "couple"],
+  allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
 });

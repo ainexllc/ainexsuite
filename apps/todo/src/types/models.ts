@@ -1,8 +1,8 @@
 // apps/todo/src/types/models.ts
 
-import type { EntryColor } from '@ainexsuite/types';
+import type { EntryColor, SpaceType } from '@ainexsuite/types';
 
-export type SpaceType = 'personal' | 'family' | 'work';
+export type { SpaceType };
 
 export interface Member {
   uid: string;
@@ -30,7 +30,7 @@ export interface TaskList {
 }
 
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
-export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
+export type TaskStatus = 'queued' | 'todo' | 'blocked' | 'in_progress' | 'done';
 
 export interface Subtask {
   id: string;

@@ -8,11 +8,12 @@ import type { JournalSpace } from "@/lib/types/space";
  * Uses the shared spaces factory from @ainexsuite/ui
  */
 export const { SpacesProvider, useSpaces } = createSpacesProvider<JournalSpace>({
-  collectionName: "journalSpaces",
+  appId: "journal",
+  collectionName: "spaces",
   storageKey: "journey-current-space",
   defaultSpace: {
     name: "My Journal",
     type: "personal",
   },
-  allowedTypes: ["personal", "family", "couple"],
+  allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
 });

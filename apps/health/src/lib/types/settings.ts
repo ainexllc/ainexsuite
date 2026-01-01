@@ -1,7 +1,7 @@
 import type { Timestamp } from 'firebase/firestore';
 import type { HealthFilterValue } from '@/components/health-filter-content';
 
-export type ViewMode = 'masonry' | 'list' | 'calendar';
+export type ViewMode = 'masonry' | 'list' | 'calendar' | 'wellness' | 'medications';
 export type MasonryColumns = 1 | 2 | 3 | 4;
 
 // Sort configuration for health metrics

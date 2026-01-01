@@ -86,27 +86,27 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
   const progress = initialTime > 0 ? (timeLeft / initialTime) * 100 : 0;
 
   return (
-    <TileBase 
-      id={id} 
-      title="Timer" 
-      onRemove={onRemove} 
+    <TileBase
+      id={id}
+      title="Timer"
+      onRemove={onRemove}
       isDraggable={isDraggable}
       onDragStart={onDragStart}
-      className="min-w-[200px]"
+      className="min-w-[150px]"
     >
-      <div className="flex flex-col items-center justify-center h-full gap-2 py-1">
-        
+      <div className="flex flex-col items-center justify-center h-full gap-1.5 py-0.5">
+
         {/* Timer Display */}
         <div className="relative group/display">
             {isEditing ? (
-                <div className="flex items-center gap-1 text-3xl font-mono font-bold text-foreground">
+                <div className="flex items-center gap-1 text-xl font-mono font-bold text-foreground">
                     <input
                         type="number"
                         min="1"
                         max="999"
                         value={editMinutes}
                         onChange={(e) => setEditMinutes(e.target.value)}
-                        className="w-20 bg-foreground/10 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-2 focus:ring-accent-500"
+                        className="w-14 bg-foreground/10 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-2 focus:ring-accent-500 text-lg"
                         autoFocus
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -115,12 +115,12 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
                         }}
                         onBlur={() => handleSetTime(parseInt(editMinutes) || 25)}
                     />
-                    <span className="text-base text-muted-foreground">min</span>
+                    <span className="text-[10px] text-muted-foreground">min</span>
                 </div>
             ) : (
                 <button
                     onClick={() => !isActive && setIsEditing(true)}
-                    className={`text-3xl font-mono font-bold tracking-wider tabular-nums transition-colors ${isActive ? 'text-accent-400' : 'text-foreground hover:text-foreground/80'}`}
+                    className={`text-xl font-mono font-bold tracking-wider tabular-nums transition-colors ${isActive ? 'text-accent-400' : 'text-foreground hover:text-foreground/80'}`}
                     title={isActive ? "Pause to edit" : "Click to edit time"}
                     disabled={isActive}
                 >
@@ -130,7 +130,7 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
         </div>
 
         {/* Progress Bar (Mini) */}
-        <div className="w-full h-1 bg-foreground/10 rounded-full overflow-hidden">
+        <div className="w-full h-0.5 bg-foreground/10 rounded-full overflow-hidden">
             <div
                 className="h-full bg-accent-500 transition-all duration-1000 ease-linear"
                 style={{ width: `${progress}%` }}
@@ -138,35 +138,35 @@ export function TimerTile({ id = 'timer', onRemove, isDraggable = true, onDragSt
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-3 w-full justify-center">
+        <div className="flex items-center gap-2 w-full justify-center">
              <button
                 onClick={toggleTimer}
-                className={`p-2 rounded-full transition-all ${
+                className={`p-1.5 rounded-full transition-all ${
                     isActive
                         ? 'bg-destructive/20 text-destructive hover:bg-destructive/30'
                         : 'bg-success/20 text-success hover:bg-success/30'
                 }`}
             >
-                {isActive ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                {isActive ? <Pause className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
             </button>
 
             <button
                 onClick={resetTimer}
-                className="p-2 rounded-full bg-foreground/5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
+                className="p-1.5 rounded-full bg-foreground/5 text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
                 title="Reset"
             >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3 h-3" />
             </button>
         </div>
 
         {/* Quick Presets (Only show when paused/stopped for cleaner look) */}
         {!isActive && !isEditing && (
-            <div className="flex gap-1.5 mt-0.5">
+            <div className="flex gap-1">
                 {[5, 15, 25, 45].map(min => (
                     <button
                         key={min}
                         onClick={() => handleSetTime(min)}
-                        className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
+                        className="px-1 py-0.5 text-[9px] font-medium rounded bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
                     >
                         {min}m
                     </button>

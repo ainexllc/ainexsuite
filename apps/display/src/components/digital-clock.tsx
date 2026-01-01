@@ -15,11 +15,12 @@ import { HabitsTile } from './tiles/habits-tile';
 import { HealthTile } from './tiles/health-tile';
 import { TasksTile } from './tiles/tasks-tile';
 import { JournalTile } from './tiles/journal-tile';
-import { ClockService, ClockStyle, type ClockSettings } from '@/lib/clock-settings';
-import { LAYOUTS, DEFAULT_LAYOUT, SlotSize } from '@/lib/layouts';
+import { ClockService, ClockStyle, type ClockSettings, type WidgetPosition, migrateWidgetPositions, CURRENT_GRID_VERSION } from '@/lib/clock-settings';
+import { LAYOUTS, DEFAULT_LAYOUT, SlotSize, WIDGET_CONSTRAINTS } from '@/lib/layouts';
 import { Preset } from '@/lib/presets';
 import { BackgroundEffects, EffectType } from './background-effects';
 import { usePulseStore } from '@/lib/store';
+import { FreeFormGrid } from './free-form-grid';
 
 type TimeFormat = '12h' | '24h';
 
@@ -135,6 +136,7 @@ export function DigitalClock() {
   const [time, setTime] = useState<Date | null>(null);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isTrayOpen, setIsTrayOpen] = useState(false);
+  const [isGridInteracting, setIsGridInteracting] = useState(false);
   const isDraggingTile = useRef(false);
 
   // Initialize state with defaults
@@ -148,6 +150,7 @@ export function DigitalClock() {
   const [activeLayoutId, setActiveLayoutId] = useState<string>(DEFAULT_LAYOUT.id);
   const [showClock, setShowClock] = useState<boolean>(true);
   const [showTiles, setShowTiles] = useState<boolean>(true);
+  const [freeformWidgets, setFreeformWidgets] = useState<WidgetPosition[]>([]);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const trayContainerRef = useRef<HTMLDivElement>(null);
@@ -217,6 +220,7 @@ export function DigitalClock() {
       setActiveLayoutId(DEFAULT_LAYOUT.id);
       setShowClock(true);
       setShowTiles(true);
+      setFreeformWidgets([]);
     };
 
     // Apply settings from Firestore snapshot
@@ -247,6 +251,31 @@ export function DigitalClock() {
         }
         if (typeof settings.showTiles === 'boolean') {
           setShowTiles(settings.showTiles);
+        }
+        if (settings.freeformWidgets) {
+          // Sanitize: filter out preview tile IDs and deduplicate by ID
+          const seen = new Set<string>();
+          let sanitized = settings.freeformWidgets.filter((w: WidgetPosition) => {
+            // Skip preview tile IDs (from tray)
+            if (w.i.endsWith('-tray')) return false;
+            // Skip duplicates
+            if (seen.has(w.i)) return false;
+            seen.add(w.i);
+            return true;
+          });
+
+          // Migrate widget positions if needed (v1 12-col -> v2 24-col)
+          const currentVersion = settings.gridVersion || 1;
+          if (currentVersion < CURRENT_GRID_VERSION) {
+            sanitized = migrateWidgetPositions(sanitized, currentVersion);
+            // Save migrated positions back to Firestore
+            ClockService.saveSettings(user.uid, {
+              freeformWidgets: sanitized,
+              gridVersion: CURRENT_GRID_VERSION
+            }, currentSpaceId || undefined);
+          }
+
+          setFreeformWidgets(sanitized);
         }
       }
     };
@@ -302,7 +331,8 @@ export function DigitalClock() {
     newDim?: number,
     newClockStyle?: ClockStyle,
     newShowClock?: boolean,
-    newShowTiles?: boolean
+    newShowTiles?: boolean,
+    newFreeformWidgets?: WidgetPosition[]
   ) => {
     if (!user) return;
 
@@ -330,6 +360,9 @@ export function DigitalClock() {
     if (typeof newShowTiles === 'boolean') {
         setShowTiles(newShowTiles);
     }
+    if (newFreeformWidgets !== undefined) {
+        setFreeformWidgets(newFreeformWidgets);
+    }
 
     // Persist
     try {
@@ -343,7 +376,9 @@ export function DigitalClock() {
         backgroundDim: typeof newDim === 'number' ? newDim : backgroundDim,
         clockStyle: newClockStyle || clockStyle,
         showClock: typeof newShowClock === 'boolean' ? newShowClock : showClock,
-        showTiles: typeof newShowTiles === 'boolean' ? newShowTiles : showTiles
+        showTiles: typeof newShowTiles === 'boolean' ? newShowTiles : showTiles,
+        freeformWidgets: newFreeformWidgets !== undefined ? newFreeformWidgets : freeformWidgets,
+        gridVersion: CURRENT_GRID_VERSION
       }, currentSpaceId || undefined);
     } catch (error) {
       console.error('Failed to save clock settings:', error);
@@ -363,9 +398,39 @@ export function DigitalClock() {
         backgroundDim,
         clockStyle,
         showClock,
-        showTiles
+        showTiles,
+        freeformWidgets,
+        gridVersion: CURRENT_GRID_VERSION
       }, currentSpaceId || undefined).catch(e => console.error(e));
     }
+  };
+
+  // Handler for freeform widget layout changes
+  const handleFreeformLayoutChange = (widgets: WidgetPosition[]) => {
+    updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, undefined, undefined, undefined, widgets);
+  };
+
+  // Handler for adding a widget in freeform mode
+  const handleAddFreeformWidget = (type: string) => {
+    const constraints = WIDGET_CONSTRAINTS[type] || { minW: 2, minH: 2, defaultW: 3, defaultH: 2 };
+    const newWidget: WidgetPosition = {
+      i: `${type}-${Date.now()}`,
+      x: 0,
+      y: Infinity, // Place at the bottom
+      w: constraints.defaultW,
+      h: constraints.defaultH,
+      type,
+      minW: constraints.minW,
+      minH: constraints.minH,
+    };
+    const updatedWidgets = [...freeformWidgets, newWidget];
+    updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, undefined, undefined, undefined, updatedWidgets);
+  };
+
+  // Handler for removing a widget in freeform mode
+  const handleRemoveFreeformWidget = (widgetId: string) => {
+    const updatedWidgets = freeformWidgets.filter(w => w.i !== widgetId);
+    updateSettings(tiles, backgroundImage, undefined, undefined, undefined, undefined, undefined, undefined, undefined, updatedWidgets);
   };
 
   const handleTimeFormatChange = (format: TimeFormat) => {
@@ -375,15 +440,58 @@ export function DigitalClock() {
   const handleLayoutSelect = (layoutId: string) => {
       if (layoutId === activeLayoutId) return;
 
-      // Smart Migration Logic:
-      // 1. Collect all current tile IDs that are placed
-      const activeTileIds = Object.values(tiles).filter(Boolean) as string[];
-      
-      // 2. Get the new layout configuration
       const targetLayout = LAYOUTS[layoutId];
       if (!targetLayout) return;
 
-      // 3. Map existing tiles to new slots sequentially
+      // Handle switching to freeform layout
+      if (targetLayout.isFreeform) {
+        // Migrate existing slot-based tiles to freeform widgets
+        const activeTileIds = Object.values(tiles).filter(Boolean) as string[];
+        const migratedWidgets: WidgetPosition[] = activeTileIds.map((tileId, index) => {
+          const tileType = tileId.split('-')[0]; // Extract type from ID
+          const constraints = WIDGET_CONSTRAINTS[tileType] || { minW: 2, minH: 2, defaultW: 3, defaultH: 2 };
+          return {
+            i: tileId,
+            x: (index % 4) * 3, // Spread across 4 columns
+            y: Math.floor(index / 4) * 3, // Stack rows
+            w: constraints.defaultW,
+            h: constraints.defaultH,
+            type: tileType,
+            minW: constraints.minW,
+            minH: constraints.minH,
+          };
+        });
+
+        // Keep existing freeform widgets if any, or use migrated ones
+        const newFreeformWidgets = freeformWidgets.length > 0 ? freeformWidgets : migratedWidgets;
+        updateSettings(tiles, backgroundImage, undefined, layoutId, undefined, undefined, undefined, undefined, undefined, newFreeformWidgets);
+        return;
+      }
+
+      // Handle switching from freeform to a slot-based layout
+      if (LAYOUTS[activeLayoutId]?.isFreeform) {
+        // Migrate freeform widgets to slot-based tiles
+        const widgetTileIds = freeformWidgets.map(w => w.i);
+        const nextTiles: Record<string, string | null> = {};
+        const targetSlots = targetLayout.slots.map(s => s.id);
+
+        targetSlots.forEach((slotId, index) => {
+          if (index < widgetTileIds.length) {
+            nextTiles[slotId] = widgetTileIds[index];
+          } else {
+            nextTiles[slotId] = null;
+          }
+        });
+
+        updateSettings(nextTiles, backgroundImage, undefined, layoutId);
+        return;
+      }
+
+      // Standard layout-to-layout migration
+      // 1. Collect all current tile IDs that are placed
+      const activeTileIds = Object.values(tiles).filter(Boolean) as string[];
+
+      // 2. Map existing tiles to new slots sequentially
       //    (This preserves as many as possible, dropping extras if new layout is smaller)
       const nextTiles: Record<string, string | null> = {};
       const targetSlots = targetLayout.slots.map(s => s.id);
@@ -547,12 +655,18 @@ export function DigitalClock() {
   };
 
   const handleAddTile = (type: string) => {
+    // If in freeform mode, use the freeform handler
+    if (activeLayout.isFreeform) {
+      handleAddFreeformWidget(type);
+      return;
+    }
+
     // Generate unique ID
     const uniqueId = `${type}-${Date.now()}`;
-    
+
     // Find first empty slot
     const emptySlot = activeLayout.slots.find(slot => !tiles[slot.id]);
-    
+
     if (emptySlot) {
       const newTiles = { ...tiles, [emptySlot.id]: uniqueId };
       updateSettings(newTiles, backgroundImage);
@@ -990,9 +1104,45 @@ export function DigitalClock() {
 
       {/* Content Container (z-10 to sit above overlay) */}
       <div className="relative z-10 w-full h-full flex flex-col items-center pointer-events-auto">
-        
+
+        {/* Grid overlay for freeform layout - always subtle, prominent during drag/resize */}
+        {activeLayout.isFreeform && showTiles && (
+          <div
+            className="absolute inset-0 pointer-events-none rounded-2xl transition-opacity duration-300"
+            style={{
+              zIndex: 5,
+              opacity: isGridInteracting ? 1 : 0.15,
+              backgroundImage: `
+                linear-gradient(to right, hsl(var(--primary) / 0.5) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(var(--primary) / 0.5) 1px, transparent 1px)
+              `,
+              backgroundSize: '24px 24px',
+              // Offset by 16px (px-4 padding) to align with FreeFormGrid snap positions
+              backgroundPosition: '16px 16px',
+            }}
+          />
+        )}
+
         {/* Dynamic Layout Rendering */}
-        {activeLayoutId === 'studio-right' ? (
+        {activeLayout.isFreeform ? (
+            /* Freeform Layout - Full workspace coverage */
+            <div className="absolute inset-0 px-4 pt-4 pb-4">
+                {/* FreeFormGrid covers entire workspace - clock is now a widget */}
+                {showTiles && (
+                    <FreeFormGrid
+                        widgets={freeformWidgets}
+                        onLayoutChange={handleFreeformLayoutChange}
+                        onRemoveWidget={handleRemoveFreeformWidget}
+                        onOpenTray={() => setIsTrayOpen(true)}
+                        weatherZipcode={weatherZipcode}
+                        onZipcodeChange={handleZipcodeChange}
+                        onInteractionChange={setIsGridInteracting}
+                        clockStyle={clockStyle}
+                        timeFormat={timeFormat}
+                    />
+                )}
+            </div>
+        ) : activeLayoutId === 'studio-right' ? (
             renderStudioLayout(true)
         ) : activeLayoutId === 'studio-left' ? (
             renderStudioLayout(false)

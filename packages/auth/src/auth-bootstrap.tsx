@@ -44,9 +44,9 @@ function getDevCrossAppSession(): string | null {
       return null;
     }
 
-    // Check if session is less than 5 minutes old
+    // Check if session is less than 30 minutes old
     const age = Date.now() - parseInt(timestamp, 10);
-    if (age > 5 * 60 * 1000) {
+    if (age > 30 * 60 * 1000) {
       // Clean up expired session
       localStorage.removeItem('__cross_app_session');
       localStorage.removeItem('__cross_app_timestamp');

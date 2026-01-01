@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import {
   X,
   FileText,
@@ -79,6 +79,12 @@ interface QuickCreateMenuProps {
 export function QuickCreateMenu({ isOpen, onClose }: QuickCreateMenuProps) {
   const currentAppSlug = getCurrentAppSlug();
 
+  const handleCreate = useCallback((item: QuickCreateMenuItem) => {
+    onClose();
+    // Navigate to the app with a create action parameter
+    navigateToApp(item.appSlug, currentAppSlug || "main");
+  }, [onClose, currentAppSlug]);
+
   // Handle keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return;
@@ -101,13 +107,7 @@ export function QuickCreateMenu({ isOpen, onClose }: QuickCreateMenuProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  const handleCreate = (item: QuickCreateMenuItem) => {
-    onClose();
-    // Navigate to the app with a create action parameter
-    navigateToApp(item.appSlug, currentAppSlug || "main");
-  };
+  }, [isOpen, onClose, handleCreate]);
 
   if (!isOpen) return null;
 

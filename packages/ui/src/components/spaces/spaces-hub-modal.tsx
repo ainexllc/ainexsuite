@@ -17,6 +17,7 @@ export interface SpaceHubItem {
   color?: Space['color'];
   icon?: Space['icon'];
   isGlobal?: boolean;
+  hiddenInApps?: string[];
   memberCount: number;
   userRole: SpaceRole;
   itemCount?: number;

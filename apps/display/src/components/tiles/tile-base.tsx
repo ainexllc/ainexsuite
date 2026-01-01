@@ -45,12 +45,12 @@ export function TileBase({
       draggable={isDraggable}
       onDragStart={handleDragStart}
       onTouchStart={handleTouchStart}
-      className={`group relative bg-background/85 hover:bg-background/95 border border-border/30 rounded-xl p-3 transition-all duration-300 backdrop-blur-md shadow-lg select-none touch-none flex flex-col h-full hover:shadow-xl hover:scale-[1.01] ${isDraggable ? 'cursor-grab active:cursor-grabbing active:scale-[0.99]' : ''} ${className}`}
+      className={`group relative bg-background/85 hover:bg-background/95 border border-border/30 rounded-lg p-2 transition-all duration-300 backdrop-blur-md shadow-lg select-none touch-none flex flex-col h-full hover:shadow-xl hover:scale-[1.01] ${isDraggable ? 'cursor-grab active:cursor-grabbing active:scale-[0.99]' : ''} ${className}`}
     >
-      <div className="flex items-center justify-between mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <div className="flex items-center gap-1.5">
-          {isDraggable && <GripVertical className="w-2.5 h-2.5 text-foreground/40" />}
-          <span className="text-[10px] font-medium uppercase tracking-wider text-foreground/50">{title}</span>
+      <div className="flex items-center justify-between mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center gap-1">
+          {isDraggable && <GripVertical className="w-2 h-2 text-foreground/40" />}
+          <span className="text-[9px] font-medium uppercase tracking-wider text-foreground/50">{title}</span>
         </div>
         {onRemove && (
           <button
@@ -60,11 +60,11 @@ export function TileBase({
             }}
             className="text-muted-foreground/50 hover:text-red-400 transition-colors p-0.5 rounded hover:bg-red-500/10"
           >
-            <X className="w-2.5 h-2.5" />
+            <X className="w-2 h-2" />
           </button>
         )}
       </div>
-      <div className="text-sm text-foreground/90 flex-1 overflow-visible">
+      <div className="text-xs text-foreground/90 flex-1 overflow-visible">
         {children}
       </div>
     </div>

@@ -196,35 +196,35 @@ export function AlarmClockTile({
         onRemove={onRemove}
         isDraggable={isDraggable}
         onDragStart={onDragStart}
-        className="min-w-[200px]"
+        className="min-w-[150px]"
       >
-        <div className="flex flex-col items-center justify-center h-full gap-3 py-2">
+        <div className="flex flex-col items-center justify-center h-full gap-2 py-1">
 
           {/* Alarm Icon with Status */}
           <div className="relative">
             {isAlarmSet ? (
-              <Bell className={`w-8 h-8 ${isSnoozed ? 'text-warning' : 'text-success'}`} />
+              <Bell className={`w-5 h-5 ${isSnoozed ? 'text-warning' : 'text-success'}`} />
             ) : (
-              <BellOff className="w-8 h-8 text-muted-foreground" />
+              <BellOff className="w-5 h-5 text-muted-foreground" />
             )}
           </div>
 
           {/* Time Input */}
-          <div className="w-full space-y-2">
+          <div className="w-full space-y-1">
             <input
               type="time"
               value={alarmTime}
               onChange={(e) => setAlarmTime(e.target.value)}
               disabled={isAlarmSet}
-              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-center text-lg font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground/10 rounded px-2 py-1.5 text-center text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             />
 
             {/* Time Until Alarm */}
             {isAlarmSet && timeUntilAlarm && (
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  <span>{isSnoozed ? 'Snoozed: ' : 'Rings '}{timeUntilAlarm}</span>
+                <div className="flex items-center justify-center gap-0.5 text-[9px] text-muted-foreground">
+                  <Clock className="w-2.5 h-2.5" />
+                  <span>{isSnoozed ? 'Snooze: ' : ''}{timeUntilAlarm}</span>
                 </div>
               </div>
             )}
@@ -239,7 +239,7 @@ export function AlarmClockTile({
                 if (sound) setSelectedSound(sound);
               }}
               disabled={isAlarmSet}
-              className="w-full bg-foreground/10 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-foreground/10 rounded px-2 py-1 text-[10px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {ALARM_SOUNDS.map((sound) => (
                 <option key={sound.id} value={sound.id}>
@@ -250,22 +250,22 @@ export function AlarmClockTile({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 w-full">
+          <div className="flex items-center gap-1.5 w-full">
             {!isAlarmSet ? (
               <button
                 onClick={handleSetAlarm}
                 disabled={!alarmTime}
-                className="flex-1 py-2 rounded-lg bg-success/20 text-success hover:bg-success/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm flex items-center justify-center gap-2"
+                className="flex-1 py-1.5 rounded bg-success/20 text-success hover:bg-success/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-[10px] flex items-center justify-center gap-1"
               >
-                <Bell className="w-4 h-4" />
-                Set Alarm
+                <Bell className="w-3 h-3" />
+                Set
               </button>
             ) : (
               <button
                 onClick={handleCancelAlarm}
-                className="flex-1 py-2 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                className="flex-1 py-1.5 rounded bg-destructive/20 text-destructive hover:bg-destructive/30 transition-colors font-medium text-[10px] flex items-center justify-center gap-1"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3 h-3" />
                 Cancel
               </button>
             )}
@@ -278,10 +278,10 @@ export function AlarmClockTile({
                 playAlarmSound();
                 setTimeout(stopAlarmSound, 1000);
               }}
-              className="text-xs text-muted-foreground hover:text-foreground/60 transition-colors flex items-center gap-1"
+              className="text-[9px] text-muted-foreground hover:text-foreground/60 transition-colors flex items-center gap-0.5"
             >
-              <Volume2 className="w-3 h-3" />
-              Test Sound
+              <Volume2 className="w-2.5 h-2.5" />
+              Test
             </button>
           )}
         </div>

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import Image from 'next/image';
-import { Check, MessageCircle, Flame } from 'lucide-react';
+import { Check, MessageCircle, Flame, Sparkles } from 'lucide-react';
 import { Completion, Habit, Member } from '@/types/models';
 import { cn } from '@/lib/utils';
 
@@ -154,8 +154,17 @@ export function ActivityFeed({
 
   if (activityItems.length === 0) {
     return (
-      <div className="text-center py-6 text-sm text-zinc-500 dark:text-zinc-400">
-        No recent activity. Complete a habit to get started!
+      <div className="flex flex-col items-center justify-center py-8 px-4">
+        <div className="relative mb-4">
+          <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl" />
+          <div className="relative p-4 rounded-full bg-white/5 border border-white/10">
+            <Sparkles className="h-6 w-6 text-indigo-400" />
+          </div>
+        </div>
+        <p className="text-sm font-medium text-white/80 mb-1">No activity yet</p>
+        <p className="text-xs text-white/40 text-center max-w-[200px]">
+          Complete a habit to see your progress here
+        </p>
       </div>
     );
   }

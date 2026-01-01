@@ -41,8 +41,8 @@ const PRIORITY_OPTIONS: { value: Priority | 'all'; label: string; color: string 
 const STATUS_OPTIONS: { value: TaskStatus | 'all'; label: string; icon: typeof CheckSquare }[] = [
   { value: 'all', label: 'All', icon: ListTodo },
   { value: 'todo', label: 'To Do', icon: CheckSquare },
+  { value: 'blocked', label: 'Blocked', icon: CheckSquare },
   { value: 'in_progress', label: 'In Progress', icon: CheckSquare },
-  { value: 'review', label: 'Review', icon: CheckSquare },
   { value: 'done', label: 'Done', icon: CheckSquare },
 ];
 

@@ -8,7 +8,8 @@ import type { NoteSpace } from "@/lib/types/note";
  * Uses the shared spaces factory from @ainexsuite/ui
  */
 export const { SpacesProvider, useSpaces } = createSpacesProvider<NoteSpace>({
-  collectionName: "noteSpaces",
+  appId: "notes",
+  collectionName: "spaces",
   storageKey: "notes-current-space",
   defaultSpace: {
     name: "My Notes",

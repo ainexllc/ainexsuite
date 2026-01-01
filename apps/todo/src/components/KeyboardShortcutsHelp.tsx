@@ -17,7 +17,7 @@ interface KeyboardShortcutsHelpProps {
 const SHORTCUTS: ShortcutItem[] = [
   { key: 'N', description: 'Create new task' },
   { key: '/', description: 'Focus search' },
-  { key: '1-6', description: 'Switch view (List, Masonry, Board, My Day, Matrix, Calendar)' },
+  { key: '1-5', description: 'Switch view (List, Board, My Day, Matrix, Calendar)' },
   { key: '?', description: 'Toggle keyboard shortcuts help' },
   { key: 'Esc', description: 'Close dialogs / Cancel editing' },
 ];

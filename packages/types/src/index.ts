@@ -19,12 +19,14 @@ export * from './moment';
 export * from './learning';
 export * from './health';
 export * from './fitness';
+export * from './medication';
 
 // Cross-app types
 export * from './search';
 export * from './activity';
 export * from './feedback';
 export * from './notification';
+export * from './wellness';
 
 // AI/ML types
 export * from './sentiment';

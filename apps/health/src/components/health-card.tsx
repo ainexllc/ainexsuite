@@ -17,7 +17,19 @@ import {
 } from 'lucide-react';
 import { ConfirmationDialog } from '@ainexsuite/ui';
 
-type ViewMode = 'list' | 'masonry' | 'calendar';
+import type { ViewMode } from '@/lib/types/settings';
+
+// Helper to convert Firestore Timestamp or Date to JS Date
+function toDate(value: unknown): Date {
+  if (!value) return new Date();
+  if (value instanceof Date) return value;
+  if (typeof value === 'object' && 'toDate' in value && typeof (value as { toDate: () => Date }).toDate === 'function') {
+    return (value as { toDate: () => Date }).toDate();
+  }
+  if (typeof value === 'number') return new Date(value);
+  if (typeof value === 'string') return new Date(value);
+  return new Date();
+}
 
 interface HealthCardProps {
   metric: HealthMetric;
@@ -224,7 +236,7 @@ export function HealthCard({ metric, viewMode, onEdit, onDelete }: HealthCardPro
             "bg-zinc-100/90 dark:bg-zinc-700/50 border-zinc-200/60 dark:border-zinc-600/40"
           )}>
             <span className="h-7 flex items-center px-2.5 rounded-full text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              {new Date(metric.updatedAt !== metric.createdAt ? metric.updatedAt : metric.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              {toDate(metric.updatedAt !== metric.createdAt ? metric.updatedAt : metric.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
               {' · '}
               {metric.updatedAt !== metric.createdAt ? 'Edited' : 'Created'}
             </span>

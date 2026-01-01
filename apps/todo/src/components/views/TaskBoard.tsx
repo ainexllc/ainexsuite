@@ -2,57 +2,32 @@
 
 import { useMemo } from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import Masonry from 'react-masonry-css';
 import { EmptyState, ListSection } from '@ainexsuite/ui';
 import { TaskCard } from './TaskCard';
 import { useTodoStore } from '../../lib/store';
 import type { Task } from '../../types/models';
 
-const masonryBreakpoints = {
-  default: 3,
-  1024: 2,
-  640: 1,
-};
-
 interface TaskBoardProps {
-  viewMode: 'list' | 'masonry';
   onEditTask: (taskId: string) => void;
   searchQuery?: string;
 }
 
 // Skeleton loader for lazy loading (reserved for future use)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function TasksSkeleton({ viewMode }: { viewMode: 'list' | 'masonry' }) {
-  if (viewMode === 'list') {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className="h-16 rounded-2xl bg-surface-muted/80 shadow-inner animate-pulse"
-          />
-        ))}
-      </div>
-    );
-  }
-
+function TasksSkeleton() {
   return (
-    <Masonry
-      breakpointCols={masonryBreakpoints}
-      className="flex -ml-4 w-auto"
-      columnClassName="pl-4 bg-clip-padding"
-    >
-      {Array.from({ length: 6 }).map((_, index) => (
+    <div className="space-y-3">
+      {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
-          className="mb-4 h-40 rounded-2xl bg-surface-muted/80 shadow-inner animate-pulse"
+          className="h-16 rounded-2xl bg-surface-muted/80 shadow-inner animate-pulse"
         />
       ))}
-    </Masonry>
+    </div>
   );
 }
 
-export function TaskBoard({ viewMode, onEditTask, searchQuery = '' }: TaskBoardProps) {
+export function TaskBoard({ onEditTask, searchQuery = '' }: TaskBoardProps) {
   const { getCurrentSpace, tasks } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
@@ -107,24 +82,10 @@ export function TaskBoard({ viewMode, onEditTask, searchQuery = '' }: TaskBoardP
 
   if (!currentSpace) return null;
 
-  const renderMasonry = (items: Task[]) => (
-    <Masonry
-      breakpointCols={masonryBreakpoints}
-      className="flex -ml-4 w-auto"
-      columnClassName="pl-4 bg-clip-padding"
-    >
-      {items.map((task) => (
-        <div key={task.id} className="mb-4">
-          <TaskCard task={task} viewMode={viewMode} onEditTask={onEditTask} />
-        </div>
-      ))}
-    </Masonry>
-  );
-
   const renderList = (items: Task[]) => (
     <div className="space-y-3">
       {items.map((task) => (
-        <TaskCard key={task.id} task={task} viewMode={viewMode} onEditTask={onEditTask} />
+        <TaskCard key={task.id} task={task} onEditTask={onEditTask} />
       ))}
     </div>
   );
@@ -136,21 +97,19 @@ export function TaskBoard({ viewMode, onEditTask, searchQuery = '' }: TaskBoardP
           {/* Pinned Tasks */}
           {pinnedTasks.length > 0 && (
             <ListSection title="Pinned" count={pinnedTasks.length}>
-              {viewMode === 'list' ? renderList(pinnedTasks) : renderMasonry(pinnedTasks)}
+              {renderList(pinnedTasks)}
             </ListSection>
           )}
 
           {/* All Tasks */}
           {unpinnedTasks.length > 0 && pinnedTasks.length > 0 && (
             <ListSection title="All Tasks" count={unpinnedTasks.length}>
-              {viewMode === 'list' ? renderList(unpinnedTasks) : renderMasonry(unpinnedTasks)}
+              {renderList(unpinnedTasks)}
             </ListSection>
           )}
 
           {/* Tasks without section header when no pinned tasks */}
-          {unpinnedTasks.length > 0 && pinnedTasks.length === 0 && (
-            viewMode === 'list' ? renderList(unpinnedTasks) : renderMasonry(unpinnedTasks)
-          )}
+          {unpinnedTasks.length > 0 && pinnedTasks.length === 0 && renderList(unpinnedTasks)}
         </div>
       ) : (
         <EmptyState

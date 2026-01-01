@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { LayoutGrid, List, Calendar, Sun, Grid2X2, Columns, X, CheckCircle2, Circle, ArrowLeft } from 'lucide-react';
+import { List, Calendar, Sun, Grid2X2, Columns, X, CheckCircle2, Circle, ArrowLeft } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
@@ -32,11 +32,10 @@ import { useTodoStore } from '@/lib/store';
 import type { TaskStatus } from '@/types/models';
 import type { Priority } from '@ainexsuite/types';
 
-type ViewType = 'list' | 'masonry' | 'board' | 'my-day' | 'matrix' | 'calendar';
+type ViewType = 'list' | 'board' | 'my-day' | 'matrix' | 'calendar';
 
 const VIEW_OPTIONS: ViewOption<ViewType>[] = [
   { value: 'list', icon: List, label: 'List view' },
-  { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
   { value: 'board', icon: Columns, label: 'Board view' },
   { value: 'my-day', icon: Sun, label: 'My Day' },
   { value: 'matrix', icon: Grid2X2, label: 'Eisenhower Matrix' },
@@ -59,9 +58,10 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
+  queued: 'In Queue',
   todo: 'To Do',
+  blocked: 'Blocked',
   in_progress: 'In Progress',
-  review: 'Review',
   done: 'Done',
 };
 
@@ -313,26 +313,21 @@ export default function TodoWorkspacePage() {
     },
     {
       key: '2',
-      action: () => handleSetView('masonry'),
-      description: 'Masonry view',
-    },
-    {
-      key: '3',
       action: () => handleSetView('board'),
       description: 'Board view',
     },
     {
-      key: '4',
+      key: '3',
       action: () => handleSetView('my-day'),
       description: 'My Day view',
     },
     {
-      key: '5',
+      key: '4',
       action: () => handleSetView('matrix'),
       description: 'Matrix view',
     },
     {
-      key: '6',
+      key: '5',
       action: () => handleSetView('calendar'),
       description: 'Calendar view',
     },
@@ -469,9 +464,8 @@ export default function TodoWorkspacePage() {
             </div>
           ) : (
             <>
-              {(view === 'list' || view === 'masonry') && (
+              {view === 'list' && (
                 <TaskBoard
-                  viewMode={view}
                   onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
                   searchQuery={searchQuery}
                 />

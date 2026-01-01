@@ -96,14 +96,14 @@ export function HabitCard({
   const getCardStyles = () => {
     switch (status) {
       case 'completed':
-        return 'bg-emerald-900/20 border-emerald-500/30';
+        return 'bg-emerald-900/20 border-emerald-500/30 shadow-emerald-500/10 shadow-lg';
       case 'frozen':
         return 'bg-blue-900/10 border-blue-500/20 opacity-70';
       case 'not_due':
-        return 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 opacity-60';
+        return 'bg-[#1a1a1a] border-white/5 opacity-50';
       case 'due':
       default:
-        return 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md';
+        return 'bg-[#1a1a1a] border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-indigo-500/5';
     }
   };
 
@@ -113,9 +113,9 @@ export function HabitCard({
       return 'border-blue-400/30 cursor-not-allowed bg-blue-500/5';
     }
     if (isCompleted) {
-      return 'border-emerald-500 bg-emerald-500 text-white';
+      return 'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30';
     }
-    return 'border-indigo-500 hover:bg-indigo-500/20 hover:border-indigo-400';
+    return 'border-indigo-500/50 hover:border-indigo-400 hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30';
   };
 
   // Get streak color based on count
@@ -188,7 +188,7 @@ export function HabitCard({
           <h3
             className={cn(
               'text-sm font-medium flex items-center gap-2 transition-all',
-              isCompleted ? 'text-emerald-300 line-through opacity-70' : 'text-zinc-900 dark:text-zinc-50'
+              isCompleted ? 'text-emerald-300 line-through opacity-70' : 'text-white'
             )}
           >
             <span className="truncate">{habit.title}</span>
@@ -215,9 +215,9 @@ export function HabitCard({
               </span>
             )}
             {habit.description && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{habit.description}</p>
+              <p className="text-xs text-white/40 truncate">{habit.description}</p>
             )}
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 flex-shrink-0">
+            <span className="text-[10px] text-white/30 flex-shrink-0">
               {getScheduleLabel()}
             </span>
           </div>
@@ -225,11 +225,11 @@ export function HabitCard({
           {/* Progress bar for habits with targets */}
           {hasTarget && (
             <div className="mt-2">
-              <div className="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 mb-1">
+              <div className="flex items-center justify-between text-[10px] text-white/40 mb-1">
                 <span>{todayValue} / {habit.targetValue} {habit.targetUnit}</span>
-                <span>{Math.round(progressPercent)}%</span>
+                <span className={progressPercent >= 100 ? 'text-emerald-400' : 'text-indigo-400'}>{Math.round(progressPercent)}%</span>
               </div>
-              <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
                   className={cn(
                     'h-full rounded-full transition-all duration-500',
@@ -249,7 +249,7 @@ export function HabitCard({
         {showUndo && (
           <button
             onClick={handleUndo}
-            className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-all"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-white/60 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg transition-all"
           >
             <RotateCcw className="h-3 w-3" />
             Undo
@@ -293,7 +293,7 @@ export function HabitCard({
         {/* Edit Button */}
         <button
           onClick={() => onEdit(habit.id)}
-          className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 transition-all rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
+          className="opacity-0 group-hover:opacity-100 p-1.5 text-white/40 hover:text-white transition-all rounded-lg hover:bg-white/10"
           aria-label="Edit habit"
         >
           <Settings className="h-4 w-4" />

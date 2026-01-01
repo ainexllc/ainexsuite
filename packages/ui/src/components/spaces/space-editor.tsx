@@ -23,6 +23,19 @@ export interface PendingMemberInvite {
   role: SpaceRole;
 }
 
+/** Available apps for visibility configuration */
+const AVAILABLE_APPS = [
+  { id: 'notes', label: 'Notes', icon: '📝' },
+  { id: 'journal', label: 'Journal', icon: '📔' },
+  { id: 'todo', label: 'Todo', icon: '✓' },
+  { id: 'health', label: 'Health', icon: '❤️' },
+  { id: 'fit', label: 'Fit', icon: '💪' },
+  { id: 'album', label: 'Moments', icon: '📷' },
+  { id: 'habits', label: 'Habits', icon: '🌱' },
+  { id: 'calendar', label: 'Calendar', icon: '📅' },
+  { id: 'projects', label: 'Projects', icon: '📊' },
+] as const;
+
 export interface SpaceEditorProps {
   /** Whether the modal is open */
   isOpen: boolean;
@@ -33,12 +46,13 @@ export interface SpaceEditorProps {
     name: string;
     type: SpaceType;
     isGlobal?: boolean;
+    hiddenInApps?: string[];
     color?: SpaceColor;
     icon?: SpaceIcon;
     invites?: PendingMemberInvite[];
   }) => void | Promise<void>;
   /** Initial values for editing an existing space */
-  initialValues?: { name: string; type: SpaceType; isGlobal?: boolean; color?: SpaceColor };
+  initialValues?: { name: string; type: SpaceType; isGlobal?: boolean; hiddenInApps?: string[]; color?: SpaceColor };
   /** Whether we're editing an existing space */
   isEditing?: boolean;
   /** Available space types (default: personal, family, work) */
@@ -131,6 +145,7 @@ export function SpaceEditor({
   const [name, setName] = useState('');
   const [type, setType] = useState<SpaceType>('personal');
   const [isGlobal, setIsGlobal] = useState(false);
+  const [hiddenInApps, setHiddenInApps] = useState<string[]>([]);
   const [color, setColor] = useState<SpaceColor>('default');
   const [icon, setIcon] = useState<SpaceIcon | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -205,11 +220,13 @@ export function SpaceEditor({
         setName(initialValues.name);
         setType(initialValues.type);
         setIsGlobal(initialValues.isGlobal || false);
+        setHiddenInApps(initialValues.hiddenInApps || []);
         setColor(initialValues.color || 'default');
       } else {
         setName('');
         setType('personal');
         setIsGlobal(false);
+        setHiddenInApps([]);
         setColor('default');
         setIcon(undefined);
       }
@@ -266,6 +283,7 @@ export function SpaceEditor({
         name: name.trim(),
         type,
         isGlobal: showGlobalOption ? isGlobal : undefined,
+        hiddenInApps: !isGlobal && hiddenInApps.length > 0 ? hiddenInApps : undefined,
         color: color !== 'default' ? color : undefined,
         icon: icon,
         invites: pendingInvites.length > 0 ? pendingInvites : undefined,
@@ -459,7 +477,12 @@ export function SpaceEditor({
                   <input
                     type="checkbox"
                     checked={isGlobal}
-                    onChange={(e) => setIsGlobal(e.target.checked)}
+                    onChange={(e) => {
+                      setIsGlobal(e.target.checked);
+                      if (e.target.checked) {
+                        setHiddenInApps([]); // Clear hidden apps when making global
+                      }
+                    }}
                     className="w-4 h-4 rounded border-zinc-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                   />
                   <div className="flex-1">
@@ -472,6 +495,54 @@ export function SpaceEditor({
                     </div>
                   </div>
                 </label>
+              )}
+
+              {/* App visibility (only shown when not global) */}
+              {showGlobalOption && !isGlobal && (
+                <div className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/30">
+                  <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-3">
+                    Show in Apps
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {AVAILABLE_APPS.map((app) => {
+                      const isVisible = !hiddenInApps.includes(app.id);
+                      return (
+                        <label
+                          key={app.id}
+                          className={cn(
+                            'flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all',
+                            isVisible
+                              ? 'bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/30'
+                              : 'bg-zinc-100 dark:bg-zinc-800 border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600'
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isVisible}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setHiddenInApps(hiddenInApps.filter(id => id !== app.id));
+                              } else {
+                                setHiddenInApps([...hiddenInApps, app.id]);
+                              }
+                            }}
+                            className="w-3.5 h-3.5 rounded border-zinc-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                          />
+                          <span className="text-sm">{app.icon}</span>
+                          <span className={cn(
+                            'text-xs font-medium',
+                            isVisible ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400'
+                          )}>
+                            {app.label}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-2">
+                    Uncheck apps where you don&apos;t want this space to appear
+                  </p>
+                </div>
               )}
             </>
           )}

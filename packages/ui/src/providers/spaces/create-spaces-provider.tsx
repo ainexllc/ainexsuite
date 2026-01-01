@@ -24,6 +24,19 @@ import {
   doc,
   Timestamp,
 } from 'firebase/firestore';
+
+// Helper to safely convert Firestore Timestamp, Date, string, or number to Date
+function toDate(value: unknown): Date {
+  if (!value) return new Date();
+  if (value instanceof Date) return value;
+  if (value instanceof Timestamp) return value.toDate();
+  if (typeof value === 'object' && 'toDate' in value && typeof (value as { toDate: () => Date }).toDate === 'function') {
+    return (value as { toDate: () => Date }).toDate();
+  }
+  if (typeof value === 'number') return new Date(value);
+  if (typeof value === 'string') return new Date(value);
+  return new Date();
+}
 import type {
   SpacesProviderConfig,
   SpacesContextValue,
@@ -100,25 +113,38 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          const spaces = snapshot.docs.map((docSnap) => {
-            const data = docSnap.data() as SpaceDocData;
+          const spaces = snapshot.docs
+            .map((docSnap) => {
+              const data = docSnap.data() as SpaceDocData;
 
-            // Use custom transform if provided
-            if (config.transformSpace) {
-              return config.transformSpace(docSnap.id, data);
-            }
+              // Use custom transform if provided
+              if (config.transformSpace) {
+                return { space: config.transformSpace(docSnap.id, data), data };
+              }
 
-            // Default transformation
-            return {
-              id: docSnap.id,
-              name: data.name,
-              type: data.type,
-              members: data.members,
-              memberUids: data.memberUids,
-              createdAt: data.createdAt?.toDate() ?? new Date(),
-              createdBy: data.createdBy,
-            } as TSpace;
-          });
+              // Default transformation
+              return {
+                space: {
+                  id: docSnap.id,
+                  name: data.name,
+                  type: data.type,
+                  members: data.members,
+                  memberUids: data.memberUids,
+                  createdAt: toDate(data.createdAt),
+                  createdBy: data.createdBy,
+                } as TSpace,
+                data,
+              };
+            })
+            // Filter out spaces hidden in this app (unless isGlobal)
+            .filter(({ data }) => {
+              // Global spaces are always visible
+              if (data.isGlobal) return true;
+              // Check if this app is in the hidden list
+              if (data.hiddenInApps?.includes(config.appId)) return false;
+              return true;
+            })
+            .map(({ space }) => space);
 
           setUserSpaces(spaces);
           setLoading(false);

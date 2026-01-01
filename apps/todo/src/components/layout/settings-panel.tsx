@@ -14,7 +14,7 @@ import { clsx } from "clsx";
 
 // Simple preferences for Todo app
 interface TodoPreferences {
-  defaultView?: 'list' | 'masonry' | 'board' | 'my-day' | 'matrix' | 'calendar';
+  defaultView?: 'list' | 'board' | 'my-day' | 'matrix' | 'calendar';
   showCompletedTasks?: boolean;
   enableDueDateReminders?: boolean;
   taskSortOrder?: 'manual' | 'dueDate' | 'priority' | 'createdAt';
@@ -34,7 +34,6 @@ const VIEW_OPTIONS: Array<{
   label: string;
 }> = [
   { value: 'list', label: 'List View' },
-  { value: 'masonry', label: 'Masonry View' },
   { value: 'board', label: 'Board View' },
   { value: 'my-day', label: 'My Day' },
   { value: 'matrix', label: 'Eisenhower Matrix' },

@@ -31,8 +31,14 @@ export type SpaceMemberRole = 'admin' | 'member' | 'viewer';
  */
 export interface SpacesProviderConfig<TSpace extends BaseSpace = BaseSpace> {
   /**
-   * Firestore collection name for spaces
-   * @example 'noteSpaces', 'journalSpaces', 'fitSpaces'
+   * Unique identifier for this app (used for per-app visibility filtering)
+   * @example 'notes', 'journal', 'todo', 'fit'
+   */
+  appId: string;
+
+  /**
+   * Firestore collection name for spaces (use 'spaces' for unified collection)
+   * @example 'spaces' (unified) or 'noteSpaces' (legacy)
    */
   collectionName: string;
 
@@ -79,6 +85,9 @@ export interface SpaceDocData {
   memberUids: string[];
   createdAt: { toDate: () => Date } | null;
   createdBy: string;
+  // Cross-app visibility fields
+  isGlobal?: boolean;
+  hiddenInApps?: string[];
 }
 
 /**

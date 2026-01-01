@@ -12,7 +12,7 @@ import { SettingsPanel } from '@/components/layout/settings-panel';
 
 // Simple Todo app preferences
 interface TodoAppPreferences {
-  defaultView?: 'list' | 'masonry' | 'board' | 'my-day' | 'matrix' | 'calendar';
+  defaultView?: 'list' | 'board' | 'my-day' | 'matrix' | 'calendar';
   showCompletedTasks?: boolean;
   enableDueDateReminders?: boolean;
   taskSortOrder?: 'manual' | 'dueDate' | 'priority' | 'createdAt';

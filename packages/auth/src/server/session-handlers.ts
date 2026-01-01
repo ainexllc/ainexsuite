@@ -17,6 +17,7 @@ import {
   SESSION_COOKIE_MAX_AGE_MS,
   SESSION_COOKIE_MAX_AGE_SECONDS
 } from '@ainexsuite/firebase/config';
+import { getLatestSession } from './sso-session-store';
 
 /**
  * Helper to determine if origin is allowed for CORS
@@ -164,7 +165,7 @@ export async function PUT(request: NextRequest) {
       .reduce((obj, key) => {
         obj[key] = updates[key];
         return obj;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, unknown>);
 
     if (Object.keys(filteredUpdates).length === 0) {
       return NextResponse.json({ error: 'No valid updates provided' }, { status: 400, headers: corsHeaders });
@@ -567,6 +568,12 @@ export async function CustomTokenPOST(request: NextRequest) {
       } catch {
         // No body or invalid JSON - that's fine
       }
+    }
+
+    // In development, also check the in-memory session store (for Auth Hub / main app)
+    // This enables SSO when navigating TO the main app after logging in elsewhere
+    if (!sessionCookie && isDev) {
+      sessionCookie = getLatestSession() ?? undefined;
     }
 
     if (!sessionCookie) {
