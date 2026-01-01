@@ -69,7 +69,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
   const SpacesContext = createContext<SpacesContextValue<TSpace> | null>(null);
 
   function SpacesProvider({ children }: { children: ReactNode }) {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const [userSpaces, setUserSpaces] = useState<TSpace[]>([]);
     const [currentSpaceId, setCurrentSpaceId] = useState<string>('personal');
     const [loading, setLoading] = useState(true);
@@ -151,7 +151,21 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
           setError(null);
         },
         (err) => {
-          console.error(`Error subscribing to ${config.collectionName}:`, err);
+          // Check if this is a permission-denied error (session invalidated)
+          const isPermissionDenied = err?.code === 'permission-denied' ||
+            err?.message?.includes('permission-denied') ||
+            err?.message?.includes('Missing or insufficient permissions');
+
+          if (isPermissionDenied) {
+            // eslint-disable-next-line no-console
+            console.warn('[Spaces] Session appears to be invalid, signing out...');
+            // Sign out the user - their session was invalidated elsewhere
+            signOut?.();
+            return;
+          }
+
+          // eslint-disable-next-line no-console
+          console.error(`[Spaces] Error subscribing to ${config.collectionName}:`, err);
           setError(err);
           // Still set loading to false so the app can function with personal space
           setUserSpaces([]);
@@ -160,7 +174,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
       );
 
       return () => unsubscribe();
-    }, [userId]);
+    }, [userId, signOut]);
 
     // All spaces including virtual personal space
     const spaces = useMemo(
