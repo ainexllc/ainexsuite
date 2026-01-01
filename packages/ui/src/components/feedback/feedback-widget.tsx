@@ -38,6 +38,14 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
     e.preventDefault();
     if (!message.trim()) return;
 
+    // Check if user is authenticated (Firestore rules require auth)
+    if (!userId) {
+      // eslint-disable-next-line no-console
+      console.error('[FeedbackWidget] Cannot submit feedback: user not authenticated');
+      setStatus('error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, 'feedback'), {
@@ -57,6 +65,8 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
         setStatus('idle');
       }, 2000);
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[FeedbackWidget] Failed to submit feedback:', error);
       setStatus('error');
     } finally {
       setIsSubmitting(false);
