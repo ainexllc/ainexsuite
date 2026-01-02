@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuth, SuiteGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
@@ -14,13 +15,24 @@ import {
   Smartphone,
   HelpCircle,
   ChevronRight,
+  Lightbulb,
+  RotateCcw,
 } from 'lucide-react';
 import { FirestoreSync } from '@/components/FirestoreSync';
 import { BottomNav } from '@/components/mobile/BottomNav';
+import { useHints } from '@/components/hints';
 
 function SettingsContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
+  const { resetHints } = useHints();
+  const [isResettingHints, setIsResettingHints] = useState(false);
+
+  const handleResetHints = async () => {
+    setIsResettingHints(true);
+    await resetHints();
+    setTimeout(() => setIsResettingHints(false), 1000);
+  };
 
   const handleSignOut = async () => {
     try {
@@ -142,6 +154,34 @@ function SettingsContent() {
             </div>
           </div>
         ))}
+
+        {/* Tips Section */}
+        <div>
+          <h2 className="text-xs font-medium text-white/40 uppercase tracking-wider mb-3 px-1">
+            Tips & Guidance
+          </h2>
+          <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
+            <button
+              onClick={handleResetHints}
+              disabled={isResettingHints}
+              className="flex items-center gap-4 p-4 hover:bg-white/5 transition-colors w-full text-left"
+            >
+              <div className="h-10 w-10 rounded-lg bg-teal-500/10 flex items-center justify-center">
+                {isResettingHints ? (
+                  <RotateCcw className="h-5 w-5 text-teal-400 animate-spin" />
+                ) : (
+                  <Lightbulb className="h-5 w-5 text-teal-400" />
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-white">Reset Tips</p>
+                <p className="text-xs text-white/40">
+                  {isResettingHints ? 'Tips reset!' : 'Show all helpful tips again'}
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
 
         {/* Version Info */}
         <div className="text-center pt-8 pb-20">

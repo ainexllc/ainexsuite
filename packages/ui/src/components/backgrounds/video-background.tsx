@@ -1,10 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useMemo, type ReactNode } from 'react';
+
+/**
+ * Video source for multi-source video element
+ */
+export interface VideoSource {
+  src: string;
+  type: 'video/mp4' | 'video/webm';
+}
 
 export interface VideoBackgroundProps {
-  /** Video source URL (Firebase Storage or CDN) */
-  src: string;
+  /** Single video source URL (legacy support) */
+  src?: string;
+  /** Multiple video sources for adaptive quality (preferred) */
+  sources?: VideoSource[];
   /** Fallback image shown while loading or if video fails */
   poster?: string;
   /** Dark overlay opacity (0-1, default 0.4) */
@@ -17,36 +27,53 @@ export interface VideoBackgroundProps {
   className?: string;
   /** Whether to pause on mobile to save battery (default true) */
   pauseOnMobile?: boolean;
+  /** Enable adaptive quality based on connection (default true) */
+  adaptiveQuality?: boolean;
 }
 
+type ConnectionQuality = 'slow' | 'medium' | 'fast';
+
 /**
- * VideoBackground - Full-screen video background for landing pages
+ * VideoBackground - Full-screen video background with adaptive quality
  *
  * Features:
- * - Autoplay, muted, looped video
- * - Dark overlay for text readability
+ * - Multiple source formats (WebM, MP4) for optimal browser support
+ * - Adaptive quality selection based on viewport and connection
+ * - Auto-extracted poster frame for instant visual feedback
  * - Respects prefers-reduced-motion
  * - Pauses when not in viewport (IntersectionObserver)
- * - Falls back to poster image on error or mobile
- * - Accessible (aria-hidden, decorative only)
+ * - Progressive loading with poster while video loads
  *
  * @example
  * ```tsx
+ * // With multiple sources (recommended)
+ * <VideoBackground
+ *   sources={[
+ *     { src: "/videos/hero-720p.webm", type: "video/webm" },
+ *     { src: "/videos/hero-720p.mp4", type: "video/mp4" },
+ *     { src: "/videos/hero-1080p.mp4", type: "video/mp4" },
+ *   ]}
+ *   poster="/images/hero-poster.jpg"
+ *   overlayOpacity={0.5}
+ * />
+ *
+ * // Legacy single source
  * <VideoBackground
  *   src="https://storage.googleapis.com/videos/hero-loop.mp4"
  *   poster="/images/hero-fallback.jpg"
- *   overlayOpacity={0.5}
  * />
  * ```
  */
 export function VideoBackground({
   src,
+  sources,
   poster,
   overlayOpacity = 0.4,
   overlayColor = 'black',
   fallbackComponent,
   className = '',
   pauseOnMobile = true,
+  adaptiveQuality = true,
 }: VideoBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,6 +81,7 @@ export function VideoBackground({
   const [isLoaded, setIsLoaded] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>('medium');
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -83,6 +111,55 @@ export function VideoBackground({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Estimate connection quality using Navigator.connection API
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !adaptiveQuality) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const connection = (navigator as any).connection;
+    if (!connection) return;
+
+    const updateQuality = () => {
+      const effectiveType = connection.effectiveType;
+      const downlink = connection.downlink;
+
+      if (effectiveType === 'slow-2g' || effectiveType === '2g') {
+        setConnectionQuality('slow');
+      } else if (effectiveType === '3g' || downlink < 1.5) {
+        setConnectionQuality('slow');
+      } else if (effectiveType === '4g' && downlink >= 5) {
+        setConnectionQuality('fast');
+      } else {
+        setConnectionQuality('medium');
+      }
+    };
+
+    updateQuality();
+    connection.addEventListener('change', updateQuality);
+    return () => connection.removeEventListener('change', updateQuality);
+  }, [adaptiveQuality]);
+
+  // Build optimized sources list based on connection quality
+  const optimizedSources = useMemo(() => {
+    if (sources && sources.length > 0) {
+      // On slow connections, prioritize WebM (smaller file size)
+      if (connectionQuality === 'slow') {
+        const webmSources = sources.filter((s) => s.type === 'video/webm');
+        const mp4Sources = sources.filter((s) => s.type === 'video/mp4');
+        // WebM first for smaller files, then MP4 as fallback
+        return [...webmSources, ...mp4Sources];
+      }
+      return sources;
+    }
+
+    // Legacy single-source support
+    if (src) {
+      return [{ src, type: 'video/mp4' as const }];
+    }
+
+    return [];
+  }, [sources, src, connectionQuality]);
+
   // Pause/play based on viewport visibility
   useEffect(() => {
     const video = videoRef.current;
@@ -110,7 +187,8 @@ export function VideoBackground({
   }, [isLoaded]);
 
   // Should show video?
-  const shouldShowVideo = !hasError && !prefersReducedMotion && !(pauseOnMobile && isMobile);
+  const shouldShowVideo =
+    !hasError && !prefersReducedMotion && !(pauseOnMobile && isMobile) && optimizedSources.length > 0;
 
   // Show fallback if video can't play
   if (!shouldShowVideo && fallbackComponent) {
@@ -123,7 +201,7 @@ export function VideoBackground({
       className={`absolute inset-0 overflow-hidden ${className}`}
       aria-hidden="true"
     >
-      {/* Video element */}
+      {/* Video element with multiple sources */}
       {shouldShowVideo && (
         <video
           ref={videoRef}
@@ -135,11 +213,24 @@ export function VideoBackground({
           poster={poster}
           onLoadedData={() => setIsLoaded(true)}
           onError={() => setHasError(true)}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+          className={`transition-opacity duration-1000 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            minWidth: '100%',
+            minHeight: '100%',
+            width: 'auto',
+            height: 'auto',
+            objectFit: 'cover',
+          }}
         >
-          <source src={src} type="video/mp4" />
+          {optimizedSources.map((source, index) => (
+            <source key={`${source.type}-${index}`} src={source.src} type={source.type} />
+          ))}
         </video>
       )}
 

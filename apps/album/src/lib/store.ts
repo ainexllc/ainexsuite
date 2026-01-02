@@ -7,7 +7,7 @@ import { getUserSpaces, createSpace, joinSpace, getSpaceByAccessCode } from './s
 interface MomentsState {
   // Spaces
   spaces: Space[];
-  currentSpaceId: string | null;
+  currentSpaceId: string;
   isLoadingSpaces: boolean;
 
   // Moments
@@ -31,7 +31,7 @@ export const useMomentsStore = create<MomentsState>()(
   persist(
     (set, get) => ({
       spaces: [],
-      currentSpaceId: null,
+      currentSpaceId: 'personal',
       isLoadingSpaces: false,
       moments: [],
       isLoadingMoments: false,
@@ -40,9 +40,9 @@ export const useMomentsStore = create<MomentsState>()(
       setSpaces: (spaces) => {
         const currentId = get().currentSpaceId;
         let nextId = currentId;
-        // Set default space if none selected or current no longer exists
-        if (spaces.length > 0 && (!currentId || !spaces.find(s => s.id === currentId))) {
-          nextId = spaces[0].id;
+        // Keep 'personal' as valid virtual space, otherwise set default if none selected
+        if (!currentId || (currentId !== 'personal' && !spaces.find(s => s.id === currentId))) {
+          nextId = 'personal';
         }
         set({ spaces, currentSpaceId: nextId, isLoadingSpaces: false });
       },
@@ -52,10 +52,11 @@ export const useMomentsStore = create<MomentsState>()(
         try {
           const spaces = await getUserSpaces(userId);
           set({ spaces, isLoadingSpaces: false });
-          
-          // Set default space if none selected
-          if (!get().currentSpaceId && spaces.length > 0) {
-            set({ currentSpaceId: spaces[0].id });
+
+          // Keep 'personal' as default - it's a virtual space
+          const currentId = get().currentSpaceId;
+          if (!currentId || (currentId !== 'personal' && !spaces.find(s => s.id === currentId))) {
+            set({ currentSpaceId: 'personal' });
           }
         } catch (error) {
           console.error('Failed to fetch spaces:', error);

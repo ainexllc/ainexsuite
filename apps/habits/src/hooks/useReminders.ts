@@ -3,6 +3,7 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { useGrowStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { getTodayDateString } from '@/lib/date-utils';
 import {
   canShowNotifications,
@@ -34,8 +35,9 @@ interface StoredReminders {
 
 export function useReminders() {
   const { user } = useAuth();
-  const { habits, completions, getCurrentSpace } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { habits, completions } = useGrowStore();
+  const { currentSpace } = useSpaces();
+  
   const scheduledRef = useRef(false);
 
   // State for Firestore data

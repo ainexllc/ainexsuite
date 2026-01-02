@@ -4,7 +4,7 @@
   "private": true,
   "description": "AINexSuite projects app for project management and tracking",
   "scripts": {
-    "dev": "next dev -p ${PORT:-3009}",
+    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3009}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@ainexsuite/auth": "workspace:*",
+    "@ainexsuite/date-detection": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
     "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",

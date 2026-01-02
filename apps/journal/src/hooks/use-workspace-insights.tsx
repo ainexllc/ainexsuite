@@ -205,15 +205,26 @@ export function useWorkspaceInsights(
 
   // Filter to recent entries (exclude archived, include all non-archived regardless of draft status)
   const recentEntries = useMemo(() => {
-    return entries
-      .filter((e) => !e.archived) // Only filter out archived entries
-      .sort((a, b) => {
-        const aTime = toDate(a.createdAt).getTime();
-        const bTime = toDate(b.createdAt).getTime();
-        return bTime - aTime;
-      })
-      .slice(0, RECENT_COUNT);
-  }, [entries]);
+    const nonArchived = entries.filter((e) => !e.archived);
+    const sorted = nonArchived.sort((a, b) => {
+      const aTime = toDate(a.createdAt).getTime();
+      const bTime = toDate(b.createdAt).getTime();
+      return bTime - aTime;
+    });
+    const result = sorted.slice(0, RECENT_COUNT);
+
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Journal Insights] Entry counts:', {
+        total: entries.length,
+        nonArchived: nonArchived.length,
+        recentForInsights: result.length,
+        spaceId: currentSpaceId,
+      });
+    }
+
+    return result;
+  }, [entries, currentSpaceId]);
 
   // Config for the shared hook
   const config: WorkspaceInsightsConfig<JournalEntry, JourneyInsightData> =

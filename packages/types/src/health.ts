@@ -3,6 +3,7 @@ import type { MoodType, Timestamp } from './common';
 export interface HealthMetric {
   id: string;
   ownerId: string;
+  spaceId?: string; // Space this metric belongs to
   date: string; // YYYY-MM-DD
   sleep: number | null; // hours
   water: number | null; // glasses
@@ -54,4 +55,33 @@ export interface HealthCorrelation {
   metric2: string;
   correlation: number; // -1 to 1
   confidence: number; // 0-1
+}
+
+// ===== HEALTH GOALS =====
+
+export interface HealthGoals {
+  dailyWaterGoal: number; // glasses
+  targetWeight: number | null; // kg/lbs based on user pref
+  sleepGoal: number; // hours per night
+  exerciseGoalDaily: number; // minutes per day
+  exerciseGoalWeekly: number; // minutes per week
+}
+
+export interface GoalProgress {
+  metric: keyof HealthGoals;
+  label: string;
+  current: number;
+  target: number;
+  percentage: number;
+  streak: number; // days meeting goal
+  bestStreak: number;
+  lastAchieved: string | null; // date
+  unit: string;
+}
+
+export interface HealthGoalsSummary {
+  goals: HealthGoals;
+  progress: GoalProgress[];
+  overallCompletionRate: number;
+  totalStreak: number; // days meeting all goals
 }

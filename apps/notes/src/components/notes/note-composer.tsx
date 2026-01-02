@@ -16,9 +16,6 @@ import {
   Sparkles,
   Loader2,
   Brain,
-  FolderOpen,
-  ChevronDown,
-  Check,
   Flame,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
@@ -42,11 +39,10 @@ import {
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
 import { usePreferences } from "@/components/providers/preferences-provider";
+import { generateUUID, InlineSpacePicker } from "@ainexsuite/ui";
+import { DateSuggestions } from "@ainexsuite/date-detection";
 import { useSpaces } from "@/components/providers/spaces-provider";
-import { SpaceEditor as SharedSpaceEditor } from "@ainexsuite/ui";
-import type { SpaceType as SharedSpaceType } from "@ainexsuite/types";
-import type { SpaceType as NoteSpaceType } from "@/lib/types/note";
-import { useAuth } from "@ainexsuite/auth";
+import { Hint, HINTS } from "@/components/hints";
 
 type AttachmentDraft = {
   id: string;
@@ -55,19 +51,24 @@ type AttachmentDraft = {
 };
 
 const checklistTemplate = (): ChecklistItem => ({
-  id: crypto.randomUUID(),
+  id: generateUUID(),
   text: "",
   completed: false,
 });
 
+interface NoteComposerProps {
+  /** Callback to open member manager for current space */
+  onManagePeople?: () => void;
+  /** Callback to open space management modal */
+  onManageSpaces?: () => void;
+}
 
-export function NoteComposer() {
-  const { user } = useAuth();
+export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerProps) {
   const { createNote, updateNote, deleteNote } = useNotes();
+  const { spaces, currentSpace, setCurrentSpace } = useSpaces();
   const { createReminder } = useReminders();
   const { preferences } = usePreferences();
   const { labels, createLabel } = useLabels();
-  const { spaces, currentSpaceId, setCurrentSpace, createSpace } = useSpaces();
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -98,8 +99,6 @@ export function NoteComposer() {
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
   const [isCreatingLabel, setIsCreatingLabel] = useState(false);
-  const [showSpacePicker, setShowSpacePicker] = useState(false);
-  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const newLabelInputRef = useRef<HTMLInputElement>(null);
@@ -528,7 +527,7 @@ export function NoteComposer() {
     }
 
     const drafts: AttachmentDraft[] = Array.from(files).map((file) => ({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       file,
       preview: URL.createObjectURL(file),
     }));
@@ -613,15 +612,6 @@ export function NoteComposer() {
   const colorConfig = NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
   const backgroundClass = colorConfig.cardClass;
 
-  // Get current space name
-  const currentSpace = spaces.find((s) => s.id === currentSpaceId);
-  const currentSpaceName = currentSpace?.name || "Personal";
-
-  const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
-    if (!user) return;
-    const noteType = data.type as NoteSpaceType;
-    await createSpace({ name: data.name, type: noteType });
-  };
 
   const canUseSms = Boolean(preferences.smsNumber?.trim());
 
@@ -658,76 +648,31 @@ export function NoteComposer() {
     };
   }, [expanded, handleClose, isSubmitting]);
 
+  // Check if user only has personal space (for hint display)
+  const hasOnlyPersonalSpace = spaces.length === 1 && spaces[0]?.type === 'personal';
+
   return (
     <section className="w-full">
       {!expanded ? (
-        <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
-          <button
-            type="button"
-            className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
-            onClick={() => setExpanded(true)}
-          >
-            <span>Take a note...</span>
-          </button>
-          {/* Compact space selector - responsive */}
-          <div className="relative flex-shrink-0">
+        <Hint hint={HINTS.SHARED_NOTES} showWhen={hasOnlyPersonalSpace}>
+          <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowSpacePicker((prev) => !prev);
-              }}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-full text-sm font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
+              onClick={() => setExpanded(true)}
             >
-              <FolderOpen className="h-4 w-4" />
-              <span className="hidden sm:inline max-w-[80px] truncate">{currentSpaceName}</span>
-              <ChevronDown className="h-3.5 w-3.5" />
+              <span>Take a note...</span>
             </button>
-            {showSpacePicker && (
-              <>
-                <div
-                  className="fixed inset-0 z-20"
-                  onClick={() => setShowSpacePicker(false)}
-                />
-                <div className="absolute right-0 top-full mt-1 z-30 min-w-[160px] rounded-xl border shadow-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 py-1">
-                  {spaces.map((space) => (
-                    <button
-                      key={space.id}
-                      type="button"
-                      onClick={() => {
-                        setCurrentSpace(space.id);
-                        setShowSpacePicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-2 w-full px-3 py-2 text-sm text-left transition",
-                        space.id === currentSpaceId
-                          ? "text-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      )}
-                    >
-                      <FolderOpen className="h-4 w-4" />
-                      <span className="flex-1 truncate">{space.name}</span>
-                      {space.id === currentSpaceId && <Check className="h-4 w-4" />}
-                    </button>
-                  ))}
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 mt-1 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowSpacePicker(false);
-                        setShowSpaceEditor(true);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>New Space</span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
+            {/* Compact space selector */}
+            <InlineSpacePicker
+              spaces={spaces}
+              currentSpace={currentSpace}
+              onSpaceChange={setCurrentSpace}
+              onManagePeople={onManagePeople}
+              onManageSpaces={onManageSpaces}
+            />
           </div>
-        </div>
+        </Hint>
       ) : (
         <div
           ref={composerRef}
@@ -971,6 +916,19 @@ export function NoteComposer() {
               </div>
             )}
 
+            {/* Date detection suggestions for calendar */}
+            {(title.trim() || body.trim()) && (
+              <DateSuggestions
+                text={`${title} ${body}`}
+                context={{
+                  app: 'notes',
+                  entryId: createdNoteId || undefined,
+                  title: title.trim() || 'Note',
+                }}
+                className="pb-2"
+              />
+            )}
+
             {selectedLabelIds.length ? (
               <div className="flex flex-wrap items-center gap-2">
                 {selectedLabelIds.map((labelId) => {
@@ -1179,7 +1137,7 @@ export function NoteComposer() {
                         if (body.trim()) {
                           const lines = body.split('\n').filter(line => line.trim());
                           const items = lines.map(line => ({
-                            id: crypto.randomUUID(),
+                            id: generateUUID(),
                             text: line.trim(),
                             completed: false,
                           }));
@@ -1490,17 +1448,6 @@ export function NoteComposer() {
         accept="image/*"
         multiple
         onChange={(event) => handleFilesSelected(event.target.files)}
-      />
-
-      {/* Space Editor Dialog */}
-      <SharedSpaceEditor
-        isOpen={showSpaceEditor}
-        onClose={() => setShowSpaceEditor(false)}
-        onSubmit={handleCreateSpace}
-        spaceTypes={[
-          { value: "family", label: "Family", description: "Share with family members" },
-          { value: "work", label: "Work", description: "Team notes and projects" },
-        ]}
       />
     </section>
   );

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Mail, Crown, UserMinus, UserPlus, X, Baby, User, Monitor, Link, Copy, Check, RefreshCw, Send, Loader2 } from 'lucide-react';
-import { useGrowStore } from '../../lib/store';
+import { useSpaces } from '../providers/spaces-provider';
 import { useAuth } from '@ainexsuite/auth';
 import { Member, MemberAgeGroup, HabitCreationPolicy } from '../../types/models';
 import { isSpaceAdmin } from '../../lib/permissions';
@@ -17,8 +17,8 @@ type InviteTab = 'quick' | 'email';
 
 export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
   const { user } = useAuth();
-  const { getCurrentSpace, updateSpace } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { currentSpace, updateSpace } = useSpaces();
+  
 
   // Quick add state
   const [quickName, setQuickName] = useState('');

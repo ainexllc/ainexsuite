@@ -21,11 +21,11 @@ import {
   Camera,
   GraduationCap,
   Activity,
-  Dumbbell,
   Layers,
   GitBranch,
   Calendar,
   Settings,
+  DollarSign,
 } from 'lucide-react';
 import type { AppConfig, AppSlug } from '@ainexsuite/types';
 import { APP_REGISTRY } from '@ainexsuite/types';
@@ -41,12 +41,12 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Camera,
   GraduationCap,
   Activity,
-  Dumbbell,
   Layers,
   GitBranch,
   Calendar,
   Settings,
   Circle,
+  DollarSign,
 };
 
 // Animated icons for specific apps (uses different props)

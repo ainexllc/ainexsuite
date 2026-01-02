@@ -4,7 +4,7 @@
   "private": true,
   "description": "Health app - Body metrics, wellness tracking, and health monitoring at health.ainexsuite.com",
   "scripts": {
-    "dev": "next dev -p ${PORT:-3004}",
+    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3004}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
@@ -13,6 +13,7 @@
   "dependencies": {
     "@ainexsuite/ai": "workspace:*",
     "@ainexsuite/auth": "workspace:*",
+    "@ainexsuite/date-detection": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
     "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",
@@ -20,6 +21,8 @@
     "clsx": "^2.1.0",
     "date-fns": "^3.0.0",
     "geist": "^1.2.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.4",
     "lucide-react": "^0.312.0",
     "next": "15.5.9",
     "react": "^19.1.0",

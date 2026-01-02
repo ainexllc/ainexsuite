@@ -16,29 +16,55 @@ service cloud.firestore {
     // --- Grow App Rules ---
 
     match /spaces/{spaceId} {
-      allow read: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      // Allow read if: member OR space is public (for browsing joinable spaces)
+      allow read: if isAuthenticated() && (
+        request.auth.uid in resource.data.memberUids ||
+        resource.data.isPublic == true
+      );
       allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
-      allow update: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
-      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+      // Allow update if: member OR joining a public space (adding self to memberUids)
+      allow update: if isAuthenticated() && (
+        request.auth.uid in resource.data.memberUids ||
+        (resource.data.isPublic == true &&
+         request.auth.uid in request.resource.data.memberUids &&
+         request.resource.data.memberUids.hasAll(resource.data.memberUids))
+      );
+      // Support both ownerId and createdBy (legacy) for deletion
+      allow delete: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.createdBy == request.auth.uid
+      );
     }
 
     match /habits/{habitId} {
-      // Allow read if user is in space OR is assigned to the habit
+      // Allow read if:
+      // 1. Personal space: user must be the creator
+      // 2. User is assigned to the habit
+      // 3. User is a member of the non-personal space
       allow read: if isAuthenticated() && (
-        request.auth.uid in resource.data.assigneeIds ||
-        (exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+        (resource.data.spaceId == 'personal' && resource.data.createdBy == request.auth.uid) ||
+        resource.data.createdBy == request.auth.uid ||
+        (resource.data.assigneeIds != null && request.auth.uid in resource.data.assigneeIds) ||
+        (resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
          request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
       );
 
-      // Create: member of space + must set createdBy to their own uid
+      // Create: user must be creator, and for non-personal space, must be a member
       allow create: if isAuthenticated() &&
-        exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
-        request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids &&
-        request.resource.data.createdBy == request.auth.uid;
+        request.resource.data.createdBy == request.auth.uid && (
+          request.resource.data.spaceId == 'personal' ||
+          (exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids)
+        );
 
-      allow update, delete: if isAuthenticated() &&
-        exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
-        request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
+      // Update/delete: creator or space member
+      allow update, delete: if isAuthenticated() && (
+        resource.data.createdBy == request.auth.uid ||
+        (resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
     }
 
     match /quests/{questId} {
@@ -52,20 +78,33 @@ service cloud.firestore {
     }
 
     match /completions/{completionId} {
-      // Allow read if user created the completion OR is in the space
+      // Allow read if:
+      // 1. Personal space: user must be the completion owner
+      // 2. User owns the completion
+      // 3. User is a member of the non-personal space
       allow read: if isAuthenticated() && (
+        (resource.data.spaceId == 'personal' && resource.data.userId == request.auth.uid) ||
         resource.data.userId == request.auth.uid ||
-        (exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+        (resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
          request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
       );
 
-      allow update, delete: if isAuthenticated() &&
-        exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
-        request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids;
+      // Update/delete: owner or space member
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
 
+      // Create: user must be the userId, and for non-personal space, must be a member
       allow create: if isAuthenticated() &&
-        exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
-        request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids;
+        request.resource.data.userId == request.auth.uid && (
+          request.resource.data.spaceId == 'personal' ||
+          (exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids)
+        );
     }
     
     match /learning_goals/{goalId} {
@@ -82,6 +121,55 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.recipientId == request.auth.uid;
       allow create: if isAuthenticated(); // Anyone can send, logic checks recipient
       allow update: if isAuthenticated() && resource.data.recipientId == request.auth.uid; // Mark read
+    }
+
+    // --- Habit Reminders ---
+    match /habitReminders/{reminderId} {
+      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+
+    match /userReminderPreferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // --- Habits Preferences (hints, UI state) ---
+    match /habits_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // --- Space Invitations ---
+    match /spaceInvitations/{invitationId} {
+      // Allow reading invitations if user is inviter, invitee, or space member
+      allow read: if isAuthenticated() && (
+        resource.data.invitedBy == request.auth.uid ||
+        resource.data.inviteeUid == request.auth.uid ||
+        (resource.data.spaceId != null &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      // Allow creating invitations if user is a member of the space
+      allow create: if isAuthenticated() && (
+        request.resource.data.invitedBy == request.auth.uid &&
+        request.resource.data.spaceId != null &&
+        exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids
+      );
+
+      // Allow updating (accept/decline) if user is invitee or inviter
+      allow update: if isAuthenticated() && (
+        resource.data.inviteeUid == request.auth.uid ||
+        resource.data.invitedBy == request.auth.uid
+      );
+
+      // Allow deleting if user is inviter or a member of the space
+      allow delete: if isAuthenticated() && (
+        resource.data.invitedBy == request.auth.uid ||
+        (resource.data.spaceId != null &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
     }
 
 
@@ -190,6 +278,10 @@ service cloud.firestore {
     }
 
     match /journal_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /todo_preferences/{userId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
@@ -380,9 +472,8 @@ service cloud.firestore {
 
     match /feedback/{feedbackId} {
       allow create: if isAuthenticated();
-      // Allow public read for admin dashboard (admin role checked client-side)
-      allow read: if true;
-      allow update, delete: if isAuthenticated();
+      // Allow public access for admin dashboard (admin role checked client-side)
+      allow read, update, delete: if true;
     }
 
 

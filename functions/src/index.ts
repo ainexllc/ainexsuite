@@ -15,6 +15,7 @@ admin.initializeApp();
 
 const GROK_API_KEY = process.env.GROK_API_KEY;
 if (!GROK_API_KEY) {
+  // API key not configured - will be checked at runtime
 }
 
 const GROK_MODEL = 'grok-4-1-fast-non-reasoning';
@@ -26,7 +27,7 @@ const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 14 * 1000; // 14 days in milliseco
  */
 export const generateSessionCookie = functions
   .region('us-central1')
-  .https.onCall(async (data: any, context: any) => {
+  .https.onCall(async (data: any, _context: any) => {
     const { idToken } = data;
 
     if (!idToken) {
@@ -136,7 +137,7 @@ export const generateSessionCookie = functions
  */
 export const checkAuthStatus = functions
   .region('us-central1')
-  .https.onCall(async (data: any, context: any) => {
+  .https.onCall(async (data: any, _context: any) => {
     const { sessionCookie } = data;
 
     if (!sessionCookie) {
@@ -229,7 +230,6 @@ export const chatWithGrok = functions
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
         throw new functions.https.HttpsError('internal', 'AI service error');
       }
 
@@ -270,3 +270,6 @@ Be helpful, concise, and context-aware. Provide actionable suggestions based on 
 
   return basePrompt;
 }
+
+// Video processing
+export { processVideoBackground } from './video-transcoding';

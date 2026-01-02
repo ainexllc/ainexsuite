@@ -20,9 +20,8 @@ export interface MomentsSpace {
   memberUids: string[];
   ownerId: string;
   accessCode?: string;
-  createdAt: Date;
+  createdAt: Date | number;
   updatedAt?: Date;
-  createdBy: string;
 }
 
 /**

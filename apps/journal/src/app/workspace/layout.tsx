@@ -1,12 +1,14 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
-import { SpacesProvider } from '@/components/providers/spaces-provider';
+import type { SpaceSettingsItem } from '@ainexsuite/ui';
+import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
 import { EntriesProvider, useEntries } from '@/components/providers/entries-provider';
 import { PreferencesProvider } from '@/components/providers/preferences-provider';
+import { HintsProvider } from '@/components/hints';
 import { PrivacyProvider } from '@ainexsuite/privacy';
 import { CoverSettingsProvider } from '@/contexts/cover-settings-context';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
@@ -30,6 +32,28 @@ function WorkspaceLayoutInner({
   const router = useRouter();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const { entries, loading: entriesLoading } = useEntries();
+  const { allSpaces, updateSpace, deleteSpace } = useSpaces();
+
+  // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
+  // Use allSpaces so users can see and toggle visibility of hidden spaces
+  const spaceSettingsItems = useMemo<SpaceSettingsItem[]>(() => {
+    return allSpaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal,
+        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+        memberCount: s.memberUids?.length || 1,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+      }));
+  }, [allSpaces, user?.uid]);
+
+  // Handle updating space visibility
+  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
+    await updateSpace(spaceId, { hiddenInApps });
+  }, [updateSpace]);
 
   // Get quick actions for Journal app
   const quickActions = getQuickActionsForApp('journal');
@@ -92,6 +116,10 @@ function WorkspaceLayoutInner({
           notifications: { email: true, push: false, inApp: true },
         }}
         onUpdatePreferences={updatePreferences}
+        spaces={spaceSettingsItems}
+        currentAppId="journal"
+        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
+        onDeleteSpace={deleteSpace}
         appSettingsLabel="Journal"
         appSettingsIcon={<BookOpen className="h-4 w-4" />}
       />
@@ -110,14 +138,10 @@ export default function WorkspaceRootLayout({
   useFontPreference(user?.preferences?.fontFamily);
   useFontSizePreference(user?.preferences?.fontSize);
 
-  // Show standardized loading screen
-  if (isLoading) {
+  // Show standardized loading screen while checking auth
+  // This prevents providers from mounting and making Firestore calls before auth is confirmed
+  if (isLoading || !isReady || !user) {
     return <WorkspaceLoadingScreen />;
-  }
-
-  // Return null while redirecting
-  if (!isReady || !user) {
-    return null;
   }
 
   return (
@@ -125,15 +149,17 @@ export default function WorkspaceRootLayout({
       <PrivacyProvider config={{ appName: 'journal' }}>
         <CoverSettingsProvider>
           <PreferencesProvider>
-            <EntriesProvider>
-              <WorkspaceLayoutInner
-                user={user}
-                handleSignOut={handleSignOut}
-                updatePreferences={updatePreferences}
-              >
-                {children}
-              </WorkspaceLayoutInner>
-            </EntriesProvider>
+            <HintsProvider>
+              <EntriesProvider>
+                <WorkspaceLayoutInner
+                  user={user}
+                  handleSignOut={handleSignOut}
+                  updatePreferences={updatePreferences}
+                >
+                  {children}
+                </WorkspaceLayoutInner>
+              </EntriesProvider>
+            </HintsProvider>
           </PreferencesProvider>
         </CoverSettingsProvider>
       </PrivacyProvider>

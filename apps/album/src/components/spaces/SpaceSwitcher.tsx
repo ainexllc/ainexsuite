@@ -1,20 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { SpaceSwitcher as SharedSpaceSwitcher, SpaceEditor as SharedSpaceEditor } from '@ainexsuite/ui';
+import { useEffect } from 'react';
+import { SpaceSwitcher as SharedSpaceSwitcher } from '@ainexsuite/ui';
 import type { SpaceItem } from '@ainexsuite/ui';
 import type { SpaceType as SharedSpaceType } from '@ainexsuite/types';
 import { useMomentsStore } from '@/lib/store';
 import { useAuth } from '@ainexsuite/auth';
 import { subscribeToSpaces } from '@/lib/spaces';
 
+interface SpaceSwitcherProps {
+  /** Callback when user wants to manage spaces */
+  onManageSpaces?: () => void;
+  /** Callback when user wants to invite people to current space */
+  onManagePeople?: () => void;
+}
+
 /**
  * Moments app SpaceSwitcher - wraps shared UI component with app-specific data
  */
-export function SpaceSwitcher() {
+export function SpaceSwitcher({ onManageSpaces, onManagePeople }: SpaceSwitcherProps) {
   const { user } = useAuth();
-  const { spaces, currentSpaceId, setCurrentSpace, setSpaces, addSpace } = useMomentsStore();
-  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
+  const { spaces, currentSpaceId, setCurrentSpace, setSpaces } = useMomentsStore();
 
   // Subscribe to spaces from Firestore
   useEffect(() => {
@@ -34,32 +40,15 @@ export function SpaceSwitcher() {
     type: (space.type || 'family') as SharedSpaceType,
   }));
 
-  const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
-    if (!user) return;
-    await addSpace(user.uid, data.name, data.type);
-  };
-
   return (
-    <>
-      <SharedSpaceSwitcher
-        spaces={spaceItems}
-        currentSpaceId={currentSpaceId || 'personal'}
-        onSpaceChange={setCurrentSpace}
-        onCreateSpace={() => setShowSpaceEditor(true)}
-        spacesLabel="Photo Spaces"
-        defaultSpaceName="Personal"
-      />
-
-      <SharedSpaceEditor
-        isOpen={showSpaceEditor}
-        onClose={() => setShowSpaceEditor(false)}
-        onSubmit={handleCreateSpace}
-        spaceTypes={[
-          { value: 'personal', label: 'Personal', description: 'Your private photos' },
-          { value: 'family', label: 'Family', description: 'Share with family members' },
-          { value: 'couple', label: 'Couple', description: 'Share with your partner' },
-        ]}
-      />
-    </>
+    <SharedSpaceSwitcher
+      spaces={spaceItems}
+      currentSpaceId={currentSpaceId || 'personal'}
+      onSpaceChange={setCurrentSpace}
+      onManageSpaces={onManageSpaces}
+      onManagePeople={onManagePeople}
+      spacesLabel="Photo Spaces"
+      defaultSpaceName="Personal"
+    />
   );
 }

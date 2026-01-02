@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState, useCallback } from 'react';
+import { ReactNode, useState, useCallback, useEffect } from 'react';
 import { WorkspaceHeader } from './workspace-header';
 import { WorkspaceBackground } from '../backgrounds/workspace-background';
 import { FeedbackWidget } from '../feedback/feedback-widget';
@@ -15,6 +15,9 @@ import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
 import { useAppTheme } from '@ainexsuite/theme';
 import { useRealtimeThemeSync } from '../../hooks/use-realtime-theme-sync';
 import type { NotificationItem, QuickAction, BreadcrumbItem } from '@ainexsuite/types';
+
+// Storage key for tracking first-time AI Insights user
+const INSIGHTS_FIRST_TIME_KEY = 'ainex-ai-insights-first-time-seen';
 
 interface WorkspaceLayoutProps {
   /**
@@ -178,6 +181,10 @@ interface WorkspaceLayoutProps {
    * Callback to update user preferences (e.g. theme)
    */
   onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
+  /**
+   * Custom message to show when there's not enough data for insights
+   */
+  insightsEmptyStateMessage?: string;
 }
 
 export function WorkspaceLayout({
@@ -216,12 +223,51 @@ export function WorkspaceLayout({
   insightsDefaultExpanded,
   onInsightsViewDetails,
   onUpdatePreferences,
+  insightsEmptyStateMessage,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
-  const [isInsightsExpanded, setIsInsightsExpanded] = useState(false);
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
+
+  // Compute the storage key for insights
+  const computedStorageKey = insightsStorageKey || `${appName || 'app'}-ai-insights-expanded`;
+
+  // Initialize isInsightsExpanded synchronously to match pulldown's behavior
+  // This prevents the flash where panel is expanded but content hasn't adjusted
+  const [isInsightsExpanded, setIsInsightsExpanded] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(computedStorageKey);
+      // Default to true (expanded) for new users, respect stored preference otherwise
+      return stored === null ? true : stored === 'true';
+    }
+    return true; // Default to expanded for SSR
+  });
+
+  // Sync isInsightsExpanded when storage key changes or on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && computedStorageKey) {
+      const stored = localStorage.getItem(computedStorageKey);
+      const expanded = stored === null ? true : stored === 'true';
+      setIsInsightsExpanded(expanded);
+    }
+  }, [computedStorageKey]);
+
+  // Check if first-time user for AI Insights welcome message
+  useEffect(() => {
+    if (typeof window !== 'undefined' && insightsSections) {
+      const hasSeenInsights = localStorage.getItem(INSIGHTS_FIRST_TIME_KEY);
+      if (!hasSeenInsights) {
+        setIsFirstTimeUser(true);
+        // Mark as seen after a short delay (so they see the welcome)
+        const timer = setTimeout(() => {
+          localStorage.setItem(INSIGHTS_FIRST_TIME_KEY, 'true');
+        }, 10000); // Mark as seen after 10 seconds
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [insightsSections]);
 
   // Real-time theme sync: bidirectional sync with Firestore for cross-device theme
   // Also syncs local theme changes TO Firestore automatically
@@ -365,26 +411,33 @@ export function WorkspaceLayout({
             lastUpdated={insightsLastUpdated}
             onRefresh={onInsightsRefresh}
             refreshDisabled={insightsRefreshDisabled}
-            storageKey={insightsStorageKey || `${appName || 'app'}-ai-insights-expanded`}
+            storageKey={computedStorageKey}
             defaultExpanded={insightsDefaultExpanded}
             onExpandedChange={setIsInsightsExpanded}
             onViewDetails={onInsightsViewDetails}
+            isFirstTimeUser={isFirstTimeUser}
+            onDismissFirstTime={() => {
+              setIsFirstTimeUser(false);
+              localStorage.setItem(INSIGHTS_FIRST_TIME_KEY, 'true');
+            }}
+            emptyStateMessage={insightsEmptyStateMessage}
           />
         </div>
       )}
 
       {/* Main Content - adjusts padding based on header visibility and insights expanded state */}
       {/* When expanded: panel height (100-180px responsive) + tab handle (28-36px responsive) + accent line (2px) */}
+      {/* Duration matches AIInsightsPulldown animation (500ms) for smooth sync */}
       <main
-        className={`flex-1 transition-[padding-top] duration-300 ${
+        className={`flex-1 transition-[padding-top] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           insightsSections
             ? isInsightsExpanded
               ? isNavVisible
                 ? 'pt-[calc(4rem+132px)] sm:pt-[calc(4rem+160px)] lg:pt-[calc(4rem+180px)] xl:pt-[calc(4rem+200px)] 2xl:pt-[calc(4rem+220px)]'
                 : 'pt-[132px] sm:pt-[160px] lg:pt-[180px] xl:pt-[200px] 2xl:pt-[220px]'
               : isNavVisible
-                ? 'pt-[calc(4rem+24px)] sm:pt-[calc(4rem+36px)]'
-                : 'pt-[24px] sm:pt-[36px]'
+                ? 'pt-[calc(4rem+40px)] sm:pt-[calc(4rem+44px)]'
+                : 'pt-[40px] sm:pt-[44px]'
             : isNavVisible
               ? 'pt-16'
               : 'pt-0'

@@ -1,0 +1,19 @@
+"use client";
+
+import { createSpacesProvider } from "@ainexsuite/ui";
+import type { Space } from "@ainexsuite/types";
+
+/**
+ * Todo app spaces configuration
+ * Uses the shared spaces factory from @ainexsuite/ui
+ */
+export const { SpacesProvider, useSpaces } = createSpacesProvider<Space>({
+  appId: "todo",
+  collectionName: "todo_spaces",
+  storageKey: "todo-current-space",
+  defaultSpace: {
+    name: "My Todos",
+    type: "personal",
+  },
+  allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
+});

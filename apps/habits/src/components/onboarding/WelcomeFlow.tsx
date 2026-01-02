@@ -14,6 +14,7 @@ import {
   Home,
 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 import { SpaceType, Habit } from '@/types/models';
 import { cn } from '@/lib/utils';
@@ -64,7 +65,8 @@ const spaceOptions = [
 
 export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
   const { user } = useAuth();
-  const { addSpace, addHabit, spaces } = useGrowStore();
+  const { spaces, createSpace } = useSpaces();
+  const { addHabit } = useGrowStore();
 
   const [step, setStep] = useState<Step>('welcome');
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
@@ -114,35 +116,20 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
         // Create each selected space
         for (let i = 0; i < selectedSpaces.length; i++) {
           const spaceType = selectedSpaces[i];
-          const newSpace = {
-            id: `space_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 9)}`,
+
+          // Create space with basic info - the provider generates the rest
+          const spaceId = await createSpace({
             name: getSpaceName(spaceType),
             type: spaceType,
-            members: [
-              {
-                uid: user.uid,
-                displayName: user.displayName || 'You',
-                photoURL: user.photoURL || undefined,
-                role: 'admin' as const,
-                joinedAt: new Date().toISOString(),
-                // For family spaces, mark creator as adult
-                ...(spaceType === 'family' ? { ageGroup: 'adult' as const } : {}),
-              },
-            ],
-            memberUids: [user.uid],
-            createdAt: new Date().toISOString(),
-            createdBy: user.uid,
-          };
-
-          await addSpace(newSpace);
+          });
 
           // First space (or personal if selected) gets the habits
           if (!primarySpaceId) {
-            primarySpaceId = newSpace.id;
+            primarySpaceId = spaceId;
           }
           // Prefer personal space for habits
           if (spaceType === 'personal') {
-            primarySpaceId = newSpace.id;
+            primarySpaceId = spaceId;
           }
 
           // Small delay between space creation

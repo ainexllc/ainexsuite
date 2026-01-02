@@ -12,8 +12,12 @@ import {
   Clock,
   AtSign,
   RefreshCw,
+  UserPlus,
+  UserCheck,
+  Users,
 } from 'lucide-react';
 import type { NotificationItem, NotificationType } from '@ainexsuite/types';
+import { InvitationNotificationItem } from '../notifications/invitation-notification-item';
 
 /**
  * NotificationDropdown Component
@@ -38,6 +42,10 @@ export interface NotificationDropdownProps {
   onClearAll?: () => void;
   /** Callback to view all notifications (navigate to notifications page) */
   onViewAll?: () => void;
+  /** Callback when a space invitation is accepted */
+  onAcceptInvitation?: (invitationId: string, notificationId: string) => Promise<void>;
+  /** Callback when a space invitation is declined */
+  onDeclineInvitation?: (invitationId: string, notificationId: string) => Promise<void>;
   /** Additional CSS classes */
   className?: string;
 }
@@ -50,6 +58,9 @@ const NOTIFICATION_ICONS: Record<NotificationType, React.ComponentType<{ classNa
   reminder: Clock,
   mention: AtSign,
   update: RefreshCw,
+  space_invite: UserPlus,
+  space_accepted: UserCheck,
+  space_joined: Users,
 };
 
 const NOTIFICATION_COLORS: Record<NotificationType, string> = {
@@ -60,6 +71,9 @@ const NOTIFICATION_COLORS: Record<NotificationType, string> = {
   reminder: 'text-purple-500',
   mention: 'text-cyan-500',
   update: 'text-indigo-500',
+  space_invite: 'text-violet-500',
+  space_accepted: 'text-emerald-500',
+  space_joined: 'text-teal-500',
 };
 
 function formatTimestamp(timestamp: number): string {
@@ -85,6 +99,8 @@ export function NotificationDropdown({
   onMarkAllRead,
   onClearAll,
   onViewAll,
+  onAcceptInvitation,
+  onDeclineInvitation,
   className = '',
 }: NotificationDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -174,6 +190,21 @@ export function NotificationDropdown({
         {hasItems ? (
           <ul className="py-1">
             {items.map((item) => {
+              // Render InvitationNotificationItem for space_invite type
+              if (item.type === 'space_invite' && onAcceptInvitation && onDeclineInvitation) {
+                return (
+                  <InvitationNotificationItem
+                    key={item.id}
+                    notification={item}
+                    onAccept={onAcceptInvitation}
+                    onDecline={onDeclineInvitation}
+                    onNotificationClick={onNotificationClick}
+                    onMarkAsRead={onMarkAsRead}
+                  />
+                );
+              }
+
+              // Default notification rendering
               const Icon = NOTIFICATION_ICONS[item.type] || Info;
               const colorClass = NOTIFICATION_COLORS[item.type] || 'text-muted-foreground';
 
@@ -207,7 +238,7 @@ export function NotificationDropdown({
                       )}
                       <p className="text-[10px] text-muted-foreground/70 mt-1">
                         {formatTimestamp(item.timestamp)}
-                        {item.app && ` · ${item.app}`}
+                        {item.app && ` \u00b7 ${item.app}`}
                       </p>
                     </div>
                     {!item.read && (

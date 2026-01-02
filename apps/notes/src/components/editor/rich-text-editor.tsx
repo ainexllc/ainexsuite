@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
+import { useCallback, useEffect, forwardRef, useImperativeHandle, useState, useRef } from 'react';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -129,10 +129,41 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       },
     });
 
-    // Sync content when it changes externally
+    // Track if editor is focused to avoid syncing content while user is typing
+    const isFocusedRef = useRef(false);
+    const initialContentRef = useRef(content);
+
+    // Track focus state
     useEffect(() => {
-      if (editor && content !== editor.getHTML()) {
+      if (!editor) return;
+
+      const handleFocus = () => {
+        isFocusedRef.current = true;
+      };
+      const handleBlur = () => {
+        isFocusedRef.current = false;
+      };
+
+      editor.on('focus', handleFocus);
+      editor.on('blur', handleBlur);
+
+      return () => {
+        editor.off('focus', handleFocus);
+        editor.off('blur', handleBlur);
+      };
+    }, [editor]);
+
+    // Only sync content when editor is NOT focused (external changes only)
+    useEffect(() => {
+      if (!editor) return;
+
+      // Skip syncing if editor is focused (user is typing)
+      if (isFocusedRef.current) return;
+
+      // Only sync if content actually changed from initial/external value
+      if (content !== initialContentRef.current) {
         editor.commands.setContent(content);
+        initialContentRef.current = content;
       }
     }, [editor, content]);
 
@@ -206,11 +237,15 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
           />
         )}
         <div
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto cursor-text"
           style={{ minHeight }}
           onKeyDown={handleKeyDown}
+          onClick={() => editor?.commands.focus()}
         >
-          <EditorContent editor={editor} className="h-full" />
+          <EditorContent
+            editor={editor}
+            className="h-full [&_.ProseMirror]:min-h-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:h-full"
+          />
         </div>
       </div>
     );

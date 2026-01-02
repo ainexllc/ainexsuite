@@ -102,7 +102,7 @@ export function RichTextEditorEnhanced({
     editable: !disabled,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose dark:prose-invert max-w-none focus:outline-none min-h-[400px] max-h-[600px] overflow-y-auto px-4 py-3 text-foreground'
+        class: 'prose prose-sm sm:prose dark:prose-invert max-w-none focus:outline-none min-h-[150px] sm:min-h-[300px] max-h-[300px] sm:max-h-[500px] overflow-y-auto px-3 sm:px-4 py-2 sm:py-3 text-foreground'
       }
     }
   });
@@ -424,7 +424,7 @@ export function RichTextEditorEnhanced({
           <EditorContent
             editor={editor}
             className={cn(
-              "min-h-[300px]",
+              "min-h-[120px] sm:min-h-[250px]",
               disabled && "opacity-60 cursor-not-allowed",
               // Override prose text colors for backgrounds
               brightness === 'dark' && "[&_.ProseMirror]:text-white [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-white/50",

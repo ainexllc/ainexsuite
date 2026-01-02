@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { SpaceSwitcher as SharedSpaceSwitcher, SpaceEditor as SharedSpaceEditor } from "@ainexsuite/ui";
+import { SpaceSwitcher as SharedSpaceSwitcher } from "@ainexsuite/ui";
 import type { SpaceItem } from "@ainexsuite/ui";
 import type { SpaceType as SharedSpaceType } from "@ainexsuite/types";
-import type { SpaceType as NoteSpaceType } from "@/lib/types/note";
 import { useSpaces } from "@/components/providers/spaces-provider";
-import { useAuth } from "@ainexsuite/auth";
+
+interface SpaceSwitcherProps {
+  /** Callback when user wants to manage spaces */
+  onManageSpaces?: () => void;
+  /** Callback when user wants to invite people to current space */
+  onManagePeople?: () => void;
+}
 
 /**
  * Notes app SpaceSwitcher - wraps shared UI component with app-specific data
  */
-export function SpaceSwitcher() {
-  const { user } = useAuth();
-  const { spaces, currentSpaceId, setCurrentSpace, createSpace } = useSpaces();
-  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
+export function SpaceSwitcher({ onManageSpaces, onManagePeople }: SpaceSwitcherProps) {
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
 
   // Map NoteSpace to SpaceItem for the shared component
   const spaceItems: SpaceItem[] = spaces.map((space: { id: string; name: string; type: string }) => ({
@@ -23,29 +25,15 @@ export function SpaceSwitcher() {
     type: space.type as SharedSpaceType,
   }));
 
-  const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
-    if (!user) return;
-    // Only allow types supported by notes app
-    const noteType = data.type as NoteSpaceType;
-    await createSpace({ name: data.name, type: noteType });
-  };
-
   return (
-    <>
-      <SharedSpaceSwitcher
-        spaces={spaceItems}
-        currentSpaceId={currentSpaceId}
-        onSpaceChange={setCurrentSpace}
-        onCreateSpace={() => setShowSpaceEditor(true)}
-        spacesLabel="Note Spaces"
-        defaultSpaceName="Personal"
-      />
-
-      <SharedSpaceEditor
-        isOpen={showSpaceEditor}
-        onClose={() => setShowSpaceEditor(false)}
-        onSubmit={handleCreateSpace}
-      />
-    </>
+    <SharedSpaceSwitcher
+      spaces={spaceItems}
+      currentSpaceId={currentSpaceId}
+      onSpaceChange={setCurrentSpace}
+      onManageSpaces={onManageSpaces}
+      onManagePeople={onManagePeople}
+      spacesLabel="Note Spaces"
+      defaultSpaceName="My Notes"
+    />
   );
 }

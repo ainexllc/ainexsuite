@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Check, Plus, Baby, UserCircle, Users2 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 import { Habit, Schedule, MemberAgeGroup } from '@/types/models';
 import {
@@ -34,8 +35,9 @@ export function FamilyHabitTemplates({
   onHabitsAdded,
 }: FamilyHabitTemplatesProps) {
   const { user } = useAuth();
-  const { getCurrentSpace, addHabit } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { addHabit } = useGrowStore();
+  const { currentSpace } = useSpaces();
+  
 
   const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
   const [selectedAssignee, setSelectedAssignee] = useState<FilterType>('all');

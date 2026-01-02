@@ -2,8 +2,11 @@
 
 import { useMemo } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import Masonry from 'react-masonry-css';
 import { EmptyState, ListSection } from '@ainexsuite/ui';
 import { TaskCard } from './TaskCard';
+import { ColumnSelector } from './column-selector';
+import { usePreferences } from '@/components/providers/preferences-provider';
 import { useTodoStore } from '../../lib/store';
 import type { Task } from '../../types/models';
 
@@ -30,6 +33,18 @@ function TasksSkeleton() {
 export function TaskBoard({ onEditTask, searchQuery = '' }: TaskBoardProps) {
   const { getCurrentSpace, tasks } = useTodoStore();
   const currentSpace = getCurrentSpace();
+  const { preferences } = usePreferences();
+
+  // Breakpoints for Pinned and All Tasks sections (matches notes app pattern)
+  const pinnedBreakpoints = useMemo(() => ({
+    default: preferences.pinnedColumns || 2,
+    640: 1,
+  }), [preferences.pinnedColumns]);
+
+  const allTasksBreakpoints = useMemo(() => ({
+    default: preferences.allTasksColumns || 2,
+    640: 1,
+  }), [preferences.allTasksColumns]);
 
   // Filter tasks for current space, excluding archived
   const spaceTasks = useMemo(() => {
@@ -82,12 +97,18 @@ export function TaskBoard({ onEditTask, searchQuery = '' }: TaskBoardProps) {
 
   if (!currentSpace) return null;
 
-  const renderList = (items: Task[]) => (
-    <div className="space-y-3">
+  const renderMasonry = (items: Task[], breakpoints: Record<string, number>) => (
+    <Masonry
+      breakpointCols={breakpoints}
+      className="flex -ml-4 w-auto"
+      columnClassName="pl-4 bg-clip-padding"
+    >
       {items.map((task) => (
-        <TaskCard key={task.id} task={task} onEditTask={onEditTask} />
+        <div key={task.id} className="mb-4">
+          <TaskCard task={task} onEditTask={onEditTask} />
+        </div>
       ))}
-    </div>
+    </Masonry>
   );
 
   return (
@@ -96,20 +117,36 @@ export function TaskBoard({ onEditTask, searchQuery = '' }: TaskBoardProps) {
         <div className="space-y-10">
           {/* Pinned Tasks */}
           {pinnedTasks.length > 0 && (
-            <ListSection title="Pinned" count={pinnedTasks.length}>
-              {renderList(pinnedTasks)}
+            <ListSection
+              title="Pinned"
+              count={pinnedTasks.length}
+              action={<ColumnSelector section="pinned" />}
+            >
+              {renderMasonry(pinnedTasks, pinnedBreakpoints)}
             </ListSection>
           )}
 
           {/* All Tasks */}
           {unpinnedTasks.length > 0 && pinnedTasks.length > 0 && (
-            <ListSection title="All Tasks" count={unpinnedTasks.length}>
-              {renderList(unpinnedTasks)}
+            <ListSection
+              title="All Tasks"
+              count={unpinnedTasks.length}
+              action={<ColumnSelector section="allTasks" />}
+            >
+              {renderMasonry(unpinnedTasks, allTasksBreakpoints)}
             </ListSection>
           )}
 
           {/* Tasks without section header when no pinned tasks */}
-          {unpinnedTasks.length > 0 && pinnedTasks.length === 0 && renderList(unpinnedTasks)}
+          {unpinnedTasks.length > 0 && pinnedTasks.length === 0 && (
+            <ListSection
+              title="All Tasks"
+              count={unpinnedTasks.length}
+              action={<ColumnSelector section="allTasks" />}
+            >
+              {renderMasonry(unpinnedTasks, allTasksBreakpoints)}
+            </ListSection>
+          )}
         </div>
       ) : (
         <EmptyState

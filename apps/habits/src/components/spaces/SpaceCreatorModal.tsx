@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X, User, Heart, Users, Home, Check, Sparkles, ArrowRight, SkipForward } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
-import { useGrowStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { SpaceType, MemberAgeGroup, HabitCreationPolicy } from '@/types/models';
 import { FamilyHabitTemplates } from '@/components/family/FamilyHabitTemplates';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,7 @@ const spaceTypes: {
 
 export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
   const { user } = useAuth();
-  const { addSpace } = useGrowStore();
+  const { createSpace, updateSpace } = useSpaces();
 
   const [step, setStep] = useState<'type' | 'details' | 'templates'>('type');
   const [selectedType, setSelectedType] = useState<SpaceType | null>(null);
@@ -98,27 +98,19 @@ export function SpaceCreatorModal({ isOpen, onClose }: SpaceCreatorModalProps) {
       // Set habit creation policy for squad spaces (default to 'anyone' for backwards compatibility)
       const habitPolicy: HabitCreationPolicy | undefined = selectedType === 'squad' ? 'anyone' : undefined;
 
-      const newSpace = {
-        id: `space_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      // Create space with basic info - the provider will generate the rest
+      const spaceId = await createSpace({
         name: spaceName.trim(),
         type: selectedType,
-        members: [
-          {
-            uid: user.uid,
-            displayName: user.displayName || 'You',
-            photoURL: user.photoURL || undefined,
-            role: 'admin' as const,
-            joinedAt: new Date().toISOString(),
-            ...(memberAgeGroup && { ageGroup: memberAgeGroup }),
-          },
-        ],
-        memberUids: [user.uid],
-        createdAt: new Date().toISOString(),
-        createdBy: user.uid,
-        ...(habitPolicy && { habitCreationPolicy: habitPolicy }),
-      };
+      });
 
-      await addSpace(newSpace);
+      // Update with habits-specific fields if needed
+      if (habitPolicy || memberAgeGroup) {
+        const updates: Record<string, unknown> = {};
+        if (habitPolicy) updates.habitCreationPolicy = habitPolicy;
+        // Note: memberAgeGroup would need to be set on the member, not the space
+        await updateSpace(spaceId, updates);
+      }
 
       // For family spaces, go to templates step
       if (selectedType === 'family') {

@@ -22,7 +22,8 @@ import {
   Database,
   Users
 } from 'lucide-react';
-import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo } from '@ainexsuite/ui/components';
+import { DynamicBackground } from '@/components/dynamic-background';
 import type {
   DemoStep,
   NavLink,
@@ -238,7 +239,7 @@ function MainHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} />}
-        backgroundComponent={<LayeredBackground />}
+        backgroundComponent={<DynamicBackground />}
         appName="journaling"
         demoSteps={demoSteps}
         navLinks={navLinks}

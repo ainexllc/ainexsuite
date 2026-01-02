@@ -5,13 +5,16 @@ import { Camera, MapPin, Calendar, Tag, X, Smile, Users, Cloud, Palette, Pin, Pi
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useAppColors } from '@ainexsuite/theme';
+import { InlineSpacePicker } from '@ainexsuite/ui';
 import { createMoment, uploadPhoto } from '@/lib/moments';
 import { useMomentsStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { MOMENT_COLORS, type MomentColor } from '@/lib/constants/moment-colors';
 
 interface MomentComposerProps {
-  spaceId?: string;
   onMomentCreated?: () => void;
+  onManagePeople?: () => void;
+  onManageSpaces?: () => void;
 }
 
 const MOODS = [
@@ -25,10 +28,14 @@ const MOODS = [
 
 const WEATHER_OPTIONS = ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Windy', 'Foggy'];
 
-export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps) {
+export function MomentComposer({ onMomentCreated, onManagePeople, onManageSpaces }: MomentComposerProps) {
   const { user } = useAuth();
   const { fetchMoments } = useMomentsStore();
   const { primary: primaryColor } = useAppColors();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+
+  // Get current space for InlineSpacePicker
+  const currentSpace = spaces.find((s) => s.id === currentSpaceId) || null;
   const [expanded, setExpanded] = useState(false);
   const [caption, setCaption] = useState('');
   const [location, setLocation] = useState('');
@@ -172,11 +179,11 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
         weather: weather,
         photoUrl: photoUrl,
         collectionId: null,
-        spaceId: spaceId || undefined,
+        spaceId: currentSpaceId || undefined,
       });
 
       // Refresh moments list
-      await fetchMoments(user.uid, spaceId);
+      await fetchMoments(user.uid, currentSpaceId);
       onMomentCreated?.();
       resetState();
     } catch (error) {
@@ -184,7 +191,7 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, user?.uid, canSave, photoFile, caption, location, date, tags, people, mood, weather, spaceId, fetchMoments, onMomentCreated, resetState]);
+  }, [isSubmitting, user?.uid, canSave, photoFile, caption, location, date, tags, people, mood, weather, currentSpaceId, fetchMoments, onMomentCreated, resetState]);
 
   // Handle click outside to close if empty
   useEffect(() => {
@@ -206,13 +213,23 @@ export function MomentComposer({ spaceId, onMomentCreated }: MomentComposerProps
   return (
     <section className="w-full mb-8">
       {!expanded ? (
-        <button
-          type="button"
-          className="flex w-full items-center rounded-2xl border px-5 py-4 text-left text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-          onClick={() => setExpanded(true)}
-        >
-          <span>Capture a moment...</span>
-        </button>
+        <div className="flex w-full items-center gap-3 rounded-2xl border px-5 py-4 text-sm shadow-sm transition focus-within:ring-2 focus-within:ring-[var(--color-primary)] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+          <button
+            type="button"
+            className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
+            onClick={() => setExpanded(true)}
+          >
+            <span>Capture a moment...</span>
+          </button>
+          {/* Inline space picker */}
+          <InlineSpacePicker
+            spaces={spaces}
+            currentSpace={currentSpace}
+            onSpaceChange={setCurrentSpace}
+            onManagePeople={onManagePeople}
+            onManageSpaces={onManageSpaces}
+          />
+        </div>
       ) : (
         <div
           ref={composerRef}

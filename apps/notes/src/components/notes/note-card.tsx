@@ -6,12 +6,11 @@ import { useMemo, useState } from "react";
 import {
   Trash2,
   Users,
-  Flame,
   Check,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
-import { ConfirmationDialog } from "@ainexsuite/ui";
+import { ConfirmationDialog, PriorityIcon } from "@ainexsuite/ui";
 import type { Note } from "@/lib/types/note";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
@@ -108,7 +107,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           "group relative cursor-pointer overflow-hidden rounded-2xl",
           "transition-[border-color,box-shadow,transform] duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
-          "break-inside-avoid px-6 py-6",
+          "break-inside-avoid px-4 py-4 h-[220px] flex flex-col",
           // Selection styles - glow effect and scale
           isSelected && "border-primary dark:border-primary ring-4 ring-primary/20 scale-[0.98]",
         )}
@@ -136,7 +135,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
               "flex items-center justify-center",
               "backdrop-blur-xl border shadow-sm",
               // Position in title row, right side but left of pin corner
-              "top-4 right-[42px]",
+              "top-3 right-[36px]",
               isSelected
                 ? "bg-primary border-primary scale-110"
                 : clsx(
@@ -192,33 +191,56 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           </div>
         )}
 
-        {/* Corner Focus Badge - clickable to remove from focus */}
-        {note.pinned && (
-          <button
-            type="button"
-            onClick={handlePin}
-            className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
-            aria-label="Remove from Focus"
-          >
-            <div className="absolute top-0 right-0 bg-[var(--color-primary)] group-hover/pin:brightness-90 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all" />
-            <FocusIcon focused className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
-          </button>
-        )}
+        {/* Corner Focus Badge - clickable to toggle focus */}
+        <button
+          type="button"
+          onClick={handlePin}
+          className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
+          aria-label={note.pinned ? "Remove from Focus" : "Add to Focus"}
+        >
+          {note.pinned ? (
+            <>
+              <div className="absolute top-0 right-0 bg-[var(--color-primary)] group-hover/pin:brightness-90 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all" />
+              <FocusIcon focused className="absolute top-1.5 right-1.5 h-3 w-3 text-white" />
+            </>
+          ) : (
+            <>
+              <div className={clsx(
+                "absolute top-0 right-0 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all",
+                "opacity-0 group-hover:opacity-100",
+                backgroundImage?.brightness === 'light'
+                  ? "bg-black/10"
+                  : backgroundImage || hasCover
+                    ? "bg-white/10"
+                    : "bg-zinc-200/50 dark:bg-zinc-700/50"
+              )} />
+              <FocusIcon className={clsx(
+                "absolute top-1.5 right-1.5 h-3 w-3 transition-all",
+                "opacity-0 group-hover:opacity-100",
+                backgroundImage?.brightness === 'light'
+                  ? "text-[var(--color-primary)]"
+                  : backgroundImage || hasCover
+                    ? "text-[var(--color-primary)]/80"
+                    : "text-[var(--color-primary)]"
+              )} />
+            </>
+          )}
+        </button>
 
         {/* Header with title */}
         {note.title && (
           <div className={clsx(
-            "relative z-10 -mx-6 -mt-6 px-6 py-4 rounded-t-2xl border-b mb-4",
+            "relative z-10 -mx-4 -mt-4 px-4 py-2.5 rounded-t-2xl border-b mb-2",
             backgroundImage?.brightness === 'light'
               ? "bg-white/30 backdrop-blur-sm border-black/10"
               : backgroundImage
                 ? "bg-black/30 backdrop-blur-sm border-white/10"
                 : hasCover
                   ? "bg-black/30 backdrop-blur-sm border-white/10"
-                  : "bg-zinc-50/80 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-700/50"
+                  : "border-transparent"
           )}>
             <h3 className={clsx(
-              "pr-8 text-[17px] font-semibold tracking-[-0.02em]",
+              "pr-8 text-[14px] font-semibold tracking-[-0.02em] line-clamp-1",
               hasCover && !backgroundImage
                 ? "text-white"
                 : getTextColorClasses(backgroundImage, 'title')
@@ -228,18 +250,18 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           </div>
         )}
 
-        <div className="relative z-10 w-full">
+        <div className="relative z-10 w-full flex-1 flex flex-col overflow-hidden">
           <div
-            className="overflow-y-auto pr-1 max-h-[480px]"
+            className="overflow-y-auto pr-1 flex-1"
           >
 
             {note.type === "checklist" ? (
-              <ul className="mt-3 space-y-2">
-                {note.checklist.slice(0, 6).map((item) => (
+              <ul className="space-y-1">
+                {note.checklist.slice(0, 5).map((item) => (
                   <li
                     key={item.id}
                     className={clsx(
-                      "flex items-start gap-2 text-sm",
+                      "flex items-start gap-2 text-[12px]",
                       item.completed
                         ? clsx(
                             hasCover && !backgroundImage
@@ -253,30 +275,30 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                     )}
                   >
                     <span className={clsx(
-                      "mt-1.5 h-2 w-2 rounded-full flex-shrink-0",
+                      "mt-1 h-1.5 w-1.5 rounded-full flex-shrink-0",
                       item.completed
                         ? hasCover && !backgroundImage
                           ? "bg-white/30"
                           : backgroundImage?.brightness === 'light' ? "bg-black/20" : backgroundImage ? "bg-white/30" : "bg-zinc-300 dark:bg-zinc-700"
                         : "bg-yellow-500"
                     )} />
-                    <span>{item.text}</span>
+                    <span className="line-clamp-1">{item.text}</span>
                   </li>
                 ))}
-                {note.checklist.length > 6 ? (
+                {note.checklist.length > 5 ? (
                   <li className={clsx(
-                    "text-xs",
+                    "text-[10px]",
                     hasCover && !backgroundImage
                       ? "text-white/70"
                       : getTextColorClasses(backgroundImage, 'muted')
                   )}>
-                    +{note.checklist.length - 6} more
+                    +{note.checklist.length - 5} more
                   </li>
                 ) : null}
               </ul>
             ) : note.body ? (
               <p className={clsx(
-                "mt-3 whitespace-pre-wrap text-[15px] leading-7 tracking-[-0.01em] line-clamp-6",
+                "whitespace-pre-wrap text-[13px] leading-5 tracking-[-0.01em] line-clamp-4",
                 hasCover && !backgroundImage
                   ? "text-white/90"
                   : getTextColorClasses(backgroundImage, 'body')
@@ -286,11 +308,11 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
             ) : null}
 
             {note.attachments.length ? (
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {note.attachments.slice(0, 4).map((attachment) => (
+              <div className="mt-2 grid gap-1.5 grid-cols-2">
+                {note.attachments.slice(0, 2).map((attachment) => (
                   <figure
                     key={attachment.id}
-                    className="overflow-hidden rounded-2xl bg-foreground/10 shadow-sm border border-border cursor-zoom-in hover:brightness-95 transition-all"
+                    className="overflow-hidden rounded-lg bg-foreground/10 shadow-sm border border-border cursor-zoom-in hover:brightness-95 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
                       setPreviewImage(attachment.downloadURL);
@@ -299,25 +321,25 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                     <img
                       src={attachment.downloadURL}
                       alt={attachment.name}
-                      className="h-24 w-full object-cover"
+                      className="h-16 w-full object-cover"
                     />
                   </figure>
                 ))}
-                {note.attachments.length > 4 ? (
-                  <div className="grid place-items-center rounded-2xl bg-foreground/10 p-4 text-xs font-medium text-muted-foreground">
-                    +{note.attachments.length - 4} more
+                {note.attachments.length > 2 ? (
+                  <div className="grid place-items-center rounded-lg bg-foreground/10 p-2 text-[10px] font-medium text-muted-foreground">
+                    +{note.attachments.length - 2} more
                   </div>
                 ) : null}
               </div>
             ) : null}
 
             {noteLabels.length ? (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {noteLabels.map((label) => (
+              <div className="mt-2 flex flex-wrap items-center gap-1">
+                {noteLabels.slice(0, 2).map((label) => (
                   <span
                     key={label.id}
                     className={clsx(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium",
                       hasCover && !backgroundImage
                         ? "bg-white/10 text-white/90"
                         : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
@@ -325,7 +347,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                   >
                     <span
                       className={clsx(
-                        "h-2 w-2 rounded-full",
+                        "h-1.5 w-1.5 rounded-full",
                         label.color === "default"
                           ? "bg-zinc-400"
                           : `bg-${label.color}-500`,
@@ -334,118 +356,97 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                     <span>{label.name}</span>
                   </span>
                 ))}
+                {noteLabels.length > 2 && (
+                  <span className="text-[10px] text-zinc-400">+{noteLabels.length - 2}</span>
+                )}
               </div>
             ) : null}
           </div>
+        </div>
 
-          <footer className={clsx(
-            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t",
-            backgroundImage?.brightness === 'light'
-              ? "bg-white/30 backdrop-blur-sm border-black/10"
-              : backgroundImage
+        {/* Footer - outside overflow wrapper so it extends to card edges */}
+        <footer className={clsx(
+          "relative z-10 mt-auto flex items-center justify-between pt-2 -mx-4 -mb-4 px-4 pb-3 rounded-b-2xl border-t",
+          backgroundImage?.brightness === 'light'
+            ? "bg-white/30 backdrop-blur-sm border-black/10"
+            : backgroundImage
+              ? "bg-black/30 backdrop-blur-sm border-white/10"
+              : hasCover
                 ? "bg-black/30 backdrop-blur-sm border-white/10"
-                : hasCover
-                  ? "bg-black/30 backdrop-blur-sm border-white/10"
-                  : "bg-zinc-50/80 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-700/50"
+                : "bg-black/5 dark:bg-white/5 border-transparent"
+        )}>
+          {/* Glass pill for date/shared info */}
+          <div className={clsx(
+            "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full backdrop-blur-xl border",
+            backgroundImage
+              ? backgroundImage.brightness === 'dark'
+                ? "bg-white/10 border-white/20"
+                : "bg-black/5 border-black/10"
+              : hasCover
+                ? "bg-white/10 border-white/20"
+                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
           )}>
-            {/* Glass pill for date/shared info */}
-            <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
-              backgroundImage
-                ? backgroundImage.brightness === 'dark'
-                  ? "bg-white/10 border-white/20"
-                  : "bg-black/5 border-black/10"
-                : hasCover
-                  ? "bg-white/10 border-white/20"
-                  : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
-            )}>
-              {note.sharedWithUserIds?.length ? (
-                <span className={clsx(
-                  "h-7 flex items-center gap-1.5 rounded-full px-2.5 text-xs font-medium",
-                  hasCover && !backgroundImage
-                    ? "text-white/70"
-                    : getTextColorClasses(backgroundImage, 'muted')
-                )}>
-                  <Users className="h-3.5 w-3.5" />
-                  {note.sharedWithUserIds.length}
-                </span>
-              ) : null}
+            {note.sharedWithUserIds?.length ? (
               <span className={clsx(
-                "h-7 flex items-center px-2.5 rounded-full text-xs font-medium",
+                "h-5 flex items-center gap-1 rounded-full px-1.5 text-[10px] font-medium",
                 hasCover && !backgroundImage
                   ? "text-white/70"
                   : getTextColorClasses(backgroundImage, 'muted')
               )}>
-                {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                {' · '}
-                {note.updatedAt.getTime() !== note.createdAt.getTime() ? 'Edited' : 'Created'}
+                <Users className="h-3 w-3" />
+                {note.sharedWithUserIds.length}
               </span>
-            </div>
-            {/* Glass pill for actions */}
-            <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
-              backgroundImage
-                ? backgroundImage.brightness === 'dark'
-                  ? "bg-white/10 border-white/20"
-                  : "bg-black/5 border-black/10"
-                : hasCover
-                  ? "bg-white/10 border-white/20"
-                  : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+            ) : null}
+            <span className={clsx(
+              "h-5 flex items-center px-1.5 rounded-full text-[10px] font-medium",
+              hasCover && !backgroundImage
+                ? "text-white/70"
+                : getTextColorClasses(backgroundImage, 'muted')
             )}>
-              {/* Priority Indicator */}
-              {note.priority && (
-                <div
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center",
-                    note.priority === "high" && "text-red-500",
-                    note.priority === "medium" && "text-amber-500",
-                    note.priority === "low" && "text-blue-500",
-                  )}
-                  title={`${note.priority.charAt(0).toUpperCase() + note.priority.slice(1)} priority`}
-                >
-                  <Flame className="h-3.5 w-3.5" />
-                </div>
-              )}
-              {/* Focus button - only shows on non-focused notes */}
-              {!note.pinned && (
-                <button
-                  type="button"
-                  onClick={handlePin}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    backgroundImage?.brightness === 'light'
-                      ? "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
-                      : backgroundImage
-                        ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30"
-                        : hasCover
-                          ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30"
-                          : "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
-                  )}
-                  aria-label="Add to Focus"
-                >
-                  <FocusIcon className="h-3.5 w-3.5" />
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  backgroundImage?.brightness === 'light'
-                    ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
-                    : backgroundImage
-                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                      : hasCover
-                        ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                        : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
-                )}
-                aria-label="Delete note"
+              {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              {' · '}
+              {note.updatedAt.getTime() !== note.createdAt.getTime() ? 'Edited' : 'Created'}
+            </span>
+          </div>
+          {/* Glass pill for actions */}
+          <div className={clsx(
+            "flex items-center gap-0.5 px-1 py-0.5 rounded-full backdrop-blur-xl border",
+            backgroundImage
+              ? backgroundImage.brightness === 'dark'
+                ? "bg-white/10 border-white/20"
+                : "bg-black/5 border-black/10"
+              : hasCover
+                ? "bg-white/10 border-white/20"
+                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+          )}>
+            {/* Priority Indicator */}
+            {note.priority && (
+              <div
+                className="h-5 w-5 rounded-full flex items-center justify-center"
+                title={`${note.priority.charAt(0).toUpperCase() + note.priority.slice(1)} priority`}
               >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </footer>
-        </div>
+                <PriorityIcon priority={note.priority} size="sm" showOnlyHighPriority={false} />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className={clsx(
+                "h-5 w-5 rounded-full flex items-center justify-center transition",
+                backgroundImage?.brightness === 'light'
+                  ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
+                  : backgroundImage
+                    ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                    : hasCover
+                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                      : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
+              )}
+              aria-label="Delete note"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        </footer>
       </article>
 
       {isEditing ? (

@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useBackgroundBrightness } from '@/contexts/background-context';
 import { getAdaptiveTextClass, getAdaptiveMoodButtonClass, getAdaptiveInputClass } from '@/lib/adaptive-styles';
 import { Loader2, X, Sparkles, Scissors, Compass, Copy } from 'lucide-react';
+import { DateSuggestions } from '@ainexsuite/date-detection';
 import { RichTextEditorEnhanced } from '@/components/ui/rich-text-editor-enhanced';
 // TODO: Port InlinePrompt component from journalnex-app
 // import { InlinePrompt } from '@/components/prompts/inline-prompt';
@@ -501,6 +502,20 @@ function JournalForm({ initialData, onSubmit, isSubmitting, onContentChange, hid
             setValue('content', currentContent + response);
           }}
         /> */}
+
+        {/* Date detection suggestions for calendar */}
+        {contentValue && contentValue.trim().length > 10 && (
+          <DateSuggestions
+            text={contentValue}
+            context={{
+              app: 'journal',
+              entryId: entryId,
+              title: watch('title') || 'Journal Entry',
+            }}
+            className="mt-2"
+          />
+        )}
+
         {errors.content && (
           <p className="text-red-500 text-sm mt-1">{String(errors.content.message)}</p>
         )}

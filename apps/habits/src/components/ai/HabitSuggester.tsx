@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Sparkles, Plus, Loader2, RefreshCw, X } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 import { Habit, FrequencyType } from '@/types/models';
 import { cn } from '@/lib/utils';
@@ -36,8 +37,9 @@ const goalPresets = [
 
 export function HabitSuggester({ isOpen, onClose }: HabitSuggesterProps) {
   const { user } = useAuth();
-  const { addHabit, getCurrentSpace, habits } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { addHabit, habits } = useGrowStore();
+  const { currentSpace } = useSpaces();
+  
 
   const [step, setStep] = useState<'goals' | 'suggestions' | 'custom'>('goals');
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);

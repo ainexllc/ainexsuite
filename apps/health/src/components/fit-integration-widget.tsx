@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Dumbbell, Clock, Flame, TrendingUp, ExternalLink, Loader2 } from 'lucide-react';
+import { Dumbbell, Clock, Flame, TrendingUp, Loader2 } from 'lucide-react';
 import {
   getRecentWorkouts,
   getWeeklyWorkoutStats,
@@ -9,18 +9,22 @@ import {
   type FitWorkoutSummary,
   type FitWeeklyStats,
 } from '@/lib/fit-integration';
-
-const FIT_APP_URL = process.env.NEXT_PUBLIC_FIT_APP_URL || 'https://fit.ainexsuite.com';
+import { usePreferences } from '@/components/providers/preferences-provider';
 
 interface FitIntegrationWidgetProps {
   compact?: boolean;
 }
 
 export function FitIntegrationWidget({ compact = false }: FitIntegrationWidgetProps) {
+  const { updatePreferences } = usePreferences();
   const [workouts, setWorkouts] = useState<FitWorkoutSummary[]>([]);
   const [stats, setStats] = useState<FitWeeklyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const goToFitnessView = () => {
+    updatePreferences({ viewMode: 'fitness' });
+  };
 
   useEffect(() => {
     async function loadFitData() {
@@ -68,15 +72,12 @@ export function FitIntegrationWidget({ compact = false }: FitIntegrationWidgetPr
         <div className={`text-center ${compact ? 'py-4' : 'py-6'}`}>
           <Dumbbell className={`${compact ? 'h-8 w-8' : 'h-10 w-10'} mx-auto mb-3 text-violet-500/30`} />
           <p className={`${compact ? 'text-xs' : 'text-sm'} text-ink-500 mb-3`}>No recent workouts</p>
-          <a
-            href={`${FIT_APP_URL}/workspace`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={goToFitnessView}
             className={`inline-flex items-center gap-1 ${compact ? 'text-xs' : 'text-sm'} text-violet-500 hover:text-violet-600`}
           >
-            Log a workout in FIT
-            <ExternalLink className="h-3 w-3" />
-          </a>
+            Log a workout
+          </button>
         </div>
       </div>
     );
@@ -90,15 +91,12 @@ export function FitIntegrationWidget({ compact = false }: FitIntegrationWidgetPr
           <Dumbbell className={`${compact ? 'h-4 w-4' : 'h-5 w-5'} text-violet-500`} />
           <h3 className={`font-semibold text-ink-900 ${compact ? 'text-sm' : ''}`}>FIT Activity</h3>
         </div>
-        <a
-          href={`${FIT_APP_URL}/workspace`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={goToFitnessView}
           className="text-xs text-violet-500 hover:text-violet-600 flex items-center gap-1"
         >
-          Open FIT
-          <ExternalLink className="h-3 w-3" />
-        </a>
+          View All
+        </button>
       </div>
 
       {/* Weekly Stats */}

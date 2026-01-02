@@ -18,14 +18,16 @@ import {
 } from 'lucide-react';
 import { FirestoreSync } from '@/components/FirestoreSync';
 import { BottomNav } from '@/components/mobile/BottomNav';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 import { useMemo } from 'react';
 
 function ProfileContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
-  const { habits, completions, getCurrentSpace } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { habits, completions } = useGrowStore();
+  const { currentSpace } = useSpaces();
+  
 
   const stats = useMemo(() => {
     if (!currentSpace) return null;

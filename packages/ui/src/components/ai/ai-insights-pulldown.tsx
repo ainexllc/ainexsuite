@@ -128,6 +128,12 @@ export interface AIInsightsPulldownProps {
   onViewDetails?: () => void;
   /** Callback when expanded state changes (for parent layout adjustment) */
   onExpandedChange?: (expanded: boolean) => void;
+  /** Whether this is a first-time user (shows welcome content) */
+  isFirstTimeUser?: boolean;
+  /** Callback to dismiss first-time user message */
+  onDismissFirstTime?: () => void;
+  /** Custom message when there's not enough data */
+  emptyStateMessage?: string;
 }
 
 /**
@@ -156,6 +162,9 @@ export function AIInsightsPulldown({
   className,
   onViewDetails,
   onExpandedChange,
+  isFirstTimeUser = false,
+  onDismissFirstTime,
+  emptyStateMessage,
 }: AIInsightsPulldownProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -243,13 +252,13 @@ export function AIInsightsPulldown({
         className={cn(
           "overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
           isExpanded
-            ? "max-h-[100px] sm:max-h-[120px] lg:max-h-[140px] xl:max-h-[160px] 2xl:max-h-[180px]"
+            ? "max-h-[80px] sm:max-h-[90px] lg:max-h-[100px] xl:max-h-[110px] 2xl:max-h-[120px]"
             : "max-h-0"
         )}
       >
         {/* Glassmorphism Slide-out Panel - edge to edge - responsive heights */}
         <div
-          className="relative h-[100px] sm:h-[120px] lg:h-[140px] xl:h-[160px] 2xl:h-[180px] border-b transition-all duration-500"
+          className="relative h-[80px] sm:h-[90px] lg:h-[100px] xl:h-[110px] 2xl:h-[120px] border-b transition-all duration-500"
           style={{ borderColor: `${gradientFrom}40` }}
           onMouseEnter={() => setIsHoverPaused(true)}
           onMouseLeave={() => setIsHoverPaused(false)}
@@ -267,7 +276,7 @@ export function AIInsightsPulldown({
 
           {/* Top edge glow - color emanating from nav - responsive height */}
           <div
-            className="absolute top-0 left-0 right-0 h-16 sm:h-20 lg:h-24 xl:h-28 transition-all duration-500 pointer-events-none"
+            className="absolute top-0 left-0 right-0 h-12 sm:h-14 lg:h-16 xl:h-18 transition-all duration-500 pointer-events-none"
             style={{
               background: `linear-gradient(180deg, ${gradientFrom}60 0%, ${gradientFrom}30 40%, transparent 100%)`,
             }}
@@ -277,45 +286,102 @@ export function AIInsightsPulldown({
 
           {/* Large colorful glow orbs - responsive sizes */}
           <div
-            className="absolute -top-16 sm:-top-20 lg:-top-24 left-1/4 w-48 sm:w-64 lg:w-80 xl:w-96 2xl:w-[28rem] h-32 sm:h-40 lg:h-48 xl:h-56 2xl:h-64 rounded-full blur-[60px] sm:blur-[80px] lg:blur-[100px] opacity-40 transition-all duration-500 pointer-events-none"
+            className="absolute -top-12 sm:-top-14 lg:-top-16 left-1/4 w-36 sm:w-48 lg:w-56 xl:w-64 2xl:w-72 h-24 sm:h-28 lg:h-32 xl:h-36 2xl:h-40 rounded-full blur-[40px] sm:blur-[50px] lg:blur-[60px] opacity-40 transition-all duration-500 pointer-events-none"
             style={{ backgroundColor: gradientFrom }}
           />
           <div
-            className="absolute -bottom-16 sm:-bottom-20 lg:-bottom-24 right-1/4 w-44 sm:w-60 lg:w-72 xl:w-80 2xl:w-96 h-28 sm:h-36 lg:h-44 xl:h-52 2xl:h-60 rounded-full blur-[50px] sm:blur-[60px] lg:blur-[80px] opacity-35 transition-all duration-500 pointer-events-none"
+            className="absolute -bottom-12 sm:-bottom-14 lg:-bottom-16 right-1/4 w-32 sm:w-44 lg:w-52 xl:w-56 2xl:w-64 h-20 sm:h-24 lg:h-28 xl:h-32 2xl:h-36 rounded-full blur-[30px] sm:blur-[40px] lg:blur-[50px] opacity-35 transition-all duration-500 pointer-events-none"
             style={{ backgroundColor: gradientTo }}
           />
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-80 lg:w-96 xl:w-[30rem] 2xl:w-[36rem] h-24 sm:h-28 lg:h-32 xl:h-40 2xl:h-48 rounded-full blur-[80px] sm:blur-[100px] lg:blur-[120px] opacity-20 transition-all duration-500 pointer-events-none"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 sm:w-56 lg:w-64 xl:w-72 2xl:w-80 h-16 sm:h-20 lg:h-24 xl:h-28 2xl:h-32 rounded-full blur-[50px] sm:blur-[60px] lg:blur-[70px] opacity-20 transition-all duration-500 pointer-events-none"
             style={{ backgroundColor: gradientFrom }}
           />
 
           {/* Content - responsive padding and gaps */}
-          <div className="relative h-full flex items-center px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 2xl:gap-10 z-10">
+          <div className="relative h-full flex items-center px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 2xl:px-10 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4 xl:gap-5 2xl:gap-6 z-10">
             {isLoading ? (
-              <div className="flex items-center justify-center w-full gap-2 sm:gap-3">
+              <div className="flex items-center justify-center w-full gap-1.5 sm:gap-2">
                 <Loader2
-                  className="h-4 w-4 sm:h-5 sm:w-5 animate-spin"
+                  className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin"
                   style={{ color: accentColor }}
                 />
-                <span className="text-xs sm:text-sm text-white/60 font-medium">{loadingMessage}</span>
+                <span className="text-[10px] sm:text-xs text-white/60 font-medium">{loadingMessage}</span>
               </div>
             ) : error ? (
               <div className="flex items-center justify-center w-full">
-                <p className="text-xs sm:text-sm text-yellow-400 font-medium">{error}</p>
+                <p className="text-[10px] sm:text-xs text-yellow-400 font-medium">{error}</p>
               </div>
+            ) : isFirstTimeUser ? (
+              /* First-time user welcome content */
+              <>
+                {/* Welcome Icon */}
+                <div
+                  className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 xl:w-14 xl:h-14 2xl:w-16 2xl:h-16 rounded-md sm:rounded-lg flex items-center justify-center border transition-all duration-500"
+                  style={{
+                    backgroundColor: `${gradientFrom}15`,
+                    borderColor: `${gradientFrom}40`,
+                    boxShadow: `0 0 20px ${gradientFrom}50, 0 0 40px ${gradientFrom}20`
+                  }}
+                >
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 lg:w-5.5 lg:h-5.5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7 transition-all duration-500">
+                    <AIBrainIcon
+                      size={28}
+                      color={gradientFrom}
+                      isAnimating={true}
+                      className="w-full h-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Welcome Text */}
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    <Sparkles
+                      className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 transition-colors duration-500"
+                      style={{ color: gradientFrom }}
+                    />
+                    <span
+                      className="text-[9px] sm:text-[10px] lg:text-xs xl:text-sm font-bold uppercase tracking-wider transition-colors duration-500"
+                      style={{ color: gradientFrom }}
+                    >
+                      Welcome to AI Insights
+                    </span>
+                  </div>
+                  <div className="text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-medium text-white/90 leading-snug line-clamp-2">
+                    Your personal AI analyzes your data to provide smart insights, patterns, and suggestions.
+                  </div>
+                </div>
+
+                {/* Got It button */}
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={onDismissFirstTime}
+                    className="flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 md:px-4 lg:px-5 py-1 sm:py-1.5 md:py-2 lg:py-2.5 rounded-md font-semibold text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-white transition-all hover:scale-105 hover:shadow-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+                    }}
+                  >
+                    Got It
+                    <ArrowRight className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5" />
+                  </button>
+                </div>
+              </>
             ) : sections.length === 0 ? (
               <div className="flex items-center justify-center w-full">
-                <p className="text-xs sm:text-sm text-white/40">Add more data to see AI insights</p>
+                <p className="text-[10px] sm:text-xs text-white/40">
+                  {emptyStateMessage || "Add more entries to see AI insights"}
+                </p>
               </div>
             ) : (
               <>
                 {/* Icon with bold glow - responsive sizes - supports animated icons */}
                 <div
-                  className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 2xl:w-24 2xl:h-24 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all duration-500"
+                  className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 xl:w-14 xl:h-14 2xl:w-16 2xl:h-16 rounded-md sm:rounded-lg flex items-center justify-center border transition-all duration-500"
                   style={{
                     backgroundColor: `${gradientFrom}15`,
                     borderColor: `${gradientFrom}40`,
-                    boxShadow: `0 0 30px ${gradientFrom}50, 0 0 60px ${gradientFrom}20`
+                    boxShadow: `0 0 20px ${gradientFrom}50, 0 0 40px ${gradientFrom}20`
                   }}
                 >
                   {currentSection?.animatedIconType ? (
@@ -323,9 +389,9 @@ export function AIInsightsPulldown({
                     (() => {
                       const AnimatedIcon = ANIMATED_ICON_MAP[currentSection.animatedIconType];
                       return (
-                        <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 transition-all duration-500">
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 lg:w-5.5 lg:h-5.5 xl:w-6 xl:h-6 2xl:w-7 2xl:h-7 transition-all duration-500">
                           <AnimatedIcon
-                            size={40}
+                            size={28}
                             color={gradientFrom}
                             isAnimating={true}
                             className="w-full h-full"
@@ -336,7 +402,7 @@ export function AIInsightsPulldown({
                   ) : (
                     // Fallback to static icon
                     <span
-                      className="[&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6 lg:[&>svg]:w-7 lg:[&>svg]:h-7 xl:[&>svg]:w-8 xl:[&>svg]:h-8 2xl:[&>svg]:w-10 2xl:[&>svg]:h-10 transition-colors duration-500"
+                      className="[&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5 lg:[&>svg]:w-5.5 lg:[&>svg]:h-5.5 xl:[&>svg]:w-6 xl:[&>svg]:h-6 2xl:[&>svg]:w-7 2xl:[&>svg]:h-7 transition-colors duration-500"
                       style={{ color: gradientFrom }}
                     >
                       {currentSection?.icon}
@@ -345,66 +411,66 @@ export function AIInsightsPulldown({
                 </div>
 
                 {/* Text Content - responsive typography */}
-                <div className="flex-1 min-w-0 space-y-0.5 sm:space-y-1 lg:space-y-1.5 xl:space-y-2">
-                  <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5">
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-1 sm:gap-1.5">
                     <Sparkles
-                      className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 transition-colors duration-500"
+                      className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 transition-colors duration-500"
                       style={{ color: gradientFrom }}
                     />
                     <span
-                      className="text-[10px] sm:text-xs lg:text-sm xl:text-base font-bold uppercase tracking-wider transition-colors duration-500"
+                      className="text-[9px] sm:text-[10px] lg:text-xs xl:text-sm font-bold uppercase tracking-wider transition-colors duration-500"
                       style={{ color: gradientFrom }}
                     >
                       {currentSection?.label}
                     </span>
                   </div>
-                  <div className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-white leading-snug line-clamp-2">
+                  <div className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl font-bold text-white leading-snug line-clamp-2">
                     {currentSection?.content}
                   </div>
                 </div>
 
                 {/* Right side controls - responsive */}
-                <div className="flex-shrink-0 flex flex-col gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3">
+                <div className="flex-shrink-0 flex flex-col gap-1 sm:gap-1.5 lg:gap-2">
                   {/* Nav buttons row - hidden on mobile, visible from sm up */}
-                  <div className="hidden sm:flex gap-1 lg:gap-1.5">
+                  <div className="hidden sm:flex gap-1">
                     <button
                       onClick={goToPrevious}
-                      className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 rounded-lg bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all"
+                      className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-md bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all"
                       aria-label="Previous"
                     >
-                      <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                      <ChevronLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
                     </button>
                     <button
                       onClick={() => setIsManuallyPaused(!isManuallyPaused)}
                       className={cn(
-                        "flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 rounded-lg border border-white/10 transition-all",
+                        "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-md border border-white/10 transition-all",
                         isManuallyPaused
                           ? "bg-white/20 text-white"
                           : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
                       )}
                       aria-label={isManuallyPaused ? "Resume" : "Pause"}
                     >
-                      {isManuallyPaused ? <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" /> : <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />}
+                      {isManuallyPaused ? <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" /> : <Pause className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />}
                     </button>
                     <button
                       onClick={goToNext}
-                      className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 rounded-lg bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all"
+                      className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-md bg-white/10 border border-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-all"
                       aria-label="Next"
                     >
-                      <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                      <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
                     </button>
                   </div>
 
                   {/* View Details button - responsive sizing */}
                   <button
                     onClick={onViewDetails}
-                    className="flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 py-1 sm:py-1.5 md:py-2 lg:py-2.5 xl:py-3 rounded-lg font-semibold text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-lg text-white transition-all hover:scale-105 hover:shadow-lg"
+                    className="flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 lg:px-4 py-1 sm:py-1.5 md:py-2 rounded-md font-semibold text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-white transition-all hover:scale-105 hover:shadow-lg"
                     style={{
                       background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
                     }}
                   >
                     Details
-                    <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                    <ArrowRight className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5" />
                   </button>
                 </div>
               </>
@@ -413,35 +479,35 @@ export function AIInsightsPulldown({
 
           {/* Bottom dots & timestamp - responsive */}
           {sections.length > 1 && !isLoading && !error && (
-            <div className="absolute bottom-1.5 sm:bottom-2 lg:bottom-2.5 xl:bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-3 lg:gap-4 z-10">
-              <div className="flex gap-1 sm:gap-1.5 lg:gap-2">
+            <div className="absolute bottom-1 sm:bottom-1.5 lg:bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 lg:gap-3 z-10">
+              <div className="flex gap-0.5 sm:gap-1 lg:gap-1.5">
                 {sections.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
                     className={cn(
-                      "h-0.5 sm:h-1 lg:h-1.5 rounded-full transition-all duration-300",
+                      "h-0.5 rounded-full transition-all duration-300",
                       index === currentSlide
-                        ? "w-3 sm:w-4 lg:w-5 xl:w-6 bg-white"
-                        : "w-1 sm:w-1.5 lg:w-2 bg-white/30 hover:bg-white/50"
+                        ? "w-2.5 sm:w-3 lg:w-4 bg-white"
+                        : "w-0.5 sm:w-1 lg:w-1.5 bg-white/30 hover:bg-white/50"
                     )}
                     aria-label={`Go to insight ${index + 1}`}
                   />
                 ))}
               </div>
               {lastUpdated && (
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <span className="text-[8px] sm:text-[9px] lg:text-[10px] xl:text-xs text-white/40">
+                <div className="flex items-center gap-1">
+                  <span className="text-[7px] sm:text-[8px] lg:text-[9px] text-white/40">
                     · Updated {lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                   </span>
                   {onRefresh && (
                     <button
                       onClick={onRefresh}
                       disabled={refreshDisabled}
-                      className="p-0.5 sm:p-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-0.5 rounded text-white/40 hover:text-white hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Refresh insights"
                     >
-                      <RefreshCw className={cn("w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5", refreshDisabled && "animate-spin")} />
+                      <RefreshCw className={cn("w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3", refreshDisabled && "animate-spin")} />
                     </button>
                   )}
                 </div>

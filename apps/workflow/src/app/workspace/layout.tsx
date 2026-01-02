@@ -2,6 +2,7 @@
 
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout, WorkspaceLoadingScreen, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
+import { HintsProvider } from '@/components/hints';
 
 export default function WorkspaceRootLayout({
   children,
@@ -14,24 +15,21 @@ export default function WorkspaceRootLayout({
   useFontPreference(user?.preferences?.fontFamily);
   useFontSizePreference(user?.preferences?.fontSize);
 
-  // Show standardized loading screen
-  if (isLoading) {
+  // Show loading screen while checking auth - prevents Firestore calls before auth is confirmed
+  if (isLoading || !isReady || !user) {
     return <WorkspaceLoadingScreen />;
   }
 
-  // Return null while redirecting
-  if (!isReady || !user) {
-    return null;
-  }
-
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      appName="Workflow"
-      onUpdatePreferences={updatePreferences}
-    >
-      {children}
-    </WorkspaceLayout>
+    <HintsProvider>
+      <WorkspaceLayout
+        user={user}
+        onSignOut={handleSignOut}
+        appName="Workflow"
+        onUpdatePreferences={updatePreferences}
+      >
+        {children}
+      </WorkspaceLayout>
+    </HintsProvider>
   );
 }

@@ -17,6 +17,8 @@ import {
   Check,
   Play,
   Image as ImageIcon,
+  Clock,
+  Zap,
 } from 'lucide-react';
 import {
   uploadVideoBackground,
@@ -24,8 +26,12 @@ import {
   deleteVideoBackground,
   subscribeToVideoBackgrounds,
   formatFileSize,
+  isVideoProcessed,
+  isVideoProcessing,
+  isVideoProcessingFailed,
   type VideoBackgroundDoc,
   type VideoBackgroundCreateInput,
+  type VideoVariant,
 } from '@ainexsuite/firebase';
 import { useAuth } from '@ainexsuite/auth';
 
@@ -44,6 +50,69 @@ const APP_OPTIONS = [
   { value: 'workflow', label: 'Workflow' },
   { value: 'calendar', label: 'Calendar' },
 ];
+
+/**
+ * Processing status badge component
+ */
+function ProcessingBadge({ video }: { video: VideoBackgroundDoc }) {
+  if (isVideoProcessed(video)) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-400">
+        <Zap className="h-3 w-3" />
+        Optimized
+      </span>
+    );
+  }
+
+  if (isVideoProcessing(video)) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-blue-500/20 text-blue-400">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Processing
+      </span>
+    );
+  }
+
+  if (isVideoProcessingFailed(video)) {
+    return (
+      <span
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-500/20 text-red-400 cursor-help"
+        title={video.processingStatus?.error || 'Processing failed'}
+      >
+        <AlertCircle className="h-3 w-3" />
+        Failed
+      </span>
+    );
+  }
+
+  // No processing status - video was uploaded before transcoding was enabled
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-yellow-500/20 text-yellow-400">
+      <Clock className="h-3 w-3" />
+      Pending
+    </span>
+  );
+}
+
+/**
+ * Variant info display component
+ */
+function VariantInfo({ variants }: { variants?: VideoVariant[] }) {
+  if (!variants || variants.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1 mt-1">
+      {variants.map((v) => (
+        <span
+          key={`${v.quality}-${v.format}`}
+          className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-muted-foreground"
+        >
+          {v.quality} {v.format.toUpperCase()} ({formatFileSize(v.fileSize)})
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function VideoBackgroundsManagement() {
   const { user } = useAuth();
@@ -157,9 +226,9 @@ export default function VideoBackgroundsManagement() {
     try {
       const metadata: VideoBackgroundCreateInput = {
         name: uploadName.trim() || 'Untitled Video',
-        description: uploadDescription.trim() || undefined,
+        description: uploadDescription.trim() || undefined, // undefined is OK here - service converts to null
         recommendedOverlay: uploadOverlay,
-        assignedApp: uploadAssignedApp || undefined,
+        assignedApp: uploadAssignedApp || undefined, // undefined is OK here - service converts to null
         tags: uploadTags.split(',').map((t) => t.trim()).filter(Boolean),
       };
 
@@ -392,13 +461,14 @@ export default function VideoBackgroundsManagement() {
 
               {/* Info */}
               <div className="p-3">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-white truncate">{video.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {formatFileSize(video.fileSize)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <ProcessingBadge video={video} />
                   {video.assignedApp && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">
                       {video.assignedApp}
@@ -407,7 +477,13 @@ export default function VideoBackgroundsManagement() {
                   <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">
                     {Math.round((video.recommendedOverlay || 0.4) * 100)}% overlay
                   </span>
+                  {video.duration && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">
+                      {video.duration.toFixed(1)}s
+                    </span>
+                  )}
                 </div>
+                <VariantInfo variants={video.variants} />
               </div>
             </div>
           ))}
@@ -814,11 +890,11 @@ export default function VideoBackgroundsManagement() {
       {/* Video Preview Modal */}
       {previewVideo && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
           onClick={() => setPreviewVideo(null)}
         >
-          <div className="w-full max-w-4xl mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
+          <div className="w-full h-full flex flex-col max-w-[95vw] max-h-[95vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <h3 className="text-white font-medium">{previewVideo.name}</h3>
               <button
                 onClick={() => setPreviewVideo(null)}
@@ -827,15 +903,17 @@ export default function VideoBackgroundsManagement() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <video
-              src={previewVideo.downloadURL}
-              poster={previewVideo.posterURL}
-              controls
-              autoPlay
-              loop
-              muted
-              className="w-full rounded-xl"
-            />
+            <div className="flex-1 min-h-0 flex items-center justify-center">
+              <video
+                src={previewVideo.downloadURL}
+                poster={previewVideo.posterURL}
+                controls
+                autoPlay
+                loop
+                muted
+                className="max-w-full max-h-full rounded-xl object-contain"
+              />
+            </div>
           </div>
         </div>
       )}

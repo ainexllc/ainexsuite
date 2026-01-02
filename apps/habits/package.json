@@ -4,7 +4,7 @@
   "private": true,
   "description": "Habits app - Personal development tracking at habits.ainexsuite.com",
   "scripts": {
-    "dev": "next dev -p ${PORT:-3006}",
+    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3006}",
     "build": "next build",
     "start": "next start -p 3006",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache"
@@ -12,6 +12,7 @@
   "dependencies": {
     "@ainexsuite/ai": "workspace:*",
     "@ainexsuite/auth": "workspace:*",
+    "@ainexsuite/date-detection": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
     "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",

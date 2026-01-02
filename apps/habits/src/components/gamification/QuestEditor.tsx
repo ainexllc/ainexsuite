@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Crown, Gift, Save, X } from 'lucide-react';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '../../lib/store';
 import { Quest } from '../../types/models';
 import { addDays, format } from 'date-fns';
@@ -12,8 +13,9 @@ interface QuestEditorProps {
 }
 
 export function QuestEditor({ isOpen, onClose }: QuestEditorProps) {
-  const { getCurrentSpace, addQuest } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { addQuest } = useGrowStore();
+  const { currentSpace } = useSpaces();
+  
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');

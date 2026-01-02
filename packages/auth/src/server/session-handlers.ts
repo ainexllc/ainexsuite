@@ -354,11 +354,13 @@ export async function POST(request: NextRequest) {
           },
         };
 
-        // Try to load existing user preferences from Firestore
+        // Try to load existing user preferences from Firestore, or create user if missing
+        let userExists = false;
         try {
           const adminDb = getAdminFirestore();
           const userDoc = await adminDb.collection('users').doc(userData.uid || 'dev-user').get();
           if (userDoc.exists) {
+            userExists = true;
             const existingUser = userDoc.data();
             if (existingUser?.preferences) {
               existingPreferences = existingUser.preferences;
@@ -398,6 +400,27 @@ export async function POST(request: NextRequest) {
           subscriptionStatus: 'trial' as const,
           suiteAccess: true,
         };
+
+        // Create user document in Firestore if it doesn't exist (dev mode)
+        if (!userExists && userData.uid && userData.uid !== 'dev-user') {
+          try {
+            const adminDb = getAdminFirestore();
+            const { FieldValue } = await import('firebase-admin/firestore');
+            const now = Date.now();
+            const trialEndDate = now + (30 * 24 * 60 * 60 * 1000); // 30 days
+
+            await adminDb.collection('users').doc(userData.uid).set({
+              ...user,
+              createdAt: now,
+              trialEndDate: trialEndDate,
+              lastLoginAt: FieldValue.serverTimestamp(),
+            });
+            console.log('[Dev Session] Created Firestore document for user:', userData.uid);
+          } catch (e) {
+            // Could not create user in Firestore - continue with cookie-only session
+            console.warn('[Dev Session] Could not create Firestore document:', e);
+          }
+        }
 
         // Create a richer session token including preferences for persistence in dev
         // Allow user object to be stored in cookie for stateless dev experience

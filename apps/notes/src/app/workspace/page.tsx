@@ -7,16 +7,21 @@ import {
   WorkspaceToolbar,
   ActivityCalendar,
   ActiveFilterChips,
+  SpaceManagementModal,
   type ViewOption,
   type SortOption,
   type FilterChip,
   type FilterChipType,
+  type UserSpace,
 } from '@ainexsuite/ui';
+import type { SpaceType } from '@ainexsuite/types';
 import { NoteBoard } from '@/components/notes/note-board';
 import { NoteComposer } from "@/components/notes/note-composer";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useLabels } from "@/components/providers/labels-provider";
+import { useSpaces } from "@/components/providers/spaces-provider";
+import { MemberManager } from "@/components/spaces/MemberManager";
 import { NoteFilterContent } from "@/components/notes/note-filter-content";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
 import { BulkActionBar } from "@/components/bulk-action-bar";
@@ -68,6 +73,7 @@ function NotesWorkspaceContent() {
   const { preferences, updatePreferences } = usePreferences();
   const { notes, others, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
   const { labels } = useLabels();
+  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
   const {
     selectedIds,
     selectionCount,
@@ -76,8 +82,67 @@ function NotesWorkspaceContent() {
   } = useNoteSelection();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
+  const [showMemberManager, setShowMemberManager] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Map spaces to UserSpace format for SpaceManagementModal
+  const userSpaces = useMemo<UserSpace[]>(() => {
+    return allSpaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type as SpaceType,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+      }));
+  }, [allSpaces, user?.uid]);
+
+  // Space management callbacks
+  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
+    if (!user) return;
+    const globalSpaceNames: Record<string, string> = {
+      family: 'Family',
+      couple: 'Couple',
+      squad: 'Team',
+      work: 'Group',
+    };
+    const spaceId = await createSpace({
+      name: globalSpaceNames[type] || type,
+      type,
+    });
+    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
+  }, [user, createSpace, updateSpace]);
+
+  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
+    if (!user) return;
+    const spaceId = await createSpace({
+      name,
+      type: 'work',
+    });
+    if (hiddenInApps.length > 0) {
+      await updateSpace(spaceId, { hiddenInApps });
+    }
+  }, [user, createSpace, updateSpace]);
+
+  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
+    await updateSpace(spaceId, { name });
+  }, [updateSpace]);
+
+  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
+    await updateSpace(spaceId, { hiddenInApps });
+  }, [updateSpace]);
 
   // Bulk action handlers
   const handleBulkDelete = useCallback(async () => {
@@ -331,8 +396,14 @@ function NotesWorkspaceContent() {
   }, [setSearchQuery]);
 
   return (
+    <>
     <WorkspacePageLayout
-      composer={<NoteComposer />}
+      composer={
+        <NoteComposer
+          onManagePeople={() => setShowMemberManager(true)}
+          onManageSpaces={() => setShowSpaceManagement(true)}
+        />
+      }
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (
@@ -418,5 +489,25 @@ function NotesWorkspaceContent() {
         onLabelAdd={handleBulkLabelAdd}
       />
     </WorkspacePageLayout>
+
+    {/* Space Management Modal */}
+    <SpaceManagementModal
+      isOpen={showSpaceManagement}
+      onClose={() => setShowSpaceManagement(false)}
+      userSpaces={userSpaces}
+      onJoinGlobalSpace={handleJoinGlobalSpace}
+      onLeaveGlobalSpace={handleLeaveGlobalSpace}
+      onCreateCustomSpace={handleCreateCustomSpace}
+      onRenameCustomSpace={handleRenameCustomSpace}
+      onDeleteCustomSpace={handleDeleteCustomSpace}
+      onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
+    />
+
+    {/* Member Manager Modal */}
+    <MemberManager
+      isOpen={showMemberManager}
+      onClose={() => setShowMemberManager(false)}
+    />
+    </>
   );
 }

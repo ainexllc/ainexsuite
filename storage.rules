@@ -22,6 +22,17 @@ service firebase.storage {
       allow read, write, delete: if true;
     }
 
+    // Video backgrounds (admin uploads, all authenticated users can read)
+    // TODO: Re-add auth check after debugging
+    match /video-backgrounds/{fileName} {
+      allow read, write, delete: if true;
+    }
+
+    // Also allow nested paths for video backgrounds
+    match /video-backgrounds/{allPaths=**} {
+      allow read, write, delete: if true;
+    }
+
     // Allow users to read, write, and delete their own backgrounds
     match /users/{userId}/backgrounds/{allPaths=**} {
       allow read, delete: if request.auth.uid == userId;

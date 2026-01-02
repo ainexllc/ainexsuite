@@ -256,8 +256,8 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
 
   return (
     <div className="dark relative isolate min-h-screen overflow-x-hidden bg-[#050505] text-foreground">
-      {/* Background - video takes priority over component */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      {/* Background - fixed to viewport, video takes priority over component */}
+      <div className="pointer-events-none fixed inset-0 -z-10">
         {props.videoBackground ? (
           <VideoBackground
             src={props.videoBackground.src}
@@ -272,7 +272,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
       </div>
 
       {/* Header */}
-      <header className="relative z-50 border-b border-border bg-[#050505]/90 backdrop-blur-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-xl shadow-lg shadow-black/20">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8">
           <Link href="/" className="flex items-center pl-2 sm:pl-4 md:pl-6">
             {props.logo}

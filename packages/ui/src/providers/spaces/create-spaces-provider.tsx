@@ -69,7 +69,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
   const SpacesContext = createContext<SpacesContextValue<TSpace> | null>(null);
 
   function SpacesProvider({ children }: { children: ReactNode }) {
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
     const [userSpaces, setUserSpaces] = useState<TSpace[]>([]);
     const [currentSpaceId, setCurrentSpaceId] = useState<string>('personal');
     const [loading, setLoading] = useState(true);
@@ -84,12 +84,19 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
           id: 'personal',
           name: config.defaultSpace.name,
           type: config.defaultSpace.type,
-          members: [],
+          // Include user in members array so permission checks work
+          members: userId ? [{
+            uid: userId,
+            displayName: user?.displayName || 'Me',
+            photoURL: user?.photoURL || undefined,
+            role: 'admin',
+            joinedAt: new Date().toISOString(),
+          }] : [],
           memberUids: userId ? [userId] : [],
           createdAt: new Date(),
-          createdBy: userId || '',
+          ownerId: userId || '',
         }) as unknown as TSpace,
-      [userId]
+      [userId, user?.displayName, user?.photoURL]
     );
 
     // Subscribe to user's spaces from Firestore
@@ -113,59 +120,58 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          const spaces = snapshot.docs
-            .map((docSnap) => {
-              const data = docSnap.data() as SpaceDocData;
+          // Transform all spaces, keeping both space object and raw data for filtering
+          const spacesWithData = snapshot.docs.map((docSnap) => {
+            const data = docSnap.data() as SpaceDocData;
 
-              // Use custom transform if provided
-              if (config.transformSpace) {
-                return { space: config.transformSpace(docSnap.id, data), data };
-              }
+            // Use custom transform if provided
+            if (config.transformSpace) {
+              return { space: config.transformSpace(docSnap.id, data), data };
+            }
 
-              // Default transformation
-              return {
-                space: {
-                  id: docSnap.id,
-                  name: data.name,
-                  type: data.type,
-                  members: data.members,
-                  memberUids: data.memberUids,
-                  createdAt: toDate(data.createdAt),
-                  createdBy: data.createdBy,
-                } as TSpace,
-                data,
-              };
-            })
-            // Filter out spaces hidden in this app (unless isGlobal)
-            .filter(({ data }) => {
-              // Global spaces are always visible
-              if (data.isGlobal) return true;
-              // Check if this app is in the hidden list
-              if (data.hiddenInApps?.includes(config.appId)) return false;
-              return true;
-            })
-            .map(({ space }) => space);
+            // Default transformation - include isGlobal and hiddenInApps
+            // Support both ownerId and createdBy (legacy field) for compatibility
+            const ownerId = data.ownerId || data.createdBy || '';
+            return {
+              space: {
+                id: docSnap.id,
+                name: data.name,
+                type: data.type,
+                members: data.members,
+                memberUids: data.memberUids,
+                createdAt: toDate(data.createdAt),
+                ownerId,
+                createdBy: ownerId, // Also set createdBy for apps that use that field
+                isGlobal: data.isGlobal,
+                hiddenInApps: data.hiddenInApps,
+              } as unknown as TSpace,
+              data,
+            };
+          });
 
-          setUserSpaces(spaces);
+          // Store all spaces (unfiltered) - needed for settings modal
+          const allSpaces = spacesWithData.map(({ space }) => space);
+
+          setUserSpaces(allSpaces);
           setLoading(false);
           setError(null);
         },
         (err) => {
-          // Check if this is a permission-denied error (session invalidated)
+          // eslint-disable-next-line no-console
+          console.error(`[Spaces] Error subscribing to ${config.collectionName}:`, err);
+
+          // Check if this is a permission-denied error
           const isPermissionDenied = err?.code === 'permission-denied' ||
             err?.message?.includes('permission-denied') ||
             err?.message?.includes('Missing or insufficient permissions');
 
           if (isPermissionDenied) {
             // eslint-disable-next-line no-console
-            console.warn('[Spaces] Session appears to be invalid, signing out...');
-            // Sign out the user - their session was invalidated elsewhere
-            signOut?.();
-            return;
+            console.warn('[Spaces] Permission denied - falling back to personal space only');
+            // Note: We no longer sign out on permission errors to avoid logout loops
+            // The user can still use the app with the personal space
           }
 
-          // eslint-disable-next-line no-console
-          console.error(`[Spaces] Error subscribing to ${config.collectionName}:`, err);
           setError(err);
           // Still set loading to false so the app can function with personal space
           setUserSpaces([]);
@@ -174,11 +180,27 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
       );
 
       return () => unsubscribe();
-    }, [userId, signOut]);
+    }, [userId]);
 
-    // All spaces including virtual personal space
-    const spaces = useMemo(
+    // All spaces including virtual personal space (unfiltered - for settings)
+    const allSpaces = useMemo(
       () => [personalSpace, ...userSpaces],
+      [personalSpace, userSpaces]
+    );
+
+    // Visible spaces for this app (filtered by hiddenInApps)
+    const spaces = useMemo(
+      () => [
+        personalSpace,
+        ...userSpaces.filter((space) => {
+          // Global spaces are always visible
+          if ((space as BaseSpace & { isGlobal?: boolean }).isGlobal) return true;
+          // Check if this app is in the hidden list
+          const hiddenInApps = (space as BaseSpace & { hiddenInApps?: string[] }).hiddenInApps;
+          if (hiddenInApps?.includes(config.appId)) return false;
+          return true;
+        }),
+      ],
       [personalSpace, userSpaces]
     );
 
@@ -241,7 +263,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
           members: [member],
           memberUids: [userId],
           createdAt: Timestamp.now(),
-          createdBy: userId,
+          ownerId: userId,
         };
 
         const docRef = await addDoc(spacesRef, spaceData);
@@ -285,6 +307,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
     const value = useMemo<SpacesContextValue<TSpace>>(
       () => ({
         spaces,
+        allSpaces,
         currentSpace,
         currentSpaceId,
         loading,
@@ -297,6 +320,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
       }),
       [
         spaces,
+        allSpaces,
         currentSpace,
         currentSpaceId,
         loading,

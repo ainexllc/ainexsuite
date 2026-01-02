@@ -6,10 +6,13 @@ import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   ActiveFilterChips,
+  SpaceManagementModal,
   type ViewOption,
   type FilterChip,
   type FilterChipType,
+  type UserSpace,
 } from '@ainexsuite/ui';
+import type { SpaceType } from '@ainexsuite/types';
 import {
   Loader2,
   CalendarDays,
@@ -31,13 +34,14 @@ import { AgendaView } from '@/components/calendar/agenda-view';
 import { EventComposer, EventComposerRef } from '@/components/calendar/event-composer';
 import { CalendarFilterContent, CalendarFilters } from '@/components/calendar/calendar-filter-content';
 import { KeyboardShortcutsModal } from '@/components/calendar/keyboard-shortcuts-modal';
-import { SpaceSwitcher } from '@/components/spaces';
 import { EventsService } from '@/lib/events';
 import { useEvents } from '@/components/providers/events-provider';
 import { CalendarEvent, CreateEventInput, EventType } from '@/types/event';
 import { useReminders } from '@/hooks/use-reminders';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
+import { MemberManager } from '@/components/spaces/MemberManager';
+import { useSpaces } from '@/components/providers/spaces-provider';
 
 const VIEW_OPTIONS: ViewOption<CalendarViewType>[] = [
   { value: 'month', icon: CalendarDays, label: 'Month view' },
@@ -76,12 +80,72 @@ export default function WorkspacePage() {
   const { toast } = useToast();
   const composerRef = useRef<EventComposerRef>(null);
   const { events, loading: isLoadingEvents, refreshEvents } = useEvents();
+  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>('month');
   const [filters, setFilters] = useState<CalendarFilters>(DEFAULT_FILTERS);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [showMemberManager, setShowMemberManager] = useState(false);
+  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
+
+  // Map spaces to UserSpace format for SpaceManagementModal
+  const userSpaces = useMemo<UserSpace[]>(() => {
+    return allSpaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type as SpaceType,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+      }));
+  }, [allSpaces, user?.uid]);
+
+  // Space management callbacks
+  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
+    if (!user) return;
+    const globalSpaceNames: Record<string, string> = {
+      family: 'Family',
+      couple: 'Couple',
+      squad: 'Team',
+      work: 'Group',
+    };
+    const spaceId = await createSpace({
+      name: globalSpaceNames[type] || type,
+      type,
+    });
+    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
+  }, [user, createSpace, updateSpace]);
+
+  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
+    if (!user) return;
+    const spaceId = await createSpace({
+      name,
+      type: 'work',
+    });
+    if (hiddenInApps.length > 0) {
+      await updateSpace(spaceId, { hiddenInApps });
+    }
+  }, [user, createSpace, updateSpace]);
+
+  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
+    await updateSpace(spaceId, { name });
+  }, [updateSpace]);
+
+  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
+    await updateSpace(spaceId, { hiddenInApps });
+  }, [updateSpace]);
 
   // Enable reminders
   useReminders(events);
@@ -381,9 +445,10 @@ export default function WorkspacePage() {
           onSave={handleComposerSave}
           onDelete={handleDeleteEvent}
           onDuplicate={handleDuplicateEvent}
+          onManagePeople={() => setShowMemberManager(true)}
+          onManageSpaces={() => setShowSpaceManagement(true)}
         />
       }
-      composerActions={<SpaceSwitcher />}
       toolbar={
         <div className="space-y-2">
           <WorkspaceToolbar
@@ -514,6 +579,25 @@ export default function WorkspacePage() {
 
         {/* Keyboard Shortcuts Modal */}
         <KeyboardShortcutsModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
+
+        {/* Member Manager Modal */}
+        <MemberManager
+          isOpen={showMemberManager}
+          onClose={() => setShowMemberManager(false)}
+        />
+
+        {/* Space Management Modal */}
+        <SpaceManagementModal
+          isOpen={showSpaceManagement}
+          onClose={() => setShowSpaceManagement(false)}
+          userSpaces={userSpaces}
+          onJoinGlobalSpace={handleJoinGlobalSpace}
+          onLeaveGlobalSpace={handleLeaveGlobalSpace}
+          onCreateCustomSpace={handleCreateCustomSpace}
+          onRenameCustomSpace={handleRenameCustomSpace}
+          onDeleteCustomSpace={handleDeleteCustomSpace}
+          onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
+        />
     </WorkspacePageLayout>
   );
 }

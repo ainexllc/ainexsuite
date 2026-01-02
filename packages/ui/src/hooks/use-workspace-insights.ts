@@ -77,6 +77,7 @@ export function useWorkspaceInsights<TData, TInsights>(
     title,
     loadingMessage,
     minimumDataCount,
+    emptyStateMessage: configEmptyStateMessage,
     generateDataHash,
     calculateLocalStats,
     itemCountThreshold = 5,
@@ -94,6 +95,7 @@ export function useWorkspaceInsights<TData, TInsights>(
   // Refs for tracking
   const previousSpaceIdRef = useRef<string | null>(null);
   const dataHashRef = useRef<string>("");
+  const loadingRef = useRef(false);
 
   // Compute cache key (space-aware)
   const cacheKey = spaceId
@@ -102,6 +104,19 @@ export function useWorkspaceInsights<TData, TInsights>(
 
   // Check if we have enough data
   const hasEnoughData = data.length >= minimumDataCount;
+
+  // Debug logging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[${appName} Insights] State:`, {
+      dataLength: data.length,
+      minimumDataCount,
+      hasEnoughData,
+      isExpanded,
+      loading,
+      hasInsightsData: !!insightsData,
+      spaceId,
+    });
+  }
 
   // Generate current data hash if configured
   const currentDataHash = useMemo(() => {
@@ -135,9 +150,23 @@ export function useWorkspaceInsights<TData, TInsights>(
 
   // Generate insights via API
   const generateInsights = useCallback(async () => {
-    if (!hasEnoughData || loading) return;
+    // Use ref for the guard to avoid stale closure issues
+    if (!hasEnoughData || loadingRef.current) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[${appName} Insights] generateInsights skipped:`, {
+          hasEnoughData,
+          loadingRef: loadingRef.current,
+        });
+      }
+      return;
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[${appName} Insights] Starting API fetch...`);
+    }
 
     setLoading(true);
+    loadingRef.current = true;
     setError(null);
 
     try {
@@ -169,17 +198,23 @@ export function useWorkspaceInsights<TData, TInsights>(
       }
 
       const result = await response.json();
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[${appName} Insights] API response received:`, result);
+      }
       setInsightsData(result);
       saveToCache(result);
     } catch (err) {
       console.error(`[${appName}] Insights error:`, err);
       setError("Could not analyze workspace.");
     } finally {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[${appName} Insights] Fetch complete, setting loading=false`);
+      }
       setLoading(false);
+      loadingRef.current = false;
     }
   }, [
     hasEnoughData,
-    loading,
     data,
     preparePayload,
     apiEndpoint,
@@ -210,12 +245,23 @@ export function useWorkspaceInsights<TData, TInsights>(
     if (cached) {
       try {
         const cacheData: InsightsCacheData<TInsights> = JSON.parse(cached);
-        const { refresh } = shouldRefreshCache(
+        const { refresh, reason } = shouldRefreshCache(
           cacheData,
           currentDataHash,
           data.length,
           itemCountThreshold
         );
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[${appName} Insights] Cache check:`, {
+            cacheKey,
+            hasCache: true,
+            refresh,
+            reason,
+            cacheItemCount: cacheData.itemCount,
+            currentCount: data.length,
+          });
+        }
 
         if (!refresh) {
           // Cache is valid - use it
@@ -227,13 +273,19 @@ export function useWorkspaceInsights<TData, TInsights>(
         }
       } catch {
         // Invalid cache, ignore
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[${appName} Insights] Invalid cache, ignoring`);
+        }
       }
+    } else if (process.env.NODE_ENV === 'development') {
+      console.log(`[${appName} Insights] No cache found for key:`, cacheKey);
     }
-  }, [dataLoading, cacheKey, currentDataHash, data.length, itemCountThreshold]);
+  }, [dataLoading, cacheKey, currentDataHash, data.length, itemCountThreshold, appName]);
 
   // Auto-generate when expanded and no valid cache
   useEffect(() => {
-    if (dataLoading || !isExpanded || loading || error) return;
+    // Use ref for loading check to avoid stale closure
+    if (dataLoading || !isExpanded || loadingRef.current || error) return;
 
     // Check if we need to generate (no cached data yet)
     const needsGeneration = hasEnoughData && !insightsData;
@@ -253,7 +305,6 @@ export function useWorkspaceInsights<TData, TInsights>(
     isExpanded,
     hasEnoughData,
     insightsData,
-    loading,
     error,
     currentDataHash,
     generateInsights,
@@ -261,9 +312,18 @@ export function useWorkspaceInsights<TData, TInsights>(
 
   // Build sections from insights data
   const sections = useMemo(() => {
-    if (!insightsData) return [];
-    return buildSections(insightsData, primaryColor, localStats);
-  }, [insightsData, buildSections, primaryColor, localStats]);
+    if (!insightsData) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[${appName} Insights] No insights data to build sections from`);
+      }
+      return [];
+    }
+    const result = buildSections(insightsData, primaryColor, localStats);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[${appName} Insights] Built ${result.length} sections from:`, insightsData);
+    }
+    return result;
+  }, [insightsData, buildSections, primaryColor, localStats, appName]);
 
   // Compute title
   const resolvedTitle =
@@ -273,6 +333,10 @@ export function useWorkspaceInsights<TData, TInsights>(
   const errorMessage = error?.includes("API key")
     ? "AI features require configuration. Insights will be available once set up."
     : error;
+
+  // Compute contextual empty state message
+  const emptyStateMessage = configEmptyStateMessage ||
+    (hasEnoughData ? undefined : `Add at least ${minimumDataCount} entries to see AI insights`);
 
   return {
     sections,
@@ -287,5 +351,6 @@ export function useWorkspaceInsights<TData, TInsights>(
     hasEnoughData,
     rawData: insightsData,
     localStats,
+    emptyStateMessage,
   };
 }

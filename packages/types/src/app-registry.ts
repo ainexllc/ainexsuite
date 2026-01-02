@@ -12,10 +12,10 @@ export type AppSlug =
   | 'album'
   | 'habits'
   | 'display'
-  | 'fit'
   | 'projects'
   | 'workflow'
   | 'calendar'
+  | 'track'
   | 'admin';
 
 export interface AppConfig {
@@ -151,20 +151,6 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['World Clocks', 'Dashboard Display', 'Ambient Info'],
     status: 'active',
   },
-  fit: {
-    name: 'Fit',
-    slug: 'fit',
-    description: 'Record workouts, track fitness progress, and achieve your health goals.',
-    icon: 'Dumbbell',
-    color: 'orange',
-    gradient: 'from-orange-500 to-amber-500',
-    devUrl: 'http://localhost:3008',
-    prodUrl: 'https://fit.ainexsuite.com',
-    devPort: 3008,
-    category: 'health',
-    features: ['Workout Logging', 'Exercise Library', 'Progress Charts', 'Personal Records'],
-    status: 'active',
-  },
   projects: {
     name: 'Project',
     slug: 'projects',
@@ -205,6 +191,20 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     devPort: 3014,
     category: 'productivity',
     features: ['Events', 'Scheduling', 'Reminders', 'Multiple Views'],
+    status: 'active',
+  },
+  track: {
+    name: 'Track',
+    slug: 'track',
+    description: 'Manage subscriptions and recurring expenses. Track your money and spending.',
+    icon: 'DollarSign',
+    color: 'green',
+    gradient: 'from-green-500 to-emerald-500',
+    devUrl: 'http://localhost:3015',
+    prodUrl: 'https://track.ainexsuite.com',
+    devPort: 3015,
+    category: 'productivity',
+    features: ['Subscriptions', 'Recurring Expenses', 'Spending Tracker', 'Budget'],
     status: 'active',
   },
   admin: {

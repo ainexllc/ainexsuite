@@ -11,6 +11,7 @@ interface AppTheme {
   secondary: string;
   backgroundVariant: BackgroundVariant;
   backgroundIntensity: number;
+  backgroundAccentColor: string;
   loading: boolean;
 }
 
@@ -19,6 +20,7 @@ const AppColorContext = createContext<AppTheme>({
   secondary: '#60a5fa',
   backgroundVariant: 'glow',
   backgroundIntensity: 0.25,
+  backgroundAccentColor: '#f97316',
   loading: true,
 });
 
@@ -48,6 +50,7 @@ export function AppColorProvider({
     secondary: fallbackSecondary,
     backgroundVariant: 'glow',
     backgroundIntensity: 0.25,
+    backgroundAccentColor: '#f97316',
     loading: true,
   });
 
@@ -56,7 +59,7 @@ export function AppColorProvider({
     let appColorsLoaded = false;
     let themeLoaded = false;
     let appColors = { primary: fallbackPrimary, secondary: fallbackSecondary };
-    let globalTheme = { backgroundVariant: 'glow' as BackgroundVariant, backgroundIntensity: 0.25 };
+    let globalTheme = { backgroundVariant: 'glow' as BackgroundVariant, backgroundIntensity: 0.25, backgroundAccentColor: '#f97316' };
 
     const updateTheme = () => {
       const isLoading = !appColorsLoaded || !themeLoaded;
@@ -65,6 +68,7 @@ export function AppColorProvider({
         secondary: appColors.secondary,
         backgroundVariant: globalTheme.backgroundVariant,
         backgroundIntensity: globalTheme.backgroundIntensity,
+        backgroundAccentColor: globalTheme.backgroundAccentColor,
         loading: isLoading,
       });
     };
@@ -102,16 +106,17 @@ export function AppColorProvider({
           globalTheme = {
             backgroundVariant: (data.backgroundVariant as BackgroundVariant) || 'glow',
             backgroundIntensity: data.backgroundIntensity ?? 0.25,
+            backgroundAccentColor: data.backgroundAccentColor || '#f97316',
           };
         } else {
-          globalTheme = { backgroundVariant: 'glow', backgroundIntensity: 0.25 };
+          globalTheme = { backgroundVariant: 'glow', backgroundIntensity: 0.25, backgroundAccentColor: '#f97316' };
         }
         themeLoaded = true;
         updateTheme();
       },
       () => {
         // Permission errors or other issues - use defaults silently
-        globalTheme = { backgroundVariant: 'glow', backgroundIntensity: 0.25 };
+        globalTheme = { backgroundVariant: 'glow', backgroundIntensity: 0.25, backgroundAccentColor: '#f97316' };
         themeLoaded = true;
         updateTheme();
       }

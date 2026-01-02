@@ -4,7 +4,7 @@
   "private": true,
   "description": "AINexSuite calendar app for scheduling and events",
   "scripts": {
-    "dev": "next dev -p ${PORT:-3014}",
+    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3014}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",

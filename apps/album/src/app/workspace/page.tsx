@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import type { Moment } from '@ainexsuite/types';
+import type { Moment, SpaceType } from '@ainexsuite/types';
 import {
   EmptyState,
   WorkspacePageLayout,
@@ -10,6 +10,7 @@ import {
   WorkspaceLoadingScreen,
   ActivityCalendar,
   ActiveFilterChips,
+  SpaceManagementModal,
   type ViewOption,
   type SortOption,
   type SortConfig,
@@ -24,12 +25,12 @@ import { MomentComposer } from '@/components/moment-composer';
 import { useMomentsStore } from '@/lib/store';
 import { useSpaces } from '@/components/providers/spaces-provider';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
+import { MemberManager } from '@/components/spaces/MemberManager';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
 import { FlipbookPlayer } from '@/components/flipbook-player';
 import { SlideshowPlayer } from '@/components/slideshow-player';
 import { MomentsFilterContent } from '@/components/moments-filter-content';
-import { SpaceSwitcher } from '@/components/spaces/SpaceSwitcher';
 import {
   Image as ImageIcon,
   LayoutGrid,
@@ -75,7 +76,11 @@ export default function MomentsWorkspacePage() {
   const { user } = useWorkspaceAuth();
 
   // Use shared SpacesProvider for spaces (auto-creates default space)
-  const { currentSpaceId, currentSpace } = useSpaces();
+  const { spaces, currentSpaceId, currentSpace, createSpace, updateSpace, deleteSpace } = useSpaces();
+
+  // Space management modals
+  const [showMemberManager, setShowMemberManager] = useState(false);
+  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
 
   // Use Zustand store for moments data
   const {
@@ -334,6 +339,41 @@ export default function MomentsWorkspacePage() {
 
   const isCalendarView = view === 'calendar';
 
+  // Map spaces to format expected by SpaceManagementModal
+  const userSpaces = useMemo(() => {
+    return spaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        memberCount: s.memberUids?.length || 1,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+      }));
+  }, [spaces, user?.uid]);
+
+  // Space management handlers
+  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
+    const name = type.charAt(0).toUpperCase() + type.slice(1);
+    await createSpace({ name, type });
+  }, [createSpace]);
+
+  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
+    await createSpace({ name, type: 'project' });
+  }, [createSpace]);
+
+  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
+    await updateSpace(spaceId, { name });
+  }, [updateSpace]);
+
+  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
   // Show loading screen
   if (isLoadingMoments && moments.length === 0) {
     return <WorkspaceLoadingScreen />;
@@ -347,11 +387,11 @@ export default function MomentsWorkspacePage() {
         maxWidth="default"
         composer={
           <MomentComposer
-            spaceId={currentSpaceId || undefined}
             onMomentCreated={handleUpdate}
+            onManagePeople={() => setShowMemberManager(true)}
+            onManageSpaces={() => setShowSpaceManagement(true)}
           />
         }
-        composerActions={<SpaceSwitcher />}
         toolbar={
           <div className="space-y-2">
             {isSearchOpen && (
@@ -529,6 +569,23 @@ export default function MomentsWorkspacePage() {
           onClose={() => setShowFlipbook(false)}
         />
       )}
+
+      {/* Space Management Modals */}
+      <MemberManager
+        isOpen={showMemberManager}
+        onClose={() => setShowMemberManager(false)}
+      />
+
+      <SpaceManagementModal
+        isOpen={showSpaceManagement}
+        onClose={() => setShowSpaceManagement(false)}
+        userSpaces={userSpaces}
+        onJoinGlobalSpace={handleJoinGlobalSpace}
+        onLeaveGlobalSpace={handleLeaveGlobalSpace}
+        onCreateCustomSpace={handleCreateCustomSpace}
+        onRenameCustomSpace={handleRenameCustomSpace}
+        onDeleteCustomSpace={handleDeleteCustomSpace}
+      />
     </>
   );
 }

@@ -10,13 +10,15 @@ import { BottomNav } from '@/components/mobile/BottomNav';
 import { ReminderSettings } from '@/components/reminders/ReminderSettings';
 import { HabitReminderToggle } from '@/components/reminders/HabitReminderToggle';
 import { useReminders } from '@/hooks/useReminders';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 
 function NotificationsContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
-  const { habits, getCurrentSpace } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { habits } = useGrowStore();
+  const { currentSpace } = useSpaces();
+  
   const {
     getPreferences,
     savePreferences,

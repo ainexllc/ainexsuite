@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { useGrowStore } from "@/lib/store";
-import { useSpaces } from "@/components/providers/spaces-provider";
+import { useSpaces } from "./spaces-provider";
 import type { Habit, Completion } from "@/types/models";
 
 interface HabitsContextValue {

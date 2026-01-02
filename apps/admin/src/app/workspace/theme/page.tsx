@@ -10,6 +10,7 @@ type BackgroundVariant = 'glow' | 'aurora' | 'minimal' | 'grid' | 'dots' | 'mesh
 interface ThemeConfig {
   backgroundVariant: BackgroundVariant;
   backgroundIntensity: number;
+  backgroundAccentColor: string;
 }
 
 const VARIANTS: { id: BackgroundVariant; name: string; description: string }[] = [
@@ -24,7 +25,20 @@ const VARIANTS: { id: BackgroundVariant; name: string; description: string }[] =
 const DEFAULT_THEME: ThemeConfig = {
   backgroundVariant: 'glow',
   backgroundIntensity: 0.25,
+  backgroundAccentColor: '#f97316',
 };
+
+// Preset colors for quick selection
+const COLOR_PRESETS = [
+  { color: '#f97316', name: 'Orange' },
+  { color: '#eab308', name: 'Amber' },
+  { color: '#22c55e', name: 'Green' },
+  { color: '#14b8a6', name: 'Teal' },
+  { color: '#3b82f6', name: 'Blue' },
+  { color: '#6366f1', name: 'Indigo' },
+  { color: '#a855f7', name: 'Purple' },
+  { color: '#ec4899', name: 'Pink' },
+];
 
 // Helper to convert hex to rgba for preview
 function hexToRgba(hex: string, alpha: number): string {
@@ -37,19 +51,34 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 // Preview component for background variants
+// Uses OKLab color space + blur to eliminate gradient banding on 4K displays
 function BackgroundPreview({ variant, intensity, color = '#4ade80' }: { variant: BackgroundVariant; intensity: number; color?: string }) {
+  // OKLab: perceptually smooth color transitions
+  // Blur: smooths any remaining 8-bit color banding
   const previewStyles: Record<BackgroundVariant, React.CSSProperties> = {
     glow: {
-      background: `radial-gradient(ellipse 80% 50% at 50% -10%, ${hexToRgba(color, intensity)}, transparent 60%)`,
+      background: `radial-gradient(in oklab, ellipse 80% 50% at 50% -10%,
+        ${hexToRgba(color, intensity)} 0%,
+        ${hexToRgba(color, intensity * 0.5)} 35%,
+        transparent 70%)`,
     },
     aurora: {
       background: `
-        radial-gradient(ellipse 100% 40% at 50% 0%, ${hexToRgba(color, intensity * 0.8)}, transparent 50%),
-        radial-gradient(ellipse 60% 30% at 70% 10%, ${hexToRgba(color, intensity * 0.5)}, transparent 40%)
+        radial-gradient(in oklab, ellipse 100% 40% at 50% 0%,
+          ${hexToRgba(color, intensity * 0.8)} 0%,
+          ${hexToRgba(color, intensity * 0.3)} 35%,
+          transparent 55%),
+        radial-gradient(in oklab, ellipse 60% 30% at 70% 10%,
+          ${hexToRgba(color, intensity * 0.5)} 0%,
+          ${hexToRgba(color, intensity * 0.15)} 30%,
+          transparent 50%)
       `,
     },
     minimal: {
-      background: `radial-gradient(ellipse 80% 50% at 50% -20%, ${hexToRgba(color, intensity)}, transparent 70%)`,
+      background: `radial-gradient(in oklab, ellipse 80% 50% at 50% -20%,
+        ${hexToRgba(color, intensity)} 0%,
+        ${hexToRgba(color, intensity * 0.4)} 40%,
+        transparent 75%)`,
     },
     grid: {
       backgroundImage: `
@@ -64,18 +93,33 @@ function BackgroundPreview({ variant, intensity, color = '#4ade80' }: { variant:
     },
     mesh: {
       background: `
-        radial-gradient(at 40% 20%, ${hexToRgba(color, intensity * 0.4)} 0px, transparent 50%),
-        radial-gradient(at 80% 0%, ${hexToRgba(color, intensity * 0.3)} 0px, transparent 50%),
-        radial-gradient(at 0% 50%, ${hexToRgba(color, intensity * 0.2)} 0px, transparent 50%)
+        radial-gradient(in oklab, at 40% 20%,
+          ${hexToRgba(color, intensity * 0.4)} 0%,
+          ${hexToRgba(color, intensity * 0.1)} 35%,
+          transparent 55%),
+        radial-gradient(in oklab, at 80% 0%,
+          ${hexToRgba(color, intensity * 0.3)} 0%,
+          ${hexToRgba(color, intensity * 0.08)} 35%,
+          transparent 55%),
+        radial-gradient(in oklab, at 0% 50%,
+          ${hexToRgba(color, intensity * 0.2)} 0%,
+          ${hexToRgba(color, intensity * 0.05)} 35%,
+          transparent 55%)
       `,
     },
   };
 
   return (
-    <div
-      className="absolute inset-0 rounded-xl"
-      style={previewStyles[variant]}
-    />
+    <div className="absolute inset-0 rounded-xl overflow-hidden">
+      {/* Gradient layer with strong blur to eliminate banding */}
+      <div
+        className="absolute -inset-8"
+        style={{
+          ...previewStyles[variant],
+          filter: 'blur(12px)',
+        }}
+      />
+    </div>
   );
 }
 
@@ -195,7 +239,7 @@ export default function ThemeManagement() {
             >
               {/* Preview */}
               <div className="relative h-28 bg-surface-base">
-                <BackgroundPreview variant={variant.id} intensity={theme.backgroundIntensity} />
+                <BackgroundPreview variant={variant.id} intensity={theme.backgroundIntensity} color={theme.backgroundAccentColor} />
               </div>
 
               {/* Label */}
@@ -249,12 +293,69 @@ export default function ThemeManagement() {
         </div>
       </div>
 
+      {/* Accent Color Selection */}
+      <div className="glass-card rounded-xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Accent Color</h2>
+            <p className="text-sm text-muted-foreground">Choose a consistent background color for all apps</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className="h-8 w-8 rounded-lg border-2 border-white/20 shadow-lg"
+              style={{ backgroundColor: theme.backgroundAccentColor }}
+            />
+            <input
+              type="color"
+              value={theme.backgroundAccentColor}
+              onChange={(e) => setTheme((prev) => ({ ...prev, backgroundAccentColor: e.target.value }))}
+              className="h-8 w-8 rounded-lg cursor-pointer opacity-0 absolute"
+              style={{ marginLeft: '-2rem' }}
+            />
+            <span className="text-sm font-mono font-medium text-white bg-surface-elevated px-3 py-1 rounded-lg uppercase">
+              {theme.backgroundAccentColor}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          {COLOR_PRESETS.map((preset) => (
+            <button
+              key={preset.color}
+              onClick={() => setTheme((prev) => ({ ...prev, backgroundAccentColor: preset.color }))}
+              className={`group relative h-10 w-10 rounded-xl transition-all ${
+                theme.backgroundAccentColor === preset.color
+                  ? 'ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110'
+                  : 'hover:scale-105'
+              }`}
+              style={{ backgroundColor: preset.color }}
+              title={preset.name}
+            >
+              {theme.backgroundAccentColor === preset.color && (
+                <CheckCircle2 className="absolute inset-0 m-auto h-5 w-5 text-white drop-shadow-lg" />
+              )}
+            </button>
+          ))}
+
+          {/* Custom color picker */}
+          <label className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-red-500 via-green-500 to-blue-500 cursor-pointer hover:scale-105 transition-all flex items-center justify-center">
+            <Paintbrush className="h-5 w-5 text-white drop-shadow-lg" />
+            <input
+              type="color"
+              value={theme.backgroundAccentColor}
+              onChange={(e) => setTheme((prev) => ({ ...prev, backgroundAccentColor: e.target.value }))}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+          </label>
+        </div>
+      </div>
+
       {/* Live Preview */}
       <div className="glass-card rounded-xl p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Live Preview</h2>
 
         <div className="relative h-64 rounded-xl bg-surface-base overflow-hidden border border-white/5 shadow-2xl">
-          <BackgroundPreview variant={theme.backgroundVariant} intensity={theme.backgroundIntensity} />
+          <BackgroundPreview variant={theme.backgroundVariant} intensity={theme.backgroundIntensity} color={theme.backgroundAccentColor} />
 
           {/* Mock content */}
           <div className="absolute inset-0 p-8 flex flex-col">

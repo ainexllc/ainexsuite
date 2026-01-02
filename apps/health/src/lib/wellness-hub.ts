@@ -154,7 +154,7 @@ export async function buildActivityFeed(limitCount: number = 15): Promise<Wellne
           exercises: workout.exerciseCount,
           calories: workout.caloriesBurned || 0,
         },
-        appUrl: '/fit/workspace',
+        appUrl: '/workspace',  // Now internal to health app
         itemId: workout.id,
       });
     }

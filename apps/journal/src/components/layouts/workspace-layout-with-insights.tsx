@@ -93,6 +93,7 @@ export function WorkspaceLayoutWithInsights({
         insightsStorageKey={insights.storageKey}
         onUpdatePreferences={onUpdatePreferences}
         onInsightsViewDetails={() => setIsModalOpen(true)}
+        insightsEmptyStateMessage={insights.emptyStateMessage}
       >
         {children}
       </WorkspaceLayout>

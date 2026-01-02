@@ -27,7 +27,7 @@ export function AchievementBadges({
   // Mini variant - ultra compact for mobile
   if (variant === 'mini') {
     return (
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden">
         <div className="p-2.5 flex items-center justify-between gap-3">
           {/* Left: Icon and title */}
           <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export function AchievementBadges({
 
   if (variant === 'compact') {
     return (
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="p-3 border-b border-white/10 bg-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">

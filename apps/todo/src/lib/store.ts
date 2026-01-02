@@ -56,7 +56,7 @@ export const useTodoStore = create<TodoState>()(
   persist(
     (set, get) => ({
       spaces: [],
-      currentSpaceId: '',
+      currentSpaceId: 'personal',
       tasks: [],
       myTasks: [],
       viewPreferences: {},
@@ -65,8 +65,10 @@ export const useTodoStore = create<TodoState>()(
       setSpaces: (spaces) => {
         const currentId = get().currentSpaceId;
         let nextId = currentId;
-        if (spaces.length > 0 && !spaces.find(s => s.id === currentId) && currentId !== 'all') {
-          nextId = spaces[0].id;
+        // Keep 'all' and 'personal' as valid virtual spaces
+        if (!currentId || (currentId !== 'all' && currentId !== 'personal' && !spaces.find(s => s.id === currentId))) {
+          // Default to 'personal' (My Todos) for new users
+          nextId = 'personal';
         }
         set({ spaces, currentSpaceId: nextId });
       },
@@ -155,6 +157,22 @@ export const useTodoStore = create<TodoState>()(
             createdAt: new Date().toISOString(),
             createdBy: '',
             lists: []
+          } as TaskSpace;
+        }
+        if (currentSpaceId === 'personal') {
+          return {
+            id: 'personal',
+            name: 'My Todos',
+            type: 'personal',
+            members: [],
+            memberUids: [],
+            createdAt: new Date().toISOString(),
+            createdBy: '',
+            lists: [
+              { id: 'personal_todo', title: 'To Do', order: 0 },
+              { id: 'personal_progress', title: 'In Progress', order: 1 },
+              { id: 'personal_done', title: 'Done', order: 2 },
+            ]
           } as TaskSpace;
         }
         return spaces.find((s) => s.id === currentSpaceId);

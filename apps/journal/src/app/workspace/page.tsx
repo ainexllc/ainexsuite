@@ -3,17 +3,19 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { LayoutGrid, Calendar, X } from 'lucide-react';
-import { useAuth } from '@ainexsuite/auth';
+import { useWorkspaceAuth } from '@ainexsuite/auth';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   ActiveFilterChips,
+  SpaceManagementModal,
   type ViewOption,
   type SortOption,
   type SortConfig,
   type FilterChip,
   type FilterChipType,
 } from '@ainexsuite/ui';
+import type { SpaceType } from '@ainexsuite/types';
 import { DashboardView } from '@/components/dashboard/dashboard-view';
 import { JournalComposer } from '@/components/journal/journal-composer';
 import {
@@ -21,6 +23,8 @@ import {
   type JournalFilterValue,
 } from '@/components/journal/journal-filter-content';
 import { moodConfig } from '@/lib/utils/mood';
+import { useSpaces } from '@/components/providers/spaces-provider';
+import { MemberManager } from '@/components/spaces/MemberManager';
 
 type ViewMode = 'masonry' | 'calendar';
 
@@ -61,7 +65,7 @@ const ENTRY_COLOR_MAP: Record<string, string> = {
 };
 
 export default function WorkspacePage() {
-  const { user } = useAuth();
+  const { user } = useWorkspaceAuth({ redirectTo: '/' });
   const searchParams = useSearchParams();
   const dateFilter = searchParams.get('date');
   const [refreshKey, setRefreshKey] = useState(0);
@@ -70,6 +74,11 @@ export default function WorkspacePage() {
   const [sort, setSort] = useState<SortConfig>({ field: 'createdAt', direction: 'desc' });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Space management state
+  const [showMemberManager, setShowMemberManager] = useState(false);
+  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
+  const { spaces, createSpace, updateSpace, deleteSpace } = useSpaces();
 
   const handleEntryCreated = useCallback(() => {
     setRefreshKey((prev) => prev + 1);
@@ -194,13 +203,56 @@ export default function WorkspacePage() {
     }
   }, [filters]);
 
+  // Map spaces to format expected by SpaceManagementModal
+  const userSpaces = useMemo(() => {
+    return spaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        memberCount: s.memberUids?.length || 1,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+      }));
+  }, [spaces, user?.uid]);
+
+  // Space management handlers
+  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
+    // Create a new global space of the specified type
+    const name = type.charAt(0).toUpperCase() + type.slice(1);
+    await createSpace({ name, type });
+  }, [createSpace]);
+
+  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
+    // For now, leaving a global space is the same as deleting it
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
+    await createSpace({ name, type: 'project' });
+  }, [createSpace]);
+
+  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
+    await updateSpace(spaceId, { name });
+  }, [updateSpace]);
+
+  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
   if (!user) {
     return null;
   }
 
   return (
     <WorkspacePageLayout
-      composer={<JournalComposer onEntryCreated={handleEntryCreated} />}
+      composer={
+        <JournalComposer
+          onEntryCreated={handleEntryCreated}
+          onManagePeople={() => setShowMemberManager(true)}
+          onManageSpaces={() => setShowSpaceManagement(true)}
+        />
+      }
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (
@@ -266,6 +318,23 @@ export default function WorkspacePage() {
         onSearchQueryChange={setSearchQuery}
         isSearchOpen={isSearchOpen}
         viewMode={viewMode}
+      />
+
+      {/* Space Management Modals */}
+      <MemberManager
+        isOpen={showMemberManager}
+        onClose={() => setShowMemberManager(false)}
+      />
+
+      <SpaceManagementModal
+        isOpen={showSpaceManagement}
+        onClose={() => setShowSpaceManagement(false)}
+        userSpaces={userSpaces}
+        onJoinGlobalSpace={handleJoinGlobalSpace}
+        onLeaveGlobalSpace={handleLeaveGlobalSpace}
+        onCreateCustomSpace={handleCreateCustomSpace}
+        onRenameCustomSpace={handleRenameCustomSpace}
+        onDeleteCustomSpace={handleDeleteCustomSpace}
       />
     </WorkspacePageLayout>
   );

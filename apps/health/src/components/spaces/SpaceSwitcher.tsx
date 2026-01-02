@@ -1,19 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { SpaceSwitcher as SharedSpaceSwitcher, SpaceEditor as SharedSpaceEditor } from "@ainexsuite/ui";
+import { SpaceSwitcher as SharedSpaceSwitcher } from "@ainexsuite/ui";
 import type { SpaceItem } from "@ainexsuite/ui";
 import type { SpaceType } from "@ainexsuite/types";
 import { useSpaces } from "@/components/providers/spaces-provider";
-import { useAuth } from "@ainexsuite/auth";
+
+interface SpaceSwitcherProps {
+  /** Callback when user wants to manage spaces */
+  onManageSpaces?: () => void;
+  /** Callback when user wants to invite people to current space */
+  onManagePeople?: () => void;
+}
 
 /**
  * Health app SpaceSwitcher - wraps shared UI component with app-specific data
  */
-export function SpaceSwitcher() {
-  const { user } = useAuth();
-  const { spaces, currentSpaceId, setCurrentSpace, createSpace } = useSpaces();
-  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
+export function SpaceSwitcher({ onManageSpaces, onManagePeople }: SpaceSwitcherProps) {
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
 
   // Map HealthSpace to SpaceItem for the shared component
   const spaceItems: SpaceItem[] = spaces.map((space: { id: string; name: string; type: string }) => ({
@@ -22,32 +25,15 @@ export function SpaceSwitcher() {
     type: space.type as SpaceType,
   }));
 
-  const handleCreateSpace = async (data: { name: string; type: SpaceType }) => {
-    if (!user) return;
-    await createSpace({ name: data.name, type: data.type });
-  };
-
   return (
-    <>
-      <SharedSpaceSwitcher
-        spaces={spaceItems}
-        currentSpaceId={currentSpaceId}
-        onSpaceChange={setCurrentSpace}
-        onCreateSpace={() => setShowSpaceEditor(true)}
-        spacesLabel="Health Spaces"
-        defaultSpaceName="Personal"
-      />
-
-      <SharedSpaceEditor
-        isOpen={showSpaceEditor}
-        onClose={() => setShowSpaceEditor(false)}
-        onSubmit={handleCreateSpace}
-        spaceTypes={[
-          { value: "personal", label: "Personal", description: "Track your personal health metrics privately" },
-          { value: "family", label: "Family", description: "Share health tracking with family members" },
-          { value: "couple", label: "Couple", description: "Track health together with your partner" },
-        ]}
-      />
-    </>
+    <SharedSpaceSwitcher
+      spaces={spaceItems}
+      currentSpaceId={currentSpaceId}
+      onSpaceChange={setCurrentSpace}
+      onManageSpaces={onManageSpaces}
+      onManagePeople={onManagePeople}
+      spacesLabel="Health Spaces"
+      defaultSpaceName="Personal"
+    />
   );
 }

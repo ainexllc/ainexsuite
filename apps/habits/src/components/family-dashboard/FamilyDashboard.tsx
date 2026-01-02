@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { db } from '@ainexsuite/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, type FirestoreError } from 'firebase/firestore';
 import { Space, Habit, Completion, Member } from '@/types/models';
 import { getTodayDateString } from '@/lib/date-utils';
 import { DashboardHeader } from './DashboardHeader';
@@ -38,14 +38,22 @@ export function FamilyDashboard({ space, token }: FamilyDashboardProps) {
       where('spaceId', '==', space.id)
     );
 
-    const unsubscribe = onSnapshot(habitsQuery, (snapshot) => {
-      const habitsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Habit[];
-      setHabits(habitsData);
-      setIsLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      habitsQuery,
+      (snapshot) => {
+        const habitsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Habit[];
+        setHabits(habitsData);
+        setIsLoading(false);
+      },
+      (err: FirestoreError) => {
+        // eslint-disable-next-line no-console
+        console.error('[FamilyDashboard] Habits subscription error:', err);
+        setIsLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [space.id]);
@@ -59,13 +67,20 @@ export function FamilyDashboard({ space, token }: FamilyDashboardProps) {
       where('date', '==', today)
     );
 
-    const unsubscribe = onSnapshot(completionsQuery, (snapshot) => {
-      const completionsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Completion[];
-      setCompletions(completionsData);
-    });
+    const unsubscribe = onSnapshot(
+      completionsQuery,
+      (snapshot) => {
+        const completionsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Completion[];
+        setCompletions(completionsData);
+      },
+      (err: FirestoreError) => {
+        // eslint-disable-next-line no-console
+        console.error('[FamilyDashboard] Completions subscription error:', err);
+      }
+    );
 
     return () => unsubscribe();
   }, [space.id]);

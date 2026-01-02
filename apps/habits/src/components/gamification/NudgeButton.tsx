@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { BellRing, CheckCircle2 } from 'lucide-react';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
 import { Notification } from '../../types/models';
@@ -14,9 +15,10 @@ interface NudgeButtonProps {
 
 export function NudgeButton({ targetName, targetId, habitTitle }: NudgeButtonProps) {
   const [nudged, setNudged] = useState(false);
-  const { sendNotification, getCurrentSpace } = useGrowStore();
+  const { sendNotification } = useGrowStore();
+  const { currentSpace } = useSpaces();
   const { user } = useAuth();
-  const currentSpace = getCurrentSpace();
+  
 
   const handleNudge = async () => {
     if (!user || !currentSpace) return;

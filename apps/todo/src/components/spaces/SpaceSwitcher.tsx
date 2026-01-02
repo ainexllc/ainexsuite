@@ -1,83 +1,46 @@
 'use client';
 
-import { useState } from 'react';
-import { SpaceSwitcher as SharedSpaceSwitcher, SpaceEditor as SharedSpaceEditor } from '@ainexsuite/ui';
+import { SpaceSwitcher as SharedSpaceSwitcher } from '@ainexsuite/ui';
 import type { SpaceItem } from '@ainexsuite/ui';
 import type { SpaceType as SharedSpaceType } from '@ainexsuite/types';
-import type { SpaceType as TaskSpaceType, TaskList } from '../../types/models';
 import { useTodoStore } from '../../lib/store';
-import { useAuth } from '@ainexsuite/auth';
+
+interface SpaceSwitcherProps {
+  /** Callback when user wants to manage spaces */
+  onManageSpaces?: () => void;
+  /** Callback when user wants to invite people to current space */
+  onManagePeople?: () => void;
+}
 
 /**
  * Todo app SpaceSwitcher - wraps shared UI component with app-specific data
  */
-export function SpaceSwitcher() {
-  const { user } = useAuth();
-  const { spaces, currentSpaceId, setCurrentSpace, addSpace } = useTodoStore();
-  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
+export function SpaceSwitcher({ onManageSpaces, onManagePeople }: SpaceSwitcherProps) {
+  const { spaces, currentSpaceId, setCurrentSpace } = useTodoStore();
 
   // Map TaskSpace to SpaceItem for the shared component
+  // Add virtual "My Todos" personal space, then custom spaces
   const spaceItems: SpaceItem[] = [
     { id: 'all', name: 'All Spaces', type: 'personal' },
-    ...spaces.map((space: { id: string; name: string; type: string }) => ({
-      id: space.id,
-      name: space.name,
-      type: space.type as SharedSpaceType,
-    }))
+    { id: 'personal', name: 'My Todos', type: 'personal' },
+    ...spaces
+      .filter((space: { id: string; name: string }) => space.id !== 'personal') // Exclude if there's a stored personal space
+      .map((space: { id: string; name: string; type: string }) => ({
+        id: space.id,
+        name: space.name,
+        type: space.type as SharedSpaceType,
+      }))
   ];
 
-  const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
-    if (!user) return;
-
-    // Only allow types supported by todo app
-    const taskType = data.type as TaskSpaceType;
-
-    // Default lists for new space
-    const defaultLists: TaskList[] = [
-      { id: `list_${Date.now()}_1`, title: 'To Do', order: 0 },
-      { id: `list_${Date.now()}_2`, title: 'In Progress', order: 1 },
-      { id: `list_${Date.now()}_3`, title: 'Done', order: 2 },
-    ];
-
-    await addSpace({
-      id: `todo_space_${Date.now()}`,
-      name: data.name,
-      type: taskType,
-      members: [{
-        uid: user.uid,
-        displayName: user.displayName || 'Me',
-        photoURL: user.photoURL || undefined,
-        role: 'admin',
-        joinedAt: new Date().toISOString()
-      }],
-      memberUids: [user.uid],
-      createdAt: new Date().toISOString(),
-      createdBy: user.uid,
-      lists: defaultLists,
-    });
-  };
-
   return (
-    <>
-      <SharedSpaceSwitcher
-        spaces={spaceItems}
-        currentSpaceId={currentSpaceId}
-        onSpaceChange={setCurrentSpace}
-        onCreateSpace={() => setShowSpaceEditor(true)}
-        spacesLabel="Task Spaces"
-        defaultSpaceName="Personal"
-      />
-
-      <SharedSpaceEditor
-        isOpen={showSpaceEditor}
-        onClose={() => setShowSpaceEditor(false)}
-        onSubmit={handleCreateSpace}
-        spaceTypes={[
-          { value: 'personal', label: 'Personal', description: 'Your private tasks and goals' },
-          { value: 'family', label: 'Family', description: 'Share with family members' },
-          { value: 'work', label: 'Work', description: 'Team projects and tasks' },
-        ]}
-      />
-    </>
+    <SharedSpaceSwitcher
+      spaces={spaceItems}
+      currentSpaceId={currentSpaceId}
+      onSpaceChange={setCurrentSpace}
+      onManageSpaces={onManageSpaces}
+      onManagePeople={onManagePeople}
+      spacesLabel="Task Spaces"
+      defaultSpaceName="My Todos"
+    />
   );
 }

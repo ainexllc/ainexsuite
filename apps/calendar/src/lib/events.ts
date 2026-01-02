@@ -161,6 +161,7 @@ export const EventsService = {
 
     const docData: Record<string, unknown> = {
       userId,
+      spaceId: event.spaceId || 'personal',
       title: event.title,
       description: event.description || '',
       startTime: Timestamp.fromDate(event.startTime),
@@ -200,6 +201,7 @@ export const EventsService = {
     if (event.color) updateData.color = event.color;
     if (event.type) updateData.type = event.type;
     if (event.location !== undefined) updateData.location = event.location;
+    if (event.spaceId) updateData.spaceId = event.spaceId;
     
     if (event.recurrence) {
       updateData.recurrence = {

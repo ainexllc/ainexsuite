@@ -2,15 +2,21 @@ import type { SpaceType } from '@ainexsuite/types';
 
 /**
  * Base space structure common to all apps
+ * Uses loose typing for members to allow app-specific member types
  */
 export interface BaseSpace {
   id: string;
   name: string;
   type: SpaceType;
-  members: SpaceMember[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  members: any[]; // Loose typing to allow app-specific member types
   memberUids: string[];
-  createdAt: Date;
-  createdBy: string;
+  createdAt: Date | number | string;
+  ownerId?: string; // Owner user ID
+  createdBy?: string; // Legacy: some apps use createdBy instead of ownerId
+  // Cross-app visibility
+  isGlobal?: boolean;
+  hiddenInApps?: string[];
 }
 
 /**
@@ -18,10 +24,12 @@ export interface BaseSpace {
  */
 export interface SpaceMember {
   uid: string;
-  displayName: string;
+  displayName?: string;
   photoURL?: string;
+  email?: string;
   role: SpaceMemberRole;
-  joinedAt: string;
+  joinedAt: string | number;
+  addedBy?: string;
 }
 
 export type SpaceMemberRole = 'admin' | 'member' | 'viewer';
@@ -81,26 +89,33 @@ export interface SpacesProviderConfig<TSpace extends BaseSpace = BaseSpace> {
 export interface SpaceDocData {
   name: string;
   type: SpaceType;
+  description?: string;
   members: SpaceMember[];
   memberUids: string[];
-  createdAt: { toDate: () => Date } | null;
-  createdBy: string;
+  createdAt: { toDate: () => Date } | number | null;
+  ownerId?: string;
+  createdBy?: string; // Legacy field, some spaces use this instead of ownerId
   // Cross-app visibility fields
   isGlobal?: boolean;
   hiddenInApps?: string[];
+  // Public/Joinable spaces
+  isPublic?: boolean;
 }
 
 /**
  * Space draft for updates (partial space without id and timestamps)
+ * Includes Record<string, unknown> to allow app-specific fields
  */
-export type SpaceDraft = Partial<Omit<BaseSpace, 'id' | 'createdAt' | 'createdBy'>>;
+export type SpaceDraft = Partial<Omit<BaseSpace, 'id' | 'createdAt' | 'ownerId'>> & Record<string, unknown>;
 
 /**
  * Context value provided by SpacesProvider
  */
 export interface SpacesContextValue<TSpace extends BaseSpace = BaseSpace> {
-  /** All spaces including virtual personal space */
+  /** Visible spaces for this app (filtered by hiddenInApps) including virtual personal space */
   spaces: TSpace[];
+  /** All user spaces without filtering (for settings/management) including virtual personal space */
+  allSpaces: TSpace[];
   /** Currently selected space */
   currentSpace: TSpace;
   /** ID of currently selected space */

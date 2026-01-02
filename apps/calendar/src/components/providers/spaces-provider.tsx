@@ -18,8 +18,8 @@ export interface CalendarSpace {
     joinedAt: string;
   }>;
   memberUids: string[];
-  createdAt: Date;
-  createdBy: string;
+  createdAt: Date | number;
+  ownerId: string;
 }
 
 /**

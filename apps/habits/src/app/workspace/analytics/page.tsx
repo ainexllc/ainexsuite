@@ -15,6 +15,7 @@ import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
 import { HabitTrends } from '@/components/analytics/HabitTrends';
 
 // Store & Utils
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 import {
   calculateWeeklyConsistency,
@@ -26,9 +27,10 @@ function AnalyticsContent() {
   const { user, loading: authLoading, bootstrapStatus } = useAuth();
   const router = useRouter();
 
-  const { getCurrentSpace, getSpaceHabits, completions } = useGrowStore();
+  const { getSpaceHabits, completions } = useGrowStore();
+  const { currentSpace } = useSpaces();
 
-  const currentSpace = getCurrentSpace();
+  
   const habits = currentSpace ? getSpaceHabits(currentSpace.id) : [];
   const weeklyStats = calculateWeeklyConsistency(habits, completions);
   const teamStats = currentSpace

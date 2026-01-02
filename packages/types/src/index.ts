@@ -20,6 +20,8 @@ export * from './learning';
 export * from './health';
 export * from './fitness';
 export * from './medication';
+export * from './nutrition';
+export * from './medical';
 
 // Cross-app types
 export * from './search';

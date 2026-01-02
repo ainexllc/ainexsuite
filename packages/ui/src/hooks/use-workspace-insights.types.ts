@@ -105,6 +105,9 @@ export interface WorkspaceInsightsResult<TInsights = unknown> {
 
   /** Client-side calculated stats (e.g., streak data) */
   localStats?: object;
+
+  /** Message to show when there's not enough data */
+  emptyStateMessage?: string;
 }
 
 /**

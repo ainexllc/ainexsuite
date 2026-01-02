@@ -26,6 +26,7 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
+import { generateUUID } from "@ainexsuite/ui";
 import {
   clientNoteCollection,
   clientNoteDoc,
@@ -304,7 +305,7 @@ export async function uploadNoteAttachment(
   file: File,
 ): Promise<NoteAttachment> {
   const storage = getFirebaseStorage();
-  const attachmentId = crypto.randomUUID();
+  const attachmentId = generateUUID();
   const sanitizedName = file.name.replace(/\s+/g, "-");
   const storagePath = `${noteDocPath(userId, noteId)}/attachments/${attachmentId}-${sanitizedName}`;
   const fileRef = ref(storage, storagePath);

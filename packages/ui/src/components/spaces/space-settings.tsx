@@ -19,13 +19,30 @@ import {
   Crown,
   Shield,
   Eye,
+  Clock,
+  Baby,
+  UserPlus,
 } from 'lucide-react';
-import type { SpaceType, SpaceColor, SpaceIcon, SpaceRole, SpaceMember } from '@ainexsuite/types';
+import type { SpaceType, SpaceColor, SpaceIcon, SpaceRole, SpaceMember, ChildMember, SpaceInvitation } from '@ainexsuite/types';
 import { Modal, ModalHeader, ModalTitle, ModalDescription, ModalContent, ModalFooter } from '../modal';
 import { Button } from '../buttons/button';
 import { Input, FormField } from '../forms';
 import { ConfirmationDialog } from '../confirmation-dialog';
 import { cn } from '../../lib/utils';
+
+/** Member limits per space type (null = unlimited) */
+const SPACE_MEMBER_LIMITS: Record<SpaceType, number | null> = {
+  personal: 1,
+  couple: 2,
+  family: null,
+  work: null,
+  buddy: 2,
+  squad: null,
+  project: null,
+};
+
+/** Space types that support child members */
+const CHILD_MEMBER_SPACE_TYPES: SpaceType[] = ['family'];
 
 export interface SpaceSettingsProps {
   /** Whether the modal is open */
@@ -41,7 +58,11 @@ export interface SpaceSettingsProps {
     icon?: SpaceIcon;
     isGlobal?: boolean;
     members: SpaceMember[];
+    childMembers?: ChildMember[];
+    pendingInviteCount?: number;
   };
+  /** Pending invitations for this space */
+  pendingInvitations?: SpaceInvitation[];
   /** Current user's ID */
   currentUserId: string;
   /** Callback when settings are saved */
@@ -58,6 +79,14 @@ export interface SpaceSettingsProps {
   onChangeMemberRole?: (memberId: string, role: SpaceRole) => Promise<void>;
   /** Callback when a member is removed */
   onRemoveMember?: (memberId: string) => Promise<void>;
+  /** Callback when an invitation is canceled */
+  onCancelInvitation?: (invitationId: string) => Promise<void>;
+  /** Callback to add a child member */
+  onAddChild?: () => void;
+  /** Callback to edit a child member */
+  onEditChild?: (child: ChildMember) => void;
+  /** Callback to remove a child member */
+  onRemoveChild?: (childId: string) => Promise<void>;
   /** Whether user can edit this space */
   canEdit?: boolean;
   /** Whether user can delete this space */
@@ -123,12 +152,17 @@ export function SpaceSettings({
   isOpen,
   onClose,
   space,
+  pendingInvitations = [],
   currentUserId,
   onSave,
   onDelete,
   onInviteMember,
   onChangeMemberRole,
   onRemoveMember,
+  onCancelInvitation,
+  onAddChild,
+  onEditChild,
+  onRemoveChild,
   canEdit = true,
   canDelete = true,
 }: SpaceSettingsProps) {
@@ -147,6 +181,15 @@ export function SpaceSettings({
   const currentUserRole = space.members.find((m) => m.uid === currentUserId)?.role;
   const isAdmin = currentUserRole === 'admin';
   const TypeIcon = SPACE_TYPE_ICONS[space.type];
+
+  // Calculate member limits
+  const memberLimit = SPACE_MEMBER_LIMITS[space.type];
+  const currentMemberCount = space.members.length;
+  const pendingCount = pendingInvitations.length || space.pendingInviteCount || 0;
+  const totalCount = currentMemberCount + pendingCount;
+  const canInviteMore = memberLimit === null || totalCount < memberLimit;
+  const supportsChildMembers = CHILD_MEMBER_SPACE_TYPES.includes(space.type);
+  const childMembers = space.childMembers || [];
 
   const handleSave = async () => {
     if (!name.trim() || !onSave) return;
@@ -287,13 +330,42 @@ export function SpaceSettings({
           {/* Members Section */}
           <div className="border-t border-zinc-200 dark:border-zinc-800 pt-6">
             <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                Members ({space.members.length})
-              </label>
+              <div>
+                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  Members
+                </label>
+                {memberLimit !== null && (
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    {totalCount} / {memberLimit} {pendingCount > 0 && `(${pendingCount} pending)`}
+                  </p>
+                )}
+              </div>
+              {isAdmin && onInviteMember && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {/* Parent should open InviteMemberModal */}}
+                  disabled={!canInviteMore}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite
+                </Button>
+              )}
             </div>
 
+            {/* Member limit warning */}
+            {memberLimit !== null && !canInviteMore && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm mb-4">
+                <Users className="h-4 w-4 flex-shrink-0" />
+                <span>
+                  This {space.type} space has reached its maximum of {memberLimit} members.
+                </span>
+              </div>
+            )}
+
             {/* Invite member (for admins) */}
-            {isAdmin && onInviteMember && (
+            {isAdmin && onInviteMember && canInviteMore && (
               <div className="flex gap-2 mb-4">
                 <div className="flex-1 relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
@@ -328,6 +400,50 @@ export function SpaceSettings({
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
+              </div>
+            )}
+
+            {/* Pending Invitations */}
+            {pendingInvitations.length > 0 && (
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-zinc-500 mb-2">
+                  Pending Invitations
+                </label>
+                <div className="space-y-2">
+                  {pendingInvitations.map((invitation) => (
+                    <div
+                      key={invitation.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 border border-amber-500/20"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                          <Clock className="h-4 w-4 text-amber-500" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                            {invitation.email}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-zinc-500">
+                            <span className="capitalize">{invitation.role}</span>
+                            <span>•</span>
+                            <span>
+                              Expires {new Date(invitation.expiresAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {isAdmin && onCancelInvitation && (
+                        <button
+                          onClick={() => onCancelInvitation(invitation.id)}
+                          className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
+                          title="Cancel invitation"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -398,6 +514,100 @@ export function SpaceSettings({
               })}
             </div>
           </div>
+
+          {/* Child Members Section (Family spaces only) */}
+          {supportsChildMembers && (
+            <div className="border-t border-zinc-200 dark:border-zinc-800 pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    Child Members
+                  </label>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Children don&apos;t need their own account
+                  </p>
+                </div>
+                {isAdmin && onAddChild && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={onAddChild}
+                  >
+                    <Baby className="h-4 w-4" />
+                    Add Child
+                  </Button>
+                )}
+              </div>
+
+              {childMembers.length === 0 ? (
+                <div className="text-center py-6 text-sm text-zinc-500">
+                  No child members yet
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {childMembers.map((child) => (
+                    <div
+                      key={child.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-pink-500/5 border border-pink-500/10"
+                    >
+                      <div className="flex items-center gap-3">
+                        {child.photoURL ? (
+                          <img
+                            src={child.photoURL}
+                            alt={child.displayName}
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-pink-500/10 flex items-center justify-center">
+                            <Baby className="h-4 w-4 text-pink-500" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                            {child.displayName}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-zinc-500">
+                            {child.relationship && (
+                              <>
+                                <span className="capitalize">{child.relationship}</span>
+                                <span>•</span>
+                              </>
+                            )}
+                            <Eye className="h-3 w-3" />
+                            <span>Viewer</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {isAdmin && (
+                        <div className="flex items-center gap-2">
+                          {onEditChild && (
+                            <button
+                              onClick={() => onEditChild(child)}
+                              className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                              title="Edit child"
+                            >
+                              <Save className="h-4 w-4" />
+                            </button>
+                          )}
+                          {onRemoveChild && (
+                            <button
+                              onClick={() => onRemoveChild(child.id)}
+                              className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
+                              title="Remove child"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Danger Zone */}
           {canDelete && onDelete && (

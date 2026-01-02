@@ -3,66 +3,69 @@
 import { useEffect } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { useGrowStore } from '../lib/store';
-import { 
-  subscribeToUserSpaces, 
-  subscribeToSpaceHabits, 
+import { useSpaces } from './providers/spaces-provider';
+import {
+  subscribeToSpaceHabits,
   subscribeToSpaceQuests,
   subscribeToCompletions,
-  subscribeToUserNotifications
+  subscribeToUserNotifications,
 } from '../lib/firebase-service';
 
 export function FirestoreSync() {
   const { user } = useAuth();
-  const { 
-    currentSpaceId, 
-    setSpaces, 
-    setHabits, 
-    setQuests, 
+  const { currentSpaceId } = useSpaces();
+
+  // Note: Permission error handler removed to prevent logout loops
+  // Permission errors now just log warnings instead of triggering logout
+  // Users will need to manually re-login if their session is truly invalid
+
+  const {
+    setHabits,
+    setQuests,
     setCompletions,
     setNotifications
   } = useGrowStore();
 
-  // Sync Spaces & Notifications (User Level)
+  // Sync Notifications (User Level)
   useEffect(() => {
     if (!user) return;
-
-    const unsubSpaces = subscribeToUserSpaces(user.uid, (spaces) => {
-      setSpaces(spaces);
-    });
 
     const unsubNotifs = subscribeToUserNotifications(user.uid, (notifs) => {
       setNotifications(notifs);
     });
 
     return () => {
-      unsubSpaces();
       unsubNotifs();
     };
-  }, [user, setSpaces, setNotifications]);
+  }, [user, setNotifications]);
 
   // Sync Habits, Quests, Completions for Current Space
   useEffect(() => {
-    if (!currentSpaceId) return;
+    if (!currentSpaceId || !user) return;
 
+    // Pass userId for personal space queries to match security rules
     const unsubHabits = subscribeToSpaceHabits(currentSpaceId, (habits) => {
       setHabits(habits);
-    });
+    }, user.uid);
 
-    const unsubQuests = subscribeToSpaceQuests(currentSpaceId, (quests) => {
-      setQuests(quests);
-    });
+    // Quests are team features - skip for personal space (no Firestore document exists)
+    const unsubQuests = currentSpaceId !== 'personal'
+      ? subscribeToSpaceQuests(currentSpaceId, (quests) => {
+          setQuests(quests);
+        })
+      : () => { setQuests([]); };
 
     // Note: In production, completions might be too large to sync all at once.
     const unsubCompletions = subscribeToCompletions(currentSpaceId, (completions) => {
       setCompletions(completions);
-    });
+    }, user.uid);
 
     return () => {
       unsubHabits();
-      unsubQuests();
+      if (typeof unsubQuests === 'function') unsubQuests();
       unsubCompletions();
     };
-  }, [currentSpaceId, setHabits, setQuests, setCompletions]);
+  }, [currentSpaceId, user, setHabits, setQuests, setCompletions]);
 
   return null; // This component renders nothing, just logic
 }

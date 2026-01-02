@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { List, LayoutGrid, Calendar, Activity, X, Sparkles, Pill } from 'lucide-react';
+import { List, LayoutGrid, Calendar, Activity, X, Sparkles, Pill, BarChart3, Apple, Stethoscope, Dumbbell } from 'lucide-react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import type { HealthMetric } from '@ainexsuite/types';
+import type { HealthMetric, SpaceType } from '@ainexsuite/types';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   WorkspaceLoadingScreen,
   ActivityCalendar,
   ActiveFilterChips,
+  SpaceManagementModal,
   type ViewOption,
   type FilterChip,
   type FilterChipType,
@@ -17,16 +18,27 @@ import {
 import { getTodayDate } from '@/lib/health-metrics';
 import { useHealthMetrics } from '@/components/providers/health-metrics-provider';
 import { usePreferences } from '@/components/providers/preferences-provider';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { HealthCheckinComposer } from '@/components/health-checkin-composer';
 import { HealthEditModal } from '@/components/health-edit-modal';
 import { HealthBoard } from '@/components/health-board';
 import { HealthFilterContent } from '@/components/health-filter-content';
 import { WellnessBoard } from '@/components/wellness-board';
 import { MedicationDashboard } from '@/components/medications';
+import { AnalyticsBoard } from '@/components/analytics';
+import { NutritionDashboard } from '@/components/nutrition';
+import { MedicalDashboard } from '@/components/medical';
+import { FitnessBoard } from '@/components/workouts';
+import { WorkoutsProvider } from '@/components/providers/workouts-provider';
+import { MemberManager } from '@/components/spaces/MemberManager';
 import type { ViewMode, SortField } from '@/lib/types/settings';
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
   { value: 'wellness', icon: Sparkles, label: 'Wellness hub' },
+  { value: 'fitness', icon: Dumbbell, label: 'Fitness' },
+  { value: 'analytics', icon: BarChart3, label: 'Analytics' },
+  { value: 'nutrition', icon: Apple, label: 'Nutrition' },
+  { value: 'medical', icon: Stethoscope, label: 'Medical' },
   { value: 'medications', icon: Pill, label: 'Medications' },
   { value: 'list', icon: List, label: 'List view' },
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
@@ -72,8 +84,51 @@ export default function HealthWorkspacePage() {
     deleteMetric,
   } = useHealthMetrics();
   const { preferences, updatePreferences } = usePreferences();
+  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
   const [editingMetric, setEditingMetric] = useState<HealthMetric | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [showMemberManager, setShowMemberManager] = useState(false);
+  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
+
+  // Map spaces for SpaceManagementModal
+  const userSpaces = useMemo(() => {
+    return allSpaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal || false,
+        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+        memberCount: s.memberUids?.length || 1,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+      }));
+  }, [allSpaces, user?.uid]);
+
+  // Space management handlers
+  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
+    await createSpace({ name: type === 'family' ? 'Family' : 'Partner', type });
+  }, [createSpace]);
+
+  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
+    await createSpace({ name, type: 'project' });
+  }, [createSpace]);
+
+  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
+    await updateSpace(spaceId, { name });
+  }, [updateSpace]);
+
+  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
+    await updateSpace(spaceId, { hiddenInApps });
+  }, [updateSpace]);
 
   const handleSaveCheckin = async (data: Partial<HealthMetric>) => {
     try {
@@ -82,6 +137,7 @@ export default function HealthWorkspacePage() {
       } else {
         await createMetric({
           date: data.date || getTodayDate(),
+          spaceId: data.spaceId,
           sleep: data.sleep ?? null,
           water: data.water ?? null,
           exercise: data.exercise ?? null,
@@ -222,7 +278,12 @@ export default function HealthWorkspacePage() {
 
   const isCalendarView = preferences.viewMode === 'calendar';
   const isWellnessView = preferences.viewMode === 'wellness';
+  const isFitnessView = preferences.viewMode === 'fitness';
   const isMedicationsView = preferences.viewMode === 'medications';
+  const isAnalyticsView = preferences.viewMode === 'analytics';
+  const isNutritionView = preferences.viewMode === 'nutrition';
+  const isMedicalView = preferences.viewMode === 'medical';
+  const isSpecialView = isWellnessView || isFitnessView || isMedicationsView || isAnalyticsView || isNutritionView || isMedicalView;
 
   const handleSearchToggle = useCallback(() => {
     setIsSearchOpen((prev) => {
@@ -250,6 +311,8 @@ export default function HealthWorkspacePage() {
             existingMetric={todayMetric}
             date={getTodayDate()}
             onSave={handleSaveCheckin}
+            onManagePeople={() => setShowMemberManager(true)}
+            onManageSpaces={() => setShowSpaceManagement(true)}
           />
         }
         toolbar={
@@ -306,8 +369,8 @@ export default function HealthWorkspacePage() {
           </div>
         }
       >
-        {/* Empty State (not shown in wellness or medications view) */}
-        {!isWellnessView && !isMedicationsView && metrics.length === 0 && (
+        {/* Empty State (not shown in special views) */}
+        {!isSpecialView && metrics.length === 0 && (
           <div className="text-center py-12 rounded-2xl bg-foreground/5 border border-border">
             <Activity className="h-16 w-16 mx-auto mb-4 text-primary/50" />
             <p className="text-foreground/70 mb-2">No health data yet</p>
@@ -320,11 +383,27 @@ export default function HealthWorkspacePage() {
         {/* Wellness Hub View */}
         {isWellnessView && <WellnessBoard />}
 
+        {/* Fitness View */}
+        {isFitnessView && (
+          <WorkoutsProvider>
+            <FitnessBoard />
+          </WorkoutsProvider>
+        )}
+
+        {/* Analytics View */}
+        {isAnalyticsView && <AnalyticsBoard />}
+
+        {/* Nutrition View */}
+        {isNutritionView && <NutritionDashboard />}
+
+        {/* Medical View */}
+        {isMedicalView && <MedicalDashboard />}
+
         {/* Medications View */}
         {isMedicationsView && <MedicationDashboard />}
 
         {/* Health Data Views */}
-        {!isWellnessView && !isMedicationsView && metrics.length > 0 && (
+        {!isSpecialView && metrics.length > 0 && (
           isCalendarView ? (
             <ActivityCalendar
               activityData={activityData}
@@ -346,6 +425,25 @@ export default function HealthWorkspacePage() {
           onClose={() => setEditingMetric(null)}
         />
       )}
+
+      {/* Member Manager Modal */}
+      <MemberManager
+        isOpen={showMemberManager}
+        onClose={() => setShowMemberManager(false)}
+      />
+
+      {/* Space Management Modal */}
+      <SpaceManagementModal
+        isOpen={showSpaceManagement}
+        onClose={() => setShowSpaceManagement(false)}
+        userSpaces={userSpaces}
+        onJoinGlobalSpace={handleJoinGlobalSpace}
+        onLeaveGlobalSpace={handleLeaveGlobalSpace}
+        onCreateCustomSpace={handleCreateCustomSpace}
+        onRenameCustomSpace={handleRenameCustomSpace}
+        onDeleteCustomSpace={handleDeleteCustomSpace}
+        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
+      />
     </>
   );
 }

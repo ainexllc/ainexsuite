@@ -59,7 +59,7 @@ export function TeamLeaderboard({ data, spaceType, onSettingsClick, compact = fa
 
   if (compact) {
     return (
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
+      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden">
         {/* Compact header with always-visible settings */}
         <div className="p-2.5 border-b border-white/10 bg-white/5 flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -140,7 +140,7 @@ export function TeamLeaderboard({ data, spaceType, onSettingsClick, compact = fa
   }
 
   return (
-    <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
+    <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden">
       <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-indigo-500/20">

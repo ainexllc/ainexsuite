@@ -2,6 +2,7 @@
 
 import { SpacesProvider } from "@/components/providers/spaces-provider";
 import { HabitsProvider } from "@/components/providers/habits-provider";
+import { HintsProvider } from "@/components/hints";
 
 type AppProvidersProps = {
   children: React.ReactNode;
@@ -15,7 +16,9 @@ type AppProvidersProps = {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <SpacesProvider>
-      <HabitsProvider>{children}</HabitsProvider>
+      <HabitsProvider>
+        <HintsProvider>{children}</HintsProvider>
+      </HabitsProvider>
     </SpacesProvider>
   );
 }

@@ -1,16 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { Plus, Layout, Crown, Rocket, ChevronDown, Settings, Trophy, Users } from 'lucide-react';
+import { Plus, Layout, Crown, Rocket, ChevronDown, Trophy } from 'lucide-react';
+import type { SpaceType } from '@ainexsuite/types';
 
 // Core Components
-import { WorkspacePageLayout, EmptyState } from '@ainexsuite/ui';
+import { WorkspacePageLayout, EmptyState, SpaceManagementModal, type UserSpace } from '@ainexsuite/ui';
+import { useSettings } from '@/components/providers/settings-context';
 import { MemberManager } from '@/components/spaces/MemberManager';
 import { HabitEditor } from '@/components/habits/HabitEditor';
 import { HabitComposer } from '@/components/habits/HabitComposer';
 import { HabitCard } from '@/components/habits/HabitCard';
 import { SwipeableHabitCard } from '@/components/habits/SwipeableHabitCard';
+import { FamilyHabitsGrid } from '@/components/habits/FamilyHabitsGrid';
 import { HabitPacks } from '@/components/gamification/HabitPacks';
 import { QuestBar } from '@/components/gamification/QuestBar';
 import { WagerCard } from '@/components/gamification/WagerCard';
@@ -26,6 +29,7 @@ import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
 
 // Store & Types
 import { useGrowStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { getHabitStatus, getTodayDateString } from '@/lib/date-utils';
 import { Habit, Member, Quest, ReactionEmoji } from '@/types/models';
 import { getTeamContribution } from '@/lib/analytics-utils';
@@ -34,10 +38,80 @@ import { cn } from '@/lib/utils';
 
 export default function GrowWorkspacePage() {
   const { user } = useWorkspaceAuth();
+  useSettings(); // Keep provider mounted
 
-  // Zustand Store
+  // Spaces from context (createSpacesProvider)
+  const { currentSpace, allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+
+  // Handler to open member manager for current space
+  const handleManagePeople = useCallback(() => {
+    setShowMemberManager(true);
+  }, []);
+
+  // Map spaces to UserSpace format for SpaceManagementModal
+  const userSpaces = useMemo<UserSpace[]>(() => {
+    return allSpaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type as SpaceType,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+      }));
+  }, [allSpaces, user?.uid]);
+
+  // Space management callbacks
+  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
+    if (!user) return;
+    const globalSpaceNames: Record<string, string> = {
+      family: 'Family',
+      couple: 'Couple',
+      squad: 'Team',
+      work: 'Group',
+    };
+    // Create the space first, then update with extra fields
+    const spaceId = await createSpace({
+      name: globalSpaceNames[type] || type,
+      type,
+    });
+    // Add isGlobal and hiddenInApps fields
+    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
+  }, [user, createSpace, updateSpace]);
+
+  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
+    if (!user) return;
+    // Create the space first, then update with extra fields
+    // Use 'work' type for custom spaces since habits allows: personal, family, couple, work
+    const spaceId = await createSpace({
+      name,
+      type: 'work',
+    });
+    // Add hiddenInApps field
+    if (hiddenInApps.length > 0) {
+      await updateSpace(spaceId, { hiddenInApps });
+    }
+  }, [user, createSpace, updateSpace]);
+
+  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
+    await updateSpace(spaceId, { name });
+  }, [updateSpace]);
+
+  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
+    await updateSpace(spaceId, { hiddenInApps });
+  }, [updateSpace]);
+
+  // Zustand Store for habits/completions
   const {
-    getCurrentSpace,
     getSpaceHabits,
     getSpaceQuests,
     addCompletion,
@@ -47,7 +121,6 @@ export default function GrowWorkspacePage() {
     completions
   } = useGrowStore();
 
-  const currentSpace = getCurrentSpace();
   const habits = currentSpace ? getSpaceHabits(currentSpace.id) : [];
   const quests = currentSpace ? getSpaceQuests(currentSpace.id) : [];
 
@@ -65,6 +138,7 @@ export default function GrowWorkspacePage() {
   const [showHabitPacks, setShowHabitPacks] = useState(false);
   const [showQuestEditor, setShowQuestEditor] = useState(false);
   const [showAISuggester, setShowAISuggester] = useState(false);
+  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState<string | undefined>(undefined);
 
   // Collapsible section states
@@ -83,8 +157,26 @@ export default function GrowWorkspacePage() {
     });
   };
 
+  // Complete habit for a specific member (for family grid view)
+  const handleCompleteForMember = (habitId: string, memberId: string) => {
+    if (!currentSpace) return;
+    addCompletion({
+      id: `comp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      habitId,
+      spaceId: currentSpace.id,
+      userId: memberId,
+      date: getTodayDateString(),
+      completedAt: new Date().toISOString(),
+    });
+  };
+
   const handleUndoComplete = (habitId: string) => {
     removeCompletion(habitId);
+  };
+
+  // Undo completion for a specific member (for family grid view)
+  const handleUndoCompleteForMember = (habitId: string, memberId: string) => {
+    removeCompletion(habitId, memberId);
   };
 
   const handleEditHabit = (habitId: string) => {
@@ -117,41 +209,19 @@ export default function GrowWorkspacePage() {
       <FirestoreSync />
 
       <WorkspacePageLayout
-        composer={
-          createPermission.allowed ? (
-            <HabitComposer onAISuggestClick={() => setShowAISuggester(true)} />
-          ) : null
-        }
+        composer={<HabitComposer onAISuggestClick={() => setShowAISuggester(true)} onManagePeople={handleManagePeople} onManageSpaces={() => setShowSpaceManagement(true)} />}
       >
         {/* Main content with consistent section spacing */}
         <div className="space-y-4">
-          {/* Family/Team Settings - Always visible for non-personal spaces */}
-          {isTeamSpace && (
-            <button
-              onClick={() => setShowMemberManager(true)}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/15 transition-colors group"
-            >
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-indigo-500/20">
-                  <Users className="h-4 w-4 text-indigo-400" />
-                </div>
-                <span className="text-sm font-medium text-white">
-                  {currentSpace?.type === 'family' ? 'Family' : currentSpace?.type === 'couple' ? 'Partner' : 'Team'} Settings
-                </span>
-                <span className="text-xs text-white/40">
-                  {currentSpace?.members.length} {currentSpace?.members.length === 1 ? 'member' : 'members'}
-                </span>
-              </div>
-              <Settings className="h-4 w-4 text-indigo-400 group-hover:rotate-45 transition-transform" />
-            </button>
-          )}
-
           {/* Quests Section (Non-personal spaces) - Collapsible */}
           {isTeamSpace && (
             <section className="space-y-2">
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => setQuestsExpanded(!questsExpanded)}
-                className="w-full flex items-center justify-between py-1"
+                onKeyDown={(e) => e.key === 'Enter' && setQuestsExpanded(!questsExpanded)}
+                className="w-full flex items-center justify-between py-1 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 rounded-lg bg-yellow-500/20">
@@ -181,7 +251,7 @@ export default function GrowWorkspacePage() {
                     )}
                   />
                 </div>
-              </button>
+              </div>
 
               <div className={cn(
                 "transition-all duration-200 overflow-hidden",
@@ -322,6 +392,16 @@ export default function GrowWorkspacePage() {
                 onClick: () => setShowAISuggester(true),
               }}
             />
+          ) : isTeamSpace && currentSpace ? (
+            /* Family/Team Grid View - show all members side by side */
+            <FamilyHabitsGrid
+              members={currentSpace.members}
+              habits={habits}
+              completions={completions}
+              onComplete={handleCompleteForMember}
+              onUndoComplete={handleUndoCompleteForMember}
+              currentUserId={user?.uid || ''}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Due habits first */}
@@ -364,8 +444,8 @@ export default function GrowWorkspacePage() {
             </div>
           )}
 
-          {/* Not due today (collapsed section) */}
-          {habits.filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due').length > 0 && (
+          {/* Not due today (collapsed section) - only for personal spaces */}
+          {!isTeamSpace && habits.filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due').length > 0 && (
             <div className="pt-4 mt-2 border-t border-white/5">
               <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Not scheduled today</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -402,8 +482,8 @@ export default function GrowWorkspacePage() {
             </div>
           )}
 
-          {/* Frozen habits */}
-          {habits.filter((habit: Habit) => habit.isFrozen).length > 0 && (
+          {/* Frozen habits - only for personal spaces */}
+          {!isTeamSpace && habits.filter((habit: Habit) => habit.isFrozen).length > 0 && (
             <div className="pt-4 mt-2 border-t border-white/5">
               <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Frozen</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -476,6 +556,19 @@ export default function GrowWorkspacePage() {
       <HabitSuggester
         isOpen={showAISuggester}
         onClose={() => setShowAISuggester(false)}
+      />
+
+      {/* Space Management Modal */}
+      <SpaceManagementModal
+        isOpen={showSpaceManagement}
+        onClose={() => setShowSpaceManagement(false)}
+        userSpaces={userSpaces}
+        onJoinGlobalSpace={handleJoinGlobalSpace}
+        onLeaveGlobalSpace={handleLeaveGlobalSpace}
+        onCreateCustomSpace={handleCreateCustomSpace}
+        onRenameCustomSpace={handleRenameCustomSpace}
+        onDeleteCustomSpace={handleDeleteCustomSpace}
+        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
       />
 
       {/* Mobile Bottom Navigation */}

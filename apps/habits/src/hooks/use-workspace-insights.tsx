@@ -223,9 +223,8 @@ function buildHabitSections(
  * Uses the shared useWorkspaceInsights hook with habit-specific configuration.
  */
 export function useHabitWorkspaceInsights(): WorkspaceInsightsResult {
-  const { habits, completions, getCurrentSpace } = useGrowStore();
-  const { currentSpaceId } = useSpaces();
-  const currentSpace = getCurrentSpace();
+  const { habits, completions } = useGrowStore();
+  const { currentSpaceId, currentSpace } = useSpaces();
   const { primary: primaryColor } = useAppColors();
 
   // Filter to space habits (not frozen)

@@ -22,13 +22,14 @@ export const useProjectsStore = create<ProjectsState>()(
   persist(
     (set, get) => ({
       spaces: [],
-      currentSpaceId: '',
+      currentSpaceId: 'personal',
 
       setSpaces: (spaces) => {
         const currentId = get().currentSpaceId;
         let nextId = currentId;
-        if (spaces.length > 0 && !spaces.find(s => s.id === currentId)) {
-          nextId = spaces[0].id;
+        // Keep 'personal' as valid virtual space
+        if (!currentId || (currentId !== 'personal' && !spaces.find(s => s.id === currentId))) {
+          nextId = 'personal';
         }
         set({ spaces, currentSpaceId: nextId });
       },
@@ -42,6 +43,17 @@ export const useProjectsStore = create<ProjectsState>()(
 
       getCurrentSpace: () => {
         const { spaces, currentSpaceId } = get();
+        if (currentSpaceId === 'personal') {
+          return {
+            id: 'personal',
+            name: 'My Projects',
+            type: 'personal',
+            members: [],
+            memberUids: [],
+            createdAt: new Date().toISOString(),
+            createdBy: '',
+          } as ProjectSpace;
+        }
         return spaces.find((s) => s.id === currentSpaceId);
       },
     }),

@@ -4,7 +4,7 @@
   "private": true,
   "description": "AINexSuite workflow app for visual workflow automation and building",
   "scripts": {
-    "dev": "next dev -p ${PORT:-3010}",
+    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3010}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",

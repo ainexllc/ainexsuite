@@ -18,6 +18,7 @@ interface WorkspaceLayoutWithInsightsProps {
   };
   onSignOut: () => void;
   onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
+  onSettingsClick?: () => void;
   events: CalendarEvent[];
 }
 
@@ -30,6 +31,7 @@ export function WorkspaceLayoutWithInsights({
   user,
   onSignOut,
   onUpdatePreferences,
+  onSettingsClick,
   events,
 }: WorkspaceLayoutWithInsightsProps) {
   // Get insights data from the hook
@@ -53,6 +55,7 @@ export function WorkspaceLayoutWithInsights({
       insightsRefreshDisabled={insights.refreshDisabled}
       insightsStorageKey={insights.storageKey}
       onUpdatePreferences={onUpdatePreferences}
+      onSettingsClick={onSettingsClick}
     >
       {children}
     </WorkspaceLayout>

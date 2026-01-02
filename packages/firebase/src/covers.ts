@@ -38,6 +38,20 @@ import type {
 const COLLECTION_NAME = 'covers';
 
 /**
+ * Generate a UUID with fallback for non-secure contexts (HTTP on local network)
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+/**
  * Convert Firestore document to CoverDoc
  */
 function docToCover(id: string, data: Record<string, unknown>): CoverDoc {
@@ -85,7 +99,7 @@ export async function uploadCover(
   metadata: CoverCreateInput,
   uploadedBy: string
 ): Promise<CoverDoc> {
-  const coverId = crypto.randomUUID();
+  const coverId = generateUUID();
   const basePath = `covers/${coverId}`;
 
   // Upload original

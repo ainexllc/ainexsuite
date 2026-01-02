@@ -5,6 +5,8 @@ import { Calendar, Clock, MapPin, Palette, Trash2, Copy } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, addHours, setHours, setMinutes } from 'date-fns';
 import { CalendarEvent, CreateEventInput } from '@/types/event';
+import { useSpaces } from '@/components/providers/spaces-provider';
+import { InlineSpacePicker } from '@ainexsuite/ui';
 
 const EVENT_COLORS = [
   { value: '#3b82f6', label: 'Blue' },
@@ -28,10 +30,14 @@ interface EventComposerProps {
   onSave: (event: CreateEventInput, eventId?: string) => Promise<void>;
   onDelete?: (eventId: string) => Promise<void>;
   onDuplicate?: (event: CalendarEvent) => void;
+  onManagePeople?: () => void;
+  onManageSpaces?: () => void;
 }
 
 export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
-  function EventComposer({ onSave, onDelete, onDuplicate }, ref) {
+  function EventComposer({ onSave, onDelete, onDuplicate, onManagePeople, onManageSpaces }, ref) {
+    const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+    const currentSpace = spaces.find((s) => s.id === currentSpaceId) || null;
     const [expanded, setExpanded] = useState(false);
     const [editingEventId, setEditingEventId] = useState<string | null>(null);
     const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -180,6 +186,7 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
           color,
           location: location.trim(),
           type: 'event',
+          spaceId: currentSpaceId,
         }, editingEventId || undefined);
 
         resetState();
@@ -188,7 +195,7 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
       } finally {
         setIsSubmitting(false);
       }
-    }, [title, description, startDate, endDate, startTime, endTime, allDay, color, location, onSave, resetState, editingEventId]);
+    }, [title, description, startDate, endDate, startTime, endTime, allDay, color, location, onSave, resetState, editingEventId, currentSpaceId]);
 
     const handleDuplicate = useCallback(() => {
       if (!editingEvent || !onDuplicate) return;
@@ -233,17 +240,27 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
     return (
       <section className="w-full">
         {!expanded ? (
-          <button
-            type="button"
-            className="flex w-full items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-left text-sm text-white/50 shadow-sm transition hover:bg-white/10 hover:border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] backdrop-blur-sm"
-            onClick={() => {
-              setExpanded(true);
-              requestAnimationFrame(() => titleInputRef.current?.focus());
-            }}
-          >
-            <Calendar className="h-4 w-4 mr-3 text-white/40" />
-            <span>Add a new event...</span>
-          </button>
+          <div className="flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 shadow-sm transition hover:bg-white/10 hover:border-white/20 backdrop-blur-sm">
+            <button
+              type="button"
+              className="flex-1 min-w-0 flex items-center text-left text-sm text-white/50 focus-visible:outline-none"
+              onClick={() => {
+                setExpanded(true);
+                requestAnimationFrame(() => titleInputRef.current?.focus());
+              }}
+            >
+              <Calendar className="h-4 w-4 mr-3 text-white/40" />
+              <span>Add a new event...</span>
+            </button>
+            {/* Inline space picker */}
+            <InlineSpacePicker
+              spaces={spaces}
+              currentSpace={currentSpace}
+              onSpaceChange={setCurrentSpace}
+              onManagePeople={onManagePeople}
+              onManageSpaces={onManageSpaces}
+            />
+          </div>
         ) : (
           <div
             ref={composerRef}

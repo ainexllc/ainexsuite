@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useAppColors } from '@ainexsuite/theme';
+import { useAppTheme } from '@ainexsuite/theme';
 
 interface WorkspaceBackgroundProps {
   /**
@@ -62,15 +62,16 @@ export function WorkspaceBackground({
   variant = 'glow',
   intensity = 0.25,
 }: WorkspaceBackgroundProps) {
-  // Use context to get color - avoids polling and prevents blinking
-  const appColors = useAppColors();
+  // Use global theme context for consistent background across all apps
+  const appTheme = useAppTheme();
 
   // Compute color synchronously to avoid double-render flickering on high refresh rate displays
+  // Uses global backgroundAccentColor for consistency across all apps
   const color = useMemo(() => {
     if (accentColor) return accentColor;
-    if (appColors?.secondary && !appColors.loading) return appColors.secondary;
+    if (appTheme?.backgroundAccentColor && !appTheme.loading) return appTheme.backgroundAccentColor;
     return '#f97316'; // fallback orange
-  }, [accentColor, appColors?.secondary, appColors?.loading]);
+  }, [accentColor, appTheme?.backgroundAccentColor, appTheme?.loading]);
 
   // Render based on variant
   if (variant === 'minimal') {

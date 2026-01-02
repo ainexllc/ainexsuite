@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { List, Calendar, Sun, Grid2X2, Columns, X, CheckCircle2, Circle, ArrowLeft } from 'lucide-react';
+import { LayoutGrid, Calendar, Sun, Grid2X2, Columns, X, CheckCircle2, Circle, ArrowLeft } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
@@ -9,6 +9,7 @@ import {
   ActiveFilterChips,
   ListItem,
   EmptyState,
+  SpaceManagementModal,
   type ViewOption,
   type SortOption,
   type SortConfig,
@@ -16,6 +17,7 @@ import {
   type FilterChipType,
 } from '@ainexsuite/ui';
 import { format, isSameDay, parseISO } from 'date-fns';
+import type { SpaceType } from '@ainexsuite/types';
 
 // Components
 import { TaskEditor } from '@/components/tasks/TaskEditor';
@@ -26,7 +28,9 @@ import { MyDayView } from '@/components/views/MyDayView';
 import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
 import { TaskFilterContent, type TaskFilterValue } from '@/components/task-filter-content';
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
+import { MemberManager } from '@/components/spaces/MemberManager';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { useSpaces } from '@/components/providers/spaces-provider';
 
 import { useTodoStore } from '@/lib/store';
 import type { TaskStatus } from '@/types/models';
@@ -35,7 +39,7 @@ import type { Priority } from '@ainexsuite/types';
 type ViewType = 'list' | 'board' | 'my-day' | 'matrix' | 'calendar';
 
 const VIEW_OPTIONS: ViewOption<ViewType>[] = [
-  { value: 'list', icon: List, label: 'List view' },
+  { value: 'list', icon: LayoutGrid, label: 'List view' },
   { value: 'board', icon: Columns, label: 'Board view' },
   { value: 'my-day', icon: Sun, label: 'My Day' },
   { value: 'matrix', icon: Grid2X2, label: 'Eisenhower Matrix' },
@@ -68,11 +72,54 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 
 export default function TodoWorkspacePage() {
   const { currentSpaceId, viewPreferences, setViewPreference, tasks, getCurrentSpace } = useTodoStore();
+  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
   const currentSpace = getCurrentSpace();
 
   const [showEditor, setShowEditor] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
+  const [showMemberManager, setShowMemberManager] = useState(false);
+  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
   const [sort, setSort] = useState<SortConfig>({ field: 'createdAt', direction: 'desc' });
+
+  // Map spaces for SpaceManagementModal
+  const userSpaces = useMemo(() => {
+    return allSpaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal || false,
+        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+        memberCount: s.memberUids?.length || 1,
+        isOwner: (s as { ownerId?: string; createdBy?: string }).ownerId === undefined,
+      }));
+  }, [allSpaces]);
+
+  // Space management handlers
+  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
+    await createSpace({ name: type === 'family' ? 'Family' : 'Partner', type });
+  }, [createSpace]);
+
+  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
+    await createSpace({ name, type: 'project' });
+  }, [createSpace]);
+
+  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
+    await updateSpace(spaceId, { name });
+  }, [updateSpace]);
+
+  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
+    await deleteSpace(spaceId);
+  }, [deleteSpace]);
+
+  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
+    await updateSpace(spaceId, { hiddenInApps });
+  }, [updateSpace]);
   const [filters, setFilters] = useState<TaskFilterValue>({
     priority: 'all',
     status: 'all',
@@ -343,7 +390,12 @@ export default function TodoWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
-        composer={<TaskComposer />}
+        composer={
+          <TaskComposer
+            onManagePeople={() => setShowMemberManager(true)}
+            onManageSpaces={() => setShowSpaceManagement(true)}
+          />
+        }
         toolbar={
           <div className="space-y-2">
             {isSearchOpen && (
@@ -507,6 +559,25 @@ export default function TodoWorkspacePage() {
 
       {/* Keyboard Shortcuts Help */}
       <KeyboardShortcutsHelp isOpen={showHelp} onClose={closeHelp} />
+
+      {/* Member Manager Modal */}
+      <MemberManager
+        isOpen={showMemberManager}
+        onClose={() => setShowMemberManager(false)}
+      />
+
+      {/* Space Management Modal */}
+      <SpaceManagementModal
+        isOpen={showSpaceManagement}
+        onClose={() => setShowSpaceManagement(false)}
+        userSpaces={userSpaces}
+        onJoinGlobalSpace={handleJoinGlobalSpace}
+        onLeaveGlobalSpace={handleLeaveGlobalSpace}
+        onCreateCustomSpace={handleCreateCustomSpace}
+        onRenameCustomSpace={handleRenameCustomSpace}
+        onDeleteCustomSpace={handleDeleteCustomSpace}
+        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
+      />
     </>
   );
 }

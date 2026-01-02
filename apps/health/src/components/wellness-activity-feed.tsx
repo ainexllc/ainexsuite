@@ -13,18 +13,22 @@ import {
 import type { WellnessActivityItem } from '@ainexsuite/types';
 import { buildActivityFeed } from '@/lib/wellness-hub';
 
-const FIT_APP_URL = process.env.NEXT_PUBLIC_FIT_APP_URL || 'https://fit.ainexsuite.com';
 const HABITS_APP_URL = process.env.NEXT_PUBLIC_HABITS_APP_URL || 'https://habits.ainexsuite.com';
 
 function getAppUrl(source: string): string {
   switch (source) {
     case 'fit':
-      return FIT_APP_URL;
+      // Fitness is now internal to the health app
+      return '';
     case 'habits':
       return HABITS_APP_URL;
     default:
-      return '/workspace';
+      return '';
   }
+}
+
+function isInternalSource(source: string): boolean {
+  return source === 'fit' || source === 'health';
 }
 
 function getSourceIcon(source: string) {
@@ -187,8 +191,8 @@ export function WellnessActivityFeed({ compact = false }: WellnessActivityFeedPr
               </div>
             </div>
 
-            {/* Link - hidden in compact mode */}
-            {!compact && activity.appUrl && (
+            {/* Link - hidden in compact mode, only show for external sources */}
+            {!compact && activity.appUrl && !isInternalSource(activity.source) && (
               <a
                 href={`${getAppUrl(activity.source)}${activity.appUrl}`}
                 target="_blank"

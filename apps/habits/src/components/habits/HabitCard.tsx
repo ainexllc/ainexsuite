@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Flame, Settings, Snowflake, Check, RotateCcw, Link2, ArrowRight } from 'lucide-react';
+import { Flame, Settings, Snowflake, RotateCcw, Link2, ArrowRight, Square, CheckSquare } from 'lucide-react';
 import type { Habit, Completion, SpaceType, ReactionEmoji } from '@/types/models';
 import { HABIT_CATEGORIES } from '@/types/models';
 import { getHabitStatus, calculateStreak, getTodayDateString } from '@/lib/date-utils';
@@ -107,15 +107,15 @@ export function HabitCard({
     }
   };
 
-  // Get checkbox styles
-  const getCheckboxStyles = () => {
+  // Get checkbox icon styles
+  const getCheckboxIconStyles = () => {
     if (habit.isFrozen) {
-      return 'border-blue-400/30 cursor-not-allowed bg-blue-500/5';
+      return 'text-blue-400/30 cursor-not-allowed';
     }
     if (isCompleted) {
-      return 'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30';
+      return 'text-emerald-500';
     }
-    return 'border-indigo-500/50 hover:border-indigo-400 hover:bg-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30';
+    return 'text-white/30 hover:text-indigo-400';
   };
 
   // Get streak color based on count
@@ -161,26 +161,29 @@ export function HabitCard({
     >
       {/* Left side: Checkbox + Content */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
-        {/* Completion Checkbox */}
+        {/* Completion Checkbox Icon */}
         <button
           onClick={handleComplete}
           disabled={habit.isFrozen || isCompleted}
           className={cn(
-            'relative h-7 w-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 flex-shrink-0',
-            getCheckboxStyles(),
+            'flex-shrink-0 transition-all duration-300',
+            getCheckboxIconStyles(),
             isAnimating && 'animate-pulse'
           )}
           aria-label={isCompleted ? 'Completed' : 'Mark as complete'}
         >
-          {isCompleted && (
-            <Check
+          {habit.isFrozen ? (
+            <Snowflake className="h-5 w-5 text-blue-400" />
+          ) : isCompleted ? (
+            <CheckSquare
               className={cn(
-                'h-4 w-4 transition-all duration-300',
+                'h-5 w-5 transition-all duration-300',
                 justCompleted && 'animate-bounce'
               )}
             />
+          ) : (
+            <Square className="h-5 w-5" />
           )}
-          {habit.isFrozen && <Snowflake className="h-3.5 w-3.5 text-blue-400" />}
         </button>
 
         {/* Habit Info */}

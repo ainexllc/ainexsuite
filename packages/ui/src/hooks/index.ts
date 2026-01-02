@@ -20,3 +20,4 @@ export type {
   InsightsCacheData,
 } from './use-workspace-insights.types';
 export { useRealtimeThemeSync } from './use-realtime-theme-sync';
+export { useGlobalSpaces } from './use-global-spaces';

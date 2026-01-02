@@ -17,7 +17,7 @@ import {
   Pin,
   PinOff,
 } from 'lucide-react';
-import { EntryEditorShell, ConfirmationDialog } from '@ainexsuite/ui';
+import { EntryEditorShell, ConfirmationDialog, generateUUID } from '@ainexsuite/ui';
 import type { EntryColor } from '@ainexsuite/types';
 import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '../../lib/store';
@@ -32,7 +32,7 @@ type AttachmentDraft = {
 };
 
 const checklistTemplate = (): ChecklistItem => ({
-  id: crypto.randomUUID(),
+  id: generateUUID(),
   text: '',
   completed: false,
 });
@@ -153,7 +153,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
     if (!files || !files.length) return;
 
     const drafts: AttachmentDraft[] = Array.from(files).map((file) => ({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       file,
       preview: URL.createObjectURL(file),
     }));
@@ -307,7 +307,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
                     if (description.trim()) {
                       const lines = description.split('\n').filter((line) => line.trim());
                       const items = lines.map((line) => ({
-                        id: crypto.randomUUID(),
+                        id: generateUUID(),
                         text: line.trim(),
                         completed: false,
                       }));

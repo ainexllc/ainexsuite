@@ -77,3 +77,20 @@ export function subscribeToAllUserTasks(userId: string, callback: (tasks: Task[]
     callback(tasks);
   });
 }
+
+export function subscribeToPersonalTasks(userId: string, callback: (tasks: Task[]) => void) {
+  // Get tasks for the virtual "My Todos" personal space
+  // These are tasks where spaceId is "personal" OR ownerId matches and no shared space
+  const q = query(
+    collection(db, 'tasks'),
+    where('spaceId', '==', 'personal')
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    // Filter to only include tasks where user is owner or assignee
+    const tasks = snapshot.docs
+      .map(doc => doc.data() as Task)
+      .filter(task => task.ownerId === userId || task.assigneeIds?.includes(userId));
+    callback(tasks);
+  });
+}

@@ -86,15 +86,14 @@ export default function WorkspaceRootLayout({
     setActivePanel('ai-assistant');
   }, []);
 
-  if (loading || ssoInProgress || bootstrapStatus === 'running') {
+  // Show loading screen while checking auth - prevents Firestore calls before auth is confirmed
+  if (loading || ssoInProgress || bootstrapStatus === 'running' || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-base">
         <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
       </div>
     );
   }
-
-  if (!user) return null;
 
   return (
     <>

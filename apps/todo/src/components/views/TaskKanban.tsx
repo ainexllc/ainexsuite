@@ -28,7 +28,6 @@ import {
   Circle,
   Clock,
   Ban,
-  Flag,
   GripVertical,
   ChevronDown,
   ChevronRight,
@@ -36,7 +35,7 @@ import {
 } from 'lucide-react';
 import { format, parseISO, isPast, isToday } from 'date-fns';
 import { clsx } from 'clsx';
-import { getEntryColorConfig } from '@ainexsuite/ui';
+import { getEntryColorConfig, PriorityIcon } from '@ainexsuite/ui';
 
 interface TaskKanbanProps {
   onEditTask: (taskId: string) => void;
@@ -525,11 +524,8 @@ function KanbanCardContent({
           {hasMetadata && (
             <div className="flex items-center gap-1 mt-0.5 flex-wrap">
               {/* Priority */}
-              {task.priority === 'high' && (
-                <Flag className="h-2 w-2 text-amber-500 fill-amber-500/20" />
-              )}
-              {task.priority === 'urgent' && (
-                <Flag className="h-2 w-2 text-red-500 fill-red-500/20" />
+              {(task.priority === 'high' || task.priority === 'urgent') && (
+                <PriorityIcon priority={task.priority} size="sm" />
               )}
 
               {/* Due date */}

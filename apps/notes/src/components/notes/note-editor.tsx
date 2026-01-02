@@ -23,7 +23,6 @@ import {
   Ban,
   Check,
   Trash2,
-  Flame,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
@@ -53,7 +52,7 @@ import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionCol
 import type { BackgroundOverlay } from "@/lib/types/note";
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useAutoSave } from "@/hooks/use-auto-save";
-import { ConfirmationDialog } from "@ainexsuite/ui";
+import { ConfirmationDialog, generateUUID, PriorityIcon, type PriorityLevel } from "@ainexsuite/ui";
 import { ImageModal } from "@/components/ui/image-modal";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
@@ -618,7 +617,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   }, [canUseSms]);
 
   const checklistTemplate = (): ChecklistItem => ({
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     text: "",
     completed: false,
   });
@@ -658,7 +657,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
 
     const drafts: AttachmentDraft[] = Array.from(files).map((file) => ({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       file,
       preview: URL.createObjectURL(file),
     }));
@@ -835,16 +834,20 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       className={clsx(
                         "h-7 w-7 rounded-full flex items-center justify-center transition",
                         priority === "high"
-                          ? "bg-red-500/20 text-red-500"
+                          ? "bg-red-500/20"
                           : priority === "medium"
-                            ? "bg-amber-500/20 text-amber-500"
+                            ? "bg-amber-500/20"
                             : priority === "low"
-                              ? "bg-blue-500/20 text-blue-500"
+                              ? "bg-green-500/20"
                               : getActionColorClasses(currentBackground),
                       )}
                       aria-label="Set priority"
                     >
-                      <Flame className="h-3.5 w-3.5" />
+                      <PriorityIcon
+                        priority={(priority as PriorityLevel) || "none"}
+                        size="sm"
+                        showOnlyHighPriority={false}
+                      />
                     </button>
                   </div>
                 {showPriorityPicker && (
@@ -862,7 +865,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           : "text-zinc-300 hover:bg-white/10"
                       )}
                     >
-                      <Flame className="h-4 w-4 text-red-500" />
+                      <PriorityIcon priority="high" size="sm" showOnlyHighPriority={false} />
                       High
                     </button>
                     <button
@@ -878,7 +881,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           : "text-zinc-300 hover:bg-white/10"
                       )}
                     >
-                      <Flame className="h-4 w-4 text-amber-500" />
+                      <PriorityIcon priority="medium" size="sm" showOnlyHighPriority={false} />
                       Medium
                     </button>
                     <button
@@ -890,11 +893,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       className={clsx(
                         "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
                         priority === "low"
-                          ? "bg-blue-500/20 text-blue-400"
+                          ? "bg-green-500/20 text-green-400"
                           : "text-zinc-300 hover:bg-white/10"
                       )}
                     >
-                      <Flame className="h-4 w-4 text-blue-500" />
+                      <PriorityIcon priority="low" size="sm" showOnlyHighPriority={false} />
                       Low
                     </button>
                     {priority && (
@@ -1382,7 +1385,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       if (body.trim()) {
                         const lines = body.split('\n').filter(line => line.trim());
                         const items = lines.map(line => ({
-                          id: crypto.randomUUID(),
+                          id: generateUUID(),
                           text: line.trim(),
                           completed: false,
                         }));
@@ -1802,7 +1805,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                                 setShowSpacePicker(false);
                               }}
                               className={clsx(
-                                "w-full text-left px-3 py-2 rounded-xl text-sm transition-colors flex items-center gap-2",
+                                "w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors flex items-center gap-2",
                                 space.id === selectedSpaceId
                                   ? "bg-[var(--color-primary)] text-white"
                                   : currentBackground

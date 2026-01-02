@@ -23,7 +23,7 @@ function convertToJournalSpace(id: string, data: JournalSpaceDoc): JournalSpace 
     members: data.members,
     memberUids: data.memberUids,
     createdAt: data.createdAt?.toDate() ?? new Date(),
-    createdBy: data.createdBy,
+    ownerId: data.ownerId,
   };
 }
 
@@ -76,7 +76,7 @@ export async function createSpace(
     members: [member],
     memberUids: [userId],
     createdAt: Timestamp.now(),
-    createdBy: userId,
+    ownerId: userId,
   };
 
   const docRef = await addDoc(spacesRef, spaceData);

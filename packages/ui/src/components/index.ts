@@ -129,6 +129,12 @@ export {
   type NotificationDropdownProps,
 } from "./navigation/notification-dropdown";
 
+// Notification Components
+export {
+  InvitationNotificationItem,
+  type InvitationNotificationItemProps,
+} from "./notifications";
+
 export {
   QuickActionsMenu,
   type QuickActionsMenuProps,
@@ -517,11 +523,23 @@ export { Paywall } from "./paywall";
 // Space Components
 export {
   SpaceSwitcher,
-  SpaceEditor,
+  SpaceSettings,
+  SpacesHubModal,
+  SpaceManagementModal,
+  InviteMemberModal,
+  AddChildModal,
+  InlineSpacePicker,
   type SpaceSwitcherProps,
-  type SpaceEditorProps,
+  type SpaceSettingsProps,
+  type SpacesHubModalProps,
+  type SpaceManagementModalProps,
+  type SpaceHubItem,
+  type UserSpace,
+  type InviteMemberModalProps,
+  type AddChildModalProps,
   type SpaceItem,
-  type SpaceTypeOption,
+  type InlineSpacePickerProps,
+  type InlineSpaceItem,
 } from "./spaces";
 
 // Toast/Notification Components
@@ -622,6 +640,7 @@ export {
   type SettingsModalProps,
   type SettingsUser,
   type SettingsTab,
+  type SpaceSettingsItem,
 } from "./settings";
 
 // Re-export hooks for convenience (main export is from '../hooks')
@@ -638,3 +657,11 @@ export {
   EntryEditorShell,
   type EntryEditorShellProps,
 } from "./editors/entry-editor-shell";
+
+// Priority Components
+export {
+  PriorityIcon,
+  PriorityBadge,
+  type PriorityIconProps,
+  type PriorityLevel,
+} from "./priority";

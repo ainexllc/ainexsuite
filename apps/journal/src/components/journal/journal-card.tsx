@@ -5,14 +5,13 @@ import { clsx } from 'clsx';
 import type { JournalEntry } from '@ainexsuite/types';
 import { deleteJournalEntry, toggleEntryPin, updateJournalEntry } from '@/lib/firebase/firestore';
 import { deleteAllEntryFiles } from '@/lib/firebase/storage';
-import { useToast, ConfirmationDialog } from '@ainexsuite/ui';
+import { useToast, ConfirmationDialog, getEntryColorConfig } from '@ainexsuite/ui';
 import { useRouter } from 'next/navigation';
 import {
   Paperclip,
   Trash2,
   Link as LinkIcon,
   Heart,
-  ImageIcon,
   Loader2,
 } from 'lucide-react';
 import { usePrivacy, BlurredContent, PasscodeModal } from '@ainexsuite/privacy';
@@ -40,8 +39,8 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
   // Private entries logic - blur content when private, regardless of passcode setup
   const isLocked = entry.isPrivate && !isUnlocked;
 
-  // Default card styling (used when no background/leather/cover)
-  const cardClass = 'bg-zinc-50 dark:bg-zinc-900';
+  // Get color configuration for this entry
+  const colorConfig = getEntryColorConfig(entry.color || 'default');
 
   // Fetch backgrounds from Firestore
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
@@ -255,12 +254,12 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
     <>
       <article
         className={clsx(
-          !hasBackground && !isLeatherCover && !hasCover && cardClass,
+          !hasBackground && !isLeatherCover && !hasCover && colorConfig.cardClass,
           'border border-zinc-200 dark:border-zinc-800',
           'group relative cursor-pointer overflow-hidden rounded-2xl',
           'transition-[border-color,box-shadow] duration-200',
           'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md',
-          'break-inside-avoid px-6 py-6',
+          'break-inside-avoid px-4 py-4 h-[220px] flex flex-col',
         )}
         onClick={handleCardClick}
       >
@@ -314,113 +313,90 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
           </div>
         )}
 
-        {/* Cover indicator badge - show when cover is set */}
-        {hasCover && (
-          <div className="absolute top-2 left-2 z-20 h-6 w-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center" title="Has cover image">
-            <ImageIcon className="h-3 w-3 text-white/80" />
-          </div>
-        )}
 
-        {/* Background indicator badge - only show if no cover */}
-        {!hasCover && hasBackground && (
-          <div className="absolute top-2 left-2 z-20 h-6 w-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center" title="Has background image">
-            <ImageIcon className="h-3 w-3 text-white/80" />
-          </div>
-        )}
-
-        {/* Corner Heart Badge - clickable to unfavorite */}
-        {entry.pinned && (
-          <button
-            type="button"
-            onClick={handlePin}
-            className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
-            aria-label="Remove from favorites"
-          >
-            <div className="absolute top-0 right-0 bg-[var(--color-primary)] group-hover/pin:brightness-90 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all" />
-            <Heart className="absolute top-1.5 right-1.5 h-3 w-3 text-white fill-white" />
-          </button>
-        )}
-
-        <div className="relative z-10 w-full">
-          {/* Header section with title and badges */}
-          {(entry.title || entry.isDraft) && (
-            <div className={clsx(
-              "relative z-10 -mx-6 -mt-6 px-6 py-4 rounded-t-2xl border-b mb-4",
-              hasCover
-                ? "bg-black/30 backdrop-blur-sm border-white/10"
-                : hasBackground
-                  ? currentBackground?.brightness === 'light'
-                    ? "bg-white/30 backdrop-blur-sm border-black/10"
-                    : "bg-black/30 backdrop-blur-sm border-white/10"
-                  : isLeatherCover
-                    ? "bg-black/30 backdrop-blur-sm border-amber-200/20"
-                    : "bg-zinc-50/80 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-700/50"
-            )}>
-              {/* Draft badge */}
-              {entry.isDraft && (
-                <span className={clsx(
-                  "inline-block mb-2 rounded-full border border-dashed px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
-                  hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                    ? "border-white/40 text-white/90"
-                    : "border-border text-primary"
-                )}>
-                  Draft
-                </span>
-              )}
-
-              {/* Title */}
-              {entry.title && (
-                <h3 className={clsx(
-                  "pr-8 text-[17px] font-semibold tracking-[-0.02em] line-clamp-2",
-                  hasCover
-                    ? "text-white"
-                    : hasBackground
-                      ? getTextColorClasses(currentBackground, 'title')
-                      : isLeatherCover
-                        ? "text-amber-100"
-                        : "text-zinc-900 dark:text-zinc-50"
-                )}>
-                  {entry.title}
-                </h3>
-              )}
-
-              {/* Heart button in header - only shows on unpinned entries */}
-              {!entry.pinned && (
-                <button
-                  type="button"
-                  onClick={handlePin}
-                  className={clsx(
-                    "absolute right-4 top-4 z-20 hidden rounded-full h-7 w-7 items-center justify-center transition group-hover:flex",
-                    hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                      ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30 hover:text-[var(--color-primary)]"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 hover:brightness-110"
-                  )}
-                  aria-label="Add to favorites"
-                >
-                  <Heart className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Heart button for entries without title - only shows on unpinned entries */}
-          {!entry.title && !entry.isDraft && !entry.pinned && (
-            <button
-              type="button"
-              onClick={handlePin}
-              className={clsx(
-                "absolute right-4 top-4 z-20 hidden rounded-full h-7 w-7 items-center justify-center transition group-hover:flex",
+        {/* Corner Heart Badge - clickable to toggle favorites */}
+        <button
+          type="button"
+          onClick={handlePin}
+          className="absolute -top-0 -right-0 w-10 h-10 overflow-hidden rounded-tr-lg z-20 group/pin"
+          aria-label={entry.pinned ? "Remove from favorites" : "Add to favorites"}
+        >
+          {entry.pinned ? (
+            <>
+              <div className="absolute top-0 right-0 bg-[var(--color-primary)] group-hover/pin:brightness-90 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all" />
+              <Heart className="absolute top-1.5 right-1.5 h-3 w-3 text-white fill-white" />
+            </>
+          ) : (
+            <>
+              <div className={clsx(
+                "absolute top-0 right-0 w-14 h-14 rotate-45 translate-x-7 -translate-y-7 transition-all",
+                "opacity-0 group-hover:opacity-100",
                 hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                  ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30 hover:text-[var(--color-primary)]"
-                  : "bg-zinc-100 dark:bg-zinc-800 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 hover:brightness-110"
-              )}
-              aria-label="Add to favorites"
-            >
-              <Heart className="h-4 w-4" />
-            </button>
+                  ? "bg-white/10"
+                  : hasBackground && currentBackground?.brightness === 'light'
+                    ? "bg-black/10"
+                    : "bg-zinc-200/50 dark:bg-zinc-700/50"
+              )} />
+              <Heart className={clsx(
+                "absolute top-1.5 right-1.5 h-3 w-3 transition-all",
+                "opacity-0 group-hover:opacity-100",
+                hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
+                  ? "text-[var(--color-primary)]/80"
+                  : hasBackground && currentBackground?.brightness === 'light'
+                    ? "text-[var(--color-primary)]"
+                    : "text-[var(--color-primary)]"
+              )} />
+            </>
           )}
+        </button>
 
-          <div className="overflow-y-auto pr-1 max-h-[480px]">
+        {/* Header section with title and badges - outside overflow wrapper */}
+        {(entry.title || entry.isDraft) && (
+          <div className={clsx(
+            "relative z-10 -mx-4 -mt-4 px-4 py-2.5 rounded-t-2xl border-b mb-2",
+            hasCover
+              ? "bg-black/30 backdrop-blur-sm border-white/10"
+              : hasBackground
+                ? currentBackground?.brightness === 'light'
+                  ? "bg-white/30 backdrop-blur-sm border-black/10"
+                  : "bg-black/30 backdrop-blur-sm border-white/10"
+                : isLeatherCover
+                  ? "bg-black/30 backdrop-blur-sm border-amber-200/20"
+                  : "bg-black/5 dark:bg-white/5 border-transparent"
+          )}>
+            {/* Draft badge */}
+            {entry.isDraft && (
+              <span className={clsx(
+                "inline-block mb-1 rounded-full border border-dashed px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide",
+                hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
+                  ? "border-white/40 text-white/90"
+                  : "border-border text-primary"
+              )}>
+                Draft
+              </span>
+            )}
+
+            {/* Title */}
+            {entry.title && (
+              <h3 className={clsx(
+                "pr-8 text-[14px] font-semibold tracking-[-0.02em] line-clamp-1",
+                hasCover
+                  ? "text-white"
+                  : hasBackground
+                    ? getTextColorClasses(currentBackground, 'title')
+                    : isLeatherCover
+                      ? "text-amber-100"
+                      : "text-zinc-900 dark:text-zinc-50"
+              )}>
+                {entry.title}
+              </h3>
+            )}
+
+          </div>
+        )}
+
+        <div className="relative z-10 w-full flex-1 flex flex-col overflow-hidden">
+          <div className="overflow-y-auto pr-1 flex-1">
 
             {/* Content - show AI summary when cover exists and AI summary enabled, otherwise truncated content */}
             <BlurredContent isLocked={isLocked} onClick={handleView}>
@@ -445,7 +421,7 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                 </div>
               ) : (
                 <p className={clsx(
-                  "whitespace-pre-wrap text-[15px] leading-7 tracking-[-0.01em] line-clamp-6",
+                  "whitespace-pre-wrap text-[13px] leading-5 tracking-[-0.01em] line-clamp-4",
                   hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
                     ? "text-white/90"
                     : hasBackground && currentBackground?.brightness === 'light'
@@ -454,19 +430,19 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                 )}>
                   {showAiSummary && hasCover && entry.coverSummary
                     ? entry.coverSummary
-                    : truncateContent(entry.content, 300)}
+                    : truncateContent(entry.content, 200)}
                 </p>
               )}
             </BlurredContent>
 
             {/* Tags */}
             {entry.tags && entry.tags.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {entry.tags.slice(0, 3).map((tag) => (
+              <div className="mt-2 flex flex-wrap items-center gap-1">
+                {entry.tags.slice(0, 2).map((tag) => (
                   <span
                     key={tag}
                     className={clsx(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium",
                       hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
                         ? "bg-white/10 text-white/90"
                         : hasBackground && currentBackground?.brightness === 'light'
@@ -478,129 +454,113 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
                   </span>
                 ))}
 
-                {entry.tags.length > 3 && (
+                {entry.tags.length > 2 && (
                   <span className={clsx(
-                    "text-xs",
+                    "text-[10px]",
                     hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
                       ? "text-white/70"
                       : hasBackground && currentBackground?.brightness === 'light'
                         ? "text-zinc-600"
                         : "text-zinc-400 dark:text-zinc-500"
                   )}>
-                    +{entry.tags.length - 3} more
+                    +{entry.tags.length - 2}
                   </span>
                 )}
               </div>
             )}
           </div>
+        </div>
 
-          {/* Footer with actions */}
-          <footer className={clsx(
-            "mt-4 flex items-center justify-between pt-3 -mx-6 -mb-6 px-6 pb-4 rounded-b-2xl border-t",
-            hasCover
-              ? "bg-black/30 backdrop-blur-sm border-white/10"
-              : hasBackground
-                ? currentBackground?.brightness === 'light'
-                  ? "bg-white/30 backdrop-blur-sm border-black/10"
-                  : "bg-black/30 backdrop-blur-sm border-white/10"
-                : isLeatherCover
-                  ? "bg-black/30 backdrop-blur-sm border-amber-200/20"
-                  : "bg-zinc-50/80 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-700/50"
+        {/* Footer with actions - outside overflow wrapper for full-width bg */}
+        <footer className={clsx(
+          "relative z-10 mt-auto flex items-center justify-between pt-2 -mx-4 -mb-4 px-4 pb-3 rounded-b-2xl border-t",
+          hasCover
+            ? "bg-black/30 backdrop-blur-sm border-white/10"
+            : hasBackground
+              ? currentBackground?.brightness === 'light'
+                ? "bg-white/30 backdrop-blur-sm border-black/10"
+                : "bg-black/30 backdrop-blur-sm border-white/10"
+              : isLeatherCover
+                ? "bg-black/30 backdrop-blur-sm border-amber-200/20"
+                : "bg-black/5 dark:bg-white/5 border-transparent"
+        )}>
+          {/* Glass pill for date and indicators */}
+          <div className={clsx(
+            "flex items-center gap-1 px-2 py-0.5 rounded-full backdrop-blur-xl border",
+            hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
+              ? "bg-white/10 border-white/20"
+              : hasBackground && currentBackground?.brightness === 'light'
+                ? "bg-black/5 border-black/10"
+                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
           )}>
-            {/* Glass pill for date and indicators */}
-            <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
-              hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                ? "bg-white/10 border-white/20"
-                : hasBackground && currentBackground?.brightness === 'light'
-                  ? "bg-black/5 border-black/10"
-                  : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
-            )}>
-              {/* Attachments indicator */}
-              {entry.attachments && entry.attachments.length > 0 && (
-                <span className={clsx(
-                  "h-7 flex items-center gap-1 px-2 rounded-full text-xs font-medium",
-                  hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                    ? "text-white/70"
-                    : hasBackground && currentBackground?.brightness === 'light'
-                      ? "text-zinc-700"
-                      : "text-zinc-500 dark:text-zinc-400"
-                )}>
-                  <Paperclip className="h-3.5 w-3.5" />
-                  {entry.attachments.length}
-                </span>
-              )}
-              {/* Links indicator */}
-              {entry.links && entry.links.length > 0 && (
-                <span className={clsx(
-                  "h-7 flex items-center gap-1 px-2 rounded-full text-xs font-medium",
-                  hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                    ? "text-white/70"
-                    : hasBackground && currentBackground?.brightness === 'light'
-                      ? "text-zinc-700"
-                      : "text-zinc-500 dark:text-zinc-400"
-                )}>
-                  <LinkIcon className="h-3.5 w-3.5" />
-                  {entry.links.length}
-                </span>
-              )}
-              {/* Date */}
+            {/* Attachments indicator */}
+            {entry.attachments && entry.attachments.length > 0 && (
               <span className={clsx(
-                "h-7 flex items-center px-2 rounded-full text-xs font-medium",
+                "h-5 flex items-center gap-1 px-1.5 rounded-full text-[10px] font-medium",
                 hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
                   ? "text-white/70"
                   : hasBackground && currentBackground?.brightness === 'light'
                     ? "text-zinc-700"
                     : "text-zinc-500 dark:text-zinc-400"
               )}>
-                {(entry.updatedAt && entry.updatedAt !== entry.createdAt ? new Date(entry.updatedAt) : new Date(entry.createdAt)).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                {entry.updatedAt && entry.updatedAt !== entry.createdAt ? ' · Edited' : ''}
+                <Paperclip className="h-3 w-3" />
+                {entry.attachments.length}
               </span>
-            </div>
-
-            {/* Glass pill for action buttons */}
-            <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
+            )}
+            {/* Links indicator */}
+            {entry.links && entry.links.length > 0 && (
+              <span className={clsx(
+                "h-5 flex items-center gap-1 px-1.5 rounded-full text-[10px] font-medium",
+                hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
+                  ? "text-white/70"
+                  : hasBackground && currentBackground?.brightness === 'light'
+                    ? "text-zinc-700"
+                    : "text-zinc-500 dark:text-zinc-400"
+              )}>
+                <LinkIcon className="h-3 w-3" />
+                {entry.links.length}
+              </span>
+            )}
+            {/* Date */}
+            <span className={clsx(
+              "h-5 flex items-center px-1.5 rounded-full text-[10px] font-medium",
               hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                ? "bg-white/10 border-white/20"
+                ? "text-white/70"
                 : hasBackground && currentBackground?.brightness === 'light'
-                  ? "bg-black/5 border-black/10"
-                  : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+                  ? "text-zinc-700"
+                  : "text-zinc-500 dark:text-zinc-400"
             )}>
-              {/* Heart/Pin button - only shows on non-pinned entries */}
-              {!entry.pinned && (
-                <button
-                  type="button"
-                  onClick={handlePin}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                      ? "text-[var(--color-primary)]/70 hover:bg-[var(--color-primary)]/30 hover:text-[var(--color-primary)]"
-                      : "text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 hover:brightness-110"
-                  )}
-                  aria-label="Add to favorites"
-                >
-                  <Heart className="h-3.5 w-3.5" />
-                </button>
+              {(entry.updatedAt && entry.updatedAt !== entry.createdAt ? new Date(entry.updatedAt) : new Date(entry.createdAt)).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              {entry.updatedAt && entry.updatedAt !== entry.createdAt ? ' · Edited' : ''}
+            </span>
+          </div>
+
+          {/* Glass pill for action buttons */}
+          <div className={clsx(
+            "flex items-center gap-1 px-1.5 py-0.5 rounded-full backdrop-blur-xl border",
+            hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
+              ? "bg-white/10 border-white/20"
+              : hasBackground && currentBackground?.brightness === 'light'
+                ? "bg-black/5 border-black/10"
+                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+          )}>
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className={clsx(
+                "h-5 w-5 rounded-full flex items-center justify-center transition",
+                hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
+                  ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                  : hasBackground && currentBackground?.brightness === 'light'
+                    ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
+                    : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
               )}
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  hasCover || (hasBackground && currentBackground?.brightness === 'dark') || isLeatherCover
-                    ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                    : hasBackground && currentBackground?.brightness === 'light'
-                      ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
-                      : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
-                )}
-                aria-label="Delete entry"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </footer>
-        </div>
+              aria-label="Delete entry"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        </footer>
       </article>
 
       {/* Modals */}

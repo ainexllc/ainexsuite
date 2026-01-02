@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 import { Habit, Schedule } from '@/types/models';
 import { cn } from '@/lib/utils';
@@ -225,8 +226,9 @@ interface HabitPacksProps {
 
 export function HabitPacks({ onClose: _onClose }: HabitPacksProps) {
   const { user } = useAuth();
-  const { getCurrentSpace, addHabit } = useGrowStore();
-  const currentSpace = getCurrentSpace();
+  const { addHabit } = useGrowStore();
+  const { currentSpace } = useSpaces();
+  
 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [installedPacks, setInstalledPacks] = useState<Set<string>>(new Set());

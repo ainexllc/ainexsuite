@@ -117,7 +117,7 @@ export function NoteBoard() {
 
           {sortedOthers.length ? (
             <ListSection
-              title="Library"
+              title="All Notes"
               count={sortedPinned.length ? totalCount : undefined}
               action={<ColumnSelector section="library" />}
             >
@@ -153,7 +153,7 @@ export function NoteBoard() {
               {!loading && !isLoadingMore && !hasMore && totalCount > 0 && (
                 <div className="flex items-center justify-center py-4">
                   <span className="text-xs text-muted-foreground">
-                    {totalCount} {totalCount === 1 ? 'note' : 'notes'} in Library
+                    {totalCount} {totalCount === 1 ? 'note' : 'notes'}
                   </span>
                 </div>
               )}

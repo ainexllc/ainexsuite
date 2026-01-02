@@ -14,6 +14,7 @@ export interface RecurrenceRule {
 export interface CalendarEvent {
   id: string;
   userId: string;
+  spaceId?: string; // Space this event belongs to
   title: string;
   description?: string;
   startTime: Timestamp;
@@ -37,6 +38,7 @@ export interface CreateEventInput {
   color?: string;
   type?: EventType;
   location?: string;
+  spaceId?: string; // Space this event belongs to
   recurrence?: {
     frequency: RecurrenceFrequency;
     interval: number;

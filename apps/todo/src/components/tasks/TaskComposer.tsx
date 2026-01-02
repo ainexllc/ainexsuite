@@ -16,17 +16,13 @@ import {
   Image as ImageIcon,
   Calculator,
   Plus,
-  FolderOpen,
-  ChevronDown,
-  Check,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '@/lib/store';
 import { Task, Priority, TaskList, Member, ChecklistItem, TaskType } from '@/types/models';
-import { ENTRY_COLORS, getEntryColorConfig, SpaceEditor as SharedSpaceEditor } from '@ainexsuite/ui';
-import type { EntryColor, SpaceType as SharedSpaceType } from '@ainexsuite/types';
-import type { SpaceType as TaskSpaceType, TaskList as TaskListType } from '@/types/models';
+import { ENTRY_COLORS, getEntryColorConfig, generateUUID, InlineSpacePicker } from '@ainexsuite/ui';
+import type { EntryColor, SpaceType } from '@ainexsuite/types';
 import { InlineCalculator } from './inline-calculator';
 
 type AttachmentDraft = {
@@ -36,19 +32,22 @@ type AttachmentDraft = {
 };
 
 const checklistTemplate = (): ChecklistItem => ({
-  id: crypto.randomUUID(),
+  id: generateUUID(),
   text: '',
   completed: false,
 });
 
-export function TaskComposer() {
+interface TaskComposerProps {
+  onManagePeople?: () => void;
+  onManageSpaces?: () => void;
+}
+
+export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerProps) {
   const { user } = useAuth();
-  const { spaces, currentSpaceId, setCurrentSpace, getCurrentSpace, addTask, addSpace } = useTodoStore();
+  const { spaces, currentSpaceId, setCurrentSpace, getCurrentSpace, addTask } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
   const [expanded, setExpanded] = useState(false);
-  const [showSpacePicker, setShowSpacePicker] = useState(false);
-  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [mode, setMode] = useState<TaskType>('text');
@@ -209,7 +208,7 @@ export function TaskComposer() {
     if (!files || !files.length) return;
 
     const drafts: AttachmentDraft[] = Array.from(files).map((file) => ({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       file,
       preview: URL.createObjectURL(file),
     }));
@@ -254,47 +253,28 @@ export function TaskComposer() {
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
 
+  // Build space items for InlineSpacePicker (include virtual spaces)
+  const spaceItems = useMemo(() => [
+    { id: 'all', name: 'All Spaces', type: 'personal' as SpaceType },
+    { id: 'personal', name: 'My Todos', type: 'personal' as SpaceType },
+    ...spaces.filter((s) => s.id !== 'personal').map((s) => ({ id: s.id, name: s.name, type: s.type }))
+  ], [spaces]);
+
+  // Get current space for InlineSpacePicker
+  const currentSpaceForPicker = useMemo(() => {
+    if (currentSpaceId === 'all') {
+      return { id: 'all', name: 'All Spaces', type: 'personal' as SpaceType };
+    }
+    if (currentSpaceId === 'personal') {
+      return { id: 'personal', name: 'My Todos', type: 'personal' as SpaceType };
+    }
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space ? { id: space.id, name: space.name, type: space.type } : null;
+  }, [currentSpaceId, spaces]);
+
   if (!currentSpace || !user) return null;
 
-  // Get current space name for display
-  const currentSpaceName = currentSpaceId === 'all'
-    ? 'All Spaces'
-    : spaces.find((s) => s.id === currentSpaceId)?.name || 'Personal';
-
-  const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
-    if (!user) return;
-    const taskType = data.type as TaskSpaceType;
-    const defaultLists: TaskListType[] = [
-      { id: `list_${Date.now()}_1`, title: 'To Do', order: 0 },
-      { id: `list_${Date.now()}_2`, title: 'In Progress', order: 1 },
-      { id: `list_${Date.now()}_3`, title: 'Done', order: 2 },
-    ];
-
-    await addSpace({
-      id: `todo_space_${Date.now()}`,
-      name: data.name,
-      type: taskType,
-      members: [{
-        uid: user.uid,
-        displayName: user.displayName || 'Me',
-        photoURL: user.photoURL || undefined,
-        role: 'admin',
-        joinedAt: new Date().toISOString()
-      }],
-      memberUids: [user.uid],
-      createdAt: new Date().toISOString(),
-      createdBy: user.uid,
-      lists: defaultLists,
-    });
-  };
-
   const colorConfig = getEntryColorConfig(color);
-
-  // Build space items for picker (include "All Spaces" option)
-  const spaceItems = [
-    { id: 'all', name: 'All Spaces' },
-    ...spaces.map((s) => ({ id: s.id, name: s.name }))
-  ];
 
   return (
     <section className="w-full">
@@ -308,64 +288,14 @@ export function TaskComposer() {
           >
             <span>Add a todo...</span>
           </button>
-          {/* Compact space selector - responsive */}
-          <div className="relative flex-shrink-0">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowSpacePicker((prev) => !prev);
-              }}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            >
-              <FolderOpen className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline max-w-[80px] truncate">{currentSpaceName}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-            {showSpacePicker && (
-              <>
-                <div
-                  className="fixed inset-0 z-20"
-                  onClick={() => setShowSpacePicker(false)}
-                />
-                <div className="absolute right-0 top-full mt-1 z-30 min-w-[160px] rounded-xl border shadow-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 py-1">
-                  {spaceItems.map((space) => (
-                    <button
-                      key={space.id}
-                      type="button"
-                      onClick={() => {
-                        setCurrentSpace(space.id);
-                        setShowSpacePicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-2 w-full px-3 py-2 text-sm text-left transition",
-                        space.id === currentSpaceId
-                          ? "text-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      )}
-                    >
-                      <FolderOpen className="h-4 w-4" />
-                      <span className="flex-1 truncate">{space.name}</span>
-                      {space.id === currentSpaceId && <Check className="h-4 w-4" />}
-                    </button>
-                  ))}
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 mt-1 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowSpacePicker(false);
-                        setShowSpaceEditor(true);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>New Space</span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          {/* Inline space picker */}
+          <InlineSpacePicker
+            spaces={spaceItems}
+            currentSpace={currentSpaceForPicker}
+            onSpaceChange={setCurrentSpace}
+            onManagePeople={onManagePeople}
+            onManageSpaces={onManageSpaces}
+          />
         </div>
       ) : (
         <div
@@ -633,7 +563,7 @@ export function TaskComposer() {
                         if (description.trim()) {
                           const lines = description.split('\n').filter((line) => line.trim());
                           const items = lines.map((line) => ({
-                            id: crypto.randomUUID(),
+                            id: generateUUID(),
                             text: line.trim(),
                             completed: false,
                           }));
@@ -813,18 +743,6 @@ export function TaskComposer() {
         accept="image/*"
         multiple
         onChange={(e) => handleFilesSelected(e.target.files)}
-      />
-
-      {/* Space Editor Dialog */}
-      <SharedSpaceEditor
-        isOpen={showSpaceEditor}
-        onClose={() => setShowSpaceEditor(false)}
-        onSubmit={handleCreateSpace}
-        spaceTypes={[
-          { value: 'personal', label: 'Personal', description: 'Your private tasks and goals' },
-          { value: 'family', label: 'Family', description: 'Share with family members' },
-          { value: 'work', label: 'Work', description: 'Team projects and tasks' },
-        ]}
       />
     </section>
   );

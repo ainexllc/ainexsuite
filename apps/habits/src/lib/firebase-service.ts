@@ -10,9 +10,60 @@ import {
   where,
   onSnapshot,
   orderBy,
-  limit
+  limit,
+  type Query,
+  type DocumentReference,
+  type DocumentData,
+  type QuerySnapshot,
+  type DocumentSnapshot,
+  type FirestoreError
 } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
+
+// Global error handler for permission-denied errors
+// Apps can set this to trigger logout when session is invalidated
+let globalPermissionErrorHandler: (() => void) | null = null;
+
+export function setPermissionErrorHandler(handler: () => void) {
+  globalPermissionErrorHandler = handler;
+}
+
+// Used for state management, will be called when permission-denied handling is re-enabled
+void globalPermissionErrorHandler;
+
+// Check if error is permission-denied (session invalidated)
+function isPermissionDenied(err: FirestoreError): boolean {
+  return err?.code === 'permission-denied' ||
+    err?.message?.includes('permission-denied') ||
+    err?.message?.includes('Missing or insufficient permissions');
+}
+
+// Wrapper for onSnapshot with permission-denied handling
+function safeOnSnapshot<T extends DocumentData>(
+  ref: Query<T> | DocumentReference<T>,
+  onNext: (snapshot: QuerySnapshot<T> | DocumentSnapshot<T>) => void,
+  onError?: (error: FirestoreError) => void
+) {
+  return onSnapshot(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ref as any,
+    onNext,
+    (err: FirestoreError) => {
+      if (isPermissionDenied(err)) {
+        // eslint-disable-next-line no-console
+        console.warn('[Firebase] Permission denied - may need to re-login or check security rules');
+        // Note: We no longer automatically logout on permission errors to avoid logout loops
+        // The error will be passed to the onError handler if provided
+        onError?.(err);
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('[Firebase] Snapshot error:', err);
+        onError?.(err);
+      }
+    }
+  );
+}
+
 import { Habit, Space, Quest, Completion, Notification, HabitReminder, UserReminderPreferences } from '../types/models';
 
 // Helper to deeply remove undefined values from objects (Firestore doesn't accept undefined)
@@ -51,12 +102,12 @@ export async function updateSpaceInDb(spaceId: string, updates: Partial<Space>) 
 
 export function subscribeToUserSpaces(userId: string, callback: (spaces: Space[]) => void) {
   const q = query(
-    collection(db, 'spaces'), 
+    collection(db, 'spaces'),
     where('memberUids', 'array-contains', userId)
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const spaces = snapshot.docs.map(doc => doc.data() as Space);
+  return safeOnSnapshot(q, (snapshot) => {
+    const spaces = (snapshot as QuerySnapshot).docs.map(doc => doc.data() as Space);
     callback(spaces);
   });
 }
@@ -78,14 +129,21 @@ export async function deleteHabitInDb(habitId: string) {
   await deleteDoc(habitRef);
 }
 
-export function subscribeToSpaceHabits(spaceId: string, callback: (habits: Habit[]) => void) {
-  const q = query(
-    collection(db, 'habits'),
-    where('spaceId', '==', spaceId)
-  );
+export function subscribeToSpaceHabits(spaceId: string, callback: (habits: Habit[]) => void, userId?: string) {
+  // For personal space, we need to also filter by createdBy to match security rules
+  const q = spaceId === 'personal' && userId
+    ? query(
+        collection(db, 'habits'),
+        where('spaceId', '==', spaceId),
+        where('createdBy', '==', userId)
+      )
+    : query(
+        collection(db, 'habits'),
+        where('spaceId', '==', spaceId)
+      );
 
-  return onSnapshot(q, (snapshot) => {
-    const habits = snapshot.docs.map(doc => doc.data() as Habit);
+  return safeOnSnapshot(q, (snapshot) => {
+    const habits = (snapshot as QuerySnapshot).docs.map(doc => doc.data() as Habit);
     callback(habits);
   });
 }
@@ -107,14 +165,21 @@ export async function updateCompletionInDb(completionId: string, updates: Partia
   await updateDoc(compRef, removeUndefined(updates));
 }
 
-export function subscribeToCompletions(spaceId: string, callback: (completions: Completion[]) => void) {
-  const q = query(
-    collection(db, 'completions'),
-    where('spaceId', '==', spaceId)
-  );
+export function subscribeToCompletions(spaceId: string, callback: (completions: Completion[]) => void, userId?: string) {
+  // For personal space, we need to also filter by userId to match security rules
+  const q = spaceId === 'personal' && userId
+    ? query(
+        collection(db, 'completions'),
+        where('spaceId', '==', spaceId),
+        where('userId', '==', userId)
+      )
+    : query(
+        collection(db, 'completions'),
+        where('spaceId', '==', spaceId)
+      );
 
-  return onSnapshot(q, (snapshot) => {
-    const completions = snapshot.docs.map(doc => doc.data() as Completion);
+  return safeOnSnapshot(q, (snapshot) => {
+    const completions = (snapshot as QuerySnapshot).docs.map(doc => doc.data() as Completion);
     callback(completions);
   });
 }
@@ -132,8 +197,8 @@ export function subscribeToSpaceQuests(spaceId: string, callback: (quests: Quest
     where('spaceId', '==', spaceId)
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const quests = snapshot.docs.map(doc => doc.data() as Quest);
+  return safeOnSnapshot(q, (snapshot) => {
+    const quests = (snapshot as QuerySnapshot).docs.map(doc => doc.data() as Quest);
     callback(quests);
   });
 }
@@ -158,8 +223,8 @@ export function subscribeToUserNotifications(userId: string, callback: (notifica
     limit(20)
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const notifications = snapshot.docs.map(doc => doc.data() as Notification);
+  return safeOnSnapshot(q, (snapshot) => {
+    const notifications = (snapshot as QuerySnapshot).docs.map(doc => doc.data() as Notification);
     callback(notifications);
   });
 }
@@ -190,8 +255,8 @@ export function subscribeToUserReminders(userId: string, callback: (reminders: H
     where('userId', '==', userId)
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const reminders = snapshot.docs.map(doc => doc.data() as HabitReminder);
+  return safeOnSnapshot(q, (snapshot) => {
+    const reminders = (snapshot as QuerySnapshot).docs.map(doc => doc.data() as HabitReminder);
     callback(reminders);
   });
 }
@@ -238,9 +303,10 @@ export async function updateReminderPreferencesInDb(userId: string, updates: Par
 export function subscribeToReminderPreferences(userId: string, callback: (preferences: UserReminderPreferences | null) => void) {
   const prefsRef = doc(db, 'userReminderPreferences', userId);
 
-  return onSnapshot(prefsRef, (snapshot) => {
-    if (snapshot.exists()) {
-      callback(snapshot.data() as UserReminderPreferences);
+  return safeOnSnapshot(prefsRef, (snapshot) => {
+    const docSnap = snapshot as DocumentSnapshot;
+    if (docSnap.exists()) {
+      callback(docSnap.data() as UserReminderPreferences);
     } else {
       callback(null);
     }

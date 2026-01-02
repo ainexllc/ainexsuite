@@ -20,6 +20,7 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const pathname = usePathname();
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -42,11 +43,13 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
     if (!userId) {
       // eslint-disable-next-line no-console
       console.error('[FeedbackWidget] Cannot submit feedback: user not authenticated');
+      setErrorMessage('Please sign in to send feedback.');
       setStatus('error');
       return;
     }
 
     setIsSubmitting(true);
+    setErrorMessage('');
     try {
       await addDoc(collection(db, 'feedback'), {
         userId: userId || null,
@@ -67,6 +70,14 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('[FeedbackWidget] Failed to submit feedback:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMsg.includes('permission') || errorMsg.includes('PERMISSION_DENIED')) {
+        setErrorMessage('Permission denied. Please try signing out and back in.');
+      } else if (errorMsg.includes('network') || errorMsg.includes('offline')) {
+        setErrorMessage('Network error. Please check your connection.');
+      } else {
+        setErrorMessage('Failed to send. Please try again.');
+      }
       setStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -116,8 +127,8 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
 
               {status === 'error' && (
                 <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 p-2 rounded-lg border border-red-500/20">
-                  <AlertCircle className="h-3 w-3" />
-                  Failed to send. Please try again.
+                  <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                  {errorMessage || 'Failed to send. Please try again.'}
                 </div>
               )}
 

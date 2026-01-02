@@ -15,7 +15,10 @@ export type NotificationType =
   | 'error'
   | 'reminder'
   | 'mention'
-  | 'update';
+  | 'update'
+  | 'space_invite'    // Invited to join a space
+  | 'space_accepted'  // Someone accepted your invite
+  | 'space_joined';   // New member joined your space
 
 /**
  * Individual notification item
@@ -32,6 +35,21 @@ export interface NotificationItem {
   actionLabel?: string;
   icon?: string; // Lucide icon name
   metadata?: Record<string, unknown>;
+}
+
+/**
+ * Metadata for space_invite notifications
+ */
+export interface SpaceInviteMetadata {
+  invitationId: string;
+  spaceId: string;
+  spaceName: string;
+  spaceType: string;
+  invitedBy: string;
+  invitedByName?: string;
+  invitedByPhoto?: string;
+  role: string;
+  expiresAt: number;
 }
 
 /**
@@ -123,8 +141,8 @@ export const DEFAULT_QUICK_ACTIONS: Record<AppSlug, QuickAction[]> = {
   display: [
     { id: 'check-in', label: 'Check In', description: 'Daily health check-in', icon: 'Activity', shortcut: 'C', app: 'display', category: 'create' },
   ],
-  fit: [
-    { id: 'log-workout', label: 'Log Workout', description: 'Record a workout', icon: 'Dumbbell', shortcut: 'W', app: 'fit', category: 'create' },
+  track: [
+    { id: 'add-subscription', label: 'Add Subscription', description: 'Track a subscription', icon: 'DollarSign', shortcut: 'S', app: 'track', category: 'create' },
   ],
   projects: [
     { id: 'new-board', label: 'New Board', description: 'Create a project board', icon: 'Layout', shortcut: 'B', app: 'projects', category: 'create' },

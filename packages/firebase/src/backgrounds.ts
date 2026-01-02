@@ -43,6 +43,20 @@ import type {
 const COLLECTION_NAME = 'backgrounds';
 
 /**
+ * Generate a UUID with fallback for non-secure contexts (HTTP on local network)
+ */
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+/**
  * Convert Firestore document to BackgroundDoc
  */
 function docToBackground(id: string, data: Record<string, unknown>): BackgroundDoc {
@@ -91,7 +105,7 @@ export async function uploadBackground(
   metadata: BackgroundCreateInput,
   uploadedBy: string
 ): Promise<BackgroundDoc> {
-  const backgroundId = crypto.randomUUID();
+  const backgroundId = generateUUID();
   const extension = file.name.split('.').pop() || 'jpg';
   const storagePath = `backgrounds/${backgroundId}.${extension}`;
 
@@ -306,7 +320,7 @@ export async function uploadBackgroundWithVariants(
   metadata: GeneratedBackgroundInput,
   uploadedBy: string
 ): Promise<BackgroundDocWithVariants> {
-  const backgroundId = crypto.randomUUID();
+  const backgroundId = generateUUID();
   const basePath = `backgrounds/${backgroundId}`;
 
   // 1. Upload original image

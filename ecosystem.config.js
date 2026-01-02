@@ -165,6 +165,17 @@ module.exports = {
       min_uptime: 10000,
     },
     {
+      name: 'track',
+      cwd: './apps/track',
+      script: 'pnpm',
+      args: 'dev',
+      env: { PORT: 3015, NODE_ENV: 'development', ...sharedEnv },
+      watch: false,
+      autorestart: true,
+      max_restarts: 5,
+      min_uptime: 10000,
+    },
+    {
       name: 'admin',
       cwd: './apps/admin',
       script: 'pnpm',

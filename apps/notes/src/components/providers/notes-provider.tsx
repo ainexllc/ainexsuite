@@ -14,7 +14,7 @@ import {
 const DISPLAY_BATCH_SIZE = 20;
 import { useAuth } from "@ainexsuite/auth";
 import type { Note, NoteAttachment, NoteDraft, NoteType, NoteColor, NotePriority } from "@/lib/types/note";
-import type { FilterValue, SortConfig } from "@ainexsuite/ui";
+import { generateUUID, type FilterValue, type SortConfig } from "@ainexsuite/ui";
 import {
   addAttachments,
   createNote as createNoteMutation,
@@ -231,10 +231,10 @@ export function NotesProvider({ children }: NotesProviderProps) {
 
       const now = new Date();
       const { attachments, ...noteInput } = input;
-      const tempId = `optimistic-${crypto.randomUUID()}`;
+      const tempId = `optimistic-${generateUUID()}`;
       const localAttachments =
         attachments?.map<NoteAttachment>((file) => ({
-          id: `temp-${crypto.randomUUID()}`,
+          id: `temp-${generateUUID()}`,
           name: file.name,
           storagePath: "",
           downloadURL: URL.createObjectURL(file),

@@ -1,10 +1,8 @@
 // apps/grow/src/lib/store.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Space, Habit, Quest, Completion, Notification, Reaction, ReactionEmoji } from '../types/models';
+import { Habit, Quest, Completion, Notification, Reaction, ReactionEmoji } from '../types/models';
 import {
-  createSpaceInDb,
-  updateSpaceInDb,
   createHabitInDb,
   updateHabitInDb,
   deleteHabitInDb,
@@ -18,39 +16,32 @@ import {
 import { getUpdatedStreakValues, getTodayDateString } from './date-utils';
 
 interface GrowState {
-  // State
-  spaces: Space[];
-  currentSpaceId: string;
+  // State - spaces now managed by createSpacesProvider
   habits: Habit[];
   quests: Quest[];
   completions: Completion[];
   notifications: Notification[];
-  
+
   // Setters (Sync)
-  setSpaces: (spaces: Space[]) => void;
   setHabits: (habits: Habit[]) => void;
   setQuests: (quests: Quest[]) => void;
   setCompletions: (completions: Completion[]) => void;
   setNotifications: (notifications: Notification[]) => void;
 
   // Actions (DB)
-  setCurrentSpace: (spaceId: string) => void;
-  addSpace: (space: Space) => Promise<void>;
-  updateSpace: (spaceId: string, updates: Partial<Space>) => Promise<void>;
   addHabit: (habit: Habit) => Promise<void>;
   updateHabit: (habitId: string, updates: Partial<Habit>) => Promise<void>;
   deleteHabit: (habitId: string) => Promise<void>;
   toggleHabitFreeze: (habitId: string, currentStatus: boolean) => Promise<void>;
   addCompletion: (completion: Completion) => Promise<void>;
-  removeCompletion: (habitId: string) => Promise<void>;
+  removeCompletion: (habitId: string, userId?: string) => Promise<void>;
   addReaction: (completionId: string, emoji: ReactionEmoji, userId: string, userName: string) => Promise<void>;
   removeReaction: (completionId: string, userId: string) => Promise<void>;
   addQuest: (quest: Quest) => Promise<void>;
   sendNotification: (notification: Notification) => Promise<void>;
   markNotificationRead: (notificationId: string) => Promise<void>;
-  
+
   // Getters
-  getCurrentSpace: () => Space | undefined;
   getSpaceHabits: (spaceId: string) => Habit[];
   getSpaceQuests: (spaceId: string) => Quest[];
 }
@@ -58,42 +49,18 @@ interface GrowState {
 export const useGrowStore = create<GrowState>()(
   persist(
     (set, get) => ({
-      spaces: [],
-      currentSpaceId: '',
       habits: [],
       quests: [],
       completions: [],
       notifications: [],
 
       // --- Setters (Sync) ---
-      setSpaces: (spaces) => {
-        const currentId = get().currentSpaceId;
-        let nextId = currentId;
-        if (spaces.length > 0 && !spaces.find(s => s.id === currentId)) {
-          nextId = spaces[0].id;
-        }
-        set({ spaces, currentSpaceId: nextId });
-      },
       setHabits: (habits) => set({ habits }),
       setQuests: (quests) => set({ quests }),
       setCompletions: (completions) => set({ completions }),
       setNotifications: (notifications) => set({ notifications }),
 
       // --- Actions (DB) ---
-      setCurrentSpace: (spaceId) => set({ currentSpaceId: spaceId }),
-      
-      addSpace: async (space) => {
-        set((state) => ({ spaces: [...state.spaces, space], currentSpaceId: space.id }));
-        await createSpaceInDb(space);
-      },
-      
-      updateSpace: async (spaceId, updates) => {
-        set((state) => ({
-          spaces: state.spaces.map((s) => s.id === spaceId ? { ...s, ...updates } : s)
-        }));
-        await updateSpaceInDb(spaceId, updates);
-      },
-
       addHabit: async (habit) => {
         set((state) => ({ habits: [...state.habits, habit] }));
         await createHabitInDb(habit);
@@ -148,13 +115,13 @@ export const useGrowStore = create<GrowState>()(
         await createCompletionInDb(completion);
       },
 
-      removeCompletion: async (habitId) => {
+      removeCompletion: async (habitId, userId) => {
         const state = get();
         const today = getTodayDateString();
 
-        // Find today's completion for this habit
+        // Find today's completion for this habit (and optionally for specific user)
         const completionToRemove = state.completions.find(
-          c => c.habitId === habitId && c.date === today
+          c => c.habitId === habitId && c.date === today && (userId ? c.userId === userId : true)
         );
 
         if (!completionToRemove) return;
@@ -238,11 +205,6 @@ export const useGrowStore = create<GrowState>()(
       },
 
       // --- Getters ---
-      getCurrentSpace: () => {
-        const { spaces, currentSpaceId } = get();
-        return spaces.find((s) => s.id === currentSpaceId);
-      },
-
       getSpaceHabits: (spaceId) => {
         const { habits } = get();
         return habits.filter((h) => h.spaceId === spaceId);
@@ -254,8 +216,8 @@ export const useGrowStore = create<GrowState>()(
       }
     }),
     {
-      name: 'grow-storage-client-prefs',
-      partialize: (state) => ({ currentSpaceId: state.currentSpaceId }),
+      name: 'grow-storage-habits',
+      partialize: () => ({}), // No state to persist - spaces managed by createSpacesProvider
     }
   )
 );

@@ -5,12 +5,6 @@ export {
 } from './space-switcher';
 
 export {
-  SpaceEditor,
-  type SpaceEditorProps,
-  type SpaceTypeOption,
-} from './space-editor';
-
-export {
   SpaceCard,
   type SpaceCardProps,
 } from './space-card';
@@ -26,4 +20,24 @@ export {
   type SpaceSettingsProps,
 } from './space-settings';
 
-export { type PendingMemberInvite } from './space-editor';
+export {
+  SpaceManagementModal,
+  type SpaceManagementModalProps,
+  type UserSpace,
+} from './space-management-modal';
+
+export {
+  InviteMemberModal,
+  type InviteMemberModalProps,
+} from './invite-member-modal';
+
+export {
+  AddChildModal,
+  type AddChildModalProps,
+} from './add-child-modal';
+
+export {
+  InlineSpacePicker,
+  type InlineSpacePickerProps,
+  type InlineSpaceItem,
+} from './inline-space-picker';

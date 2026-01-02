@@ -19,12 +19,12 @@ export type JournalSpaceDoc = {
   members: SpaceMember[];
   memberUids: string[];
   createdAt: Timestamp;
-  createdBy: string;
+  ownerId: string;
 };
 
 export type JournalSpace = Omit<JournalSpaceDoc, "createdAt"> & {
   id: string;
-  createdAt: Date;
+  createdAt: Date | number;
 };
 
 export type JournalSpaceDraft = {

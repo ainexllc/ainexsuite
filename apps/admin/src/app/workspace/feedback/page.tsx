@@ -16,16 +16,14 @@ import { db } from '@ainexsuite/firebase';
 import {
   MessageSquare,
   Search,
-  CheckCircle2,
-  Archive,
   Clock,
-  Inbox,
   ChevronLeft,
   ChevronRight,
   Sparkles,
   Trash2,
   RefreshCw,
-  Star
+  Star,
+  Inbox
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Loader2 } from 'lucide-react';
@@ -38,7 +36,7 @@ interface FeedbackDoc {
   message: string;
   appId: string;
   path: string;
-  status: 'new' | 'read' | 'archived';
+  status: 'new' | 'read';
   promoted?: boolean;
   createdAt: Timestamp;
 }
@@ -50,7 +48,6 @@ interface AIInsights {
 export default function FeedbackPage() {
   const [feedback, setFeedback] = useState<FeedbackDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'new' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -61,7 +58,6 @@ export default function FeedbackPage() {
 
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const fetchInsights = async () => {
     try {
@@ -121,16 +117,6 @@ export default function FeedbackPage() {
     }
   }, [feedback]);
 
-  const handleStatusUpdate = async (id: string, newStatus: 'read' | 'archived') => {
-    try {
-      await updateDoc(doc(db, 'feedback', id), {
-        status: newStatus
-      });
-    } catch (error) {
-      console.error('Failed to update feedback status:', error);
-    }
-  };
-
   const handleDelete = (id: string) => {
     setItemToDelete(id);
   };
@@ -146,11 +132,6 @@ export default function FeedbackPage() {
   };
 
   const filteredFeedback = feedback.filter(item => {
-    // "all" shows everything except archived
-    if (filter === 'all' && item.status === 'archived') return false;
-    if (filter === 'new' && item.status !== 'new') return false;
-    if (filter === 'archived' && item.status !== 'archived') return false;
-
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
@@ -167,47 +148,12 @@ export default function FeedbackPage() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedFeedback = filteredFeedback.slice(startIndex, endIndex);
 
-  const toggleSelect = (id: string) => {
-    setSelectedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedItems.size === filteredFeedback.length) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set(filteredFeedback.map(item => item.id)));
-    }
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedItems.size > 0) {
-      setItemToDelete('bulk');
-    }
-  };
-
   const confirmDelete = async () => {
     if (!itemToDelete) return;
 
     setIsDeleting(true);
     try {
-      if (itemToDelete === 'bulk') {
-        // Delete all selected items
-        const deletePromises = Array.from(selectedItems).map(id =>
-          deleteDoc(doc(db, 'feedback', id))
-        );
-        await Promise.all(deletePromises);
-        setSelectedItems(new Set());
-      } else {
-        await deleteDoc(doc(db, 'feedback', itemToDelete));
-      }
+      await deleteDoc(doc(db, 'feedback', itemToDelete));
       setItemToDelete(null);
     } catch (error) {
       console.error('Failed to delete feedback:', error);
@@ -218,7 +164,7 @@ export default function FeedbackPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter, searchQuery]);
+  }, [searchQuery]);
 
   if (loading) {
     return (
@@ -273,59 +219,16 @@ export default function FeedbackPage() {
         </div>
       </div>
 
-      {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="glass-card rounded-lg p-1 flex gap-1 w-fit">
-          {(['all', 'new', 'archived'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => { setFilter(f); setSelectedItems(new Set()); }}
-              className={clsx(
-                "px-4 py-2 rounded-md text-sm font-medium capitalize transition-all",
-                filter === f
-                  ? "bg-surface-elevated text-white shadow-sm"
-                  : "text-muted-foreground hover:text-white hover:bg-white/5"
-              )}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Bulk Actions */}
-        {selectedItems.size > 0 && (
-          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
-            <span className="text-sm text-muted-foreground">{selectedItems.size} selected</span>
-            <button
-              onClick={handleBulkDelete}
-              className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-colors border border-red-500/20"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </button>
-          </div>
-        )}
-
-        <div className="relative flex-1 max-w-md ml-auto flex gap-2">
-          <div className="flex items-center justify-center px-3">
-             <input
-                type="checkbox"
-                checked={filteredFeedback.length > 0 && selectedItems.size === filteredFeedback.length}
-                onChange={toggleSelectAll}
-                className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500/50"
-             />
-          </div>
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search feedback..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-surface-elevated/50 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
-            />
-          </div>
-        </div>
+      {/* Search */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Search feedback..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-surface-elevated/50 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
+        />
       </div>
 
       {/* List */}
@@ -338,23 +241,13 @@ export default function FeedbackPage() {
           </div>
         ) : (
           paginatedFeedback.map((item) => (
-            <div 
+            <div
               key={item.id}
               className={clsx(
-                "glass-card rounded-xl p-5 transition-all hover:border-white/20 group flex gap-4 items-start",
-                item.status === 'new' && "bg-indigo-500/5 border-indigo-500/20",
-                selectedItems.has(item.id) && "bg-white/5 border-indigo-500/30"
+                "glass-card rounded-xl p-5 transition-all hover:border-white/20 group",
+                item.status === 'new' && "bg-indigo-500/5 border-indigo-500/20"
               )}
             >
-              <div className="pt-1">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.has(item.id)}
-                  onChange={() => toggleSelect(item.id)}
-                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500/50 cursor-pointer"
-                />
-              </div>
-
               <div className="flex flex-col md:flex-row gap-4 flex-1">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
@@ -391,34 +284,13 @@ export default function FeedbackPage() {
                     onClick={() => handlePromote(item.id, item.promoted)}
                     className={clsx(
                       "p-2 rounded-lg transition-colors",
-                      item.promoted 
-                        ? "text-yellow-400 bg-yellow-400/10 hover:bg-yellow-400/20" 
+                      item.promoted
+                        ? "text-yellow-400 bg-yellow-400/10 hover:bg-yellow-400/20"
                         : "text-muted-foreground hover:text-yellow-400 hover:bg-yellow-400/10"
                     )}
                     title={item.promoted ? "Remove from Great Ideas" : "Promote to Great Ideas"}
                   >
                     <Star className={clsx("h-4 w-4", item.promoted && "fill-current")} />
-                  </button>
-                  {item.status === 'new' && (
-                    <button
-                      onClick={() => handleStatusUpdate(item.id, 'read')}
-                      className="p-2 rounded-lg text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-                      title="Mark as Read"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleStatusUpdate(item.id, item.status === 'archived' ? 'read' : 'archived')}
-                    className={clsx(
-                      "p-2 rounded-lg transition-colors",
-                      item.status === 'archived'
-                        ? "text-indigo-400 hover:bg-indigo-500/10"
-                        : "text-muted-foreground hover:bg-surface-elevated hover:text-white"
-                    )}
-                    title={item.status === 'archived' ? "Move to Inbox" : "Archive"}
-                  >
-                    {item.status === 'archived' ? <Inbox className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
@@ -469,18 +341,13 @@ export default function FeedbackPage() {
                 <Trash2 className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">
-                  {itemToDelete === 'bulk' ? `Delete ${selectedItems.size} Items` : 'Delete Feedback'}
-                </h3>
+                <h3 className="text-lg font-semibold text-white">Delete Feedback</h3>
                 <p className="text-sm text-muted-foreground">This action cannot be undone.</p>
               </div>
             </div>
-            
+
             <p className="text-foreground/90 text-sm mb-6 leading-relaxed">
-              {itemToDelete === 'bulk' 
-                ? `Are you sure you want to permanently delete these ${selectedItems.size} feedback items? They will be removed from all views and analytics.`
-                : "Are you sure you want to permanently delete this feedback item? It will be removed from all views and analytics."
-              }
+              Are you sure you want to permanently delete this feedback item?
             </p>
 
             <div className="flex gap-3 justify-end">
@@ -504,7 +371,7 @@ export default function FeedbackPage() {
                 ) : (
                   <>
                     <Trash2 className="h-4 w-4" />
-                    Delete Permanently
+                    Delete
                   </>
                 )}
               </button>

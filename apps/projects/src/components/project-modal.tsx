@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { DateSuggestions } from '@ainexsuite/date-detection';
 
 interface Project {
   id: string;
@@ -66,6 +67,17 @@ export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote }: Pro
               placeholder="Enter project name..."
               autoFocus
             />
+            {/* Date detection suggestions for calendar */}
+            {name.trim().length > 5 && (
+              <DateSuggestions
+                text={name}
+                context={{
+                  app: 'projects',
+                  title: name || 'Project',
+                }}
+                className="mt-2"
+              />
+            )}
           </div>
           
           <div className="mb-4">

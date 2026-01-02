@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { FolderOpen, ChevronDown, Plus, Check, X, Lock, Tag, Loader2, ImagePlus, Ban, BookOpen, Sparkles, Pin } from "lucide-react";
+import { Plus, Check, X, Lock, Tag, Loader2, ImagePlus, Ban, BookOpen, Sparkles, Pin } from "lucide-react";
 import { clsx } from "clsx";
-import { SpaceEditor as SharedSpaceEditor } from "@ainexsuite/ui";
-import type { SpaceType as SharedSpaceType } from "@ainexsuite/types";
-import type { SpaceType as JournalSpaceType } from "@/lib/types/space";
 import type { JournalEntryFormData, EntryColor, BackgroundOverlay } from "@ainexsuite/types";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAuth } from "@ainexsuite/auth";
-import { useToast } from "@ainexsuite/ui";
+import { useToast, InlineSpacePicker } from "@ainexsuite/ui";
 import { useBackgrounds } from "@/hooks/use-backgrounds";
 import { useCovers } from "@/hooks/use-covers";
 import { getBackgroundById, getOverlayClasses, OVERLAY_OPTIONS, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
@@ -22,12 +19,14 @@ import { usePrivacy, PasscodeModal } from "@ainexsuite/privacy";
 
 interface JournalComposerProps {
   onEntryCreated?: () => void;
+  onManagePeople?: () => void;
+  onManageSpaces?: () => void;
 }
 
-export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
+export function JournalComposer({ onEntryCreated, onManagePeople, onManageSpaces }: JournalComposerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { spaces, currentSpaceId, setCurrentSpace, createSpace } = useSpaces();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
   const { hasPasscode, setupPasscode, lockNow } = usePrivacy();
 
   // Expand/collapse state
@@ -36,10 +35,6 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
   const formRef = useRef<JournalFormHandle>(null);
   const composerRef = useRef<HTMLDivElement>(null);
-
-  // Space picker state
-  const [showSpacePicker, setShowSpacePicker] = useState(false);
-  const [showSpaceEditor, setShowSpaceEditor] = useState(false);
 
   // Entry state
   const [pinned, setPinned] = useState(false);
@@ -72,9 +67,8 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
   // Cover settings (AI summary toggle)
   const { showAiSummary, setShowAiSummary } = useCoverSettings();
 
-  // Get current space name
-  const currentSpace = spaces.find((s) => s.id === currentSpaceId);
-  const currentSpaceName = currentSpace?.name || "Personal";
+  // Get current space for InlineSpacePicker
+  const currentSpace = spaces.find((s) => s.id === currentSpaceId) || null;
 
   // Merge Firestore backgrounds with fallbacks
   const availableBackgrounds = useMemo(() => {
@@ -89,12 +83,6 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
     if (!backgroundImage) return null;
     return getBackgroundById(backgroundImage, availableBackgrounds) || null;
   }, [backgroundImage, availableBackgrounds]);
-
-  const handleCreateSpace = async (data: { name: string; type: SharedSpaceType }) => {
-    if (!user) return;
-    const journalType = data.type as JournalSpaceType;
-    await createSpace({ name: data.name, type: journalType });
-  };
 
   // Sync title changes to the form
   const handleTitleChange = (newTitle: string) => {
@@ -260,81 +248,31 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
           >
             <span>Write a journal entry...</span>
           </button>
-          {/* Compact space selector - responsive */}
-          <div className="relative flex-shrink-0">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowSpacePicker((prev) => !prev);
-              }}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-full text-xs font-medium transition bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            >
-              <FolderOpen className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline max-w-[80px] truncate">{currentSpaceName}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-            {showSpacePicker && (
-              <>
-                <div
-                  className="fixed inset-0 z-20"
-                  onClick={() => setShowSpacePicker(false)}
-                />
-                <div className="absolute right-0 top-full mt-1 z-30 min-w-[160px] rounded-xl border shadow-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 py-1">
-                  {spaces.map((space) => (
-                    <button
-                      key={space.id}
-                      type="button"
-                      onClick={() => {
-                        setCurrentSpace(space.id);
-                        setShowSpacePicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-2 w-full px-3 py-2 text-sm text-left transition",
-                        space.id === currentSpaceId
-                          ? "text-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      )}
-                    >
-                      <FolderOpen className="h-4 w-4" />
-                      <span className="flex-1 truncate">{space.name}</span>
-                      {space.id === currentSpaceId && <Check className="h-4 w-4" />}
-                    </button>
-                  ))}
-                  <div className="border-t border-zinc-200 dark:border-zinc-700 mt-1 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowSpacePicker(false);
-                        setShowSpaceEditor(true);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>New Space</span>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          {/* Inline space picker */}
+          <InlineSpacePicker
+            spaces={spaces}
+            currentSpace={currentSpace}
+            onSpaceChange={setCurrentSpace}
+            onManagePeople={onManagePeople}
+            onManageSpaces={onManageSpaces}
+          />
         </div>
       ) : (
         // Expanded state - inline editor
         <div
           ref={composerRef}
           className={clsx(
-            "w-full rounded-2xl shadow-lg border overflow-hidden",
+            "relative w-full rounded-2xl shadow-lg border overflow-hidden",
             "bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
           )}
         >
-          {/* Background image layer */}
+          {/* Background image layer - contained within this form */}
           {currentBackground && (
             <div
-              className="absolute inset-0 bg-cover bg-center"
+              className="absolute inset-0 bg-cover bg-center rounded-2xl"
               style={{ backgroundImage: `url(${currentBackground.fullImage})` }}
             >
-              <div className={getOverlayClasses(currentBackground, backgroundOverlay)} />
+              <div className={clsx(getOverlayClasses(currentBackground, backgroundOverlay), "rounded-2xl")} />
             </div>
           )}
 
@@ -671,8 +609,9 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
             )}
 
             {/* Footer toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
-              <div className="flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
+              {/* Left side - tool buttons */}
+              <div className="flex items-center justify-center sm:justify-start gap-1">
                 {/* Background picker button */}
                 <button
                   type="button"
@@ -758,11 +697,11 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                 </button>
               </div>
 
-              {/* Right side actions */}
-              <div className="flex items-center gap-3">
+              {/* Right side actions - responsive */}
+              <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3">
                 <button
                   type="button"
-                  className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
+                  className="flex-1 sm:flex-none rounded-full border px-3 sm:px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
                   onClick={handleClose}
                   disabled={isSubmitting}
                 >
@@ -772,49 +711,33 @@ export function JournalComposer({ onEntryCreated }: JournalComposerProps) {
                   type="button"
                   onClick={() => formRef.current?.submitDraft()}
                   disabled={isSubmitting}
-                  className="rounded-full border px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
+                  className="flex-1 sm:flex-none rounded-full border px-3 sm:px-4 py-1.5 text-sm font-medium transition border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
                 >
                   {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
-                      Saving...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
                   ) : (
-                    'Save as Draft'
+                    <span className="hidden sm:inline">Save as Draft</span>
                   )}
+                  {!isSubmitting && <span className="sm:hidden">Draft</span>}
                 </button>
                 <button
                   type="button"
                   onClick={() => formRef.current?.submitPublish()}
                   disabled={isSubmitting}
-                  className="rounded-full bg-[var(--color-primary)] px-5 py-1.5 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-60"
+                  className="flex-1 sm:flex-none rounded-full bg-[var(--color-primary)] px-3 sm:px-5 py-1.5 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-60"
                 >
                   {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
-                      Saving...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin mx-auto" />
                   ) : (
-                    'Save Entry'
+                    <span className="hidden sm:inline">Save Entry</span>
                   )}
+                  {!isSubmitting && <span className="sm:hidden">Save</span>}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Space Editor Dialog */}
-      <SharedSpaceEditor
-        isOpen={showSpaceEditor}
-        onClose={() => setShowSpaceEditor(false)}
-        onSubmit={handleCreateSpace}
-        spaceTypes={[
-          { value: "personal", label: "Personal", description: "Your private journal" },
-          { value: "family", label: "Family", description: "Share memories with family" },
-          { value: "couple", label: "Couple", description: "Journal together with your partner" },
-        ]}
-      />
 
       {/* Passcode modal for setting up privacy PIN */}
       <PasscodeModal

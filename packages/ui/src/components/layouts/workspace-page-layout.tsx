@@ -27,7 +27,7 @@ interface WorkspacePageLayoutProps {
     items: SpaceItem[];
     currentSpaceId: string | null;
     onSpaceChange: (spaceId: string) => void;
-    onCreateSpace?: () => void;
+    onManageSpaces?: () => void;
   };
   /**
    * Additional actions to show next to the composer (e.g., ViewToggle)
@@ -73,7 +73,7 @@ const maxWidthClasses = {
  *     items: spaces,
  *     currentSpaceId,
  *     onSpaceChange: setCurrentSpace,
- *     onCreateSpace: () => setShowEditor(true),
+ *     onManageSpaces: () => setShowManageSpaces(true),
  *   }}
  *   toolbar={<ViewToggle />}
  * >
@@ -123,7 +123,7 @@ export function WorkspacePageLayout({
                 spaces={spaces.items}
                 currentSpaceId={spaces.currentSpaceId}
                 onSpaceChange={spaces.onSpaceChange}
-                onCreateSpace={spaces.onCreateSpace}
+                onManageSpaces={spaces.onManageSpaces}
               />
             )}
             {composerActions}

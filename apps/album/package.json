@@ -4,7 +4,7 @@
   "private": true,
   "description": "Album app - Memory curation at album.ainexsuite.com",
   "scripts": {
-    "dev": "next dev -p ${PORT:-3005}",
+    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3005}",
     "build": "next build",
     "start": "next start -p 3005",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache"

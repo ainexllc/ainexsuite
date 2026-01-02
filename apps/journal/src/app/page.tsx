@@ -14,7 +14,8 @@ import {
   BookOpen,
   Heart,
 } from 'lucide-react';
-import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
+import { HomepageTemplate, AinexStudiosLogo } from '@ainexsuite/ui/components';
+import { DynamicBackground } from '@/components/dynamic-background';
 import type {
   DemoStep,
   NavLink,
@@ -155,7 +156,7 @@ function JourneyHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="JOURNAL" appColor="#06b6d4" />}
-        backgroundComponent={<LayeredBackground primaryColor="#06b6d4" secondaryColor="#22d3ee" variant="organic" />}
+        backgroundComponent={<DynamicBackground />}
         appName="journal"
         accentColor="#06b6d4"
         gradientFrom="#06b6d4"

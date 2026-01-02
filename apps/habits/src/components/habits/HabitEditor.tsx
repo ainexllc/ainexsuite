@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, Users, Snowflake, Save, Trash2, Check, Flame, X, Target, Link2 } from 'lucide-react';
+import { DateSuggestions } from '@ainexsuite/date-detection';
 import { useGrowStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { Habit, FrequencyType, Schedule, Wager, Member, HabitCategory, HABIT_CATEGORIES } from '../../types/models';
 import { ConfirmationDialog } from '@ainexsuite/ui';
 import { useAppColors } from '@ainexsuite/theme';
@@ -20,14 +22,12 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
   const { user } = useAuth();
   const { primary, secondary } = useAppColors();
   const {
-    getCurrentSpace,
     addHabit,
     updateHabit,
     deleteHabit,
     habits
   } = useGrowStore();
-
-  const currentSpace = getCurrentSpace();
+  const { currentSpace } = useSpaces();
   
   // Form State
   const [title, setTitle] = useState('');
@@ -203,6 +203,18 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                 className="w-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl px-4 py-3 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:border-transparent transition-all min-h-[80px] resize-none"
                 style={{ '--tw-ring-color': `${primary}50` } as React.CSSProperties}
               />
+              {/* Date detection suggestions for calendar */}
+              {(title.trim() || description.trim()) && (
+                <DateSuggestions
+                  text={`${title} ${description}`}
+                  context={{
+                    app: 'habits',
+                    entryId: editHabitId,
+                    title: title || 'Habit Goal',
+                  }}
+                  className="mt-2"
+                />
+              )}
             </div>
           </div>
 

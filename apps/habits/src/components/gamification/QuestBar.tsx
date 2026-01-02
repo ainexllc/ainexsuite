@@ -3,21 +3,25 @@
 import { Crown, Gift, Star } from 'lucide-react';
 import { Quest } from '../../types/models';
 import { cn } from '../../lib/utils';
+import { Hint, HINTS } from '../hints';
 
 interface QuestBarProps {
   quest: Quest;
   compact?: boolean;
+  /** Show hint for first-time users */
+  showHint?: boolean;
 }
 
-export function QuestBar({ quest, compact = false }: QuestBarProps) {
+export function QuestBar({ quest, compact = false, showHint = false }: QuestBarProps) {
   const progress = Math.min((quest.currentCompletions / quest.targetTotalCompletions) * 100, 100);
   const isNearComplete = progress >= 75;
   const isComplete = progress >= 100;
 
   if (compact) {
     return (
-      <div className={cn(
-        "relative flex items-center gap-3 p-2.5 rounded-xl bg-[#1a1a1a] border transition-all",
+      <Hint hint={HINTS.QUESTS} showWhen={showHint}>
+        <div className={cn(
+        "relative flex items-center gap-3 p-2.5 rounded-2xl bg-[#1a1a1a] border transition-all",
         isComplete ? "border-yellow-500/50" : isNearComplete ? "border-yellow-500/30" : "border-white/10"
       )}>
         {/* Icon */}
@@ -69,13 +73,15 @@ export function QuestBar({ quest, compact = false }: QuestBarProps) {
             <span className="max-w-[60px] truncate">{quest.reward}</span>
           </div>
         )}
-      </div>
+        </div>
+      </Hint>
     );
   }
 
   return (
-    <div className={cn(
-      "relative overflow-hidden rounded-xl bg-[#1a1a1a] border transition-all",
+    <Hint hint={HINTS.QUESTS} showWhen={showHint}>
+      <div className={cn(
+      "relative overflow-hidden rounded-2xl bg-[#1a1a1a] border transition-all",
       isComplete ? "border-yellow-500/50 shadow-yellow-500/20" : isNearComplete ? "border-yellow-500/30" : "border-white/10"
     )}>
       {/* Glow effect when near complete */}
@@ -138,7 +144,8 @@ export function QuestBar({ quest, compact = false }: QuestBarProps) {
             {Math.round(progress)}%
           </span>
         </div>
+        </div>
       </div>
-    </div>
+    </Hint>
   );
 }
