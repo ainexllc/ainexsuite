@@ -2,10 +2,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Habit, Quest, Completion, Notification, Reaction, ReactionEmoji } from '../types/models';
+import { ICON_BUNDLES } from './bundles';
 import {
   createHabitInDb,
   updateHabitInDb,
   deleteHabitInDb,
+  bulkDeleteHabitsInDb,
+  bulkUpdateHabitsInDb,
   createCompletionInDb,
   deleteCompletionInDb,
   updateCompletionInDb,
@@ -21,6 +24,7 @@ interface GrowState {
   quests: Quest[];
   completions: Completion[];
   notifications: Notification[];
+  ownedBundles: string[];
 
   // Setters (Sync)
   setHabits: (habits: Habit[]) => void;
@@ -33,13 +37,20 @@ interface GrowState {
   updateHabit: (habitId: string, updates: Partial<Habit>) => Promise<void>;
   deleteHabit: (habitId: string) => Promise<void>;
   toggleHabitFreeze: (habitId: string, currentStatus: boolean) => Promise<void>;
+  // Bulk Actions
+  bulkDeleteHabits: (habitIds: string[]) => Promise<void>;
+  bulkUpdateHabits: (habitIds: string[], updates: Partial<Habit>) => Promise<void>;
   addCompletion: (completion: Completion) => Promise<void>;
   removeCompletion: (habitId: string, userId?: string) => Promise<void>;
   addReaction: (completionId: string, emoji: ReactionEmoji, userId: string, userName: string) => Promise<void>;
   removeReaction: (completionId: string, userId: string) => Promise<void>;
   addQuest: (quest: Quest) => Promise<void>;
   sendNotification: (notification: Notification) => Promise<void>;
-  markNotificationRead: (notificationId: string) => Promise<void>;
+      markNotificationRead: (notificationId: string) => Promise<void>;
+
+      // Icon bundles
+      loadOwnedBundles: () => Promise<void>;
+      purchaseBundle: (bundleId: string) => Promise<void>;
 
   // Getters
   getSpaceHabits: (spaceId: string) => Habit[];
@@ -53,6 +64,7 @@ export const useGrowStore = create<GrowState>()(
       quests: [],
       completions: [],
       notifications: [],
+      ownedBundles: [],
 
       // --- Setters (Sync) ---
       setHabits: (habits) => set({ habits }),
@@ -88,6 +100,26 @@ export const useGrowStore = create<GrowState>()(
           habits: state.habits.map((h) => h.id === habitId ? { ...h, isFrozen: newStatus } : h)
         }));
         await updateHabitInDb(habitId, { isFrozen: newStatus });
+      },
+
+      bulkDeleteHabits: async (habitIds) => {
+        // Optimistic update - remove from local state first
+        set((state) => ({
+          habits: state.habits.filter((h) => !habitIds.includes(h.id)),
+          // Also remove completions for deleted habits
+          completions: state.completions.filter((c) => !habitIds.includes(c.habitId))
+        }));
+        await bulkDeleteHabitsInDb(habitIds);
+      },
+
+      bulkUpdateHabits: async (habitIds, updates) => {
+        // Optimistic update - update local state first
+        set((state) => ({
+          habits: state.habits.map((h) =>
+            habitIds.includes(h.id) ? { ...h, ...updates } : h
+          )
+        }));
+        await bulkUpdateHabitsInDb(habitIds, updates);
       },
 
       addCompletion: async (completion) => {
@@ -202,6 +234,29 @@ export const useGrowStore = create<GrowState>()(
           notifications: state.notifications.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
         }));
         await markNotificationReadInDb(notificationId);
+      },
+
+      // Icon bundles (mock for now)
+      loadOwnedBundles: async () => {
+        // TODO: Fetch from Firestore user doc
+        set({ ownedBundles: [] });
+      },
+
+      purchaseBundle: async (bundleId: string) => {
+        const bundle = ICON_BUNDLES.find(b => b.id === bundleId);
+        if (!bundle) throw new Error('Bundle not found');
+
+        const state = get();
+        if (state.ownedBundles.includes(bundleId)) {
+          throw new Error('Bundle already owned');
+        }
+
+        // Mock purchase
+        set({ ownedBundles: [...state.ownedBundles, bundleId] });
+
+        // TODO: Stripe checkout, then Firestore update
+        // eslint-disable-next-line no-console
+        console.log(`Purchased ${bundle.name}`);
       },
 
       // --- Getters ---

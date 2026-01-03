@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { X, Lock, Loader2, Tag, Plus, ImagePlus, Check, Ban, BookOpen, Sparkles } from "lucide-react";
+import { X, Lock, Loader2, Tag, Plus, ImagePlus, Check, Ban, BookOpen, Sparkles, FolderOpen } from "lucide-react";
 import { clsx } from "clsx";
 import type { JournalEntry, JournalEntryFormData, EntryColor, BackgroundOverlay } from "@ainexsuite/types";
 import { useAuth } from "@ainexsuite/auth";
@@ -12,6 +12,7 @@ import { useToast, EntryEditorShell } from "@ainexsuite/ui";
 import { sentimentService } from "@/lib/ai/sentiment-service";
 import { saveSentimentAnalysis } from "@/lib/firebase/sentiment";
 import { usePrivacy, PasscodeModal } from "@ainexsuite/privacy";
+import { useSpaces } from "@/components/providers/spaces-provider";
 import { useBackgrounds } from "@/hooks/use-backgrounds";
 import { useCovers } from "@/hooks/use-covers";
 import { getBackgroundById, getOverlayClasses, OVERLAY_OPTIONS, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
@@ -28,10 +29,13 @@ type JournalEntryEditorProps = {
 export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEditorProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { spaces } = useSpaces();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
   const { isUnlocked, hasPasscode, verifyPasscode, setupPasscode, lockNow } = usePrivacy();
   const formRef = useRef<JournalFormHandle>(null);
+  const [selectedSpaceId, setSelectedSpaceId] = useState(entry.spaceId || 'personal');
+  const [showSpaceSelector, setShowSpaceSelector] = useState(false);
 
   // Entry state that can be modified via shell buttons
   const [pinned, setPinned] = useState(entry.pinned || false);
@@ -187,6 +191,7 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
         backgroundOverlay,
         coverImage,
         coverSummary,
+        spaceId: selectedSpaceId === 'personal' ? undefined : selectedSpaceId,
       };
       await updateJournalEntry(entry.id, updatePayload);
 
@@ -221,7 +226,7 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, entry, toast, onSaved, onClose, pinned, archived, color, tags, isPrivate, backgroundImage, backgroundOverlay, coverImage, title, showAiSummary]);
+  }, [user, entry, toast, onSaved, onClose, pinned, archived, color, tags, isPrivate, backgroundImage, backgroundOverlay, coverImage, title, showAiSummary, selectedSpaceId]);
 
   const handlePasscodeSubmit = async (passcode: string) => {
     if (hasPasscode) {
@@ -647,6 +652,64 @@ export function JournalEntryEditor({ entry, onClose, onSaved }: JournalEntryEdit
           >
             <Lock className="h-4 w-4" />
           </button>
+
+          {/* Space selector (only show if multiple spaces exist) */}
+          {spaces.length > 1 && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSpaceSelector((prev) => !prev)}
+                className={clsx(
+                  'h-9 w-9 rounded-full flex items-center justify-center transition',
+                  showSpaceSelector
+                    ? 'bg-[var(--color-primary)] text-white'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                )}
+                aria-label="Change space"
+                title="Move to a different space"
+              >
+                <FolderOpen className="h-4 w-4" />
+              </button>
+              {showSpaceSelector && (
+                <>
+                  {/* Click outside to close */}
+                  <div
+                    className="fixed inset-0 z-20"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSpaceSelector(false);
+                    }}
+                  />
+                  <div
+                    className="absolute bottom-12 left-0 z-30 w-48 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xl py-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700">
+                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Move to Space</p>
+                    </div>
+                    {[{ id: 'personal', name: 'My Journal' }, ...spaces.filter(s => s.id !== 'personal')].map((space) => (
+                      <button
+                        key={space.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSpaceId(space.id);
+                          setShowSpaceSelector(false);
+                        }}
+                        className={clsx(
+                          "w-full px-3 py-2 text-left text-sm transition-colors",
+                          selectedSpaceId === space.id
+                            ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        )}
+                      >
+                        {space.name}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </>
       }
       footerExpandedContent={

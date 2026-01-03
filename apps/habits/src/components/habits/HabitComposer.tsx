@@ -59,6 +59,12 @@ export function HabitComposer({ onAISuggestClick, onManagePeople, onManageSpaces
     setIsSubmitting(true);
 
     try {
+      // For team spaces, assign to all members by default
+      // For personal space, only assign to the current user
+      const assigneeIds = currentSpace.type !== 'personal' && currentSpace.memberUids?.length > 0
+        ? currentSpace.memberUids
+        : [user.uid];
+
       const newHabit: Habit = {
         id: generateUUID(),
         spaceId: currentSpace.id,
@@ -67,7 +73,7 @@ export function HabitComposer({ onAISuggestClick, onManagePeople, onManageSpaces
           type: scheduleType,
           daysOfWeek: scheduleType === "specific_days" ? selectedDays : undefined,
         },
-        assigneeIds: [user.uid],
+        assigneeIds,
         currentStreak: 0,
         bestStreak: 0,
         isFrozen: false,

@@ -10,6 +10,7 @@ export interface DayStats {
 export interface MemberContribution {
   uid: string;
   displayName: string;
+  photoURL?: string;
   totalCompletions: number;
   weeklyCompletions: number;
 }
@@ -74,6 +75,7 @@ export function getTeamContribution(members: Member[], completions: Completion[]
     return {
       uid: member.uid,
       displayName: member.displayName,
+      photoURL: member.photoURL,
       totalCompletions: userCompletions.length,
       weeklyCompletions: weeklyCount
     };

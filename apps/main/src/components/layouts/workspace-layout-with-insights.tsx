@@ -1,10 +1,12 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { WorkspaceLayout, AIInsightsModal } from "@ainexsuite/ui";
 import { useWorkspaceInsights } from "@/hooks/use-workspace-insights";
+import { useNotifications } from "@/hooks/use-notifications";
 import { useAppColors } from "@ainexsuite/theme";
-import type { QuickAction, NotificationItem } from "@ainexsuite/types";
+import type { QuickAction } from "@ainexsuite/types";
 
 interface WorkspaceLayoutWithInsightsProps {
   children: ReactNode;
@@ -27,7 +29,6 @@ interface WorkspaceLayoutWithInsightsProps {
   onAiAssistantClick?: () => void;
   onSettingsClick?: () => void;
   onActivityClick?: () => void;
-  notifications?: NotificationItem[];
   onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
 }
 
@@ -44,12 +45,37 @@ export function WorkspaceLayoutWithInsights({
   onAiAssistantClick,
   onSettingsClick,
   onActivityClick,
-  notifications = [],
   onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
+  const router = useRouter();
+
   // Get insights data from the hook
   const insights = useWorkspaceInsights();
   const { primary: primaryColor } = useAppColors();
+
+  // Get notifications from the hook
+  const {
+    notifications,
+    markAsRead,
+    markAllAsRead,
+    clearAll,
+    handleAcceptInvitation,
+    handleDeclineInvitation,
+  } = useNotifications();
+
+  // Handle notification click - navigate based on type
+  const handleNotificationClick = useCallback((id: string) => {
+    const notification = notifications.find((n) => n.id === id);
+    if (notification?.actionUrl) {
+      router.push(notification.actionUrl);
+    }
+    markAsRead(id);
+  }, [notifications, router, markAsRead]);
+
+  // Handle view all notifications - navigate to invitations page
+  const handleViewAllNotifications = useCallback(() => {
+    router.push('/invitations');
+  }, [router]);
 
   // Modal state for View Details
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,6 +109,13 @@ export function WorkspaceLayoutWithInsights({
         onSettingsClick={onSettingsClick}
         onActivityClick={onActivityClick}
         notifications={notifications}
+        onNotificationClick={handleNotificationClick}
+        onMarkAsRead={markAsRead}
+        onMarkAllRead={markAllAsRead}
+        onClearAll={clearAll}
+        onViewAllNotifications={handleViewAllNotifications}
+        onAcceptInvitation={handleAcceptInvitation}
+        onDeclineInvitation={handleDeclineInvitation}
         // AI Insights Pulldown - always pass sections (pulldown handles empty state)
         insightsSections={insights.sections}
         insightsTitle={insights.title}

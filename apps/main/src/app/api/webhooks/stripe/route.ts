@@ -3,8 +3,6 @@
  * Processes Stripe events with idempotency and atomic updates
  */
 
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { getStripeServer, mapStripeStatus, getTierFromPriceId } from '@ainexsuite/firebase/admin/stripe';
@@ -51,7 +49,6 @@ export async function POST(request: NextRequest) {
     const webhookDoc = await webhookRef.get();
 
     if (webhookDoc.exists) {
-      console.log(`Webhook ${event.id} already processed, skipping`);
       return NextResponse.json({ received: true });
     }
 
@@ -75,8 +72,6 @@ export async function POST(request: NextRequest) {
         processed: true,
         processedAt: Date.now(),
       });
-
-      console.log(`Successfully processed webhook: ${event.type} (${event.id})`);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -138,7 +133,8 @@ async function processWebhookEvent(event: Stripe.Event): Promise<void> {
     }
 
     default:
-      console.log(`Unhandled event type: ${event.type}`);
+      // Unhandled event type - no action needed
+      break;
   }
 }
 
@@ -233,8 +229,6 @@ async function handleSubscriptionChange(
 
     transaction.update(userRef, userUpdate);
   });
-
-  console.log(`Subscription ${stripeSubscription.status} for user ${userId}`);
 }
 
 /**
@@ -268,8 +262,6 @@ async function handleSubscriptionDeleted(
       updatedAt: Date.now(),
     });
   });
-
-  console.log(`Subscription deleted for user ${userId}`);
 }
 
 /**
@@ -282,7 +274,6 @@ async function handlePaymentSucceeded(
   const subscriptionId = invoice.subscription as string;
 
   if (!subscriptionId) {
-    console.log('Invoice not associated with subscription, skipping');
     return;
   }
 
@@ -295,8 +286,6 @@ async function handlePaymentSucceeded(
     console.error('Missing userId in subscription metadata');
     return;
   }
-
-  console.log(`Payment succeeded for user ${userId}: ${invoice.amount_paid / 100} ${invoice.currency}`);
 
   // Update user's last payment date
   const userRef = db.collection('users').doc(userId);
@@ -317,7 +306,6 @@ async function handlePaymentFailed(
   const subscriptionId = invoice.subscription as string;
 
   if (!subscriptionId) {
-    console.log('Invoice not associated with subscription, skipping');
     return;
   }
 
@@ -330,8 +318,6 @@ async function handlePaymentFailed(
     console.error('Missing userId in subscription metadata');
     return;
   }
-
-  console.log(`Payment failed for user ${userId}`);
 
   // Update subscription status
   const subscriptionRef = db.collection('subscriptions').doc(userId);

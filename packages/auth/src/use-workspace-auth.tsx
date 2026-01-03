@@ -29,6 +29,12 @@ interface UseWorkspaceAuthReturn {
   handleSignOut: () => Promise<void>;
   /** Update user preferences */
   updatePreferences: ReturnType<typeof useAuth>['updatePreferences'];
+  /** Update user profile (displayName, etc) */
+  updateProfile: ReturnType<typeof useAuth>['updateProfile'];
+  /** Update user profile image */
+  updateProfileImage: ReturnType<typeof useAuth>['updateProfileImage'];
+  /** Remove custom profile image */
+  removeProfileImage: ReturnType<typeof useAuth>['removeProfileImage'];
 }
 
 /**
@@ -47,7 +53,7 @@ interface UseWorkspaceAuthReturn {
  */
 export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWorkspaceAuthReturn {
   const { redirectTo = '/' } = options;
-  const { user, loading, ssoInProgress, bootstrapStatus, updatePreferences } = useAuth();
+  const { user, loading, ssoInProgress, bootstrapStatus, updatePreferences, updateProfile, updateProfileImage, removeProfileImage } = useAuth();
   const router = useRouter();
 
   // Combined loading state
@@ -86,5 +92,8 @@ export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWork
     isReady,
     handleSignOut,
     updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
   };
 }

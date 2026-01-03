@@ -107,12 +107,24 @@ export function TeamLeaderboard({ data, spaceType, onSettingsClick, compact = fa
                 </div>
 
                 {/* Avatar */}
-                <div className={cn(
-                  "h-6 w-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-[9px] font-bold text-white ring-1",
-                  index === 0 ? "ring-yellow-500/50" : "ring-transparent"
-                )}>
-                  {member.displayName.slice(0, 2).toUpperCase()}
-                </div>
+                {member.photoURL ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={member.photoURL}
+                    alt={member.displayName}
+                    className={cn(
+                      "h-6 w-6 rounded-full object-cover ring-1",
+                      index === 0 ? "ring-yellow-500/50" : "ring-transparent"
+                    )}
+                  />
+                ) : (
+                  <div className={cn(
+                    "h-6 w-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-[9px] font-bold text-white ring-1",
+                    index === 0 ? "ring-yellow-500/50" : "ring-transparent"
+                  )}>
+                    {member.displayName.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
 
                 {/* Name & Count */}
                 <div className="flex-1 min-w-0">
@@ -188,12 +200,24 @@ export function TeamLeaderboard({ data, spaceType, onSettingsClick, compact = fa
               </div>
 
               {/* Avatar */}
-              <div className={cn(
-                "h-8 w-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-[10px] font-bold text-white ring-2",
-                index === 0 ? "ring-yellow-500/50" : index === 1 ? "ring-gray-400/30" : index === 2 ? "ring-amber-600/30" : "ring-transparent"
-              )}>
-                {member.displayName.slice(0, 2).toUpperCase()}
-              </div>
+              {member.photoURL ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={member.photoURL}
+                  alt={member.displayName}
+                  className={cn(
+                    "h-8 w-8 rounded-full object-cover ring-2",
+                    index === 0 ? "ring-yellow-500/50" : index === 1 ? "ring-gray-400/30" : index === 2 ? "ring-amber-600/30" : "ring-transparent"
+                  )}
+                />
+              ) : (
+                <div className={cn(
+                  "h-8 w-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-[10px] font-bold text-white ring-2",
+                  index === 0 ? "ring-yellow-500/50" : index === 1 ? "ring-gray-400/30" : index === 2 ? "ring-amber-600/30" : "ring-transparent"
+                )}>
+                  {member.displayName.slice(0, 2).toUpperCase()}
+                </div>
+              )}
 
               {/* Name & Stats */}
               <div className="flex-1 min-w-0">

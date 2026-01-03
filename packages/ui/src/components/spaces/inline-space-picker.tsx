@@ -62,7 +62,7 @@ export function InlineSpacePicker({
   };
 
   return (
-    <div className={cn('relative flex-shrink-0', className)}>
+    <div className={cn('relative flex-shrink-0 z-[9999]', className)}>
       {/* Trigger Button */}
       <button
         type="button"
@@ -82,12 +82,12 @@ export function InlineSpacePicker({
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-20"
+            className="fixed inset-0 z-[9998]"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Menu */}
-          <div className="absolute right-0 top-full mt-1 z-30 min-w-[160px] rounded-xl border shadow-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 py-1">
+          <div className="absolute right-0 top-full mt-1 z-[9999] min-w-[160px] rounded-xl border shadow-2xl bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 p-1 backdrop-blur-xl opacity-100">
             {/* Space List */}
             {spaces.map((space) => {
               const isActive = space.id === currentSpace?.id;
@@ -97,7 +97,7 @@ export function InlineSpacePicker({
                   type="button"
                   onClick={() => handleSelectSpace(space.id)}
                   className={cn(
-                    'flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition',
+                    'flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-left transition rounded-lg',
                     isActive
                       ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/5'
                       : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -118,7 +118,7 @@ export function InlineSpacePicker({
                   <button
                     type="button"
                     onClick={handleManagePeople}
-                    className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                    className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-left text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg"
                   >
                     <Users className="h-3.5 w-3.5" />
                     <span>Manage People</span>
@@ -130,7 +130,7 @@ export function InlineSpacePicker({
                   <button
                     type="button"
                     onClick={handleManageSpaces}
-                    className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                    className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-left text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg"
                   >
                     <Settings className="h-3.5 w-3.5" />
                     <span>Manage Spaces</span>

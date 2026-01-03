@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fit-specific overrides. Shared tokens & utilities come from @ainexsuite/ui/styles. */
+
+/* Fit App Theme - Blue Accent Colors in HSL format */
+:root {
+  --app-primary: 217 91% 60%;      /* Blue-500 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 142 71% 45%;    /* Green-500 */
+  --app-secondary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --app-primary: 213 94% 68%;      /* Blue-400 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 142 69% 58%;    /* Green-400 */
+  --app-secondary-foreground: 0 0% 0%;
+}

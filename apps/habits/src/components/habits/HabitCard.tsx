@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Flame, Settings, Snowflake, RotateCcw, Link2, ArrowRight, Square, CheckSquare } from 'lucide-react';
-import type { Habit, Completion, SpaceType, ReactionEmoji } from '@/types/models';
+import { Flame, Settings, Snowflake, RotateCcw, Link2, ArrowRight, Square, CheckSquare, Check } from 'lucide-react';
+import type { Habit, Completion, SpaceType, ReactionEmoji, Member } from '@/types/models';
 import { HABIT_CATEGORIES } from '@/types/models';
+import { DynamicIcon } from '@/components/DynamicIcon';
 import { getHabitStatus, calculateStreak, getTodayDateString } from '@/lib/date-utils';
 import { NudgeButton } from '@/components/gamification/NudgeButton';
 import { ReactionPicker } from '@/components/gamification/ReactionPicker';
+import { QuickAssignPopover, AssigneeBadges } from '@/components/habits/QuickAssignPopover';
 import { cn } from '@/lib/utils';
 import { isInChain, getNextInChain, getChainPositionLabel } from '@/lib/chain-utils';
 
@@ -23,6 +25,15 @@ interface HabitCardProps {
   currentUserId?: string;
   onReact?: (completionId: string, emoji: ReactionEmoji) => void;
   onRemoveReaction?: (completionId: string) => void;
+  // Selection mode props
+  isSelectMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (habitId: string, event: React.MouseEvent) => void;
+  // Assignment props
+  members?: Member[];
+  onAssign?: (habitId: string, assigneeIds: string[]) => void;
+  // Card tap handler
+  onCardClick?: (habitId: string) => void;
 }
 
 export function HabitCard({
@@ -37,7 +48,13 @@ export function HabitCard({
   partnerId,
   currentUserId,
   onReact,
-  onRemoveReaction
+  onRemoveReaction,
+  isSelectMode = false,
+  isSelected = false,
+  onSelect,
+  members = [],
+  onAssign,
+  onCardClick,
 }: HabitCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showUndo, setShowUndo] = useState(false);
@@ -94,6 +111,11 @@ export function HabitCard({
 
   // Get status-based styles
   const getCardStyles = () => {
+    // Selection highlight takes precedence
+    if (isSelected) {
+      return 'bg-indigo-900/30 border-indigo-500/50 shadow-indigo-500/10 shadow-lg ring-2 ring-indigo-500/30';
+    }
+
     switch (status) {
       case 'completed':
         return 'bg-emerald-900/20 border-emerald-500/30 shadow-emerald-500/10 shadow-lg';
@@ -104,6 +126,17 @@ export function HabitCard({
       case 'due':
       default:
         return 'bg-[#1a1a1a] border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-indigo-500/5';
+    }
+  };
+
+  // Handle card click for selection or opening detail modal
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (isSelectMode && onSelect) {
+      e.preventDefault();
+      e.stopPropagation();
+      onSelect(habit.id, e);
+    } else if (onCardClick) {
+      onCardClick(habit.id);
     }
   };
 
@@ -153,22 +186,47 @@ export function HabitCard({
   return (
     <div
       id={`habit-${habit.id}`}
+      onClick={handleCardClick}
       className={cn(
         'group relative flex items-center justify-between p-4 rounded-2xl border transition-all duration-300',
         getCardStyles(),
-        isAnimating && 'scale-[1.02]'
+        isAnimating && 'scale-[1.02]',
+        isSelectMode && 'cursor-pointer'
       )}
     >
-      {/* Left side: Checkbox + Content */}
+      {/* Left side: Selection + Checkbox + Content */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
+        {/* Selection Checkbox (shown in select mode) */}
+        {isSelectMode && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect?.(habit.id, e);
+            }}
+            className={cn(
+              'flex-shrink-0 h-5 w-5 rounded border-2 flex items-center justify-center transition-all',
+              isSelected
+                ? 'bg-indigo-500 border-indigo-500'
+                : 'border-white/30 hover:border-indigo-400'
+            )}
+            aria-label={isSelected ? 'Deselect' : 'Select'}
+          >
+            {isSelected && <Check className="h-3 w-3 text-white" />}
+          </button>
+        )}
+
         {/* Completion Checkbox Icon */}
         <button
-          onClick={handleComplete}
-          disabled={habit.isFrozen || isCompleted}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleComplete();
+          }}
+          disabled={habit.isFrozen || isCompleted || isSelectMode}
           className={cn(
             'flex-shrink-0 transition-all duration-300',
             getCheckboxIconStyles(),
-            isAnimating && 'animate-pulse'
+            isAnimating && 'animate-pulse',
+            isSelectMode && 'opacity-50 cursor-default'
           )}
           aria-label={isCompleted ? 'Completed' : 'Mark as complete'}
         >
@@ -194,6 +252,7 @@ export function HabitCard({
               isCompleted ? 'text-emerald-300 line-through opacity-70' : 'text-white'
             )}
           >
+            {habit.icon && <DynamicIcon name={habit.icon} className="text-lg mr-2 flex-shrink-0" />}
             <span className="truncate">{habit.title}</span>
             {habit.isFrozen && (
               <span className="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded flex-shrink-0">
@@ -223,6 +282,15 @@ export function HabitCard({
             <span className="text-[10px] text-white/30 flex-shrink-0">
               {getScheduleLabel()}
             </span>
+            {/* Assignee badges (family/team spaces) */}
+            {spaceType !== 'personal' && members.length > 0 && habit.assigneeIds.length > 0 && (
+              <AssigneeBadges
+                assigneeIds={habit.assigneeIds}
+                members={members}
+                maxVisible={3}
+                size="sm"
+              />
+            )}
           </div>
 
           {/* Progress bar for habits with targets */}
@@ -280,6 +348,19 @@ export function HabitCard({
             targetId={partnerId}
             habitTitle={habit.title}
           />
+        )}
+
+        {/* Quick Assign (family/team spaces) */}
+        {spaceType !== 'personal' && members.length > 0 && onAssign && !isSelectMode && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <QuickAssignPopover
+              habitId={habit.id}
+              currentAssigneeIds={habit.assigneeIds}
+              members={members}
+              onAssign={onAssign}
+              position="left"
+            />
+          </div>
         )}
 
         {/* Reactions (Team/Couple/Family only, when completed) */}

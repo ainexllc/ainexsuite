@@ -1,19 +1,70 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, BellDot } from 'lucide-react';
-import { useGrowStore } from '../../lib/store';
-import { Notification } from '../../types/models';
+import { Bell, BellDot, UserPlus, Check, X, Loader2 } from 'lucide-react';
+import { useSpaceNotifications } from '../../hooks/use-space-notifications';
 import { formatDistanceToNow } from 'date-fns';
+import type { NotificationItem } from '@ainexsuite/types';
 
 export function NotificationBell() {
-  const { notifications, markNotificationRead } = useGrowStore();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    handleAcceptInvitation,
+    handleDeclineInvitation,
+  } = useSpaceNotifications();
+
   const [isOpen, setIsOpen] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
+  const handleAccept = async (notif: NotificationItem) => {
+    const invitationId = notif.metadata?.invitationId as string | undefined;
+    if (!invitationId) return;
 
-  const handleMarkRead = async (id: string) => {
-    await markNotificationRead(id);
+    setProcessingId(notif.id);
+    try {
+      await handleAcceptInvitation(invitationId, notif.id);
+      // Optionally reload to show new space
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to accept:', error);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDecline = async (notif: NotificationItem) => {
+    const invitationId = notif.metadata?.invitationId as string | undefined;
+    if (!invitationId) return;
+
+    setProcessingId(notif.id);
+    try {
+      await handleDeclineInvitation(invitationId, notif.id);
+    } catch (error) {
+      console.error('Failed to decline:', error);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'space_invite':
+        return <UserPlus className="h-5 w-5 text-indigo-400" />;
+      case 'nudge':
+        return <span className="text-xl">👋</span>;
+      case 'wager_won':
+        return <span className="text-xl">🏆</span>;
+      case 'wager_lost':
+        return <span className="text-xl">💸</span>;
+      case 'quest_update':
+        return <span className="text-xl">👑</span>;
+      case 'system':
+        return <span className="text-xl">🤖</span>;
+      default:
+        return <Bell className="h-5 w-5 text-white/50" />;
+    }
   };
 
   return (
@@ -26,8 +77,9 @@ export function NotificationBell() {
         {unreadCount > 0 ? (
           <div className="relative">
             <BellDot className="h-5 w-5 text-indigo-400 animate-pulse" />
-            {/* Fallback badge just in case */}
-            {/* <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full" /> */}
+            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center text-white">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
           </div>
         ) : (
           <Bell className="h-5 w-5" />
@@ -50,33 +102,65 @@ export function NotificationBell() {
                 </div>
               ) : (
                 <div className="divide-y divide-white/5">
-                  {notifications.map((notif: Notification) => (
-                    <div 
-                      key={notif.id} 
-                      className={`p-3 flex gap-3 transition-colors hover:bg-white/5 ${notif.isRead ? 'opacity-60' : 'bg-indigo-500/5'}`}
-                      onClick={() => !notif.isRead && handleMarkRead(notif.id)}
+                  {notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`p-3 transition-colors hover:bg-white/5 ${notif.read ? 'opacity-60' : 'bg-indigo-500/5'}`}
+                      onClick={() => !notif.read && notif.type !== 'space_invite' && markAsRead(notif.id)}
                     >
-                      <div className="mt-1">
-                        {notif.type === 'nudge' && <span className="text-xl">👋</span>}
-                        {notif.type === 'wager_won' && <span className="text-xl">🏆</span>}
-                        {notif.type === 'wager_lost' && <span className="text-xl">💸</span>}
-                        {notif.type === 'quest_update' && <span className="text-xl">👑</span>}
-                        {notif.type === 'system' && <span className="text-xl">🤖</span>}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className={`text-sm ${notif.isRead ? 'font-medium text-white/80' : 'font-bold text-white'}`}>
-                          {notif.title}
-                        </h4>
-                        <p className="text-xs text-white/60 leading-snug mb-1">{notif.message}</p>
-                        <span className="text-[10px] text-white/30">
-                          {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
-                        </span>
-                      </div>
-                      {!notif.isRead && (
-                        <div className="self-center">
-                          <div className="h-2 w-2 bg-indigo-500 rounded-full" />
+                      <div className="flex gap-3">
+                        <div className="mt-1 flex-shrink-0">
+                          {getNotificationIcon(notif.type)}
                         </div>
-                      )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className={`text-sm ${notif.read ? 'font-medium text-white/80' : 'font-bold text-white'}`}>
+                            {notif.title}
+                          </h4>
+                          <p className="text-xs text-white/60 leading-snug mb-1">{notif.message}</p>
+                          <span className="text-[10px] text-white/30">
+                            {formatDistanceToNow(new Date(notif.timestamp), { addSuffix: true })}
+                          </span>
+
+                          {/* Accept/Decline buttons for space invites */}
+                          {notif.type === 'space_invite' && !notif.read && (
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAccept(notif);
+                                }}
+                                disabled={processingId === notif.id}
+                                className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors"
+                              >
+                                {processingId === notif.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Check className="h-3 w-3" />
+                                    Accept
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDecline(notif);
+                                }}
+                                disabled={processingId === notif.id}
+                                className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white/70 text-xs font-medium rounded-lg transition-colors"
+                              >
+                                <X className="h-3 w-3" />
+                                Decline
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        {!notif.read && notif.type !== 'space_invite' && (
+                          <div className="self-center flex-shrink-0">
+                            <div className="h-2 w-2 bg-indigo-500 rounded-full" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

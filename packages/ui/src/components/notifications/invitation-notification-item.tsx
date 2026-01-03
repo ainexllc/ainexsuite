@@ -50,10 +50,15 @@ export function InvitationNotificationItem({
 }: InvitationNotificationItemProps) {
   const [isAccepting, setIsAccepting] = useState(false);
   const [isDecling, setIsDeclining] = useState(false);
-  const [responded, setResponded] = useState(false);
-  const [responseType, setResponseType] = useState<'accepted' | 'declined' | null>(null);
+  const [localResponded, setLocalResponded] = useState(false);
+  const [localResponseType, setLocalResponseType] = useState<'accepted' | 'declined' | null>(null);
 
   const metadata = notification.metadata as SpaceInviteMetadata | undefined;
+
+  // Check if already responded (from Firestore metadata or local state)
+  const alreadyResponded = metadata?.responseStatus === 'accepted' || metadata?.responseStatus === 'declined';
+  const responded = alreadyResponded || localResponded;
+  const responseType = metadata?.responseStatus || localResponseType;
 
   const handleAccept = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -62,8 +67,8 @@ export function InvitationNotificationItem({
     setIsAccepting(true);
     try {
       await onAccept(metadata.invitationId, notification.id);
-      setResponded(true);
-      setResponseType('accepted');
+      setLocalResponded(true);
+      setLocalResponseType('accepted');
     } catch (error) {
       console.error('Failed to accept invitation:', error);
     } finally {
@@ -78,8 +83,8 @@ export function InvitationNotificationItem({
     setIsDeclining(true);
     try {
       await onDecline(metadata.invitationId, notification.id);
-      setResponded(true);
-      setResponseType('declined');
+      setLocalResponded(true);
+      setLocalResponseType('declined');
     } catch (error) {
       console.error('Failed to decline invitation:', error);
     } finally {
@@ -122,6 +127,7 @@ export function InvitationNotificationItem({
           {/* Inviter photo or default icon */}
           <div className="mt-0.5 shrink-0">
             {metadata?.invitedByPhoto ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={metadata.invitedByPhoto}
                 alt={metadata.invitedByName || 'Inviter'}

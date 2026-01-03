@@ -6,6 +6,7 @@ import { X, User, Palette, Bell, Globe, Settings2, Eye, EyeOff, Users, Loader2, 
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import type { UserPreferences, FontFamily, SpaceType } from "@ainexsuite/types";
+import { ProfileImageGenerator } from "./profile-image-generator";
 
 export type SettingsTab = "profile" | "appearance" | "notifications" | "spaces" | "app";
 
@@ -51,6 +52,12 @@ export interface SettingsModalProps {
   onUpdatePreferences: (updates: Partial<UserPreferences>) => Promise<void>;
   /** Update profile handler */
   onUpdateProfile?: (updates: { displayName?: string; photoURL?: string }) => Promise<void>;
+  /** Update profile image handler (for AI-generated avatars) */
+  onUpdateProfileImage?: (imageData: string) => Promise<{ success: boolean; error?: string }>;
+  /** Remove profile image handler */
+  onRemoveProfileImage?: () => Promise<boolean>;
+  /** API endpoint for profile image generation (defaults to /api/generate-profile-image) */
+  profileImageApiEndpoint?: string;
   /** User's spaces for management */
   spaces?: SpaceSettingsItem[];
   /** Callback when user wants to create a new space */
@@ -95,6 +102,9 @@ export function SettingsModal({
   preferences,
   onUpdatePreferences,
   onUpdateProfile,
+  onUpdateProfileImage,
+  onRemoveProfileImage,
+  profileImageApiEndpoint,
   spaces,
   onCreateSpace,
   onEditSpace,
@@ -210,6 +220,9 @@ export function SettingsModal({
               <ProfileSettings
                 user={user}
                 onUpdateProfile={onUpdateProfile}
+                onUpdateProfileImage={onUpdateProfileImage}
+                onRemoveProfileImage={onRemoveProfileImage}
+                profileImageApiEndpoint={profileImageApiEndpoint}
               />
             )}
             {activeTab === "appearance" && (
@@ -256,54 +269,116 @@ export function SettingsModal({
 interface ProfileSettingsProps {
   user: SettingsUser | null;
   onUpdateProfile?: (updates: { displayName?: string; photoURL?: string }) => Promise<void>;
+  onUpdateProfileImage?: (imageData: string) => Promise<{ success: boolean; error?: string }>;
+  onRemoveProfileImage?: () => Promise<boolean>;
+  profileImageApiEndpoint?: string;
 }
 
-function ProfileSettings({ user, onUpdateProfile }: ProfileSettingsProps) {
+function ProfileSettings({
+  user,
+  onUpdateProfile,
+  onUpdateProfileImage,
+  onRemoveProfileImage,
+  profileImageApiEndpoint,
+}: ProfileSettingsProps) {
   const [displayName, setDisplayName] = React.useState(user?.displayName || "");
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
+  const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const lastSavedValueRef = React.useRef(user?.displayName || "");
 
-  const handleSave = async () => {
-    if (!onUpdateProfile) return;
-    setSaving(true);
-    try {
-      await onUpdateProfile({ displayName });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } finally {
-      setSaving(false);
+  // Auto-save with debounce when displayName changes
+  React.useEffect(() => {
+    // Don't save if no handler or value hasn't changed from last saved
+    if (!onUpdateProfile || displayName === lastSavedValueRef.current) {
+      return;
     }
-  };
 
-  const hasChanges = displayName !== (user?.displayName || "");
+    // Clear any pending save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Debounce save by 800ms
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (displayName.trim() && displayName !== lastSavedValueRef.current) {
+        setSaving(true);
+        try {
+          await onUpdateProfile({ displayName: displayName.trim() });
+          lastSavedValueRef.current = displayName.trim();
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        } finally {
+          setSaving(false);
+        }
+      }
+    }, 800);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [displayName, onUpdateProfile]);
+
+  // Sync with user prop changes
+  React.useEffect(() => {
+    if (user?.displayName && user.displayName !== lastSavedValueRef.current) {
+      setDisplayName(user.displayName);
+      lastSavedValueRef.current = user.displayName;
+    }
+  }, [user?.displayName]);
 
   return (
     <div className="space-y-6">
-      {/* Avatar */}
-      <div className="flex items-center gap-4">
-        {user?.photoURL ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.photoURL}
-            alt={user.displayName || "User"}
-            className="h-16 w-16 rounded-full object-cover"
-          />
-        ) : (
-          <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center font-semibold text-xl">
-            {(user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U").toUpperCase()}
+      {/* Profile Image Generator */}
+      {onUpdateProfileImage ? (
+        <ProfileImageGenerator
+          currentPhotoURL={user?.photoURL}
+          displayName={user?.displayName}
+          email={user?.email}
+          onUpdateImage={onUpdateProfileImage}
+          onRemoveImage={onRemoveProfileImage}
+          apiEndpoint={profileImageApiEndpoint}
+          showRemoveButton={!!onRemoveProfileImage}
+        />
+      ) : (
+        /* Fallback: Static Avatar Display */
+        <div className="flex items-center gap-4">
+          {user?.photoURL ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.photoURL}
+              alt={user.displayName || "User"}
+              className="h-16 w-16 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center font-semibold text-xl">
+              {(user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U").toUpperCase()}
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-medium text-foreground">Profile Photo</p>
+            <p className="text-xs text-muted-foreground">Managed by your Google account</p>
           </div>
-        )}
-        <div>
-          <p className="text-sm font-medium text-foreground">Profile Photo</p>
-          <p className="text-xs text-muted-foreground">Managed by your Google account</p>
         </div>
-      </div>
+      )}
 
       {/* Display Name */}
       <div className="space-y-2">
-        <label htmlFor="displayName" className="text-sm font-medium text-foreground">
-          Display Name
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="displayName" className="text-sm font-medium text-foreground">
+            Display Name
+          </label>
+          {/* Auto-save status indicator */}
+          <span className={`text-xs transition-opacity duration-200 ${saving || saved ? 'opacity-100' : 'opacity-0'}`}>
+            {saving ? (
+              <span className="text-muted-foreground">Saving...</span>
+            ) : saved ? (
+              <span className="text-emerald-500">Saved</span>
+            ) : null}
+          </span>
+        </div>
         <input
           id="displayName"
           type="text"
@@ -331,25 +406,6 @@ function ProfileSettings({ user, onUpdateProfile }: ProfileSettingsProps) {
           )}
         </div>
       </div>
-
-      {/* Save Button */}
-      {onUpdateProfile && (
-        <div className="flex items-center gap-3 pt-2">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-            className={clsx(
-              "px-4 py-2 rounded-xl text-sm font-medium transition-colors",
-              hasChanges && !saving
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            )}
-          >
-            {saving ? "Saving..." : saved ? "Saved!" : "Save Changes"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -966,6 +1022,7 @@ function SpacesSettings({
   // User's global spaces (spaces matching template types)
   const userGlobalSpaces = React.useMemo(() => {
     return spaces.filter(s => GLOBAL_SPACE_TYPES.has(s.type));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spaces]);
 
   // Create a new space from a template

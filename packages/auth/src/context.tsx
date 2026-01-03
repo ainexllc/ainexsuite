@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import type { User as FirebaseUser } from 'firebase/auth';
-import { auth, SSOHandler } from '@ainexsuite/firebase';
+import { auth, SSOHandler, setProfileImage, removeCustomProfileImage, syncUserPhotoToSpaces } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User, UserPreferences } from '@ainexsuite/types';
 import { setThemeCookie, getThemeCookie, type ThemeValue } from '@ainexsuite/theme';
@@ -42,6 +42,12 @@ interface AuthContextType {
   hydrateFromDevSession: (sessionCookie: string) => void;
   /** Update user preferences (theme, etc) with backend sync */
   updatePreferences: (updates: Partial<UserPreferences>) => Promise<void>;
+  /** Update user profile (displayName, etc) with backend sync */
+  updateProfile: (updates: { displayName?: string }) => Promise<void>;
+  /** Update user profile image with AI-generated or uploaded image */
+  updateProfileImage: (imageData: string) => Promise<{ success: boolean; error?: string }>;
+  /** Remove custom profile image and revert to default */
+  removeProfileImage: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -203,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Cross-tab/cross-app preference sync via BroadcastChannel
-  // When theme changes in one tab, all other tabs update immediately
+  // When theme or profile image changes in one tab, all other tabs update immediately
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -213,6 +219,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(prev => prev ? {
           ...prev,
           preferences: { ...prev.preferences, ...event.data.preferences }
+        } : null);
+      } else if (event.data.type === 'PROFILE_IMAGE_UPDATE') {
+        setUser(prev => prev ? {
+          ...prev,
+          photoURL: event.data.photoURL,
         } : null);
       }
     };
@@ -273,6 +284,127 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  // Update user profile (displayName, etc)
+  const updateProfile = useCallback(async (updates: { displayName?: string }) => {
+    if (!user) return;
+
+    // 1. Optimistic update
+    const previousUser = user;
+    const updatedUser = {
+      ...user,
+      ...updates,
+    };
+
+    // Immediate state update for UI responsiveness
+    setUser(updatedUser);
+
+    // 2. Broadcast to other tabs/apps for real-time sync
+    if (typeof window !== 'undefined') {
+      const channel = new BroadcastChannel('ainex-preferences');
+      channel.postMessage({ type: 'PROFILE_UPDATE', profile: updates });
+      channel.close();
+    }
+
+    try {
+      // 3. API Call to persist
+      const response = await fetch('/api/auth/session', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      // Revert optimistic update on failure
+      setUser(previousUser);
+    }
+  }, [user]);
+
+  // Update user profile image
+  const updateProfileImage = useCallback(async (imageData: string): Promise<{ success: boolean; error?: string }> => {
+    if (!user) {
+      return { success: false, error: 'No user logged in' };
+    }
+
+    try {
+      const result = await setProfileImage(user.uid, imageData);
+
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
+
+      // Update local user state with new photo URL
+      const updatedUser = {
+        ...user,
+        photoURL: result.downloadURL || user.photoURL,
+      };
+      setUser(updatedUser);
+
+      // Broadcast to other tabs for sync
+      if (typeof window !== 'undefined') {
+        const channel = new BroadcastChannel('ainex-preferences');
+        channel.postMessage({
+          type: 'PROFILE_IMAGE_UPDATE',
+          photoURL: result.downloadURL,
+        });
+        channel.close();
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to update profile image:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update profile image',
+      };
+    }
+  }, [user]);
+
+  // Remove custom profile image
+  const removeProfileImage = useCallback(async (): Promise<boolean> => {
+    if (!user) {
+      return false;
+    }
+
+    try {
+      const success = await removeCustomProfileImage(user.uid);
+
+      if (success) {
+        // Revert to Firebase Auth photoURL or empty
+        const originalPhotoURL = firebaseUser?.photoURL || '';
+        setUser({
+          ...user,
+          photoURL: originalPhotoURL,
+        });
+
+        // Sync the reverted photoURL to all spaces (fire and forget)
+        syncUserPhotoToSpaces(user.uid, originalPhotoURL || null).catch(() => {
+          // Ignore sync errors - non-critical
+        });
+
+        // Broadcast to other tabs
+        if (typeof window !== 'undefined') {
+          const channel = new BroadcastChannel('ainex-preferences');
+          channel.postMessage({
+            type: 'PROFILE_IMAGE_UPDATE',
+            photoURL: originalPhotoURL,
+          });
+          channel.close();
+        }
+      }
+
+      return success;
+    } catch (error) {
+      console.error('Failed to remove profile image:', error);
+      return false;
+    }
+  }, [user, firebaseUser]);
+
   useEffect(() => {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -312,16 +444,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(userData);
             // Sync session with Auth Hub for cross-app SSO
             syncSessionWithAuthHub(sessionCookie)
-              .then((success) => {
-                if (success) {
-                  // eslint-disable-next-line no-console
-                  console.debug('[Auth] Session synced to Auth Hub');
-                } else {
-                  console.warn('[Auth] Session sync to Auth Hub returned false');
-                }
-              })
-              .catch((err) => {
-                console.warn('[Auth] Session sync failed:', err);
+              .catch(() => {
+                // Silent fail - SSO sync is non-critical
               });
           } else {
             // Log the full error response to help debug
@@ -521,6 +645,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSsoComplete,
         hydrateFromDevSession,
         updatePreferences,
+        updateProfile,
+        updateProfileImage,
+        removeProfileImage,
       }}
     >
       {/* SSOHandler processes auth_token from URL and signals completion */}

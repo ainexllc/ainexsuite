@@ -3,6 +3,7 @@ import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
+import { AppProviders } from '@/components/providers/app-providers';
 import { AppColorProvider, ThemeProvider, themeSyncScriptContent } from '@ainexsuite/theme';
 import { getServerTheme } from '@ainexsuite/theme/server';
 import '@ainexsuite/ui/styles';
@@ -66,7 +67,9 @@ export default async function RootLayout({
         <ThemeProvider defaultTheme={theme} enableSystem={true} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="track" fallbackPrimary="#10b981" fallbackSecondary="#34d399">
-              {children}
+              <AppProviders>
+                {children}
+              </AppProviders>
             </AppColorProvider>
           </AuthProvider>
         </ThemeProvider>

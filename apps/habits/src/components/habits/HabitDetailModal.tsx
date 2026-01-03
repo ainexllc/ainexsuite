@@ -14,7 +14,7 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { GlassModal, GlassModalContent, GlassModalFooter, ConfirmationDialog } from '@ainexsuite/ui';
-import { Habit, Completion } from '@/types/models';
+import { Habit, Completion, Member } from '@/types/models';
 import { cn } from '@/lib/utils';
 import { getHabitStatus, getDateString } from '@/lib/date-utils';
 
@@ -23,6 +23,7 @@ interface HabitDetailModalProps {
   onClose: () => void;
   habit: Habit | null;
   completions: Completion[];
+  member?: Member | null; // For family view - show member-specific stats
   onEdit: (habit: Habit) => void;
   onDelete: (habitId: string) => Promise<void>;
   onToggleFreeze: (habitId: string, currentStatus: boolean) => Promise<void>;
@@ -42,6 +43,7 @@ export function HabitDetailModal({
   onClose,
   habit,
   completions,
+  member,
   onEdit,
   onDelete,
   onToggleFreeze,
@@ -50,10 +52,16 @@ export function HabitDetailModal({
   const [showMenu, setShowMenu] = useState(false);
   const [isFreezing, setIsFreezing] = useState(false);
 
+  // Filter completions by habit and optionally by member
   const habitCompletions = useMemo(() => {
     if (!habit) return [];
-    return completions.filter((c) => c.habitId === habit.id);
-  }, [habit, completions]);
+    let filtered = completions.filter((c) => c.habitId === habit.id);
+    // If viewing for a specific member, filter by their userId
+    if (member) {
+      filtered = filtered.filter((c) => c.userId === member.uid);
+    }
+    return filtered;
+  }, [habit, completions, member]);
 
   const status = useMemo(() => {
     if (!habit) return null;
@@ -81,6 +89,61 @@ export function HabitDetailModal({
     }
     return days;
   }, [habitCompletions]);
+
+  // Calculate member-specific streaks from their completions
+  const memberStats = useMemo(() => {
+    if (!member || habitCompletions.length === 0) {
+      return null;
+    }
+
+    // Sort completions by date descending
+    const sortedDates = [...new Set(habitCompletions.map(c => c.date))].sort().reverse();
+
+    // Calculate current streak (consecutive days ending today or yesterday)
+    let currentStreak = 0;
+    const today = getDateString(new Date());
+    const yesterday = getDateString(new Date(Date.now() - 86400000));
+
+    if (sortedDates.length > 0) {
+      const lastDate = sortedDates[0];
+      // Only count streak if last completion is today or yesterday
+      if (lastDate === today || lastDate === yesterday) {
+        currentStreak = 1;
+        const checkDate = new Date(lastDate);
+
+        for (let i = 1; i < sortedDates.length; i++) {
+          checkDate.setDate(checkDate.getDate() - 1);
+          const expectedDate = getDateString(checkDate);
+          if (sortedDates[i] === expectedDate) {
+            currentStreak++;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+
+    // Calculate best streak
+    let bestStreak = 0;
+    let tempStreak = 1;
+    const ascDates = [...sortedDates].reverse();
+
+    for (let i = 1; i < ascDates.length; i++) {
+      const prevDate = new Date(ascDates[i - 1]);
+      const currDate = new Date(ascDates[i]);
+      const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / 86400000);
+
+      if (diffDays === 1) {
+        tempStreak++;
+      } else {
+        bestStreak = Math.max(bestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    bestStreak = Math.max(bestStreak, tempStreak);
+
+    return { currentStreak, bestStreak };
+  }, [member, habitCompletions]);
 
   if (!habit) return null;
 
@@ -143,6 +206,11 @@ export function HabitDetailModal({
               )}
             </div>
             <h2 className="text-xl font-bold text-foreground">{habit.title}</h2>
+            {member && (
+              <p className="text-sm text-primary font-medium mt-0.5">
+                {member.displayName}&apos;s Progress
+              </p>
+            )}
             {habit.description && (
               <p className="text-sm text-muted-foreground mt-1">{habit.description}</p>
             )}
@@ -205,16 +273,20 @@ export function HabitDetailModal({
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats - use member-specific stats when viewing for a member */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-foreground/5 rounded-xl p-4 text-center">
             <Flame className="h-5 w-5 text-orange-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{habit.currentStreak}</p>
+            <p className="text-2xl font-bold text-foreground">
+              {memberStats?.currentStreak ?? habit.currentStreak}
+            </p>
             <p className="text-xs text-foreground/40">Current Streak</p>
           </div>
           <div className="bg-foreground/5 rounded-xl p-4 text-center">
             <Trophy className="h-5 w-5 text-amber-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{habit.bestStreak}</p>
+            <p className="text-2xl font-bold text-foreground">
+              {memberStats?.bestStreak ?? habit.bestStreak}
+            </p>
             <p className="text-xs text-foreground/40">Best Streak</p>
           </div>
           <div className="bg-foreground/5 rounded-xl p-4 text-center">

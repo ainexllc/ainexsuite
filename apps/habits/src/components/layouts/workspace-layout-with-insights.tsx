@@ -22,6 +22,8 @@ interface WorkspaceLayoutWithInsightsProps {
   onAiAssistantClick?: () => void;
   onSettingsClick?: () => void;
   notifications?: NotificationItem[];
+  onAcceptInvitation?: (invitationId: string, notificationId: string) => Promise<void>;
+  onDeclineInvitation?: (invitationId: string, notificationId: string) => Promise<void>;
   onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
 }
 
@@ -38,6 +40,8 @@ export function WorkspaceLayoutWithInsights({
   onAiAssistantClick,
   onSettingsClick,
   notifications = [],
+  onAcceptInvitation,
+  onDeclineInvitation,
   onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
   // Get insights data from the hook (requires SpacesProvider and HabitsProvider)
@@ -53,6 +57,8 @@ export function WorkspaceLayoutWithInsights({
       onAiAssistantClick={onAiAssistantClick}
       onSettingsClick={onSettingsClick}
       notifications={notifications}
+      onAcceptInvitation={onAcceptInvitation}
+      onDeclineInvitation={onDeclineInvitation}
       // AI Insights Pulldown - always pass sections (pulldown handles empty state)
       insightsSections={insights.sections}
       insightsTitle={insights.title}

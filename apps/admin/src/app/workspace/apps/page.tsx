@@ -138,8 +138,8 @@ export default function AppsManagement() {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
-          <p className="text-muted-foreground text-sm">Loading apps...</p>
+          <Loader2 className="h-8 w-8 text-zinc-400 dark:text-zinc-500 animate-spin" />
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm">Loading apps...</p>
         </div>
       </div>
     );
@@ -149,17 +149,21 @@ export default function AppsManagement() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <LayoutGrid className="h-6 w-6 text-indigo-400" />
-            Apps Configuration
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Manage theme colors and branding for all suite applications.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-500/20">
+            <LayoutGrid className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              Apps Configuration
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Manage theme colors and branding
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 rounded-full bg-surface-elevated/50 border border-white/5 text-xs font-medium text-muted-foreground flex items-center gap-2">
+          <div className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {apps.length} Apps Active
           </div>
@@ -168,14 +172,14 @@ export default function AppsManagement() {
 
       {/* Alerts */}
       {error && (
-        <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3 text-sm font-medium">
+        <div className="p-4 rounded-xl bg-red-100 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 flex items-center gap-3 text-sm font-medium">
           <AlertCircle className="h-4 w-4" />
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-3 text-sm font-medium">
+        <div className="p-4 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 flex items-center gap-3 text-sm font-medium">
           <CheckCircle2 className="h-4 w-4" />
           {success}
         </div>
@@ -186,10 +190,10 @@ export default function AppsManagement() {
         {apps.map((app) => (
           <div
             key={app.id}
-            className="glass-card rounded-xl overflow-hidden flex flex-col"
+            className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md"
           >
             {/* Preview Strip */}
-            <div 
+            <div
               className="h-2 w-full"
               style={{ background: `linear-gradient(to right, ${app.primary}, ${app.secondary})` }}
             />
@@ -197,16 +201,16 @@ export default function AppsManagement() {
             <div className="p-5 flex-1 flex flex-col">
               <div className="flex items-center gap-3 mb-6">
                 <div
-                  className="w-10 h-10 rounded-lg shadow-inner flex-shrink-0"
+                  className="w-10 h-10 rounded-xl shadow-sm flex-shrink-0"
                   style={{
                     background: `linear-gradient(135deg, ${app.primary} 0%, ${app.secondary} 100%)`,
                   }}
                 />
                 <div>
-                  <h3 className="font-semibold text-white text-lg leading-tight">
+                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-lg leading-tight">
                     {app.name}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">ID: {app.id}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">ID: {app.id}</p>
                 </div>
               </div>
 
@@ -214,21 +218,21 @@ export default function AppsManagement() {
               <div className="space-y-3 flex-1">
                 {['primary', 'secondary'].map((field) => (
                   <div key={field} className="relative">
-                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-1.5 block">
+                    <label className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold mb-1.5 block">
                       {field}
                     </label>
-                    <div className="flex items-center gap-2 p-2 bg-black/20 border border-white/5 rounded-lg focus-within:border-white/20 transition-colors">
+                    <div className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus-within:border-zinc-400 dark:focus-within:border-zinc-600 transition-colors">
                       <div
-                        className="w-6 h-6 rounded border border-white/10 shrink-0"
+                        className="w-6 h-6 rounded-lg border border-zinc-200 dark:border-zinc-600 shrink-0"
                         style={{ backgroundColor: app[field as keyof AppConfig] as string }}
                       />
                       <input
                         type="text"
                         value={app[field as keyof AppConfig] as string}
                         onChange={(e) => handleColorChange(app.id, field as 'primary' | 'secondary', e.target.value)}
-                        className="flex-1 bg-transparent text-sm text-foreground font-mono focus:outline-none"
+                        className="flex-1 bg-transparent text-sm text-zinc-900 dark:text-zinc-100 font-mono focus:outline-none"
                       />
-                      <div className="relative w-6 h-6 overflow-hidden rounded cursor-pointer">
+                      <div className="relative w-6 h-6 overflow-hidden rounded-lg cursor-pointer">
                         <input
                           type="color"
                           value={app[field as keyof AppConfig] as string}
@@ -242,10 +246,10 @@ export default function AppsManagement() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2 pt-5 mt-2 border-t border-white/5">
+              <div className="flex gap-2 pt-5 mt-2 border-t border-zinc-200 dark:border-zinc-800">
                 <button
                   onClick={() => { setShowAIModal(app.id); setAiDescription(''); setAiMood(''); }}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-foreground/90 hover:text-white rounded-lg transition-colors text-xs font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition-all duration-200 text-xs font-medium"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   AI Gen
@@ -253,7 +257,7 @@ export default function AppsManagement() {
                 <button
                   onClick={() => handleSave(app)}
                   disabled={saving === app.id}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-black hover:bg-white/90 rounded-lg transition-colors disabled:opacity-50 text-xs font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-xl transition-all duration-200 disabled:opacity-50 text-xs font-medium"
                 >
                   {saving === app.id ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -270,69 +274,69 @@ export default function AppsManagement() {
 
       {/* AI Modal */}
       {showAIModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glass-panel rounded-2xl max-w-md w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                  <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
                     <Sparkles className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">AI Palette Generator</h3>
-                    <p className="text-xs text-muted-foreground">Generate themes using AI</p>
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">AI Palette Generator</h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Generate themes using AI</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAIModal(null)}
-                  className="p-2 text-muted-foreground hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                  className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all duration-200"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="space-y-4">
-                <div className="p-3 bg-surface-elevated/50 rounded-lg border border-white/5 flex items-center gap-3">
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 flex items-center gap-3">
                   <div
-                    className="w-8 h-8 rounded-md shadow-sm"
+                    className="w-8 h-8 rounded-lg shadow-sm"
                     style={{
                       background: `linear-gradient(135deg, ${apps.find(a => a.id === showAIModal)?.primary}, ${apps.find(a => a.id === showAIModal)?.secondary})`
                     }}
                   />
                   <div>
-                    <span className="text-xs text-muted-foreground block">Target App</span>
-                    <span className="text-sm font-medium text-white">
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Target App</span>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                       {apps.find(a => a.id === showAIModal)?.name}
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Context / Description</label>
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5 block">Context / Description</label>
                   <input
                     type="text"
                     value={aiDescription}
                     onChange={(e) => setAiDescription(e.target.value)}
                     placeholder="e.g., Modern analytics dashboard for finance"
-                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
+                    className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Visual Mood</label>
+                  <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5 block">Visual Mood</label>
                   <input
                     type="text"
                     value={aiMood}
                     onChange={(e) => setAiMood(e.target.value)}
                     placeholder="e.g., Trustworthy, Energetic, Calm"
-                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
+                    className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
                   />
                 </div>
 
                 <div className="pt-2 flex gap-3">
                   <button
                     onClick={() => setShowAIModal(null)}
-                    className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-white rounded-lg border border-white/5 transition-colors text-sm font-medium"
+                    className="flex-1 px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition-all duration-200 text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -342,7 +346,7 @@ export default function AppsManagement() {
                       if (app) handleGenerateColors(app);
                     }}
                     disabled={generatingColors !== null}
-                    className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium shadow-lg shadow-indigo-500/20"
+                    className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                   >
                     {generatingColors ? (
                       <>

@@ -15,6 +15,7 @@ import {
   UserPlus,
   UserCheck,
   Users,
+  MessageSquare,
 } from 'lucide-react';
 import type { NotificationItem, NotificationType } from '@ainexsuite/types';
 import { InvitationNotificationItem } from '../notifications/invitation-notification-item';
@@ -61,6 +62,7 @@ const NOTIFICATION_ICONS: Record<NotificationType, React.ComponentType<{ classNa
   space_invite: UserPlus,
   space_accepted: UserCheck,
   space_joined: Users,
+  feedback: MessageSquare,
 };
 
 const NOTIFICATION_COLORS: Record<NotificationType, string> = {
@@ -74,6 +76,7 @@ const NOTIFICATION_COLORS: Record<NotificationType, string> = {
   space_invite: 'text-violet-500',
   space_accepted: 'text-emerald-500',
   space_joined: 'text-teal-500',
+  feedback: 'text-orange-500',
 };
 
 function formatTimestamp(timestamp: number): string {

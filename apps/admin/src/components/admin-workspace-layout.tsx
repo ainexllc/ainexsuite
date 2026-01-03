@@ -5,12 +5,14 @@
  * Same hamburger menu slide-in as all other apps in the suite
  */
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@ainexsuite/auth';
 import { WorkspaceLayout, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { db } from '@ainexsuite/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { useFeedbackNotifications } from '@/hooks/use-feedback-notifications';
 
 interface AdminWorkspaceLayoutProps {
   children: ReactNode;
@@ -20,6 +22,15 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
   const { user, loading, ssoInProgress, bootstrapStatus, updatePreferences } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
+  const router = useRouter();
+
+  // Feedback notifications hook
+  const {
+    notifications,
+    markAsRead,
+    markAllAsRead,
+    clearAll,
+  } = useFeedbackNotifications();
 
   // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
@@ -80,6 +91,17 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
     }
   };
 
+  // Handle notification click - navigate to feedback page and mark as read
+  const handleNotificationClick = useCallback((id: string) => {
+    markAsRead(id);
+    router.push('/workspace/feedback');
+  }, [markAsRead, router]);
+
+  // Handle view all notifications - navigate to feedback page
+  const handleViewAllNotifications = useCallback(() => {
+    router.push('/workspace/feedback');
+  }, [router]);
+
   // Loading state
   if (loading || ssoInProgress || bootstrapStatus === 'running' || checkingRole) {
     return (
@@ -138,6 +160,12 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
       appColor="#71717a"
       showBackground={true}
       onUpdatePreferences={updatePreferences}
+      notifications={notifications}
+      onNotificationClick={handleNotificationClick}
+      onMarkAsRead={markAsRead}
+      onMarkAllRead={markAllAsRead}
+      onClearAll={clearAll}
+      onViewAllNotifications={handleViewAllNotifications}
     >
       {children}
     </WorkspaceLayout>

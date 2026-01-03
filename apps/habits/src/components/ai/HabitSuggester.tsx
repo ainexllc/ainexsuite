@@ -243,13 +243,19 @@ Avoid suggesting habits that are too similar to these existing habits: ${existin
   const addSuggestedHabit = async (suggestion: SuggestedHabit) => {
     if (!user || !currentSpace) return;
 
+    // For team spaces, assign to all members by default
+    // For personal space, only assign to the current user
+    const assigneeIds = currentSpace.type !== 'personal' && currentSpace.memberUids?.length > 0
+      ? currentSpace.memberUids
+      : [user.uid];
+
     const newHabit: Habit = {
       id: `habit_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       spaceId: currentSpace.id,
       title: suggestion.title,
       description: suggestion.description,
       schedule: suggestion.schedule,
-      assigneeIds: [user.uid],
+      assigneeIds,
       currentStreak: 0,
       bestStreak: 0,
       isFrozen: false,

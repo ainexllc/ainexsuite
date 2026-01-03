@@ -213,18 +213,8 @@ export function useWorkspaceInsights(
     });
     const result = sorted.slice(0, RECENT_COUNT);
 
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Journal Insights] Entry counts:', {
-        total: entries.length,
-        nonArchived: nonArchived.length,
-        recentForInsights: result.length,
-        spaceId: currentSpaceId,
-      });
-    }
-
     return result;
-  }, [entries, currentSpaceId]);
+  }, [entries]);
 
   // Config for the shared hook
   const config: WorkspaceInsightsConfig<JournalEntry, JourneyInsightData> =

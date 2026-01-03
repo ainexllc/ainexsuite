@@ -83,7 +83,10 @@ export async function GET(request: NextRequest) {
             if (userData?.displayName) {
               displayName = userData.displayName;
             }
-            if (userData?.photoURL) {
+            // Prioritize custom avatar (AI-generated/uploaded) over Google photo
+            if (userData?.customPhotoURL) {
+              photoURL = userData.customPhotoURL;
+            } else if (userData?.photoURL) {
               photoURL = userData.photoURL;
             }
             if (userData?.preferences) {
@@ -132,7 +135,7 @@ export async function GET(request: NextRequest) {
           uid: decodedClaims.uid,
           email: decodedClaims.email,
           displayName: userData.displayName || decodedClaims.name,
-          photoURL: userData.photoURL || decodedClaims.picture,
+          photoURL: userData.customPhotoURL || userData.photoURL || decodedClaims.picture,
           preferences: userData.preferences,
         } : {
           uid: decodedClaims.uid,

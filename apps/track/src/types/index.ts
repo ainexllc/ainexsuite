@@ -1,5 +1,6 @@
 export type BillingCycle = 'monthly' | 'yearly' | 'weekly';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'paused';
+export type SubscriptionColor = 'default' | 'blue' | 'green' | 'red' | 'yellow' | 'purple' | 'pink' | 'indigo' | 'cyan' | 'orange';
 
 export interface SubscriptionItem {
   id: string;
@@ -14,8 +15,27 @@ export interface SubscriptionItem {
   status: SubscriptionStatus;
   description?: string;
   userId: string;
+  spaceId?: string;
   createdAt: string;
   updatedAt: string;
+  
+  // Standardized fields
+  color: SubscriptionColor;
+  labelIds: string[];
+  pinned: boolean;
+  archived: boolean;
 }
 
-export type ViewType = 'list' | 'calendar' | 'analytics';
+export type ViewType = 'list' | 'grid' | 'calendar' | 'analytics';
+
+export type SortField = 'cost' | 'name' | 'nextPaymentDate' | 'createdAt';
+export type SortOrder = 'asc' | 'desc';
+
+export interface SubscriptionFilter {
+  category?: string;
+  billingCycle?: BillingCycle;
+  minCost?: number;
+  maxCost?: number;
+  status?: SubscriptionStatus;
+  labelIds?: string[];
+}

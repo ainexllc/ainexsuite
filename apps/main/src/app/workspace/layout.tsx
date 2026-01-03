@@ -105,7 +105,6 @@ export default function WorkspaceRootLayout({
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
         onAiAssistantClick={handleAiAssistantClick}
-        notifications={[]}
         onUpdatePreferences={updatePreferences}
       >
         {children}

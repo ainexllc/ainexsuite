@@ -13,6 +13,7 @@ interface FamilyHabitsGridProps {
   onComplete: (habitId: string, memberId: string) => void;
   onUndoComplete: (habitId: string, memberId: string) => void;
   currentUserId: string;
+  onHabitClick?: (habitId: string, memberId: string) => void;
 }
 
 export function FamilyHabitsGrid({
@@ -22,6 +23,7 @@ export function FamilyHabitsGrid({
   onComplete,
   onUndoComplete,
   currentUserId: _currentUserId,
+  onHabitClick,
 }: FamilyHabitsGridProps) {
   const today = getTodayDateString();
 
@@ -111,51 +113,81 @@ export function FamilyHabitsGrid({
                   : 'bg-white/5 border-white/10'
               )}
             >
-              {/* Member Header */}
+              {/* Member Header with Banner Background */}
               <div
                 className={cn(
-                  'p-3 text-center border-b',
+                  'relative text-center border-b overflow-hidden',
+                  member.photoURL ? 'py-6 px-3' : 'p-3',
                   allDone ? 'border-emerald-500/20' : 'border-white/10'
                 )}
               >
-                {/* Avatar */}
-                <div
-                  className={cn(
-                    'h-12 w-12 rounded-full mx-auto flex items-center justify-center text-lg font-bold',
-                    allDone
-                      ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white'
-                      : 'bg-gradient-to-br from-gray-700 to-gray-600 text-white'
+                {/* Banner Background Image */}
+                {member.photoURL && (
+                  <>
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${member.photoURL})` }}
+                    />
+                    {/* Dark gradient overlay for text readability */}
+                    <div className={cn(
+                      'absolute inset-0',
+                      allDone
+                        ? 'bg-gradient-to-b from-emerald-900/70 via-emerald-900/80 to-emerald-900/90'
+                        : 'bg-gradient-to-b from-black/50 via-black/60 to-black/70'
+                    )} />
+                  </>
+                )}
+
+                {/* Content (positioned above background) */}
+                <div className="relative z-10">
+                  {/* Avatar - only show if no banner image */}
+                  {!member.photoURL && (
+                    <div
+                      className={cn(
+                        'h-12 w-12 rounded-full mx-auto flex items-center justify-center text-lg font-bold shadow-lg',
+                        allDone
+                          ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white'
+                          : 'bg-gradient-to-br from-gray-700 to-gray-600 text-white'
+                      )}
+                    >
+                      {getInitials(member.displayName)}
+                    </div>
                   )}
-                >
-                  {getInitials(member.displayName)}
+
+                  {/* Name */}
+                  <h3 className={cn(
+                    'text-sm font-semibold flex items-center justify-center gap-1',
+                    member.photoURL ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]' : 'text-white mt-2'
+                  )}>
+                    {member.displayName}
+                    {isChild ? (
+                      <Baby className="h-3 w-3 text-pink-400 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
+                    ) : (
+                      <User className="h-3 w-3 text-white/60 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
+                    )}
+                  </h3>
+
+                  {/* Progress */}
+                  <p
+                    className={cn(
+                      'text-xs mt-0.5',
+                      allDone
+                        ? 'text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
+                        : member.photoURL
+                          ? 'text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
+                          : 'text-white/50'
+                    )}
+                  >
+                    {allDone ? (
+                      <span className="flex items-center justify-center gap-1">
+                        <PartyPopper className="h-3 w-3" />
+                        All done!
+                      </span>
+                    ) : (
+                      `${completedCount}/${assignedCount}`
+                    )}
+                  </p>
                 </div>
-
-                {/* Name */}
-                <h3 className="text-sm font-semibold text-white mt-2 flex items-center justify-center gap-1">
-                  {member.displayName}
-                  {isChild ? (
-                    <Baby className="h-3 w-3 text-pink-400" />
-                  ) : (
-                    <User className="h-3 w-3 text-white/40" />
-                  )}
-                </h3>
-
-                {/* Progress */}
-                <p
-                  className={cn(
-                    'text-xs mt-0.5',
-                    allDone ? 'text-emerald-400' : 'text-white/50'
-                  )}
-                >
-                  {allDone ? (
-                    <span className="flex items-center justify-center gap-1">
-                      <PartyPopper className="h-3 w-3" />
-                      All done!
-                    </span>
-                  ) : (
-                    `${completedCount}/${assignedCount}`
-                  )}
-                </p>
               </div>
 
               {/* Habits List */}
@@ -168,38 +200,42 @@ export function FamilyHabitsGrid({
                   assignedHabits.map((habit) => {
                     const completed = isCompleted(habit.id, member.uid);
                     return (
-                      <button
+                      <div
                         key={habit.id}
-                        onClick={() => handleToggle(habit.id, member.uid)}
+                        onClick={() => onHabitClick?.(habit.id, member.uid)}
                         className={cn(
-                          'w-full flex items-center gap-2 p-2.5 rounded-xl text-left transition-all',
+                          'w-full flex items-center gap-2 p-2.5 rounded-xl text-left transition-all cursor-pointer',
                           completed
                             ? 'bg-emerald-500/20 border border-emerald-500/30'
                             : 'bg-white/5 border border-white/10 hover:bg-white/10'
                         )}
                       >
-                        {/* Checkbox */}
-                        <div
+                        {/* Checkbox - tap to toggle completion */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggle(habit.id, member.uid);
+                          }}
                           className={cn(
                             'h-5 w-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all',
                             completed
                               ? 'bg-emerald-500 text-white'
-                              : 'border-2 border-white/30'
+                              : 'border-2 border-white/30 hover:border-white/50'
                           )}
                         >
                           {completed && <Check className="h-3 w-3" />}
-                        </div>
+                        </button>
 
-                        {/* Habit title */}
+                        {/* Habit title - tap to open details */}
                         <span
                           className={cn(
-                            'text-xs font-medium truncate',
+                            'text-xs font-medium truncate flex-1',
                             completed ? 'text-emerald-300 line-through' : 'text-white'
                           )}
                         >
                           {habit.title}
                         </span>
-                      </button>
+                      </div>
                     );
                   })
                 )}

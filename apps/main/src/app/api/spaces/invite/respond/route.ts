@@ -14,10 +14,13 @@ import type { SpaceInvitation, Space, SpaceMember } from '@ainexsuite/types';
  *   invitationId: string;
  *   spaceCollection: string; // e.g., 'noteSpaces', 'journalSpaces'
  *   action: 'accept' | 'decline';
+ *   confirmReplacement?: boolean; // If true, delete user's existing space of same type
  * }
  *
  * Response:
  * { success: true, spaceId?: string }
+ * or
+ * { requiresConfirmation: true, existingSpaceId: string, existingSpaceName: string, spaceType: string }
  * or
  * { error: string }
  */
@@ -26,7 +29,7 @@ const INVITATIONS_COLLECTION = 'spaceInvitations';
 
 export async function POST(request: NextRequest) {
   try {
-    const { invitationId, spaceCollection, action } = await request.json();
+    const { invitationId, spaceCollection, action, confirmReplacement } = await request.json();
 
     // Validate required fields
     if (!invitationId || !spaceCollection || !action) {
@@ -165,6 +168,38 @@ export async function POST(request: NextRequest) {
         spaceId: invitation.spaceId,
         alreadyMember: true,
       });
+    }
+
+    // Check if user owns a space of the same type (excluding personal spaces)
+    // Personal spaces are unique per user, so we don't need to check for duplicates
+    if (invitation.spaceType !== 'personal') {
+      const existingSpacesQuery = await adminDb
+        .collection(spaceCollection)
+        .where('ownerId', '==', userUid)
+        .where('type', '==', invitation.spaceType)
+        .limit(1)
+        .get();
+
+      if (!existingSpacesQuery.empty) {
+        const existingSpace = existingSpacesQuery.docs[0];
+        const existingSpaceData = existingSpace.data() as Space;
+
+        // If user hasn't confirmed replacement, ask for confirmation
+        if (!confirmReplacement) {
+          return NextResponse.json({
+            requiresConfirmation: true,
+            existingSpaceId: existingSpace.id,
+            existingSpaceName: existingSpaceData.name,
+            spaceType: invitation.spaceType,
+          });
+        }
+
+        // User confirmed - delete their existing space
+        // First, delete all data associated with the space (subcollections, etc.)
+        // For now, we'll just delete the space document
+        // Note: In production, you may want to batch delete subcollections
+        await adminDb.collection(spaceCollection).doc(existingSpace.id).delete();
+      }
     }
 
     // Create new member

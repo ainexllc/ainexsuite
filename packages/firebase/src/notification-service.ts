@@ -161,6 +161,41 @@ export async function markNotificationRead(
 }
 
 /**
+ * Update a notification's metadata (e.g., for invite response status)
+ */
+export async function updateNotificationMetadata(
+  userId: string,
+  notificationId: string,
+  metadataUpdates: Record<string, unknown>
+): Promise<void> {
+  const notificationRef = doc(db, 'users', userId, NOTIFICATIONS_COLLECTION, notificationId);
+
+  // Firestore dot notation allows updating nested fields
+  const updates: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(metadataUpdates)) {
+    updates[`metadata.${key}`] = value;
+  }
+
+  await updateDoc(notificationRef, updates);
+}
+
+/**
+ * Mark an invitation notification as responded (accepted or declined)
+ */
+export async function markInvitationResponded(
+  userId: string,
+  notificationId: string,
+  responseStatus: 'accepted' | 'declined'
+): Promise<void> {
+  const notificationRef = doc(db, 'users', userId, NOTIFICATIONS_COLLECTION, notificationId);
+  await updateDoc(notificationRef, {
+    read: true,
+    'metadata.responseStatus': responseStatus,
+    'metadata.respondedAt': Date.now(),
+  });
+}
+
+/**
  * Mark all notifications as read for a user
  */
 export async function markAllNotificationsRead(userId: string): Promise<void> {

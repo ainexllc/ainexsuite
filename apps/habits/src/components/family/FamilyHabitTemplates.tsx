@@ -88,6 +88,11 @@ export function FamilyHabitTemplates({
     setIsAdding(template.id);
 
     try {
+      // For family/team spaces, assign to all members by default
+      const assigneeIds = currentSpace.type !== 'personal' && currentSpace.memberUids?.length > 0
+        ? currentSpace.memberUids
+        : [user.uid];
+
       const habit: Habit = {
         id: `habit_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
         spaceId: currentSpace.id,
@@ -98,7 +103,7 @@ export function FamilyHabitTemplates({
           daysOfWeek: template.schedule.daysOfWeek,
           timesPerWeek: template.schedule.timesPerWeek,
         } as Schedule,
-        assigneeIds: [user.uid], // Start with creator, they can assign others later
+        assigneeIds,
         targetValue: template.targetValue,
         targetUnit: template.targetUnit,
         category: template.category,

@@ -22,6 +22,8 @@ import { TimelineView } from '@/components/timeline-view';
 import { PhotoEditor } from '@/components/photo-editor';
 import { PhotoDetail } from '@/components/photo-detail';
 import { MomentComposer } from '@/components/moment-composer';
+import { PlacesView } from '@/components/places-view';
+import { MomentsInsights } from '@/components/moments-insights';
 import { useMomentsStore } from '@/lib/store';
 import { useSpaces } from '@/components/providers/spaces-provider';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
@@ -39,14 +41,16 @@ import {
   Gamepad2,
   Play,
   Book,
+  MapPin,
 } from 'lucide-react';
 
-type ViewType = 'timeline' | 'masonry' | 'calendar';
+type ViewType = 'timeline' | 'masonry' | 'calendar' | 'places';
 
 const VIEW_OPTIONS: ViewOption<ViewType>[] = [
   { value: 'timeline', icon: List, label: 'Timeline view' },
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
   { value: 'calendar', icon: Calendar, label: 'Calendar view' },
+  { value: 'places', icon: MapPin, label: 'Places view' },
 ];
 
 const SORT_OPTIONS: SortOption[] = [
@@ -68,12 +72,13 @@ interface MomentsFilters {
   tags?: string[];
   moods?: string[];
   people?: string[];
+  location?: string;
   dateRange?: { start: string | null; end: string | null };
   datePreset?: string;
 }
 
 export default function MomentsWorkspacePage() {
-  const { user } = useWorkspaceAuth();
+  const { user, isReady } = useWorkspaceAuth();
 
   // Use shared SpacesProvider for spaces (auto-creates default space)
   const { spaces, currentSpaceId, currentSpace, createSpace, updateSpace, deleteSpace } = useSpaces();
@@ -107,10 +112,10 @@ export default function MomentsWorkspacePage() {
 
   // Fetch moments when space changes
   useEffect(() => {
-    if (user?.uid && currentSpaceId) {
+    if (isReady && user?.uid && currentSpaceId) {
       fetchMoments(user.uid, currentSpaceId);
     }
-  }, [currentSpaceId, fetchMoments, user?.uid]);
+  }, [currentSpaceId, fetchMoments, user?.uid, isReady]);
 
   const handleUpdate = async () => {
     if (user?.uid && currentSpaceId) {
@@ -167,6 +172,11 @@ export default function MomentsWorkspacePage() {
       result = result.filter((m) =>
         filters.people!.some((person) => m.people?.includes(person))
       );
+    }
+
+    // Filter by location
+    if (filters.location) {
+      result = result.filter((m) => m.location === filters.location);
     }
 
     // Filter by date range
@@ -258,6 +268,15 @@ export default function MomentsWorkspacePage() {
       });
     }
 
+    // Location chip
+    if (filters.location) {
+      chips.push({
+        id: 'location_filter',
+        label: filters.location,
+        type: 'space' as FilterChipType,
+      });
+    }
+
     // Date range chip
     if (filters.dateRange?.start || filters.dateRange?.end) {
       const dateLabel =
@@ -283,6 +302,7 @@ export default function MomentsWorkspacePage() {
     if (filters.tags && filters.tags.length > 0) count++;
     if (filters.moods && filters.moods.length > 0) count++;
     if (filters.people && filters.people.length > 0) count++;
+    if (filters.location) count++;
     if (filters.dateRange?.start || filters.dateRange?.end) count++;
     return count;
   }, [filters]);
@@ -319,11 +339,15 @@ export default function MomentsWorkspacePage() {
           });
           break;
         case 'space':
-          // Remove person
-          setFilters({
-            ...filters,
-            people: filters.people?.filter((p) => p !== chipId) || [],
-          });
+          if (chipId === 'location_filter') {
+            setFilters({ ...filters, location: undefined });
+          } else {
+            // Remove person
+            setFilters({
+              ...filters,
+              people: filters.people?.filter((p) => p !== chipId) || [],
+            });
+          }
           break;
         case 'date':
           setFilters({
@@ -385,6 +409,7 @@ export default function MomentsWorkspacePage() {
     <>
       <WorkspacePageLayout
         maxWidth="default"
+        insightsBanner={<MomentsInsights moments={moments} />}
         composer={
           <MomentComposer
             onMomentCreated={handleUpdate}
@@ -502,6 +527,18 @@ export default function MomentsWorkspacePage() {
             <ActivityCalendar
               activityData={activityData}
               size="large"
+            />
+          ) : view === 'places' ? (
+            <PlacesView
+              moments={filteredMoments}
+              onSelectLocation={(location) => {
+                setFilters({ ...filters, location });
+                setView('masonry');
+              }}
+              onPlayStory={(location) => {
+                setFilters({ ...filters, location });
+                setShowSlideshow(true);
+              }}
             />
           ) : (
             <TimelineView

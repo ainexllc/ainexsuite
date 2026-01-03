@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, Snowflake, Save, Trash2, Check, Flame, X, Target, Link2 } from 'lucide-react';
+import { Calendar, Users, Snowflake, Save, Trash2, Check, Flame, X, Target, Link2, FolderOpen } from 'lucide-react';
 import { DateSuggestions } from '@ainexsuite/date-detection';
 import { useGrowStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
@@ -27,8 +27,8 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
     deleteHabit,
     habits
   } = useGrowStore();
-  const { currentSpace } = useSpaces();
-  
+  const { spaces, currentSpace } = useSpaces();
+
   // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -38,10 +38,12 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
   const [isFrozen, setIsFrozen] = useState(false);
   const [wager, setWager] = useState<Wager | undefined>(undefined);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedSpaceId, setSelectedSpaceId] = useState(currentSpace?.id || 'personal');
+  const [showSpaceSelector, setShowSpaceSelector] = useState(false);
   const [targetValue, setTargetValue] = useState<number | undefined>(undefined);
   const [targetUnit, setTargetUnit] = useState<string>('mins');
   const [chainedTo, setChainedTo] = useState<string | undefined>(undefined);
-  
+
   // Load data if editing
   useEffect(() => {
     if (editHabitId && isOpen) {
@@ -57,10 +59,14 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         setTargetValue(habit.targetValue);
         setTargetUnit(habit.targetUnit || 'mins');
         setChainedTo(habit.chainedTo);
+        setSelectedSpaceId(habit.spaceId || 'personal');
       }
     } else if (isOpen && currentSpace) {
-      // Default to assigning to self
-      setAssignees([currentSpace.members[0].uid]);
+      // For team spaces, default to all members; for personal space, just the user
+      const defaultAssignees = currentSpace.type !== 'personal' && currentSpace.memberUids?.length > 0
+        ? currentSpace.memberUids
+        : [currentSpace.members[0].uid];
+      setAssignees(defaultAssignees);
       setSchedule(DEFAULT_SCHEDULE);
       setTitle('');
       setDescription('');
@@ -91,7 +97,10 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
     };
 
     if (editHabitId) {
-      updateHabit(editHabitId, habitData);
+      updateHabit(editHabitId, {
+        ...habitData,
+        spaceId: selectedSpaceId === 'personal' ? undefined : selectedSpaceId,
+      });
       // Update the "chainedFrom" field on the linked habit
       if (chainedTo) {
         updateHabit(chainedTo, { chainedFrom: editHabitId });
@@ -143,24 +152,19 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
   const handleDelete = async () => {
     if (!editHabitId) return;
-    await deleteHabit(editHabitId);
-    setShowDeleteConfirm(false);
-    onClose();
+    try {
+      await deleteHabit(editHabitId);
+      setShowDeleteConfirm(false);
+      onClose();
+    } catch {
+      // Handle deletion error silently
+    }
   };
 
   if (!isOpen || !currentSpace || !user) return null;
 
   return (
     <React.Fragment>
-      <ConfirmationDialog
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDelete}
-        title="Delete Habit?"
-        description={`"${title}" and all its completion history will be permanently deleted. This action cannot be undone.`}
-        confirmText="Delete"
-        variant="danger"
-      />
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div className="w-full max-w-2xl bg-white dark:bg-[#1a1a1a] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
           {/* Header */}
@@ -294,11 +298,49 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
 
           {/* Assignees */}
           <div>
-            <label className="block text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
-              <Users className="h-4 w-4 text-zinc-500 dark:text-white/50" /> Assign To
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {currentSpace.members.map((member: Member) => (
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-2">
+                <Users className="h-4 w-4 text-zinc-500 dark:text-white/50" /> Assign To
+              </label>
+              {/* Select All / Clear All */}
+              {currentSpace.members.length > 1 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAssignees(currentSpace.members.map((m: Member) => m.uid))}
+                    className="text-xs font-medium px-2.5 py-1 rounded-lg transition-colors"
+                    style={{
+                      color: assignees.length === currentSpace.members.length ? primary : undefined,
+                      backgroundColor: assignees.length === currentSpace.members.length ? `${primary}15` : 'transparent'
+                    }}
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAssignees([])}
+                    className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors ${
+                      assignees.length === 0
+                        ? 'text-zinc-900 dark:text-white bg-zinc-100 dark:bg-white/10'
+                        : 'text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white/70'
+                    }`}
+                  >
+                    Clear All
+                  </button>
+                  <span className="text-xs text-zinc-400 dark:text-white/40 ml-1">
+                    ({assignees.length}/{currentSpace.members.length})
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Group members by age (adults first, then children) */}
+            {(() => {
+              const adults = currentSpace.members.filter((m: Member) => m.ageGroup !== 'child');
+              const children = currentSpace.members.filter((m: Member) => m.ageGroup === 'child');
+              const hasGroups = children.length > 0;
+
+              const MemberButton = ({ member }: { member: Member }) => (
                 <button
                   key={member.uid}
                   type="button"
@@ -330,8 +372,70 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
                   </span>
                   {assignees.includes(member.uid) && <Check className="h-4 w-4 flex-shrink-0" style={{ color: primary }} />}
                 </button>
-              ))}
-            </div>
+              );
+
+              return hasGroups ? (
+                <div className="space-y-4">
+                  {/* Adults Section */}
+                  {adults.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-zinc-400 dark:text-white/40 uppercase tracking-wider">Adults</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const adultIds = adults.map((m: Member) => m.uid);
+                            const allAdultsSelected = adultIds.every(id => assignees.includes(id));
+                            if (allAdultsSelected) {
+                              setAssignees(prev => prev.filter(id => !adultIds.includes(id)));
+                            } else {
+                              setAssignees(prev => [...new Set([...prev, ...adultIds])]);
+                            }
+                          }}
+                          className="text-[10px] text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white/70"
+                        >
+                          {adults.every((m: Member) => assignees.includes(m.uid)) ? '(deselect)' : '(select all)'}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {adults.map((member: Member) => <MemberButton key={member.uid} member={member} />)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Children Section */}
+                  {children.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-zinc-400 dark:text-white/40 uppercase tracking-wider">Children</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const childIds = children.map((m: Member) => m.uid);
+                            const allChildrenSelected = childIds.every(id => assignees.includes(id));
+                            if (allChildrenSelected) {
+                              setAssignees(prev => prev.filter(id => !childIds.includes(id)));
+                            } else {
+                              setAssignees(prev => [...new Set([...prev, ...childIds])]);
+                            }
+                          }}
+                          className="text-[10px] text-zinc-500 dark:text-white/50 hover:text-zinc-700 dark:hover:text-white/70"
+                        >
+                          {children.every((m: Member) => assignees.includes(m.uid)) ? '(deselect)' : '(select all)'}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {children.map((member: Member) => <MemberButton key={member.uid} member={member} />)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {currentSpace.members.map((member: Member) => <MemberButton key={member.uid} member={member} />)}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Gamification (Couples Only) */}
@@ -511,6 +615,54 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
             </select>
           </div>
 
+          {/* Space Selector (only when editing and multiple spaces exist) */}
+          {editHabitId && spaces.length > 1 && (
+            <div className="bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-4 rounded-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-zinc-200 dark:bg-white/10 flex items-center justify-center text-zinc-500 dark:text-white/50">
+                    <FolderOpen className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-zinc-900 dark:text-white">Space</h4>
+                    <p className="text-xs text-zinc-500 dark:text-white/50">Move habit to a different space</p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowSpaceSelector(!showSpaceSelector)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-white/70 hover:bg-zinc-300 dark:hover:bg-white/15 transition-colors"
+                  >
+                    {spaces.find(s => s.id === selectedSpaceId)?.name || 'My Habits'}
+                  </button>
+                  {showSpaceSelector && (
+                    <div className="absolute top-12 right-0 z-30 w-48 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shadow-xl py-1">
+                      {[{ id: 'personal', name: 'My Habits' }, ...spaces.filter(s => s.id !== 'personal')].map((space) => (
+                        <button
+                          key={space.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSpaceId(space.id);
+                            setShowSpaceSelector(false);
+                          }}
+                          className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                            selectedSpaceId === space.id
+                              ? 'text-white'
+                              : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          }`}
+                          style={selectedSpaceId === space.id ? { backgroundColor: primary } : undefined}
+                        >
+                          {space.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Freezer Toggle */}
           <div className="bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-4 rounded-2xl flex items-center justify-between">
             <div className="flex gap-3">
@@ -564,6 +716,17 @@ export function HabitEditor({ isOpen, onClose, editHabitId }: HabitEditorProps) 
         </div>
       </div>
     </div>
+
+    {/* Delete Confirmation - rendered after main modal so it appears on top */}
+    <ConfirmationDialog
+      isOpen={showDeleteConfirm}
+      onClose={() => setShowDeleteConfirm(false)}
+      onConfirm={handleDelete}
+      title="Delete Habit?"
+      description={`"${title}" and all its completion history will be permanently deleted. This action cannot be undone.`}
+      confirmText="Delete"
+      variant="danger"
+    />
     </React.Fragment>
   );
 }

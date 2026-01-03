@@ -11,6 +11,7 @@ import {
   onSnapshot,
   orderBy,
   limit,
+  writeBatch,
   type Query,
   type DocumentReference,
   type DocumentData,
@@ -127,6 +128,52 @@ export async function updateHabitInDb(habitId: string, updates: Partial<Habit>) 
 export async function deleteHabitInDb(habitId: string) {
   const habitRef = doc(db, 'habits', habitId);
   await deleteDoc(habitRef);
+}
+
+// --- Bulk Habit Operations ---
+
+export async function bulkDeleteHabitsInDb(habitIds: string[]): Promise<void> {
+  if (habitIds.length === 0) return;
+
+  // Firestore batch limit is 500 operations per batch
+  const batchSize = 500;
+  const batches: string[][] = [];
+
+  for (let i = 0; i < habitIds.length; i += batchSize) {
+    batches.push(habitIds.slice(i, i + batchSize));
+  }
+
+  for (const batchIds of batches) {
+    const batch = writeBatch(db);
+    for (const habitId of batchIds) {
+      const habitRef = doc(db, 'habits', habitId);
+      batch.delete(habitRef);
+    }
+    await batch.commit();
+  }
+}
+
+export async function bulkUpdateHabitsInDb(habitIds: string[], updates: Partial<Habit>): Promise<void> {
+  if (habitIds.length === 0) return;
+
+  const cleanUpdates = removeUndefined(updates);
+
+  // Firestore batch limit is 500 operations per batch
+  const batchSize = 500;
+  const batches: string[][] = [];
+
+  for (let i = 0; i < habitIds.length; i += batchSize) {
+    batches.push(habitIds.slice(i, i + batchSize));
+  }
+
+  for (const batchIds of batches) {
+    const batch = writeBatch(db);
+    for (const habitId of batchIds) {
+      const habitRef = doc(db, 'habits', habitId);
+      batch.update(habitRef, cleanUpdates);
+    }
+    await batch.commit();
+  }
 }
 
 export function subscribeToSpaceHabits(spaceId: string, callback: (habits: Habit[]) => void, userId?: string) {

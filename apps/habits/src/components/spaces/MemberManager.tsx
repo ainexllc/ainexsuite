@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, Crown, UserMinus, UserPlus, X, Baby, User, Monitor, Link, Copy, Check, RefreshCw, Send, Loader2 } from 'lucide-react';
+import { Mail, Crown, UserMinus, UserPlus, X, Baby, User, Monitor, Link, Copy, Check, RefreshCw, Send, Loader2, Sparkles } from 'lucide-react';
 import { useSpaces } from '../providers/spaces-provider';
 import { useAuth } from '@ainexsuite/auth';
+import { uploadMemberAvatar, deleteProfileImage } from '@ainexsuite/firebase';
 import { Member, MemberAgeGroup, HabitCreationPolicy } from '../../types/models';
 import { isSpaceAdmin } from '../../lib/permissions';
 import { cn } from '../../lib/utils';
+import { MemberProfileEditor } from './MemberProfileEditor';
 
 interface MemberManagerProps {
   isOpen: boolean;
@@ -18,7 +20,9 @@ type InviteTab = 'quick' | 'email';
 export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
   const { user } = useAuth();
   const { currentSpace, updateSpace } = useSpaces();
-  
+
+  // Profile editor state
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
 
   // Quick add state
   const [quickName, setQuickName] = useState('');
@@ -62,7 +66,7 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
     setQuickAgeGroup('adult');
   };
 
-  // Email invite (sends real invite)
+  // Email invite (sends real invite using centralized invite system)
   const handleEmailInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
@@ -72,17 +76,15 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
     setInviteSuccess(false);
 
     try {
-      const response = await fetch('/api/invites/send', {
+      // Use local API route (avoids CORS issues, uses same invite logic as main app)
+      const response = await fetch('/api/spaces/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          email: inviteEmail.trim(),
           spaceId: currentSpace.id,
-          spaceName: currentSpace.name,
-          spaceType: currentSpace.type,
-          inviteeEmail: inviteEmail.trim(),
-          inviterName: user.displayName || 'Someone',
-          inviterId: user.uid,
-          ageGroup: isFamilySpace ? inviteAgeGroup : undefined,
+          spaceCollection: 'spaces',
+          role: 'member',
         }),
       });
 
@@ -162,6 +164,40 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  // Save member's profile photo (uploads to Firebase Storage, deletes old one)
+  const handleSaveMemberPhoto = async (imageData: string) => {
+    if (!editingMember) return;
+
+    // Delete old image if exists
+    if (editingMember.photoStoragePath) {
+      deleteProfileImage(editingMember.photoStoragePath).catch(() => {
+        // Ignore cleanup errors
+      });
+    }
+
+    // Upload new image to Firebase Storage
+    const uploadResult = await uploadMemberAvatar(
+      currentSpace.id,
+      editingMember.uid,
+      imageData
+    );
+
+    if (!uploadResult.success || !uploadResult.downloadURL) {
+      console.error('Failed to upload member avatar:', uploadResult.error);
+      return;
+    }
+
+    // Save URL and storage path for future cleanup
+    updateSpace(currentSpace.id, {
+      members: currentSpace.members.map((m: Member) =>
+        m.uid === editingMember.uid
+          ? { ...m, photoURL: uploadResult.downloadURL, photoStoragePath: uploadResult.storagePath }
+          : m
+      ),
+    });
+    setEditingMember(null);
   };
 
   return (
@@ -365,8 +401,30 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
                   className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-xs font-bold text-white">
-                      {member.displayName.slice(0, 2).toUpperCase()}
+                    {/* Avatar with edit button */}
+                    <div className="relative group">
+                      {member.photoURL ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={member.photoURL}
+                          alt={member.displayName}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center text-xs font-bold text-white">
+                          {member.displayName.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      {/* Edit avatar button overlay */}
+                      {canManage && (
+                        <button
+                          onClick={() => setEditingMember(member)}
+                          className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                          title="Edit avatar"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                        </button>
+                      )}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">{member.displayName}</p>
@@ -525,6 +583,16 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
           )}
         </div>
       </div>
+
+      {/* Member Profile Editor Modal */}
+      {editingMember && (
+        <MemberProfileEditor
+          member={editingMember}
+          isOpen={true}
+          onClose={() => setEditingMember(null)}
+          onSave={handleSaveMemberPhoto}
+        />
+      )}
     </div>
   );
 }

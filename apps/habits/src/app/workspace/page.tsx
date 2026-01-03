@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { Plus, Layout, Crown, Rocket, ChevronDown, Trophy } from 'lucide-react';
+import { Plus, Layout, Crown, Rocket, ChevronDown, Trophy, CheckSquare } from 'lucide-react';
 import type { SpaceType } from '@ainexsuite/types';
 
 // Core Components
@@ -12,6 +12,7 @@ import { MemberManager } from '@/components/spaces/MemberManager';
 import { HabitEditor } from '@/components/habits/HabitEditor';
 import { HabitComposer } from '@/components/habits/HabitComposer';
 import { HabitCard } from '@/components/habits/HabitCard';
+import { HabitDetailModal } from '@/components/habits/HabitDetailModal';
 import { SwipeableHabitCard } from '@/components/habits/SwipeableHabitCard';
 import { FamilyHabitsGrid } from '@/components/habits/FamilyHabitsGrid';
 import { HabitPacks } from '@/components/gamification/HabitPacks';
@@ -23,6 +24,13 @@ import { StreakDangerAlert } from '@/components/gamification/StreakDangerAlert';
 import { AchievementBadges } from '@/components/gamification/AchievementBadges';
 import { HabitSuggester } from '@/components/ai/HabitSuggester';
 import { BottomNav } from '@/components/mobile/BottomNav';
+
+// Bulk operations & filtering
+import { SelectionProvider, useHabitSelectionContext } from '@/components/providers/selection-provider';
+import { HabitsToolbar } from '@/components/habits/HabitsToolbar';
+import { BulkActionBar } from '@/components/habits/BulkActionBar';
+import { useHabitFilters } from '@/hooks/use-habit-filters';
+import { useFilteredHabits } from '@/hooks/use-filtered-habits';
 
 // Analytics Components
 import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
@@ -37,11 +45,34 @@ import { canCreateHabit } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
 export default function GrowWorkspacePage() {
+  return (
+    <SelectionProvider>
+      <GrowWorkspaceContent />
+    </SelectionProvider>
+  );
+}
+
+function GrowWorkspaceContent() {
   const { user } = useWorkspaceAuth();
   useSettings(); // Keep provider mounted
 
   // Spaces from context (createSpacesProvider)
   const { currentSpace, allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+
+  // Selection context for bulk operations
+  const selection = useHabitSelectionContext();
+
+  // Filtering state
+  const {
+    filters,
+    setSearchQuery,
+    toggleCategory,
+    toggleAssignee,
+    setStatus,
+    clearFilters,
+    hasActiveFilters,
+    activeFilterCount,
+  } = useHabitFilters();
 
   // Handler to open member manager for current space
   const handleManagePeople = useCallback(() => {
@@ -118,11 +149,25 @@ export default function GrowWorkspacePage() {
     removeCompletion,
     addReaction,
     removeReaction,
-    completions
+    completions,
+    deleteHabit,
+    updateHabit,
   } = useGrowStore();
 
-  const habits = currentSpace ? getSpaceHabits(currentSpace.id) : [];
+  const allHabits = currentSpace ? getSpaceHabits(currentSpace.id) : [];
   const quests = currentSpace ? getSpaceQuests(currentSpace.id) : [];
+
+  // Apply filters to habits
+  const habits = useFilteredHabits({
+    habits: allHabits,
+    filters,
+    completions,
+  });
+
+  // Handler for quick-assign from HabitCard
+  const handleQuickAssign = useCallback((habitId: string, assigneeIds: string[]) => {
+    useGrowStore.getState().updateHabit(habitId, { assigneeIds });
+  }, []);
 
   // Permission check for habit creation
   const createPermission = currentSpace && user
@@ -140,6 +185,12 @@ export default function GrowWorkspacePage() {
   const [showAISuggester, setShowAISuggester] = useState(false);
   const [showSpaceManagement, setShowSpaceManagement] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState<string | undefined>(undefined);
+  const [detailHabitId, setDetailHabitId] = useState<string | null>(null);
+  const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
+
+  // Find the habit and member for the detail modal
+  const detailHabit = detailHabitId ? allHabits.find(h => h.id === detailHabitId) || null : null;
+  const detailMember = detailMemberId ? currentSpace?.members.find(m => m.uid === detailMemberId) : null;
 
   // Collapsible section states
   const [questsExpanded, setQuestsExpanded] = useState(true);
@@ -375,14 +426,51 @@ export default function GrowWorkspacePage() {
 
           {/* Main Habits List */}
           <section className="space-y-3">
-            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-indigo-500/20">
-                <Layout className="h-3.5 w-3.5 text-indigo-400" />
-              </div>
-              Today&apos;s Focus
-            </h2>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-indigo-500/20">
+                  <Layout className="h-3.5 w-3.5 text-indigo-400" />
+                </div>
+                Today&apos;s Focus
+                {habits.length !== allHabits.length && (
+                  <span className="text-xs text-white/40">
+                    ({habits.length} of {allHabits.length})
+                  </span>
+                )}
+              </h2>
+              {/* Select Mode Toggle */}
+              {allHabits.length > 1 && (
+                <button
+                  onClick={() => selection.isSelectMode ? selection.exitSelectMode() : selection.enterSelectMode()}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                    selection.isSelectMode
+                      ? 'bg-indigo-500 text-white'
+                      : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
+                  )}
+                >
+                  <CheckSquare className="h-3.5 w-3.5" />
+                  {selection.isSelectMode ? 'Cancel' : 'Select'}
+                </button>
+              )}
+            </div>
 
-          {habits.length === 0 ? (
+            {/* Habits Toolbar - Search & Filters */}
+            {allHabits.length > 0 && (
+              <HabitsToolbar
+                filters={filters}
+                onSearchChange={setSearchQuery}
+                onCategoryToggle={toggleCategory}
+                onAssigneeToggle={toggleAssignee}
+                onStatusChange={setStatus}
+                onClearFilters={clearFilters}
+                hasActiveFilters={hasActiveFilters}
+                activeFilterCount={activeFilterCount}
+                members={currentSpace?.members || []}
+              />
+            )}
+
+          {allHabits.length === 0 ? (
             <EmptyState
               icon={Rocket}
               title="Ready to grow?"
@@ -392,6 +480,16 @@ export default function GrowWorkspacePage() {
                 onClick: () => setShowAISuggester(true),
               }}
             />
+          ) : habits.length === 0 && hasActiveFilters ? (
+            <div className="text-center py-12">
+              <p className="text-white/50 mb-2">No habits match your filters</p>
+              <button
+                onClick={clearFilters}
+                className="text-sm text-indigo-400 hover:text-indigo-300"
+              >
+                Clear all filters
+              </button>
+            </div>
           ) : isTeamSpace && currentSpace ? (
             /* Family/Team Grid View - show all members side by side */
             <FamilyHabitsGrid
@@ -401,6 +499,10 @@ export default function GrowWorkspacePage() {
               onComplete={handleCompleteForMember}
               onUndoComplete={handleUndoCompleteForMember}
               currentUserId={user?.uid || ''}
+              onHabitClick={(habitId, memberId) => {
+                setDetailHabitId(habitId);
+                setDetailMemberId(memberId);
+              }}
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -416,15 +518,15 @@ export default function GrowWorkspacePage() {
                   return (
                     <SwipeableHabitCard
                       key={habit.id}
-                      onSwipeRight={() => !isHabitCompleted && handleCompleteHabit(habit.id)}
-                      onSwipeLeft={() => handleEditHabit(habit.id)}
+                      onSwipeRight={() => !isHabitCompleted && !selection.isSelectMode && handleCompleteHabit(habit.id)}
+                      onSwipeLeft={() => !selection.isSelectMode && handleEditHabit(habit.id)}
                       isCompleted={isHabitCompleted}
-                      disabled={habit.isFrozen}
+                      disabled={habit.isFrozen || selection.isSelectMode}
                     >
                       <HabitCard
                         habit={habit}
                         completions={completions}
-                        allHabits={habits}
+                        allHabits={allHabits}
                         onComplete={handleCompleteHabit}
                         onUndoComplete={handleUndoComplete}
                         onEdit={handleEditHabit}
@@ -437,6 +539,12 @@ export default function GrowWorkspacePage() {
                         currentUserId={user?.uid}
                         onReact={handleReact}
                         onRemoveReaction={handleRemoveReaction}
+                        isSelectMode={selection.isSelectMode}
+                        isSelected={selection.selectedIds.has(habit.id)}
+                        onSelect={(id, e) => selection.handleSelect(id, e, habits.map(h => h.id))}
+                        members={currentSpace?.members || []}
+                        onAssign={handleQuickAssign}
+                        onCardClick={(id) => setDetailHabitId(id)}
                       />
                     </SwipeableHabitCard>
                   );
@@ -445,24 +553,24 @@ export default function GrowWorkspacePage() {
           )}
 
           {/* Not due today (collapsed section) - only for personal spaces */}
-          {!isTeamSpace && habits.filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due').length > 0 && (
+          {!isTeamSpace && allHabits.filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due').length > 0 && (
             <div className="pt-4 mt-2 border-t border-white/5">
               <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Not scheduled today</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {habits
+                {allHabits
                   .filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due')
                   .map((habit: Habit) => (
                     <SwipeableHabitCard
                       key={habit.id}
-                      onSwipeRight={() => handleCompleteHabit(habit.id)}
-                      onSwipeLeft={() => handleEditHabit(habit.id)}
+                      onSwipeRight={() => !selection.isSelectMode && handleCompleteHabit(habit.id)}
+                      onSwipeLeft={() => !selection.isSelectMode && handleEditHabit(habit.id)}
                       isCompleted={false}
-                      disabled={habit.isFrozen}
+                      disabled={habit.isFrozen || selection.isSelectMode}
                     >
                       <HabitCard
                         habit={habit}
                         completions={completions}
-                        allHabits={habits}
+                        allHabits={allHabits}
                         onComplete={handleCompleteHabit}
                         onUndoComplete={handleUndoComplete}
                         onEdit={handleEditHabit}
@@ -475,6 +583,12 @@ export default function GrowWorkspacePage() {
                         currentUserId={user?.uid}
                         onReact={handleReact}
                         onRemoveReaction={handleRemoveReaction}
+                        isSelectMode={selection.isSelectMode}
+                        isSelected={selection.selectedIds.has(habit.id)}
+                        onSelect={(id, e) => selection.handleSelect(id, e, allHabits.map(h => h.id))}
+                        members={currentSpace?.members || []}
+                        onAssign={handleQuickAssign}
+                        onCardClick={(id) => setDetailHabitId(id)}
                       />
                     </SwipeableHabitCard>
                   ))}
@@ -483,22 +597,22 @@ export default function GrowWorkspacePage() {
           )}
 
           {/* Frozen habits - only for personal spaces */}
-          {!isTeamSpace && habits.filter((habit: Habit) => habit.isFrozen).length > 0 && (
+          {!isTeamSpace && allHabits.filter((habit: Habit) => habit.isFrozen).length > 0 && (
             <div className="pt-4 mt-2 border-t border-white/5">
               <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Frozen</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {habits
+                {allHabits
                   .filter((habit: Habit) => habit.isFrozen)
                   .map((habit: Habit) => (
                     <SwipeableHabitCard
                       key={habit.id}
-                      onSwipeLeft={() => handleEditHabit(habit.id)}
+                      onSwipeLeft={() => !selection.isSelectMode && handleEditHabit(habit.id)}
                       disabled={true}
                     >
                       <HabitCard
                         habit={habit}
                         completions={completions}
-                        allHabits={habits}
+                        allHabits={allHabits}
                         onComplete={handleCompleteHabit}
                         onUndoComplete={handleUndoComplete}
                         onEdit={handleEditHabit}
@@ -511,6 +625,12 @@ export default function GrowWorkspacePage() {
                         currentUserId={user?.uid}
                         onReact={handleReact}
                         onRemoveReaction={handleRemoveReaction}
+                        isSelectMode={selection.isSelectMode}
+                        isSelected={selection.selectedIds.has(habit.id)}
+                        onSelect={(id, e) => selection.handleSelect(id, e, allHabits.map(h => h.id))}
+                        members={currentSpace?.members || []}
+                        onAssign={handleQuickAssign}
+                        onCardClick={(id) => setDetailHabitId(id)}
                       />
                     </SwipeableHabitCard>
                   ))}
@@ -521,11 +641,42 @@ export default function GrowWorkspacePage() {
         </div>
       </WorkspacePageLayout>
 
+      {/* Bulk Action Bar - appears when selecting habits */}
+      <BulkActionBar />
+
       {/* Modals */}
       <HabitEditor
         isOpen={showHabitEditor}
         onClose={() => setShowHabitEditor(false)}
         editHabitId={selectedHabitId}
+      />
+
+      <HabitDetailModal
+        isOpen={!!detailHabitId}
+        onClose={() => {
+          setDetailHabitId(null);
+          setDetailMemberId(null);
+        }}
+        habit={detailHabit}
+        completions={completions}
+        member={detailMember}
+        onEdit={(habit) => {
+          setDetailHabitId(null);
+          setDetailMemberId(null);
+          handleEditHabit(habit.id);
+        }}
+        onDelete={async (habitId) => {
+          try {
+            await deleteHabit(habitId);
+            setDetailHabitId(null);
+            setDetailMemberId(null);
+          } catch {
+            // Handle deletion error silently
+          }
+        }}
+        onToggleFreeze={async (habitId, currentStatus) => {
+          await updateHabit(habitId, { isFrozen: !currentStatus });
+        }}
       />
 
       <MemberManager

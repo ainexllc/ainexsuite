@@ -15,6 +15,8 @@ export interface NutritionInfo {
   fiber?: number; // grams
   sugar?: number; // grams
   sodium?: number; // mg
+  cholesterol?: number; // mg
+  saturatedFat?: number; // grams
 }
 
 export interface FoodItem {

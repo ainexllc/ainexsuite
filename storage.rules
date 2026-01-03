@@ -2,56 +2,62 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     // Shared backgrounds (admin uploads, all authenticated users can read/write)
-    // TODO: Re-add auth check after debugging
+    // Secured: public read, auth write (TODO: admin only)
     match /backgrounds/{fileName} {
-      allow read, write, delete: if true;
+      allow read: if true;
+      allow write, delete: if request.auth != null;
     }
 
     // Also allow subfolder access for any nested paths
     match /backgrounds/{allPaths=**} {
-      allow read, write, delete: if true;
+      allow read: if true;
+      allow write, delete: if request.auth != null;
     }
 
     // Shared covers (admin uploads, all users can read)
     match /covers/{coverId}/{fileName} {
-      allow read, write, delete: if true;
+      allow read: if true;
+      allow write, delete: if request.auth != null;
     }
 
     // Also allow nested paths for covers
     match /covers/{allPaths=**} {
-      allow read, write, delete: if true;
+      allow read: if true;
+      allow write, delete: if request.auth != null;
     }
 
     // Video backgrounds (admin uploads, all authenticated users can read)
-    // TODO: Re-add auth check after debugging
     match /video-backgrounds/{fileName} {
-      allow read, write, delete: if true;
+      allow read: if true;
+      allow write, delete: if request.auth != null;
     }
 
     // Also allow nested paths for video backgrounds
     match /video-backgrounds/{allPaths=**} {
-      allow read, write, delete: if true;
+      allow read: if true;
+      allow write, delete: if request.auth != null;
     }
 
     // Allow users to read, write, and delete their own backgrounds
     match /users/{userId}/backgrounds/{allPaths=**} {
-      allow read, delete: if request.auth.uid == userId;
-      allow write: if request.auth.uid == userId
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
         && request.resource.size <= 5 * 1024 * 1024; // 5MB max
     }
 
     // Allow users to read, write, and delete their own notes attachments
-    // TODO: Remove 'true' fallback after dev mode auth is fixed
+    // Fixed: Removed unauthenticated access
     match /users/{userId}/notes/{noteId}/attachments/{fileName} {
-      allow read, delete: if request.auth.uid == userId || request.auth == null;
-      allow write: if (request.auth.uid == userId || request.auth == null)
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
         && request.resource.size <= 10 * 1024 * 1024; // 10MB max for attachments
     }
 
     // Allow users to read, write, and delete their own data
+    // Fixed: Removed unauthenticated access
     match /users/{userId}/{allPaths=**} {
-      allow read, delete: if request.auth.uid == userId || request.auth == null;
-      allow write: if (request.auth.uid == userId || request.auth == null)
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
         && request.resource.size <= 5 * 1024 * 1024; // 5MB max
     }
 
@@ -63,6 +69,21 @@ service firebase.storage {
       allow write: if request.auth.uid == userId
         && request.resource.size <= 10 * 1024 * 1024; // 10MB max for photos
       allow delete: if request.auth.uid == userId;
+    }
+
+    // Profile images for authenticated users
+    match /profile-images/{userId}/{allPaths=**} {
+      allow read: if true; // Public read for avatars
+      allow write, delete: if request.auth != null && request.auth.uid == userId
+        && request.resource.size <= 2 * 1024 * 1024; // 2MB max for profile images
+    }
+
+    // Member avatars for space members (kids, family members)
+    // Any authenticated user can write (space membership verified in app)
+    match /member-avatars/{spaceId}/{memberId}/{allPaths=**} {
+      allow read: if true; // Public read for avatars
+      allow write, delete: if request.auth != null
+        && request.resource.size <= 2 * 1024 * 1024; // 2MB max
     }
 
     // Deny all other access

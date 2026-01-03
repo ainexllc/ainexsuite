@@ -16,6 +16,7 @@ import {
   Plus,
   Pin,
   PinOff,
+  FolderOpen,
 } from 'lucide-react';
 import { EntryEditorShell, ConfirmationDialog, generateUUID } from '@ainexsuite/ui';
 import type { EntryColor } from '@ainexsuite/types';
@@ -46,7 +47,7 @@ interface TaskEditorProps {
 
 export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskEditorProps) {
   const { user } = useAuth();
-  const { getCurrentSpace, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskPin, toggleTaskArchive } = useTodoStore();
+  const { spaces, getCurrentSpace, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskPin, toggleTaskArchive } = useTodoStore();
   const currentSpace = getCurrentSpace();
 
   const [title, setTitle] = useState('');
@@ -57,6 +58,8 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
   const [dueDate, setDueDate] = useState('');
   const [assignees, setAssignees] = useState<string[]>([]);
   const [listId, setListId] = useState(defaultListId || '');
+  const [selectedSpaceId, setSelectedSpaceId] = useState(currentSpace?.id || 'personal');
+  const [showSpaceSelector, setShowSpaceSelector] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
@@ -101,6 +104,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         setDueDate(task.dueDate || '');
         setAssignees(task.assigneeIds);
         setListId(task.listId);
+        setSelectedSpaceId(task.spaceId || 'personal');
         setColor((task.color as EntryColor) || 'default');
         setPinned(task.pinned || false);
         setArchived(task.archived || false);
@@ -116,13 +120,15 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
       setDueDate('');
       setAssignees([]);
       setListId(defaultListId || '');
+      setSelectedSpaceId(currentSpace?.id || 'personal');
       setColor('default');
       setPinned(false);
       setArchived(false);
       setAttachments([]);
       setShowCalculator(false);
+      setShowSpaceSelector(false);
     }
-  }, [isOpen, editTaskId, tasks, defaultListId]);
+  }, [isOpen, editTaskId, tasks, defaultListId, currentSpace?.id]);
 
   // Ensure listId is set if creating new
   useEffect(() => {
@@ -222,6 +228,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           dueDate,
           assigneeIds: assignees,
           listId,
+          spaceId: selectedSpaceId === 'personal' ? undefined : selectedSpaceId,
           color,
           pinned,
           archived,
@@ -550,6 +557,44 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
               </button>
             ))}
           </div>
+
+          {/* Space selector (only when editing and has multiple spaces) */}
+          {editTaskId && spaces.length > 1 && (
+            <div className="relative">
+              <div className="flex items-center gap-2">
+                <FolderOpen className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                <button
+                  type="button"
+                  onClick={() => setShowSpaceSelector(!showSpaceSelector)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  {spaces.find(s => s.id === selectedSpaceId)?.name || 'My Todos'}
+                </button>
+              </div>
+              {showSpaceSelector && (
+                <div className="absolute top-10 left-0 z-30 w-48 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xl py-1">
+                  {[{ id: 'personal', name: 'My Todos' }, ...spaces.filter(s => s.id !== 'personal')].map((space) => (
+                    <button
+                      key={space.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSpaceId(space.id);
+                        setShowSpaceSelector(false);
+                      }}
+                      className={clsx(
+                        "w-full px-3 py-2 text-left text-sm transition-colors",
+                        selectedSpaceId === space.id
+                          ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      )}
+                    >
+                      {space.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Properties row */}
           <div className="flex flex-wrap items-center gap-3 pt-2">

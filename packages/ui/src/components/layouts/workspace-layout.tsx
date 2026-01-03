@@ -118,6 +118,14 @@ interface WorkspaceLayoutProps {
    * Callback to view all notifications
    */
   onViewAllNotifications?: () => void;
+  /**
+   * Callback when a space invitation is accepted
+   */
+  onAcceptInvitation?: (invitationId: string, notificationId: string) => Promise<void>;
+  /**
+   * Callback when a space invitation is declined
+   */
+  onDeclineInvitation?: (invitationId: string, notificationId: string) => Promise<void>;
   // NEW: Quick Actions
   /**
    * Quick actions for the app
@@ -207,6 +215,8 @@ export function WorkspaceLayout({
   onMarkAllRead,
   onClearAll,
   onViewAllNotifications,
+  onAcceptInvitation,
+  onDeclineInvitation,
   quickActions = [],
   onQuickAction,
   onAiAssistantClick,
@@ -391,6 +401,8 @@ export function WorkspaceLayout({
             onMarkAllRead={onMarkAllRead}
             onClearAll={onClearAll}
             onViewAll={onViewAllNotifications}
+            onAcceptInvitation={onAcceptInvitation}
+            onDeclineInvitation={onDeclineInvitation}
           />
         </div>
       )}
@@ -426,24 +438,25 @@ export function WorkspaceLayout({
       )}
 
       {/* Main Content - adjusts padding based on header visibility and insights expanded state */}
-      {/* When expanded: panel height (100-180px responsive) + tab handle (28-36px responsive) + accent line (2px) */}
+      {/* When expanded: panel (80-120px) + tab (~28-36px) + accent (2px) + 25px gap = 135-183px */}
+      {/* When collapsed: accent (2px) + tab (~28-36px) + 25px gap = 55-63px */}
       {/* Duration matches AIInsightsPulldown animation (500ms) for smooth sync */}
       <main
         className={`flex-1 transition-[padding-top] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           insightsSections
             ? isInsightsExpanded
               ? isNavVisible
-                ? 'pt-[calc(4rem+132px)] sm:pt-[calc(4rem+160px)] lg:pt-[calc(4rem+180px)] xl:pt-[calc(4rem+200px)] 2xl:pt-[calc(4rem+220px)]'
-                : 'pt-[132px] sm:pt-[160px] lg:pt-[180px] xl:pt-[200px] 2xl:pt-[220px]'
+                ? 'pt-[calc(4rem+135px)] sm:pt-[calc(4rem+149px)] lg:pt-[calc(4rem+159px)] xl:pt-[calc(4rem+173px)] 2xl:pt-[calc(4rem+183px)]'
+                : 'pt-[135px] sm:pt-[149px] lg:pt-[159px] xl:pt-[173px] 2xl:pt-[183px]'
               : isNavVisible
-                ? 'pt-[calc(4rem+40px)] sm:pt-[calc(4rem+44px)]'
-                : 'pt-[40px] sm:pt-[44px]'
+                ? 'pt-[calc(4rem+55px)] sm:pt-[calc(4rem+63px)]'
+                : 'pt-[55px] sm:pt-[63px]'
             : isNavVisible
               ? 'pt-16'
               : 'pt-0'
         }`}
       >
-        <div className="mx-auto max-w-7xl px-4 pt-2 sm:pt-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
+        <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
           {children}
         </div>
       </main>

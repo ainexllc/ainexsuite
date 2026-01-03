@@ -438,7 +438,7 @@ export default function WorkspacePage() {
   return (
     <WorkspacePageLayout
       maxWidth="wide"
-      className="h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 py-8 flex flex-col"
+      className="h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 pb-8 flex flex-col"
       composer={
         <EventComposer
           ref={composerRef}

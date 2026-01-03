@@ -108,7 +108,7 @@ export function WorkspacePageLayout({
 
       {/* Composer Row: Form + SpaceSwitcher + Actions */}
       {hasComposerRow && (
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="relative z-30 flex flex-col md:flex-row md:items-start justify-between gap-4">
           {/* Composer (left side, takes available space) */}
           {composer && (
             <div className="flex-1 min-w-0">

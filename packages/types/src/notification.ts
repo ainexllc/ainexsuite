@@ -18,7 +18,8 @@ export type NotificationType =
   | 'update'
   | 'space_invite'    // Invited to join a space
   | 'space_accepted'  // Someone accepted your invite
-  | 'space_joined';   // New member joined your space
+  | 'space_joined'    // New member joined your space
+  | 'feedback';       // New feedback submitted (admin)
 
 /**
  * Individual notification item
@@ -38,6 +39,11 @@ export interface NotificationItem {
 }
 
 /**
+ * Response status for space invite notifications
+ */
+export type SpaceInviteResponseStatus = 'pending' | 'accepted' | 'declined';
+
+/**
  * Metadata for space_invite notifications
  */
 export interface SpaceInviteMetadata {
@@ -50,6 +56,10 @@ export interface SpaceInviteMetadata {
   invitedByPhoto?: string;
   role: string;
   expiresAt: number;
+  /** Response status - tracks if the user has already responded */
+  responseStatus?: SpaceInviteResponseStatus;
+  /** Timestamp when the user responded */
+  respondedAt?: number;
 }
 
 /**
@@ -131,6 +141,11 @@ export const DEFAULT_QUICK_ACTIONS: Record<AppSlug, QuickAction[]> = {
   ],
   health: [
     { id: 'log-metrics', label: 'Log Metrics', description: 'Record health metrics', icon: 'Heart', shortcut: 'L', app: 'health', category: 'create' },
+  ],
+  fit: [
+    { id: 'new-workout', label: 'Log Workout', description: 'Record a workout', icon: 'Dumbbell', shortcut: 'W', app: 'fit', category: 'create' },
+    { id: 'log-meal', label: 'Log Meal', description: 'Track nutrition', icon: 'UtensilsCrossed', shortcut: 'M', app: 'fit', category: 'create' },
+    { id: 'log-weight', label: 'Log Weight', description: 'Record body weight', icon: 'Scale', shortcut: 'L', app: 'fit', category: 'create' },
   ],
   album: [
     { id: 'capture-moment', label: 'Capture Moment', description: 'Add a new moment', icon: 'Camera', shortcut: 'M', app: 'album', category: 'create' },

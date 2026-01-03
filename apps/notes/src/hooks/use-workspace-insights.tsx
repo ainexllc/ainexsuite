@@ -229,18 +229,8 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
     const sorted = active.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
     const result = sorted.slice(0, RECENT_COUNT);
 
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Notes Insights] Note counts:', {
-        total: notes.length,
-        active: active.length,
-        recentForInsights: result.length,
-        spaceId: currentSpaceId,
-      });
-    }
-
     return result;
-  }, [notes, currentSpaceId]);
+  }, [notes]);
 
   // All active notes for streak calculation
   const activeNotes = useMemo(() => {

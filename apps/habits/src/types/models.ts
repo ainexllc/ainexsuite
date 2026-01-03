@@ -14,6 +14,7 @@ export interface Member {
   uid: string;
   displayName: string;
   photoURL?: string;
+  photoStoragePath?: string; // Firebase Storage path for cleanup
   role: 'admin' | 'member' | 'observer';
   joinedAt: string;
   ageGroup?: MemberAgeGroup; // Only relevant for family spaces
@@ -119,6 +120,7 @@ export interface Habit {
   wager?: Wager;
   // Organization
   category?: HabitCategory;
+  icon?: string;
   tags?: string[];
   // Habit chaining
   chainedTo?: string; // ID of habit that follows this one

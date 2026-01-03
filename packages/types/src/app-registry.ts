@@ -9,6 +9,7 @@ export type AppSlug =
   | 'journal'
   | 'todo'
   | 'health'
+  | 'fit'
   | 'album'
   | 'habits'
   | 'display'
@@ -98,7 +99,7 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
   health: {
     name: 'Health',
     slug: 'health',
-    description: 'Track your body metrics, wellness, and health data. Monitor weight, sleep, vitals, and supplements.',
+    description: 'Track medications, symptoms, lab results, and appointments. Monitor sleep, mood, and vitals.',
     icon: 'Heart',
     color: 'emerald',
     gradient: 'from-emerald-500 to-teal-500',
@@ -106,7 +107,21 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     prodUrl: 'https://health.ainexsuite.com',
     devPort: 3004,
     category: 'health',
-    features: ['Weight Tracking', 'Sleep Monitoring', 'Vitals', 'Supplements', 'Body Metrics'],
+    features: ['Medications', 'Symptoms', 'Lab Results', 'Appointments', 'Sleep', 'Vitals'],
+    status: 'active',
+  },
+  fit: {
+    name: 'Fit',
+    slug: 'fit',
+    description: 'Track workouts, nutrition, recipes, and body metrics. Reach your fitness goals with AI assistance.',
+    icon: 'Dumbbell',
+    color: 'blue',
+    gradient: 'from-blue-500 to-green-500',
+    devUrl: 'http://localhost:3008',
+    prodUrl: 'https://fit.ainexsuite.com',
+    devPort: 3008,
+    category: 'health',
+    features: ['Workouts', 'Nutrition', 'Recipes', 'Supplements', 'Body Metrics', 'Personal Records'],
     status: 'active',
   },
   album: {

@@ -11,6 +11,7 @@ import { NotificationToast } from '@/components/gamification/NotificationToast';
 import { FirestoreSync } from '@/components/FirestoreSync';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
 import { SettingsContext } from '@/components/providers/settings-context';
+import { useSpaceNotifications } from '@/hooks/use-space-notifications';
 import { Sprout } from 'lucide-react';
 
 /**
@@ -21,11 +22,17 @@ function WorkspaceLayoutInner({
   user,
   handleSignOut,
   updatePreferences,
+  updateProfile,
+  updateProfileImage,
+  removeProfileImage,
 }: {
   children: React.ReactNode;
   user: NonNullable<ReturnType<typeof useWorkspaceAuth>['user']>;
   handleSignOut: () => void;
   updatePreferences: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
+  updateProfile: (updates: { displayName?: string }) => Promise<void>;
+  updateProfileImage: (imageData: string) => Promise<{ success: boolean; error?: string }>;
+  removeProfileImage: () => Promise<boolean>;
 }) {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [settingsDefaultTab, setSettingsDefaultTab] = useState<SettingsTab>('profile');
@@ -33,6 +40,7 @@ function WorkspaceLayoutInner({
   const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const { allSpaces, currentSpace, updateSpace, deleteSpace, refreshSpaces } = useSpaces();
+  const { notifications, handleAcceptInvitation, handleDeclineInvitation } = useSpaceNotifications();
 
   // Open settings modal with optional tab selection
   const openSettings = useCallback((tab?: SettingsTab) => {
@@ -138,6 +146,9 @@ function WorkspaceLayoutInner({
         onSignOut={handleSignOut}
         onUpdatePreferences={updatePreferences}
         onSettingsClick={handleSettingsClick}
+        notifications={notifications}
+        onAcceptInvitation={handleAcceptInvitation}
+        onDeclineInvitation={handleDeclineInvitation}
       >
         <NotificationToast />
         {children}
@@ -161,6 +172,7 @@ function WorkspaceLayoutInner({
           notifications: { email: true, push: false, inApp: true },
         }}
         onUpdatePreferences={updatePreferences}
+        onUpdateProfile={updateProfile}
         spaces={spaceSettingsItems}
         currentAppId="habits"
         onEditSpace={handleEditSpace}
@@ -169,6 +181,9 @@ function WorkspaceLayoutInner({
         showGlobalSpacesTab={false}
         appSettingsLabel="Habits"
         appSettingsIcon={<Sprout className="h-4 w-4" />}
+        onUpdateProfileImage={updateProfileImage}
+        onRemoveProfileImage={removeProfileImage}
+        profileImageApiEndpoint="/api/generate-profile-image"
       />
 
       {/* Space Settings Modal */}
@@ -229,7 +244,7 @@ export default function WorkspaceRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const { user, isLoading, isReady, handleSignOut, updatePreferences, updateProfile, updateProfileImage, removeProfileImage } = useWorkspaceAuth();
 
   // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
@@ -247,6 +262,9 @@ export default function WorkspaceRootLayout({
           user={user}
           handleSignOut={handleSignOut}
           updatePreferences={updatePreferences}
+          updateProfile={updateProfile}
+          updateProfileImage={updateProfileImage}
+          removeProfileImage={removeProfileImage}
         >
           {children}
         </WorkspaceLayoutInner>

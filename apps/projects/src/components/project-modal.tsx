@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { DateSuggestions } from '@ainexsuite/date-detection';
+import { InlineSpacePicker } from '@ainexsuite/ui';
+import { useSpaces } from './providers/spaces-provider';
 
 interface Project {
   id: string;
@@ -12,6 +14,7 @@ interface Project {
   createdAt: Date;
   updatedAt: Date;
   notes: string[];
+  spaceId?: string;
 }
 
 interface ProjectModalProps {
@@ -22,9 +25,12 @@ interface ProjectModalProps {
     content: string;
     type: 'app' | 'video';
   };
+  onManagePeople?: () => void;
+  onManageSpaces?: () => void;
 }
 
-export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote }: ProjectModalProps) {
+export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote, onManagePeople, onManageSpaces }: ProjectModalProps) {
+  const { spaces, currentSpace, currentSpaceId, setCurrentSpace } = useSpaces();
   const [name, setName] = useState(ideaNote?.content || '');
   const [type, setType] = useState<'app' | 'video'>(ideaNote?.type || 'app');
 
@@ -37,7 +43,8 @@ export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote }: Pro
         name: name.trim(),
         type,
         status: 'active',
-        notes: ideaNote ? [ideaNote.content] : []
+        notes: ideaNote ? [ideaNote.content] : [],
+        spaceId: currentSpaceId === 'personal' ? undefined : currentSpaceId,
       });
       setName('');
       onClose();
@@ -49,11 +56,20 @@ export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote }: Pro
       <div className="bg-foreground rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Create New Project</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <InlineSpacePicker
+              spaces={spaces}
+              currentSpace={currentSpace}
+              onSpaceChange={setCurrentSpace}
+              onManagePeople={onManagePeople}
+              onManageSpaces={onManageSpaces}
+            />
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">

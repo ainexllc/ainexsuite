@@ -105,19 +105,6 @@ export function useWorkspaceInsights<TData, TInsights>(
   // Check if we have enough data
   const hasEnoughData = data.length >= minimumDataCount;
 
-  // Debug logging in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[${appName} Insights] State:`, {
-      dataLength: data.length,
-      minimumDataCount,
-      hasEnoughData,
-      isExpanded,
-      loading,
-      hasInsightsData: !!insightsData,
-      spaceId,
-    });
-  }
-
   // Generate current data hash if configured
   const currentDataHash = useMemo(() => {
     if (!generateDataHash) return undefined;
@@ -152,17 +139,7 @@ export function useWorkspaceInsights<TData, TInsights>(
   const generateInsights = useCallback(async () => {
     // Use ref for the guard to avoid stale closure issues
     if (!hasEnoughData || loadingRef.current) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[${appName} Insights] generateInsights skipped:`, {
-          hasEnoughData,
-          loadingRef: loadingRef.current,
-        });
-      }
       return;
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[${appName} Insights] Starting API fetch...`);
     }
 
     setLoading(true);
@@ -198,18 +175,11 @@ export function useWorkspaceInsights<TData, TInsights>(
       }
 
       const result = await response.json();
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[${appName} Insights] API response received:`, result);
-      }
       setInsightsData(result);
       saveToCache(result);
-    } catch (err) {
-      console.error(`[${appName}] Insights error:`, err);
+    } catch {
       setError("Could not analyze workspace.");
     } finally {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[${appName} Insights] Fetch complete, setting loading=false`);
-      }
       setLoading(false);
       loadingRef.current = false;
     }
@@ -219,7 +189,6 @@ export function useWorkspaceInsights<TData, TInsights>(
     preparePayload,
     apiEndpoint,
     saveToCache,
-    appName,
   ]);
 
   // Reset state when space changes
@@ -245,23 +214,12 @@ export function useWorkspaceInsights<TData, TInsights>(
     if (cached) {
       try {
         const cacheData: InsightsCacheData<TInsights> = JSON.parse(cached);
-        const { refresh, reason } = shouldRefreshCache(
+        const { refresh } = shouldRefreshCache(
           cacheData,
           currentDataHash,
           data.length,
           itemCountThreshold
         );
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[${appName} Insights] Cache check:`, {
-            cacheKey,
-            hasCache: true,
-            refresh,
-            reason,
-            cacheItemCount: cacheData.itemCount,
-            currentCount: data.length,
-          });
-        }
 
         if (!refresh) {
           // Cache is valid - use it
@@ -273,14 +231,9 @@ export function useWorkspaceInsights<TData, TInsights>(
         }
       } catch {
         // Invalid cache, ignore
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[${appName} Insights] Invalid cache, ignoring`);
-        }
       }
-    } else if (process.env.NODE_ENV === 'development') {
-      console.log(`[${appName} Insights] No cache found for key:`, cacheKey);
     }
-  }, [dataLoading, cacheKey, currentDataHash, data.length, itemCountThreshold, appName]);
+  }, [dataLoading, cacheKey, currentDataHash, data.length, itemCountThreshold]);
 
   // Auto-generate when expanded and no valid cache
   useEffect(() => {
@@ -313,17 +266,10 @@ export function useWorkspaceInsights<TData, TInsights>(
   // Build sections from insights data
   const sections = useMemo(() => {
     if (!insightsData) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[${appName} Insights] No insights data to build sections from`);
-      }
       return [];
     }
-    const result = buildSections(insightsData, primaryColor, localStats);
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[${appName} Insights] Built ${result.length} sections from:`, insightsData);
-    }
-    return result;
-  }, [insightsData, buildSections, primaryColor, localStats, appName]);
+    return buildSections(insightsData, primaryColor, localStats);
+  }, [insightsData, buildSections, primaryColor, localStats]);
 
   // Compute title
   const resolvedTitle =

@@ -241,6 +241,12 @@ export function HabitPacks({ onClose: _onClose }: HabitPacksProps) {
       : HABIT_PACKS.filter((pack) => pack.category === selectedCategory);
 
   const handleInstall = async (pack: HabitPack) => {
+    // For team spaces, assign to all members by default
+    // For personal space, only assign to the current user
+    const assigneeIds = currentSpace.type !== 'personal' && currentSpace.memberUids?.length > 0
+      ? currentSpace.memberUids
+      : [user.uid];
+
     for (const h of pack.habits) {
       const habit: Habit = {
         id: `habit_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
@@ -253,7 +259,7 @@ export function HabitPacks({ onClose: _onClose }: HabitPacksProps) {
           timesPerWeek: h.schedule.timesPerWeek,
           intervalDays: h.schedule.intervalDays,
         } as Schedule,
-        assigneeIds: [user.uid],
+        assigneeIds,
         currentStreak: 0,
         bestStreak: 0,
         isFrozen: false,

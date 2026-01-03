@@ -38,45 +38,75 @@ export function FamilyMemberColumn({
 
   return (
     <div className="flex flex-col h-full bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
-      {/* Member Header */}
+      {/* Member Header with Banner Background */}
       <div className={cn(
-        'p-4 lg:p-5 text-center border-b',
-        allDone ? 'bg-emerald-500/10 border-emerald-500/20' : 'border-white/10'
+        'relative text-center border-b overflow-hidden',
+        member.photoURL ? 'py-8 lg:py-10 px-4 lg:px-5' : 'p-4 lg:p-5',
+        allDone ? 'border-emerald-500/20' : 'border-white/10'
       )}>
-        {/* Avatar */}
-        <div className={cn(
-          'h-16 w-16 lg:h-20 lg:w-20 rounded-full mx-auto flex items-center justify-center text-2xl lg:text-3xl font-bold',
-          allDone
-            ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white'
-            : 'bg-gradient-to-br from-gray-700 to-gray-600 text-white'
-        )}>
-          {member.displayName.slice(0, 2).toUpperCase()}
+        {/* Banner Background Image */}
+        {member.photoURL && (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${member.photoURL})` }}
+            />
+            {/* Dark gradient overlay for text readability */}
+            <div className={cn(
+              'absolute inset-0',
+              allDone
+                ? 'bg-gradient-to-b from-emerald-900/60 via-emerald-900/70 to-emerald-900/80'
+                : 'bg-gradient-to-b from-black/40 via-black/50 to-black/60'
+            )} />
+          </>
+        )}
+
+        {/* Content (positioned above background) */}
+        <div className="relative z-10">
+          {/* Avatar - only show if no banner image */}
+          {!member.photoURL && (
+            <div className={cn(
+              'h-16 w-16 lg:h-20 lg:w-20 rounded-full mx-auto flex items-center justify-center text-2xl lg:text-3xl font-bold shadow-lg',
+              allDone
+                ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white'
+                : 'bg-gradient-to-br from-gray-700 to-gray-600 text-white'
+            )}>
+              {member.displayName.slice(0, 2).toUpperCase()}
+            </div>
+          )}
+
+          {/* Name */}
+          <h2 className={cn(
+            'text-lg lg:text-xl font-bold flex items-center justify-center gap-2',
+            member.photoURL ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-white mt-3'
+          )}>
+            {member.displayName}
+            {isChild ? (
+              <Baby className="h-4 w-4 text-pink-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
+            ) : (
+              <User className="h-4 w-4 text-white/60 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
+            )}
+          </h2>
+
+          {/* Progress */}
+          <p className={cn(
+            'text-sm mt-1',
+            allDone
+              ? 'text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
+              : member.photoURL
+                ? 'text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
+                : 'text-white/50'
+          )}>
+            {allDone ? (
+              <span className="flex items-center justify-center gap-1">
+                <PartyPopper className="h-4 w-4" />
+                All done!
+              </span>
+            ) : (
+              `${completedCount}/${habits.length} done`
+            )}
+          </p>
         </div>
-
-        {/* Name */}
-        <h2 className="text-lg lg:text-xl font-bold text-white mt-3 flex items-center justify-center gap-2">
-          {member.displayName}
-          {isChild ? (
-            <Baby className="h-4 w-4 text-pink-400" />
-          ) : (
-            <User className="h-4 w-4 text-white/40" />
-          )}
-        </h2>
-
-        {/* Progress */}
-        <p className={cn(
-          'text-sm mt-1',
-          allDone ? 'text-emerald-400' : 'text-white/50'
-        )}>
-          {allDone ? (
-            <span className="flex items-center justify-center gap-1">
-              <PartyPopper className="h-4 w-4" />
-              All done!
-            </span>
-          ) : (
-            `${completedCount}/${habits.length} done`
-          )}
-        </p>
       </div>
 
       {/* Habits List */}

@@ -8,7 +8,7 @@ import {
   AIInsightsText,
 } from '@ainexsuite/ui';
 import type { AIInsightsSection } from '@ainexsuite/ui';
-import { useSubscriptionStore } from '@/lib/store';
+import { useSubscriptions } from '@/components/providers/subscription-provider';
 
 interface InsightData {
   spendingTrend: string;
@@ -18,7 +18,7 @@ interface InsightData {
 }
 
 export function SubscriptionInsights() {
-  const { subscriptions } = useSubscriptionStore();
+  const { subscriptions } = useSubscriptions();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);

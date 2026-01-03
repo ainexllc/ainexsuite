@@ -47,13 +47,10 @@ export function ThemeSyncScript() {
       storageTheme = localStorage.getItem(STORAGE_KEY);
     } catch (e) {}
 
-    console.log('[ThemeSync] Cookie:', cookieTheme, 'Storage:', storageTheme);
-
     // Cookie takes priority (it's the cross-app source of truth)
     if (cookieTheme && cookieTheme !== storageTheme) {
       try {
         localStorage.setItem(STORAGE_KEY, cookieTheme);
-        console.log('[ThemeSync] Synced cookie to localStorage:', cookieTheme);
       } catch (e) {}
     }
     // If localStorage exists but cookie doesn't, set the cookie
@@ -61,7 +58,6 @@ export function ThemeSyncScript() {
       var domain = window.location.hostname.includes('ainexsuite.com')
         ? '; domain=.ainexsuite.com' : '';
       document.cookie = COOKIE_NAME + '=' + storageTheme + '; path=/; max-age=31536000; SameSite=Lax' + domain;
-      console.log('[ThemeSync] Synced localStorage to cookie:', storageTheme);
     }
   } catch (e) {
     console.error('[ThemeSync] Error:', e);
