@@ -65,35 +65,44 @@ export async function GET(request: NextRequest) {
     }
 
     // For local development, decode the simple base64 session
-    // Also try to fetch latest preferences from Firestore
+    // Also try to fetch latest user data from Firestore
     if (process.env.NODE_ENV === 'development') {
       try {
         const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
 
-        // Try to get latest preferences from Firestore
+        // Try to get latest user data from Firestore (displayName, photoURL, preferences)
+        let displayName = decoded.displayName;
+        let photoURL = decoded.photoURL;
         let preferences = decoded.preferences;
         try {
           const adminDb = getAdminFirestore();
           const userDoc = await adminDb.collection('users').doc(decoded.uid).get();
           if (userDoc.exists) {
             const userData = userDoc.data();
+            // Use Firestore values if available (they're the source of truth after PUT updates)
+            if (userData?.displayName) {
+              displayName = userData.displayName;
+            }
+            if (userData?.photoURL) {
+              photoURL = userData.photoURL;
+            }
             if (userData?.preferences) {
               preferences = userData.preferences;
             }
           }
         } catch {
-          // Could not load from Firestore, using cookie preferences
+          // Could not load from Firestore, using cookie values
         }
 
-        // Return full user data with Firestore preferences (or cookie fallback)
+        // Return full user data with Firestore values (or cookie fallback)
         return NextResponse.json(
           {
             user: {
               uid: decoded.uid,
               email: decoded.email,
-              displayName: decoded.displayName,
-              photoURL: decoded.photoURL,
-              preferences: preferences,
+              displayName,
+              photoURL,
+              preferences,
             },
             authenticated: true
           },
@@ -415,10 +424,8 @@ export async function POST(request: NextRequest) {
               trialEndDate: trialEndDate,
               lastLoginAt: FieldValue.serverTimestamp(),
             });
-            console.log('[Dev Session] Created Firestore document for user:', userData.uid);
-          } catch (e) {
+          } catch {
             // Could not create user in Firestore - continue with cookie-only session
-            console.warn('[Dev Session] Could not create Firestore document:', e);
           }
         }
 
