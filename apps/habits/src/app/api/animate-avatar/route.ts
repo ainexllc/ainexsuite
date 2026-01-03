@@ -25,7 +25,7 @@ type AvatarAction =
   | 'salute'
   | 'flex';
 
-// Action-specific animation prompts - explicit physical movements that loop back
+// Action-specific animation prompts - detailed descriptions
 const ACTION_PROMPTS: Record<AvatarAction, string> = {
   wave: 'The person raises their right hand and waves it side to side in a friendly hello gesture, then lowers hand back to starting position.',
   wink: 'The person slowly closes their right eye in a deliberate wink with a playful smile, then opens eye returning to neutral expression.',
@@ -87,7 +87,8 @@ async function getImageBase64(sourceImage: string): Promise<{ base64: string; mi
 function buildAnimationPrompt(action: AvatarAction): string {
   const actionGuide = ACTION_PROMPTS[action] || ACTION_PROMPTS.wave;
 
-  return `${actionGuide} Static camera, no zoom, no pan. Keep framing exactly the same throughout. Maintain subject identity.`;
+  // Gen-4 prompting: focus on subject action, avoid negative commands
+  return `Same person, same face, same appearance. ${actionGuide} The person stays in place. Locked camera angle.`;
 }
 
 export async function POST(request: NextRequest) {
@@ -128,9 +129,9 @@ export async function POST(request: NextRequest) {
     }
 
     const promptText = buildAnimationPrompt(avatarAction);
-    const promptImage = `data:${imageData.mimeType};base64,${imageData.base64}`;
+    const promptImageUri = `data:${imageData.mimeType};base64,${imageData.base64}`;
 
-    // Call Runway Gen-4 Turbo API
+    // Call Runway Veo 3.1 API (Google's video generation model via Runway)
     const response = await fetch(`${RUNWAY_BASE_URL}/image_to_video`, {
       method: 'POST',
       headers: {
@@ -139,11 +140,16 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gen4_turbo',
-        promptImage: promptImage,
+        model: 'veo3.1',
+        promptImage: [
+          {
+            uri: promptImageUri,
+            position: 'first',
+          },
+        ],
         promptText: promptText,
         ratio: '1280:720',
-        duration: 5,
+        duration: 4,
       }),
     });
 
@@ -173,7 +179,7 @@ export async function POST(request: NextRequest) {
         success: true,
         pending: true,
         operationId: data.id,
-        model: 'gen4_turbo',
+        model: 'veo3.1',
         provider: 'runway',
         action: avatarAction,
       });
@@ -250,7 +256,6 @@ export async function GET(request: NextRequest) {
           videoUrl: videoUrl,
         });
       }
-
       return NextResponse.json({
         success: false,
         error: 'No video in completed task',

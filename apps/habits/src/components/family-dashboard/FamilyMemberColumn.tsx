@@ -5,6 +5,7 @@ import { TouchHabitCard } from './TouchHabitCard';
 import { ChildHabitCard } from './ChildHabitCard';
 import { Baby, User, PartyPopper, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AnimatedAvatarPlayer } from '@ainexsuite/ui';
 
 interface FamilyMemberColumnProps {
   member: Member;
@@ -30,6 +31,7 @@ export function FamilyMemberColumn({
   const completedCount = habits.filter((h) => isCompleted(h.id)).length;
   const allDone = habits.length > 0 && completedCount === habits.length;
   const isChild = member.ageGroup === 'child';
+  const hasAnimatedAvatar = member.useAnimatedAvatar && member.animatedAvatarURL;
 
   // Handle celebration when completing a habit
   const handleCelebrate = (achievement?: { name: string; icon: string }) => {
@@ -41,11 +43,30 @@ export function FamilyMemberColumn({
       {/* Member Header with Banner Background */}
       <div className={cn(
         'relative text-center border-b overflow-hidden',
-        member.photoURL ? 'py-8 lg:py-12 px-4 lg:px-5' : 'p-4 lg:p-5',
+        (hasAnimatedAvatar || member.photoURL) ? 'py-8 lg:py-12 px-4 lg:px-5' : 'p-4 lg:p-5',
         allDone ? 'border-emerald-500/20' : 'border-white/10'
       )}>
-        {/* Banner Background Image */}
-        {member.photoURL && (
+        {/* Animated Avatar Banner */}
+        {hasAnimatedAvatar && member.animatedAvatarURL && (
+          <>
+            <AnimatedAvatarPlayer
+              src={member.animatedAvatarURL}
+              className="absolute inset-0 w-full h-full object-cover"
+              alt={`${member.displayName} animated avatar`}
+              maxPlays={4}
+              pauseDuration={10000}
+            />
+            {/* Dark gradient overlay for text readability */}
+            <div className={cn(
+              'absolute inset-0',
+              allDone
+                ? 'bg-gradient-to-b from-emerald-900/60 via-emerald-900/70 to-emerald-900/80'
+                : 'bg-gradient-to-b from-black/40 via-black/50 to-black/60'
+            )} />
+          </>
+        )}
+        {/* Static Banner Background Image (fallback when no animated avatar) */}
+        {!hasAnimatedAvatar && member.photoURL && (
           <>
             <div
               className="absolute inset-0 bg-cover bg-center"
@@ -63,8 +84,8 @@ export function FamilyMemberColumn({
 
         {/* Content (positioned above background) */}
         <div className="relative z-10">
-          {/* Avatar - only show if no banner image */}
-          {!member.photoURL && (
+          {/* Avatar - only show if no banner image (animated or static) */}
+          {!hasAnimatedAvatar && !member.photoURL && (
             <div className={cn(
               'h-16 w-16 lg:h-20 lg:w-20 rounded-full mx-auto flex items-center justify-center text-2xl lg:text-3xl font-bold shadow-lg',
               allDone
@@ -78,7 +99,7 @@ export function FamilyMemberColumn({
           {/* Name */}
           <h2 className={cn(
             'text-lg lg:text-xl font-bold flex items-center justify-center gap-2',
-            member.photoURL ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-white mt-3'
+            (hasAnimatedAvatar || member.photoURL) ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-white mt-3'
           )}>
             {member.displayName}
             {isChild ? (
@@ -93,7 +114,7 @@ export function FamilyMemberColumn({
             'text-sm mt-1',
             allDone
               ? 'text-emerald-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
-              : member.photoURL
+              : (hasAnimatedAvatar || member.photoURL)
                 ? 'text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]'
                 : 'text-white/50'
           )}>

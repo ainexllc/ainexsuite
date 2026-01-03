@@ -254,7 +254,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(prev => prev ? {
           ...prev,
           animatedAvatarURL: event.data.animatedAvatarURL,
-          animatedAvatarStyle: event.data.animatedAvatarStyle,
+          animatedAvatarAction: event.data.animatedAvatarAction,
+          animatedAvatarStyle: event.data.animatedAvatarStyle, // legacy
           useAnimatedAvatar: event.data.useAnimatedAvatar,
         } : null);
       } else if (event.data.type === 'ANIMATED_AVATAR_TOGGLE') {
@@ -551,6 +552,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           type: 'ANIMATED_AVATAR_UPDATE',
           animatedAvatarURL: result.videoURL,
           animatedAvatarAction: action,
+          animatedAvatarStyle: action, // legacy support
           useAnimatedAvatar: true,
         });
         channel.close();

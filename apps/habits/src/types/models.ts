@@ -18,6 +18,9 @@ export interface Member {
   role: 'admin' | 'member' | 'observer';
   joinedAt: string;
   ageGroup?: MemberAgeGroup; // Only relevant for family spaces
+  // Animated avatar (AI-generated video)
+  animatedAvatarURL?: string;
+  useAnimatedAvatar?: boolean;
 }
 
 export interface Space {

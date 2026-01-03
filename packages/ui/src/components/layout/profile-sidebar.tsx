@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useTheme } from '@ainexsuite/theme';
 import { clsx } from 'clsx';
+import { AnimatedAvatarPlayer } from '../animated-avatar-player';
 
 export interface ProfileSidebarProps {
   isOpen: boolean;
@@ -24,6 +25,9 @@ export interface ProfileSidebarProps {
     subscriptionStatus?: string;
     subscriptionTier?: string;
     trialStartDate?: number;
+    // Animated avatar fields
+    animatedAvatarURL?: string | null;
+    useAnimatedAvatar?: boolean;
   };
   onSignOut: () => void;
   onSettingsClick?: () => void;
@@ -94,8 +98,20 @@ export function ProfileSidebar({
               <X className="h-4 w-4 text-white" />
             </button>
 
-            {/* Banner Background */}
-            {user.photoURL ? (
+            {/* Banner Background - Animated avatar first, then static image */}
+            {user.useAnimatedAvatar && user.animatedAvatarURL ? (
+              <>
+                <AnimatedAvatarPlayer
+                  src={user.animatedAvatarURL}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  alt={`${user.displayName || 'User'} animated avatar`}
+                  maxPlays={4}
+                  pauseDuration={10000}
+                />
+                {/* Gradient overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70" />
+              </>
+            ) : user.photoURL ? (
               <>
                 <div
                   className="absolute inset-0 bg-cover bg-center"

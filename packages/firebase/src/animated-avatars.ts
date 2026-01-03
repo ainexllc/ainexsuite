@@ -217,7 +217,6 @@ export async function updateUserAnimatedAvatar(
     // Check if user document exists
     const userDoc = await getDoc(userRef);
     if (!userDoc.exists()) {
-      console.error('User document not found:', userId);
       return false;
     }
 
@@ -338,6 +337,53 @@ export async function removeAnimatedAvatar(userId: string): Promise<boolean> {
  * Upload and set a new animated avatar, cleaning up the old one
  * This is the main function to use for updating animated avatars
  */
+/**
+ * Sync user's animated avatar to all their space member records
+ * This ensures animated avatars show up in family dashboards and other spaces
+ */
+async function syncAnimatedAvatarToSpaces(
+  userId: string,
+  animatedAvatarURL: string,
+  useAnimatedAvatar: boolean = true
+): Promise<void> {
+  try {
+    // Query all spaces where this user is a member
+    const { collection, query, where, getDocs, writeBatch } = await import('firebase/firestore');
+    const spacesRef = collection(db, 'spaces');
+    const q = query(spacesRef, where('memberUids', 'array-contains', userId));
+    const spacesSnapshot = await getDocs(q);
+
+    if (spacesSnapshot.empty) {
+      return;
+    }
+
+    const batch = writeBatch(db);
+
+    for (const spaceDoc of spacesSnapshot.docs) {
+      const spaceData = spaceDoc.data();
+      const members = spaceData.members || [];
+
+      // Find and update this user's member record
+      const updatedMembers = members.map((member: { uid: string; [key: string]: unknown }) => {
+        if (member.uid === userId) {
+          return {
+            ...member,
+            animatedAvatarURL,
+            useAnimatedAvatar,
+          };
+        }
+        return member;
+      });
+
+      batch.update(spaceDoc.ref, { members: updatedMembers });
+    }
+
+    await batch.commit();
+  } catch (error) {
+    // Don't throw - this is a non-critical operation
+  }
+}
+
 export async function setAnimatedAvatar(
   userId: string,
   videoData: string,
@@ -375,6 +421,11 @@ export async function setAnimatedAvatar(
         error: 'Failed to update user profile',
       };
     }
+
+    // Sync animated avatar to all space member records (fire and forget)
+    syncAnimatedAvatarToSpaces(userId, uploadResult.videoURL, true).catch((err) => {
+      console.error('Failed to sync animated avatar to spaces:', err);
+    });
 
     // Clean up the old video (don't await, fire and forget)
     if (oldAvatar?.videoPath) {
