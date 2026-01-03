@@ -70,11 +70,15 @@ export async function GET(request: NextRequest) {
       try {
         const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
 
-        // Try to get latest user data from Firestore (displayName, photoURL, iconURL, preferences)
+        // Try to get latest user data from Firestore (displayName, photoURL, iconURL, preferences, animated avatar)
         let displayName = decoded.displayName;
         let photoURL = decoded.photoURL;
         let iconURL: string | undefined;
         let preferences = decoded.preferences;
+        let animatedAvatarURL: string | undefined;
+        let animatedAvatarAction: string | undefined;
+        let animatedAvatarStyle: string | undefined;
+        let useAnimatedAvatar: boolean | undefined;
         try {
           const adminDb = getAdminFirestore();
           const userDoc = await adminDb.collection('users').doc(decoded.uid).get();
@@ -99,6 +103,19 @@ export async function GET(request: NextRequest) {
             if (userData?.preferences) {
               preferences = userData.preferences;
             }
+            // Get animated avatar fields
+            if (userData?.animatedAvatarURL) {
+              animatedAvatarURL = userData.animatedAvatarURL;
+            }
+            if (userData?.animatedAvatarAction) {
+              animatedAvatarAction = userData.animatedAvatarAction;
+            }
+            if (userData?.animatedAvatarStyle) {
+              animatedAvatarStyle = userData.animatedAvatarStyle;
+            }
+            if (userData?.useAnimatedAvatar !== undefined) {
+              useAnimatedAvatar = userData.useAnimatedAvatar;
+            }
           } else {
             // eslint-disable-next-line no-console
             console.log('[Session GET] No Firestore doc for uid:', decoded.uid);
@@ -118,6 +135,10 @@ export async function GET(request: NextRequest) {
               photoURL,
               iconURL,
               preferences,
+              animatedAvatarURL,
+              animatedAvatarAction,
+              animatedAvatarStyle,
+              useAnimatedAvatar,
             },
             authenticated: true
           },
@@ -150,6 +171,10 @@ export async function GET(request: NextRequest) {
           photoURL: userData.customPhotoURL || userData.photoURL || decodedClaims.picture,
           iconURL: userData.customIconURL,
           preferences: userData.preferences,
+          animatedAvatarURL: userData.animatedAvatarURL,
+          animatedAvatarAction: userData.animatedAvatarAction,
+          animatedAvatarStyle: userData.animatedAvatarStyle,
+          useAnimatedAvatar: userData.useAnimatedAvatar,
         } : {
           uid: decodedClaims.uid,
           email: decodedClaims.email,
