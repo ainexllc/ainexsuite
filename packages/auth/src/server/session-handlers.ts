@@ -79,6 +79,8 @@ export async function GET(request: NextRequest) {
           const userDoc = await adminDb.collection('users').doc(decoded.uid).get();
           if (userDoc.exists) {
             const userData = userDoc.data();
+            // eslint-disable-next-line no-console
+            console.log('[Session GET] Firestore data for', decoded.uid, '- displayName:', userData?.displayName);
             // Use Firestore values if available (they're the source of truth after PUT updates)
             if (userData?.displayName) {
               displayName = userData.displayName;
@@ -92,9 +94,13 @@ export async function GET(request: NextRequest) {
             if (userData?.preferences) {
               preferences = userData.preferences;
             }
+          } else {
+            // eslint-disable-next-line no-console
+            console.log('[Session GET] No Firestore doc for uid:', decoded.uid);
           }
-        } catch {
-          // Could not load from Firestore, using cookie values
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('[Session GET] Firestore read failed:', err);
         }
 
         // Return full user data with Firestore values (or cookie fallback)
@@ -194,12 +200,16 @@ export async function PUT(request: NextRequest) {
           const adminDb = getAdminFirestore();
           const { FieldValue } = await import('firebase-admin/firestore');
           const userRef = adminDb.collection('users').doc(decoded.uid);
-          await userRef.update({
+          // Use set with merge to handle both existing and new documents
+          await userRef.set({
             ...filteredUpdates,
             updatedAt: FieldValue.serverTimestamp(),
-          });
-        } catch {
-          // Firestore update failed - continue with cookie update only
+          }, { merge: true });
+          // eslint-disable-next-line no-console
+          console.log('[Session PUT] Firestore updated for user:', decoded.uid, 'updates:', filteredUpdates);
+        } catch (firestoreError) {
+          // eslint-disable-next-line no-console
+          console.error('[Session PUT] Firestore update failed:', firestoreError);
         }
 
         // Create new cookie with updated data

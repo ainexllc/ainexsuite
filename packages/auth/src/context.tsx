@@ -220,6 +220,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ...prev,
           preferences: { ...prev.preferences, ...event.data.preferences }
         } : null);
+      } else if (event.data.type === 'PROFILE_UPDATE') {
+        setUser(prev => prev ? {
+          ...prev,
+          ...event.data.profile,
+        } : null);
       } else if (event.data.type === 'PROFILE_IMAGE_UPDATE') {
         setUser(prev => prev ? {
           ...prev,
@@ -303,10 +308,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const channel = new BroadcastChannel('ainex-preferences');
       channel.postMessage({ type: 'PROFILE_UPDATE', profile: updates });
       channel.close();
+
+      // 3. Update localStorage dev session (for page reload persistence in dev mode)
+      if (process.env.NODE_ENV === 'development') {
+        try {
+          const existingSession = localStorage.getItem('__cross_app_session');
+          if (existingSession) {
+            const decoded = JSON.parse(Buffer.from(existingSession, 'base64').toString());
+            const updatedSession = { ...decoded, ...updates };
+            const newSessionCookie = Buffer.from(JSON.stringify(updatedSession)).toString('base64');
+            localStorage.setItem('__cross_app_session', newSessionCookie);
+          }
+        } catch {
+          // Ignore localStorage errors
+        }
+      }
     }
 
     try {
-      // 3. API Call to persist
+      // 4. API Call to persist to Firestore
       const response = await fetch('/api/auth/session', {
         method: 'PUT',
         headers: {
