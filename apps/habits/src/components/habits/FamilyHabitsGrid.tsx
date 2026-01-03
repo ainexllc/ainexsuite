@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Check, Baby, User, PartyPopper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Member, Habit, Completion } from '@/types/models';
 import { getTodayDateString } from '@/lib/date-utils';
+import { MemberProfileModal } from './MemberProfileModal';
 
 interface FamilyHabitsGridProps {
   members: Member[];
@@ -26,6 +27,7 @@ export function FamilyHabitsGrid({
   onHabitClick,
 }: FamilyHabitsGridProps) {
   const today = getTodayDateString();
+  const [profileMember, setProfileMember] = useState<Member | null>(null);
 
   // Check if a habit is completed for a specific member today
   const isCompleted = (habitId: string, memberId: string): boolean => {
@@ -113,11 +115,12 @@ export function FamilyHabitsGrid({
                   : 'bg-white/5 border-white/10'
               )}
             >
-              {/* Member Header with Banner Background */}
+              {/* Member Header with Banner Background - Clickable for profile */}
               <div
+                onClick={() => setProfileMember(member)}
                 className={cn(
-                  'relative text-center border-b overflow-hidden',
-                  member.photoURL ? 'py-6 px-3' : 'p-3',
+                  'relative text-center border-b overflow-hidden cursor-pointer hover:opacity-90 transition-opacity',
+                  member.photoURL ? 'py-6 lg:py-9 px-3' : 'p-3',
                   allDone ? 'border-emerald-500/20' : 'border-white/10'
                 )}
               >
@@ -244,6 +247,18 @@ export function FamilyHabitsGrid({
           );
         })}
       </div>
+
+      {/* Member Profile Modal */}
+      {profileMember && (
+        <MemberProfileModal
+          member={profileMember}
+          isOpen={!!profileMember}
+          onClose={() => setProfileMember(null)}
+          habits={habits}
+          completions={completions}
+          allMembers={members}
+        />
+      )}
     </div>
   );
 }

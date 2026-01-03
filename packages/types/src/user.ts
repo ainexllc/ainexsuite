@@ -14,6 +14,8 @@ export interface User {
   email: string;
   displayName: string;
   photoURL: string;
+  /** Square-cropped icon URL for circular avatars (TopNav, etc.) */
+  iconURL?: string;
   role?: UserRole;
   preferences: UserPreferences;
   createdAt: Timestamp;
@@ -97,6 +99,16 @@ export interface User {
     lastReset: Timestamp;   // Last time usage was reset
   };
   monthlyQueryLimit?: number; // Based on subscription tier
+
+  // Animated Avatar (AI-generated video)
+  animatedAvatarURL?: string;        // Video URL in Firebase Storage
+  animatedAvatarPath?: string;       // Storage path for cleanup
+  animatedAvatarPosterURL?: string;  // Poster frame for loading state
+  animatedAvatarPosterPath?: string; // Poster storage path
+  animatedAvatarAction?: string;     // Action used (wave, wink, thumbsup, etc.)
+  animatedAvatarStyle?: string;      // Legacy: Animation style (kept for backwards compatibility)
+  animatedAvatarUpdatedAt?: Timestamp;
+  useAnimatedAvatar?: boolean;       // Toggle preference
 }
 
 export type CreateUserInput = Omit<User, 'uid' | 'createdAt' | 'lastLoginAt'>;

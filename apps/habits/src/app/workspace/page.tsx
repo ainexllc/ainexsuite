@@ -493,7 +493,9 @@ function GrowWorkspaceContent() {
           ) : isTeamSpace && currentSpace ? (
             /* Family/Team Grid View - show all members side by side */
             <FamilyHabitsGrid
-              members={currentSpace.members}
+              members={filters.assigneeIds.length > 0
+                ? currentSpace.members.filter(m => filters.assigneeIds.includes(m.uid))
+                : currentSpace.members}
               habits={habits}
               completions={completions}
               onComplete={handleCompleteForMember}

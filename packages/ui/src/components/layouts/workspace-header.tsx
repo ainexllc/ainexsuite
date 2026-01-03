@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
 import { NotificationBell } from '../navigation/notification-bell';
+import { AnimatedAvatarPlayer } from '../animated-avatar-player';
 import type { BreadcrumbItem, QuickAction } from '@ainexsuite/types';
 
 interface WorkspaceHeaderProps {
@@ -14,9 +15,14 @@ interface WorkspaceHeaderProps {
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
+    /** Square-cropped icon URL for circular avatars */
+    iconURL?: string | null;
     subscriptionStatus?: string;
     subscriptionTier?: string;
     trialStartDate?: number;
+    // Animated avatar fields
+    animatedAvatarURL?: string | null;
+    useAnimatedAvatar?: boolean;
   };
   onSignOut: () => void;
   appName?: string;
@@ -158,17 +164,39 @@ export function WorkspaceHeader({
   };
 
   // Render user avatar/initials (shared between header and floating controls)
-  const renderUserAvatar = () => (
-    user.photoURL ? (
-      <Image
-        src={user.photoURL}
-        alt={user.displayName ?? user.email ?? 'Account'}
-        width={28}
-        height={28}
-        className="rounded-full object-cover"
-        sizes="28px"
-      />
-    ) : (
+  // Supports animated avatars when user.useAnimatedAvatar is true
+  // Prefers iconURL (square-cropped) for circular display, falls back to photoURL
+  const renderUserAvatar = () => {
+    // Show animated avatar if enabled and available
+    if (user.useAnimatedAvatar && user.animatedAvatarURL) {
+      return (
+        <AnimatedAvatarPlayer
+          src={user.animatedAvatarURL}
+          className="h-7 w-7 rounded-full object-cover"
+          alt={user.displayName ?? 'Avatar'}
+          maxPlays={4}
+          pauseDuration={10000}
+        />
+      );
+    }
+
+    // Prefer iconURL (center-cropped square) for circular avatars, fallback to photoURL
+    const avatarSrc = user.iconURL || user.photoURL;
+    if (avatarSrc) {
+      return (
+        <Image
+          src={avatarSrc}
+          alt={user.displayName ?? user.email ?? 'Account'}
+          width={28}
+          height={28}
+          className="rounded-full object-cover"
+          sizes="28px"
+        />
+      );
+    }
+
+    // Fallback to initials
+    return (
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500 text-xs font-semibold text-white">
         {user.displayName
           ? user.displayName
@@ -179,8 +207,8 @@ export function WorkspaceHeader({
             .toUpperCase()
           : (user.email?.charAt(0).toUpperCase() ?? 'U')}
       </span>
-    )
-  );
+    );
+  };
 
   return (
     <>

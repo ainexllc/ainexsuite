@@ -147,6 +147,7 @@ export {
 
 export { AtmosphericGlows } from "./layouts/atmospheric-glows";
 export { WorkspaceHeader } from "./layouts/workspace-header";
+export { AnimatedAvatarPlayer, type AnimatedAvatarPlayerProps } from "./animated-avatar-player";
 // WorkspacePageHeader hidden - may be used later (see _workspace-page-header.tsx)
 export { WorkspaceLayout } from "./layouts/workspace-layout";
 export { WorkspacePageLayout } from "./layouts/workspace-page-layout";

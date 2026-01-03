@@ -35,6 +35,16 @@ interface UseWorkspaceAuthReturn {
   updateProfileImage: ReturnType<typeof useAuth>['updateProfileImage'];
   /** Remove custom profile image */
   removeProfileImage: ReturnType<typeof useAuth>['removeProfileImage'];
+  /** Generate animated avatar (calls Veo API) */
+  generateAnimatedAvatar: ReturnType<typeof useAuth>['generateAnimatedAvatar'];
+  /** Save animated avatar video to storage */
+  saveAnimatedAvatar: ReturnType<typeof useAuth>['saveAnimatedAvatar'];
+  /** Toggle animated avatar preference */
+  toggleAnimatedAvatar: ReturnType<typeof useAuth>['toggleAnimatedAvatar'];
+  /** Remove animated avatar */
+  removeAnimatedAvatar: ReturnType<typeof useAuth>['removeAnimatedAvatar'];
+  /** Poll for animation operation status */
+  pollAnimationStatus: ReturnType<typeof useAuth>['pollAnimationStatus'];
 }
 
 /**
@@ -53,7 +63,21 @@ interface UseWorkspaceAuthReturn {
  */
 export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWorkspaceAuthReturn {
   const { redirectTo = '/' } = options;
-  const { user, loading, ssoInProgress, bootstrapStatus, updatePreferences, updateProfile, updateProfileImage, removeProfileImage } = useAuth();
+  const {
+    user,
+    loading,
+    ssoInProgress,
+    bootstrapStatus,
+    updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
+  } = useAuth();
   const router = useRouter();
 
   // Combined loading state
@@ -95,5 +119,10 @@ export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWork
     updateProfile,
     updateProfileImage,
     removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
   };
 }

@@ -71,6 +71,7 @@ function WorkspaceLayoutInner({
           displayName: user.displayName,
           email: user.email,
           photoURL: user.photoURL,
+          iconURL: user.iconURL,
         } : null}
         preferences={user?.preferences ?? {
           theme: 'dark',

@@ -13,6 +13,8 @@ interface WorkspaceLayoutWithInsightsProps {
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
+    /** Square-cropped icon URL for circular avatars */
+    iconURL?: string | null;
     subscriptionStatus?: string;
     subscriptionTier?: string;
     trialStartDate?: number;

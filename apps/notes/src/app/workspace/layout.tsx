@@ -242,6 +242,7 @@ export default function WorkspaceRootLayout({
           displayName: user.displayName,
           email: user.email,
           photoURL: user.photoURL,
+          iconURL: user.iconURL,
         } : null}
         preferences={user?.preferences ?? {
           theme: 'dark',

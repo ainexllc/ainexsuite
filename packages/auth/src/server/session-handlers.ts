@@ -70,9 +70,10 @@ export async function GET(request: NextRequest) {
       try {
         const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
 
-        // Try to get latest user data from Firestore (displayName, photoURL, preferences)
+        // Try to get latest user data from Firestore (displayName, photoURL, iconURL, preferences)
         let displayName = decoded.displayName;
         let photoURL = decoded.photoURL;
+        let iconURL: string | undefined;
         let preferences = decoded.preferences;
         try {
           const adminDb = getAdminFirestore();
@@ -90,6 +91,10 @@ export async function GET(request: NextRequest) {
               photoURL = userData.customPhotoURL;
             } else if (userData?.photoURL) {
               photoURL = userData.photoURL;
+            }
+            // Get custom icon URL for circular avatars
+            if (userData?.customIconURL) {
+              iconURL = userData.customIconURL;
             }
             if (userData?.preferences) {
               preferences = userData.preferences;
@@ -111,6 +116,7 @@ export async function GET(request: NextRequest) {
               email: decoded.email,
               displayName,
               photoURL,
+              iconURL,
               preferences,
             },
             authenticated: true
@@ -142,6 +148,7 @@ export async function GET(request: NextRequest) {
           email: decodedClaims.email,
           displayName: userData.displayName || decodedClaims.name,
           photoURL: userData.customPhotoURL || userData.photoURL || decodedClaims.picture,
+          iconURL: userData.customIconURL,
           preferences: userData.preferences,
         } : {
           uid: decodedClaims.uid,
@@ -378,6 +385,9 @@ export async function POST(request: NextRequest) {
 
         // Try to load existing user preferences from Firestore, or create user if missing
         let userExists = false;
+        let customPhotoURL: string | undefined;
+        let customIconURL: string | undefined;
+        let firestoreDisplayName: string | undefined;
         try {
           const adminDb = getAdminFirestore();
           const userDoc = await adminDb.collection('users').doc(userData.uid || 'dev-user').get();
@@ -386,6 +396,16 @@ export async function POST(request: NextRequest) {
             const existingUser = userDoc.data();
             if (existingUser?.preferences) {
               existingPreferences = existingUser.preferences;
+            }
+            // Get custom profile image if set (takes priority over JWT photo)
+            if (existingUser?.customPhotoURL) {
+              customPhotoURL = existingUser.customPhotoURL;
+            }
+            if (existingUser?.customIconURL) {
+              customIconURL = existingUser.customIconURL;
+            }
+            if (existingUser?.displayName) {
+              firestoreDisplayName = existingUser.displayName;
             }
           }
         } catch {
@@ -397,8 +417,9 @@ export async function POST(request: NextRequest) {
         const user = {
           uid: userData.uid || 'dev-user',
           email: userData.email || 'dev@example.com',
-          displayName: userData.displayName || 'Dev User',
-          photoURL: userData.photoURL || '',
+          displayName: firestoreDisplayName || userData.displayName || 'Dev User',
+          photoURL: customPhotoURL || userData.photoURL || '',
+          iconURL: customIconURL,
           preferences: existingPreferences,
           createdAt: Date.now(),
           lastLoginAt: Date.now(),
@@ -559,8 +580,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Transform user object to use correct field names for frontend
+    // Prioritize customPhotoURL over photoURL for display
+    const transformedUser = {
+      ...user,
+      photoURL: user?.customPhotoURL || user?.photoURL || decodedToken.picture || '',
+      iconURL: user?.customIconURL,
+    };
+
     // Set session cookie on response
-    const res = NextResponse.json({ sessionCookie, user });
+    const res = NextResponse.json({ sessionCookie, user: transformedUser });
 
     res.cookies.set('__session', sessionCookie, {
       ...(cookieDomain ? { domain: cookieDomain } : {}), // Only set domain if defined

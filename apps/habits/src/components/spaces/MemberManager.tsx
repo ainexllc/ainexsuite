@@ -415,12 +415,12 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
                           {member.displayName.slice(0, 2).toUpperCase()}
                         </div>
                       )}
-                      {/* Edit avatar button overlay */}
-                      {canManage && (
+                      {/* Edit avatar button overlay - Only for child members */}
+                      {canManage && member.ageGroup === 'child' && (
                         <button
                           onClick={() => setEditingMember(member)}
                           className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                          title="Edit avatar"
+                          title="Generate avatar"
                         >
                           <Sparkles className="h-3.5 w-3.5 text-amber-400" />
                         </button>

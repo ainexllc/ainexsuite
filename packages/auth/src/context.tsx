@@ -7,7 +7,16 @@
 
 import React, { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import type { User as FirebaseUser } from 'firebase/auth';
-import { auth, SSOHandler, setProfileImage, removeCustomProfileImage, syncUserPhotoToSpaces } from '@ainexsuite/firebase';
+import {
+  auth,
+  SSOHandler,
+  setProfileImage,
+  removeCustomProfileImage,
+  syncUserPhotoToSpaces,
+  setAnimatedAvatar,
+  toggleAnimatedAvatar as firebaseToggleAnimatedAvatar,
+  removeAnimatedAvatar as firebaseRemoveAnimatedAvatar,
+} from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User, UserPreferences } from '@ainexsuite/types';
 import { setThemeCookie, getThemeCookie, type ThemeValue } from '@ainexsuite/theme';
@@ -48,6 +57,16 @@ interface AuthContextType {
   updateProfileImage: (imageData: string) => Promise<{ success: boolean; error?: string }>;
   /** Remove custom profile image and revert to default */
   removeProfileImage: () => Promise<boolean>;
+  /** Generate animated avatar - used with onSaveAnimatedAvatar */
+  generateAnimatedAvatar: (action: string) => Promise<{ success: boolean; videoData?: string; error?: string; pending?: boolean; operationId?: string }>;
+  /** Save animated avatar video to storage */
+  saveAnimatedAvatar: (videoData: string, action: string) => Promise<{ success: boolean; error?: string }>;
+  /** Toggle animated avatar preference */
+  toggleAnimatedAvatar: (useAnimated: boolean) => Promise<void>;
+  /** Remove animated avatar */
+  removeAnimatedAvatar: () => Promise<boolean>;
+  /** Poll for animation operation status */
+  pollAnimationStatus: (operationId: string) => Promise<{ success: boolean; done: boolean; videoData?: string; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -229,6 +248,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(prev => prev ? {
           ...prev,
           photoURL: event.data.photoURL,
+          iconURL: event.data.iconURL ?? undefined,
+        } : null);
+      } else if (event.data.type === 'ANIMATED_AVATAR_UPDATE') {
+        setUser(prev => prev ? {
+          ...prev,
+          animatedAvatarURL: event.data.animatedAvatarURL,
+          animatedAvatarStyle: event.data.animatedAvatarStyle,
+          useAnimatedAvatar: event.data.useAnimatedAvatar,
+        } : null);
+      } else if (event.data.type === 'ANIMATED_AVATAR_TOGGLE') {
+        setUser(prev => prev ? {
+          ...prev,
+          useAnimatedAvatar: event.data.useAnimated,
+        } : null);
+      } else if (event.data.type === 'ANIMATED_AVATAR_REMOVED') {
+        setUser(prev => prev ? {
+          ...prev,
+          animatedAvatarURL: undefined,
+          animatedAvatarStyle: undefined,
+          useAnimatedAvatar: false,
         } : null);
       }
     };
@@ -354,23 +393,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await setProfileImage(user.uid, imageData);
 
-      if (!result.success) {
-        return { success: false, error: result.error };
+      if (!result.success || !result.downloadURL) {
+        return { success: false, error: result.error || 'Failed to get download URL' };
       }
 
-      // Update local user state with new photo URL
-      const updatedUser = {
-        ...user,
-        photoURL: result.downloadURL || user.photoURL,
-      };
-      setUser(updatedUser);
+      const newPhotoURL = result.downloadURL;
+      const newIconURL = result.iconURL;
+
+      // Update local user state with new photo URL and icon URL
+      setUser(prevUser => prevUser ? {
+        ...prevUser,
+        photoURL: newPhotoURL,
+        iconURL: newIconURL,
+      } : null);
 
       // Broadcast to other tabs for sync
       if (typeof window !== 'undefined') {
         const channel = new BroadcastChannel('ainex-preferences');
         channel.postMessage({
           type: 'PROFILE_IMAGE_UPDATE',
-          photoURL: result.downloadURL,
+          photoURL: newPhotoURL,
+          iconURL: newIconURL,
         });
         channel.close();
       }
@@ -395,11 +438,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const success = await removeCustomProfileImage(user.uid);
 
       if (success) {
-        // Revert to Firebase Auth photoURL or empty
+        // Revert to Firebase Auth photoURL or empty, clear iconURL
         const originalPhotoURL = firebaseUser?.photoURL || '';
         setUser({
           ...user,
           photoURL: originalPhotoURL,
+          iconURL: undefined,
         });
 
         // Sync the reverted photoURL to all spaces (fire and forget)
@@ -413,6 +457,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           channel.postMessage({
             type: 'PROFILE_IMAGE_UPDATE',
             photoURL: originalPhotoURL,
+            iconURL: null,
           });
           channel.close();
         }
@@ -424,6 +469,198 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
   }, [user, firebaseUser]);
+
+  // Generate animated avatar
+  const generateAnimatedAvatar = useCallback(async (action: string): Promise<{
+    success: boolean;
+    videoData?: string;
+    error?: string;
+    pending?: boolean;
+    operationId?: string;
+  }> => {
+    if (!user?.photoURL) {
+      return { success: false, error: 'No avatar to animate' };
+    }
+
+    try {
+      const response = await fetch('/api/animate-avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceImage: user.photoURL,
+          action,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        return { success: false, error: data.error || 'Failed to generate animation' };
+      }
+
+      // Check if it's a pending operation (for long-running generation)
+      if (data.pending && data.operationId) {
+        return {
+          success: true,
+          pending: true,
+          operationId: data.operationId,
+        };
+      }
+
+      return {
+        success: true,
+        videoData: data.videoData,
+      };
+    } catch (error) {
+      console.error('Failed to generate animated avatar:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to generate animation',
+      };
+    }
+  }, [user?.photoURL]);
+
+  // Save animated avatar video to storage
+  const saveAnimatedAvatar = useCallback(async (videoData: string, action: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> => {
+    if (!user) {
+      return { success: false, error: 'No user logged in' };
+    }
+
+    try {
+      const result = await setAnimatedAvatar(user.uid, videoData, undefined, action);
+
+      if (!result.success || !result.videoURL) {
+        return { success: false, error: result.error || 'Failed to save animation' };
+      }
+
+      // Update local user state
+      setUser(prevUser => prevUser ? {
+        ...prevUser,
+        animatedAvatarURL: result.videoURL,
+        animatedAvatarAction: action,
+        useAnimatedAvatar: true,
+      } : null);
+
+      // Broadcast to other tabs
+      if (typeof window !== 'undefined') {
+        const channel = new BroadcastChannel('ainex-preferences');
+        channel.postMessage({
+          type: 'ANIMATED_AVATAR_UPDATE',
+          animatedAvatarURL: result.videoURL,
+          animatedAvatarAction: action,
+          useAnimatedAvatar: true,
+        });
+        channel.close();
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to save animated avatar:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to save animation',
+      };
+    }
+  }, [user]);
+
+  // Toggle animated avatar preference
+  const toggleAnimatedAvatar = useCallback(async (useAnimated: boolean): Promise<void> => {
+    if (!user) return;
+
+    try {
+      await firebaseToggleAnimatedAvatar(user.uid, useAnimated);
+
+      // Update local state
+      setUser(prevUser => prevUser ? {
+        ...prevUser,
+        useAnimatedAvatar: useAnimated,
+      } : null);
+
+      // Broadcast to other tabs
+      if (typeof window !== 'undefined') {
+        const channel = new BroadcastChannel('ainex-preferences');
+        channel.postMessage({
+          type: 'ANIMATED_AVATAR_TOGGLE',
+          useAnimated,
+        });
+        channel.close();
+      }
+    } catch (error) {
+      console.error('Failed to toggle animated avatar:', error);
+    }
+  }, [user]);
+
+  // Remove animated avatar
+  const removeAnimatedAvatar = useCallback(async (): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const success = await firebaseRemoveAnimatedAvatar(user.uid);
+
+      if (success) {
+        // Update local state
+        setUser(prevUser => prevUser ? {
+          ...prevUser,
+          animatedAvatarURL: undefined,
+          animatedAvatarStyle: undefined,
+          useAnimatedAvatar: false,
+        } : null);
+
+        // Broadcast to other tabs
+        if (typeof window !== 'undefined') {
+          const channel = new BroadcastChannel('ainex-preferences');
+          channel.postMessage({ type: 'ANIMATED_AVATAR_REMOVED' });
+          channel.close();
+        }
+      }
+
+      return success;
+    } catch (error) {
+      console.error('Failed to remove animated avatar:', error);
+      return false;
+    }
+  }, [user]);
+
+  // Poll for animation operation status
+  const pollAnimationStatus = useCallback(async (operationId: string): Promise<{
+    success: boolean;
+    done: boolean;
+    videoData?: string;
+    error?: string;
+  }> => {
+    try {
+      const response = await fetch(`/api/animate-avatar?operationId=${encodeURIComponent(operationId)}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, done: true, error: data.error || 'Failed to check status' };
+      }
+
+      if (data.done) {
+        return {
+          success: data.success,
+          done: true,
+          videoData: data.videoUrl || data.videoData,
+          error: data.error,
+        };
+      }
+
+      return {
+        success: true,
+        done: false,
+      };
+    } catch (error) {
+      console.error('Failed to poll animation status:', error);
+      return {
+        success: false,
+        done: true,
+        error: error instanceof Error ? error.message : 'Failed to check status',
+      };
+    }
+  }, []);
 
   useEffect(() => {
 
@@ -438,9 +675,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Skip session creation if we're bootstrapping from an existing session cookie
           // This prevents double authentication when refreshing the page
           if (isBootstrapping) {
-            // Session cookie already exists, just hydrate user from Firebase
-            // No need to call /api/auth/session again
-            setUser(createFallbackUser(firebaseUser));
+            // Session cookie already exists, fetch user data from session endpoint
+            // This ensures we get the latest data including customPhotoURL
+            try {
+              const sessionResponse = await fetch('/api/auth/session', {
+                method: 'GET',
+                credentials: 'include',
+              });
+              if (sessionResponse.ok) {
+                const { user: sessionUser } = await sessionResponse.json();
+                if (sessionUser) {
+                  // Merge session data with fallback to ensure all fields exist
+                  const fallbackUser = createFallbackUser(firebaseUser);
+                  setUser({
+                    ...fallbackUser,
+                    ...sessionUser,
+                    // Ensure photoURL uses custom photo if available
+                    photoURL: sessionUser.photoURL || fallbackUser.photoURL,
+                    // Include square icon for circular avatars
+                    iconURL: sessionUser.iconURL,
+                  });
+                } else {
+                  setUser(createFallbackUser(firebaseUser));
+                }
+              } else {
+                setUser(createFallbackUser(firebaseUser));
+              }
+            } catch {
+              setUser(createFallbackUser(firebaseUser));
+            }
             setIsBootstrapping(false);
             setLoading(false);
             // SSO is complete when we have a user
@@ -668,6 +931,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updateProfile,
         updateProfileImage,
         removeProfileImage,
+        generateAnimatedAvatar,
+        saveAnimatedAvatar,
+        toggleAnimatedAvatar,
+        removeAnimatedAvatar,
+        pollAnimationStatus,
       }}
     >
       {/* SSOHandler processes auth_token from URL and signals completion */}

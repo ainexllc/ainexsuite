@@ -41,7 +41,7 @@ export function FamilyMemberColumn({
       {/* Member Header with Banner Background */}
       <div className={cn(
         'relative text-center border-b overflow-hidden',
-        member.photoURL ? 'py-8 lg:py-10 px-4 lg:px-5' : 'p-4 lg:p-5',
+        member.photoURL ? 'py-8 lg:py-12 px-4 lg:px-5' : 'p-4 lg:p-5',
         allDone ? 'border-emerald-500/20' : 'border-white/10'
       )}>
         {/* Banner Background Image */}

@@ -5,6 +5,7 @@ import { clsx } from "clsx";
 import {
   Sparkles,
   Upload,
+  Download,
   Loader2,
   RefreshCw,
   Check,
@@ -235,20 +236,42 @@ export function ProfileImageGenerator({
     }
   };
 
+  const handleDownload = async () => {
+    if (!currentPhotoURL) return;
+
+    try {
+      // Fetch the image and convert to blob for download
+      const response = await fetch(currentPhotoURL);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      // Create download link
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `profile-banner-${Date.now()}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError("Failed to download image");
+    }
+  };
+
   return (
     <div className="space-y-3">
-      {/* Current Profile Banner Display */}
+      {/* Current Profile Banner Display - Full Size */}
       <div className="space-y-3">
         {currentPhotoURL ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={currentPhotoURL}
             alt={displayName || "Profile"}
-            className="w-full h-24 rounded-xl object-cover ring-2 ring-border"
+            className="w-full h-44 rounded-xl object-cover ring-2 ring-border"
           />
         ) : (
-          <div className="w-full h-24 rounded-xl bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-border">
-            <span className="text-4xl font-bold text-primary/40">{initials}</span>
+          <div className="w-full h-44 rounded-xl bg-gradient-to-r from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-border">
+            <span className="text-5xl font-bold text-primary/40">{initials}</span>
           </div>
         )}
         <div>
@@ -297,6 +320,16 @@ export function ProfileImageGenerator({
             </>
           )}
         </button>
+        {currentPhotoURL && (
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </button>
+        )}
         {showRemoveButton && currentPhotoURL && onRemoveImage && (
           <button
             type="button"
@@ -431,28 +464,26 @@ export function ProfileImageGenerator({
                 </div>
               )}
 
-              {/* Style Selector - Same for both modes */}
+              {/* Style Selector - Compact chips */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
                   Style
                 </label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {AVATAR_STYLES.map((style) => (
                     <button
                       key={style.id}
                       type="button"
                       onClick={() => setSelectedStyle(style.id)}
                       className={clsx(
-                        "flex flex-col items-center gap-1 p-2 rounded-xl border transition-all",
+                        "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all",
                         selectedStyle === style.id
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                       )}
                     >
-                      <span className="text-lg">{style.emoji}</span>
-                      <span className="text-[10px] font-medium truncate w-full text-center">
-                        {style.label}
-                      </span>
+                      <span className="text-sm">{style.emoji}</span>
+                      <span>{style.label}</span>
                     </button>
                   ))}
                 </div>

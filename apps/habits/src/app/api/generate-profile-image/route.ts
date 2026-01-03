@@ -63,7 +63,7 @@ Role: Expert Banner Designer creating unique profile header images.
 
 ## CRITICAL COMPOSITION RULES (MUST FOLLOW):
 
-1. **WIDE RECTANGULAR FORMAT:** Generate a wide rectangular banner image with 9:4 aspect ratio (approximately 900x400 pixels).
+1. **WIDE RECTANGULAR FORMAT:** Generate a wide rectangular banner image with 16:9 aspect ratio (1280x720 pixels).
 
 2. **BANNER COMPOSITION:**
    - Design should work as a horizontal header/banner.
@@ -88,7 +88,7 @@ Role: Expert Banner Designer creating unique profile header images.
 
 ## FINAL OUTPUT:
 - A beautiful, unique banner/header image.
-- Wide rectangular format (9:4 aspect ratio).
+- Wide rectangular format (16:9 aspect ratio, 1280x720).
 - Professional quality suitable for a premium app.
 - Visually interesting with good use of the horizontal space.
 - Works well as a profile header or column banner.
@@ -106,7 +106,7 @@ ${styleGuide}
 
 ## CRITICAL COMPOSITION RULES (MUST FOLLOW):
 
-1. **WIDE RECTANGULAR FORMAT:** Output a wide rectangular banner with 9:4 aspect ratio (approximately 900x400 pixels).
+1. **WIDE RECTANGULAR FORMAT:** Output a wide rectangular banner with 16:9 aspect ratio (1280x720 pixels).
 
 2. **BANNER COMPOSITION:**
    - Transform the subject to fit well in a horizontal header/banner format.
@@ -126,7 +126,7 @@ ${styleGuide}
 
 ## FINAL OUTPUT:
 - A transformed banner image that's playful and unique.
-- Wide rectangular format (9:4 aspect ratio).
+- Wide rectangular format (16:9 aspect ratio, 1280x720).
 - Professional quality suitable for a premium app.
 - Works well as a profile header or column banner.
 `.trim();

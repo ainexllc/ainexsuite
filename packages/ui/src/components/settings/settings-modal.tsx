@@ -2,11 +2,13 @@
 
 import * as React from "react";
 import { clsx } from "clsx";
-import { X, User, Palette, Bell, Globe, Settings2, Eye, EyeOff, Users, Loader2, Trash2 } from "lucide-react";
+import { X, User, Palette, Bell, Globe, Settings2, Eye, EyeOff, Users, Loader2, Trash2, Video, Sparkles } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import type { UserPreferences, FontFamily, SpaceType } from "@ainexsuite/types";
 import { ProfileImageGenerator } from "./profile-image-generator";
+import { AnimateAvatarModal } from "./animate-avatar-modal";
+import { AnimatedAvatarPlayer } from "../animated-avatar-player";
 
 export type SettingsTab = "profile" | "appearance" | "notifications" | "spaces" | "app";
 
@@ -15,7 +17,14 @@ export interface SettingsUser {
   displayName?: string | null;
   email?: string | null;
   photoURL?: string | null;
+  /** Square-cropped icon URL for circular avatars */
+  iconURL?: string | null;
   emailVerified?: boolean;
+  // Animated avatar fields
+  animatedAvatarURL?: string | null;
+  animatedAvatarAction?: string | null;  // Current action (wave, wink, etc.)
+  animatedAvatarStyle?: string | null;   // Legacy: kept for backwards compatibility
+  useAnimatedAvatar?: boolean;
 }
 
 /** Space item for settings management */
@@ -58,6 +67,18 @@ export interface SettingsModalProps {
   onRemoveProfileImage?: () => Promise<boolean>;
   /** API endpoint for profile image generation (defaults to /api/generate-profile-image) */
   profileImageApiEndpoint?: string;
+  /** Generate animated avatar handler */
+  onGenerateAnimatedAvatar?: (style: string) => Promise<{ success: boolean; videoData?: string; error?: string; pending?: boolean; operationId?: string }>;
+  /** Toggle animated avatar preference */
+  onToggleAnimatedAvatar?: (useAnimated: boolean) => Promise<void>;
+  /** Remove animated avatar handler */
+  onRemoveAnimatedAvatar?: () => Promise<boolean>;
+  /** Save animated avatar handler */
+  onSaveAnimatedAvatar?: (videoData: string, style: string) => Promise<{ success: boolean; error?: string }>;
+  /** Poll for operation status (for long-running animation generation) */
+  onPollAnimationStatus?: (operationId: string) => Promise<{ success: boolean; done: boolean; videoData?: string; error?: string }>;
+  /** API endpoint for avatar animation (defaults to /api/animate-avatar) */
+  animateAvatarApiEndpoint?: string;
   /** User's spaces for management */
   spaces?: SpaceSettingsItem[];
   /** Callback when user wants to create a new space */
@@ -105,6 +126,12 @@ export function SettingsModal({
   onUpdateProfileImage,
   onRemoveProfileImage,
   profileImageApiEndpoint,
+  onGenerateAnimatedAvatar,
+  onToggleAnimatedAvatar,
+  onRemoveAnimatedAvatar,
+  onSaveAnimatedAvatar,
+  onPollAnimationStatus,
+  animateAvatarApiEndpoint,
   spaces,
   onCreateSpace,
   onEditSpace,
@@ -223,6 +250,12 @@ export function SettingsModal({
                 onUpdateProfileImage={onUpdateProfileImage}
                 onRemoveProfileImage={onRemoveProfileImage}
                 profileImageApiEndpoint={profileImageApiEndpoint}
+                onGenerateAnimatedAvatar={onGenerateAnimatedAvatar}
+                onToggleAnimatedAvatar={onToggleAnimatedAvatar}
+                onRemoveAnimatedAvatar={onRemoveAnimatedAvatar}
+                onSaveAnimatedAvatar={onSaveAnimatedAvatar}
+                onPollAnimationStatus={onPollAnimationStatus}
+                animateAvatarApiEndpoint={animateAvatarApiEndpoint}
               />
             )}
             {activeTab === "appearance" && (
@@ -272,6 +305,12 @@ interface ProfileSettingsProps {
   onUpdateProfileImage?: (imageData: string) => Promise<{ success: boolean; error?: string }>;
   onRemoveProfileImage?: () => Promise<boolean>;
   profileImageApiEndpoint?: string;
+  onGenerateAnimatedAvatar?: (style: string) => Promise<{ success: boolean; videoData?: string; error?: string; pending?: boolean; operationId?: string }>;
+  onToggleAnimatedAvatar?: (useAnimated: boolean) => Promise<void>;
+  onRemoveAnimatedAvatar?: () => Promise<boolean>;
+  onSaveAnimatedAvatar?: (videoData: string, style: string) => Promise<{ success: boolean; error?: string }>;
+  onPollAnimationStatus?: (operationId: string) => Promise<{ success: boolean; done: boolean; videoData?: string; error?: string }>;
+  animateAvatarApiEndpoint?: string;
 }
 
 function ProfileSettings({
@@ -280,10 +319,18 @@ function ProfileSettings({
   onUpdateProfileImage,
   onRemoveProfileImage,
   profileImageApiEndpoint,
+  onGenerateAnimatedAvatar,
+  onToggleAnimatedAvatar,
+  onRemoveAnimatedAvatar,
+  onSaveAnimatedAvatar,
+  onPollAnimationStatus,
+  animateAvatarApiEndpoint,
 }: ProfileSettingsProps) {
   const [displayName, setDisplayName] = React.useState(user?.displayName || "");
   const [saving, setSaving] = React.useState(false);
   const [saved, setSaved] = React.useState(false);
+  const [showAnimateModal, setShowAnimateModal] = React.useState(false);
+  const [togglingAnimated, setTogglingAnimated] = React.useState(false);
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const lastSavedValueRef = React.useRef(user?.displayName || "");
 
@@ -329,19 +376,49 @@ function ProfileSettings({
     }
   }, [user?.displayName]);
 
+  const handleToggleAnimated = async (useAnimated: boolean) => {
+    if (!onToggleAnimatedAvatar) return;
+    setTogglingAnimated(true);
+    try {
+      await onToggleAnimatedAvatar(useAnimated);
+    } finally {
+      setTogglingAnimated(false);
+    }
+  };
+
+  const handleSaveAnimation = async (videoData: string, style: string) => {
+    if (!onSaveAnimatedAvatar) {
+      return { success: false, error: "Save handler not available" };
+    }
+    return onSaveAnimatedAvatar(videoData, style);
+  };
+
   return (
     <div className="space-y-6">
       {/* Profile Image Generator */}
       {onUpdateProfileImage ? (
-        <ProfileImageGenerator
-          currentPhotoURL={user?.photoURL}
-          displayName={user?.displayName}
-          email={user?.email}
-          onUpdateImage={onUpdateProfileImage}
-          onRemoveImage={onRemoveProfileImage}
-          apiEndpoint={profileImageApiEndpoint}
-          showRemoveButton={!!onRemoveProfileImage}
-        />
+        <div className="relative">
+          <ProfileImageGenerator
+            currentPhotoURL={user?.photoURL}
+            displayName={user?.displayName}
+            email={user?.email}
+            onUpdateImage={onUpdateProfileImage}
+            onRemoveImage={onRemoveProfileImage}
+            apiEndpoint={profileImageApiEndpoint}
+            showRemoveButton={!!onRemoveProfileImage}
+          />
+          {/* Animate Button - overlay on the banner */}
+          {user?.photoURL && onGenerateAnimatedAvatar && onSaveAnimatedAvatar && (
+            <button
+              type="button"
+              onClick={() => setShowAnimateModal(true)}
+              className="absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-background/90 backdrop-blur-sm text-foreground hover:bg-background transition-all shadow-lg border border-border"
+            >
+              <Video className="h-3.5 w-3.5" />
+              Animate
+            </button>
+          )}
+        </div>
       ) : (
         /* Fallback: Static Avatar Display */
         <div className="flex items-center gap-4">
@@ -361,6 +438,67 @@ function ProfileSettings({
             <p className="text-sm font-medium text-foreground">Profile Photo</p>
             <p className="text-xs text-muted-foreground">Managed by your Google account</p>
           </div>
+        </div>
+      )}
+
+      {/* Animated Avatar Preview & Toggle */}
+      {user?.animatedAvatarURL && onToggleAnimatedAvatar && (
+        <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Animated Avatar</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {onRemoveAnimatedAvatar && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (await onRemoveAnimatedAvatar()) {
+                      // Animation removed successfully
+                    }
+                  }}
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  Remove
+                </button>
+              )}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={user.useAnimatedAvatar}
+                onClick={() => handleToggleAnimated(!user.useAnimatedAvatar)}
+                disabled={togglingAnimated}
+                className={clsx(
+                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
+                  user.useAnimatedAvatar ? "bg-primary" : "bg-muted",
+                  togglingAnimated && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <span
+                  className={clsx(
+                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                    user.useAnimatedAvatar ? "translate-x-4" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+          {user.useAnimatedAvatar && user.animatedAvatarURL && (
+            <AnimatedAvatarPlayer
+              src={user.animatedAvatarURL}
+              className="w-full h-32 rounded-lg object-cover"
+              alt="Animated avatar preview"
+              maxPlays={4}
+              pauseDuration={10000}
+            />
+          )}
+          <p className="text-xs text-muted-foreground">
+            {user.useAnimatedAvatar
+              ? "Your animated avatar is displayed in the workspace header"
+              : "Enable to show your animated avatar instead of the static banner"
+            }
+          </p>
         </div>
       )}
 
@@ -406,6 +544,20 @@ function ProfileSettings({
           )}
         </div>
       </div>
+
+      {/* Animate Avatar Modal */}
+      {user?.photoURL && onGenerateAnimatedAvatar && onSaveAnimatedAvatar && (
+        <AnimateAvatarModal
+          isOpen={showAnimateModal}
+          onClose={() => setShowAnimateModal(false)}
+          sourceImage={user.photoURL}
+          currentAction={user.animatedAvatarAction || user.animatedAvatarStyle || undefined}
+          onGenerate={onGenerateAnimatedAvatar}
+          onSave={handleSaveAnimation}
+          onPollStatus={onPollAnimationStatus}
+          apiEndpoint={animateAvatarApiEndpoint}
+        />
+      )}
     </div>
   );
 }

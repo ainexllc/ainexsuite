@@ -65,6 +65,7 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
           displayName: user.displayName,
           email: user.email,
           photoURL: user.photoURL,
+          iconURL: user.iconURL,
         } : null}
         preferences={user?.preferences ?? {
           theme: 'dark',

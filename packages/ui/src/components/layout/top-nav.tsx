@@ -85,6 +85,8 @@ export type TopNavProfileButtonProps = {
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
+    /** Square-cropped icon for circular avatars */
+    iconURL?: string | null;
   } | null;
   onClick: () => void;
   loading?: boolean;
@@ -112,29 +114,34 @@ export function TopNavProfileButton({
         .toUpperCase()
     : user.email?.charAt(0).toUpperCase() ?? "U";
 
+  // Prefer iconURL (square cropped) for circular avatar, fallback to photoURL
+  const avatarSrc = user.iconURL || user.photoURL;
+
   return (
     <button
       type="button"
-      className="flex items-center gap-2 h-9 rounded-full bg-muted/80 text-foreground shadow-sm transition hover:bg-muted px-2"
+      className="flex items-center gap-1.5 rounded-full transition hover:opacity-80"
       aria-label="Profile menu"
       onClick={onClick}
     >
-      {user.photoURL ? (
-        <Image
-          src={user.photoURL}
-          alt={user.displayName ?? user.email ?? "Account"}
-          width={28}
-          height={28}
-          className="rounded-full object-cover"
-          sizes="28px"
-        />
+      {avatarSrc ? (
+        <div className="relative h-10 w-10 rounded-full overflow-hidden ring-2 ring-white/20 shadow-lg">
+          <Image
+            src={avatarSrc}
+            alt={user.displayName ?? user.email ?? "Account"}
+            fill
+            sizes="40px"
+            className="object-cover object-center"
+            priority
+          />
+        </div>
       ) : (
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-500 text-white text-sm font-semibold shadow-lg ring-2 ring-white/20">
           {initials}
         </span>
       )}
       {showChevron && (
-        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        <ChevronDown className="h-4 w-4 text-muted-foreground" />
       )}
     </button>
   );

@@ -11,3 +11,8 @@ export {
   ProfileImageGenerator,
   type ProfileImageGeneratorProps,
 } from "./profile-image-generator";
+
+export {
+  AnimateAvatarModal,
+  type AnimateAvatarModalProps,
+} from "./animate-avatar-modal";
