@@ -6,6 +6,7 @@ import {
   ActiveFilterChips,
   type ViewOption,
   type SortOption,
+  type FilterChip,
 } from "@ainexsuite/ui";
 import { useSubscriptions } from "@/components/providers/subscription-provider";
 import type { ViewType, SortField } from "@/types";
@@ -39,15 +40,15 @@ export function TrackToolbar({ viewMode, onViewModeChange }: TrackToolbarProps) 
   } = useSubscriptions();
 
   // Convert filters to chips
-  const filterChips = [];
+  const filterChips: FilterChip[] = [];
   if (filters.category) {
-    filterChips.push({ id: 'category', label: filters.category, type: 'filter' });
+    filterChips.push({ id: 'category', label: filters.category, type: 'category' });
   }
   if (filters.billingCycle) {
-    filterChips.push({ id: 'cycle', label: filters.billingCycle === 'monthly' ? 'Monthly' : 'Yearly', type: 'filter' });
+    filterChips.push({ id: 'cycle', label: filters.billingCycle === 'monthly' ? 'Monthly' : 'Yearly', type: 'cycle' });
   }
   if (filters.status) {
-    filterChips.push({ id: 'status', label: filters.status, type: 'filter' });
+    filterChips.push({ id: 'status', label: filters.status, type: 'status' });
   }
 
   const handleRemoveChip = (id: string) => {

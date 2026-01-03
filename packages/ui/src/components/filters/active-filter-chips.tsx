@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { X, Tag, Palette, Calendar, FileText, Bookmark, Users, Flag, CheckCircle, List } from "lucide-react";
+import { X, Tag, Palette, Calendar, FileText, Bookmark, Users, Flag, CheckCircle, List, Filter, FolderOpen, RefreshCw } from "lucide-react";
 import { cn } from "../../lib/utils";
 
-export type FilterChipType = "label" | "color" | "date" | "noteType" | "dateField" | "preset" | "space" | "priority" | "status" | "list";
+export type FilterChipType = "label" | "color" | "date" | "noteType" | "dateField" | "preset" | "space" | "priority" | "status" | "list" | "filter" | "category" | "cycle";
 
 export interface FilterChip {
   id: string;
@@ -31,6 +31,9 @@ const chipTypeIcons: Record<FilterChipType, React.ComponentType<{ className?: st
   priority: Flag,
   status: CheckCircle,
   list: List,
+  filter: Filter,
+  category: FolderOpen,
+  cycle: RefreshCw,
 };
 
 const chipTypeColors: Record<FilterChipType, string> = {
@@ -44,6 +47,9 @@ const chipTypeColors: Record<FilterChipType, string> = {
   priority: "bg-red-500/20 text-red-400 border-red-500/30",
   status: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   list: "bg-violet-500/20 text-violet-400 border-violet-500/30",
+  filter: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  category: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  cycle: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
 };
 
 export function ActiveFilterChips({
