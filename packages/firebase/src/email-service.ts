@@ -198,10 +198,18 @@ export function generateInvitationEmailHtml(data: InvitationEmailData): string {
       <td style="padding: 40px 20px;">
         <table role="presentation" class="email-container" style="max-width: 600px; margin: 0 auto; border-radius: 16px; overflow: hidden;">
 
-          <!-- Header with gradient -->
+          <!-- Header with background image -->
           <tr>
-            <td style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 32px 40px; text-align: center;">
-              <img src="https://www.ainexsuite.com/email-assets/logo-email.svg" alt="AINexSuite" style="height: 48px; width: 48px; display: block; margin: 0 auto 16px;" />
+            <td style="background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('https://www.ainexsuite.com/email-assets/emailbg.png') center/cover no-repeat; background-color: #0f172a; padding: 48px 40px; text-align: center;">
+              <!-- AINexSuite text logo -->
+              <div style="margin-bottom: 28px;">
+                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
+                  <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
+                </div>
+                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 15px; font-weight: 900; letter-spacing: 3px; color: #ffffff; margin-top: 4px;">
+                  SUITE
+                </div>
+              </div>
               <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #ffffff;">Space Invitation</h1>
             </td>
           </tr>
@@ -419,10 +427,18 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
       <td style="padding: 40px 20px;">
         <table role="presentation" class="email-container" style="max-width: 600px; margin: 0 auto; border-radius: 16px; overflow: hidden;">
 
-          <!-- Header with gradient -->
+          <!-- Header with background image -->
           <tr>
-            <td style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 48px 40px; text-align: center;">
-              <img src="https://www.ainexsuite.com/email-assets/logo-email.svg" alt="AINexSuite" style="height: 56px; width: 56px; display: block; margin: 0 auto 24px;" />
+            <td style="background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('https://www.ainexsuite.com/email-assets/emailbg.png') center/cover no-repeat; background-color: #0f172a; padding: 56px 40px; text-align: center;">
+              <!-- AINexSuite text logo -->
+              <div style="margin-bottom: 32px;">
+                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 44px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
+                  <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
+                </div>
+                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 17px; font-weight: 900; letter-spacing: 4px; color: #ffffff; margin-top: 6px;">
+                  SUITE
+                </div>
+              </div>
               <h1 style="margin: 0 0 8px; font-size: 32px; font-weight: 700; color: #ffffff;">Welcome to AINexSuite!</h1>
               <p style="margin: 0; font-size: 16px; color: rgba(255, 255, 255, 0.9);">Your personal productivity suite</p>
             </td>
@@ -434,7 +450,7 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
 
               <!-- Greeting -->
               <p class="email-text" style="margin: 0 0 24px; font-size: 18px;">
-                Hi ${data.userName || 'there'} 👋
+                Hi ${data.userName || 'there'},
               </p>
 
               <p class="email-text-body" style="margin: 0 0 24px; font-size: 16px; line-height: 1.6;">
@@ -451,28 +467,28 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
                       <tr>
                         <td style="padding: 8px 0;">
                           <p class="email-text-body" style="margin: 0; font-size: 15px;">
-                            <span style="color: #f97316; font-weight: 600;">✓</span> Manage tasks and projects across 14 integrated apps
+                            <span style="color: #f97316; font-weight: 600;">•</span> Manage tasks and projects across 14 integrated apps
                           </p>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0;">
                           <p class="email-text-body" style="margin: 0; font-size: 15px;">
-                            <span style="color: #f97316; font-weight: 600;">✓</span> Create family spaces to collaborate with loved ones
+                            <span style="color: #f97316; font-weight: 600;">•</span> Create family spaces to collaborate with loved ones
                           </p>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0;">
                           <p class="email-text-body" style="margin: 0; font-size: 15px;">
-                            <span style="color: #f97316; font-weight: 600;">✓</span> Track habits, health, fitness, and personal growth
+                            <span style="color: #f97316; font-weight: 600;">•</span> Track habits, health, fitness, and personal growth
                           </p>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0;">
                           <p class="email-text-body" style="margin: 0; font-size: 15px;">
-                            <span style="color: #f97316; font-weight: 600;">✓</span> Organize notes, journals, and memories in one place
+                            <span style="color: #f97316; font-weight: 600;">•</span> Organize notes, journals, and memories in one place
                           </p>
                         </td>
                       </tr>
@@ -500,18 +516,18 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
                     <table role="presentation" style="width: 100%;">
                       <tr>
                         <td style="padding: 4px 0;">
-                          <a href="https://notes.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px;">📝 Notes</a>
+                          <a href="https://notes.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Notes</a>
                         </td>
                         <td style="padding: 4px 0;">
-                          <a href="https://todo.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px;">✓ Tasks</a>
+                          <a href="https://todo.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Tasks</a>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 4px 0;">
-                          <a href="https://habits.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px;">🎯 Habits</a>
+                          <a href="https://habits.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Habits</a>
                         </td>
                         <td style="padding: 4px 0;">
-                          <a href="https://journal.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px;">📔 Journal</a>
+                          <a href="https://journal.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Journal</a>
                         </td>
                       </tr>
                     </table>
