@@ -58,3 +58,9 @@ docs/reference/env-backups/
 # Auto-generated Vercel docs
 **/.vercel/README.txt
 
+# ESLint cache
+.eslintcache
+
+# MCP servers (local installations)
+.mcp-servers/
+
