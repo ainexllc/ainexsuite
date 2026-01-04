@@ -16,11 +16,27 @@ function WorkspaceLayoutInner({
   user,
   handleSignOut,
   updatePreferences,
+  updateProfile,
+  updateProfileImage,
+  removeProfileImage,
+  generateAnimatedAvatar,
+  saveAnimatedAvatar,
+  toggleAnimatedAvatar,
+  removeAnimatedAvatar,
+  pollAnimationStatus,
 }: {
   children: React.ReactNode;
   user: NonNullable<ReturnType<typeof useWorkspaceAuth>['user']>;
   handleSignOut: () => void;
   updatePreferences: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
+  updateProfile: (updates: { displayName?: string }) => Promise<void>;
+  updateProfileImage: (file: File) => Promise<string>;
+  removeProfileImage: () => Promise<void>;
+  generateAnimatedAvatar: (style: string) => Promise<string>;
+  saveAnimatedAvatar: (previewUrl: string, style: string) => Promise<string>;
+  toggleAnimatedAvatar: (useAnimated: boolean) => Promise<void>;
+  removeAnimatedAvatar: () => Promise<void>;
+  pollAnimationStatus: (predictionId: string) => Promise<{ status: string; output?: string }>;
 }) {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const { allSpaces, updateSpace, deleteSpace } = useSpaces();
@@ -73,6 +89,9 @@ function WorkspaceLayoutInner({
           email: user.email,
           photoURL: user.photoURL,
           iconURL: user.iconURL,
+          animatedAvatarURL: user.animatedAvatarURL,
+          animatedAvatarStyle: user.animatedAvatarStyle,
+          useAnimatedAvatar: user.useAnimatedAvatar,
         } : null}
         preferences={user?.preferences ?? {
           theme: 'dark',
@@ -81,6 +100,16 @@ function WorkspaceLayoutInner({
           notifications: { email: true, push: false, inApp: true },
         }}
         onUpdatePreferences={updatePreferences}
+        onUpdateProfile={updateProfile}
+        onUpdateProfileImage={updateProfileImage}
+        onRemoveProfileImage={removeProfileImage}
+        profileImageApiEndpoint="/api/generate-profile-image"
+        onGenerateAnimatedAvatar={generateAnimatedAvatar}
+        onSaveAnimatedAvatar={saveAnimatedAvatar}
+        onToggleAnimatedAvatar={toggleAnimatedAvatar}
+        onRemoveAnimatedAvatar={removeAnimatedAvatar}
+        onPollAnimationStatus={pollAnimationStatus}
+        animateAvatarApiEndpoint="/api/animate-avatar"
         spaces={spaceSettingsItems}
         currentAppId="projects"
         onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
@@ -97,7 +126,21 @@ export default function WorkspaceRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const {
+    user,
+    isLoading,
+    isReady,
+    handleSignOut,
+    updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
+  } = useWorkspaceAuth();
 
   // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
@@ -115,6 +158,14 @@ export default function WorkspaceRootLayout({
           user={user}
           handleSignOut={handleSignOut}
           updatePreferences={updatePreferences}
+          updateProfile={updateProfile}
+          updateProfileImage={updateProfileImage}
+          removeProfileImage={removeProfileImage}
+          generateAnimatedAvatar={generateAnimatedAvatar}
+          saveAnimatedAvatar={saveAnimatedAvatar}
+          toggleAnimatedAvatar={toggleAnimatedAvatar}
+          removeAnimatedAvatar={removeAnimatedAvatar}
+          pollAnimationStatus={pollAnimationStatus}
         >
           {children}
         </WorkspaceLayoutInner>

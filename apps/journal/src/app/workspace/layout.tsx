@@ -23,11 +23,27 @@ function WorkspaceLayoutInner({
   user,
   handleSignOut,
   updatePreferences,
+  updateProfile,
+  updateProfileImage,
+  removeProfileImage,
+  generateAnimatedAvatar,
+  saveAnimatedAvatar,
+  toggleAnimatedAvatar,
+  removeAnimatedAvatar,
+  pollAnimationStatus,
 }: {
   children: React.ReactNode;
   user: NonNullable<ReturnType<typeof useWorkspaceAuth>['user']>;
   handleSignOut: () => void;
   updatePreferences: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
+  updateProfile: (updates: { displayName?: string }) => Promise<void>;
+  updateProfileImage: (imageData: string) => Promise<{ success: boolean; error?: string }>;
+  removeProfileImage: () => Promise<boolean>;
+  generateAnimatedAvatar: (action: string) => Promise<{ success: boolean; videoData?: string; error?: string; pending?: boolean; operationId?: string }>;
+  saveAnimatedAvatar: (videoData: string, action: string) => Promise<{ success: boolean; error?: string }>;
+  toggleAnimatedAvatar: (useAnimated: boolean) => Promise<void>;
+  removeAnimatedAvatar: () => Promise<boolean>;
+  pollAnimationStatus: (operationId: string) => Promise<{ success: boolean; done: boolean; videoData?: string; error?: string }>;
 }) {
   const router = useRouter();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
@@ -109,6 +125,9 @@ function WorkspaceLayoutInner({
           email: user.email,
           photoURL: user.photoURL,
           iconURL: user.iconURL,
+          animatedAvatarURL: user.animatedAvatarURL,
+          animatedAvatarStyle: user.animatedAvatarStyle,
+          useAnimatedAvatar: user.useAnimatedAvatar,
         } : null}
         preferences={user?.preferences ?? {
           theme: 'dark',
@@ -117,12 +136,22 @@ function WorkspaceLayoutInner({
           notifications: { email: true, push: false, inApp: true },
         }}
         onUpdatePreferences={updatePreferences}
+        onUpdateProfile={updateProfile}
         spaces={spaceSettingsItems}
         currentAppId="journal"
         onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
         onDeleteSpace={deleteSpace}
         appSettingsLabel="Journal"
         appSettingsIcon={<BookOpen className="h-4 w-4" />}
+        onUpdateProfileImage={updateProfileImage}
+        onRemoveProfileImage={removeProfileImage}
+        profileImageApiEndpoint="/api/generate-profile-image"
+        onGenerateAnimatedAvatar={generateAnimatedAvatar}
+        onSaveAnimatedAvatar={saveAnimatedAvatar}
+        onToggleAnimatedAvatar={toggleAnimatedAvatar}
+        onRemoveAnimatedAvatar={removeAnimatedAvatar}
+        onPollAnimationStatus={pollAnimationStatus}
+        animateAvatarApiEndpoint="/api/animate-avatar"
       />
     </>
   );
@@ -133,7 +162,21 @@ export default function WorkspaceRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const {
+    user,
+    isLoading,
+    isReady,
+    handleSignOut,
+    updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
+  } = useWorkspaceAuth();
 
   // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
   useFontPreference(user?.preferences?.fontFamily);
@@ -156,6 +199,14 @@ export default function WorkspaceRootLayout({
                   user={user}
                   handleSignOut={handleSignOut}
                   updatePreferences={updatePreferences}
+                  updateProfile={updateProfile}
+                  updateProfileImage={updateProfileImage}
+                  removeProfileImage={removeProfileImage}
+                  generateAnimatedAvatar={generateAnimatedAvatar}
+                  saveAnimatedAvatar={saveAnimatedAvatar}
+                  toggleAnimatedAvatar={toggleAnimatedAvatar}
+                  removeAnimatedAvatar={removeAnimatedAvatar}
+                  pollAnimationStatus={pollAnimationStatus}
                 >
                   {children}
                 </WorkspaceLayoutInner>

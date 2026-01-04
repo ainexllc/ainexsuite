@@ -11,7 +11,19 @@ import { HintsProvider } from '@/components/hints';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
-  const { user, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const {
+    user,
+    handleSignOut,
+    updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
+  } = useWorkspaceAuth();
   const { events } = useEvents();
   const { allSpaces, updateSpace, deleteSpace } = useSpaces();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
@@ -66,6 +78,9 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
           email: user.email,
           photoURL: user.photoURL,
           iconURL: user.iconURL,
+          animatedAvatarURL: user.animatedAvatarURL,
+          animatedAvatarStyle: user.animatedAvatarStyle,
+          useAnimatedAvatar: user.useAnimatedAvatar,
         } : null}
         preferences={user?.preferences ?? {
           theme: 'dark',
@@ -74,6 +89,16 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
           notifications: { email: true, push: false, inApp: true },
         }}
         onUpdatePreferences={updatePreferences}
+        onUpdateProfile={updateProfile}
+        onUpdateProfileImage={updateProfileImage}
+        onRemoveProfileImage={removeProfileImage}
+        profileImageApiEndpoint="/api/generate-profile-image"
+        onGenerateAnimatedAvatar={generateAnimatedAvatar}
+        onSaveAnimatedAvatar={saveAnimatedAvatar}
+        onToggleAnimatedAvatar={toggleAnimatedAvatar}
+        onRemoveAnimatedAvatar={removeAnimatedAvatar}
+        onPollAnimationStatus={pollAnimationStatus}
+        animateAvatarApiEndpoint="/api/animate-avatar"
         spaces={spaceSettingsItems}
         currentAppId="calendar"
         onUpdateSpaceVisibility={handleUpdateSpaceVisibility}

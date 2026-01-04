@@ -537,13 +537,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: result.error || 'Failed to save animation' };
       }
 
-      // Update local user state
-      setUser(prevUser => prevUser ? {
-        ...prevUser,
-        animatedAvatarURL: result.videoURL,
-        animatedAvatarAction: action,
-        useAnimatedAvatar: true,
-      } : null);
+      // Refresh session to get latest data from Firestore
+      try {
+        const sessionResponse = await fetch('/api/auth/session', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (sessionResponse.ok) {
+          const { user: sessionUser } = await sessionResponse.json();
+          if (sessionUser) {
+            // Update user state with fresh data from Firestore
+            setUser(prevUser => prevUser ? {
+              ...prevUser,
+              ...sessionUser,
+            } : null);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to refresh session after saving animated avatar:', error);
+        // Fall back to updating local state
+        setUser(prevUser => prevUser ? {
+          ...prevUser,
+          animatedAvatarURL: result.videoURL,
+          animatedAvatarAction: action,
+          useAnimatedAvatar: true,
+        } : null);
+      }
 
       // Broadcast to other tabs
       if (typeof window !== 'undefined') {

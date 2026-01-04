@@ -331,50 +331,33 @@ function ProfileSettings({
   const [saved, setSaved] = React.useState(false);
   const [showAnimateModal, setShowAnimateModal] = React.useState(false);
   const [togglingAnimated, setTogglingAnimated] = React.useState(false);
-  const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-  const lastSavedValueRef = React.useRef(user?.displayName || "");
+  const initialDisplayName = React.useRef(user?.displayName || "");
 
-  // Auto-save with debounce when displayName changes
+  // Track if there are unsaved changes
+  const hasChanges = displayName.trim() !== initialDisplayName.current;
+
+  // Sync with user prop changes (when saved externally)
   React.useEffect(() => {
-    // Don't save if no handler or value hasn't changed from last saved
-    if (!onUpdateProfile || displayName === lastSavedValueRef.current) {
-      return;
-    }
-
-    // Clear any pending save
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    // Debounce save by 800ms
-    saveTimeoutRef.current = setTimeout(async () => {
-      if (displayName.trim() && displayName !== lastSavedValueRef.current) {
-        setSaving(true);
-        try {
-          await onUpdateProfile({ displayName: displayName.trim() });
-          lastSavedValueRef.current = displayName.trim();
-          setSaved(true);
-          setTimeout(() => setSaved(false), 2000);
-        } finally {
-          setSaving(false);
-        }
-      }
-    }, 800);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [displayName, onUpdateProfile]);
-
-  // Sync with user prop changes
-  React.useEffect(() => {
-    if (user?.displayName && user.displayName !== lastSavedValueRef.current) {
+    if (user?.displayName) {
       setDisplayName(user.displayName);
-      lastSavedValueRef.current = user.displayName;
+      initialDisplayName.current = user.displayName;
     }
   }, [user?.displayName]);
+
+  // Handle save
+  const handleSave = async () => {
+    if (!onUpdateProfile || !hasChanges) return;
+
+    setSaving(true);
+    try {
+      await onUpdateProfile({ displayName: displayName.trim() });
+      initialDisplayName.current = displayName.trim();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleToggleAnimated = async (useAnimated: boolean) => {
     if (!onToggleAnimatedAvatar) return;
@@ -504,19 +487,9 @@ function ProfileSettings({
 
       {/* Display Name */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label htmlFor="displayName" className="text-sm font-medium text-foreground">
-            Display Name
-          </label>
-          {/* Auto-save status indicator */}
-          <span className={`text-xs transition-opacity duration-200 ${saving || saved ? 'opacity-100' : 'opacity-0'}`}>
-            {saving ? (
-              <span className="text-muted-foreground">Saving...</span>
-            ) : saved ? (
-              <span className="text-emerald-500">Saved</span>
-            ) : null}
-          </span>
-        </div>
+        <label htmlFor="displayName" className="text-sm font-medium text-foreground">
+          Display Name
+        </label>
         <input
           id="displayName"
           type="text"
@@ -544,6 +517,28 @@ function ProfileSettings({
           )}
         </div>
       </div>
+
+      {/* Save Button */}
+      {onUpdateProfile && (
+        <div className="flex items-center justify-end gap-3 pt-2">
+          {saved && (
+            <span className="text-xs text-emerald-500">Saved successfully</span>
+          )}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!hasChanges || saving}
+            className={clsx(
+              "px-4 py-2 rounded-xl text-sm font-medium transition-all",
+              hasChanges && !saving
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+            )}
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      )}
 
       {/* Animate Avatar Modal */}
       {user?.photoURL && onGenerateAnimatedAvatar && onSaveAnimatedAvatar && (

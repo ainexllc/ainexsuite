@@ -200,17 +200,28 @@ export function generateInvitationEmailHtml(data: InvitationEmailData): string {
 
           <!-- Header with background image -->
           <tr>
-            <td style="background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('https://www.ainexsuite.com/email-assets/emailbg.png') center/cover no-repeat; background-color: #0f172a; padding: 48px 40px; text-align: center;">
-              <!-- AINexSuite text logo -->
-              <div style="margin-bottom: 28px;">
-                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
-                  <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
+            <td background="https://www.ainexsuite.com/email-assets/emailbg.png" bgcolor="#0f172a" style="background-image: url('https://www.ainexsuite.com/email-assets/emailbg.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #0f172a; padding: 48px 40px; text-align: center;">
+              <!--[if gte mso 9]>
+              <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:300px;">
+                <v:fill type="tile" src="https://www.ainexsuite.com/email-assets/emailbg.png" color="#0f172a" />
+                <v:textbox inset="0,0,0,0">
+              <![endif]-->
+              <div style="background-color: rgba(15, 23, 42, 0.85); padding: 48px 40px; border-radius: 0;">
+                <!-- AINexSuite text logo -->
+                <div style="margin-bottom: 28px;">
+                  <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
+                    <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
+                  </div>
+                  <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 15px; font-weight: 900; letter-spacing: 3px; color: #ffffff; margin-top: 4px;">
+                    SUITE
+                  </div>
                 </div>
-                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 15px; font-weight: 900; letter-spacing: 3px; color: #ffffff; margin-top: 4px;">
-                  SUITE
-                </div>
+                <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #ffffff;">Space Invitation</h1>
               </div>
-              <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #ffffff;">Space Invitation</h1>
+              <!--[if gte mso 9]>
+                </v:textbox>
+              </v:rect>
+              <![endif]-->
             </td>
           </tr>
 
@@ -429,18 +440,29 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
 
           <!-- Header with background image -->
           <tr>
-            <td style="background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('https://www.ainexsuite.com/email-assets/emailbg.png') center/cover no-repeat; background-color: #0f172a; padding: 56px 40px; text-align: center;">
-              <!-- AINexSuite text logo -->
-              <div style="margin-bottom: 32px;">
-                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 44px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
-                  <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
+            <td background="https://www.ainexsuite.com/email-assets/emailbg.png" bgcolor="#0f172a" style="background-image: url('https://www.ainexsuite.com/email-assets/emailbg.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #0f172a; padding: 56px 40px; text-align: center;">
+              <!--[if gte mso 9]>
+              <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:350px;">
+                <v:fill type="tile" src="https://www.ainexsuite.com/email-assets/emailbg.png" color="#0f172a" />
+                <v:textbox inset="0,0,0,0">
+              <![endif]-->
+              <div style="background-color: rgba(15, 23, 42, 0.85); padding: 56px 40px; border-radius: 0;">
+                <!-- AINexSuite text logo -->
+                <div style="margin-bottom: 32px;">
+                  <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 44px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
+                    <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
+                  </div>
+                  <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 17px; font-weight: 900; letter-spacing: 4px; color: #ffffff; margin-top: 6px;">
+                    SUITE
+                  </div>
                 </div>
-                <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 17px; font-weight: 900; letter-spacing: 4px; color: #ffffff; margin-top: 6px;">
-                  SUITE
-                </div>
+                <h1 style="margin: 0 0 8px; font-size: 32px; font-weight: 700; color: #ffffff;">Welcome to AINexSuite!</h1>
+                <p style="margin: 0; font-size: 16px; color: rgba(255, 255, 255, 0.9);">Your personal productivity suite</p>
               </div>
-              <h1 style="margin: 0 0 8px; font-size: 32px; font-weight: 700; color: #ffffff;">Welcome to AINexSuite!</h1>
-              <p style="margin: 0; font-size: 16px; color: rgba(255, 255, 255, 0.9);">Your personal productivity suite</p>
+              <!--[if gte mso 9]>
+                </v:textbox>
+              </v:rect>
+              <![endif]-->
             </td>
           </tr>
 

@@ -10,16 +10,49 @@
           "firebase-tools@latest",
           "mcp",
           "--dir",
-          "/Users/dino/ainex/ainexsuite"
+          "/Users/dinohorn/ainex/ainexsuite"
         ],
         "env": {
           "FIREBASE_CLI_EXPERIMENTS": "mcp"
         }
       },
       "timeout_seconds": 120
+    },
+    {
+      "name": "resend-mcp",
+      "type": "mcp",
+      "server": {
+        "command": "node",
+        "args": [
+          "/Users/dinohorn/ainex/ainexsuite/.mcp-servers/resend-mcp/build/index.js"
+        ],
+        "env": {
+          "RESEND_API_KEY": "re_WMzujV5Y_Kt2LQSsnfcrVLk27v2vrsfCt",
+          "SENDER_EMAIL_ADDRESS": "noreply@ainexsuite.com",
+          "REPLY_TO_EMAIL_ADDRESS": "support@ainexsuite.com"
+        }
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "name": "namecheap-mcp",
+      "type": "mcp",
+      "server": {
+        "command": "node",
+        "args": [
+          "/Users/dinohorn/ainex/ainexsuite/.mcp-servers/namecheap-mcp/dist/index.js"
+        ],
+        "env": {
+          "NAMECHEAP_API_KEY": "5579f9d5abca4fe18fa708f9f222d7e0",
+          "NAMECHEAP_API_USER": "dinohorn",
+          "NAMECHEAP_CLIENT_IP": "136.33.77.24",
+          "NAMECHEAP_USE_SANDBOX": "false"
+        }
+      },
+      "timeout_seconds": 60
     }
   ],
   "allow": {
-    "tools": ["firebase-mcp"]
+    "tools": ["firebase-mcp", "resend-mcp", "namecheap-mcp"]
   }
 }

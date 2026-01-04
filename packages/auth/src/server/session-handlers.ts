@@ -413,6 +413,10 @@ export async function POST(request: NextRequest) {
         let customPhotoURL: string | undefined;
         let customIconURL: string | undefined;
         let firestoreDisplayName: string | undefined;
+        let animatedAvatarURL: string | undefined;
+        let animatedAvatarAction: string | undefined;
+        let animatedAvatarStyle: string | undefined;
+        let useAnimatedAvatar: boolean | undefined;
         try {
           const adminDb = getAdminFirestore();
           const userDoc = await adminDb.collection('users').doc(userData.uid || 'dev-user').get();
@@ -432,6 +436,19 @@ export async function POST(request: NextRequest) {
             if (existingUser?.displayName) {
               firestoreDisplayName = existingUser.displayName;
             }
+            // Get animated avatar fields
+            if (existingUser?.animatedAvatarURL) {
+              animatedAvatarURL = existingUser.animatedAvatarURL;
+            }
+            if (existingUser?.animatedAvatarAction) {
+              animatedAvatarAction = existingUser.animatedAvatarAction;
+            }
+            if (existingUser?.animatedAvatarStyle) {
+              animatedAvatarStyle = existingUser.animatedAvatarStyle;
+            }
+            if (existingUser?.useAnimatedAvatar !== undefined) {
+              useAnimatedAvatar = existingUser.useAnimatedAvatar;
+            }
           }
         } catch {
           // Could not load preferences from Firestore (Admin SDK not available)
@@ -446,6 +463,10 @@ export async function POST(request: NextRequest) {
           photoURL: customPhotoURL || userData.photoURL || '',
           iconURL: customIconURL,
           preferences: existingPreferences,
+          animatedAvatarURL,
+          animatedAvatarAction,
+          animatedAvatarStyle,
+          useAnimatedAvatar,
           createdAt: Date.now(),
           lastLoginAt: Date.now(),
           apps: {
@@ -611,6 +632,10 @@ export async function POST(request: NextRequest) {
       ...user,
       photoURL: user?.customPhotoURL || user?.photoURL || decodedToken.picture || '',
       iconURL: user?.customIconURL,
+      animatedAvatarURL: user?.animatedAvatarURL,
+      animatedAvatarAction: user?.animatedAvatarAction,
+      animatedAvatarStyle: user?.animatedAvatarStyle,
+      useAnimatedAvatar: user?.useAnimatedAvatar,
     };
 
     // Set session cookie on response

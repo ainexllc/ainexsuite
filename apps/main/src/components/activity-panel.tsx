@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Settings as SettingsIcon, Send, Mic, MicOff } from 'lucide-react';
+import { X, Send, Mic, MicOff } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useEnhancedAssistant, useVoiceInput } from '@ainexsuite/ai';
 import { useRef, useEffect, useState } from 'react';
@@ -8,7 +8,7 @@ import ActivityFeed from '@/components/activity-feed';
 
 interface ActivityPanelProps {
   isOpen: boolean;
-  activeView: 'activity' | 'settings' | 'ai-assistant' | null;
+  activeView: 'activity' | 'ai-assistant' | null;
   onClose: () => void;
 }
 
@@ -82,7 +82,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between border-b border-outline-subtle/40 px-5 py-4">
           <span className="text-sm font-semibold text-ink-900">
-            {activeView === 'activity' ? 'Activity Center' : activeView === 'settings' ? 'Settings' : activeView === 'ai-assistant' ? 'AI Assistant' : ''}
+            {activeView === 'activity' ? 'Activity Center' : activeView === 'ai-assistant' ? 'AI Assistant' : ''}
           </span>
           <button
             type="button"
@@ -98,42 +98,6 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
           {activeView === 'activity' ? (
             <div className="space-y-4">
               <ActivityFeed limit={20} />
-            </div>
-          ) : activeView === 'settings' ? (
-            <div className="space-y-6">
-              <div className="rounded-2xl bg-surface-muted/40 px-5 py-6 text-center">
-                <SettingsIcon className="h-8 w-8 mx-auto mb-3 text-ink-500" />
-                <p className="font-semibold text-ink-700">
-                  Settings
-                </p>
-                <p className="mt-1 text-sm text-ink-600">
-                  Preferences and configuration options
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between rounded-xl bg-surface-muted/80 px-4 py-3 text-left hover:bg-surface-muted transition-colors"
-                >
-                  <span className="text-sm font-semibold text-ink-700">Theme</span>
-                  <span className="text-xs text-ink-500">System</span>
-                </button>
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between rounded-xl bg-surface-muted/80 px-4 py-3 text-left hover:bg-surface-muted transition-colors"
-                >
-                  <span className="text-sm font-semibold text-ink-700">Language</span>
-                  <span className="text-xs text-ink-500">English</span>
-                </button>
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-between rounded-xl bg-surface-muted/80 px-4 py-3 text-left hover:bg-surface-muted transition-colors"
-                >
-                  <span className="text-sm font-semibold text-ink-700">Notifications</span>
-                  <span className="text-xs text-ink-500">Enabled</span>
-                </button>
-              </div>
             </div>
           ) : activeView === 'ai-assistant' ? (
             <div className="flex h-full flex-col space-y-4">

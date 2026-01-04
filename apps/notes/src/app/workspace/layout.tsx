@@ -29,7 +29,21 @@ export default function WorkspaceRootLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { user, isLoading, isReady, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const {
+    user,
+    isLoading,
+    isReady,
+    handleSignOut,
+    updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
+  } = useWorkspaceAuth();
   const { preferences, updatePreferences: updateAppPreferences, loading: preferencesLoading } = usePreferences();
   const { allSpaces, updateSpace, deleteSpace, refreshSpaces } = useSpaces();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
@@ -243,6 +257,9 @@ export default function WorkspaceRootLayout({
           email: user.email,
           photoURL: user.photoURL,
           iconURL: user.iconURL,
+          animatedAvatarURL: user.animatedAvatarURL,
+          animatedAvatarStyle: user.animatedAvatarStyle,
+          useAnimatedAvatar: user.useAnimatedAvatar,
         } : null}
         preferences={user?.preferences ?? {
           theme: 'dark',
@@ -251,6 +268,16 @@ export default function WorkspaceRootLayout({
           notifications: { email: true, push: false, inApp: true },
         }}
         onUpdatePreferences={updatePreferences}
+        onUpdateProfile={updateProfile}
+        onUpdateProfileImage={updateProfileImage}
+        onRemoveProfileImage={removeProfileImage}
+        profileImageApiEndpoint="/api/generate-profile-image"
+        onGenerateAnimatedAvatar={generateAnimatedAvatar}
+        onSaveAnimatedAvatar={saveAnimatedAvatar}
+        onToggleAnimatedAvatar={toggleAnimatedAvatar}
+        onRemoveAnimatedAvatar={removeAnimatedAvatar}
+        onPollAnimationStatus={pollAnimationStatus}
+        animateAvatarApiEndpoint="/api/animate-avatar"
         spaces={spaceSettingsItems}
         currentAppId="notes"
         onEditSpace={handleEditSpace}
