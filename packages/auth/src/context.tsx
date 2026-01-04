@@ -16,6 +16,7 @@ import {
   setAnimatedAvatar,
   toggleAnimatedAvatar as firebaseToggleAnimatedAvatar,
   removeAnimatedAvatar as firebaseRemoveAnimatedAvatar,
+  useUserProfileListener,
 } from '@ainexsuite/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import type { User, UserPreferences } from '@ainexsuite/types';
@@ -205,6 +206,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Track if we used dev hydration (no Firebase auth, just UI-level user)
   const [devHydrated, setDevHydrated] = useState(false);
+
+  // Cross-app profile sync via Firestore listener
+  // This works across different ports (unlike BroadcastChannel which is same-origin only)
+  const { profile: firestoreProfile } = useUserProfileListener(user?.uid);
+
+  // Sync profile data from Firestore to local user state
+  // This enables real-time cross-app avatar updates
+  useEffect(() => {
+    if (!user || !firestoreProfile) return;
+
+    // Check if any profile fields have changed
+    const hasPhotoChange = firestoreProfile.photoURL !== user.photoURL;
+    const hasIconChange = firestoreProfile.iconURL !== user.iconURL;
+    const hasAnimatedChange = firestoreProfile.animatedAvatarURL !== user.animatedAvatarURL;
+    const hasDisplayNameChange = firestoreProfile.displayName !== user.displayName;
+    const hasToggleChange = firestoreProfile.useAnimatedAvatar !== user.useAnimatedAvatar;
+
+    if (hasPhotoChange || hasIconChange || hasAnimatedChange || hasDisplayNameChange || hasToggleChange) {
+      setUser(prevUser => prevUser ? {
+        ...prevUser,
+        photoURL: firestoreProfile.photoURL || prevUser.photoURL,
+        iconURL: firestoreProfile.iconURL || prevUser.iconURL,
+        animatedAvatarURL: firestoreProfile.animatedAvatarURL || prevUser.animatedAvatarURL,
+        animatedAvatarAction: firestoreProfile.animatedAvatarAction || prevUser.animatedAvatarAction,
+        useAnimatedAvatar: firestoreProfile.useAnimatedAvatar ?? prevUser.useAnimatedAvatar,
+        displayName: firestoreProfile.displayName || prevUser.displayName,
+      } : null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firestoreProfile, user?.uid]); // Only depend on firestoreProfile and uid to avoid loops
 
   // Use useLayoutEffect to hydrate from dev session BEFORE paint
   // This runs synchronously after DOM mutations but before browser paint
@@ -537,32 +568,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: result.error || 'Failed to save animation' };
       }
 
-      // Refresh session to get latest data from Firestore
-      try {
-        const sessionResponse = await fetch('/api/auth/session', {
-          method: 'GET',
-          credentials: 'include',
-        });
-        if (sessionResponse.ok) {
-          const { user: sessionUser } = await sessionResponse.json();
-          if (sessionUser) {
-            // Update user state with fresh data from Firestore
-            setUser(prevUser => prevUser ? {
-              ...prevUser,
-              ...sessionUser,
-            } : null);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to refresh session after saving animated avatar:', error);
-        // Fall back to updating local state
-        setUser(prevUser => prevUser ? {
-          ...prevUser,
-          animatedAvatarURL: result.videoURL,
-          animatedAvatarAction: action,
-          useAnimatedAvatar: true,
-        } : null);
-      }
+      // Update local state immediately with the result (avoid session refresh race condition)
+      setUser(prevUser => prevUser ? {
+        ...prevUser,
+        animatedAvatarURL: result.videoURL,
+        animatedAvatarAction: action,
+        useAnimatedAvatar: true,
+      } : null);
 
       // Broadcast to other tabs
       if (typeof window !== 'undefined') {

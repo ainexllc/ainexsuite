@@ -125,6 +125,7 @@ export function AnimatedAvatarPlayer({
 
   return (
     <video
+      key={src}
       ref={videoRef}
       src={src}
       muted

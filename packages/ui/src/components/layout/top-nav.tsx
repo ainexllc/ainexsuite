@@ -3,6 +3,7 @@
 import { type ReactNode, useState, useEffect, useCallback } from "react";
 import { Menu, ChevronDown, Maximize, Minimize } from "lucide-react";
 import { AIVoiceIcon } from "../ai";
+import { AnimatedAvatarPlayer } from "../animated-avatar-player";
 import { clsx } from "clsx";
 import Image from "next/image";
 
@@ -87,6 +88,10 @@ export type TopNavProfileButtonProps = {
     photoURL?: string | null;
     /** Square-cropped icon for circular avatars */
     iconURL?: string | null;
+    /** Animated avatar video URL */
+    animatedAvatarURL?: string | null;
+    /** Whether to use animated avatar */
+    useAnimatedAvatar?: boolean;
   } | null;
   onClick: () => void;
   loading?: boolean;
@@ -116,6 +121,31 @@ export function TopNavProfileButton({
 
   // Prefer iconURL (square cropped) for circular avatar, fallback to photoURL
   const avatarSrc = user.iconURL || user.photoURL;
+
+  // Show animated avatar if enabled
+  if (user.useAnimatedAvatar && user.animatedAvatarURL) {
+    return (
+      <button
+        type="button"
+        className="flex items-center gap-1.5 rounded-full transition hover:opacity-80"
+        aria-label="Profile menu"
+        onClick={onClick}
+      >
+        <div className="relative h-10 w-10 rounded-full overflow-hidden ring-2 ring-white/20 shadow-lg">
+          <AnimatedAvatarPlayer
+            src={user.animatedAvatarURL}
+            className="h-full w-full object-cover"
+            alt={user.displayName ?? "Avatar"}
+            maxPlays={4}
+            pauseDuration={10000}
+          />
+        </div>
+        {showChevron && (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
+    );
+  }
 
   return (
     <button
