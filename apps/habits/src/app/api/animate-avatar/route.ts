@@ -196,8 +196,8 @@ export async function POST(request: NextRequest) {
           },
         ],
         promptText: promptText,
-        ratio: '720:720',
-        duration: 5,
+        ratio: '1280:720',
+        duration: 4,
       }),
     });
 
