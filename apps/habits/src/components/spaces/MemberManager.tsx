@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Mail, Crown, UserMinus, UserPlus, X, Baby, User, Monitor, Link, Copy, Check, RefreshCw, Send, Loader2, Sparkles } from 'lucide-react';
 import { useSpaces } from '../providers/spaces-provider';
 import { useAuth } from '@ainexsuite/auth';
-import { uploadMemberAvatar, deleteProfileImage } from '@ainexsuite/firebase';
+import { uploadMemberAvatar, deleteProfileImage, deleteAnimatedAvatar } from '@ainexsuite/firebase';
 import { Member, MemberAgeGroup, HabitCreationPolicy } from '../../types/models';
 import { isSpaceAdmin } from '../../lib/permissions';
 import { cn } from '../../lib/utils';
@@ -108,6 +108,23 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
 
   const handleRemoveMember = (uid: string) => {
     if (confirm('Remove this member?')) {
+      const member = currentSpace.members.find((m: Member) => m.uid === uid);
+
+      // Delete animated avatar if exists
+      if (member?.animatedAvatarPath) {
+        deleteAnimatedAvatar(member.animatedAvatarPath, member.animatedAvatarPosterPath).catch(() => {
+          // Ignore cleanup errors
+        });
+      }
+
+      // Delete profile photo if exists
+      if (member?.photoStoragePath) {
+        deleteProfileImage(member.photoStoragePath).catch(() => {
+          // Ignore cleanup errors
+        });
+      }
+
+      // Remove member from space
       updateSpace(currentSpace.id, {
         members: currentSpace.members.filter((m: Member) => m.uid !== uid)
       });
@@ -588,6 +605,7 @@ export function MemberManager({ isOpen, onClose }: MemberManagerProps) {
       {editingMember && (
         <MemberProfileEditor
           member={editingMember}
+          spaceId={currentSpace.id}
           isOpen={true}
           onClose={() => setEditingMember(null)}
           onSave={handleSaveMemberPhoto}

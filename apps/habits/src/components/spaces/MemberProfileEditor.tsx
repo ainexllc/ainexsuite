@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X, Sparkles, Upload, Loader2, RefreshCw, Check, Wand2, ImageIcon } from 'lucide-react';
 import { Member } from '../../types/models';
 import { cn } from '../../lib/utils';
+import { setMemberAnimatedAvatar } from '@ainexsuite/firebase';
 
 // Unified styles for both generation and transformation (12 fun styles)
 const AVATAR_STYLES = [
@@ -21,29 +22,117 @@ const AVATAR_STYLES = [
   { id: 'pop-art', label: 'Pop Art', emoji: '🎯' },
 ] as const;
 
+// Animation actions for animated avatars (12 actions)
+const AVATAR_ACTIONS = [
+  { id: 'wave', label: 'Wave', emoji: '👋' },
+  { id: 'wink', label: 'Wink', emoji: '😉' },
+  { id: 'thumbsup', label: 'Thumbs Up', emoji: '👍' },
+  { id: 'peace', label: 'Peace', emoji: '✌️' },
+  { id: 'dance', label: 'Dance', emoji: '💃' },
+  { id: 'nod', label: 'Nod', emoji: '🙂' },
+  { id: 'smile', label: 'Smile', emoji: '😊' },
+  { id: 'laugh', label: 'Laugh', emoji: '😄' },
+  { id: 'surprised', label: 'Surprised', emoji: '😮' },
+  { id: 'thinking', label: 'Thinking', emoji: '🤔' },
+  { id: 'celebrate', label: 'Celebrate', emoji: '🎉' },
+  { id: 'cool', label: 'Cool', emoji: '😎' },
+] as const;
+
 type AvatarStyleId = (typeof AVATAR_STYLES)[number]['id'];
-type Mode = 'generate' | 'transform';
+type AvatarAction = (typeof AVATAR_ACTIONS)[number]['id'];
+type Mode = 'generate' | 'transform' | 'animate';
 
 interface MemberProfileEditorProps {
   member: Member;
+  spaceId: string;
   isOpen: boolean;
   onClose: () => void;
   onSave: (photoURL: string) => Promise<void>;
 }
 
-export function MemberProfileEditor({ member, isOpen, onClose, onSave }: MemberProfileEditorProps) {
+export function MemberProfileEditor({ member, spaceId, isOpen, onClose, onSave }: MemberProfileEditorProps) {
   const [mode, setMode] = useState<Mode>('generate');
   const [prompt, setPrompt] = useState('');
   const [selectedStyle, setSelectedStyle] = useState<AvatarStyleId>('pixar');
+  const [selectedAction, setSelectedAction] = useState<AvatarAction>('wave');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [animating, setAnimating] = useState(false);
+  const [operationId, setOperationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const isChild = member.ageGroup === 'child';
+
+  // Poll for animation completion
+  const pollForCompletion = async (opId: string): Promise<string> => {
+    const maxAttempts = 60; // 60 seconds max
+    for (let i = 0; i < maxAttempts; i++) {
+      const response = await fetch(`/api/animate-avatar?operationId=${opId}`);
+      const data = await response.json();
+
+      if (data.status === 'SUCCEEDED') {
+        return data.videoUrl;
+      } else if (data.status === 'FAILED') {
+        throw new Error(data.error || 'Animation failed');
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    throw new Error('Animation timed out');
+  };
+
+  const handleAnimateAvatar = async () => {
+    if (!member.photoURL) {
+      setError('Member needs a profile photo first');
+      return;
+    }
+
+    setAnimating(true);
+    setError(null);
+
+    try {
+      // 1. Submit to Runway API
+      const response = await fetch('/api/animate-avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceImage: member.photoURL,
+          action: selectedAction,
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.success || !data.operationId) {
+        throw new Error(data.error || 'Failed to start animation');
+      }
+
+      setOperationId(data.operationId);
+
+      // 2. Poll for completion (20-40 seconds)
+      const videoUrl = await pollForCompletion(data.operationId);
+
+      // 3. Upload to Firebase Storage and update member
+      await setMemberAnimatedAvatar(
+        spaceId,
+        member.uid,
+        videoUrl,
+        undefined,
+        selectedAction
+      );
+
+      // Success - close modal
+      handleClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to animate avatar');
+    } finally {
+      setAnimating(false);
+      setOperationId(null);
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -198,6 +287,18 @@ export function MemberProfileEditor({ member, isOpen, onClose, onSave }: MemberP
               <ImageIcon className="h-4 w-4" />
               Transform
             </button>
+            <button
+              type="button"
+              onClick={() => setMode('animate')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all',
+                mode === 'animate'
+                  ? 'bg-indigo-500 text-white'
+                  : 'text-white/50 hover:text-white'
+              )}
+            >
+              ✨ Animate
+            </button>
           </div>
 
           {/* Generate Mode - Prompt Input */}
@@ -251,11 +352,54 @@ export function MemberProfileEditor({ member, isOpen, onClose, onSave }: MemberP
             </div>
           )}
 
-          {/* Style Selector - Same for both modes */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-white/60">
-              Fun Style {isChild && '✨'}
-            </label>
+          {/* Animate Mode - Action Selector */}
+          {mode === 'animate' && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-white/60">
+                Animation Action
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {AVATAR_ACTIONS.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    onClick={() => setSelectedAction(action.id)}
+                    className={cn(
+                      'flex flex-col items-center gap-1 p-2 rounded-xl border transition-all',
+                      selectedAction === action.id
+                        ? 'border-indigo-500 bg-indigo-500/20 text-white'
+                        : 'border-white/10 hover:border-white/30 text-white/50'
+                    )}
+                  >
+                    <span className="text-lg">{action.emoji}</span>
+                    <span className="text-[10px] font-medium truncate w-full text-center">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Preview current photo */}
+              {member.photoURL && (
+                <div className="p-3 bg-white/5 rounded-xl">
+                  <label className="text-xs font-medium text-white/60 mb-2 block">
+                    Current Photo
+                  </label>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={member.photoURL}
+                    alt={member.displayName}
+                    className="w-full h-24 rounded-lg object-cover ring-2 ring-white/20"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Style Selector - For generate and transform modes only */}
+          {(mode === 'generate' || mode === 'transform') && (
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-white/60">
+                Fun Style {isChild && '✨'}
+              </label>
             <div className="grid grid-cols-4 gap-2">
               {AVATAR_STYLES.map((style) => (
                 <button
@@ -274,7 +418,8 @@ export function MemberProfileEditor({ member, isOpen, onClose, onSave }: MemberP
                 </button>
               ))}
             </div>
-          </div>
+            </div>
+          )}
 
           {/* Generated Preview */}
           {generatedImage && (
@@ -342,19 +487,29 @@ export function MemberProfileEditor({ member, isOpen, onClose, onSave }: MemberP
               </button>
               <button
                 type="button"
-                onClick={handleGenerate}
-                disabled={loading || (mode === 'generate' && !prompt.trim()) || (mode === 'transform' && !uploadedImage)}
+                onClick={mode === 'animate' ? handleAnimateAvatar : handleGenerate}
+                disabled={
+                  loading ||
+                  animating ||
+                  (mode === 'generate' && !prompt.trim()) ||
+                  (mode === 'transform' && !uploadedImage) ||
+                  (mode === 'animate' && !member.photoURL)
+                }
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? (
+                {loading || animating ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Creating...
+                    {mode === 'animate'
+                      ? operationId
+                        ? 'Processing...'
+                        : 'Starting...'
+                      : 'Creating...'}
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4" />
-                    Generate
+                    {mode === 'animate' ? '✨ Animate Avatar' : 'Generate'}
                   </>
                 )}
               </button>

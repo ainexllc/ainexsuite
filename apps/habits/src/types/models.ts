@@ -20,6 +20,11 @@ export interface Member {
   ageGroup?: MemberAgeGroup; // Only relevant for family spaces
   // Animated avatar (AI-generated video)
   animatedAvatarURL?: string;
+  animatedAvatarPath?: string; // Firebase Storage path for cleanup
+  animatedAvatarPosterURL?: string; // Poster/thumbnail image
+  animatedAvatarPosterPath?: string; // Poster storage path for cleanup
+  animatedAvatarAction?: string; // Action used (wave, wink, etc.)
+  animatedAvatarUpdatedAt?: Date;
   useAnimatedAvatar?: boolean;
 }
 
