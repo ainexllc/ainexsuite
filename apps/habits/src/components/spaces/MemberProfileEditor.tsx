@@ -69,7 +69,7 @@ export function MemberProfileEditor({ member, spaceId, isOpen, onClose, onSave }
 
   // Poll for animation completion
   const pollForCompletion = async (opId: string): Promise<string> => {
-    const maxAttempts = 60; // 60 seconds max
+    const maxAttempts = 180; // 3 minutes max (Runway generation typically takes 2-3 min)
     for (let i = 0; i < maxAttempts; i++) {
       const response = await fetch(`/api/animate-avatar?operationId=${opId}`);
       const data = await response.json();
