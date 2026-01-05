@@ -475,6 +475,9 @@ importers:
       recharts:
         specifier: ^2.10.3
         version: 2.15.4(react-dom@19.2.0)(react@19.2.0)
+      sharp:
+        specifier: ^0.34.5
+        version: 0.34.5
       zustand:
         specifier: ^5.0.8
         version: 5.0.8(@types/react@19.2.2)(react@19.2.0)
@@ -2671,7 +2674,6 @@ packages:
       }
     engines: { node: ">=18" }
     requiresBuild: true
-    optional: true
 
   /@img/sharp-darwin-arm64@0.34.5:
     resolution:
@@ -6760,7 +6762,6 @@ packages:
       }
     engines: { node: ">=8" }
     requiresBuild: true
-    optional: true
 
   /detect-node-es@1.1.0:
     resolution:
@@ -11641,7 +11642,6 @@ packages:
       "@img/sharp-win32-arm64": 0.34.5
       "@img/sharp-win32-ia32": 0.34.5
       "@img/sharp-win32-x64": 0.34.5
-    optional: true
 
   /shebang-command@2.0.0:
     resolution:

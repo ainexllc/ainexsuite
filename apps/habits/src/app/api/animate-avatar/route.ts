@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 /**
  * Animated Avatar Generation API using Runway Gen-4 Turbo
@@ -82,6 +83,51 @@ async function getImageBase64(sourceImage: string): Promise<{ base64: string; mi
 }
 
 /**
+ * Correct image aspect ratio to meet Runway requirements (max 2:1)
+ * If image is wider than 2:1, it will be center-cropped
+ */
+async function correctAspectRatio(base64: string, mimeType: string): Promise<{ base64: string; mimeType: string }> {
+  try {
+    const buffer = Buffer.from(base64, 'base64');
+    const image = sharp(buffer);
+    const metadata = await image.metadata();
+
+    if (!metadata.width || !metadata.height) {
+      // Can't determine dimensions, return as-is
+      return { base64, mimeType };
+    }
+
+    const aspectRatio = metadata.width / metadata.height;
+    const maxAspectRatio = 2.0;
+
+    if (aspectRatio <= maxAspectRatio) {
+      // Aspect ratio is fine, return original
+      return { base64, mimeType };
+    }
+
+    // Image is too wide - crop to 2:1 (center crop)
+    const targetWidth = metadata.height * maxAspectRatio;
+    const cropX = Math.floor((metadata.width - targetWidth) / 2);
+
+    const croppedBuffer = await image
+      .extract({
+        left: cropX,
+        top: 0,
+        width: Math.floor(targetWidth),
+        height: metadata.height
+      })
+      .toBuffer();
+
+    const croppedBase64 = croppedBuffer.toString('base64');
+    return { base64: croppedBase64, mimeType };
+  } catch (error) {
+    console.error('Failed to correct aspect ratio:', error);
+    // Return original on error
+    return { base64, mimeType };
+  }
+}
+
+/**
  * Build animation prompt for the action
  */
 function buildAnimationPrompt(action: AvatarAction): string {
@@ -120,6 +166,8 @@ export async function POST(request: NextRequest) {
     let imageData: { base64: string; mimeType: string };
     try {
       imageData = await getImageBase64(sourceImage);
+      // Correct aspect ratio if needed (Runway requires max 2:1)
+      imageData = await correctAspectRatio(imageData.base64, imageData.mimeType);
     } catch (error) {
       console.error('Failed to process source image:', error);
       return NextResponse.json(
