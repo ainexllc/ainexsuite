@@ -454,6 +454,9 @@ importers:
       "@ainexsuite/ui":
         specifier: workspace:*
         version: link:../../packages/ui
+      "@fal-ai/client":
+        specifier: ^1.8.1
+        version: 1.8.1
       date-fns:
         specifier: ^2.30.0
         version: 2.30.0
@@ -1817,6 +1820,18 @@ packages:
     engines: { node: ^12.22.0 || ^14.17.0 || >=16.0.0 }
     dev: true
 
+  /@fal-ai/client@1.8.1:
+    resolution:
+      {
+        integrity: sha512-IO05V0VaiIA4pIi4q5thM0suC0bUCzxX40qM15XcMuvefYk+qWECKHnxjeGCSEkvKkZ/uCF8RNqvYwjZ4wJxXQ==,
+      }
+    engines: { node: ">=22.0.0" }
+    dependencies:
+      "@msgpack/msgpack": 3.1.3
+      eventsource-parser: 1.1.2
+      robot3: 0.4.1
+    dev: false
+
   /@fastify/busboy@3.2.0:
     resolution:
       {
@@ -3011,6 +3026,14 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /@msgpack/msgpack@3.1.3:
+    resolution:
+      {
+        integrity: sha512-47XIizs9XZXvuJgoaJUIE2lFoID8ugvc0jzSHP+Ptfk8nTbnR8g788wv48N03Kx0UkAv559HWRQ3yzOgzlRNUA==,
+      }
+    engines: { node: ">= 18" }
+    dev: false
 
   /@napi-rs/wasm-runtime@0.2.12:
     resolution:
@@ -7498,6 +7521,14 @@ packages:
         integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==,
       }
 
+  /eventsource-parser@1.1.2:
+    resolution:
+      {
+        integrity: sha512-v0eOBUbiaFojBu2s2NPBfYUoRR9GjcDNvCXVaqEf5vVfpIAh9f8RCo4vXTP8c63QRKCFwoLpMpTdPwwhEKVgzA==,
+      }
+    engines: { node: ">=14.18" }
+    dev: false
+
   /execa@8.0.1:
     resolution:
       {
@@ -11452,6 +11483,13 @@ packages:
     dependencies:
       glob: 13.0.0
     dev: true
+
+  /robot3@0.4.1:
+    resolution:
+      {
+        integrity: sha512-hzjy826lrxzx8eRgv80idkf8ua1JAepRc9Efdtj03N3KNJuznQCPlyCJ7gnUmDFwZCLQjxy567mQVKmdv2BsXQ==,
+      }
+    dev: false
 
   /rope-sequence@1.3.4:
     resolution:

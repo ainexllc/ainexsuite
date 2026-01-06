@@ -160,6 +160,8 @@ export async function uploadAnimatedAvatar(
         style: style || 'default',
         generatedAt: new Date().toISOString(),
         optimized: optimized.optimized ? 'true' : 'false',
+        provider: 'fal.ai',
+        model: 'kling-1.0',
       },
     });
 
@@ -535,6 +537,8 @@ export async function uploadMemberAnimatedAvatar(
         action: action || 'default',
         generatedAt: new Date().toISOString(),
         optimized: optimized.optimized ? 'true' : 'false',
+        provider: 'fal.ai',
+        model: 'kling-1.0',
       },
     });
 

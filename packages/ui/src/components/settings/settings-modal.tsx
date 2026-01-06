@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { clsx } from "clsx";
-import { X, User, Palette, Bell, Globe, Settings2, Eye, EyeOff, Users, Loader2, Trash2, Video, Sparkles } from "lucide-react";
+import { X, User, Palette, Bell, Globe, Settings2, Eye, EyeOff, Users, Loader2, Trash2, Video, Sparkles, Check, AlertCircle, Mail } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import type { UserPreferences, FontFamily, SpaceType } from "@ainexsuite/types";
 import { ProfileImageGenerator } from "./profile-image-generator";
 import { AnimateAvatarModal } from "./animate-avatar-modal";
 import { AnimatedAvatarPlayer } from "../animated-avatar-player";
+import { useAutoSave } from "../../hooks";
 
 export type SettingsTab = "profile" | "appearance" | "notifications" | "spaces" | "app";
 
@@ -327,37 +328,43 @@ function ProfileSettings({
   animateAvatarApiEndpoint,
 }: ProfileSettingsProps) {
   const [displayName, setDisplayName] = React.useState(user?.displayName || "");
-  const [saving, setSaving] = React.useState(false);
-  const [saved, setSaved] = React.useState(false);
   const [showAnimateModal, setShowAnimateModal] = React.useState(false);
   const [togglingAnimated, setTogglingAnimated] = React.useState(false);
-  const initialDisplayName = React.useRef(user?.displayName || "");
 
-  // Track if there are unsaved changes
-  const hasChanges = displayName.trim() !== initialDisplayName.current;
+  // Animated avatar generation feedback
+  const [animationStatus, setAnimationStatus] = React.useState<
+    'idle' | 'success' | 'error'
+  >('idle');
+  const [animationError, setAnimationError] = React.useState<string | null>(null);
+
+  // Auto-save display name with debounce
+  const { saving, saved, error: saveError } = useAutoSave(
+    displayName,
+    async (value) => {
+      if (onUpdateProfile && value.trim()) {
+        await onUpdateProfile({ displayName: value.trim() });
+      }
+    },
+    { delay: 500 }
+  );
 
   // Sync with user prop changes (when saved externally)
   React.useEffect(() => {
-    if (user?.displayName) {
+    if (user?.displayName && user.displayName !== displayName) {
       setDisplayName(user.displayName);
-      initialDisplayName.current = user.displayName;
     }
-  }, [user?.displayName]);
+  }, [user?.displayName, displayName]);
 
-  // Handle save
-  const handleSave = async () => {
-    if (!onUpdateProfile || !hasChanges) return;
-
-    setSaving(true);
-    try {
-      await onUpdateProfile({ displayName: displayName.trim() });
-      initialDisplayName.current = displayName.trim();
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } finally {
-      setSaving(false);
+  // Auto-hide success/error message after 5 seconds
+  React.useEffect(() => {
+    if (animationStatus !== 'idle') {
+      const timer = setTimeout(() => {
+        setAnimationStatus('idle');
+        setAnimationError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [animationStatus]);
 
   const handleToggleAnimated = async (useAnimated: boolean) => {
     if (!onToggleAnimatedAvatar) return;
@@ -373,60 +380,146 @@ function ProfileSettings({
     if (!onSaveAnimatedAvatar) {
       return { success: false, error: "Save handler not available" };
     }
-    return onSaveAnimatedAvatar(videoData, style);
+
+    try {
+      const result = await onSaveAnimatedAvatar(videoData, style);
+
+      if (result.success) {
+        // Show success message
+        setAnimationStatus('success');
+        setAnimationError(null);
+
+        // Auto-enable animated avatar after successful save
+        if (onToggleAnimatedAvatar && !user?.useAnimatedAvatar) {
+          setTimeout(() => {
+            onToggleAnimatedAvatar(true);
+          }, 500);
+        }
+      } else {
+        // Show error message
+        setAnimationStatus('error');
+        setAnimationError(result.error || 'Failed to save animation');
+      }
+
+      return result;
+    } catch (error) {
+      setAnimationStatus('error');
+      setAnimationError(error instanceof Error ? error.message : 'Failed to save animation');
+      return { success: false, error: 'Failed to save animation' };
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Profile Image Generator */}
-      {onUpdateProfileImage ? (
-        <div className="relative">
-          <ProfileImageGenerator
-            currentPhotoURL={user?.photoURL}
-            displayName={user?.displayName}
-            email={user?.email}
-            onUpdateImage={onUpdateProfileImage}
-            onRemoveImage={onRemoveProfileImage}
-            apiEndpoint={profileImageApiEndpoint}
-            showRemoveButton={!!onRemoveProfileImage}
-          />
-          {/* Animate Button - overlay on the banner */}
-          {user?.photoURL && onGenerateAnimatedAvatar && onSaveAnimatedAvatar && (
+    <div className="space-y-4">
+      {/* Profile Image Card */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden transition-all duration-200 hover:shadow-md hover:shadow-primary/5">
+        {onUpdateProfileImage ? (
+          <div className="relative">
+            <ProfileImageGenerator
+              currentPhotoURL={user?.photoURL}
+              displayName={user?.displayName}
+              email={user?.email}
+              onUpdateImage={onUpdateProfileImage}
+              onRemoveImage={onRemoveProfileImage}
+              apiEndpoint={profileImageApiEndpoint}
+              showRemoveButton={!!onRemoveProfileImage}
+            />
+            {/* Animate Button - overlay on the banner */}
+            {user?.photoURL && onGenerateAnimatedAvatar && onSaveAnimatedAvatar && (
+              <button
+                type="button"
+                onClick={() => setShowAnimateModal(true)}
+                className="absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-background/90 backdrop-blur-sm text-foreground hover:bg-background transition-all shadow-lg border border-border"
+              >
+                <Video className="h-3.5 w-3.5" />
+                Animate
+              </button>
+            )}
+          </div>
+        ) : (
+          /* Fallback: Static Avatar Display */
+          <div className="flex items-center gap-4 p-5">
+            {user?.photoURL ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.photoURL}
+                alt={user.displayName || "User"}
+                className="h-16 w-16 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center font-semibold text-xl">
+                {(user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U").toUpperCase()}
+              </div>
+            )}
+            <div>
+              <p className="text-sm font-medium text-foreground">Profile Photo</p>
+              <p className="text-xs text-muted-foreground">Managed by your Google account</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Animated Avatar Success Notification */}
+      {animationStatus === 'success' && (
+        <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 p-4 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+              <Check className="h-5 w-5 text-emerald-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+                Animated Avatar Created!
+              </h4>
+              <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
+                Your animated avatar has been generated and saved successfully. It is now enabled in your workspace header.
+              </p>
+            </div>
             <button
               type="button"
-              onClick={() => setShowAnimateModal(true)}
-              className="absolute top-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-background/90 backdrop-blur-sm text-foreground hover:bg-background transition-all shadow-lg border border-border"
+              onClick={() => {
+                setAnimationStatus('idle');
+                setAnimationError(null);
+              }}
+              className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 p-1 rounded transition-colors"
             >
-              <Video className="h-3.5 w-3.5" />
-              Animate
+              <X className="h-4 w-4" />
             </button>
-          )}
-        </div>
-      ) : (
-        /* Fallback: Static Avatar Display */
-        <div className="flex items-center gap-4">
-          {user?.photoURL ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.photoURL}
-              alt={user.displayName || "User"}
-              className="h-16 w-16 rounded-full object-cover"
-            />
-          ) : (
-            <div className="h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center font-semibold text-xl">
-              {(user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U").toUpperCase()}
-            </div>
-          )}
-          <div>
-            <p className="text-sm font-medium text-foreground">Profile Photo</p>
-            <p className="text-xs text-muted-foreground">Managed by your Google account</p>
           </div>
         </div>
       )}
 
-      {/* Animated Avatar Preview & Toggle */}
+      {/* Animated Avatar Error Notification */}
+      {animationStatus === 'error' && (
+        <div className="rounded-xl border-2 border-destructive/50 bg-destructive/5 p-4 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-semibold text-destructive mb-1">
+                Failed to Save Animation
+              </h4>
+              <p className="text-xs text-destructive/80">
+                {animationError || 'An unexpected error occurred while saving your animated avatar.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setAnimationStatus('idle');
+                setAnimationError(null);
+              }}
+              className="text-destructive hover:bg-destructive/10 p-1 rounded transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Animated Avatar Card */}
       {user?.animatedAvatarURL && onToggleAnimatedAvatar && (
-        <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border">
+        <div className="space-y-3 p-5 rounded-xl bg-card border border-border transition-all duration-200 hover:shadow-md hover:shadow-primary/5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
@@ -485,24 +578,50 @@ function ProfileSettings({
         </div>
       )}
 
-      {/* Display Name */}
-      <div className="space-y-2">
-        <label htmlFor="displayName" className="text-sm font-medium text-foreground">
+      {/* Display Name Card */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-3 transition-all duration-200 hover:shadow-md hover:shadow-primary/5">
+        <label htmlFor="displayName" className="text-sm font-medium text-foreground flex items-center gap-2">
+          <User className="h-4 w-4 text-muted-foreground" />
           Display Name
         </label>
-        <input
-          id="displayName"
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Enter your name"
-        />
+        <div className="relative">
+          <input
+            id="displayName"
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 pr-24 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+            placeholder="Enter your name"
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            {saving && (
+              <>
+                <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                <span className="text-xs text-muted-foreground">Saving...</span>
+              </>
+            )}
+            {saved && !saving && (
+              <>
+                <Check className="h-4 w-4 text-emerald-500" />
+                <span className="text-xs text-emerald-500">Saved</span>
+              </>
+            )}
+            {saveError && !saving && (
+              <AlertCircle className="h-4 w-4 text-destructive" />
+            )}
+          </div>
+        </div>
+        {saveError && (
+          <p className="text-xs text-destructive">{saveError}</p>
+        )}
       </div>
 
-      {/* Email (read-only) */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground">Email</label>
+      {/* Account Info Card */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-3 transition-all duration-200 hover:shadow-md hover:shadow-primary/5">
+        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+          <Mail className="h-4 w-4 text-muted-foreground" />
+          Email
+        </label>
         <div className="flex items-center gap-2">
           <input
             type="email"
@@ -511,34 +630,13 @@ function ProfileSettings({
             className="flex-1 rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-muted-foreground"
           />
           {user?.emailVerified && (
-            <span className="text-xs text-emerald-500 font-medium px-2 py-1 bg-emerald-500/10 rounded-lg">
+            <span className="text-xs text-emerald-500 font-medium px-2 py-1 bg-emerald-500/10 rounded-lg flex items-center gap-1">
+              <Check className="h-3 w-3" />
               Verified
             </span>
           )}
         </div>
       </div>
-
-      {/* Save Button */}
-      {onUpdateProfile && (
-        <div className="flex items-center justify-end gap-3 pt-2">
-          {saved && (
-            <span className="text-xs text-emerald-500">Saved successfully</span>
-          )}
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-            className={clsx(
-              "px-4 py-2 rounded-xl text-sm font-medium transition-all",
-              hasChanges && !saving
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            )}
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
-      )}
 
       {/* Animate Avatar Modal */}
       {user?.photoURL && onGenerateAnimatedAvatar && onSaveAnimatedAvatar && (

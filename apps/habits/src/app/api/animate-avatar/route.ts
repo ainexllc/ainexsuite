@@ -1,15 +1,19 @@
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
+import { fal } from '@fal-ai/client';
 import sharp from 'sharp';
 
 /**
- * Animated Avatar Generation API using Runway Gen-4 Turbo
- * Uses image-to-video generation to animate profile avatars
+ * Animated Avatar Generation API using fal.ai Kling 1.0
+ * Uses image-to-video generation with first+last frame for smooth looping
  */
 
-// Runway API configuration
-const RUNWAY_API_KEY = process.env.RUNWAY_API_KEY || '';
-const RUNWAY_BASE_URL = 'https://api.dev.runwayml.com/v1';
-const RUNWAY_API_VERSION = '2024-11-06';
+// Configure fal.ai client
+fal.config({
+  credentials: process.env.FAL_KEY || ''
+});
+
+const FAL_MODEL = 'fal-ai/kling-video/v1.6/pro/image-to-video';
 
 // Avatar action type
 type AvatarAction =
@@ -26,21 +30,24 @@ type AvatarAction =
   | 'salute'
   | 'flex';
 
-// Action-specific animation prompts - detailed descriptions
+// Action-specific animation prompts - optimized for Kling 1.0 with first+last frame
 const ACTION_PROMPTS: Record<AvatarAction, string> = {
-  wave: 'The person raises their right hand and waves it side to side in a friendly hello gesture, then lowers hand back to starting position.',
-  wink: 'The person slowly closes their right eye in a deliberate wink with a playful smile, then opens eye returning to neutral expression.',
-  thumbsup: 'The person raises their right hand with thumb up in a thumbs up gesture, holds briefly, then lowers hand back down.',
-  peace: 'The person raises their right hand making a V peace sign with a cool smile, holds it, then lowers hand back to start.',
-  dance: 'The person bobs their head and sways shoulders rhythmically in a fun dance, then smoothly returns to original still pose.',
-  laugh: 'The person laughs joyfully with shoulders shaking, then gradually calms down returning to a gentle smile.',
-  nod: 'The person nods their head up and down several times in agreement, then returns head to center looking forward.',
-  blowkiss: 'The person brings hand to lips, blows a kiss outward, then lowers hand gracefully back to starting position.',
-  shrug: 'The person raises shoulders and palms up in a shrug gesture, then relaxes shoulders back down to normal.',
-  clap: 'The person claps hands together enthusiastically several times, then lowers hands back to resting position.',
-  salute: 'The person raises right hand to forehead in a crisp salute, holds briefly, then lowers hand back down.',
-  flex: 'The person raises arms and flexes biceps proudly, holds the pose, then relaxes arms back to sides.',
+  wave: 'A person energetically waves their hand side to side with a warm smile, moving smoothly from neutral to waving and back.',
+  wink: 'A person playfully winks with their right eye while maintaining a friendly smile.',
+  thumbsup: 'A person raises their hand showing an enthusiastic thumbs up gesture.',
+  peace: 'A person displays a V peace sign with a cool, confident smile.',
+  dance: 'A person bobs their head and sways their body rhythmically to music.',
+  laugh: 'A person laughs joyfully with natural facial expressions and shoulder movement.',
+  nod: 'A person nods their head up and down in agreement with a friendly expression.',
+  blowkiss: 'A person brings their hand to their lips and blows a sweet kiss forward.',
+  shrug: 'A person performs a casual shrug with raised shoulders and open palms.',
+  clap: 'A person claps their hands together enthusiastically with joy.',
+  salute: 'A person performs a crisp military salute with confidence.',
+  flex: 'A person flexes both arms proudly showing strength.',
 };
+
+// Negative prompt for quality control
+const NEGATIVE_PROMPT = "blur, distortion, low quality, artifacts, watermark, static image, no movement, frozen";
 
 const VALID_ACTIONS: AvatarAction[] = [
   'wave', 'wink', 'thumbsup', 'peace', 'dance', 'laugh',
@@ -133,15 +140,15 @@ async function correctAspectRatio(base64: string, mimeType: string): Promise<{ b
 function buildAnimationPrompt(action: AvatarAction): string {
   const actionGuide = ACTION_PROMPTS[action] || ACTION_PROMPTS.wave;
 
-  // Gen-4 prompting: focus on subject action, avoid negative commands
-  return `Same person, same face, same appearance. ${actionGuide} The person stays in place. Locked camera angle.`;
+  // Kling 1.0 prompting: focus on smooth motion with first+last frame
+  return `Same person, same face, same appearance. ${actionGuide} The person stays in place. Smooth motion. Locked camera angle.`;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    if (!RUNWAY_API_KEY) {
+    if (!process.env.FAL_KEY) {
       return NextResponse.json(
-        { success: false, error: 'RUNWAY_API_KEY environment variable is not set' },
+        { success: false, error: 'FAL_KEY environment variable is not set' },
         { status: 500 }
       );
     }
@@ -179,64 +186,31 @@ export async function POST(request: NextRequest) {
     const promptText = buildAnimationPrompt(avatarAction);
     const promptImageUri = `data:${imageData.mimeType};base64,${imageData.base64}`;
 
-    // Call Runway Veo 3.1 API (Google's video generation model via Runway)
-    const response = await fetch(`${RUNWAY_BASE_URL}/image_to_video`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-        'X-Runway-Version': RUNWAY_API_VERSION,
-        'Content-Type': 'application/json',
+    // Queue job with fal.ai (non-blocking - returns immediately)
+    console.log('[fal.ai] Queuing video generation with Kling 1.6...');
+
+    const { request_id } = await fal.queue.submit(FAL_MODEL, {
+      input: {
+        prompt: promptText,
+        image_url: promptImageUri,          // First frame
+        tail_image_url: promptImageUri,     // Last frame (same image for loop effect)
+        duration: "5",                      // 5 seconds
+        negative_prompt: NEGATIVE_PROMPT,
+        cfg_scale: 0.6,                     // Slightly higher adherence to prompt
       },
-      body: JSON.stringify({
-        model: 'veo3.1',
-        promptImage: [
-          {
-            uri: promptImageUri,
-            position: 'first',
-          },
-        ],
-        promptText: promptText,
-        ratio: '1280:720',
-        duration: 4,
-      }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Runway API error:', response.status, errorText);
+    console.log('[fal.ai] Job queued with ID:', request_id);
 
-      let errorMessage = 'Runway API request failed';
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorMessage = errorJson.error?.message || errorJson.message || errorMessage;
-      } catch {
-        // Use default
-      }
-
-      return NextResponse.json(
-        { success: false, error: errorMessage, details: errorText },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-
-    // Runway returns a task ID for async generation
-    if (data.id) {
-      return NextResponse.json({
-        success: true,
-        pending: true,
-        operationId: data.id,
-        model: 'veo3.1',
-        provider: 'runway',
-        action: avatarAction,
-      });
-    }
-
-    return NextResponse.json(
-      { success: false, error: 'Unexpected response format', details: data },
-      { status: 422 }
-    );
+    // Return immediately with operation ID for polling
+    return NextResponse.json({
+      success: true,
+      pending: true,
+      operationId: request_id,
+      model: 'kling-1.6',
+      provider: 'fal.ai',
+      action: avatarAction,
+    });
 
   } catch (error) {
     console.error('Animate avatar error:', error);
@@ -251,87 +225,81 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET endpoint to check task status
+// GET endpoint to check job status
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const taskId = searchParams.get('operationId') || searchParams.get('taskId');
-
-  if (!taskId) {
-    return NextResponse.json(
-      { success: false, error: 'taskId is required' },
-      { status: 400 }
-    );
-  }
-
-  if (!RUNWAY_API_KEY) {
-    return NextResponse.json(
-      { success: false, error: 'RUNWAY_API_KEY environment variable is not set' },
-      { status: 500 }
-    );
-  }
-
   try {
-    // Query task status
-    const response = await fetch(`${RUNWAY_BASE_URL}/tasks/${taskId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${RUNWAY_API_KEY}`,
-        'X-Runway-Version': RUNWAY_API_VERSION,
-      },
-    });
+    const { searchParams } = new URL(request.url);
+    const requestId = searchParams.get('operationId') || searchParams.get('taskId');
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!requestId) {
       return NextResponse.json(
-        { success: false, error: 'Failed to check task status', details: errorText },
-        { status: response.status }
+        { success: false, error: 'operationId is required' },
+        { status: 400 }
       );
     }
 
-    const data = await response.json();
+    if (!process.env.FAL_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'FAL_KEY environment variable is not set' },
+        { status: 500 }
+      );
+    }
 
-    // Check status - Runway uses: PENDING, RUNNING, SUCCEEDED, FAILED, CANCELLED
-    const status = data.status;
+    console.log('[fal.ai] Checking status for request:', requestId);
 
-    if (status === 'SUCCEEDED') {
-      // Get the video URL from output
-      const videoUrl = data.output?.[0] || data.outputUrl;
+    // Check job status with fal.ai
+    const status = await fal.queue.status(FAL_MODEL, {
+      requestId,
+      logs: true,
+    });
+
+    console.log('[fal.ai] Job status:', status.status);
+
+    // Check if job is complete
+    if (status.status === 'COMPLETED') {
+      const result = await fal.queue.result(FAL_MODEL, {
+        requestId,
+      });
+
+      const videoUrl = result.data?.video?.url;
 
       if (videoUrl) {
+        console.log('[fal.ai] Video ready:', videoUrl);
         return NextResponse.json({
           success: true,
           done: true,
           videoUrl: videoUrl,
         });
       }
+
       return NextResponse.json({
         success: false,
-        error: 'No video in completed task',
         done: true,
-        details: data,
+        error: 'No video URL in completed job',
       });
     }
 
-    if (status === 'FAILED' || status === 'CANCELLED') {
+    // Check if job failed
+    if (status.status === 'FAILED') {
       return NextResponse.json({
         success: false,
-        error: data.failure || data.error || 'Video generation failed',
         done: true,
+        error: status.error || 'Video generation failed',
       });
     }
 
-    // Still processing (PENDING, RUNNING)
+    // Still processing
     return NextResponse.json({
       success: true,
       done: false,
-      status: status,
-      progress: data.progress,
+      status: status.status,
+      progress: status.logs?.length || 0,
     });
 
   } catch (error) {
-    console.error('Check task error:', error);
+    console.error('Status check error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to check task status', details: String(error) },
+      { success: false, error: 'Failed to check status', details: String(error) },
       { status: 500 }
     );
   }

@@ -28,6 +28,7 @@ const envFromFile = loadEnvFile();
 const sharedEnv = {
   GROK_API_KEY: envFromFile.GROK_API_KEY || process.env.GROK_API_KEY || "",
   XAI_API_KEY: envFromFile.XAI_API_KEY || process.env.XAI_API_KEY || "",
+  FAL_KEY: envFromFile.FAL_KEY || process.env.FAL_KEY || "",
 };
 
 module.exports = {

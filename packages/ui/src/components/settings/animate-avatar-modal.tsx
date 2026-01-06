@@ -148,14 +148,19 @@ export function AnimateAvatarModal({
       if (onGenerate) {
         const result = await onGenerate(selectedAction);
 
-        if (result.pending && result.operationId) {
-          setProgress("Generating animation... This may take 10-30 seconds");
-          await pollOperation(result.operationId);
-        } else if (result.success && result.videoData) {
+        // Priority 1: Check for immediate video response
+        if (result.success && result.videoData) {
           setGeneratedVideo(result.videoData);
           setLoading(false);
           setProgress(null);
-        } else {
+        }
+        // Priority 2: Fall back to polling pattern for backward compatibility
+        else if (result.pending && result.operationId) {
+          setProgress("Generating animation... This may take 10-30 seconds");
+          await pollOperation(result.operationId);
+        }
+        // Priority 3: Handle error cases
+        else {
           throw new Error(result.error || "Failed to generate animation");
         }
       } else {
@@ -175,14 +180,19 @@ export function AnimateAvatarModal({
           throw new Error(data.error || "Failed to generate animation");
         }
 
-        if (data.pending && data.operationId && onPollStatus) {
-          setProgress("Generating animation... This may take 10-30 seconds");
-          await pollOperation(data.operationId);
-        } else if (data.videoData) {
+        // Priority 1: Check for immediate video response
+        if (data.videoData) {
           setGeneratedVideo(data.videoData);
           setLoading(false);
           setProgress(null);
-        } else {
+        }
+        // Priority 2: Fall back to polling pattern for backward compatibility
+        else if (data.pending && data.operationId && onPollStatus) {
+          setProgress("Generating animation... This may take 10-30 seconds");
+          await pollOperation(data.operationId);
+        }
+        // Priority 3: Handle error cases
+        else {
           throw new Error("No video data in response");
         }
       }

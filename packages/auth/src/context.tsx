@@ -539,6 +539,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
       }
 
+      // Handle both videoData (old base64 format) and videoUrl (new URL format)
+      if (data.videoUrl) {
+        // Download and convert to base64 in browser (avoids server timeout)
+        try {
+          const videoResponse = await fetch(data.videoUrl);
+          const videoBlob = await videoResponse.blob();
+          const videoBase64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(videoBlob);
+          });
+          return {
+            success: true,
+            videoData: videoBase64,
+          };
+        } catch (err) {
+          return {
+            success: false,
+            error: 'Failed to download generated video',
+          };
+        }
+      }
+
       return {
         success: true,
         videoData: data.videoData,

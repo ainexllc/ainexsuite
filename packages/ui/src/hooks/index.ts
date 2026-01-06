@@ -1,4 +1,5 @@
 export { useAppNavigation, getAppNavigation, type AppNavItem } from './use-app-navigation';
+export { useAutoSave, type UseAutoSaveOptions, type UseAutoSaveReturn } from './use-auto-save';
 export { useFontPreference } from './use-font-preference';
 export { useFontSizePreference } from './use-font-size-preference';
 export { useThemePreference } from './use-theme-preference';
