@@ -279,16 +279,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if job failed
-    if (status.status === 'FAILED') {
-      return NextResponse.json({
-        success: false,
-        done: true,
-        error: status.error || 'Video generation failed',
-      });
-    }
 
-    // Still processing
+    // Still processing (IN_QUEUE or IN_PROGRESS)
     return NextResponse.json({
       success: true,
       done: false,
