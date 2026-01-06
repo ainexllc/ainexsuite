@@ -284,7 +284,6 @@ export async function GET(request: NextRequest) {
       success: true,
       done: false,
       status: status.status,
-      progress: status.logs?.length || 0,
     });
 
   } catch (error) {
