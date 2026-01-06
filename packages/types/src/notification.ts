@@ -156,8 +156,8 @@ export const DEFAULT_QUICK_ACTIONS: Record<AppSlug, QuickAction[]> = {
   display: [
     { id: 'check-in', label: 'Check In', description: 'Daily health check-in', icon: 'Activity', shortcut: 'C', app: 'display', category: 'create' },
   ],
-  track: [
-    { id: 'add-subscription', label: 'Add Subscription', description: 'Track a subscription', icon: 'DollarSign', shortcut: 'S', app: 'track', category: 'create' },
+  subs: [
+    { id: 'add-subscription', label: 'Add Subscription', description: 'Track a subscription', icon: 'DollarSign', shortcut: 'S', app: 'subs', category: 'create' },
   ],
   projects: [
     { id: 'new-board', label: 'New Board', description: 'Create a project board', icon: 'Layout', shortcut: 'B', app: 'projects', category: 'create' },

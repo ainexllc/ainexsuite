@@ -71,7 +71,7 @@ function WorkspaceLayoutInner({
       <WorkspaceLayout
         user={user}
         onSignOut={handleSignOut}
-        appName="Track"
+        appName="Subs"
         onUpdatePreferences={updatePreferences}
         onSettingsClick={handleSettingsClick}
       >
@@ -110,10 +110,10 @@ function WorkspaceLayoutInner({
         onPollAnimationStatus={pollAnimationStatus}
         animateAvatarApiEndpoint="/api/animate-avatar"
         spaces={spaceSettingsItems}
-        currentAppId="track"
+        currentAppId="subs"
         onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
         onDeleteSpace={deleteSpace}
-        appSettingsLabel="Track"
+        appSettingsLabel="Subs"
         appSettingsIcon={<Wallet className="h-4 w-4" />}
       />
     </>

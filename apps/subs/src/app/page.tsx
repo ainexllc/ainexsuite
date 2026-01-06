@@ -72,7 +72,7 @@ const legalLinks: FooterLink[] = [
 
 function TrackHomePageContent() {
   const { user, loading, bootstrapStatus } = useAuth();
-  const { needsActivation, checking } = useAppActivation('track');
+  const { needsActivation, checking } = useAppActivation('subs');
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
   const [showActivation, setShowActivation] = useState(false);
@@ -127,9 +127,9 @@ function TrackHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TRACK" appColor="#10b981" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="SUBS" appColor="#10b981" />}
         backgroundComponent={<LayeredBackground primaryColor="#10b981" secondaryColor="#34d399" variant="organic" />}
-        appName="track"
+        appName="subs"
         accentColor="#10b981"
         gradientFrom="#10b981"
         gradientTo="#34d399"
@@ -169,8 +169,8 @@ function TrackHomePageContent() {
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
-            appName="track"
-            appDisplayName="Track"
+            appName="subs"
+            appDisplayName="Subs"
             onActivated={() => window.location.reload()}
             onDifferentEmail={async () => {
               await firebaseSignOut(auth);
@@ -179,7 +179,7 @@ function TrackHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "AINex Track",
+          appDisplayName: "AINex Subs",
           productLinks,
           companyLinks,
           resourceLinks,

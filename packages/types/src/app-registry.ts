@@ -16,7 +16,7 @@ export type AppSlug =
   | 'projects'
   | 'workflow'
   | 'calendar'
-  | 'track'
+  | 'subs'
   | 'admin';
 
 export interface AppConfig {
@@ -208,18 +208,18 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['Events', 'Scheduling', 'Reminders', 'Multiple Views'],
     status: 'active',
   },
-  track: {
-    name: 'Track',
-    slug: 'track',
-    description: 'Manage subscriptions and recurring expenses. Track your money and spending.',
+  subs: {
+    name: 'Subs',
+    slug: 'subs',
+    description: 'Manage subscriptions and recurring bills. Track your money and spending.',
     icon: 'DollarSign',
     color: 'green',
     gradient: 'from-green-500 to-emerald-500',
     devUrl: 'http://localhost:3015',
-    prodUrl: 'https://track.ainexsuite.com',
+    prodUrl: 'https://subs.ainexsuite.com',
     devPort: 3015,
     category: 'productivity',
-    features: ['Subscriptions', 'Recurring Expenses', 'Spending Tracker', 'Budget'],
+    features: ['Subscriptions', 'Recurring Bills', 'Spending Tracker', 'Budget'],
     status: 'active',
   },
   admin: {

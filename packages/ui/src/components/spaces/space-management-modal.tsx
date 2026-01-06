@@ -32,7 +32,7 @@ const AVAILABLE_APPS = [
   { id: 'habits', label: 'Habits', icon: '🌱' },
   { id: 'calendar', label: 'Calendar', icon: '📅' },
   { id: 'projects', label: 'Projects', icon: '📊' },
-  { id: 'track', label: 'Track', icon: '💰' },
+  { id: 'subs', label: 'Subs', icon: '💰' },
 ] as const;
 
 /** Global predefined space types that users can join/leave */

@@ -6,6 +6,7 @@ import { HintsProvider } from '@/components/hints';
 
 export default function WorkspaceRootLayout({
   children,
+
 }: {
   children: React.ReactNode;
 }) {

@@ -4,9 +4,9 @@ import { createSpacesProvider } from "@ainexsuite/ui";
 import type { Space } from "@ainexsuite/types";
 
 export const { SpacesProvider, useSpaces } = createSpacesProvider<Space>({
-  appId: "track",
+  appId: "subs",
   collectionName: "spaces",
-  storageKey: "track-current-space",
+  storageKey: "subs-current-space",
   defaultSpace: {
     name: "My Finances",
     type: "personal",

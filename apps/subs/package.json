@@ -1,8 +1,8 @@
 {
-  "name": "@ainexsuite/track",
+  "name": "@ainexsuite/subs",
   "version": "1.0.0",
   "private": true,
-  "description": "Money tracking app - Manage subscriptions and recurring expenses",
+  "description": "Subscription & bill tracking - Manage recurring expenses",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p ${PORT:-3015}",
     "build": "next build",

@@ -1,5 +1,5 @@
 ---
-description: Kill all ports 3000-3020 and restart all apps (main, admin, journey, notes, todo, track, fit, grow, moments, projects, pulse, workflow)
+description: Kill all ports 3000-3020 and restart all apps (main, notes, journal, todo, health, album, habits, display, fit, projects, workflow, subs, calendar, admin)
 ---
 
 Restart all AinexSuite apps using PM2 process manager.
@@ -18,7 +18,7 @@ Restart all AinexSuite apps using PM2 process manager.
 pm2 delete all 2>/dev/null || true
 
 # Kill any remaining processes on dev ports
-for port in 3000 3001 3002 3003 3004 3005 3006 3007 3008 3009 3010 3014 3020; do
+for port in 3000 3001 3002 3003 3004 3005 3006 3007 3008 3009 3010 3011 3014 3020; do
   lsof -ti:$port 2>/dev/null | xargs kill -9 2>/dev/null || true
 done
 
@@ -48,13 +48,13 @@ const data = JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'));
 const portMap = {
   main: 3000, notes: 3001, journal: 3002, todo: 3003,
   health: 3004, album: 3005, habits: 3006, display: 3007,
-  fit: 3008, projects: 3009, workflow: 3010, calendar: 3014, admin: 3020
+  fit: 3008, projects: 3009, workflow: 3010, subs: 3011, calendar: 3014, admin: 3020
 };
 
 const colorMap = {
   main: '🟠', notes: '🟡', journal: '🟠', todo: '🟣',
   health: '🟢', album: '🩷', habits: '🩵', display: '🔴',
-  fit: '🔵', projects: '🟣', workflow: '🩵', calendar: '🩵', admin: '⚪'
+  fit: '🔵', projects: '🟣', workflow: '🩵', subs: '🟢', calendar: '🩵', admin: '⚪'
 };
 
 console.log('  App          Port   Memory   Restarts  Status   URL');
@@ -94,7 +94,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 ## Output Format
 
 After running, you'll see a developer dashboard showing:
-- All 13 apps with their ports and URLs
+
+- All 14 apps with their ports and URLs
 - Memory usage per app and total
 - Restart count (high counts = unstable app)
 - Health status (up/down)
@@ -103,18 +104,19 @@ After running, you'll see a developer dashboard showing:
 
 ## App Reference
 
-| App | Port | Color | Purpose |
-|-----|------|-------|---------|
-| main | 3000 | 🟠 | Central dashboard |
-| notes | 3001 | 🟡 | Colorful notes |
-| journal | 3002 | 🟠 | Mood/reflections |
-| todo | 3003 | 🟣 | Task management |
-| health | 3004 | 🟢 | Body metrics |
-| album | 3005 | 🩷 | Memory curation |
-| habits | 3006 | 🩵 | Personal development |
-| display | 3007 | 🔴 | Vitality tracking |
-| fit | 3008 | 🔵 | Workout tracking |
-| projects | 3009 | 🟣 | Project management |
-| workflow | 3010 | 🩵 | Visual automation |
-| calendar | 3014 | 🩵 | Scheduling |
-| admin | 3020 | ⚪ | Admin dashboard |
+| App      | Port | Color | Purpose               |
+| -------- | ---- | ----- | --------------------- |
+| main     | 3000 | 🟠    | Central dashboard     |
+| notes    | 3001 | 🟡    | Colorful notes        |
+| journal  | 3002 | 🟠    | Mood/reflections      |
+| todo     | 3003 | 🟣    | Task management       |
+| health   | 3004 | 🟢    | Body metrics          |
+| album    | 3005 | 🩷    | Memory curation       |
+| habits   | 3006 | 🩵    | Personal development  |
+| display  | 3007 | 🔴    | Vitality tracking     |
+| fit      | 3008 | 🔵    | Workout tracking      |
+| projects | 3009 | 🟣    | Project management    |
+| workflow | 3010 | 🩵    | Visual automation     |
+| subs     | 3011 | 🟢    | Subscription tracking |
+| calendar | 3014 | 🩵    | Scheduling            |
+| admin    | 3020 | ⚪    | Admin dashboard       |

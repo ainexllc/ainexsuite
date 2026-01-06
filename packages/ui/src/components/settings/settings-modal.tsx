@@ -1052,7 +1052,7 @@ const AVAILABLE_APPS = [
   { id: "projects", label: "Projects", icon: "📊" },
   { id: "workflow", label: "Workflow", icon: "⚡" },
   { id: "calendar", label: "Calendar", icon: "📅" },
-  { id: "track", label: "Track", icon: "💰" },
+  { id: "subs", label: "Subs", icon: "💰" },
 ] as const;
 
 const SPACE_TYPE_LABELS: Record<SpaceType, string> = {
