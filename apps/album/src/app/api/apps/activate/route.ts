@@ -27,7 +27,7 @@ import { FieldValue } from 'firebase-admin/firestore';
  * Response:
  * {
  *   "success": true,
- *   "redirect"?: "https://www.ainexsuite.com/workspace?activated=notes"
+ *   "redirect"?: "https://www.ainexspace.com/workspace?activated=notes"
  * }
  */
 
@@ -85,14 +85,14 @@ export async function POST(request: NextRequest) {
 
     // Check if redirect needed
     const hostname = request.headers.get('host') || '';
-    const isMainApp = hostname.includes('localhost:3000') || hostname === 'www.ainexsuite.com';
+    const isMainApp = hostname.includes('localhost:3000') || hostname === 'www.ainexspace.com';
 
     if (appsEligible.length >= 2 && !isMainApp) {
       // Redirect to Main for multi-app users
       const isDev = process.env.NODE_ENV === 'development';
       const mainUrl = isDev
         ? 'http://localhost:3000'
-        : 'https://www.ainexsuite.com';
+        : 'https://www.ainexspace.com';
 
       return NextResponse.json({
         success: true,

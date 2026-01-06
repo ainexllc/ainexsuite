@@ -34,7 +34,7 @@ fi
 
 # Public Firebase variables (same for all apps)
 PUBLIC_VARS=(
-    "NEXT_PUBLIC_MAIN_DOMAIN=www.ainexsuite.com"
+    "NEXT_PUBLIC_MAIN_DOMAIN=www.ainexspace.com"
     "NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAvYZXrWGomqINh20NNiMlWxddm5eetkKc"
     "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=alnexsuite.firebaseapp.com"
     "NEXT_PUBLIC_FIREBASE_PROJECT_ID=alnexsuite"

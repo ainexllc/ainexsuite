@@ -132,15 +132,15 @@ monorepo-manager list
 
   • main
     Main dashboard showing all apps
-    Domain: www.ainexsuite.com
+    Domain: www.ainexspace.com
 
   • notes
     Note-taking with AI assistance
-    Domain: notes.ainexsuite.com
+    Domain: notes.ainexspace.com
 
   • journal
     Daily reflections and mood tracking
-    Domain: journal.ainexsuite.com
+    Domain: journal.ainexspace.com
 
   ...
 ```
@@ -298,7 +298,7 @@ The Monorepo Manager coordinates:
 
 1. **9 Next.js Apps**
    - Each deployed to separate Vercel project
-   - Each has custom domain (e.g., notes.ainexsuite.com)
+   - Each has custom domain (e.g., notes.ainexspace.com)
 
 2. **6 Shared Packages**
    - Workspace packages linked with `pnpm`

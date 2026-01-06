@@ -15,10 +15,10 @@ export class SessionManager {
       : '';
 
     // Detect if on subdomain or standalone
-    const isSubdomain = hostname.includes('.ainexsuite.com');
+    const isSubdomain = hostname.includes('.ainexspace.com');
 
     return {
-      domain: isSubdomain ? '.ainexsuite.com' : hostname,
+      domain: isSubdomain ? '.ainexspace.com' : hostname,
       maxAge: 14 * 24 * 60 * 60, // 14 days
       path: '/',
       secure: process.env.NODE_ENV === 'production',
@@ -111,6 +111,6 @@ export class SessionManager {
     if (typeof window === 'undefined') return 'standalone';
 
     const hostname = window.location.hostname;
-    return hostname.includes('.ainexsuite.com') ? 'subdomain' : 'standalone';
+    return hostname.includes('.ainexspace.com') ? 'subdomain' : 'standalone';
   }
 }

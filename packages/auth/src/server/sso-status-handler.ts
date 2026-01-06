@@ -20,7 +20,7 @@ import { getLatestSession } from './sso-session-store';
 function isAllowedOrigin(origin: string | null): boolean {
   return Boolean(
     origin && (
-      origin.includes('ainexsuite.com') ||
+      origin.includes('ainexspace.com') ||
       origin.includes('localhost') ||
       origin.includes('127.0.0.1')
     )

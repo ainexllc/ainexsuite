@@ -79,7 +79,7 @@ program
       console.log(chalk.white(`  cd apps/${appName}`));
       console.log(chalk.white(`  npm run dev\n`));
       console.log(chalk.gray(`App will be available at: http://localhost:3000`));
-      console.log(chalk.gray(`Production domain: ${appName}.ainexsuite.com\n`));
+      console.log(chalk.gray(`Production domain: ${appName}.ainexspace.com\n`));
 
     } catch (error) {
       spinner.fail();
@@ -104,7 +104,7 @@ async function replacePlaceholders(appDir, appName, appType) {
       .replace(/\{\{APP_NAME\}\}/g, appName)
       .replace(/\{\{APP_NAME_CAPITALIZED\}\}/g, capitalize(appName))
       .replace(/\{\{APP_TYPE\}\}/g, appType)
-      .replace(/\{\{DOMAIN\}\}/g, `${appName}.ainexsuite.com`);
+      .replace(/\{\{DOMAIN\}\}/g, `${appName}.ainexspace.com`);
 
     await fs.writeFile(file, content, 'utf8');
   }

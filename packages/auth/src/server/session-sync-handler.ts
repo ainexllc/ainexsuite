@@ -26,7 +26,7 @@ const PROD_COOKIE_OPTIONS = {
   secure: true,
   sameSite: 'lax' as const,
   path: '/',
-  domain: '.ainexsuite.com', // Share across all subdomains
+  domain: '.ainexspace.com', // Share across all subdomains
   maxAge: 60 * 60 * 24 * 5, // 5 days
 };
 
@@ -36,7 +36,7 @@ const PROD_COOKIE_OPTIONS = {
 function isAllowedOrigin(origin: string | null): boolean {
   return Boolean(
     origin && (
-      origin.includes('ainexsuite.com') ||
+      origin.includes('ainexspace.com') ||
       origin.includes('localhost') ||
       origin.includes('127.0.0.1')
     )

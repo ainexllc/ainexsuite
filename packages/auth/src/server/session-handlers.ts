@@ -25,7 +25,7 @@ import { getLatestSession } from './sso-session-store';
 function isAllowedOrigin(origin: string | null): boolean {
   return Boolean(
     origin && (
-      origin.includes('ainexsuite.com') ||
+      origin.includes('ainexspace.com') ||
       origin.includes('localhost') ||
       origin.includes('127.0.0.1')
     )
@@ -372,8 +372,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use shared cookie domain for true SSO across all *.ainexsuite.com apps
-    const cookieDomain = getSessionCookieDomain(); // .ainexsuite.com in production
+    // Use shared cookie domain for true SSO across all *.ainexspace.com apps
+    const cookieDomain = getSessionCookieDomain(); // .ainexspace.com in production
 
     // For local development, skip Cloud Function and create session from token
     if (process.env.NODE_ENV === 'development') {

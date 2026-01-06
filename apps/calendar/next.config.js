@@ -18,7 +18,7 @@ const nextConfig = {
   // App-specific environment variables
   env: {
     NEXT_PUBLIC_APP_NAME: 'calendar',
-    NEXT_PUBLIC_MAIN_DOMAIN: 'www.ainexsuite.com',
+    NEXT_PUBLIC_MAIN_DOMAIN: 'www.ainexspace.com',
   },
 
   // Image optimization

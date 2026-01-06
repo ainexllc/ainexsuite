@@ -67,8 +67,8 @@ export default function GrowFAQPage() {
           <h1 className="text-4xl font-semibold text-white sm:text-5xl">Grow FAQ</h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Quick answers about goals, mentors, and account management in Grow. Still curious? Email{' '}
-            <a href="mailto:grow@ainexsuite.com" className="text-purple-300 hover:underline">
-              grow@ainexsuite.com
+            <a href="mailto:grow@ainexspace.com" className="text-purple-300 hover:underline">
+              grow@ainexspace.com
             </a>
             .
           </p>

@@ -377,13 +377,13 @@ const action = getErrorAction(error);
 ### SSO Flow
 
 ```
-1. User signs in on Main app (www.ainexsuite.com)
+1. User signs in on Main app (www.ainexspace.com)
    ↓
 2. Firebase Authentication creates user
    ↓
-3. Server creates session cookie on .ainexsuite.com domain
+3. Server creates session cookie on .ainexspace.com domain
    ↓
-4. User navigates to Notes app (notes.ainexsuite.com)
+4. User navigates to Notes app (notes.ainexspace.com)
    ↓
 5. AuthBootstrap detects session cookie
    ↓
@@ -540,7 +540,7 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
 NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 
 # Session Configuration
-NEXT_PUBLIC_SESSION_COOKIE_DOMAIN=.ainexsuite.com
+NEXT_PUBLIC_SESSION_COOKIE_DOMAIN=.ainexspace.com
 NEXT_PUBLIC_SESSION_COOKIE_MAX_AGE=1209600
 ```
 
@@ -610,7 +610,7 @@ export async function POST(request: NextRequest) {
 
 ### Session Cookie Not Working Across Domains
 
-- Verify `SESSION_COOKIE_DOMAIN` is set to `.ainexsuite.com`
+- Verify `SESSION_COOKIE_DOMAIN` is set to `.ainexspace.com`
 - Ensure `secure: true` in production (requires HTTPS)
 - Check browser allows third-party cookies
 

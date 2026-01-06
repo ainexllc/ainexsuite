@@ -130,7 +130,7 @@ export function Footer({
               Built with ❤️ for productivity and growth
             </p>
             <p className="text-xs text-muted-foreground">
-              Questions? Contact us at <a href="mailto:support@ainexsuite.com" className="hover:text-foreground underline transition-colors">support@ainexsuite.com</a>
+              Questions? Contact us at <a href="mailto:support@ainexspace.com" className="hover:text-foreground underline transition-colors">support@ainexspace.com</a>
             </p>
           </div>
         </div>

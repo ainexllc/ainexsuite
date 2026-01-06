@@ -11,7 +11,7 @@ export function ContactUs() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const contactMethods = [
-    { icon: Mail, title: 'Email Support', description: 'Get help via email within 24 hours', contact: 'support@ainexsuite.com', href: 'mailto:support@ainexsuite.com' },
+    { icon: Mail, title: 'Email Support', description: 'Get help via email within 24 hours', contact: 'support@ainexspace.com', href: 'mailto:support@ainexspace.com' },
     { icon: MessageSquare, title: 'Live Chat', description: 'Chat with our team in real-time', contact: 'Available 9am-6pm EST', href: '#' },
     { icon: HelpCircle, title: 'Help Center', description: 'Browse our documentation and guides', contact: 'Self-service resources', href: '/help' },
   ];

@@ -70,8 +70,8 @@ export default function PulseFAQPage() {
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Answers to common questions about syncing vitals, collaborating with providers, and managing your account.
             Need more help? Email{' '}
-            <a href="mailto:pulse@ainexsuite.com" className="text-rose-300 hover:underline">
-              pulse@ainexsuite.com
+            <a href="mailto:pulse@ainexspace.com" className="text-rose-300 hover:underline">
+              pulse@ainexspace.com
             </a>
             .
           </p>

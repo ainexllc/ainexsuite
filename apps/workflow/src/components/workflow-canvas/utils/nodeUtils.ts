@@ -17,19 +17,26 @@ export const paletteNodeTypes = [
 export type PaletteNodeType = typeof paletteNodeTypes[number];
 
 /**
+ * Default solid background color for nodes
+ * Users can change to transparent later via the bgColor picker
+ */
+export const DEFAULT_NODE_BG_COLOR = '#1a1a1a';
+export const DEFAULT_NODE_BG_COLOR_LIGHT = '#f5f5f5';
+
+/**
  * Default data for each node type
  */
 export const defaultNodeData: Record<string, Record<string, unknown>> = {
-  rectangle: { label: 'Process' },
-  diamond: { label: 'Decision?' },
-  oval: { label: 'Start' },
-  parallelogram: { label: 'Input' },
-  swimlane: { label: 'Swimlane', orientation: 'horizontal', lanes: 3 },
-  subprocess: { label: 'Subprocess', detail: 'Describe the nested flow...' },
-  'sticky-note': { label: 'Quick note...' },
-  icon: { label: 'Service', emoji: '🧩' },
-  database: { label: 'Database' },
-  documents: { label: 'Documents' },
+  rectangle: { label: 'Process', bgColor: DEFAULT_NODE_BG_COLOR },
+  diamond: { label: 'Decision?', bgColor: DEFAULT_NODE_BG_COLOR },
+  oval: { label: 'Start', bgColor: DEFAULT_NODE_BG_COLOR },
+  parallelogram: { label: 'Input', bgColor: DEFAULT_NODE_BG_COLOR },
+  swimlane: { label: 'Swimlane', orientation: 'horizontal', lanes: 3, bgColor: DEFAULT_NODE_BG_COLOR },
+  subprocess: { label: 'Subprocess', detail: 'Describe the nested flow...', bgColor: DEFAULT_NODE_BG_COLOR },
+  'sticky-note': { label: 'Quick note...', bgColor: '#fef3c7' }, // Amber tint for sticky notes
+  icon: { label: 'Service', emoji: '🧩', bgColor: DEFAULT_NODE_BG_COLOR },
+  database: { label: 'Database', bgColor: DEFAULT_NODE_BG_COLOR },
+  documents: { label: 'Documents', bgColor: DEFAULT_NODE_BG_COLOR },
 };
 
 /**

@@ -3,6 +3,7 @@
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
+import { LockBadge } from './LockBadge';
 
 interface SwimlaneNodeData extends Record<string, unknown> {
   label?: string;
@@ -10,6 +11,7 @@ interface SwimlaneNodeData extends Record<string, unknown> {
   lanes?: number;
   color?: string;
   bgColor?: string;
+  locked?: boolean;
 }
 
 export type SwimlaneNodeType = Node<SwimlaneNodeData, 'swimlane'>;
@@ -18,6 +20,7 @@ function SwimlaneNode({ data, selected }: NodeProps<SwimlaneNodeType>) {
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const shellBg = (data.bgColor as string) || 'rgba(10, 10, 10, 0.5)';
+  const isLocked = data.locked || false;
   const orientation = data.orientation === 'vertical' ? 'vertical' : 'horizontal';
   const laneCountRaw = typeof data.lanes === 'number' ? data.lanes : 3;
   const laneCount = Math.min(Math.max(laneCountRaw, 2), 5);
@@ -53,9 +56,10 @@ function SwimlaneNode({ data, selected }: NodeProps<SwimlaneNodeType>) {
       onMouseLeave={() => setIsHovered(false)}
       className="h-full w-full"
     >
+      <LockBadge locked={isLocked} />
       <NodeResizer
         color={nodeColor}
-        isVisible={selected}
+        isVisible={selected && !isLocked}
         minWidth={260}
         minHeight={160}
       />

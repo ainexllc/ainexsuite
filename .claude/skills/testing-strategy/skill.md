@@ -911,9 +911,9 @@ export function createMockNotes(count: number) {
 import { test, expect } from '@playwright/test';
 
 const PRODUCTION_APPS = [
-  'https://www.ainexsuite.com',
-  'https://notes.ainexsuite.com',
-  'https://journal.ainexsuite.com',
+  'https://www.ainexspace.com',
+  'https://notes.ainexspace.com',
+  'https://journal.ainexspace.com',
   // ... all apps
 ];
 

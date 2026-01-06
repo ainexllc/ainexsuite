@@ -8,7 +8,7 @@
  * Works in both browser (client-side) and Node.js (server-side) environments
  *
  * @param hostname - Optional hostname override (useful for server-side)
- * @returns Cookie domain string (e.g., '.ainexsuite.com', '.localhost')
+ * @returns Cookie domain string (e.g., '.ainexspace.com', '.localhost')
  */
 export function getCookieDomain(hostname?: string): string {
   // Get hostname from window or parameter
@@ -20,8 +20,8 @@ export function getCookieDomain(hostname?: string): string {
   }
 
   // Production subdomains: detect which domain family
-  if (host.includes('ainexsuite.com')) {
-    return '.ainexsuite.com';
+  if (host.includes('ainexspace.com')) {
+    return '.ainexspace.com';
   }
 
   if (host.includes('ainexnotes.com')) {
@@ -75,9 +75,9 @@ export function getCookieDomain(hostname?: string): string {
 
 /**
  * Check if the current environment supports cross-subdomain cookies
- * (i.e., using .ainexsuite.com domain)
+ * (i.e., using .ainexspace.com domain)
  */
 export function supportsCrossSubdomainCookies(): boolean {
   const domain = getCookieDomain();
-  return domain === '.ainexsuite.com';
+  return domain === '.ainexspace.com';
 }

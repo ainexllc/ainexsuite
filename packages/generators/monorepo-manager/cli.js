@@ -277,7 +277,7 @@ program
             const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
             console.log(chalk.white(`  • ${app}`));
             console.log(chalk.gray(`    ${packageJson.description || 'No description'}`));
-            console.log(chalk.gray(`    Domain: ${app}.ainexsuite.com\n`));
+            console.log(chalk.gray(`    Domain: ${app}.ainexspace.com\n`));
           } catch (err) {
             console.log(chalk.white(`  • ${app}`));
             console.log(chalk.gray(`    (No package.json found)\n`));

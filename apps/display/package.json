@@ -2,7 +2,7 @@
   "name": "@ainexsuite/display",
   "version": "0.1.0",
   "private": true,
-  "description": "Display app - Vitality tracking at display.ainexsuite.com",
+  "description": "Display app - Vitality tracking at display.ainexspace.com",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p ${PORT:-3007}",
     "build": "next build",

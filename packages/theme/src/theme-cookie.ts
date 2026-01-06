@@ -5,7 +5,7 @@
  * Cookies are shared across all ports on localhost (unlike localStorage),
  * making this perfect for multi-app suites.
  *
- * In production with subdomains, set domain=.ainexsuite.com
+ * In production with subdomains, set domain=.ainexspace.com
  */
 
 export const THEME_COOKIE_NAME = 'ainex-theme';
@@ -37,10 +37,10 @@ export function setThemeCookie(theme: ThemeValue): void {
   if (typeof document === 'undefined') return;
 
   const isProduction = typeof window !== 'undefined' &&
-    window.location.hostname.includes('ainexsuite.com');
+    window.location.hostname.includes('ainexspace.com');
 
   // In production, set domain for cross-subdomain sharing
-  const domain = isProduction ? '; domain=.ainexsuite.com' : '';
+  const domain = isProduction ? '; domain=.ainexspace.com' : '';
 
   // SameSite=Lax allows the cookie to be sent with same-site requests
   // and top-level navigations (cross-app navigation)
@@ -54,9 +54,9 @@ export function removeThemeCookie(): void {
   if (typeof document === 'undefined') return;
 
   const isProduction = typeof window !== 'undefined' &&
-    window.location.hostname.includes('ainexsuite.com');
+    window.location.hostname.includes('ainexspace.com');
 
-  const domain = isProduction ? '; domain=.ainexsuite.com' : '';
+  const domain = isProduction ? '; domain=.ainexspace.com' : '';
 
   document.cookie = `${THEME_COOKIE_NAME}=; path=/; max-age=0${domain}`;
 }

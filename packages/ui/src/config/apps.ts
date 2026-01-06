@@ -107,7 +107,7 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
 
   // Main app uses the root domain in production
   if (slug === 'main') {
-    return 'https://ainexsuite.com/workspace';
+    return 'https://ainexspace.com/workspace';
   }
 
   // Map internal slugs to production domains (if different from slug)
@@ -116,5 +116,5 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
   };
   const domain = domainMap[slug] || slug;
 
-  return `https://${domain}.ainexsuite.com/workspace`;
+  return `https://${domain}.ainexspace.com/workspace`;
 }

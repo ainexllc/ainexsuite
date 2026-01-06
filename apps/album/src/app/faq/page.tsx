@@ -69,8 +69,8 @@ export default function MomentsFAQPage() {
           <h1 className="text-4xl font-semibold text-white sm:text-5xl">Moments FAQ</h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Answers about media capture, collaboration, and managing storage inside Moments. Have more questions? Email{' '}
-            <a href="mailto:moments@ainexsuite.com" className="text-pink-300 hover:underline">
-              moments@ainexsuite.com
+            <a href="mailto:moments@ainexspace.com" className="text-pink-300 hover:underline">
+              moments@ainexspace.com
             </a>
             .
           </p>

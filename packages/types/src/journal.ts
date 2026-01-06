@@ -25,6 +25,7 @@ export interface JournalEntry extends BaseDocument {
   isDraft: boolean;
   wordCount?: number;
   spaceId?: string; // Optional - null/undefined means personal default space
+  sharedWithUserIds?: string[]; // User IDs who can see this entry (populated from space members)
   color?: EntryColor; // Entry card background color
   archived?: boolean; // Whether entry is archived
   pinned?: boolean; // Whether entry is pinned to top

@@ -133,7 +133,7 @@ export default function SettingsPage() {
             <div className="p-4 bg-white/5 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Domain</span>
-                <span className="text-sm font-mono text-white">admin.ainexsuite.com</span>
+                <span className="text-sm font-mono text-white">admin.ainexspace.com</span>
               </div>
             </div>
             <div className="p-4 bg-white/5 rounded-lg">

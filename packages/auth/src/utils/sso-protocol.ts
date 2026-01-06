@@ -6,14 +6,14 @@
 
 /**
  * Get the Auth Hub URL based on environment
- * Main app (port 3000 / ainexsuite.com) serves as the central auth hub
+ * Main app (port 3000 / ainexspace.com) serves as the central auth hub
  */
 export function getAuthHubUrl(): string {
   if (typeof window === 'undefined') {
     // Server-side fallback
     return process.env.NODE_ENV === 'development'
       ? 'http://localhost:3000'
-      : 'https://ainexsuite.com';
+      : 'https://ainexspace.com';
   }
 
   // Client-side: detect environment from current hostname
@@ -23,20 +23,20 @@ export function getAuthHubUrl(): string {
     return 'http://localhost:3000';
   }
 
-  // Production: use main ainexsuite.com domain
-  if (hostname.endsWith('.ainexsuite.com') || hostname === 'ainexsuite.com') {
-    return 'https://ainexsuite.com';
+  // Production: use main ainexspace.com domain
+  if (hostname.endsWith('.ainexspace.com') || hostname === 'ainexspace.com') {
+    return 'https://ainexspace.com';
   }
 
   // Vercel preview deployments - main app preview
   if (hostname.includes('vercel.app')) {
     // For preview deployments, we can't easily determine the main app URL
     // Fall back to production auth hub
-    return 'https://ainexsuite.com';
+    return 'https://ainexspace.com';
   }
 
   // Default to production
-  return 'https://ainexsuite.com';
+  return 'https://ainexspace.com';
 }
 
 /**
@@ -56,8 +56,8 @@ export function isAuthHub(): boolean {
     return true;
   }
 
-  // Production: ainexsuite.com (without subdomain) is the auth hub
-  if (hostname === 'ainexsuite.com' || hostname === 'www.ainexsuite.com') {
+  // Production: ainexspace.com (without subdomain) is the auth hub
+  if (hostname === 'ainexspace.com' || hostname === 'www.ainexspace.com') {
     return true;
   }
 

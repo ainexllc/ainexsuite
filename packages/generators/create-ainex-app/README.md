@@ -133,7 +133,7 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
 
 # App-specific
 NEXT_PUBLIC_APP_NAME=<app-name>
-NEXT_PUBLIC_DOMAIN=<app-name>.ainexsuite.com
+NEXT_PUBLIC_DOMAIN=<app-name>.ainexspace.com
 ```
 
 ### Shared Packages
@@ -170,7 +170,7 @@ The generator replaces these placeholders in template files:
 | `{{APP_NAME}}` | `notes` | App name (lowercase) |
 | `{{APP_NAME_CAPITALIZED}}` | `Notes` | App name (capitalized) |
 | `{{APP_TYPE}}` | `with-ai` | Template type used |
-| `{{DOMAIN}}` | `notes.ainexsuite.com` | Production domain |
+| `{{DOMAIN}}` | `notes.ainexspace.com` | Production domain |
 
 ## Adding New Templates
 

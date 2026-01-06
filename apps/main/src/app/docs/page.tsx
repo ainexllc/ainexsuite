@@ -354,7 +354,7 @@ export default function DocsPage() {
               Visit Help Center
             </Link>
             <a
-              href="mailto:support@ainexsuite.com"
+              href="mailto:support@ainexspace.com"
               className="inline-flex items-center justify-center px-8 py-4 rounded-2xl border border-white/20 text-white font-semibold hover:bg-white/5 transition-colors"
             >
               Contact Support

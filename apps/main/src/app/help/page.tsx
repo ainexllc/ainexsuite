@@ -260,10 +260,10 @@ export default function HelpPage() {
                   <div>
                     <div className="font-semibold text-white">Email Support</div>
                     <a
-                      href="mailto:support@ainexsuite.com"
+                      href="mailto:support@ainexspace.com"
                       className="text-sm text-white/60 hover:text-[#f97316] transition"
                     >
-                      support@ainexsuite.com
+                      support@ainexspace.com
                     </a>
                   </div>
                 </div>

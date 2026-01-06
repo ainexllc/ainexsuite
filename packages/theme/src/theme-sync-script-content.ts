@@ -5,7 +5,7 @@ export type ResolvedTheme = 'light' | 'dark';
  * This must be placed in <head> to run before body scripts.
  *
  * This prevents any flash by:
- * 1. Reading theme from cookie (shared across all *.ainexsuite.com apps)
+ * 1. Reading theme from cookie (shared across all *.ainexspace.com apps)
  * 2. Syncing to localStorage for next-themes
  * 3. Immediately applying the theme class to <html> element
  */

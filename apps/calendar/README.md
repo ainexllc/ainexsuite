@@ -24,4 +24,4 @@ Required environment variables:
 
 ## Deployment
 
-Deployed via Vercel to `calendar.ainexsuite.com`
+Deployed via Vercel to `calendar.ainexspace.com`

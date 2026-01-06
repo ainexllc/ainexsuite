@@ -31,7 +31,7 @@ export function getSessionCookieDomain(): string | undefined {
   // Check for Vercel production environment or explicit production flag
   if (process.env.VERCEL_ENV === 'production' ||
     process.env.NODE_ENV === 'production') {
-    return '.ainexsuite.com';
+    return '.ainexspace.com';
   }
   // Development: Return undefined - cookies without a domain are "HostOnly"
   // and will be sent to all ports on the same host (localhost)
@@ -44,5 +44,5 @@ export function getSessionCookieDomain(): string | undefined {
 // in monorepos where the package is built separately from the apps
 export const SESSION_COOKIE_DOMAIN =
   process.env.NODE_ENV === 'production'
-    ? '.ainexsuite.com'    // Production: shared across *.ainexsuite.com
+    ? '.ainexspace.com'    // Production: shared across *.ainexspace.com
     : '.localhost';         // Development: shared across *.localhost

@@ -5,7 +5,7 @@
 # ============================================
 # PUBLIC VARIABLES (same for all apps)
 # ============================================
-NEXT_PUBLIC_MAIN_DOMAIN=www.ainexsuite.com
+NEXT_PUBLIC_MAIN_DOMAIN=www.ainexspace.com
 
 # Firebase Client Configuration (PUBLIC)
 NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyAvYZXrWGomqINh20NNiMlWxddm5eetkKc

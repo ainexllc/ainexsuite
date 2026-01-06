@@ -3,11 +3,13 @@
 import { memo, useCallback, useState } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
+import { LockBadge } from './LockBadge';
 
 interface DatabaseNodeData extends Record<string, unknown> {
   label?: string;
   color?: string;
   bgColor?: string;
+  locked?: boolean;
 }
 
 export type DatabaseNodeType = Node<DatabaseNodeData, 'database'>;
@@ -16,6 +18,7 @@ function DatabaseNode({ data, selected }: NodeProps<DatabaseNodeType>) {
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const nodeBgColor = (data.bgColor as string) || 'rgba(10, 10, 10, 0.8)';
+  const isLocked = data.locked || false;
   const [label, setLabel] = useState((data.label as string) || 'Database');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -46,7 +49,8 @@ function DatabaseNode({ data, selected }: NodeProps<DatabaseNodeType>) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <NodeResizer color={nodeColor} isVisible={selected} minWidth={150} minHeight={150} />
+      <LockBadge locked={isLocked} />
+      <NodeResizer color={nodeColor} isVisible={selected && !isLocked} minWidth={150} minHeight={150} />
 
       <Handle type="target" position={Position.Top} id="top" style={{ ...handleStyle, top: 0 }} />
       <Handle type="source" position={Position.Right} id="right" style={{ ...handleStyle, right: 0 }} />

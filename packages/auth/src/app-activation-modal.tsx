@@ -85,7 +85,7 @@ export function AppActivationModal({
       const isDev = process.env.NODE_ENV === 'development';
       const loginUrl = isDev
         ? `http://localhost:3000/signup?returnTo=${encodeURIComponent(window.location.href)}`
-        : `https://www.ainexsuite.com/signup?returnTo=${encodeURIComponent(window.location.href)}`;
+        : `https://www.ainexspace.com/signup?returnTo=${encodeURIComponent(window.location.href)}`;
       window.location.href = loginUrl;
     }
   };

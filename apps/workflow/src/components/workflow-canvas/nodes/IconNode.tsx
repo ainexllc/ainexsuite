@@ -3,12 +3,14 @@
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
+import { LockBadge } from './LockBadge';
 
 interface IconNodeData extends Record<string, unknown> {
   label?: string;
   emoji?: string;
   color?: string;
   bgColor?: string;
+  locked?: boolean;
 }
 
 export type IconNodeType = Node<IconNodeData, 'icon'>;
@@ -16,7 +18,8 @@ export type IconNodeType = Node<IconNodeData, 'icon'>;
 function IconNode({ data, selected }: NodeProps<IconNodeType>) {
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
-  const nodeBgColor = (data.bgColor as string) || 'rgba(10, 10, 10, 0.7)';
+  const nodeBgColor = (data.bgColor as string) || '#1a1a1a';
+  const isLocked = data.locked || false;
   const [label, setLabel] = useState((data.label as string) || 'Service');
   const [emoji, setEmoji] = useState((data.emoji as string) || '🧩');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
@@ -51,7 +54,8 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <NodeResizer color={nodeColor} isVisible={selected} minWidth={140} minHeight={140} />
+      <LockBadge locked={isLocked} />
+      <NodeResizer color={nodeColor} isVisible={selected && !isLocked} minWidth={140} minHeight={140} />
 
       <Handle type="target" position={Position.Top} id="top" style={{ ...handleStyle, top: 0 }} />
       <Handle type="source" position={Position.Right} id="right" style={{ ...handleStyle, right: 0 }} />

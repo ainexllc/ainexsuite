@@ -15,17 +15,17 @@ Multi-app productivity suite with 8 apps + main dashboard, single sign-on, share
 ```
 ainexsuite/
 ├── apps/                    # 11 Next.js applications
-│   ├── main/               # www.ainexsuite.com
-│   ├── projects/           # project.ainexsuite.com
-│   ├── notes/              # notes.ainexsuite.com
-│   ├── journey/            # journey.ainexsuite.com
-│   ├── todo/               # todo.ainexsuite.com
-│   ├── track/              # track.ainexsuite.com
-│   ├── moments/            # moments.ainexsuite.com
-│   ├── grow/               # grow.ainexsuite.com
-│   ├── pulse/              # pulse.ainexsuite.com
-│   ├── fit/                # fit.ainexsuite.com
-│   └── workflow/           # workflow.ainexsuite.com
+│   ├── main/               # www.ainexspace.com
+│   ├── projects/           # project.ainexspace.com
+│   ├── notes/              # notes.ainexspace.com
+│   ├── journey/            # journey.ainexspace.com
+│   ├── todo/               # todo.ainexspace.com
+│   ├── track/              # track.ainexspace.com
+│   ├── moments/            # moments.ainexspace.com
+│   ├── grow/               # grow.ainexspace.com
+│   ├── pulse/              # pulse.ainexspace.com
+│   ├── fit/                # fit.ainexspace.com
+│   └── workflow/           # workflow.ainexspace.com
 ├── packages/                # 6 shared packages
 │   ├── ui/                 # NoteNex design system
 │   ├── firebase/           # Firebase SDKs

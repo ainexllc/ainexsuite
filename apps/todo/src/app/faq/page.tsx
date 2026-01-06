@@ -67,8 +67,8 @@ export default function TodoFAQPage() {
           <h1 className="text-4xl font-semibold text-white sm:text-5xl">Todo FAQ</h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Answers about planning, automations, and account management. Still have questions? Email{' '}
-            <a href="mailto:todo@ainexsuite.com" className="text-emerald-300 hover:underline">
-              todo@ainexsuite.com
+            <a href="mailto:todo@ainexspace.com" className="text-emerald-300 hover:underline">
+              todo@ainexspace.com
             </a>
             .
           </p>

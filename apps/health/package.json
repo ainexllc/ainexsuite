@@ -2,7 +2,7 @@
   "name": "@ainexsuite/health",
   "version": "1.0.0",
   "private": true,
-  "description": "Health app - Body metrics, wellness tracking, and health monitoring at health.ainexsuite.com",
+  "description": "Health app - Body metrics, wellness tracking, and health monitoring at health.ainexspace.com",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p ${PORT:-3004}",
     "build": "next build",

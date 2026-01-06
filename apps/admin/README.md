@@ -27,4 +27,4 @@ Required environment variables:
 
 ## Deployment
 
-Deployed via Vercel to `admin.ainexsuite.com`
+Deployed via Vercel to `admin.ainexspace.com`

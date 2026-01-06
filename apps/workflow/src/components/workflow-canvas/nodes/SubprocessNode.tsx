@@ -3,12 +3,14 @@
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
+import { LockBadge } from './LockBadge';
 
 interface SubprocessNodeData extends Record<string, unknown> {
   label?: string;
   detail?: string;
   color?: string;
   bgColor?: string;
+  locked?: boolean;
 }
 
 export type SubprocessNodeType = Node<SubprocessNodeData, 'subprocess'>;
@@ -16,7 +18,8 @@ export type SubprocessNodeType = Node<SubprocessNodeData, 'subprocess'>;
 function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
-  const nodeBgColor = (data.bgColor as string) || 'rgba(10, 10, 10, 0.7)';
+  const nodeBgColor = (data.bgColor as string) || '#1a1a1a';
+  const isLocked = data.locked || false;
   const [label, setLabel] = useState((data.label as string) || 'Subprocess');
   const [detail, setDetail] = useState((data.detail as string) || 'Describe the nested flow...');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
@@ -51,7 +54,8 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
       onMouseLeave={() => setIsHovered(false)}
       className="h-full w-full"
     >
-      <NodeResizer color={nodeColor} isVisible={selected} minWidth={200} minHeight={120} />
+      <LockBadge locked={isLocked} />
+      <NodeResizer color={nodeColor} isVisible={selected && !isLocked} minWidth={200} minHeight={120} />
 
       <Handle type="target" position={Position.Top} id="top" style={{ ...handleStyle, top: 0 }} />
       <Handle type="source" position={Position.Right} id="right" style={{ ...handleStyle, right: 0 }} />

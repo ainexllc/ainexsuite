@@ -10,7 +10,7 @@ const getAppUrl = (subdomain: string, port: number): string => {
                        process.env.NEXT_PUBLIC_USE_PRODUCTION_URLS === 'true';
 
   if (isProduction) {
-    return `https://${subdomain}.ainexsuite.com`;
+    return `https://${subdomain}.ainexspace.com`;
   }
 
   // Development: use .localhost with port

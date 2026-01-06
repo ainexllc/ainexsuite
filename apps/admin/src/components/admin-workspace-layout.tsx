@@ -74,7 +74,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
   useEffect(() => {
     if (!loading && !ssoInProgress && !user && bootstrapStatus !== 'running' && !checkingRole) {
       const isDev = process.env.NODE_ENV === 'development';
-      window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexsuite.com';
+      window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexspace.com';
     }
   }, [user, loading, ssoInProgress, bootstrapStatus, checkingRole]);
 
@@ -85,7 +85,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
       const firebaseAuth = await import('firebase/auth');
       await firebaseAuth.signOut(auth);
       const isDev = process.env.NODE_ENV === 'development';
-      window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexsuite.com';
+      window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexspace.com';
     } catch {
       // Ignore sign out error
     }
@@ -141,7 +141,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
           <button
             onClick={() => {
               const isDev = process.env.NODE_ENV === 'development';
-              window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexsuite.com';
+              window.location.href = isDev ? 'http://localhost:3000' : 'https://www.ainexspace.com';
             }}
             className="w-full py-2.5 px-4 bg-white text-black font-medium rounded-lg hover:bg-white/90 transition-colors"
           >

@@ -44,13 +44,13 @@ function WorkspaceLayoutInner({
   handleSignOut: () => void;
   updatePreferences: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
   updateProfile: (updates: { displayName?: string }) => Promise<void>;
-  updateProfileImage: (file: File) => Promise<string>;
-  removeProfileImage: () => Promise<void>;
-  generateAnimatedAvatar: (prompt: string, style: string) => Promise<string>;
-  saveAnimatedAvatar: (videoUrl: string, style: string) => Promise<void>;
+  updateProfileImage: (imageData: string) => Promise<{ success: boolean; error?: string }>;
+  removeProfileImage: () => Promise<boolean>;
+  generateAnimatedAvatar: (action: string) => Promise<{ success: boolean; videoData?: string; error?: string; pending?: boolean; operationId?: string }>;
+  saveAnimatedAvatar: (videoData: string, action: string) => Promise<{ success: boolean; error?: string }>;
   toggleAnimatedAvatar: (useAnimated: boolean) => Promise<void>;
-  removeAnimatedAvatar: () => Promise<void>;
-  pollAnimationStatus: (predictionId: string) => Promise<{ status: string; output?: string; error?: string }>;
+  removeAnimatedAvatar: () => Promise<boolean>;
+  pollAnimationStatus: (operationId: string) => Promise<{ success: boolean; done: boolean; videoData?: string; error?: string }>;
 }) {
   const router = useRouter();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);

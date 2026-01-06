@@ -5,7 +5,7 @@
  * This solves the problem where cross-origin cookies don't work in development
  * (different ports are treated as different origins).
  *
- * In production, we rely on shared cookies on the .ainexsuite.com domain,
+ * In production, we rely on shared cookies on the .ainexspace.com domain,
  * so this store is only used as a backup.
  *
  * Note: This store is per-process, so it only works for single-server setups.

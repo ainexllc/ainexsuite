@@ -116,7 +116,7 @@ const faqData: FAQCategory[] = [
       },
       {
         question: 'I found a bug. How do I report it?',
-        answer: 'We appreciate bug reports! Please email support@ainexsuite.com with details about the issue, including what browser you\'re using, what you were doing when the bug occurred, and any error messages you saw. Screenshots are helpful too!',
+        answer: 'We appreciate bug reports! Please email support@ainexspace.com with details about the issue, including what browser you\'re using, what you were doing when the bug occurred, and any error messages you saw. Screenshots are helpful too!',
       },
       {
         question: 'Is there a mobile app?',
@@ -124,7 +124,7 @@ const faqData: FAQCategory[] = [
       },
       {
         question: 'How do I contact support?',
-        answer: 'You can reach our support team at support@ainexsuite.com. We typically respond within 24 hours on business days. For urgent issues, premium subscribers have access to priority support with faster response times.',
+        answer: 'You can reach our support team at support@ainexspace.com. We typically respond within 24 hours on business days. For urgent issues, premium subscribers have access to priority support with faster response times.',
       },
       {
         question: 'Do you have documentation or tutorials?',
@@ -175,7 +175,7 @@ export default function FAQPage() {
           </h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Find answers to common questions about AINexSuite. Can’t find what you’re looking for?{' '}
-            <a href="mailto:support@ainexsuite.com" className="text-[#f97316] hover:underline">
+            <a href="mailto:support@ainexspace.com" className="text-[#f97316] hover:underline">
               Contact our support team
             </a>
             .
@@ -207,7 +207,7 @@ export default function FAQPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="mailto:support@ainexsuite.com"
+              href="mailto:support@ainexspace.com"
               className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-[#f97316] text-white font-semibold hover:bg-[#ea6a0f] transition-colors"
             >
               Contact Support

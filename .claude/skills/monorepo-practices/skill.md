@@ -15,7 +15,7 @@ Maintain a healthy monorepo architecture with proper package boundaries, depende
 ```
 ainexsuite/
 ├── apps/                    # 9 Next.js applications
-│   ├── main/               # Dashboard (www.ainexsuite.com)
+│   ├── main/               # Dashboard (www.ainexspace.com)
 │   ├── notes/              # Notes app
 │   ├── journal/            # Journal app
 │   ├── todo/               # Todo app

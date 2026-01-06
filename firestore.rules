@@ -392,7 +392,33 @@ service cloud.firestore {
     }
 
     // --- Workflow App Rules ---
+    // Legacy single-workflow path (for migration)
     match /workflows/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // New multi-workflow structure
+    match /workflowSpaces/{spaceId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+
+    match /users/{userId}/workflows/{workflowId} {
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow read, update: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        (resource.data.sharedWithUserIds is list && request.auth.uid in resource.data.sharedWithUserIds)
+      );
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/workflowLabels/{labelId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/workflowPreferences/{preferenceId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
@@ -493,6 +519,10 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
       allow update: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
       allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+
+    match /notes_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
     match /users/{userId}/notes/{noteId} {

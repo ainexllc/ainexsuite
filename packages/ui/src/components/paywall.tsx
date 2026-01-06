@@ -22,7 +22,7 @@ export function Paywall({ message, daysRemaining, onUpgrade }: PaywallProps) {
     } else {
       // Default behavior: redirect to main suite
       const isDev = process.env.NODE_ENV === 'development';
-      const suiteUrl = isDev ? 'http://localhost:3010' : 'https://www.ainexsuite.com';
+      const suiteUrl = isDev ? 'http://localhost:3010' : 'https://www.ainexspace.com';
       window.location.href = suiteUrl;
     }
   };

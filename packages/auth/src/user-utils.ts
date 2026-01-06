@@ -165,7 +165,7 @@ export function getPreferredDomain(user: User, currentHostname: string): 'subdom
   }
 
   // Single-app users can use either, check current domain
-  if (currentHostname.includes('ainexsuite.com')) {
+  if (currentHostname.includes('ainexspace.com')) {
     return 'subdomain';
   }
 
@@ -180,7 +180,7 @@ export function shouldRedirectToSuite(user: User, currentHostname: string): bool
 
   // Multi-app or suite users on standalone domains should consider redirecting
   if ((accountType === 'multi-app' || accountType === 'suite') &&
-      !currentHostname.includes('ainexsuite.com')) {
+      !currentHostname.includes('ainexspace.com')) {
     return true;
   }
 

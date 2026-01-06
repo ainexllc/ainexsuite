@@ -115,7 +115,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
           daysRemaining={summary.daysRemaining}
           onUpgrade={() => {
             const isDev = process.env.NODE_ENV === 'development';
-            const suiteUrl = isDev ? 'http://localhost:3010' : 'https://www.ainexsuite.com';
+            const suiteUrl = isDev ? 'http://localhost:3010' : 'https://www.ainexspace.com';
             window.location.href = suiteUrl;
           }}
         />
@@ -132,7 +132,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
           <button
             onClick={() => {
               const isDev = process.env.NODE_ENV === 'development';
-              const suiteUrl = isDev ? 'http://localhost:3010' : 'https://www.ainexsuite.com';
+              const suiteUrl = isDev ? 'http://localhost:3010' : 'https://www.ainexspace.com';
               window.location.href = suiteUrl;
             }}
             className="w-full bg-accent-500 hover:bg-accent-600 text-foreground font-semibold py-3 px-6 rounded-lg transition-colors"

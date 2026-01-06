@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   onSnapshot,
   query,
   where,
@@ -13,7 +14,8 @@ import {
 import { db } from "@ainexsuite/firebase";
 import type { NoteSpace, NoteSpaceDoc, NoteSpaceDraft, SpaceMember, SpaceType } from "@/lib/types/note";
 
-const SPACES_COLLECTION = "noteSpaces";
+// Use unified "spaces" collection to match the provider
+const SPACES_COLLECTION = "spaces";
 
 function convertToNoteSpace(id: string, data: NoteSpaceDoc): NoteSpace {
   return {
@@ -25,6 +27,15 @@ function convertToNoteSpace(id: string, data: NoteSpaceDoc): NoteSpace {
     createdAt: data.createdAt?.toDate() ?? new Date(),
     createdBy: data.createdBy,
   };
+}
+
+export async function getSpace(spaceId: string): Promise<NoteSpace | null> {
+  const spaceRef = doc(db, SPACES_COLLECTION, spaceId);
+  const snapshot = await getDoc(spaceRef);
+  if (!snapshot.exists()) {
+    return null;
+  }
+  return convertToNoteSpace(snapshot.id, snapshot.data() as NoteSpaceDoc);
 }
 
 export function subscribeToSpaces(

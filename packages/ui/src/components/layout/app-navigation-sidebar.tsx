@@ -131,7 +131,7 @@ export function AppNavigationSidebar({
         {/* Scrollable List */}
         <div className="relative z-10 flex-1 overflow-y-auto p-3">
           <div className="space-y-2">
-            {/* Suite Dashboard - Navigate to main app (ainexsuite.com) */}
+            {/* Suite Dashboard - Navigate to main app (ainexspace.com) */}
             <button
               type="button"
               onClick={() => handleAppNavigation('main')}

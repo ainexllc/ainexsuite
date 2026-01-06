@@ -37,6 +37,7 @@ import {
   noteConverter,
   createNotePayload,
 } from "@/lib/firebase/note-converter";
+import { getSpace } from "@/lib/firebase/space-service";
 import type {
   Note,
   ChecklistItem,
@@ -117,10 +118,22 @@ export async function createNote(
   },
 ) {
   const type = input.type ?? (input.checklist?.length ? "checklist" : "text");
+
+  // For shared spaces, add all space members to sharedWithUserIds
+  let sharedWithUserIds: string[] = [];
+  if (input.spaceId && input.spaceId !== "personal") {
+    const space = await getSpace(input.spaceId);
+    if (space?.memberUids) {
+      // Include all members except the note owner
+      sharedWithUserIds = space.memberUids.filter((uid) => uid !== userId);
+    }
+  }
+
   const noteData = createNotePayload(userId, {
     ...input,
     type,
     spaceId: input.spaceId,
+    sharedWithUserIds,
   });
 
   const docRef = await addDoc(clientNoteCollection(userId), noteData);
@@ -213,6 +226,19 @@ export async function updateNote(
 
   if (updates.spaceId !== undefined) {
     payload.spaceId = updates.spaceId || null;
+
+    // When moving to a shared space, update sharedWithUserIds with space members
+    if (updates.spaceId && updates.spaceId !== "personal") {
+      const space = await getSpace(updates.spaceId);
+      if (space?.memberUids) {
+        payload.sharedWithUserIds = space.memberUids.filter((uid) => uid !== userId);
+      }
+    } else {
+      // Moving to personal space - clear sharedWithUserIds (unless explicitly set)
+      if (updates.sharedWithUserIds === undefined) {
+        payload.sharedWithUserIds = [];
+      }
+    }
   }
 
   await updateDoc(clientNoteDoc(userId, noteId), payload);

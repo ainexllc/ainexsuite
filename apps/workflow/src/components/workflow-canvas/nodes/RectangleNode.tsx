@@ -3,11 +3,13 @@
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
+import { LockBadge } from './LockBadge';
 
 interface RectangleNodeData extends Record<string, unknown> {
   label: string;
   color?: string;
   bgColor?: string;
+  locked?: boolean;
 }
 
 export type RectangleNodeType = Node<RectangleNodeData, 'rectangle'>;
@@ -15,7 +17,8 @@ export type RectangleNodeType = Node<RectangleNodeData, 'rectangle'>;
 function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
   const theme = useWorkflowTheme();
   const nodeColor = data.color || theme.primary;
-  const nodeBgColor = data.bgColor || 'rgba(10, 10, 10, 0.7)';
+  const nodeBgColor = data.bgColor || '#1a1a1a';
+  const isLocked = data.locked || false;
   const [label, setLabel] = useState(data.label || 'Process');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -52,9 +55,10 @@ function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
       onMouseLeave={() => setIsHovered(false)}
       style={{ width: '100%', height: '100%' }}
     >
+      <LockBadge locked={isLocked} />
       <NodeResizer
         color={nodeColor}
-        isVisible={selected}
+        isVisible={selected && !isLocked}
         minWidth={120}
         minHeight={60}
       />

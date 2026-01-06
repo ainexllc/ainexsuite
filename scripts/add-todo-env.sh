@@ -4,9 +4,9 @@
 cd /Users/dino/ainex/ainexsuite/apps/todo
 
 # Add public variables
-echo "www.ainexsuite.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN production
-echo "www.ainexsuite.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN preview
-echo "www.ainexsuite.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN development
+echo "www.ainexspace.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN production
+echo "www.ainexspace.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN preview
+echo "www.ainexspace.com" | vercel env add NEXT_PUBLIC_MAIN_DOMAIN development
 
 echo "AIzaSyAvYZXrWGomqINh20NNiMlWxddm5eetkKc" | vercel env add NEXT_PUBLIC_FIREBASE_API_KEY production
 echo "AIzaSyAvYZXrWGomqINh20NNiMlWxddm5eetkKc" | vercel env add NEXT_PUBLIC_FIREBASE_API_KEY preview

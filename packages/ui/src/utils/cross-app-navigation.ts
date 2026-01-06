@@ -221,8 +221,8 @@ export function getCurrentAppSlug(): AppSlug | 'main' | 'admin' | null {
   const hostname = window.location.hostname;
   const port = window.location.port;
 
-  // Production: Extract from subdomain (e.g., notes.ainexsuite.com -> notes)
-  if (hostname.includes('ainexsuite.com')) {
+  // Production: Extract from subdomain (e.g., notes.ainexspace.com -> notes)
+  if (hostname.includes('ainexspace.com')) {
     const subdomain = hostname.split('.')[0];
     if (subdomain === 'ainexsuite' || subdomain === 'www') {
       return 'main';

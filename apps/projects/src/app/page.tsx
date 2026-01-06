@@ -55,7 +55,7 @@ const companyLinks: FooterLink[] = [
 
 const resourceLinks: FooterLink[] = [
   { label: 'Help Center', href: '/help', external: true },
-  { label: 'Contact Us', href: 'mailto:projects@ainexsuite.com' },
+  { label: 'Contact Us', href: 'mailto:projects@ainexspace.com' },
   { label: 'Documentation', href: '/docs', external: true },
 ];
 

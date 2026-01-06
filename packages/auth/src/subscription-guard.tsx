@@ -99,7 +99,7 @@ function PaywallModal({
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Questions? Contact support@ainexsuite.com
+          Questions? Contact support@ainexspace.com
         </p>
       </div>
     </div>

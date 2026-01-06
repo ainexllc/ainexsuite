@@ -70,7 +70,7 @@ const faqs = [
   {
     question: 'Is there a student or nonprofit discount?',
     answer:
-      'Yes. Reach out to support@ainexsuite.com with proof of eligibility and we’ll extend discounted pricing.',
+      'Yes. Reach out to support@ainexspace.com with proof of eligibility and we’ll extend discounted pricing.',
   },
 ];
 

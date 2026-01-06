@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
     // Send email invitation via Resend
     let emailSent = false;
     const resendApiKey = process.env.RESEND_API_KEY;
-    const resendFromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@ainexsuite.com';
+    const resendFromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@ainexspace.com';
 
     if (resendApiKey) {
       const emailConfig: EmailConfig = {
@@ -251,7 +251,7 @@ export async function POST(request: NextRequest) {
       };
 
       // Build the accept URL
-      const baseUrl = request.headers.get('origin') || 'https://www.ainexsuite.com';
+      const baseUrl = request.headers.get('origin') || 'https://www.ainexspace.com';
       const acceptUrl = `${baseUrl}/invite/accept?token=${invitationData.token}`;
 
       const emailResult = await sendInvitationEmail(emailConfig, normalizedEmail, {

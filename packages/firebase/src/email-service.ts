@@ -200,10 +200,10 @@ export function generateInvitationEmailHtml(data: InvitationEmailData): string {
 
           <!-- Header with background image -->
           <tr>
-            <td background="https://www.ainexsuite.com/email-assets/emailbg.png" bgcolor="#0f172a" style="background-image: url('https://www.ainexsuite.com/email-assets/emailbg.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #0f172a; padding: 0; text-align: center;">
+            <td background="https://www.ainexspace.com/email-assets/emailbg.png" bgcolor="#0f172a" style="background-image: url('https://www.ainexspace.com/email-assets/emailbg.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #0f172a; padding: 0; text-align: center;">
               <!--[if gte mso 9]>
               <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:300px;">
-                <v:fill type="tile" src="https://www.ainexsuite.com/email-assets/emailbg.png" color="#0f172a" />
+                <v:fill type="tile" src="https://www.ainexspace.com/email-assets/emailbg.png" color="#0f172a" />
                 <v:textbox inset="0,0,0,0">
               <![endif]-->
               <div style="background-color: rgba(0, 0, 0, 0.6); padding: 48px 40px;">
@@ -307,7 +307,7 @@ export function generateInvitationEmailHtml(data: InvitationEmailData): string {
           <tr>
             <td class="email-footer" style="padding: 24px 40px; text-align: center;">
               <p class="email-text-subtle" style="margin: 0 0 8px; font-size: 14px;">
-                Sent by <a href="https://ainexsuite.com" style="color: #f97316; text-decoration: none;">AINexSuite</a>
+                Sent by <a href="https://ainexspace.com" style="color: #f97316; text-decoration: none;">AINexSuite</a>
               </p>
               <p class="email-text-dim" style="margin: 0; font-size: 12px;">
                 Your personal productivity suite
@@ -348,7 +348,7 @@ This invitation expires on ${expirationDate}.
 
 ---
 Sent by AINexSuite
-https://ainexsuite.com
+https://ainexspace.com
   `.trim();
 }
 
@@ -440,10 +440,10 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
 
           <!-- Header with background image -->
           <tr>
-            <td background="https://www.ainexsuite.com/email-assets/emailbg.png" bgcolor="#0f172a" style="background-image: url('https://www.ainexsuite.com/email-assets/emailbg.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #0f172a; padding: 0; text-align: center;">
+            <td background="https://www.ainexspace.com/email-assets/emailbg.png" bgcolor="#0f172a" style="background-image: url('https://www.ainexspace.com/email-assets/emailbg.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #0f172a; padding: 0; text-align: center;">
               <!--[if gte mso 9]>
               <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:350px;">
-                <v:fill type="tile" src="https://www.ainexsuite.com/email-assets/emailbg.png" color="#0f172a" />
+                <v:fill type="tile" src="https://www.ainexspace.com/email-assets/emailbg.png" color="#0f172a" />
                 <v:textbox inset="0,0,0,0">
               <![endif]-->
               <div style="background-color: rgba(0, 0, 0, 0.6); padding: 56px 40px;">
@@ -523,7 +523,7 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
               <table role="presentation" style="width: 100%; margin: 32px 0;">
                 <tr>
                   <td style="text-align: center;">
-                    <a href="https://www.ainexsuite.com" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);">
+                    <a href="https://www.ainexspace.com" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);">
                       Get Started
                     </a>
                   </td>
@@ -538,18 +538,18 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
                     <table role="presentation" style="width: 100%;">
                       <tr>
                         <td style="padding: 4px 0;">
-                          <a href="https://notes.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Notes</a>
+                          <a href="https://notes.ainexspace.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Notes</a>
                         </td>
                         <td style="padding: 4px 0;">
-                          <a href="https://todo.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Tasks</a>
+                          <a href="https://todo.ainexspace.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Tasks</a>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 4px 0;">
-                          <a href="https://habits.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Habits</a>
+                          <a href="https://habits.ainexspace.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Habits</a>
                         </td>
                         <td style="padding: 4px 0;">
-                          <a href="https://journal.ainexsuite.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Journal</a>
+                          <a href="https://journal.ainexspace.com" style="color: #f97316; text-decoration: none; font-size: 14px; font-weight: 500;">Journal</a>
                         </td>
                       </tr>
                     </table>
@@ -559,7 +559,7 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
 
               <!-- Help section -->
               <p class="email-text-muted" style="margin: 32px 0 0; font-size: 14px; line-height: 1.6;">
-                Need help getting started? Check out our <a href="https://www.ainexsuite.com/help" style="color: #f97316; text-decoration: none;">Help Center</a> or reply to this email with any questions.
+                Need help getting started? Check out our <a href="https://www.ainexspace.com/help" style="color: #f97316; text-decoration: none;">Help Center</a> or reply to this email with any questions.
               </p>
 
             </td>
@@ -569,7 +569,7 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
           <tr>
             <td class="email-footer" style="padding: 24px 40px; text-align: center;">
               <p class="email-text-subtle" style="margin: 0 0 8px; font-size: 14px;">
-                Sent by <a href="https://ainexsuite.com" style="color: #f97316; text-decoration: none;">AINexSuite</a>
+                Sent by <a href="https://ainexspace.com" style="color: #f97316; text-decoration: none;">AINexSuite</a>
               </p>
               <p class="email-text-dim" style="margin: 0; font-size: 12px;">
                 You're receiving this because you created an account at AINexSuite
@@ -605,15 +605,15 @@ What you can do with AINexSuite:
 ✓ Track habits, health, fitness, and personal growth
 ✓ Organize notes, journals, and memories in one place
 
-Get started: https://www.ainexsuite.com
+Get started: https://www.ainexspace.com
 
 Quick Links:
-- Notes: https://notes.ainexsuite.com
-- Tasks: https://todo.ainexsuite.com
-- Habits: https://habits.ainexsuite.com
-- Journal: https://journal.ainexsuite.com
+- Notes: https://notes.ainexspace.com
+- Tasks: https://todo.ainexspace.com
+- Habits: https://habits.ainexspace.com
+- Journal: https://journal.ainexspace.com
 
-Need help? Visit our Help Center: https://www.ainexsuite.com/help
+Need help? Visit our Help Center: https://www.ainexspace.com/help
 Or reply to this email with any questions.
 
 ---

@@ -18,6 +18,18 @@ import { db, createActivity } from '@ainexsuite/firebase';
 import type { JournalEntry, JournalEntryFormData } from '@ainexsuite/types';
 
 export const JOURNALS_COLLECTION = 'journal_entries';
+const SPACES_COLLECTION = 'spaces';
+
+// Helper to get space data (for fetching memberUids)
+async function getSpace(spaceId: string): Promise<{ memberUids: string[] } | null> {
+  const spaceRef = doc(db, SPACES_COLLECTION, spaceId);
+  const snapshot = await getDoc(spaceRef);
+  if (!snapshot.exists()) {
+    return null;
+  }
+  const data = snapshot.data();
+  return { memberUids: data.memberUids || [] };
+}
 
 // Convert Firestore timestamp to Date
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,6 +79,17 @@ export async function createJournalEntry(
   spaceId?: string
 ): Promise<string> {
   const now = new Date();
+
+  // For shared spaces, add all space members to sharedWithUserIds
+  let sharedWithUserIds: string[] = [];
+  if (spaceId && spaceId !== 'personal') {
+    const space = await getSpace(spaceId);
+    if (space?.memberUids) {
+      // Include all members except the entry owner
+      sharedWithUserIds = space.memberUids.filter((uid) => uid !== userId);
+    }
+  }
+
   const journalData = {
     ...data,
     mood: data.mood || 'neutral', // Ensure mood has a default value
@@ -78,7 +101,7 @@ export async function createJournalEntry(
     mediaUrls: [],
     ownerId: userId,
     // Only include spaceId if it's not the default personal space
-    ...(spaceId && spaceId !== 'personal' ? { spaceId } : {}),
+    ...(spaceId && spaceId !== 'personal' ? { spaceId, sharedWithUserIds } : {}),
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
@@ -116,12 +139,30 @@ export async function updateJournalEntry(
     coverImage?: JournalEntry['coverImage'];
     coverOverlay?: JournalEntry['coverOverlay'];
     coverSummary?: JournalEntry['coverSummary'];
-  }
+    spaceId?: string;
+  },
+  userId?: string
 ): Promise<void> {
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
-  const sanitizedData = { ...data };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sanitizedData: Record<string, any> = { ...data };
   if (sanitizedData.isDraft === undefined) {
     delete sanitizedData.isDraft;
+  }
+
+  // Handle space changes - update sharedWithUserIds
+  if ('spaceId' in data && userId) {
+    if (data.spaceId && data.spaceId !== 'personal') {
+      // Moving to a shared space - populate sharedWithUserIds
+      const space = await getSpace(data.spaceId);
+      if (space?.memberUids) {
+        sanitizedData.sharedWithUserIds = space.memberUids.filter((uid) => uid !== userId);
+      }
+    } else {
+      // Moving to personal space - clear sharedWithUserIds
+      sanitizedData.sharedWithUserIds = [];
+      sanitizedData.spaceId = null;
+    }
   }
 
   // Only update updatedAt if title or content changed
@@ -198,7 +239,7 @@ export async function getJournalEntry(entryId: string): Promise<JournalEntry | n
   return null;
 }
 
-// Get all journal entries for a user
+// Get all journal entries for a user (owned + shared in space)
 export async function getUserJournalEntries(
   userId: string,
   options: {
@@ -214,40 +255,90 @@ export async function getUserJournalEntries(
   entries: JournalEntry[];
   lastDoc: DocumentSnapshot | null;
 }> {
-  const constraints: QueryConstraint[] = [
-    where('ownerId', '==', userId)
-  ];
+  const sortField = options.sortBy || 'createdAt';
+  const sortOrder = options.sortOrder || 'desc';
 
-  // Add space filter
-  // Personal space (default) = entries with no spaceId or spaceId === 'personal'
-  // Other spaces = entries with matching spaceId
+  // For shared spaces, we need to query both owned and shared entries
   if (options.spaceId && options.spaceId !== 'personal') {
-    constraints.push(where('spaceId', '==', options.spaceId));
-  } else {
-    // For personal space, we want entries that DON'T have a spaceId
-    // Firestore doesn't support != null easily, so we filter in memory for personal space
+    // Query 1: Entries owned by user in this space
+    const ownedConstraints: QueryConstraint[] = [
+      where('ownerId', '==', userId),
+      where('spaceId', '==', options.spaceId),
+      orderBy(sortField, sortOrder),
+    ];
+    if (options.tags && options.tags.length > 0) {
+      ownedConstraints.push(where('tags', 'array-contains-any', options.tags));
+    }
+    if (options.mood) {
+      ownedConstraints.push(where('mood', '==', options.mood));
+    }
+    if (options.limit) {
+      ownedConstraints.push(limit(options.limit));
+    }
+
+    // Query 2: Entries shared with user in this space
+    const sharedConstraints: QueryConstraint[] = [
+      where('sharedWithUserIds', 'array-contains', userId),
+      where('spaceId', '==', options.spaceId),
+      orderBy(sortField, sortOrder),
+    ];
+    if (options.limit) {
+      sharedConstraints.push(limit(options.limit));
+    }
+
+    const [ownedSnapshot, sharedSnapshot] = await Promise.all([
+      getDocs(query(collection(db, JOURNALS_COLLECTION), ...ownedConstraints)),
+      getDocs(query(collection(db, JOURNALS_COLLECTION), ...sharedConstraints)),
+    ]);
+
+    const entriesMap = new Map<string, JournalEntry>();
+
+    // Add owned entries
+    ownedSnapshot.forEach((doc) => {
+      const data = convertTimestampToDate(doc.data());
+      entriesMap.set(doc.id, { id: doc.id, ...data } as JournalEntry);
+    });
+
+    // Add shared entries (avoiding duplicates)
+    sharedSnapshot.forEach((doc) => {
+      if (!entriesMap.has(doc.id)) {
+        const data = convertTimestampToDate(doc.data());
+        entriesMap.set(doc.id, { id: doc.id, ...data } as JournalEntry);
+      }
+    });
+
+    // Sort combined entries
+    let entries = Array.from(entriesMap.values()).sort((a, b) => {
+      const aTime = sortField === 'createdAt' ? a.createdAt : a.updatedAt;
+      const bTime = sortField === 'createdAt' ? b.createdAt : b.updatedAt;
+      const aVal = typeof aTime === 'number' ? aTime : new Date(aTime as string | Date).getTime();
+      const bVal = typeof bTime === 'number' ? bTime : new Date(bTime as string | Date).getTime();
+      return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
+    });
+
+    // Apply limit if specified
+    if (options.limit) {
+      entries = entries.slice(0, options.limit);
+    }
+
+    return { entries, lastDoc: null };
   }
 
-  // Add tag filter if provided
+  // Personal space: only owned entries without a spaceId
+  const constraints: QueryConstraint[] = [
+    where('ownerId', '==', userId),
+    orderBy(sortField, sortOrder),
+  ];
+
   if (options.tags && options.tags.length > 0) {
     constraints.push(where('tags', 'array-contains-any', options.tags));
   }
-
-  // Add mood filter if provided
   if (options.mood) {
     constraints.push(where('mood', '==', options.mood));
   }
-
-  // Add sorting
-  const sortField = options.sortBy || 'createdAt';
-  const sortOrder = options.sortOrder || 'desc';
-  constraints.push(orderBy(sortField, sortOrder));
-
-  // Add pagination
   if (options.limit) {
     constraints.push(limit(options.limit));
   }
-
   if (options.startAfter) {
     constraints.push(startAfter(options.startAfter));
   }
@@ -258,16 +349,11 @@ export async function getUserJournalEntries(
   let entries: JournalEntry[] = [];
   querySnapshot.forEach((doc) => {
     const data = convertTimestampToDate(doc.data());
-    entries.push({
-      id: doc.id,
-      ...data
-    } as JournalEntry);
+    entries.push({ id: doc.id, ...data } as JournalEntry);
   });
 
-  // For personal space, filter out entries that belong to other spaces
-  if (!options.spaceId || options.spaceId === 'personal') {
-    entries = entries.filter(entry => !entry.spaceId || entry.spaceId === 'personal');
-  }
+  // Filter out entries that belong to other spaces
+  entries = entries.filter(entry => !entry.spaceId || entry.spaceId === 'personal');
 
   const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
 

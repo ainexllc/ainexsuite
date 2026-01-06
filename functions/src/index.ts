@@ -2,7 +2,7 @@
  * Firebase Cloud Functions for AINexSuite
  *
  * Functions:
- * 1. generateSessionCookie - Creates SSO session cookies on .ainexsuite.com domain
+ * 1. generateSessionCookie - Creates SSO session cookies on .ainexspace.com domain
  * 2. checkAuthStatus - Verifies authentication across all apps
  * 3. chatWithGrok - Handles AI assistant requests with streaming responses
  */

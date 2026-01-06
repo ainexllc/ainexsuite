@@ -12,7 +12,7 @@ const apps = [
     icon: StickyNote,
     color: "bg-orange-500",
     description: "Capture ideas and organize thoughts",
-    domain: "notes.ainexsuite.com",
+    domain: "notes.ainexspace.com",
   },
   {
     name: "Journal",
@@ -20,7 +20,7 @@ const apps = [
     icon: BookOpen,
     color: "bg-blue-500",
     description: "Daily reflections and mood tracking",
-    domain: "journal.ainexsuite.com",
+    domain: "journal.ainexspace.com",
   },
   {
     name: "Todo",
@@ -28,7 +28,7 @@ const apps = [
     icon: CheckSquare,
     color: "bg-green-500",
     description: "Task management and productivity",
-    domain: "todo.ainexsuite.com",
+    domain: "todo.ainexspace.com",
   },
   {
     name: "Health",
@@ -36,7 +36,7 @@ const apps = [
     icon: Calendar,
     color: "bg-emerald-500",
     description: "Body metrics and wellness tracking",
-    domain: "health.ainexsuite.com",
+    domain: "health.ainexspace.com",
   },
   {
     name: "Moments",
@@ -44,7 +44,7 @@ const apps = [
     icon: Camera,
     color: "bg-pink-500",
     description: "Photo journal and memories",
-    domain: "moments.ainexsuite.com",
+    domain: "moments.ainexspace.com",
   },
   {
     name: "Grow",
@@ -52,7 +52,7 @@ const apps = [
     icon: TrendingUp,
     color: "bg-yellow-500",
     description: "Learning goals and progress",
-    domain: "grow.ainexsuite.com",
+    domain: "grow.ainexspace.com",
   },
   {
     name: "Pulse",
@@ -60,7 +60,7 @@ const apps = [
     icon: Heart,
     color: "bg-red-500",
     description: "Health metrics and wellness",
-    domain: "pulse.ainexsuite.com",
+    domain: "pulse.ainexspace.com",
   },
   {
     name: "Fit",
@@ -68,7 +68,7 @@ const apps = [
     icon: Dumbbell,
     color: "bg-cyan-500",
     description: "Workout tracking and fitness",
-    domain: "fit.ainexsuite.com",
+    domain: "fit.ainexspace.com",
   },
 ];
 

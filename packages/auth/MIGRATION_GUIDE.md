@@ -37,12 +37,12 @@ The shared session handlers automatically handle:
 - User document creation (new users)
 - 30-day trial activation for all apps
 - Trial upgrades for existing users
-- Cookie domain configuration (.ainexsuite.com)
+- Cookie domain configuration (.ainexspace.com)
 - Development mode with JWT parsing
 
 ### OPTIONS Handler
 - CORS preflight responses
-- Allowed origins: ainexsuite.com, localhost, 127.0.0.1
+- Allowed origins: ainexspace.com, localhost, 127.0.0.1
 
 ## Migration Steps
 
@@ -137,7 +137,7 @@ echo $FIREBASE_ADMIN_PRIVATE_KEY | head -c 50
 ### CORS errors
 
 The handlers automatically allow origins containing:
-- `ainexsuite.com`
+- `ainexspace.com`
 - `localhost`
 - `127.0.0.1`
 

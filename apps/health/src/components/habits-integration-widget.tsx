@@ -9,7 +9,7 @@ import {
 } from '@/lib/habits-integration';
 import type { HabitProgressSummary, HabitCompletionItem } from '@ainexsuite/types';
 
-const HABITS_APP_URL = process.env.NEXT_PUBLIC_HABITS_APP_URL || 'https://habits.ainexsuite.com';
+const HABITS_APP_URL = process.env.NEXT_PUBLIC_HABITS_APP_URL || 'https://habits.ainexspace.com';
 
 interface HabitsIntegrationWidgetProps {
   compact?: boolean;

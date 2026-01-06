@@ -54,8 +54,8 @@ export function TermsOfService() {
 
             <p className="text-sm text-muted-foreground mt-8">
               For questions about our terms of service, please contact us at{' '}
-              <a href="mailto:legal@ainexsuite.com" className="text-[#f97316] hover:underline">
-                legal@ainexsuite.com
+              <a href="mailto:legal@ainexspace.com" className="text-[#f97316] hover:underline">
+                legal@ainexspace.com
               </a>
             </p>
           </div>

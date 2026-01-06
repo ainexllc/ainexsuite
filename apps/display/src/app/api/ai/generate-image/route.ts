@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://ainexsuite.com',
+        'HTTP-Referer': 'https://ainexspace.com',
         'X-Title': 'Pulse Workspace',
       },
       body: JSON.stringify({

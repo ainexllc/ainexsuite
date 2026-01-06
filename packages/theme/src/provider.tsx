@@ -9,13 +9,13 @@ const COOKIE_NAME = "ainex-theme";
 // Cookie setter with production domain support
 function setCookie(theme: string) {
   const isProduction = typeof window !== 'undefined' &&
-    window.location.hostname.includes('ainexsuite.com');
+    window.location.hostname.includes('ainexspace.com');
 
   if (isProduction) {
     // Clear any subdomain-specific cookie first (without domain)
     document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`;
     // Set the domain-wide cookie
-    document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax; domain=.ainexsuite.com`;
+    document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax; domain=.ainexspace.com`;
   } else {
     document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax`;
   }

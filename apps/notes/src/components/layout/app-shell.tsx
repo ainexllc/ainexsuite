@@ -126,7 +126,12 @@ export function AppShell({ children }: AppShellProps) {
         </main>
 
         {/* Feedback Widget */}
-        <FeedbackWidget appName="notes" />
+        <FeedbackWidget
+          appName="notes"
+          userId={user?.uid}
+          userEmail={user?.email || undefined}
+          userName={user?.displayName || undefined}
+        />
 
         {/* Global Settings Modal */}
         <SettingsModal

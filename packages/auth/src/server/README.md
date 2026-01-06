@@ -75,12 +75,12 @@ FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE K
 
 ### CORS Support
 - Automatic CORS headers for cross-origin SSO
-- Allows origins containing 'ainexsuite.com', 'localhost', or '127.0.0.1'
+- Allows origins containing 'ainexspace.com', 'localhost', or '127.0.0.1'
 - Credentials support for cookie-based auth
 
 ### Cookie Domain
 - Uses `getSessionCookieDomain()` from `@ainexsuite/firebase/config`
-- `.ainexsuite.com` in production (shared across all subdomains)
+- `.ainexspace.com` in production (shared across all subdomains)
 - `.localhost` in development (shared across all localhost ports)
 
 ## Trial Access

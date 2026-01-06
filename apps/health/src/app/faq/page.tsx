@@ -70,8 +70,8 @@ export default function TrackFAQPage() {
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Everything you need to know about building habits, inviting collaborators, and managing your Track account.
             Reach us at{' '}
-            <a href="mailto:track@ainexsuite.com" className="text-amber-300 hover:underline">
-              track@ainexsuite.com
+            <a href="mailto:track@ainexspace.com" className="text-amber-300 hover:underline">
+              track@ainexspace.com
             </a>{' '}
             if you have more questions.
           </p>

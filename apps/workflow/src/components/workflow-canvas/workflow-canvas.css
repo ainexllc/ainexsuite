@@ -42,7 +42,7 @@
 
 .react-flow__edge {
   cursor: pointer;
-  z-index: 1000 !important;
+  z-index: 10 !important;
   pointer-events: all !important;
 }
 
@@ -75,7 +75,8 @@
 }
 
 .react-flow__edges {
-  z-index: 100 !important;
+  position: relative !important;
+  z-index: 5 !important;
   pointer-events: all !important;
 }
 
@@ -83,12 +84,6 @@
 .react-flow__edge-path {
   opacity: 1 !important;
   visibility: visible !important;
-}
-
-/* Ensure edges render above background but below nodes */
-.react-flow__edges {
-  position: relative !important;
-  z-index: 10 !important;
 }
 
 .react-flow__controls {

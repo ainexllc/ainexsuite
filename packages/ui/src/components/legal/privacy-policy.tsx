@@ -50,8 +50,8 @@ export function PrivacyPolicy() {
 
             <p className="text-sm text-muted-foreground mt-8">
               For questions about our privacy practices, please contact us at{' '}
-              <a href="mailto:privacy@ainexsuite.com" className="text-[#f97316] hover:underline">
-                privacy@ainexsuite.com
+              <a href="mailto:privacy@ainexspace.com" className="text-[#f97316] hover:underline">
+                privacy@ainexspace.com
               </a>
             </p>
           </div>

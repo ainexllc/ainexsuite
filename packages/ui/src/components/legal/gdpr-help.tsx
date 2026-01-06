@@ -71,7 +71,7 @@ export function GDPRHelp() {
             If you have questions about our GDPR compliance or wish to file a complaint, please contact us.
           </p>
           <a
-            href="mailto:privacy@ainexsuite.com"
+            href="mailto:privacy@ainexspace.com"
             className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-[#f97316] text-foreground font-semibold hover:bg-[#ea6a0f] transition-colors"
           >
             Contact Data Protection Officer

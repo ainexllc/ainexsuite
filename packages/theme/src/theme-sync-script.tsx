@@ -55,8 +55,8 @@ export function ThemeSyncScript() {
     }
     // If localStorage exists but cookie doesn't, set the cookie
     else if (storageTheme && !cookieTheme) {
-      var domain = window.location.hostname.includes('ainexsuite.com')
-        ? '; domain=.ainexsuite.com' : '';
+      var domain = window.location.hostname.includes('ainexspace.com')
+        ? '; domain=.ainexspace.com' : '';
       document.cookie = COOKIE_NAME + '=' + storageTheme + '; path=/; max-age=31536000; SameSite=Lax' + domain;
     }
   } catch (e) {

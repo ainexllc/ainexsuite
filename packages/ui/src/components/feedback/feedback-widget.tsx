@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Loader2, AlertCircle } from 'lucide-react';
+import { MessageSquare, X, Send, Loader2, AlertCircle, Lightbulb, Bug } from 'lucide-react';
 import { clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -15,9 +15,12 @@ interface FeedbackWidgetProps {
   appName: string;
 }
 
+type FeedbackType = 'bug' | 'feature';
+
 export function FeedbackWidget({ userId, userEmail, userName, appName }: FeedbackWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>('bug');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -56,6 +59,7 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
         authorName: userName || null,
         authorEmail: userEmail || null,
         message: message.trim(),
+        type: feedbackType,
         appId: appName.toLowerCase(),
         path: pathname,
         status: 'new',
@@ -63,6 +67,7 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
       });
       setStatus('success');
       setMessage('');
+      setFeedbackType('bug');
       setTimeout(() => {
         setIsOpen(false);
         setStatus('idle');
@@ -114,11 +119,41 @@ export function FeedbackWidget({ userId, userEmail, userName, appName }: Feedbac
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Type selector */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFeedbackType('bug')}
+                  className={clsx(
+                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all",
+                    feedbackType === 'bug'
+                      ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                      : "bg-muted text-muted-foreground border border-border hover:border-red-500/30 hover:text-red-400"
+                  )}
+                >
+                  <Bug className="h-4 w-4" />
+                  Bug
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackType('feature')}
+                  className={clsx(
+                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all",
+                    feedbackType === 'feature'
+                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                      : "bg-muted text-muted-foreground border border-border hover:border-amber-500/30 hover:text-amber-400"
+                  )}
+                >
+                  <Lightbulb className="h-4 w-4" />
+                  Feature
+                </button>
+              </div>
+
               <div>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="What's on your mind? Found a bug or have a feature idea?"
+                  placeholder={feedbackType === 'bug' ? "Describe the bug you encountered..." : "Describe your feature idea..."}
                   className="w-full h-32 bg-muted border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-ring resize-none transition-all"
                   disabled={isSubmitting}
                   autoFocus

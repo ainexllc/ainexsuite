@@ -246,10 +246,10 @@ curl https://your-app.vercel.app/api/health
 
 | App     | Dev Port | Production URL         | Status Page |
 | ------- | -------- | ---------------------- | ----------- |
-| main    | 3000     | ainexsuite.com         | /api/health |
-| journal | 3002     | journal.ainexsuite.com | /api/health |
-| notes   | 3001     | notes.ainexsuite.com   | /api/health |
-| todo    | 3003     | todo.ainexsuite.com    | /api/health |
+| main    | 3000     | ainexspace.com         | /api/health |
+| journal | 3002     | journal.ainexspace.com | /api/health |
+| notes   | 3001     | notes.ainexspace.com   | /api/health |
+| todo    | 3003     | todo.ainexspace.com    | /api/health |
 | ...     | ...      | ...                    | ...         |
 
 ## See Also

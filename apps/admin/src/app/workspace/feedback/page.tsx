@@ -23,7 +23,11 @@ import {
   Trash2,
   RefreshCw,
   Star,
-  Inbox
+  Inbox,
+  Copy,
+  Check,
+  Bug,
+  Lightbulb
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Loader2 } from 'lucide-react';
@@ -34,6 +38,7 @@ interface FeedbackDoc {
   authorName: string | null;
   authorEmail: string | null;
   message: string;
+  type?: 'bug' | 'feature';
   appId: string;
   path: string;
   status: 'new' | 'read';
@@ -58,6 +63,7 @@ export default function FeedbackPage() {
 
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const fetchInsights = async () => {
     try {
@@ -120,6 +126,16 @@ export default function FeedbackPage() {
 
   const handleDelete = (id: string) => {
     setItemToDelete(id);
+  };
+
+  const handleCopy = async (id: string, message: string) => {
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
   };
 
   const handlePromote = async (id: string, currentPromoted?: boolean) => {
@@ -258,6 +274,21 @@ export default function FeedbackPage() {
               <div className="flex flex-col md:flex-row gap-4 flex-1">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
+                    {/* Type badge */}
+                    <span className={clsx(
+                      "text-xs font-medium px-2 py-0.5 rounded-lg flex items-center gap-1",
+                      item.type === 'feature'
+                        ? "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                        : "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400"
+                    )}>
+                      {item.type === 'feature' ? (
+                        <Lightbulb className="h-3 w-3" />
+                      ) : (
+                        <Bug className="h-3 w-3" />
+                      )}
+                      {item.type === 'feature' ? 'Feature' : 'Bug'}
+                    </span>
+                    {/* App badge */}
                     <span className={clsx(
                       "text-xs font-medium px-2 py-0.5 rounded-lg",
                       item.appId === 'admin' ? "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" :
@@ -288,6 +319,22 @@ export default function FeedbackPage() {
                 </div>
 
                 <div className="flex items-center gap-2 self-end">
+                  <button
+                    onClick={() => handleCopy(item.id, item.message)}
+                    className={clsx(
+                      "p-2 rounded-xl transition-all duration-200",
+                      copiedId === item.id
+                        ? "text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-500/20"
+                        : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    )}
+                    title={copiedId === item.id ? "Copied!" : "Copy feedback"}
+                  >
+                    {copiedId === item.id ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
                   <button
                     onClick={() => handlePromote(item.id, item.promoted)}
                     className={clsx(

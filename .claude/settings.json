@@ -28,8 +28,8 @@
         ],
         "env": {
           "RESEND_API_KEY": "re_WMzujV5Y_Kt2LQSsnfcrVLk27v2vrsfCt",
-          "SENDER_EMAIL_ADDRESS": "noreply@ainexsuite.com",
-          "REPLY_TO_EMAIL_ADDRESS": "support@ainexsuite.com"
+          "SENDER_EMAIL_ADDRESS": "noreply@ainexspace.com",
+          "REPLY_TO_EMAIL_ADDRESS": "support@ainexspace.com"
         }
       },
       "timeout_seconds": 60

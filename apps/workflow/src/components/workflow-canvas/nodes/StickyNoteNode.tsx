@@ -3,11 +3,13 @@
 import { memo, useCallback, useState } from 'react';
 import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
+import { LockBadge } from './LockBadge';
 
 interface StickyNoteNodeData extends Record<string, unknown> {
   label?: string;
   color?: string;
   bgColor?: string;
+  locked?: boolean;
 }
 
 export type StickyNoteNodeType = Node<StickyNoteNodeData, 'sticky-note'>;
@@ -15,7 +17,8 @@ export type StickyNoteNodeType = Node<StickyNoteNodeData, 'sticky-note'>;
 function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || '#713f12';
-  const noteBg = (data.bgColor as string) || 'rgba(252, 211, 77, 0.9)';
+  const noteBg = (data.bgColor as string) || '#fef3c7'; // Solid amber
+  const isLocked = data.locked || false;
   const [label, setLabel] = useState((data.label as string) || 'Quick note...');
   const [isEditing, setIsEditing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -46,7 +49,8 @@ function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <NodeResizer color={theme.primary} isVisible={selected} minWidth={140} minHeight={120} />
+      <LockBadge locked={isLocked} />
+      <NodeResizer color={theme.primary} isVisible={selected && !isLocked} minWidth={140} minHeight={120} />
 
       <Handle type="target" position={Position.Top} id="top" style={{ ...handleStyle, top: 0 }} />
       <Handle type="source" position={Position.Right} id="right" style={{ ...handleStyle, right: 0 }} />

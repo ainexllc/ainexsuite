@@ -10,7 +10,7 @@ const nextConfig = {
   ],
   env: {
     NEXT_PUBLIC_APP_NAME: "fit",
-    NEXT_PUBLIC_MAIN_DOMAIN: "www.ainexsuite.com",
+    NEXT_PUBLIC_MAIN_DOMAIN: "www.ainexspace.com",
   },
   images: {
     domains: [

@@ -17,8 +17,8 @@ function detectCookieDomain(hostname: string): string {
   if (process.env.VERCEL_ENV === 'production' ||
     process.env.NODE_ENV === 'production') {
     // Production logic remains same
-    if (hostname.includes('ainexsuite.com')) {
-      return '.ainexsuite.com';
+    if (hostname.includes('ainexspace.com')) {
+      return '.ainexspace.com';
     }
   }
 
@@ -27,8 +27,8 @@ function detectCookieDomain(hostname: string): string {
   return undefined as unknown as string;
 
   // Production: check for subdomain vs standalone domain
-  if (hostname.includes('ainexsuite.com')) {
-    return '.ainexsuite.com'; // Subdomain SSO
+  if (hostname.includes('ainexspace.com')) {
+    return '.ainexspace.com'; // Subdomain SSO
   }
 
   if (hostname.includes('ainexnotes.com')) {

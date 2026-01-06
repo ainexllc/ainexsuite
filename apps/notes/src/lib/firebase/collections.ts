@@ -29,7 +29,3 @@ export function filterPresetsCollectionPath(userId: string) {
 export function filterPresetDocPath(userId: string, presetId: string) {
   return `${filterPresetsCollectionPath(userId)}/${presetId}`;
 }
-
-export function feedbackCollectionPath() {
-  return "feedback";
-}

@@ -13,7 +13,8 @@ import {
 import { db } from "@ainexsuite/firebase";
 import type { JournalSpace, JournalSpaceDoc, JournalSpaceDraft, SpaceMember, SpaceType } from "@/lib/types/space";
 
-const SPACES_COLLECTION = "journalSpaces";
+// Use unified "spaces" collection to match the provider
+const SPACES_COLLECTION = "spaces";
 
 function convertToJournalSpace(id: string, data: JournalSpaceDoc): JournalSpace {
   return {

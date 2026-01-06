@@ -13,7 +13,7 @@ import {
 import type { WellnessActivityItem } from '@ainexsuite/types';
 import { buildActivityFeed } from '@/lib/wellness-hub';
 
-const HABITS_APP_URL = process.env.NEXT_PUBLIC_HABITS_APP_URL || 'https://habits.ainexsuite.com';
+const HABITS_APP_URL = process.env.NEXT_PUBLIC_HABITS_APP_URL || 'https://habits.ainexspace.com';
 
 function getAppUrl(source: string): string {
   switch (source) {

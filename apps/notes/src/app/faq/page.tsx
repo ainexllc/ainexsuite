@@ -67,8 +67,8 @@ export default function NotesFAQPage() {
           <h1 className="text-4xl font-semibold text-white sm:text-5xl">Notes FAQ</h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Everything you need to know about capturing, organizing, and sharing knowledge with Notes. Still curious? Email{' '}
-            <a href="mailto:notes@ainexsuite.com" className="text-accent-300 hover:underline">
-              notes@ainexsuite.com
+            <a href="mailto:notes@ainexspace.com" className="text-accent-300 hover:underline">
+              notes@ainexspace.com
             </a>
             .
           </p>

@@ -26,8 +26,8 @@ export function CookiePolicy() {
 
             <p className="text-sm text-muted-foreground mt-8 pt-8 border-t border-border">
               For questions about our use of cookies, please contact us at{' '}
-              <a href="mailto:privacy@ainexsuite.com" className="text-[#f97316] hover:underline">
-                privacy@ainexsuite.com
+              <a href="mailto:privacy@ainexspace.com" className="text-[#f97316] hover:underline">
+                privacy@ainexspace.com
               </a>
             </p>
           </div>

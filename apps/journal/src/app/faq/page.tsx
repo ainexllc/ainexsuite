@@ -69,8 +69,8 @@ export default function JourneyFAQPage() {
           <h1 className="text-4xl font-semibold text-white sm:text-5xl">Journey FAQ</h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Quick answers about journaling flows, sharing, and account management. Need more? Email{' '}
-            <a href="mailto:journey@ainexsuite.com" className="text-violet-300 hover:underline">
-              journey@ainexsuite.com
+            <a href="mailto:journey@ainexspace.com" className="text-violet-300 hover:underline">
+              journey@ainexspace.com
             </a>
             .
           </p>
