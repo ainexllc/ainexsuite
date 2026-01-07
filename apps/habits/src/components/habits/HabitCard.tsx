@@ -11,6 +11,7 @@ import { ReactionPicker } from '@/components/gamification/ReactionPicker';
 import { QuickAssignPopover, AssigneeBadges } from '@/components/habits/QuickAssignPopover';
 import { cn } from '@/lib/utils';
 import { isInChain, getNextInChain, getChainPositionLabel } from '@/lib/chain-utils';
+import { fireConfettiFromElement } from '@/lib/confetti';
 
 interface HabitCardProps {
   habit: Habit;
@@ -77,9 +78,20 @@ export function HabitCard({
   const hasTarget = habit.targetValue && habit.targetValue > 0;
   const progressPercent = hasTarget ? Math.min(100, (todayValue / habit.targetValue!) * 100) : 0;
 
-  // Handle completion with animation
-  const handleComplete = () => {
-    if (habit.isFrozen || isCompleted) return;
+  // Handle completion toggle with animation
+  const handleComplete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (habit.isFrozen) return;
+
+    // If already completed, toggle it off (undo)
+    if (isCompleted) {
+      setShowUndo(false);
+      setJustCompleted(false);
+      onUndoComplete(habit.id);
+      return;
+    }
+
+    // Fire confetti from the checkbox position
+    fireConfettiFromElement(e.currentTarget);
 
     setIsAnimating(true);
     setJustCompleted(true);
@@ -146,7 +158,7 @@ export function HabitCard({
       return 'text-blue-400/30 cursor-not-allowed';
     }
     if (isCompleted) {
-      return 'text-emerald-500';
+      return 'text-emerald-500 hover:text-emerald-400 cursor-pointer';
     }
     return 'text-white/30 hover:text-indigo-400';
   };
@@ -219,9 +231,9 @@ export function HabitCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            handleComplete();
+            handleComplete(e);
           }}
-          disabled={habit.isFrozen || isCompleted || isSelectMode}
+          disabled={habit.isFrozen || isSelectMode}
           className={cn(
             'flex-shrink-0 transition-all duration-300',
             getCheckboxIconStyles(),

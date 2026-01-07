@@ -11,17 +11,15 @@ import { useSettings } from '@/components/providers/settings-context';
 import { MemberManager } from '@/components/spaces/MemberManager';
 import { HabitEditor } from '@/components/habits/HabitEditor';
 import { HabitComposer } from '@/components/habits/HabitComposer';
-import { HabitCard } from '@/components/habits/HabitCard';
 import { HabitDetailModal } from '@/components/habits/HabitDetailModal';
-import { SwipeableHabitCard } from '@/components/habits/SwipeableHabitCard';
 import { FamilyHabitsGrid } from '@/components/habits/FamilyHabitsGrid';
+import { PersonalHabitsCard } from '@/components/habits/PersonalHabitsCard';
 import { HabitPacks } from '@/components/gamification/HabitPacks';
 import { QuestBar } from '@/components/gamification/QuestBar';
 import { WagerCard } from '@/components/gamification/WagerCard';
 import { FirestoreSync } from '@/components/FirestoreSync';
 import { QuestEditor } from '@/components/gamification/QuestEditor';
 import { StreakDangerAlert } from '@/components/gamification/StreakDangerAlert';
-import { AchievementBadges } from '@/components/gamification/AchievementBadges';
 import { HabitSuggester } from '@/components/ai/HabitSuggester';
 import { BottomNav } from '@/components/mobile/BottomNav';
 
@@ -38,7 +36,7 @@ import { TeamLeaderboard } from '@/components/analytics/TeamLeaderboard';
 // Store & Types
 import { useGrowStore } from '@/lib/store';
 import { useSpaces } from '@/components/providers/spaces-provider';
-import { getHabitStatus, getTodayDateString } from '@/lib/date-utils';
+import { getTodayDateString } from '@/lib/date-utils';
 import { Habit, Member, Quest, ReactionEmoji } from '@/types/models';
 import { getTeamContribution } from '@/lib/analytics-utils';
 import { canCreateHabit } from '@/lib/permissions';
@@ -375,27 +373,19 @@ function GrowWorkspaceContent() {
                     onSettingsClick={() => setShowMemberManager(true)}
                     compact
                   />
-                  <AchievementBadges habits={habits} completions={completions} variant="mini" />
                 </div>
                 {/* Desktop: Side by side */}
-                <div className="hidden lg:grid lg:grid-cols-2 gap-3">
+                <div className="hidden lg:block">
                   <TeamLeaderboard
                     data={teamStats}
                     spaceType={currentSpace?.type}
                     onSettingsClick={() => setShowMemberManager(true)}
                   />
-                  <AchievementBadges habits={habits} completions={completions} />
                 </div>
               </div>
             </section>
           )}
 
-          {/* Achievement Badges - Personal spaces only */}
-          {currentSpace?.type === 'personal' && (
-            <section>
-              <AchievementBadges habits={habits} completions={completions} variant="mini" />
-            </section>
-          )}
 
           {/* Active Wagers - Couple Only */}
           {currentSpace?.type === 'couple' && (
@@ -507,137 +497,33 @@ function GrowWorkspaceContent() {
               }}
             />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {/* Due habits first */}
-              {habits
-                .filter((habit: Habit) => {
-                  const status = getHabitStatus(habit, completions);
-                  return status === 'due' || status === 'completed';
-                })
-                .map((habit: Habit) => {
-                  const status = getHabitStatus(habit, completions);
-                  const isHabitCompleted = status === 'completed';
-                  return (
-                    <SwipeableHabitCard
-                      key={habit.id}
-                      onSwipeRight={() => !isHabitCompleted && !selection.isSelectMode && handleCompleteHabit(habit.id)}
-                      onSwipeLeft={() => !selection.isSelectMode && handleEditHabit(habit.id)}
-                      isCompleted={isHabitCompleted}
-                      disabled={habit.isFrozen || selection.isSelectMode}
-                    >
-                      <HabitCard
-                        habit={habit}
-                        completions={completions}
-                        allHabits={allHabits}
-                        onComplete={handleCompleteHabit}
-                        onUndoComplete={handleUndoComplete}
-                        onEdit={handleEditHabit}
-                        onChainNext={(habitId) => {
-                          const el = document.getElementById(`habit-${habitId}`);
-                          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }}
-                        spaceType={currentSpace?.type || 'personal'}
-                        partnerId={getPartnerId()}
-                        currentUserId={user?.uid}
-                        onReact={handleReact}
-                        onRemoveReaction={handleRemoveReaction}
-                        isSelectMode={selection.isSelectMode}
-                        isSelected={selection.selectedIds.has(habit.id)}
-                        onSelect={(id, e) => selection.handleSelect(id, e, habits.map(h => h.id))}
-                        members={currentSpace?.members || []}
-                        onAssign={handleQuickAssign}
-                        onCardClick={(id) => setDetailHabitId(id)}
-                      />
-                    </SwipeableHabitCard>
-                  );
-                })}
-            </div>
-          )}
-
-          {/* Not due today (collapsed section) - only for personal spaces */}
-          {!isTeamSpace && allHabits.filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due').length > 0 && (
-            <div className="pt-4 mt-2 border-t border-white/5">
-              <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Not scheduled today</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {allHabits
-                  .filter((habit: Habit) => getHabitStatus(habit, completions) === 'not_due')
-                  .map((habit: Habit) => (
-                    <SwipeableHabitCard
-                      key={habit.id}
-                      onSwipeRight={() => !selection.isSelectMode && handleCompleteHabit(habit.id)}
-                      onSwipeLeft={() => !selection.isSelectMode && handleEditHabit(habit.id)}
-                      isCompleted={false}
-                      disabled={habit.isFrozen || selection.isSelectMode}
-                    >
-                      <HabitCard
-                        habit={habit}
-                        completions={completions}
-                        allHabits={allHabits}
-                        onComplete={handleCompleteHabit}
-                        onUndoComplete={handleUndoComplete}
-                        onEdit={handleEditHabit}
-                        onChainNext={(habitId) => {
-                          const el = document.getElementById(`habit-${habitId}`);
-                          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }}
-                        spaceType={currentSpace?.type || 'personal'}
-                        partnerId={getPartnerId()}
-                        currentUserId={user?.uid}
-                        onReact={handleReact}
-                        onRemoveReaction={handleRemoveReaction}
-                        isSelectMode={selection.isSelectMode}
-                        isSelected={selection.selectedIds.has(habit.id)}
-                        onSelect={(id, e) => selection.handleSelect(id, e, allHabits.map(h => h.id))}
-                        members={currentSpace?.members || []}
-                        onAssign={handleQuickAssign}
-                        onCardClick={(id) => setDetailHabitId(id)}
-                      />
-                    </SwipeableHabitCard>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Frozen habits - only for personal spaces */}
-          {!isTeamSpace && allHabits.filter((habit: Habit) => habit.isFrozen).length > 0 && (
-            <div className="pt-4 mt-2 border-t border-white/5">
-              <p className="text-xs text-white/30 uppercase tracking-wider mb-3">Frozen</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {allHabits
-                  .filter((habit: Habit) => habit.isFrozen)
-                  .map((habit: Habit) => (
-                    <SwipeableHabitCard
-                      key={habit.id}
-                      onSwipeLeft={() => !selection.isSelectMode && handleEditHabit(habit.id)}
-                      disabled={true}
-                    >
-                      <HabitCard
-                        habit={habit}
-                        completions={completions}
-                        allHabits={allHabits}
-                        onComplete={handleCompleteHabit}
-                        onUndoComplete={handleUndoComplete}
-                        onEdit={handleEditHabit}
-                        onChainNext={(habitId) => {
-                          const el = document.getElementById(`habit-${habitId}`);
-                          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }}
-                        spaceType={currentSpace?.type || 'personal'}
-                        partnerId={getPartnerId()}
-                        currentUserId={user?.uid}
-                        onReact={handleReact}
-                        onRemoveReaction={handleRemoveReaction}
-                        isSelectMode={selection.isSelectMode}
-                        isSelected={selection.selectedIds.has(habit.id)}
-                        onSelect={(id, e) => selection.handleSelect(id, e, allHabits.map(h => h.id))}
-                        members={currentSpace?.members || []}
-                        onAssign={handleQuickAssign}
-                        onCardClick={(id) => setDetailHabitId(id)}
-                      />
-                    </SwipeableHabitCard>
-                  ))}
-              </div>
-            </div>
+            <PersonalHabitsCard
+              user={{
+                uid: user?.uid || '',
+                displayName: user?.displayName || null,
+                photoURL: user?.photoURL || null,
+              }}
+              habits={habits}
+              allHabits={allHabits}
+              completions={completions}
+              onComplete={handleCompleteHabit}
+              onUndoComplete={handleUndoComplete}
+              onEdit={handleEditHabit}
+              onChainNext={(habitId) => {
+                const el = document.getElementById(`habit-${habitId}`);
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+              onCardClick={(id) => setDetailHabitId(id)}
+              isSelectMode={selection.isSelectMode}
+              selectedIds={selection.selectedIds}
+              onSelect={(id, e) => selection.handleSelect(id, e, allHabits.map(h => h.id))}
+              members={currentSpace?.members || []}
+              onAssign={handleQuickAssign}
+              spaceType={currentSpace?.type || 'personal'}
+              partnerId={getPartnerId()}
+              onReact={handleReact}
+              onRemoveReaction={handleRemoveReaction}
+            />
           )}
           </section>
         </div>
