@@ -7,6 +7,7 @@ import {
   WorkspaceToolbar,
   ActiveFilterChips,
   SpaceManagementModal,
+  SettingsModal,
   type ViewOption,
   type SortOption,
   type FilterChip,
@@ -53,20 +54,71 @@ const WORKFLOW_COLOR_MAP: Record<string, string> = {
 
 // Wrapper component that provides selection context and layout
 export default function WorkflowsWorkspace() {
-  const { user, handleSignOut, updatePreferences } = useWorkspaceAuth();
+  const {
+    user,
+    handleSignOut,
+    updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
+  } = useWorkspaceAuth();
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   if (!user) return null;
 
   return (
-    <WorkspaceLayoutWithInsights
-      user={user}
-      onSignOut={handleSignOut}
-      onUpdatePreferences={updatePreferences}
-    >
-      <SelectionProvider>
-        <WorkflowsWorkspaceContent />
-      </SelectionProvider>
-    </WorkspaceLayoutWithInsights>
+    <>
+      <WorkspaceLayoutWithInsights
+        user={user}
+        onSignOut={handleSignOut}
+        onUpdatePreferences={updatePreferences}
+        onSettingsClick={() => setSettingsModalOpen(true)}
+      >
+        <SelectionProvider>
+          <WorkflowsWorkspaceContent />
+        </SelectionProvider>
+      </WorkspaceLayoutWithInsights>
+
+      {/* Global Settings Modal */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        user={user ? {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          iconURL: user.iconURL,
+          animatedAvatarURL: user.animatedAvatarURL,
+          animatedAvatarStyle: user.animatedAvatarStyle,
+          useAnimatedAvatar: user.useAnimatedAvatar,
+        } : null}
+        preferences={user?.preferences ?? {
+          theme: 'dark',
+          language: 'en',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          notifications: { email: true, push: false, inApp: true },
+        }}
+        onUpdatePreferences={updatePreferences}
+        onUpdateProfile={updateProfile}
+        onUpdateProfileImage={updateProfileImage}
+        onRemoveProfileImage={removeProfileImage}
+        profileImageApiEndpoint="/api/generate-profile-image"
+        onGenerateAnimatedAvatar={generateAnimatedAvatar}
+        onSaveAnimatedAvatar={saveAnimatedAvatar}
+        onToggleAnimatedAvatar={toggleAnimatedAvatar}
+        onRemoveAnimatedAvatar={removeAnimatedAvatar}
+        onPollAnimationStatus={pollAnimationStatus}
+        animateAvatarApiEndpoint="/api/animate-avatar"
+        spaces={[]}
+        currentAppId="flow"
+      />
+    </>
   );
 }
 
@@ -261,6 +313,7 @@ function WorkflowsWorkspaceContent() {
   return (
     <>
       <WorkspacePageLayout
+        className="pt-[17px]"
         composer={
           <WorkflowComposer />
         }
