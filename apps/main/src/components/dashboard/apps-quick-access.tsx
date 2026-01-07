@@ -25,7 +25,7 @@ const apps = [
   { slug: "habits", icon: GrowHabitIcon, label: "Habits", color: "#14b8a6" },
   { slug: "health", icon: HealthHeartIcon, label: "Health", color: "#10b981" },
   { slug: "album", icon: MomentsCameraIcon, label: "Album", color: "#ec4899" },
-  { slug: "display", icon: PulseMonitorIcon, label: "Display", color: "#ef4444" },
+  { slug: "hub", icon: PulseMonitorIcon, label: "Hub", color: "#ef4444" },
   { slug: "projects", icon: ProjectsKanbanIcon, label: "Projects", color: "#6366f1" },
   { slug: "workflow", icon: WorkflowProcessIcon, label: "Workflow", color: "#06b6d4" },
   { slug: "calendar", icon: CalendarWeekIcon, label: "Calendar", color: "#06b6d4" },

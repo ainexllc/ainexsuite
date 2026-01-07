@@ -122,9 +122,9 @@ function CalendarHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="Calendar" appColor="#8b5cf6" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="calendar" appColor="#8b5cf6" />}
         backgroundComponent={<LayeredBackground primaryColor="#8b5cf6" secondaryColor="#a78bfa" variant="structured" />}
-        appName="Calendar"
+        appName="calendar"
         accentColor="#8b5cf6"
         gradientFrom="#8b5cf6"
         gradientTo="#a78bfa"

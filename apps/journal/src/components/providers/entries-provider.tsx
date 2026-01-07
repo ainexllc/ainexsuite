@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useAuth } from "@ainexsuite/auth";
 import { useSpaces } from "./spaces-provider";
-import { getUserJournalEntries } from "@/lib/firebase/firestore";
+import { getUserJournalEntries, migrateSpaceJournalSharing } from "@/lib/firebase/firestore";
 import type { JournalEntry } from "@ainexsuite/types";
 
 interface EntriesContextValue {
@@ -72,6 +72,25 @@ export function EntriesProvider({ children }: EntriesProviderProps) {
   useEffect(() => {
     void fetchEntries();
   }, [fetchEntries]);
+
+  // Migrate journal entries in shared spaces to populate sharedWithUserIds for entries created before the fix
+  useEffect(() => {
+    if (!user?.uid || !currentSpaceId || currentSpaceId === "personal") {
+      return;
+    }
+
+    // Run migration for the current shared space (only updates entries that need it)
+    migrateSpaceJournalSharing(user.uid, currentSpaceId)
+      .then((count) => {
+        // If entries were migrated, refetch to show the updates
+        if (count > 0) {
+          void fetchEntries();
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to migrate space journal sharing:", error);
+      });
+  }, [user?.uid, currentSpaceId, fetchEntries]);
 
   const refreshEntries = useCallback(async () => {
     await fetchEntries();

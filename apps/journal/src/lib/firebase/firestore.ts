@@ -491,3 +491,55 @@ export async function updateEntryColor(entryId: string, color: string): Promise<
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
   await updateDoc(docRef, { color });
 }
+
+// Migrate journal entries in a shared space to populate sharedWithUserIds
+// Call this when a space is selected to fix any entries that were created before the sharing fix
+export async function migrateSpaceJournalSharing(
+  userId: string,
+  spaceId: string
+): Promise<number> {
+  if (!spaceId || spaceId === 'personal') {
+    return 0;
+  }
+
+  const space = await getSpace(spaceId);
+  if (!space?.memberUids || space.memberUids.length < 2) {
+    return 0; // No other members to share with
+  }
+
+  const sharedWithUserIds = space.memberUids.filter((uid) => uid !== userId);
+  if (sharedWithUserIds.length === 0) {
+    return 0;
+  }
+
+  // Query owned entries in this space
+  const q = query(
+    collection(db, JOURNALS_COLLECTION),
+    where('ownerId', '==', userId),
+    where('spaceId', '==', spaceId)
+  );
+
+  const snapshot = await getDocs(q);
+  let updateCount = 0;
+
+  const updatePromises = snapshot.docs.map(async (docSnapshot) => {
+    const data = docSnapshot.data();
+    const existingSharedWith = data.sharedWithUserIds || [];
+
+    // Check if all space members are already in sharedWithUserIds
+    const missingMembers = sharedWithUserIds.filter(
+      (uid) => !existingSharedWith.includes(uid)
+    );
+
+    if (missingMembers.length > 0) {
+      const docRef = doc(db, JOURNALS_COLLECTION, docSnapshot.id);
+      await updateDoc(docRef, {
+        sharedWithUserIds: [...new Set([...existingSharedWith, ...sharedWithUserIds])],
+      });
+      updateCount++;
+    }
+  });
+
+  await Promise.all(updatePromises);
+  return updateCount;
+}

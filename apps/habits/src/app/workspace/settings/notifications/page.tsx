@@ -69,7 +69,7 @@ function NotificationsContent() {
     <WorkspaceLayout
       user={user}
       onSignOut={handleSignOut}
-      appName="Habits"
+      appName="habits"
     >
       <FirestoreSync />
 

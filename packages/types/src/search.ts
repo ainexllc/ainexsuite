@@ -36,7 +36,7 @@ export type SearchableApp =
   | 'health'
   | 'album'
   | 'habits'
-  | 'display'
+  | 'hub'
   | 'fit';
 
 /**
@@ -271,7 +271,7 @@ export function healthMetricToSearchResult(
 ): SearchResult {
   return {
     id,
-    app: 'display',
+    app: 'hub',
     type: 'metric',
     title: `Health Metric - ${metric.date}`,
     content: metric.notes || '',
@@ -283,7 +283,7 @@ export function healthMetricToSearchResult(
     },
     createdAt: metric.createdAt,
     updatedAt: metric.updatedAt,
-    url: `${getAppUrl('display', 3007)}`,
+    url: `${getAppUrl('hub', 3007)}`,
   };
 }
 

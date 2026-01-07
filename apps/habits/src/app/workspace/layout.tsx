@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from 'react';
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, SpaceSettings, InviteMemberModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, SpaceSettings, InviteMemberModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
 import type { SpaceSettingsItem, SettingsTab } from '@ainexsuite/ui';
 import type { SpaceType, SpaceRole } from '@ainexsuite/types';
 import { createInvitation } from '@ainexsuite/firebase';
@@ -255,6 +255,9 @@ function WorkspaceLayoutInner({
           onInvite={handleInviteMember}
         />
       )}
+
+      {/* App Floating Dock - Desktop only */}
+      <AppFloatingDock currentApp="habits" />
     </SettingsContext.Provider>
   );
 }

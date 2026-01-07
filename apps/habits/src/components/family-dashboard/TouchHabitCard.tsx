@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { Habit } from '@/types/models';
 import { cn } from '@/lib/utils';
+import { fireConfettiFromElement } from '@/lib/confetti';
 
 interface TouchHabitCardProps {
   habit: Habit;
@@ -20,10 +21,12 @@ export function TouchHabitCard({
 }: TouchHabitCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const handleTap = () => {
+  const handleTap = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (isCompleted) {
       onUndoComplete();
     } else {
+      // Fire confetti from the card position
+      fireConfettiFromElement(e.currentTarget);
       setIsAnimating(true);
       onComplete();
       setTimeout(() => setIsAnimating(false), 600);

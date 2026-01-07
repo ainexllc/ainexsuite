@@ -44,7 +44,7 @@ export default function JoinSpacePage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <div className="flex justify-center mb-6">
-            <AinexStudiosLogo size="lg" align="center" appName="ALBUM" appColor="#ec4899" />
+            <AinexStudiosLogo size="lg" align="center" appName="album" appColor="#ec4899" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">View Shared Album</h1>
           <p className="text-white/60">Enter the 4-digit access code to view this album</p>

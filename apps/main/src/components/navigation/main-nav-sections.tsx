@@ -27,7 +27,7 @@ const apps = [
   { slug: 'health', icon: Heart, label: 'Health', color: '#10b981' },
   { slug: 'album', icon: Camera, label: 'Album', color: '#ec4899' },
   { slug: 'habits', icon: Target, label: 'Habits', color: '#14b8a6' },
-  { slug: 'display', icon: Activity, label: 'Display', color: '#ef4444' },
+  { slug: 'hub', icon: Activity, label: 'Hub', color: '#ef4444' },
   { slug: 'fit', icon: Dumbbell, label: 'Fit', color: '#3b82f6' },
   { slug: 'projects', icon: FolderKanban, label: 'Projects', color: '#6366f1' },
   { slug: 'workflow', icon: Workflow, label: 'Workflow', color: '#06b6d4' },

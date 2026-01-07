@@ -1048,9 +1048,9 @@ const AVAILABLE_APPS = [
   { id: "health", label: "Health", icon: "❤️" },
   { id: "album", label: "Album", icon: "📷" },
   { id: "habits", label: "Habits", icon: "🌱" },
-  { id: "display", label: "Display", icon: "📺" },
+  { id: "hub", label: "Hub", icon: "📺" },
   { id: "projects", label: "Projects", icon: "📊" },
-  { id: "workflow", label: "Workflow", icon: "⚡" },
+  { id: "flow", label: "Flow", icon: "⚡" },
   { id: "calendar", label: "Calendar", icon: "📅" },
   { id: "subs", label: "Subs", icon: "💰" },
 ] as const;

@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
 import { EventsProvider, useEvents } from '@/components/providers/events-provider';
@@ -106,6 +106,9 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
         appSettingsLabel="Calendar"
         appSettingsIcon={<CalendarIcon className="h-4 w-4" />}
       />
+
+      {/* App Floating Dock - Desktop only */}
+      <AppFloatingDock currentApp="calendar" />
     </>
   );
 }

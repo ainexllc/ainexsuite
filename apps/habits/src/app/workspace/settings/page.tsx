@@ -103,7 +103,7 @@ function SettingsContent() {
     <WorkspaceLayout
       user={user}
       onSignOut={handleSignOut}
-      appName="Habits"
+      appName="habits"
     >
       <FirestoreSync />
 

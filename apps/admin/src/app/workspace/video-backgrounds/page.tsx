@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import {
   Loader2,
   Plus,
@@ -44,7 +45,7 @@ const APP_OPTIONS = [
   { value: 'health', label: 'Health' },
   { value: 'album', label: 'Album' },
   { value: 'habits', label: 'Habits' },
-  { value: 'display', label: 'Display' },
+  { value: 'hub', label: 'Hub' },
   { value: 'fit', label: 'Fit' },
   { value: 'projects', label: 'Projects' },
   { value: 'workflow', label: 'Workflow' },
@@ -404,10 +405,11 @@ export default function VideoBackgroundsManagement() {
               {/* Video Thumbnail */}
               <div className="aspect-video relative bg-black">
                 {video.posterURL ? (
-                  <img
+                  <Image
                     src={video.posterURL}
                     alt={video.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-white/5">
@@ -719,12 +721,13 @@ export default function VideoBackgroundsManagement() {
 
             <div className="p-4 space-y-4">
               {/* Preview */}
-              <div className="rounded-xl overflow-hidden aspect-video bg-black">
+              <div className="rounded-xl overflow-hidden aspect-video bg-black relative">
                 {showEditModal.posterURL ? (
-                  <img
+                  <Image
                     src={showEditModal.posterURL}
                     alt={showEditModal.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-white/5">

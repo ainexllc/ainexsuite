@@ -167,26 +167,9 @@ export function MomentsInsights({ moments, variant = "default" }: MomentsInsight
     ];
   }, [data]);
 
-  // Show prompt to add more data if not enough
+  // Don't show anything if not enough data
   if (!hasEnoughData) {
-    return (
-      <div className="rounded-2xl border border-border bg-foreground/5 p-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `${primaryColor}20` }}
-          >
-            <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">AI Insights</p>
-            <p className="text-xs text-muted-foreground">
-              Capture at least 2 moments to unlock AI-powered memory insights
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

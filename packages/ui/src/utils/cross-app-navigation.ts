@@ -24,7 +24,7 @@ export interface NavigateOptions {
  * In development:
  * - Also syncs session to localStorage as fallback
  *
- * @param appSlug - The target app slug (e.g., 'notes', 'journal', 'display')
+ * @param appSlug - The target app slug (e.g., 'notes', 'journal', 'hub')
  * @param currentAppSlug - Optional current app slug to avoid navigating to same app
  * @param options - Optional navigation options (e.g., action to trigger)
  */
@@ -239,12 +239,15 @@ export function getCurrentAppSlug(): AppSlug | 'main' | 'admin' | null {
     '3004': 'health',
     '3005': 'album',
     '3006': 'habits',
-    '3007': 'display',
+    '3007': 'mosaic',
     '3008': 'fit',
-    '3009': 'project',
-    '3010': 'workflow',
-    '3011': 'admin',
-    '3015': 'subs',
+    '3009': 'projects',
+    '3010': 'flow',
+    '3011': 'subs',
+    '3012': 'docs',
+    '3013': 'tables',
+    '3014': 'calendar',
+    '3020': 'admin',
   };
 
   return portMap[port] || null;

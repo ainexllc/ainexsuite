@@ -145,7 +145,7 @@ function TodoHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="TODO" appColor="#8b5cf6" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="todo" appColor="#8b5cf6" />}
         backgroundComponent={<LayeredBackground primaryColor="#8b5cf6" secondaryColor="#a78bfa" variant="structured" />}
         appName="todo"
         accentColor="#8b5cf6"

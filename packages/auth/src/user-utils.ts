@@ -136,7 +136,7 @@ export function migrateUserData(user: User): Partial<User> {
 
   // If still no apps, and in development, grant all apps
   if (appsEligible.length === 0 && process.env.NODE_ENV === 'development') {
-    appsEligible.push('notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit');
+    appsEligible.push('notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit');
   }
 
   const accountType = calculateAccountType({ ...user, appsEligible });

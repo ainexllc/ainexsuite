@@ -27,7 +27,7 @@ export class OpenRouterClient {
   private defaultModel = "grok-4-1-fast";
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.XAI_API_KEY || "";
+    this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.GROK_API_KEY || "";
     if (!this.apiKey) {
        console.warn("GROK_API_KEY is not configured.");
     }

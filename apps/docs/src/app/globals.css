@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent horizontal overflow/scrollbars */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Notes App Theme - Amber (warm, paper-like) */
+:root {
+  --app-primary: 38 92% 50%;       /* Amber-500 #f59e0b */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 32 95% 44%;     /* Amber-600 #d97706 */
+  --app-secondary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --app-primary: 43 96% 56%;       /* Amber-400 #fbbf24 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 38 92% 50%;     /* Amber-500 #f59e0b */
+  --app-secondary-foreground: 0 0% 0%;
+}
+
+/* Animation utilities matching Main app */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@layer components {
+  .animate-fade-in {
+    animation: fade-in 300ms ease-out;
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 300ms ease-out;
+  }
+}

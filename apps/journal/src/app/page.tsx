@@ -155,7 +155,7 @@ function JourneyHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="JOURNAL" appColor="#06b6d4" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="journal" appColor="#06b6d4" />}
         backgroundComponent={<DynamicBackground />}
         appName="journal"
         accentColor="#06b6d4"

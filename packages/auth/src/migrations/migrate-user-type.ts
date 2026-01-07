@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Firestore User Type Migration Script
  * Migrates users from legacy app permission fields to consolidated appsEligible field

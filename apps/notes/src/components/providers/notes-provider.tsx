@@ -23,12 +23,14 @@ import {
   removeAttachments,
   subscribeToOwnedNotes,
   subscribeToSharedNotes,
+  subscribeToSpaceNotes,
   toggleArchive,
   togglePin,
   updateNote as updateNoteMutation,
   uploadNoteAttachment,
   restoreNote as restoreNoteMutation,
   permanentlyDeleteNote,
+  migrateSpaceNotesSharing,
 } from "@/lib/firebase/note-service";
 import { saveFiltersToPreferences } from "@/lib/firebase/preferences-service";
 import { useSpaces } from "@/components/providers/spaces-provider";
@@ -69,6 +71,7 @@ type NotesContextValue = {
   setSort: (sort: SortConfig) => void;
   createNote: (input: CreateNoteInput) => Promise<string | null>;
   updateNote: (noteId: string, updates: NoteDraft) => Promise<void>;
+  duplicateNote: (noteId: string) => Promise<string | null>;
   togglePin: (noteId: string, next: boolean) => Promise<void>;
   toggleArchive: (noteId: string, next: boolean) => Promise<void>;
   deleteNote: (noteId: string) => Promise<void>;
@@ -97,9 +100,11 @@ export function NotesProvider({ children }: NotesProviderProps) {
   const { preferences, loading: preferencesLoading } = usePreferences();
   const [ownedNotes, setOwnedNotes] = useState<Note[]>([]);
   const [sharedNotes, setSharedNotes] = useState<Note[]>([]);
+  const [spaceNotes, setSpaceNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [ownedLoaded, setOwnedLoaded] = useState(false);
   const [sharedLoaded, setSharedLoaded] = useState(false);
+  const [spaceLoaded, setSpaceLoaded] = useState(false);
   const [pendingNotes, setPendingNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLabelIds, setActiveLabelIds] = useState<string[]>([]);
@@ -174,10 +179,12 @@ export function NotesProvider({ children }: NotesProviderProps) {
     if (!user || !userId) {
       setOwnedNotes([]);
       setSharedNotes([]);
+      setSpaceNotes([]);
       setPendingNotes([]);
       setLoading(false);
       setOwnedLoaded(false);
       setSharedLoaded(false);
+      setSpaceLoaded(true);
       return;
     }
 
@@ -191,7 +198,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
         setOwnedNotes(incoming);
         setOwnedLoaded(true);
       },
-      (_error) => {
+      (error) => {
+        console.error('[Notes] Owned notes subscription error:', error);
         setOwnedLoaded(true); // Unblock UI
       },
     );
@@ -202,7 +210,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
         setSharedNotes(incoming);
         setSharedLoaded(true);
       },
-      (_error) => {
+      (error) => {
+        console.error('[Notes] Shared notes subscription error:', error);
         setSharedLoaded(true); // Unblock UI
       },
     );
@@ -213,15 +222,43 @@ export function NotesProvider({ children }: NotesProviderProps) {
     };
   }, [user, userId]);
 
+  // Subscribe to space notes (notes from other users in the current space)
+  useEffect(() => {
+    if (!userId || !currentSpaceId || currentSpaceId === "personal") {
+      setSpaceNotes([]);
+      setSpaceLoaded(true);
+      return;
+    }
+
+    setSpaceLoaded(false);
+
+    const unsubscribeSpace = subscribeToSpaceNotes(
+      currentSpaceId,
+      userId,
+      (incoming) => {
+        setSpaceNotes(incoming);
+        setSpaceLoaded(true);
+      },
+      (error) => {
+        console.error('[Notes] Space notes subscription error:', error);
+        setSpaceLoaded(true); // Unblock UI
+      },
+    );
+
+    return () => {
+      unsubscribeSpace();
+    };
+  }, [userId, currentSpaceId]);
+
   useEffect(() => {
     if (!user || !userId) {
       return;
     }
 
-    if (ownedLoaded && sharedLoaded) {
+    if (ownedLoaded && sharedLoaded && spaceLoaded) {
       setLoading(false);
     }
-  }, [ownedLoaded, sharedLoaded, user, userId]);
+  }, [ownedLoaded, sharedLoaded, spaceLoaded, user, userId]);
 
   const handleCreate = useCallback(
     async (input: CreateNoteInput) => {
@@ -301,9 +338,46 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return;
       }
 
-      await updateNoteMutation(userId, noteId, updates);
+      // Find the note to get the owner's ID (for shared space notes)
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const note = allNotes.find((n) => n.id === noteId);
+      const noteOwnerId = note?.ownerId ?? userId;
+
+      await updateNoteMutation(noteOwnerId, noteId, updates);
     },
-    [userId],
+    [userId, ownedNotes, sharedNotes, spaceNotes],
+  );
+
+  const handleDuplicate = useCallback(
+    async (noteId: string) => {
+      if (!userId) {
+        return null;
+      }
+
+      // Find the note to duplicate
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const note = allNotes.find((n) => n.id === noteId);
+      if (!note) {
+        return null;
+      }
+
+      // Create a copy with updated title
+      const duplicateInput: CreateNoteInput = {
+        title: note.title ? `${note.title} (Copy)` : "Copy",
+        body: note.body,
+        type: note.type,
+        checklist: note.checklist.map((item) => ({
+          ...item,
+          id: generateUUID(), // New IDs for checklist items
+        })),
+        color: note.color,
+        labelIds: note.labelIds,
+        priority: note.priority,
+      };
+
+      return handleCreate(duplicateInput);
+    },
+    [userId, ownedNotes, sharedNotes, spaceNotes, handleCreate],
   );
 
   const handleTogglePin = useCallback(
@@ -312,9 +386,14 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return;
       }
 
-      await togglePin(userId, noteId, next);
+      // Find the note to get the owner's ID (for shared space notes)
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const note = allNotes.find((n) => n.id === noteId);
+      const noteOwnerId = note?.ownerId ?? userId;
+
+      await togglePin(noteOwnerId, noteId, next);
     },
-    [userId],
+    [userId, ownedNotes, sharedNotes, spaceNotes],
   );
 
   const handleToggleArchive = useCallback(
@@ -323,9 +402,14 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return;
       }
 
-      await toggleArchive(userId, noteId, next);
+      // Find the note to get the owner's ID (for shared space notes)
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const note = allNotes.find((n) => n.id === noteId);
+      const noteOwnerId = note?.ownerId ?? userId;
+
+      await toggleArchive(noteOwnerId, noteId, next);
     },
-    [userId],
+    [userId, ownedNotes, sharedNotes, spaceNotes],
   );
 
   const handleDelete = useCallback(
@@ -399,13 +483,18 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return;
       }
 
+      // Find the note to get the owner's ID (for shared space notes)
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const note = allNotes.find((n) => n.id === noteId);
+      const noteOwnerId = note?.ownerId ?? userId;
+
       if (attachment.storagePath) {
         await deleteAttachment(attachment.storagePath);
       }
 
-      await removeAttachments(userId, noteId, [attachment]);
+      await removeAttachments(noteOwnerId, noteId, [attachment]);
     },
-    [userId],
+    [userId, ownedNotes, sharedNotes, spaceNotes],
   );
 
   const handleAttachFiles = useCallback(
@@ -414,13 +503,18 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return;
       }
 
+      // Find the note to get the owner's ID (for shared space notes)
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const note = allNotes.find((n) => n.id === noteId);
+      const noteOwnerId = note?.ownerId ?? userId;
+
       const uploads = await Promise.all(
-        files.map((file) => uploadNoteAttachment(userId, noteId, file)),
+        files.map((file) => uploadNoteAttachment(noteOwnerId, noteId, file)),
       );
 
-      await addAttachments(userId, noteId, uploads);
+      await addAttachments(noteOwnerId, noteId, uploads);
     },
-    [userId],
+    [userId, ownedNotes, sharedNotes, spaceNotes],
   );
 
   // Load more notes for progressive rendering
@@ -438,8 +532,22 @@ export function NotesProvider({ children }: NotesProviderProps) {
     setDisplayLimit(DISPLAY_BATCH_SIZE);
   }, [searchQuery, activeLabelIds, filters, currentSpaceId]);
 
+  // Migrate notes in shared spaces to populate sharedWithUserIds for notes created before the fix
+  useEffect(() => {
+    if (!userId || !currentSpaceId || currentSpaceId === "personal") {
+      return;
+    }
+
+    // Run migration for the current shared space (only updates notes that need it)
+    migrateSpaceNotesSharing(userId, currentSpaceId)
+      .catch((error) => {
+        console.error('[Notes] Migration failed:', error);
+      });
+  }, [userId, currentSpaceId]);
+
   const computedNotes = useMemo(() => {
-    const combined = [...ownedNotes, ...sharedNotes];
+    // Combine owned, shared, and space notes (deduplicating by id)
+    const combined = [...ownedNotes, ...sharedNotes, ...spaceNotes];
     const noteMap = new Map<string, Note>();
 
     combined.forEach((note) => {
@@ -632,7 +740,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       archivedCount,
       totalCount: others.length,
     };
-  }, [pendingNotes, ownedNotes, sharedNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort, displayLimit, deletedNoteIds]);
+  }, [pendingNotes, ownedNotes, sharedNotes, spaceNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort, displayLimit, deletedNoteIds]);
 
   useEffect(() => {
     computedNotesRef.current = computedNotes;
@@ -691,6 +799,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       setSort,
       createNote: handleCreate,
       updateNote: handleUpdate,
+      duplicateNote: handleDuplicate,
       togglePin: handleTogglePin,
       toggleArchive: handleToggleArchive,
       deleteNote: handleDelete,
@@ -724,6 +833,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       sort,
       handleCreate,
       handleUpdate,
+      handleDuplicate,
       handleTogglePin,
       handleToggleArchive,
       handleDelete,

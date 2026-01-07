@@ -55,8 +55,8 @@ function detectCookieDomain(hostname: string): string {
     return '.ainexhabits.com';
   }
 
-  if (hostname.includes('ainexdisplay.com')) {
-    return '.ainexdisplay.com';
+  if (hostname.includes('ainexhub.com')) {
+    return '.ainexhub.com';
   }
 
   if (hostname.includes('ainexfit.com')) {
@@ -70,7 +70,7 @@ function detectCookieDomain(hostname: string): string {
 /**
  * Create or update user document in Firestore
  */
-async function createOrUpdateUser(firebaseUser: any): Promise<User> {
+async function createOrUpdateUser(firebaseUser: { uid: string; email?: string | null; displayName?: string | null; photoURL?: string | null }): Promise<User> {
   const userRef = adminDb.collection('users').doc(firebaseUser.uid);
   const userDoc = await userRef.get();
 
@@ -117,7 +117,7 @@ async function createOrUpdateUser(firebaseUser: any): Promise<User> {
       lastLoginAt: now,
       // In dev mode, pre-activate all apps
       appsEligible: isDev
-        ? ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit']
+        ? ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit']
         : [],
       accountType: isDev ? 'suite' : 'single-app',
       appPermissions: {},
@@ -128,7 +128,7 @@ async function createOrUpdateUser(firebaseUser: any): Promise<User> {
         health: isDev,
         album: isDev,
         habits: isDev,
-        display: isDev,
+        hub: isDev,
         fit: isDev,
       },
       appsUsed: {},
@@ -178,7 +178,7 @@ export async function handleSessionCreation(req: NextRequest) {
         },
         createdAt: Date.now(),
         lastLoginAt: Date.now(),
-        appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit'],
+        appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit'],
         accountType: 'suite',
         appPermissions: {},
         apps: {
@@ -188,7 +188,7 @@ export async function handleSessionCreation(req: NextRequest) {
           health: true,
           album: true,
           habits: true,
-          display: true,
+          hub: true,
           fit: true,
         },
         appsUsed: {},

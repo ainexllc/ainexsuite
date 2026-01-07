@@ -127,9 +127,9 @@ function ProjectsHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="Projects" appColor="#6366f1" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="projects" appColor="#6366f1" />}
         backgroundComponent={<LayeredBackground primaryColor="#6366f1" secondaryColor="#818cf8" variant="structured" />}
-        appName="Projects"
+        appName="projects"
         accentColor="#6366f1"
         gradientFrom="#6366f1"
         gradientTo="#818cf8"

@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { Habit, CHILD_ACHIEVEMENTS, STICKER_COLLECTION } from '@/types/models';
 import { cn } from '@/lib/utils';
+import { fireConfettiFromElement } from '@/lib/confetti';
 
 interface ChildHabitCardProps {
   habit: Habit;
@@ -43,11 +44,14 @@ export function ChildHabitCard({
   const [showConfetti, setShowConfetti] = useState(false);
   const [earnedSticker, setEarnedSticker] = useState<{ emoji: string; name: string } | null>(null);
 
-  const handleTap = useCallback(() => {
+  const handleTap = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (isCompleted) {
       onUndoComplete();
       return;
     }
+
+    // Fire confetti from the card position
+    fireConfettiFromElement(e.currentTarget, { particleCount: 60 });
 
     // Trigger animations
     setIsAnimating(true);

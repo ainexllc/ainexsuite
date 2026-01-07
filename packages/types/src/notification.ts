@@ -153,8 +153,8 @@ export const DEFAULT_QUICK_ACTIONS: Record<AppSlug, QuickAction[]> = {
   habits: [
     { id: 'add-goal', label: 'Add Goal', description: 'Set a learning goal', icon: 'Target', shortcut: 'G', app: 'habits', category: 'create' },
   ],
-  display: [
-    { id: 'check-in', label: 'Check In', description: 'Daily health check-in', icon: 'Activity', shortcut: 'C', app: 'display', category: 'create' },
+  mosaic: [
+    { id: 'check-in', label: 'Check In', description: 'Daily health check-in', icon: 'Activity', shortcut: 'C', app: 'mosaic', category: 'create' },
   ],
   subs: [
     { id: 'add-subscription', label: 'Add Subscription', description: 'Track a subscription', icon: 'DollarSign', shortcut: 'S', app: 'subs', category: 'create' },
@@ -162,11 +162,17 @@ export const DEFAULT_QUICK_ACTIONS: Record<AppSlug, QuickAction[]> = {
   projects: [
     { id: 'new-board', label: 'New Board', description: 'Create a project board', icon: 'Layout', shortcut: 'B', app: 'projects', category: 'create' },
   ],
-  workflow: [
-    { id: 'new-workflow', label: 'New Workflow', description: 'Build a workflow', icon: 'GitBranch', shortcut: 'W', app: 'workflow', category: 'create' },
+  flow: [
+    { id: 'new-flow', label: 'New Flow', description: 'Build a flow', icon: 'GitBranch', shortcut: 'W', app: 'flow', category: 'create' },
   ],
   calendar: [
     { id: 'new-event', label: 'New Event', description: 'Schedule an event', icon: 'CalendarPlus', shortcut: 'E', app: 'calendar', category: 'create' },
+  ],
+  docs: [
+    { id: 'new-doc', label: 'New Document', description: 'Create a document', icon: 'FileText', shortcut: 'N', app: 'docs', category: 'create' },
+  ],
+  tables: [
+    { id: 'new-table', label: 'New Table', description: 'Create a spreadsheet', icon: 'Table2', shortcut: 'T', app: 'tables', category: 'create' },
   ],
   admin: [
     { id: 'view-users', label: 'View Users', description: 'Manage users', icon: 'Users', app: 'admin', category: 'navigate' },

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Check, Baby, User, PartyPopper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Member, Habit, Completion } from '@/types/models';
+import { fireConfettiFromElement } from '@/lib/confetti';
 import { getTodayDateString } from '@/lib/date-utils';
 import { MemberProfileModal } from './MemberProfileModal';
 
@@ -65,10 +66,12 @@ export function FamilyHabitsGrid({
   }, [members, habits, completions, today]);
 
   // Handle toggle completion
-  const handleToggle = (habitId: string, memberId: string) => {
+  const handleToggle = (e: React.MouseEvent<HTMLButtonElement>, habitId: string, memberId: string) => {
     if (isCompleted(habitId, memberId)) {
       onUndoComplete(habitId, memberId);
     } else {
+      // Fire confetti from the checkbox
+      fireConfettiFromElement(e.currentTarget);
       onComplete(habitId, memberId);
     }
   };
@@ -217,7 +220,7 @@ export function FamilyHabitsGrid({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleToggle(habit.id, member.uid);
+                            handleToggle(e, habit.id, member.uid);
                           }}
                           className={cn(
                             'h-5 w-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all',

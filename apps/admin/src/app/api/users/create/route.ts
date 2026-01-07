@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
     const now = Date.now();
     const trialEndDate = now + (30 * 24 * 60 * 60 * 1000); // 30 days
-    const allApps = ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit', 'projects', 'workflow', 'calendar'];
+    const allApps = ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit', 'projects', 'workflow', 'calendar'];
 
     const user = {
       uid,

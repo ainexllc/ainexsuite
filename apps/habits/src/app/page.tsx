@@ -144,7 +144,7 @@ function GrowHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="HABITS" appColor="#8b5cf6" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="habits" appColor="#8b5cf6" />}
         backgroundComponent={<LayeredBackground primaryColor="#8b5cf6" secondaryColor="#a78bfa" variant="organic" />}
         appName="habits"
         accentColor="#8b5cf6"

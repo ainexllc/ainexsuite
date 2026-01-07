@@ -98,6 +98,46 @@ export function subscribeToSharedNotes(
   );
 }
 
+/**
+ * Subscribe to all notes in a specific space (from any user).
+ * Uses collectionGroup query with spaceId filter.
+ * Firestore rules must allow access based on space membership.
+ */
+export function subscribeToSpaceNotes(
+  spaceId: string,
+  userId: string,
+  handler: NotesSubscriptionHandler,
+  onError?: (error: Error) => void,
+): Unsubscribe {
+  // Skip for personal space
+  if (!spaceId || spaceId === "personal") {
+    handler([]);
+    return () => {};
+  }
+
+  const spaceNotesRef = query(
+    collectionGroup(getFirebaseFirestore(), "notes").withConverter(noteConverter),
+    where("spaceId", "==", spaceId),
+    orderBy("pinned", "desc"),
+    orderBy("updatedAt", "desc"),
+  );
+
+  return onSnapshot(
+    spaceNotesRef,
+    (snapshot) => {
+      // Filter out current user's notes (they come from subscribeToOwnedNotes)
+      const notes = snapshot.docs
+        .map((docSnapshot) => docSnapshot.data())
+        .filter((note) => note.ownerId !== userId);
+      handler(notes);
+    },
+    (error) => {
+      console.error("[Notes] Error subscribing to space notes:", error);
+      if (onError) onError(error);
+    },
+  );
+}
+
 export async function createNote(
   userId: string,
   input: {
@@ -458,4 +498,60 @@ export async function batchDeleteNotes(userId: string, noteIds: string[]) {
   }
 
   await batch.commit();
+}
+
+// Migrate notes in a shared space to populate sharedWithUserIds
+// Call this when a space is selected to fix any notes that were created before the sharing fix
+export async function migrateSpaceNotesSharing(
+  userId: string,
+  spaceId: string,
+): Promise<number> {
+  if (!spaceId || spaceId === "personal") {
+    return 0;
+  }
+
+  const space = await getSpace(spaceId);
+  if (!space?.memberUids || space.memberUids.length < 2) {
+    return 0; // No other members to share with
+  }
+
+  const sharedWithUserIds = space.memberUids.filter((uid) => uid !== userId);
+  if (sharedWithUserIds.length === 0) {
+    return 0;
+  }
+
+  // Query owned notes in this space that don't have proper sharedWithUserIds
+  const notesRef = query(
+    clientNoteCollection(userId).withConverter(noteConverter),
+    where("spaceId", "==", spaceId),
+  );
+
+  const snapshot = await getDocs(notesRef);
+  const db = getFirebaseFirestore();
+  const batch = writeBatch(db);
+  let updateCount = 0;
+
+  snapshot.docs.forEach((docSnapshot) => {
+    const note = docSnapshot.data();
+    const existingSharedWith = note.sharedWithUserIds || [];
+
+    // Check if all space members are already in sharedWithUserIds
+    const missingMembers = sharedWithUserIds.filter(
+      (uid) => !existingSharedWith.includes(uid)
+    );
+
+    if (missingMembers.length > 0) {
+      const noteRef = clientNoteDoc(userId, docSnapshot.id);
+      batch.update(noteRef, {
+        sharedWithUserIds: [...new Set([...existingSharedWith, ...sharedWithUserIds])],
+      });
+      updateCount++;
+    }
+  });
+
+  if (updateCount > 0) {
+    await batch.commit();
+  }
+
+  return updateCount;
 }

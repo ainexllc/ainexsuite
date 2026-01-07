@@ -103,7 +103,7 @@ export function WorkspaceLayoutWithInsights({
       <WorkspaceLayout
         user={user}
         onSignOut={onSignOut}
-        appName="Suite"
+        appName="space"
         appColor="#f97316"
         quickActions={quickActions}
         onQuickAction={onQuickAction}

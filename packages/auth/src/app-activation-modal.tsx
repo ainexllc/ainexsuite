@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from './context';
 
 /**
@@ -112,9 +113,11 @@ export function AppActivationModal({
         {user && (
           <div className="flex items-center gap-3 p-4 bg-muted rounded-lg mb-6">
             {user.photoURL ? (
-              <img
+              <Image
                 src={user.photoURL}
-                alt={user.displayName}
+                alt={user.displayName || 'User'}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full"
               />
             ) : (

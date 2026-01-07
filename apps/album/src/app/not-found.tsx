@@ -3,7 +3,7 @@ import { NotFound } from '@ainexsuite/ui';
 export default function AlbumNotFound() {
   return (
     <NotFound
-      appName="Album"
+      appName="album"
       homeHref="/workspace"
       accentClass="text-pink-500"
     />

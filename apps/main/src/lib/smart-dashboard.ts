@@ -384,13 +384,13 @@ export class SmartDashboardService {
         const data = doc.data();
         return {
           id: doc.id,
-          appSlug: 'display',
+          appSlug: 'hub',
           type: 'status' as InsightType,
           title: 'Latest Vitals',
           subtitle: `${data.metricType}: ${data.value}`,
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.date),
-          actionUrl: '/display'
+          actionUrl: '/hub'
         };
       });
       callback(insights);

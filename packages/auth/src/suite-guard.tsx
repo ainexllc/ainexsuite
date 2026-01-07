@@ -37,6 +37,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
     }
 
     checkAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading, ssoInProgress, appName]);
 
   const checkAccess = async () => {

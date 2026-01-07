@@ -3,7 +3,7 @@ import { ContentEnhancementStyle } from '@ainexsuite/types';
 import { plainText } from '@/lib/utils/text';
 import { serverEnv } from '@/env';
 
-const apiKey = process.env.GROK_API_KEY || serverEnv.XAI_API_KEY;
+const apiKey = process.env.GROK_API_KEY || serverEnv.GROK_API_KEY;
 const openai = apiKey
   ? new OpenAI({
       apiKey,

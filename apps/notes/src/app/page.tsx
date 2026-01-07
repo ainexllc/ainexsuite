@@ -158,7 +158,7 @@ function NotesHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="NOTES" appColor={primary} />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="notes" appColor={primary} />}
         backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} variant="organic" />}
         appName="notes"
         accentColor={primary}

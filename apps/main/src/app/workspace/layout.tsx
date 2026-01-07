@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { useFontPreference, useFontSizePreference, SettingsModal } from '@ainexsuite/ui/components';
+import { useFontPreference, useFontSizePreference, SettingsModal, AppFloatingDock } from '@ainexsuite/ui/components';
 import { LayoutDashboard } from 'lucide-react';
 import { ActivityPanel } from '@/components/activity-panel';
 import UniversalSearch from '@/components/universal-search';
@@ -197,6 +197,9 @@ export default function WorkspaceRootLayout({
         isOpen={isQuickCreateOpen}
         onClose={() => setIsQuickCreateOpen(false)}
       />
+
+      {/* App Floating Dock - Desktop only */}
+      <AppFloatingDock currentApp="main" />
     </>
   );
 }

@@ -43,7 +43,7 @@ export function WorkspaceLayoutWithInsights({
     <WorkspaceLayout
       user={user}
       onSignOut={onSignOut}
-      appName="Calendar"
+      appName="calendar"
       appColor="#06b6d4"
       showBackground={true}
       // AI Insights Pulldown

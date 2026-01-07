@@ -50,7 +50,7 @@ export default function SharedSpacePage() {
       <header className="sticky top-0 z-30 border-b border-outline-subtle bg-surface-base/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AinexStudiosLogo size="sm" align="center" appName="ALBUM" appColor="#ec4899" />
+            <AinexStudiosLogo size="sm" align="center" appName="album" appColor="#ec4899" />
             <div className="h-4 w-px bg-outline-subtle" />
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />

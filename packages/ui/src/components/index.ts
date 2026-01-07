@@ -105,6 +105,15 @@ export {
 } from "./layout/app-navigation-sidebar";
 
 export {
+  FloatingDock,
+  type FloatingDockItem,
+} from "./layout/floating-dock";
+
+export {
+  AppFloatingDock,
+} from "./layout/app-floating-dock";
+
+export {
   SearchBar,
   type SearchBarProps,
 } from "./navigation/search-bar";
@@ -599,7 +608,7 @@ export {
 } from "./avatar";
 
 // Theme Components
-export { ThemeSwitcher } from "./theme";
+export { ThemeSwitcher, AnimatedThemeToggler } from "./theme";
 
 // Toolbar Components
 export {

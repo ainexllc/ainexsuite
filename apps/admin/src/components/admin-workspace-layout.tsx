@@ -7,7 +7,7 @@
 
 import { ReactNode, useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
+import { WorkspaceLayout, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 import { db } from '@ainexsuite/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -153,21 +153,25 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
   }
 
   return (
-    <WorkspaceLayout
-      user={user}
-      onSignOut={handleSignOut}
-      appName="ADMIN"
-      appColor="#71717a"
-      showBackground={true}
-      onUpdatePreferences={updatePreferences}
-      notifications={notifications}
-      onNotificationClick={handleNotificationClick}
-      onMarkAsRead={markAsRead}
-      onMarkAllRead={markAllAsRead}
-      onClearAll={clearAll}
-      onViewAllNotifications={handleViewAllNotifications}
-    >
-      {children}
-    </WorkspaceLayout>
+    <>
+      <WorkspaceLayout
+        user={user}
+        onSignOut={handleSignOut}
+        appName="admin"
+        appColor="#71717a"
+        showBackground={true}
+        onUpdatePreferences={updatePreferences}
+        notifications={notifications}
+        onNotificationClick={handleNotificationClick}
+        onMarkAsRead={markAsRead}
+        onMarkAllRead={markAllAsRead}
+        onClearAll={clearAll}
+        onViewAllNotifications={handleViewAllNotifications}
+      >
+        {children}
+      </WorkspaceLayout>
+      {/* App Floating Dock - Desktop only */}
+      <AppFloatingDock currentApp="admin" />
+    </>
   );
 }

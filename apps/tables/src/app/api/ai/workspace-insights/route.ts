@@ -1,0 +1,102 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getOpenRouterClient } from "@/lib/ai";
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { docs } = body as { docs: { title: string; content: string; date: string }[] };
+
+    if (!docs || !Array.isArray(docs) || docs.length === 0) {
+      return NextResponse.json(
+        { error: "No recent docs provided to analyze" },
+        { status: 400 }
+      );
+    }
+
+    const client = getOpenRouterClient();
+    
+    // Construct a prompt that includes brief content from the docs
+    const docsContext = docs.map((n, i) => 
+      `Note ${i + 1} (${n.date}): [${n.title || "Untitled"}] ${n.content.slice(0, 300)}...`
+    ).join("\n\n");
+
+    const prompt = `Analyze the following recent docs from my workspace and provide comprehensive insights.
+
+${docsContext}
+
+Return ONLY a valid JSON object with this structure:
+{
+  "weeklyFocus": "A 1-sentence summary of what I seem to be working on recently.",
+  "commonThemes": ["Theme 1", "Theme 2", "Theme 3"],
+  "pendingActions": ["Critical task 1", "Critical task 2", "Critical task 3"],
+  "mood": "creative",
+  "topCategories": [{"name": "Category", "count": 3}],
+  "connections": [{"topic": "Topic Name", "noteCount": 2}],
+  "learningTopics": ["Topic 1", "Topic 2"],
+  "quickTip": "One actionable suggestion"
+}
+
+Field descriptions:
+- "weeklyFocus": Synthesize the main topic or project being worked on.
+- "commonThemes": Identify 3 recurring subjects (e.g., "House Renovation", "Q4 Planning").
+- "pendingActions": Extract up to 3 most important uncompleted tasks or reminders.
+- "mood": One word describing the emotional tone of the docs (creative, focused, stressed, productive, reflective, energized, overwhelmed).
+- "topCategories": Top 3 categories/themes with approximate doc counts based on content.
+- "connections": Topics or projects mentioned in multiple docs that could be linked together (max 2).
+- "learningTopics": New concepts, skills, or areas being explored/researched (max 3).
+- "quickTip": One actionable productivity suggestion based on the docs content.
+`;
+
+    // Use createCompletion for better control (lower temperature for JSON stability)
+    const completion = await client.createCompletion({
+      messages: [
+        { role: "system", content: "You are a personal productivity assistant. You speak only valid JSON. Do not include markdown formatting or explanations." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.3, // Lower temperature for deterministic output
+    });
+
+    const responseContent = completion.choices[0]?.message?.content || "{}";
+
+    // Robust JSON extraction
+    let jsonStr = responseContent;
+    // Try to find JSON object within the response (handles markdown blocks and extra text)
+    const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonStr = jsonMatch[0];
+    }
+
+    let data;
+    try {
+      data = JSON.parse(jsonStr);
+    } catch (parseError) {
+       console.error("Failed to parse AI response:", responseContent);
+       // Return a safe fallback instead of 500 to prevent UI crash/error state loop
+       return NextResponse.json({
+         weeklyFocus: "Could not analyze docs at this time.",
+         commonThemes: [],
+         pendingActions: [],
+         mood: "neutral",
+         topCategories: [],
+         connections: [],
+         learningTopics: [],
+         quickTip: ""
+       });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Workspace Insights Error:", error);
+    // Check for missing API key specific error
+    if (error instanceof Error && error.message.includes("OPENROUTER_API_KEY")) {
+        return NextResponse.json(
+            { error: "AI configuration missing (API Key)." },
+            { status: 500 }
+        );
+    }
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "An error occurred" },
+      { status: 500 }
+    );
+  }
+}

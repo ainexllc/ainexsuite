@@ -12,6 +12,8 @@ import {
   Workflow,
   Calendar,
   Settings,
+  FileText,
+  Table2,
 } from 'lucide-react';
 import { SUITE_APPS, getAppUrl } from '../config/apps';
 import { NotesStickyIcon } from '../components/ai';
@@ -30,11 +32,13 @@ const ICON_MAP = {
   health: Heart,
   album: Camera,
   habits: Sprout,
-  display: HeartPulse,
+  mosaic: HeartPulse,
   fit: Dumbbell,
-  project: Briefcase,
-  workflow: Workflow,
+  projects: Briefcase,
+  flow: Workflow,
   calendar: Calendar,
+  docs: FileText,
+  tables: Table2,
   admin: Settings,
 };
 
@@ -42,7 +46,7 @@ export function getNavigationApps(isDev: boolean = false, userEmail?: string | n
   return Object.values(SUITE_APPS)
     .filter(app => {
       // Check if app has email restrictions
-      const allowedEmails = (app as any).allowedEmails as string[] | undefined;
+      const allowedEmails = (app as { allowedEmails?: string[] }).allowedEmails;
       if (!allowedEmails || allowedEmails.length === 0) {
         return true;
       }

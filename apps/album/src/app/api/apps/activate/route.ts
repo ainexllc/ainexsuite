@@ -21,7 +21,7 @@ import { FieldValue } from 'firebase-admin/firestore';
  *
  * Request Body:
  * {
- *   "app": "notes" | "journal" | "todo" | "health" | "album" | "habits" | "display" | "fit"
+ *   "app": "notes" | "journal" | "todo" | "health" | "album" | "habits" | "hub" | "fit"
  * }
  *
  * Response:
@@ -31,7 +31,7 @@ import { FieldValue } from 'firebase-admin/firestore';
  * }
  */
 
-const VALID_APPS = ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit'];
+const VALID_APPS = ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit'];
 
 export async function POST(request: NextRequest) {
   try {

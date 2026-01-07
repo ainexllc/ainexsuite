@@ -95,8 +95,8 @@ export function AuthBox({
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         onAuthSuccess?.(userCredential.user.uid);
       }
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -135,9 +135,10 @@ export function AuthBox({
       if (user) {
         onAuthSuccess?.(user.uid);
       }
-    } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setError(err.message || 'Google authentication failed');
+    } catch (err) {
+      const firebaseError = err as { code?: string; message?: string };
+      if (firebaseError.code !== 'auth/popup-closed-by-user') {
+        setError(firebaseError.message || 'Google authentication failed');
       }
     } finally {
       setLoading(false);

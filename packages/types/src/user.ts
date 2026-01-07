@@ -44,7 +44,7 @@ export interface User {
     health?: { approved: boolean; approvedAt: Timestamp };
     album?: { approved: boolean; approvedAt: Timestamp };
     habits?: { approved: boolean; approvedAt: Timestamp };
-    display?: { approved: boolean; approvedAt: Timestamp };
+    hub?: { approved: boolean; approvedAt: Timestamp };
     fit?: { approved: boolean; approvedAt: Timestamp };
     suite?: { approved: boolean; approvedAt: Timestamp };
   };
@@ -57,7 +57,7 @@ export interface User {
     health: boolean;
     album: boolean;
     habits: boolean;
-    display: boolean;
+    hub: boolean;
     fit: boolean;
     project?: boolean;
     workflow?: boolean;
@@ -72,7 +72,7 @@ export interface User {
     health?: Timestamp;
     album?: Timestamp;
     habits?: Timestamp;
-    display?: Timestamp;
+    hub?: Timestamp;
     fit?: Timestamp;
   };
 

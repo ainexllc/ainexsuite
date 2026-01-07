@@ -18,13 +18,20 @@ import { getLatestSession } from './sso-session-store';
  * Helper to determine if origin is allowed for CORS
  */
 function isAllowedOrigin(origin: string | null): boolean {
-  return Boolean(
-    origin && (
-      origin.includes('ainexspace.com') ||
-      origin.includes('localhost') ||
-      origin.includes('127.0.0.1')
-    )
-  );
+  if (!origin) return false;
+
+  // Production domains
+  if (origin.includes('ainexspace.com')) return true;
+
+  // Local development
+  if (origin.includes('localhost')) return true;
+  if (origin.includes('127.0.0.1')) return true;
+
+  // Local network IPs for development testing (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+  const localNetworkPattern = /^https?:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?/;
+  if (localNetworkPattern.test(origin)) return true;
+
+  return false;
 }
 
 /**

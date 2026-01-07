@@ -15,7 +15,7 @@ const APPS = [
   { name: 'health', label: 'Health' },
   { name: 'album', label: 'Album' },
   { name: 'habits', label: 'Habits' },
-  { name: 'display', label: 'Display' },
+  { name: 'hub', label: 'Hub' },
   { name: 'fit', label: 'Fit' },
 ];
 

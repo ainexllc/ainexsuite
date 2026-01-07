@@ -1,0 +1,558 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent horizontal overflow/scrollbars */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Tables App Theme - Emerald (spreadsheet-like, professional) */
+:root {
+  --app-primary: 160 84% 39%;      /* Emerald-500 #10b981 */
+  --app-primary-foreground: 0 0% 100%;
+  --app-secondary: 161 94% 30%;    /* Emerald-600 #059669 */
+  --app-secondary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --app-primary: 158 64% 52%;      /* Emerald-400 #34d399 */
+  --app-primary-foreground: 0 0% 0%;
+  --app-secondary: 160 84% 39%;    /* Emerald-500 #10b981 */
+  --app-secondary-foreground: 0 0% 0%;
+
+  /* Fortune-Sheet Dark Mode Colors */
+  --fs-bg-primary: #1a1a1a;       /* Main background */
+  --fs-bg-secondary: #262626;     /* Toolbar, headers */
+  --fs-bg-tertiary: #333333;      /* Inputs, dropdowns */
+  --fs-bg-hover: #3a3a3a;         /* Hover states */
+  --fs-bg-active: #404040;        /* Active states */
+
+  --fs-border: #404040;           /* Borders */
+  --fs-border-light: #333333;     /* Subtle borders */
+
+  --fs-text-primary: #e5e5e5;     /* Primary text */
+  --fs-text-secondary: #a3a3a3;   /* Secondary text */
+  --fs-text-muted: #737373;       /* Muted text */
+
+  --fs-accent: #10b981;           /* Emerald accent */
+  --fs-accent-hover: #34d399;     /* Accent hover */
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@layer components {
+  .animate-fade-in {
+    animation: fade-in 300ms ease-out;
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 300ms ease-out;
+  }
+}
+
+/* ===== Fortune-Sheet Container Styles ===== */
+
+/* Full page container */
+.fortune-sheet-fullpage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+/* Compact container for card preview */
+.fortune-sheet-compact {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: white;
+}
+
+/* Fortune-Sheet container sizing */
+.fortune-sheet-fullpage .luckysheet-wa-editor,
+.fortune-sheet-fullpage .luckysheet,
+.fortune-sheet-compact .luckysheet-wa-editor,
+.fortune-sheet-compact .luckysheet {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Default font for Fortune-Sheet */
+.fortune-sheet-container,
+.fortune-sheet-fullpage,
+.fortune-sheet-compact,
+.fortune-toolbar,
+.fortune-fx-editor {
+  font-family: Tahoma, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Cell selection color - emerald theme */
+.luckysheet-cell-selected,
+.luckysheet-cell-selected-focus,
+.fortune-cell-selected-move,
+.fortune-cell-selected-extend {
+  border-color: #10b981 !important;
+}
+
+/* Selection highlight */
+.luckysheet-cell-selected-highlight {
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Hide watermark */
+.fortune-share-logo {
+  display: none !important;
+}
+
+/* =====================================================
+   DARK MODE - Comprehensive CSS Override Approach
+   ===================================================== */
+
+/* Dark mode container backgrounds */
+.dark .fortune-sheet-fullpage,
+.dark .fortune-sheet-compact {
+  background: var(--fs-bg-primary);
+}
+
+.dark .fortune-container,
+.dark .fortune-sheet-container,
+.dark .fortune-workarea,
+.dark .fortune-cell-area {
+  background-color: var(--fs-bg-primary) !important;
+}
+
+/* ===== Toolbar Styles ===== */
+
+/* Toolbar container */
+.dark .fortune-toolbar {
+  background: var(--fs-bg-secondary) !important;
+  border-color: var(--fs-border) !important;
+}
+
+/* Toolbar buttons */
+.dark .fortune-toolbar-button,
+.dark .fortune-toolbar-item,
+.dark .fortune-toolbar .toolbar-item {
+  color: var(--fs-text-primary) !important;
+  background: transparent !important;
+}
+
+.dark .fortune-toolbar-button:hover,
+.dark .fortune-toolbar-item:hover,
+.dark .fortune-toolbar .toolbar-item:hover {
+  background: var(--fs-bg-hover) !important;
+}
+
+.dark .fortune-toolbar-button:active,
+.dark .fortune-toolbar-item:active {
+  background: var(--fs-bg-active) !important;
+}
+
+/* Toolbar icons/SVGs */
+.dark .fortune-toolbar-button svg,
+.dark .fortune-toolbar-item svg,
+.dark .fortune-toolbar svg,
+.dark .toolbar-item svg {
+  fill: var(--fs-text-secondary) !important;
+  color: var(--fs-text-secondary) !important;
+}
+
+.dark .fortune-toolbar-button:hover svg,
+.dark .fortune-toolbar-item:hover svg {
+  fill: var(--fs-text-primary) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+/* Toolbar dividers */
+.dark .fortune-toolbar-divider,
+.dark .fortune-toolbar .toolbar-divider {
+  background: var(--fs-border) !important;
+}
+
+/* Toolbar combo boxes (font, size selectors) */
+.dark .fortune-toolbar-combo,
+.dark .fortune-toolbar-combo-button,
+.dark .fortune-toolbar-select-button,
+.dark .fortune-toolbar .toolbar-combo {
+  background: var(--fs-bg-tertiary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-toolbar-combo-text,
+.dark .fortune-toolbar-select-text {
+  color: var(--fs-text-primary) !important;
+}
+
+/* ===== Dropdowns & Popups (Critical) ===== */
+
+/* Universal dropdown/popup styling */
+.dark .fortune-toolbar-combo-popup,
+.dark .fortune-toolbar-select,
+.dark .fortune-toolbar-select-list,
+.dark .fortune-toolbar-menu,
+.dark .fortune-toolbar-popup,
+.dark .fortune-select,
+.dark .fortune-select-list,
+.dark .fortune-popup,
+.dark .toolbar-item-sub-menu,
+.dark .toolbar-select-list,
+.dark .toolbar-combo-popup,
+.dark [class*="fortune-toolbar"][class*="popup"],
+.dark [class*="fortune-toolbar"][class*="select"],
+.dark [class*="fortune-toolbar"][class*="menu"] {
+  background: var(--fs-bg-secondary) !important;
+  background-color: var(--fs-bg-secondary) !important;
+  border: 1px solid var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Dropdown options */
+.dark .fortune-toolbar-select-option,
+.dark .fortune-toolbar-select-list > div,
+.dark .fortune-toolbar-popup > div,
+.dark .fortune-select-list > div,
+.dark .toolbar-select-option,
+.dark .toolbar-select-list > div,
+.dark .toolbar-combo-popup > div {
+  background: var(--fs-bg-secondary) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-toolbar-select-option:hover,
+.dark .fortune-toolbar-select-list > div:hover,
+.dark .fortune-toolbar-popup > div:hover,
+.dark .toolbar-select-option:hover,
+.dark .toolbar-select-list > div:hover,
+.dark .toolbar-combo-popup > div:hover {
+  background: var(--fs-bg-hover) !important;
+}
+
+/* Dropdown dividers */
+.dark .fortune-toolbar-menu-divider {
+  background: var(--fs-border) !important;
+}
+
+/* ===== Context Menus (Right-Click) ===== */
+
+.dark .fortune-context-menu,
+.dark .luckysheet-cols-menu,
+.dark .luckysheet-rightclick-menu,
+.dark .luckysheet-cell-menu {
+  background: var(--fs-bg-secondary) !important;
+  border: 1px solid var(--fs-border) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .luckysheet-cols-menuitem,
+.dark .fortune-context-menu-item,
+.dark .luckysheet-cell-menu-item {
+  color: var(--fs-text-primary) !important;
+  background: transparent !important;
+}
+
+.dark .luckysheet-cols-menuitem:hover,
+.dark .fortune-context-menu-item:hover,
+.dark .luckysheet-cell-menu-item:hover {
+  background: var(--fs-bg-hover) !important;
+}
+
+.dark .fortune-context-menu-divider,
+.dark .luckysheet-menuseparator {
+  background: var(--fs-border) !important;
+}
+
+/* Submenu styling */
+.dark .toolbar-item-sub-menu {
+  background: var(--fs-bg-secondary) !important;
+  border: 1px solid var(--fs-border) !important;
+}
+
+/* ===== Formula Bar ===== */
+
+.dark .fortune-fx-editor {
+  background: var(--fs-bg-secondary) !important;
+  border-color: var(--fs-border) !important;
+}
+
+.dark .fortune-name-box-container,
+.dark .fortune-name-box,
+.dark .luckysheet-cell-name-input {
+  background: var(--fs-bg-tertiary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-fx-icon,
+.dark .luckysheet-fx-icon {
+  color: var(--fs-text-secondary) !important;
+}
+
+.dark .fortune-fx-input-container,
+.dark .fortune-fx-input,
+.dark .luckysheet-formula-text-c,
+.dark .luckysheet-formula-text {
+  background: var(--fs-bg-secondary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+/* ===== Spreadsheet Dark Mode - Light Cell Area ===== */
+/* Fortune-Sheet renders everything (gridlines, headers, cells) on a single canvas.
+   For dark mode, we keep the canvas with its default light rendering.
+   This provides better readability for spreadsheet data.
+   The surrounding UI (toolbar, formula bar) uses dark theme. */
+
+/* Ensure container doesn't add dark background that interferes with canvas */
+.dark .fortune-sheet-container,
+.dark .fortune-row-body,
+.dark .fortune-cell-area {
+  background: transparent !important;
+}
+
+/* Row/column headers - let canvas handle rendering, don't override */
+/* The canvas renders header backgrounds and text, CSS overrides cause issues */
+
+/* Left top corner - keep transparent for canvas */
+.dark .fortune-left-top {
+  background: transparent !important;
+}
+
+/* Cell input when editing - MUST have dark text on light background for visibility */
+/* This applies in BOTH light and dark mode since cell area is light-themed */
+.luckysheet-input-box,
+.luckysheet-input-box-inner,
+.luckysheet-cell-input {
+  color: #000000 !important;
+  background: #ffffff !important;
+}
+
+.dark .luckysheet-input-box,
+.dark .luckysheet-input-box-inner,
+.dark .luckysheet-cell-input {
+  color: #000000 !important;
+  background: #ffffff !important;
+}
+
+/* Selection styling - emerald theme */
+.dark .luckysheet-cell-selected,
+.dark .luckysheet-cell-selected-focus,
+.dark .fortune-cell-selected-move,
+.dark .fortune-cell-selected-extend {
+  border-color: var(--fs-accent) !important;
+}
+
+.dark .luckysheet-cell-selected-highlight {
+  background: rgba(16, 185, 129, 0.15) !important;
+}
+
+.dark .fortune-selection-copy-hc {
+  border-color: var(--fs-accent-hover) !important;
+}
+
+/* Freeze handles/lines */
+.dark .fortune-cols-freeze-handle,
+.dark .fortune-rows-freeze-handle {
+  background: var(--fs-border) !important;
+}
+
+.dark .fortune-freeze-drag-line {
+  background: var(--fs-accent) !important;
+}
+
+/* ===== Dialogs & Modals ===== */
+
+.dark .fortune-modal-container {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark .fortune-dialog,
+.dark .fortune-dialog-box,
+.dark .luckysheet-modal-dialog,
+.dark [class*="fortune-modal"],
+.dark [class*="fortune-dialog"] {
+  background: var(--fs-bg-secondary) !important;
+  border: 1px solid var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .fortune-modal-dialog-header,
+.dark .fortune-dialog-header,
+.dark .luckysheet-modal-dialog-title {
+  background: var(--fs-bg-tertiary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-dialog-box-content,
+.dark .luckysheet-modal-dialog-content {
+  color: var(--fs-text-primary) !important;
+  background: var(--fs-bg-secondary) !important;
+}
+
+.dark .fortune-dialog input,
+.dark .fortune-dialog select,
+.dark .luckysheet-modal-dialog input,
+.dark .luckysheet-modal-dialog select {
+  background: var(--fs-bg-tertiary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-dialog-box-button-container button,
+.dark .luckysheet-modal-dialog-button button {
+  background: var(--fs-bg-tertiary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-dialog-box-button-container button:hover,
+.dark .luckysheet-modal-dialog-button button:hover {
+  background: var(--fs-bg-hover) !important;
+}
+
+.dark .fortune-dialog-box-button-container button.primary,
+.dark .luckysheet-modal-dialog-button button.btn-primary {
+  background: var(--fs-accent) !important;
+  border-color: var(--fs-accent) !important;
+  color: white !important;
+}
+
+/* ===== Color Pickers ===== */
+
+.dark .fortune-toolbar-color-picker,
+.dark .luckysheet-color-picker,
+.dark [class*="fortune-color"],
+.dark [class*="luckysheet-color"] {
+  background: var(--fs-bg-secondary) !important;
+  border: 1px solid var(--fs-border) !important;
+}
+
+.dark .fortune-toolbar-color-picker-item {
+  border-color: var(--fs-border) !important;
+}
+
+.dark .fortune-toolbar-color-picker-item:hover {
+  border-color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-border-select-menu,
+.dark .luckysheet-border-menu {
+  background: var(--fs-bg-secondary) !important;
+  border-color: var(--fs-border) !important;
+}
+
+/* ===== Tooltips ===== */
+
+.dark .fortune-tooltip {
+  background: var(--fs-bg-tertiary) !important;
+  color: var(--fs-text-primary) !important;
+  border: 1px solid var(--fs-border) !important;
+}
+
+/* ===== Scrollbars ===== */
+
+.dark .fortune-sheet-fullpage ::-webkit-scrollbar,
+.dark .fortune-sheet-compact ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark .fortune-sheet-fullpage ::-webkit-scrollbar-track,
+.dark .fortune-sheet-compact ::-webkit-scrollbar-track {
+  background: var(--fs-bg-primary);
+}
+
+.dark .fortune-sheet-fullpage ::-webkit-scrollbar-thumb,
+.dark .fortune-sheet-compact ::-webkit-scrollbar-thumb {
+  background: var(--fs-border);
+  border-radius: 4px;
+}
+
+.dark .fortune-sheet-fullpage ::-webkit-scrollbar-thumb:hover,
+.dark .fortune-sheet-compact ::-webkit-scrollbar-thumb:hover {
+  background: var(--fs-bg-active);
+}
+
+/* ===== Misc Elements ===== */
+
+.dark .fortune-add-row-button {
+  background: var(--fs-bg-secondary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-add-row-button:hover {
+  background: var(--fs-bg-hover) !important;
+}
+
+/* Sheet tabs */
+.dark .fortune-sheet-tab,
+.dark .luckysheet-sheet-area {
+  background: var(--fs-bg-secondary) !important;
+  border-color: var(--fs-border) !important;
+}
+
+.dark .fortune-sheet-tab-item,
+.dark .luckysheet-sheet-item {
+  background: var(--fs-bg-secondary) !important;
+  border-color: var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+.dark .fortune-sheet-tab-item:hover,
+.dark .luckysheet-sheet-item:hover {
+  background: var(--fs-bg-hover) !important;
+}
+
+.dark .fortune-sheet-tab-item.active,
+.dark .luckysheet-sheet-item.active {
+  background: var(--fs-bg-active) !important;
+}
+
+/* ===== Portal-Rendered Elements (html.dark selectors) ===== */
+
+html.dark [class*="fortune"][class*="popup"],
+html.dark [class*="fortune"][class*="select"],
+html.dark [class*="fortune"][class*="menu"],
+html.dark [class*="luckysheet"][class*="popup"],
+html.dark [class*="luckysheet"][class*="menu"],
+html.dark .toolbar-item-sub-menu {
+  background: var(--fs-bg-secondary) !important;
+  background-color: var(--fs-bg-secondary) !important;
+  border: 1px solid var(--fs-border) !important;
+  color: var(--fs-text-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark [class*="fortune"][class*="popup"] > *,
+html.dark [class*="fortune"][class*="select"] > *,
+html.dark [class*="fortune"][class*="menu"] > *,
+html.dark [class*="luckysheet"][class*="popup"] > *,
+html.dark [class*="luckysheet"][class*="menu"] > *,
+html.dark .toolbar-item-sub-menu > * {
+  background: var(--fs-bg-secondary) !important;
+  color: var(--fs-text-primary) !important;
+}
+
+html.dark [class*="fortune"][class*="popup"] > *:hover,
+html.dark [class*="fortune"][class*="select"] > *:hover,
+html.dark [class*="fortune"][class*="menu"] > *:hover,
+html.dark [class*="luckysheet"][class*="popup"] > *:hover,
+html.dark [class*="luckysheet"][class*="menu"] > *:hover,
+html.dark .toolbar-item-sub-menu > *:hover {
+  background: var(--fs-bg-hover) !important;
+}

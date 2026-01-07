@@ -27,7 +27,6 @@ const envFromFile = loadEnvFile();
 // Shared environment variables for all apps
 const sharedEnv = {
   GROK_API_KEY: envFromFile.GROK_API_KEY || process.env.GROK_API_KEY || "",
-  XAI_API_KEY: envFromFile.XAI_API_KEY || process.env.XAI_API_KEY || "",
   FAL_KEY: envFromFile.FAL_KEY || process.env.FAL_KEY || "",
 };
 
@@ -125,8 +124,8 @@ module.exports = {
       kill_timeout: 5000,
     },
     {
-      name: "display",
-      cwd: "./apps/display",
+      name: "mosaic",
+      cwd: "./apps/mosaic",
       script: "pnpm",
       args: "dev",
       env: { PORT: 3007, NODE_ENV: "development", ...sharedEnv },
@@ -164,8 +163,8 @@ module.exports = {
       kill_timeout: 5000,
     },
     {
-      name: "workflow",
-      cwd: "./apps/workflow",
+      name: "flow",
+      cwd: "./apps/flow",
       script: "pnpm",
       args: "dev",
       env: { PORT: 3010, NODE_ENV: "development", ...sharedEnv },
@@ -190,11 +189,37 @@ module.exports = {
       kill_timeout: 5000,
     },
     {
+      name: "docs",
+      cwd: "./apps/docs",
+      script: "pnpm",
+      args: "dev",
+      env: { PORT: 3012, NODE_ENV: "development", ...sharedEnv },
+      watch: false,
+      autorestart: true,
+      max_restarts: 5,
+      min_uptime: 10000,
+      exec_mode: "fork",
+      kill_timeout: 5000,
+    },
+    {
       name: "subs",
       cwd: "./apps/subs",
       script: "pnpm",
       args: "dev",
       env: { PORT: 3011, NODE_ENV: "development", ...sharedEnv },
+      watch: false,
+      autorestart: true,
+      max_restarts: 5,
+      min_uptime: 10000,
+      exec_mode: "fork",
+      kill_timeout: 5000,
+    },
+    {
+      name: "tables",
+      cwd: "./apps/tables",
+      script: "pnpm",
+      args: "dev",
+      env: { PORT: 3013, NODE_ENV: "development", ...sharedEnv },
       watch: false,
       autorestart: true,
       max_restarts: 5,

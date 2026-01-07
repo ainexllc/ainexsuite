@@ -23,6 +23,7 @@ import {
   Ban,
   Check,
   Trash2,
+  Copy,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
@@ -80,6 +81,7 @@ type NoteEditorProps = {
 export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const {
     updateNote,
+    duplicateNote,
     togglePin,
     removeAttachment,
     attachFiles,
@@ -622,10 +624,47 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     completed: false,
   });
 
-  const handleAddChecklistItem = () => {
-    const newItem = checklistTemplate();
+  // Contextual placeholder examples for checklist items
+  const getChecklistPlaceholder = (index: number): string => {
+    const examples = [
+      "Add item...",
+      "e.g., Milk",
+      "e.g., Pick up dry cleaning",
+      "e.g., Call mom",
+      "e.g., Bread",
+      "e.g., Eggs",
+    ];
+    return examples[index % examples.length];
+  };
+
+  const handleAddChecklistItem = (afterIndex?: number, inheritIndent?: number) => {
+    const newItem = {
+      ...checklistTemplate(),
+      indent: inheritIndent ?? 0,
+    };
     pendingChecklistFocusId.current = newItem.id;
-    setChecklist((prev) => [...prev, newItem]);
+    if (afterIndex !== undefined) {
+      setChecklist((prev) => [
+        ...prev.slice(0, afterIndex + 1),
+        newItem,
+        ...prev.slice(afterIndex + 1),
+      ]);
+    } else {
+      setChecklist((prev) => [...prev, newItem]);
+    }
+  };
+
+  const handleIndentChange = (itemId: string, delta: number) => {
+    setChecklist((prev) =>
+      prev.map((item) => {
+        if (item.id === itemId) {
+          const currentIndent = item.indent ?? 0;
+          const newIndent = Math.max(0, Math.min(3, currentIndent + delta));
+          return { ...item, indent: newIndent };
+        }
+        return item;
+      })
+    );
   };
 
   const handleChecklistChange = (
@@ -945,6 +984,23 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 )}
                 <button
                   type="button"
+                  onClick={async () => {
+                    const newNoteId = await duplicateNote(note.id);
+                    if (newNoteId) {
+                      onClose();
+                    }
+                  }}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    getActionColorClasses(currentBackground),
+                  )}
+                  aria-label="Duplicate note"
+                  title="Duplicate note"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
                   onClick={() => setShowDeleteConfirm(true)}
                   className={clsx(
                     "h-7 w-7 rounded-full flex items-center justify-center transition",
@@ -1062,71 +1118,168 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {checklist.map((item, idx) => (
-                <div key={item.id} className="group flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={item.completed}
-                    onChange={(event) =>
-                      handleChecklistChange(item.id, {
-                        completed: event.target.checked,
-                      })
-                    }
-                    className="h-4 w-4 accent-accent-500"
-                  />
-                  <input
-                    value={item.text}
-                    onChange={(event) =>
-                      handleChecklistChange(item.id, {
-                        text: event.target.value,
-                      })
-                    }
-                    onKeyDown={(event) => {
-                      if (
-                        event.key === "Enter" &&
-                        !event.shiftKey &&
-                        !event.nativeEvent.isComposing
-                      ) {
-                        event.preventDefault();
-                        const nextItem = checklist[idx + 1];
-                        if (nextItem) {
-                          checklistInputRefs.current[nextItem.id]?.focus();
-                        } else {
-                          handleAddChecklistItem();
-                        }
-                      }
-                    }}
-                    placeholder={`Checklist item ${idx + 1}`}
-                    ref={(element) => {
-                      if (element) {
-                        checklistInputRefs.current[item.id] = element;
-                      } else {
-                        delete checklistInputRefs.current[item.id];
-                      }
-                    }}
-                    className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-400 dark:focus:border-zinc-600 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    className="opacity-0 transition group-hover:opacity-100"
-                    onClick={() =>
-                      setChecklist((prev) =>
-                        prev.filter((entry) => entry.id !== item.id),
-                      )
-                    }
-                    aria-label="Remove checklist item"
+              {checklist.map((item, idx) => {
+                const indentLevel = item.indent ?? 0;
+                return (
+                  <div
+                    key={item.id}
+                    className="group flex items-center gap-3"
+                    style={{ paddingLeft: `${indentLevel * 24}px` }}
                   >
-                    <X className="h-4 w-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={handleAddChecklistItem}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-              >
-                <CheckSquare className="h-3.5 w-3.5" /> Add item
-              </button>
+                    <input
+                      type="checkbox"
+                      checked={item.completed}
+                      onChange={(event) =>
+                        handleChecklistChange(item.id, {
+                          completed: event.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 accent-accent-500 flex-shrink-0"
+                    />
+                    <input
+                      value={item.text}
+                      onChange={(event) =>
+                        handleChecklistChange(item.id, {
+                          text: event.target.value,
+                        })
+                      }
+                      onKeyDown={(event) => {
+                        // Tab to indent
+                        if (event.key === "Tab" && !event.shiftKey) {
+                          event.preventDefault();
+                          handleIndentChange(item.id, 1);
+                          return;
+                        }
+                        // Shift+Tab to unindent
+                        if (event.key === "Tab" && event.shiftKey) {
+                          event.preventDefault();
+                          handleIndentChange(item.id, -1);
+                          return;
+                        }
+                        // Option/Alt + Up to move item up
+                        if (event.key === "ArrowUp" && event.altKey && idx > 0) {
+                          event.preventDefault();
+                          setChecklist((prev) => {
+                            const newList = [...prev];
+                            [newList[idx - 1], newList[idx]] = [newList[idx], newList[idx - 1]];
+                            return newList;
+                          });
+                          // Keep focus on the moved item
+                          setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
+                          return;
+                        }
+                        // Option/Alt + Down to move item down
+                        if (event.key === "ArrowDown" && event.altKey && idx < checklist.length - 1) {
+                          event.preventDefault();
+                          setChecklist((prev) => {
+                            const newList = [...prev];
+                            [newList[idx], newList[idx + 1]] = [newList[idx + 1], newList[idx]];
+                            return newList;
+                          });
+                          // Keep focus on the moved item
+                          setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
+                          return;
+                        }
+                        // Arrow Up to navigate to previous item
+                        if (event.key === "ArrowUp" && !event.altKey && idx > 0) {
+                          event.preventDefault();
+                          const prevItem = checklist[idx - 1];
+                          checklistInputRefs.current[prevItem.id]?.focus();
+                          return;
+                        }
+                        // Arrow Down to navigate to next item
+                        if (event.key === "ArrowDown" && !event.altKey && idx < checklist.length - 1) {
+                          event.preventDefault();
+                          const nextItem = checklist[idx + 1];
+                          checklistInputRefs.current[nextItem.id]?.focus();
+                          return;
+                        }
+                        // Enter to create new item (inherit indent level)
+                        if (
+                          event.key === "Enter" &&
+                          !event.shiftKey &&
+                          !event.nativeEvent.isComposing
+                        ) {
+                          event.preventDefault();
+                          handleAddChecklistItem(idx, indentLevel);
+                        }
+                        // Backspace on empty item: unindent first, then delete when at level 0
+                        if (
+                          event.key === "Backspace" &&
+                          item.text === ""
+                        ) {
+                          event.preventDefault();
+                          // If indented, unindent first
+                          if (indentLevel > 0) {
+                            handleIndentChange(item.id, -1);
+                          } else if (checklist.length > 1) {
+                            // At level 0, delete the item
+                            const prevItem = checklist[idx - 1];
+                            if (prevItem) {
+                              checklistInputRefs.current[prevItem.id]?.focus();
+                            }
+                            setChecklist((prev) =>
+                              prev.filter((entry) => entry.id !== item.id)
+                            );
+                          }
+                        }
+                      }}
+                      placeholder={getChecklistPlaceholder(idx)}
+                      ref={(element) => {
+                        if (element) {
+                          checklistInputRefs.current[item.id] = element;
+                        } else {
+                          delete checklistInputRefs.current[item.id];
+                        }
+                      }}
+                      className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-400 dark:focus:border-zinc-600 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      className="opacity-0 transition group-hover:opacity-100"
+                      onClick={() =>
+                        setChecklist((prev) =>
+                          prev.filter((entry) => entry.id !== item.id),
+                        )
+                      }
+                      aria-label="Remove checklist item"
+                    >
+                      <X className="h-4 w-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" />
+                    </button>
+                  </div>
+                );
+              })}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleAddChecklistItem()}
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                >
+                  <CheckSquare className="h-3.5 w-3.5" /> Add item
+                </button>
+                {checklist.some((item) => item.completed) && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setChecklist((prev) => prev.filter((item) => !item.completed))}
+                      className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-red-400 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-400"
+                    >
+                      Clear done
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setChecklist((prev) => {
+                        const uncompleted = prev.filter((item) => !item.completed);
+                        const completed = prev.filter((item) => item.completed);
+                        return [...uncompleted, ...completed];
+                      })}
+                      className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                    >
+                      Sort done ↓
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           )}
 
@@ -1410,7 +1563,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     ? "bg-[var(--color-primary)] text-white"
                     : getActionColorClasses(currentBackground)
                 )}
-                aria-label="Toggle checklist mode"
+                aria-label="Lists & checklists"
+                title="Lists & checklists"
               >
                 <CheckSquare className="h-3.5 w-3.5" />
               </button>
@@ -1968,6 +2122,24 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </div>
             </div>
           ) : null}
+
+          {/* Word/character count */}
+          <div className={clsx(
+            "text-[10px] tabular-nums",
+            currentBackground
+              ? currentBackground.brightness === 'dark'
+                ? "text-white/40"
+                : "text-black/40"
+              : "text-zinc-400 dark:text-zinc-500"
+          )}>
+            {mode === "checklist" ? (
+              <span>{checklist.filter(i => i.text.trim()).length} items</span>
+            ) : (
+              <span>
+                {body.trim().split(/\s+/).filter(w => w).length} words · {body.length} chars
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Hidden file input - inside modal to prevent click propagation issues */}

@@ -105,7 +105,8 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           !backgroundImage && !hasCover && cardClass,
           "border border-zinc-200 dark:border-zinc-800",
           "group relative cursor-pointer overflow-hidden rounded-2xl",
-          "transition-[border-color,box-shadow,transform] duration-200",
+          // Only transition on hover, not on initial render (prevents blinking)
+          "hover:transition-[border-color,box-shadow,transform] hover:duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
           "break-inside-avoid px-4 py-4 h-[220px] flex flex-col",
           // Selection styles - glow effect and scale
@@ -256,35 +257,40 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           >
 
             {note.type === "checklist" ? (
+              <>
               <ul className="space-y-1">
-                {note.checklist.slice(0, 5).map((item) => (
-                  <li
-                    key={item.id}
-                    className={clsx(
-                      "flex items-start gap-2 text-[12px]",
-                      item.completed
-                        ? clsx(
-                            hasCover && !backgroundImage
-                              ? "text-white/50"
-                              : getTextColorClasses(backgroundImage, 'checklist-completed'),
-                            "line-through"
-                          )
-                        : hasCover && !backgroundImage
-                          ? "text-white/90"
-                          : getTextColorClasses(backgroundImage, 'checklist'),
-                    )}
-                  >
-                    <span className={clsx(
-                      "mt-1 h-1.5 w-1.5 rounded-full flex-shrink-0",
-                      item.completed
-                        ? hasCover && !backgroundImage
-                          ? "bg-white/30"
-                          : backgroundImage?.brightness === 'light' ? "bg-black/20" : backgroundImage ? "bg-white/30" : "bg-zinc-300 dark:bg-zinc-700"
-                        : "bg-yellow-500"
-                    )} />
-                    <span className="line-clamp-1">{item.text}</span>
-                  </li>
-                ))}
+                {note.checklist.slice(0, 5).map((item) => {
+                  const indentLevel = item.indent ?? 0;
+                  return (
+                    <li
+                      key={item.id}
+                      className={clsx(
+                        "flex items-start gap-2 text-[12px]",
+                        item.completed
+                          ? clsx(
+                              hasCover && !backgroundImage
+                                ? "text-white/50"
+                                : getTextColorClasses(backgroundImage, 'checklist-completed'),
+                              "line-through"
+                            )
+                          : hasCover && !backgroundImage
+                            ? "text-white/90"
+                            : getTextColorClasses(backgroundImage, 'checklist'),
+                      )}
+                      style={{ paddingLeft: `${indentLevel * 12}px` }}
+                    >
+                      <span className={clsx(
+                        "mt-1 h-1.5 w-1.5 rounded-full flex-shrink-0",
+                        item.completed
+                          ? hasCover && !backgroundImage
+                            ? "bg-white/30"
+                            : backgroundImage?.brightness === 'light' ? "bg-black/20" : backgroundImage ? "bg-white/30" : "bg-zinc-300 dark:bg-zinc-700"
+                          : "bg-yellow-500"
+                      )} />
+                      <span className="line-clamp-1">{item.text}</span>
+                    </li>
+                  );
+                })}
                 {note.checklist.length > 5 ? (
                   <li className={clsx(
                     "text-[10px]",
@@ -296,6 +302,37 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                   </li>
                 ) : null}
               </ul>
+              {/* Progress indicator */}
+              {note.checklist.length > 0 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className={clsx(
+                    "flex-1 h-1 rounded-full overflow-hidden",
+                    hasCover && !backgroundImage
+                      ? "bg-white/20"
+                      : backgroundImage?.brightness === 'light'
+                        ? "bg-black/10"
+                        : backgroundImage
+                          ? "bg-white/20"
+                          : "bg-zinc-200 dark:bg-zinc-700"
+                  )}>
+                    <div
+                      className="h-full bg-green-500 transition-all duration-300"
+                      style={{
+                        width: `${(note.checklist.filter(i => i.completed).length / note.checklist.length) * 100}%`
+                      }}
+                    />
+                  </div>
+                  <span className={clsx(
+                    "text-[10px] font-medium tabular-nums",
+                    hasCover && !backgroundImage
+                      ? "text-white/70"
+                      : getTextColorClasses(backgroundImage, 'muted')
+                  )}>
+                    {note.checklist.filter(i => i.completed).length}/{note.checklist.length}
+                  </span>
+                </div>
+              )}
+              </>
             ) : note.body ? (
               <p className={clsx(
                 "whitespace-pre-wrap text-[13px] leading-5 tracking-[-0.01em] line-clamp-4",

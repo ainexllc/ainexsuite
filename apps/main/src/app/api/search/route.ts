@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
           health: 0,
           album: 0,
           habits: 0,
-          display: 0,
+          hub: 0,
           fit: 0,
         },
         query: searchQuery,
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       'health',
       'album',
       'habits',
-      'display',
+      'hub',
       'fit',
     ];
 
@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
       health: 0,
       album: 0,
       habits: 0,
-      display: 0,
+      hub: 0,
       fit: 0,
     };
 
@@ -279,7 +279,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Search Display (Health Metrics)
-    if (appsToSearch.includes('display')) {
+    if (appsToSearch.includes('hub')) {
       const metricsRef = collection(db, 'health_metrics');
       const metricsQuery = query(
         metricsRef,
@@ -296,7 +296,7 @@ export async function GET(request: NextRequest) {
 
         if (matchesDate || matchesNotes) {
           allResults.push(healthMetricToSearchResult(metric, doc.id));
-          appCounts.display++;
+          appCounts.hub++;
         }
       });
     }

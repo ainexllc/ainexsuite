@@ -25,3 +25,9 @@ export {
   POST as SessionSyncPOST,
   OPTIONS as SessionSyncOPTIONS,
 } from './session-sync-handler';
+
+// Logout sync handler exports for cross-app logout propagation
+export {
+  POST as LogoutSyncPOST,
+  OPTIONS as LogoutSyncOPTIONS,
+} from './logout-sync-handler';

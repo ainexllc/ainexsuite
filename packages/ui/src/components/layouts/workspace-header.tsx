@@ -8,6 +8,7 @@ import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
 import { NotificationBell } from '../navigation/notification-bell';
 import { AnimatedAvatarPlayer } from '../animated-avatar-player';
+import { AnimatedThemeToggler } from '../theme/animated-theme-toggler';
 import type { BreadcrumbItem, QuickAction } from '@ainexsuite/types';
 
 interface WorkspaceHeaderProps {
@@ -339,6 +340,9 @@ export function WorkspaceHeader({
               {renderUserAvatar()}
               <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </button>
+
+            {/* Animated Theme Toggle */}
+            <AnimatedThemeToggler />
           </div>
         </div>
       </header>

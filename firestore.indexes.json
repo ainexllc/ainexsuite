@@ -20,63 +20,6 @@
       "density": "SPARSE_ALL"
     },
     {
-      "collectionGroup": "calendar_events",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "startTime",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "challenges",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "spaceId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "clocks",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "ownerId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
       "collectionGroup": "completions",
       "queryScope": "COLLECTION",
       "fields": [
@@ -171,25 +114,6 @@
         {
           "fieldPath": "__name__",
           "order": "ASCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "covers",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "accessLevel",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "uploadedAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
         }
       ],
       "density": "SPARSE_ALL"
@@ -214,25 +138,6 @@
       "density": "SPARSE_ALL"
     },
     {
-      "collectionGroup": "covers",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "category",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "uploadedAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
       "collectionGroup": "daily_prompts",
       "queryScope": "COLLECTION",
       "fields": [
@@ -261,25 +166,6 @@
         },
         {
           "fieldPath": "scheduledFor",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "fit_spaces",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "memberUids",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "createdAt",
           "order": "DESCENDING"
         },
         {
@@ -375,25 +261,6 @@
         },
         {
           "fieldPath": "updatedAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "healthSpaces",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "memberUids",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "createdAt",
           "order": "DESCENDING"
         },
         {
@@ -526,25 +393,6 @@
       "density": "SPARSE_ALL"
     },
     {
-      "collectionGroup": "journalSpaces",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "memberUids",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
       "collectionGroup": "learning_goals",
       "queryScope": "COLLECTION",
       "fields": [
@@ -554,25 +402,6 @@
         },
         {
           "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "learning_goals",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "ownerId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "progress",
           "order": "DESCENDING"
         },
         {
@@ -720,25 +549,6 @@
       "density": "SPARSE_ALL"
     },
     {
-      "collectionGroup": "moments_spaces",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "memberUids",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
       "collectionGroup": "notes",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
@@ -763,6 +573,29 @@
     },
     {
       "collectionGroup": "notes",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "spaceId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "notes",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -781,15 +614,61 @@
       "density": "SPARSE_ALL"
     },
     {
-      "collectionGroup": "noteSpaces",
+      "collectionGroup": "docs",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "memberUids",
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "docs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "sharedWithUserIds",
           "arrayConfig": "CONTAINS"
         },
         {
-          "fieldPath": "createdAt",
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "docs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "spaceId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
           "order": "DESCENDING"
         },
         {
@@ -828,44 +707,6 @@
         },
         {
           "fieldPath": "respondedAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "pulse_spaces",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "memberUids",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "quests",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "spaceId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
           "order": "DESCENDING"
         },
         {
@@ -965,25 +806,6 @@
         },
         {
           "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "system_updates",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "date",
           "order": "DESCENDING"
         },
         {
@@ -1459,29 +1281,6 @@
       "density": "SPARSE_ALL"
     },
     {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "ownerId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "externalId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "source",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
       "collectionGroup": "supplements",
       "queryScope": "COLLECTION",
       "fields": [
@@ -1569,6 +1368,113 @@
         {
           "fieldPath": "__name__",
           "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "workflows",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "workflows",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "sharedWithUserIds",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "tables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "tables",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "sharedWithUserIds",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "tables",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "spaceId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pinned",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "updatedAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
         }
       ],
       "density": "SPARSE_ALL"

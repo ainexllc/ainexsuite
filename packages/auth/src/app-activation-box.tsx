@@ -26,6 +26,7 @@
  */
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from './context';
 
 type AppActivationBoxProps = {
@@ -126,9 +127,11 @@ export function AppActivationBox({
         {user && (
           <div className="mb-6 flex items-center gap-3 rounded-2xl border border-border bg-foreground/5 p-4">
             {user.photoURL ? (
-              <img
+              <Image
                 src={user.photoURL}
-                alt={user.displayName}
+                alt={user.displayName || 'User'}
+                width={48}
+                height={48}
                 className="h-12 w-12 rounded-full"
               />
             ) : (

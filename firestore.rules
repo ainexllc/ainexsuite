@@ -397,7 +397,15 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // New multi-workflow structure
+    // Workflow spaces (snake_case - used by Flow app)
+    match /workflow_spaces/{spaceId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+
+    // Legacy workflowSpaces (camelCase - kept for backwards compatibility)
     match /workflowSpaces/{spaceId} {
       allow read: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
       allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
@@ -525,15 +533,160 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Notes: nested under users, supports collectionGroup queries for sharing
+    // CollectionGroup queries require rules that work across all user paths
     match /users/{userId}/notes/{noteId} {
       allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow read, update: if isAuthenticated() && (
+
+      // Read access: owner, shared via sharedWithUserIds, or space member
+      // For collectionGroup queries, we check ownerId field instead of path userId
+      allow read: if isAuthenticated() && (
+        // Owner can always read (check both path and document field)
         request.auth.uid == userId ||
-        (resource.data.sharedWithUserIds is list && request.auth.uid in resource.data.sharedWithUserIds)
+        resource.data.ownerId == request.auth.uid ||
+        // Shared with user via sharedWithUserIds array
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        // User is a member of the note's shared space
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
       );
+
+      // Update access: owner or space member
+      allow update: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
       allow delete: if isAuthenticated() && request.auth.uid == userId;
     }
-    
+
+    // CollectionGroup rule for notes - needed for cross-user queries
+    match /{path=**}/notes/{noteId} {
+      allow read: if isAuthenticated() && (
+        // Owner (via ownerId field since we can't check path)
+        resource.data.ownerId == request.auth.uid ||
+        // Shared with user via sharedWithUserIds array
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        // User is a member of the note's shared space
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+    }
+
+    // --- Docs App Rules ---
+    // Docs: nested under users, supports collectionGroup queries for sharing
+    match /users/{userId}/docs/{docId} {
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Read access: owner, shared via sharedWithUserIds, or space member
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      // Update access: owner or space member
+      allow update: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // CollectionGroup rule for docs - needed for cross-user queries
+    match /{path=**}/docs/{docId} {
+      allow read: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+    }
+
+    // Docs preferences
+    match /docs_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // --- Tables App Rules ---
+    // Tables: nested under users, supports collectionGroup queries for sharing
+    match /users/{userId}/tables/{tableId} {
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Read access: owner, shared via sharedWithUserIds, or space member
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      // Update access: owner or space member
+      allow update: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // CollectionGroup rule for tables - needed for cross-user queries
+    match /{path=**}/tables/{tableId} {
+      allow read: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+    }
+
+    // Tables preferences
+    match /tables_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Tables spaces
+    match /tableSpaces/{spaceId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+
     match /users/{userId}/labels/{labelId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }

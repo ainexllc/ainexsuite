@@ -72,7 +72,7 @@ export function AinexStudiosLogo({
           marginTop: appNameOffset ? `${appNameOffset}px` : undefined
         }}
       >
-        {appName || 'SUITE'}
+        {(appName || 'space').toUpperCase()}
       </div>
     </>
   );

@@ -84,8 +84,8 @@ export function AinexLogoSVG({
         />
       </g>
 
-      {/* SUITE Text */}
-      <g id="suite">
+      {/* SPACE Text */}
+      <g id="space">
         <text
           x="120"
           y="100"
@@ -96,7 +96,7 @@ export function AinexLogoSVG({
           letterSpacing="7.2"
           textAnchor="middle"
         >
-          SUITE
+          SPACE
         </text>
       </g>
     </svg>

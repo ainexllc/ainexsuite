@@ -12,10 +12,12 @@ export type AppSlug =
   | 'fit'
   | 'album'
   | 'habits'
-  | 'display'
+  | 'mosaic'
   | 'projects'
-  | 'workflow'
+  | 'flow'
   | 'calendar'
+  | 'docs'
+  | 'tables'
   | 'subs'
   | 'admin';
 
@@ -127,7 +129,7 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
   album: {
     name: 'Album',
     slug: 'album',
-    description: 'Capture life\'s beautiful moments with photos and captions. Create a visual timeline.',
+    description: 'Curate photos and memories into beautiful albums with captions and timelines.',
     icon: 'Camera',
     color: 'pink',
     gradient: 'from-pink-500 to-rose-500',
@@ -141,7 +143,7 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
   habits: {
     name: 'Habits',
     slug: 'habits',
-    description: 'Build better habits and track your daily routines. Set goals and celebrate milestones.',
+    description: 'Build streaks, track daily habits, and grow with goal-setting and progress insights.',
     icon: 'GraduationCap',
     color: 'indigo',
     gradient: 'from-indigo-500 to-purple-500',
@@ -152,15 +154,15 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['Habit Tracking', 'Daily Routines', 'Goal Setting', 'Progress Tracking'],
     status: 'active',
   },
-  display: {
-    name: 'Display',
-    slug: 'display',
-    description: 'Dashboard displays for world clocks, weather, and ambient information.',
+  mosaic: {
+    name: 'Mosaic',
+    slug: 'mosaic',
+    description: 'Unified dashboard displaying insight cards from all your apps in one view.',
     icon: 'Activity',
     color: 'red',
     gradient: 'from-red-500 to-orange-500',
     devUrl: 'http://localhost:3007',
-    prodUrl: 'https://display.ainexspace.com',
+    prodUrl: 'https://mosaic.ainexspace.com',
     devPort: 3007,
     category: 'productivity',
     features: ['World Clocks', 'Dashboard Display', 'Ambient Info'],
@@ -180,15 +182,15 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['Whiteboard', 'Sticky Notes', 'Kanban Boards', 'Collaboration'],
     status: 'active',
   },
-  workflow: {
-    name: 'Workflow',
-    slug: 'workflow',
-    description: 'Build visual workflows with drag-and-drop simplicity. Automate processes and tasks.',
+  flow: {
+    name: 'Flow',
+    slug: 'flow',
+    description: 'Visual workflow builder with drag-and-drop nodes. Design and connect processes like Miro.',
     icon: 'GitBranch',
     color: 'purple',
     gradient: 'from-purple-600 to-indigo-600',
     devUrl: 'http://localhost:3010',
-    prodUrl: 'https://workflow.ainexspace.com',
+    prodUrl: 'https://flow.ainexspace.com',
     devPort: 3010,
     category: 'productivity',
     features: ['Visual Builder', 'Automation', 'Triggers', 'Conditions'],
@@ -197,7 +199,7 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
   calendar: {
     name: 'Calendar',
     slug: 'calendar',
-    description: 'Schedule events, manage appointments, and stay organized with your calendar.',
+    description: 'Schedule events, set reminders, and view your agenda across day, week, and month.',
     icon: 'Calendar',
     color: 'sky',
     gradient: 'from-sky-500 to-blue-500',
@@ -208,10 +210,38 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
     features: ['Events', 'Scheduling', 'Reminders', 'Multiple Views'],
     status: 'active',
   },
+  docs: {
+    name: 'Docs',
+    slug: 'docs',
+    description: 'Create and edit rich documents with a full-featured editor like Microsoft Word.',
+    icon: 'FileText',
+    color: 'blue',
+    gradient: 'from-blue-500 to-indigo-500',
+    devUrl: 'http://localhost:3012',
+    prodUrl: 'https://docs.ainexspace.com',
+    devPort: 3012,
+    category: 'productivity',
+    features: ['Rich Text Editor', 'Document Management', 'Auto-save', 'Full-page Editing'],
+    status: 'active',
+  },
+  tables: {
+    name: 'Tables',
+    slug: 'tables',
+    description: 'Create and manage spreadsheets with formulas, charts, and data tables.',
+    icon: 'Table2',
+    color: 'emerald',
+    gradient: 'from-emerald-500 to-green-500',
+    devUrl: 'http://localhost:3013',
+    prodUrl: 'https://tables.ainexspace.com',
+    devPort: 3013,
+    category: 'productivity',
+    features: ['Spreadsheets', 'Formulas', 'Data Tables', 'Charts'],
+    status: 'active',
+  },
   subs: {
     name: 'Subs',
     slug: 'subs',
-    description: 'Manage subscriptions and recurring bills. Track your money and spending.',
+    description: 'Track subscriptions, recurring bills, and monthly spending in one place.',
     icon: 'DollarSign',
     color: 'green',
     gradient: 'from-green-500 to-emerald-500',
@@ -225,7 +255,7 @@ export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
   admin: {
     name: 'Admin',
     slug: 'admin',
-    description: 'Manage users, settings, and configuration for the AINexSuite platform.',
+    description: 'Platform administration for users, analytics, and system configuration.',
     icon: 'Settings',
     color: 'zinc',
     gradient: 'from-zinc-500 to-slate-600',

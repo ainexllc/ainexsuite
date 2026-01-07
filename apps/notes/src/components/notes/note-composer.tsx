@@ -56,6 +56,58 @@ const checklistTemplate = (): ChecklistItem => ({
   completed: false,
 });
 
+// Contextual placeholder examples for checklist items
+const getChecklistPlaceholder = (index: number): string => {
+  const examples = [
+    "Add item...",
+    "e.g., Milk",
+    "e.g., Pick up dry cleaning",
+    "e.g., Call mom",
+    "e.g., Bread",
+    "e.g., Eggs",
+  ];
+  return examples[index % examples.length];
+};
+
+// Quick templates for new notes
+type NoteTemplate = {
+  id: string;
+  label: string;
+  icon: string;
+  mode: "text" | "checklist";
+  title?: string;
+  checklist?: ChecklistItem[];
+};
+
+const NOTE_TEMPLATES: NoteTemplate[] = [
+  {
+    id: "blank",
+    label: "Blank",
+    icon: "📝",
+    mode: "text",
+  },
+  {
+    id: "shopping",
+    label: "Shopping List",
+    icon: "🛒",
+    mode: "checklist",
+    title: "Shopping List",
+    checklist: [
+      { id: generateUUID(), text: "", completed: false },
+    ],
+  },
+  {
+    id: "todo",
+    label: "To-do",
+    icon: "✓",
+    mode: "checklist",
+    title: "",
+    checklist: [
+      { id: generateUUID(), text: "", completed: false },
+    ],
+  },
+];
+
 interface NoteComposerProps {
   /** Callback to open member manager for current space */
   onManagePeople?: () => void;
@@ -99,6 +151,31 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [newLabelName, setNewLabelName] = useState("");
   const [isCreatingLabel, setIsCreatingLabel] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  // Apply a template to the composer
+  const applyTemplate = useCallback((template: NoteTemplate) => {
+    setMode(template.mode);
+    if (template.title !== undefined) {
+      setTitle(template.title);
+    }
+    if (template.checklist) {
+      // Generate fresh IDs for checklist items
+      setChecklist(template.checklist.map(item => ({
+        ...item,
+        id: generateUUID(),
+      })));
+    } else {
+      setChecklist([]);
+    }
+    setShowTemplates(false);
+    setExpanded(true);
+    // Focus the title input after a short delay
+    setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 50);
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const newLabelInputRef = useRef<HTMLInputElement>(null);
@@ -511,10 +588,34 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
     );
   };
 
-  const handleAddChecklistItem = () => {
-    const newItem = checklistTemplate();
+  const handleAddChecklistItem = (afterIndex?: number, inheritIndent?: number) => {
+    const newItem = {
+      ...checklistTemplate(),
+      indent: inheritIndent ?? 0,
+    };
     pendingChecklistFocusId.current = newItem.id;
-    setChecklist((prev) => [...prev, newItem]);
+    if (afterIndex !== undefined) {
+      setChecklist((prev) => [
+        ...prev.slice(0, afterIndex + 1),
+        newItem,
+        ...prev.slice(afterIndex + 1),
+      ]);
+    } else {
+      setChecklist((prev) => [...prev, newItem]);
+    }
+  };
+
+  const handleIndentChange = (itemId: string, delta: number) => {
+    setChecklist((prev) =>
+      prev.map((item) => {
+        if (item.id === itemId) {
+          const currentIndent = item.indent ?? 0;
+          const newIndent = Math.max(0, Math.min(3, currentIndent + delta));
+          return { ...item, indent: newIndent };
+        }
+        return item;
+      })
+    );
   };
 
   const handleRemoveChecklistItem = (itemId: string) => {
@@ -659,10 +760,25 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
             <button
               type="button"
               className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
-              onClick={() => setExpanded(true)}
+              onClick={() => applyTemplate(NOTE_TEMPLATES[0])}
             >
               <span>Take a note...</span>
             </button>
+            {/* Quick template buttons */}
+            <div className="flex items-center gap-1">
+              {NOTE_TEMPLATES.slice(1).map((template) => (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => applyTemplate(template)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
+                  title={template.label}
+                >
+                  <span>{template.icon}</span>
+                  <span className="hidden sm:inline">{template.label}</span>
+                </button>
+              ))}
+            </div>
             {/* Compact space selector */}
             <InlineSpacePicker
               spaces={spaces}
@@ -851,63 +967,134 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
               </div>
             ) : (
               <div className="space-y-3">
-                {checklist.map((item, idx) => (
-                  <div key={item.id} className="group flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={item.completed}
-                      onChange={(event) =>
-                        handleChecklistChange(item.id, {
-                          completed: event.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 accent-accent-500"
-                    />
-                    <input
-                      value={item.text}
-                      onChange={(event) =>
-                        handleChecklistChange(item.id, {
-                          text: event.target.value,
-                        })
-                      }
-                      onKeyDown={(event) => {
-                        if (
-                          event.key === "Enter" &&
-                          !event.shiftKey &&
-                          !event.nativeEvent.isComposing
-                        ) {
-                          event.preventDefault();
-                          const nextItem = checklist[idx + 1];
-                          if (nextItem) {
-                            checklistInputRefs.current[nextItem.id]?.focus();
-                          } else {
-                            handleAddChecklistItem();
-                          }
-                        }
-                      }}
-                      placeholder={`Checklist item ${idx + 1}`}
-                      ref={(element) => {
-                        if (element) {
-                          checklistInputRefs.current[item.id] = element;
-                        } else {
-                          delete checklistInputRefs.current[item.id];
-                        }
-                      }}
-                      className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-ink-700 placeholder:text-ink-400 focus:border-outline-strong focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      className="opacity-0 transition group-hover:opacity-100"
-                      onClick={() => handleRemoveChecklistItem(item.id)}
-                      aria-label="Remove checklist item"
+                {checklist.map((item, idx) => {
+                  const indentLevel = item.indent ?? 0;
+                  return (
+                    <div
+                      key={item.id}
+                      className="group flex items-center gap-3"
+                      style={{ paddingLeft: `${indentLevel * 24}px` }}
                     >
-                      <X className="h-4 w-4 text-ink-400 hover:text-ink-600" />
-                    </button>
-                  </div>
-                ))}
+                      <input
+                        type="checkbox"
+                        checked={item.completed}
+                        onChange={(event) =>
+                          handleChecklistChange(item.id, {
+                            completed: event.target.checked,
+                          })
+                        }
+                        className="h-4 w-4 accent-accent-500 flex-shrink-0"
+                      />
+                      <input
+                        value={item.text}
+                        onChange={(event) =>
+                          handleChecklistChange(item.id, {
+                            text: event.target.value,
+                          })
+                        }
+                        onKeyDown={(event) => {
+                          // Tab to indent
+                          if (event.key === "Tab" && !event.shiftKey) {
+                            event.preventDefault();
+                            handleIndentChange(item.id, 1);
+                            return;
+                          }
+                          // Shift+Tab to unindent
+                          if (event.key === "Tab" && event.shiftKey) {
+                            event.preventDefault();
+                            handleIndentChange(item.id, -1);
+                            return;
+                          }
+                          // Option/Alt + Up to move item up
+                          if (event.key === "ArrowUp" && event.altKey && idx > 0) {
+                            event.preventDefault();
+                            setChecklist((prev) => {
+                              const newList = [...prev];
+                              [newList[idx - 1], newList[idx]] = [newList[idx], newList[idx - 1]];
+                              return newList;
+                            });
+                            setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
+                            return;
+                          }
+                          // Option/Alt + Down to move item down
+                          if (event.key === "ArrowDown" && event.altKey && idx < checklist.length - 1) {
+                            event.preventDefault();
+                            setChecklist((prev) => {
+                              const newList = [...prev];
+                              [newList[idx], newList[idx + 1]] = [newList[idx + 1], newList[idx]];
+                              return newList;
+                            });
+                            setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
+                            return;
+                          }
+                          // Arrow Up to navigate to previous item
+                          if (event.key === "ArrowUp" && !event.altKey && idx > 0) {
+                            event.preventDefault();
+                            const prevItem = checklist[idx - 1];
+                            checklistInputRefs.current[prevItem.id]?.focus();
+                            return;
+                          }
+                          // Arrow Down to navigate to next item
+                          if (event.key === "ArrowDown" && !event.altKey && idx < checklist.length - 1) {
+                            event.preventDefault();
+                            const nextItem = checklist[idx + 1];
+                            checklistInputRefs.current[nextItem.id]?.focus();
+                            return;
+                          }
+                          // Enter to create new item (inherit indent level)
+                          if (
+                            event.key === "Enter" &&
+                            !event.shiftKey &&
+                            !event.nativeEvent.isComposing
+                          ) {
+                            event.preventDefault();
+                            handleAddChecklistItem(idx, indentLevel);
+                          }
+                          // Backspace on empty item: unindent first, then delete when at level 0
+                          if (
+                            event.key === "Backspace" &&
+                            item.text === ""
+                          ) {
+                            event.preventDefault();
+                            // If indented, unindent first
+                            if (indentLevel > 0) {
+                              handleIndentChange(item.id, -1);
+                            } else if (checklist.length > 1) {
+                              // At level 0, delete the item
+                              const prevItem = checklist[idx - 1];
+                              if (prevItem) {
+                                checklistInputRefs.current[prevItem.id]?.focus();
+                              }
+                              setChecklist((prev) =>
+                                prev.filter((entry) => entry.id !== item.id)
+                              );
+                            }
+                          }
+                        }}
+                        placeholder={getChecklistPlaceholder(idx)}
+                        ref={(element) => {
+                          if (element) {
+                            checklistInputRefs.current[item.id] = element;
+                          } else {
+                            delete checklistInputRefs.current[item.id];
+                          }
+                        }}
+                        className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-ink-700 placeholder:text-ink-400 focus:border-outline-strong focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        className="opacity-0 transition group-hover:opacity-100"
+                        onClick={() => handleRemoveChecklistItem(item.id)}
+                        aria-label="Remove checklist item"
+                      >
+                        <X className="h-4 w-4 text-ink-400 hover:text-ink-600" />
+                      </button>
+                    </div>
+                  );
+                })}
                 <button
                   type="button"
-                  onClick={handleAddChecklistItem}
+                  onClick={() => handleAddChecklistItem()}
                   className="inline-flex items-center gap-2 rounded-full border border-outline-subtle px-3 py-1 text-xs font-medium text-ink-600 transition hover:border-outline-strong"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -1157,7 +1344,8 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
                     });
                   }}
                   className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  aria-label="Toggle checklist mode"
+                  aria-label="Lists & checklists"
+                  title="Lists & checklists"
                 >
                   <CheckSquare className="h-5 w-5" />
                 </button>

@@ -55,6 +55,13 @@ export function useUserPreferencesListener(uid: string | undefined) {
         setLoading(false);
       },
       (err) => {
+        // Silently ignore permission-denied errors - these are expected during sign-out
+        // when the listener hasn't fully cleaned up yet
+        if (err.code === 'permission-denied') {
+          setPreferences(null);
+          setLoading(false);
+          return;
+        }
         console.error('[useUserPreferencesListener] Firestore error:', err);
         setError(err);
         setLoading(false);

@@ -26,9 +26,9 @@ export class GrokClient {
   private defaultModel = "grok-2-latest";
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || serverEnv.XAI_API_KEY || "";
+    this.apiKey = apiKey || process.env.GROK_API_KEY || serverEnv.GROK_API_KEY || "";
     if (!this.apiKey) {
-      console.warn("XAI_API_KEY is not configured.");
+      console.warn("GROK_API_KEY is not configured.");
     }
   }
 
@@ -43,8 +43,8 @@ export class GrokClient {
     const model = this.defaultModel;
 
     if (!this.apiKey) {
-      console.error("AI Client: Missing XAI_API_KEY");
-      throw new Error("XAI_API_KEY is missing");
+      console.error("AI Client: Missing GROK_API_KEY");
+      throw new Error("GROK_API_KEY is missing");
     }
 
     const response = await fetch(`${this.baseUrl}/chat/completions`, {

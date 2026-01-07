@@ -26,19 +26,19 @@ export const SUITE_APPS = {
   album: {
     name: 'Album',
     slug: 'album',
-    description: 'Cherish your memories',
+    description: 'Curate photos and memories into albums',
     color: '#ec4899', // pink-500
   },
   habits: {
     name: 'Habits',
     slug: 'habits',
-    description: 'Build better habits and routines',
+    description: 'Build streaks and track daily habits',
     color: '#14b8a6', // teal-500
   },
-  display: {
-    name: 'Display',
-    slug: 'display',
-    description: 'Dashboard displays and clocks',
+  mosaic: {
+    name: 'Mosaic',
+    slug: 'mosaic',
+    description: 'Unified dashboard with insights from all apps',
     color: '#ef4444', // red-500
   },
   fit: {
@@ -47,35 +47,47 @@ export const SUITE_APPS = {
     description: 'Workout and fitness tracking',
     color: '#3b82f6', // blue-500
   },
-  project: {
+  projects: {
     name: 'Project',
-    slug: 'project',
+    slug: 'projects',
     description: 'Manage complex projects',
     color: '#6366f1', // indigo-500
   },
-  workflow: {
-    name: 'Workflow',
-    slug: 'workflow',
-    description: 'Automate your daily tasks',
+  flow: {
+    name: 'Flow',
+    slug: 'flow',
+    description: 'Visual workflow builder like Miro',
     color: '#06b6d4', // cyan-500
   },
   calendar: {
     name: 'Calendar',
     slug: 'calendar',
-    description: 'Schedule events and appointments',
+    description: 'Schedule events and manage your agenda',
     color: '#0ea5e9', // sky-500
+  },
+  docs: {
+    name: 'Docs',
+    slug: 'docs',
+    description: 'Create and edit rich documents',
+    color: '#3b82f6', // blue-500
   },
   admin: {
     name: 'Admin',
     slug: 'admin',
-    description: 'Manage platform settings',
+    description: 'Platform admin and system settings',
     color: '#71717a', // zinc-500
     allowedEmails: ['hornld25@gmail.com'],
   },
   subs: {
     name: 'Subs',
     slug: 'subs',
-    description: 'Manage subscriptions and bills',
+    description: 'Track subscriptions and recurring bills',
+    color: '#10b981', // emerald-500
+  },
+  tables: {
+    name: 'Tables',
+    slug: 'tables',
+    description: 'Spreadsheets and data tables',
     color: '#10b981', // emerald-500
   },
 } as const;
@@ -91,13 +103,15 @@ export function getAppUrl(slug: string, isDev: boolean = false): string {
     health: 3004,
     album: 3005,
     habits: 3006,
-    display: 3007,
+    mosaic: 3007,
     fit: 3008,
-    project: 3009,
-    workflow: 3010,
+    projects: 3009,
+    flow: 3010,
+    subs: 3011,
+    docs: 3012,
+    tables: 3013,
     calendar: 3014,
     admin: 3020,
-    subs: 3015,
   };
 
   if (isDev) {

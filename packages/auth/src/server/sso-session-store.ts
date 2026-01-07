@@ -121,6 +121,14 @@ export function removeSession(sessionCookie: string): boolean {
 }
 
 /**
+ * Remove a session by uid directly (for cross-app logout sync)
+ * This is simpler than removeSession when you only have the uid
+ */
+export function removeSessionByUid(uid: string): boolean {
+  return sessionStore.delete(uid);
+}
+
+/**
  * Clear all sessions (for testing)
  */
 export function clearAllSessions(): void {

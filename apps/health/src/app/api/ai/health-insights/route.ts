@@ -51,10 +51,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const xaiKey = process.env.XAI_API_KEY;
-    if (!xaiKey) {
+    const apiKey = process.env.GROK_API_KEY;
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'AI API key is missing (XAI_API_KEY)' },
+        { error: 'AI API key is missing (GROK_API_KEY)' },
         { status: 500 }
       );
     }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${xaiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'grok-4-1-fast-non-reasoning',

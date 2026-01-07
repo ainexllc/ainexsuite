@@ -146,7 +146,7 @@ function HealthHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="HEALTH" appColor="#10b981" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="health" appColor="#10b981" />}
         backgroundComponent={<LayeredBackground primaryColor="#10b981" secondaryColor="#34d399" variant="structured" />}
         appName="health"
         accentColor="#10b981"

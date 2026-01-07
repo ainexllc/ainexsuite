@@ -2,9 +2,12 @@
 
 import { useCallback, useState, useMemo } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
+import { WorkspaceLayout, WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AIInsightsModal, AppFloatingDock } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
+import { SubscriptionProvider } from '@/components/providers/subscription-provider';
+import { useWorkspaceInsights } from '@/hooks/use-workspace-insights';
+import { useAppColors } from '@ainexsuite/theme';
 import { Wallet } from 'lucide-react';
 
 /**
@@ -38,7 +41,10 @@ function WorkspaceLayoutInner({
   pollAnimationStatus: ReturnType<typeof useWorkspaceAuth>['pollAnimationStatus'];
 }) {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [insightsModalOpen, setInsightsModalOpen] = useState(false);
   const { allSpaces, updateSpace, deleteSpace } = useSpaces();
+  const insights = useWorkspaceInsights();
+  const { primary: primaryColor } = useAppColors();
 
   // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
   // Use allSpaces so users can see and toggle visibility of hidden spaces
@@ -66,14 +72,42 @@ function WorkspaceLayoutInner({
     setSettingsModalOpen(true);
   }, []);
 
+  // Extract raw data for modal display
+  const rawData = insights.rawData as {
+    spendingTrend?: string;
+    recommendations?: string[];
+    projectedYearly?: string;
+    anomalies?: string[];
+  } | null;
+
+  // Extract local stats
+  const localStats = insights.localStats as {
+    totalMonthly?: number;
+    totalYearly?: number;
+    activeCount?: number;
+    upcomingCount?: number;
+  } | undefined;
+
   return (
     <>
       <WorkspaceLayout
         user={user}
         onSignOut={handleSignOut}
-        appName="Subs"
+        appName="subs"
         onUpdatePreferences={updatePreferences}
         onSettingsClick={handleSettingsClick}
+        // AI Insights Pulldown
+        insightsSections={insights.sections}
+        insightsTitle={insights.title}
+        insightsLoading={insights.isLoading}
+        insightsLoadingMessage={insights.loadingMessage}
+        insightsError={insights.error}
+        insightsLastUpdated={insights.lastUpdated}
+        onInsightsRefresh={insights.onRefresh}
+        insightsRefreshDisabled={insights.refreshDisabled}
+        insightsStorageKey={insights.storageKey}
+        onInsightsViewDetails={() => setInsightsModalOpen(true)}
+        insightsEmptyStateMessage={insights.emptyStateMessage}
       >
         {children}
       </WorkspaceLayout>
@@ -116,6 +150,25 @@ function WorkspaceLayoutInner({
         appSettingsLabel="Subs"
         appSettingsIcon={<Wallet className="h-4 w-4" />}
       />
+
+      {/* AI Insights Modal */}
+      <AIInsightsModal
+        isOpen={insightsModalOpen}
+        onClose={() => setInsightsModalOpen(false)}
+        weeklyFocus={rawData?.spendingTrend}
+        pendingActions={rawData?.recommendations}
+        quickTip={rawData?.anomalies?.[0]}
+        streak={localStats?.activeCount}
+        itemsThisWeek={localStats?.upcomingCount}
+        lastUpdated={insights.lastUpdated}
+        onRefresh={insights.onRefresh}
+        isRefreshing={insights.isLoading}
+        accentColor={primaryColor}
+        actionsStorageKey="subs-pending-actions"
+      />
+
+      {/* App Floating Dock - Desktop only */}
+      <AppFloatingDock currentApp="subs" />
     </>
   );
 }
@@ -152,7 +205,8 @@ export default function WorkspaceRootLayout({
 
   return (
     <SpacesProvider>
-      <WorkspaceLayoutInner
+      <SubscriptionProvider>
+        <WorkspaceLayoutInner
         user={user}
         handleSignOut={handleSignOut}
         updatePreferences={updatePreferences}
@@ -167,6 +221,7 @@ export default function WorkspaceRootLayout({
       >
         {children}
       </WorkspaceLayoutInner>
+      </SubscriptionProvider>
     </SpacesProvider>
   );
 }

@@ -113,6 +113,7 @@ async function checkAuthHub(): Promise<string | null> {
     // Network errors are expected when auth hub isn't running (common in dev)
     // Only log as debug, not error
     if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
       console.debug('[SSOBridge] Auth Hub unavailable (this is normal if main app is not running)');
     }
     return null;

@@ -56,7 +56,7 @@ export function WorkspaceLayoutWithInsights({
     <WorkspaceLayout
       user={user}
       onSignOut={onSignOut}
-      appName="HABITS"
+      appName="habits"
       quickActions={quickActions}
       onQuickAction={onQuickAction}
       onAiAssistantClick={onAiAssistantClick}

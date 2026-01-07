@@ -15,7 +15,7 @@ const APP_SLUGS = [
   'health',
   'album',
   'habits',
-  'display',
+  'hub',
   'fit',
   'projects',
   'workflow',

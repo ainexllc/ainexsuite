@@ -2,10 +2,12 @@
 
 import { useCallback, useState, useMemo } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLayout, WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
+import { WorkspaceLayout, WorkspaceLoadingScreen, SettingsModal, AIInsightsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
 import { HintsProvider } from '@/components/hints';
+import { useWorkspaceInsights } from '@/hooks/use-workspace-insights';
+import { useAppColors } from '@ainexsuite/theme';
 import { FolderKanban } from 'lucide-react';
 
 /**
@@ -39,7 +41,10 @@ function WorkspaceLayoutInner({
   pollAnimationStatus: (operationId: string) => Promise<{ success: boolean; done: boolean; videoData?: string; error?: string }>;
 }) {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [insightsModalOpen, setInsightsModalOpen] = useState(false);
   const { allSpaces, updateSpace, deleteSpace } = useSpaces();
+  const insights = useWorkspaceInsights();
+  const { primary: primaryColor } = useAppColors();
 
   // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
   // Use allSpaces so users can see and toggle visibility of hidden spaces
@@ -67,14 +72,44 @@ function WorkspaceLayoutInner({
     setSettingsModalOpen(true);
   }, []);
 
+  // Extract raw data for modal display
+  const rawData = insights.rawData as {
+    portfolioHealth?: string;
+    focusArea?: string;
+    riskAlerts?: string[];
+    recommendations?: string[];
+    productivityTip?: string;
+    upcomingDeadlines?: string;
+  } | null;
+
+  // Extract local stats
+  const localStats = insights.localStats as {
+    totalProjects?: number;
+    activeProjects?: number;
+    completedProjects?: number;
+    urgentProjects?: number;
+  } | undefined;
+
   return (
     <>
       <WorkspaceLayout
         user={user}
         onSignOut={handleSignOut}
-        appName="Projects"
+        appName="projects"
         onUpdatePreferences={updatePreferences}
         onSettingsClick={handleSettingsClick}
+        // AI Insights Pulldown
+        insightsSections={insights.sections}
+        insightsTitle={insights.title}
+        insightsLoading={insights.isLoading}
+        insightsLoadingMessage={insights.loadingMessage}
+        insightsError={insights.error}
+        insightsLastUpdated={insights.lastUpdated}
+        onInsightsRefresh={insights.onRefresh}
+        insightsRefreshDisabled={insights.refreshDisabled}
+        insightsStorageKey={insights.storageKey}
+        onInsightsViewDetails={() => setInsightsModalOpen(true)}
+        insightsEmptyStateMessage={insights.emptyStateMessage}
       >
         {children}
       </WorkspaceLayout>
@@ -117,6 +152,26 @@ function WorkspaceLayoutInner({
         appSettingsLabel="Projects"
         appSettingsIcon={<FolderKanban className="h-4 w-4" />}
       />
+
+      {/* AI Insights Modal */}
+      <AIInsightsModal
+        isOpen={insightsModalOpen}
+        onClose={() => setInsightsModalOpen(false)}
+        weeklyFocus={rawData?.portfolioHealth}
+        mood={rawData?.focusArea}
+        pendingActions={rawData?.recommendations}
+        quickTip={rawData?.productivityTip}
+        streak={localStats?.activeProjects}
+        itemsThisWeek={localStats?.completedProjects}
+        lastUpdated={insights.lastUpdated}
+        onRefresh={insights.onRefresh}
+        isRefreshing={insights.isLoading}
+        accentColor={primaryColor}
+        actionsStorageKey="projects-pending-actions"
+      />
+
+      {/* App Floating Dock - Desktop only */}
+      <AppFloatingDock currentApp="projects" />
     </>
   );
 }

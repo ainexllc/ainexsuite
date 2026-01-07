@@ -31,7 +31,7 @@ import {
 } from './session';
 import { AuthBootstrap } from './auth-bootstrap';
 import { SSOBridge } from './components/sso-bridge';
-import { syncSessionWithAuthHub } from './utils/sso-protocol';
+import { syncSessionWithAuthHub, syncLogoutWithAuthHub } from './utils/sso-protocol';
 
 export type BootstrapStatus = 'pending' | 'running' | 'complete' | 'failed';
 
@@ -132,12 +132,12 @@ function getInitialDevSession(): { user: User; session: string } | null {
       lastLoginAt: now,
       apps: {
         notes: true, journal: true, todo: true, health: true,
-        album: true, habits: true, display: true, fit: true,
+        album: true, habits: true, hub: true, fit: true,
         project: true, workflow: true, calendar: true,
       },
       appPermissions: {},
       appsUsed: {},
-      appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit', 'projects', 'workflow', 'calendar'],
+      appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit', 'projects', 'workflow', 'calendar'],
       trialStartDate: now,
       subscriptionStatus: 'trial',
       suiteAccess: true,
@@ -179,12 +179,12 @@ function createFallbackUser(firebaseUser: FirebaseUser): User {
       health: isDev,
       album: isDev,
       habits: isDev,
-      display: isDev,
+      hub: isDev,
       fit: isDev,
     },
     appPermissions: {},
     appsUsed: {},
-    appsEligible: isDev ? ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit'] : [],
+    appsEligible: isDev ? ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit'] : [],
     trialStartDate: now,
     subscriptionStatus: 'trial',
     suiteAccess: false,
@@ -206,6 +206,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Track if we used dev hydration (no Firebase auth, just UI-level user)
   const [devHydrated, setDevHydrated] = useState(false);
+
+  // Track if SSOBridge has completed its check (to prevent premature "not authenticated" flash)
+  const [ssoBridgeCompleted, setSsoBridgeCompleted] = useState(false);
 
   // Cross-app profile sync via Firestore listener
   // This works across different ports (unlike BroadcastChannel which is same-origin only)
@@ -874,6 +877,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [firebaseUser]);
 
   const signOutUser = useCallback(async () => {
+    // First: Sync logout with Auth Hub to clear in-memory session store
+    // This ensures other apps won't get a stale session when they check for SSO
+    if (user?.uid) {
+      await syncLogoutWithAuthHub(user.uid).catch(() => {
+        // Silent fail - logout continues locally, session will expire naturally
+      });
+    }
+
     try {
       // Clear the shared session cookie via API (clears for all apps)
       await fetch('/api/auth/session', {
@@ -891,12 +902,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSessionData();
     setUser(null);
     setFirebaseUser(null);
-  }, []);
+  }, [user?.uid]);
 
   // Effective loading state: true if auth is loading OR SSO is in progress OR bootstrap hasn't checked yet
   // Bootstrap must complete before showing public pages (to detect existing session cookies)
+  // SSOBridge runs AFTER bootstrap completes, so we must also wait for it to finish checking
   const bootstrapPending = bootstrapStatus === 'pending' || bootstrapStatus === 'running';
-  const effectiveLoading = loading || ssoInProgress || (!user && bootstrapPending);
+  const ssoBridgePending = !user && !devHydrated && bootstrapStatus === 'complete' && !ssoBridgeCompleted;
+  const effectiveLoading = loading || ssoInProgress || (!user && bootstrapPending) || ssoBridgePending;
 
   // Dev-only: Hydrate user directly from session cookie
   // Used when Firebase Admin SDK isn't available to create custom tokens
@@ -947,7 +960,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           health: true,
           album: true,
           habits: true,
-          display: true,
+          hub: true,
           fit: true,
           project: true,
           workflow: true,
@@ -955,7 +968,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         appPermissions: {},
         appsUsed: {},
-        appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'display', 'fit', 'projects', 'workflow', 'calendar'],
+        appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit', 'projects', 'workflow', 'calendar'],
         trialStartDate: now,
         subscriptionStatus: 'trial',
         suiteAccess: true,
@@ -1003,8 +1016,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         enabled={!user && !devHydrated && bootstrapStatus === 'complete' && !ssoInProgress}
         hydrateFromDevSession={hydrateFromDevSession}
         onComplete={() => {
-          // SSOBridge completed its check - if it found a session,
-          // signInWithCustomToken will trigger onAuthStateChanged
+          // SSOBridge completed its check - mark as complete to stop showing loading state
+          // If it found a session, signInWithCustomToken will trigger onAuthStateChanged
+          setSsoBridgeCompleted(true);
         }}
       />
       {children}

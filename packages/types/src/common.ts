@@ -34,7 +34,7 @@ export interface UserPreferences {
 export interface ActivityItem {
   id: string;
   userId: string;
-  app: 'notes' | 'journal' | 'todo' | 'health' | 'album' | 'habits' | 'display' | 'fit';
+  app: 'notes' | 'journal' | 'todo' | 'health' | 'album' | 'habits' | 'hub' | 'fit';
   action: 'created' | 'updated' | 'deleted' | 'completed';
   itemId: string;
   itemTitle: string;

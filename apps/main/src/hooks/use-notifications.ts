@@ -7,6 +7,7 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
   deleteNotification,
+  markInvitationResponded,
 } from '@ainexsuite/firebase';
 import type { NotificationItem } from '@ainexsuite/types';
 
@@ -114,14 +115,15 @@ export function useNotifications(): UseNotificationsResult {
           throw new Error(data.error || 'Failed to accept invitation');
         }
 
-        // Mark notification as read after accepting
-        await markAsRead(notificationId);
+        // Mark notification as responded (sets metadata.responseStatus = 'accepted')
+        // This persists the state so buttons stay hidden after refresh
+        await markInvitationResponded(user.uid, notificationId, 'accepted');
       } catch (error) {
         console.error('Error accepting invitation:', error);
         throw error;
       }
     },
-    [user?.uid, markAsRead]
+    [user?.uid]
   );
 
   // Handle declining a space invitation
@@ -146,8 +148,10 @@ export function useNotifications(): UseNotificationsResult {
           throw new Error(data.error || 'Failed to decline invitation');
         }
 
-        // Delete the notification after declining
-        await deleteNotification(user.uid!, notificationId);
+        // Mark as declined first (in case delete fails, state is still persisted)
+        await markInvitationResponded(user.uid, notificationId, 'declined');
+        // Then delete the notification
+        await deleteNotification(user.uid, notificationId);
       } catch (error) {
         console.error('Error declining invitation:', error);
         throw error;

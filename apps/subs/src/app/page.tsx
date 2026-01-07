@@ -127,7 +127,7 @@ function TrackHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="SUBS" appColor="#10b981" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="subs" appColor="#10b981" />}
         backgroundComponent={<LayeredBackground primaryColor="#10b981" secondaryColor="#34d399" variant="organic" />}
         appName="subs"
         accentColor="#10b981"
