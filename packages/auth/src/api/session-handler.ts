@@ -70,7 +70,7 @@ function detectCookieDomain(hostname: string): string {
 /**
  * Create or update user document in Firestore
  */
-async function createOrUpdateUser(firebaseUser: { uid: string; email?: string | null; displayName?: string | null; photoURL?: string | null }): Promise<User> {
+async function createOrUpdateUser(firebaseUser: { uid: string; email?: string | null; displayName?: string | null; photoURL?: string | null; name?: string | null; picture?: string | null }): Promise<User> {
   const userRef = adminDb.collection('users').doc(firebaseUser.uid);
   const userDoc = await userRef.get();
 
@@ -100,8 +100,8 @@ async function createOrUpdateUser(firebaseUser: { uid: string; email?: string | 
 
     const newUser: User = {
       uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      displayName: firebaseUser.name || firebaseUser.email.split('@')[0],
+      email: firebaseUser.email || '',
+      displayName: firebaseUser.name || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'User'),
       photoURL: firebaseUser.picture || '',
       preferences: {
         theme: 'dark',

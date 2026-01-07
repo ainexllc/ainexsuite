@@ -479,6 +479,7 @@ export function GenerateTab({ userId, onSuccess }: GenerateTabProps) {
           {/* Preview Image */}
           <div className="glass-card rounded-xl overflow-hidden">
             <div className="aspect-video relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewImage}
                 alt="Preview"

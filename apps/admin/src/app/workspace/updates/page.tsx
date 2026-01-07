@@ -114,7 +114,7 @@ export default function UpdatesPage() {
       await addDoc(collection(db, 'system_updates'), {
         title: commit.title,
         description: commit.originalMessage,
-        type: commit.type as any,
+        type: commit.type as 'feature' | 'fix' | 'improvement' | 'other',
         status: 'draft',
         date: serverTimestamp()
       });

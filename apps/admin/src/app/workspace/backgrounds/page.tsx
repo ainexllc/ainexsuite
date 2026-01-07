@@ -384,6 +384,7 @@ export default function BackgroundsManagement() {
             >
               {/* Image */}
               <div className="aspect-[4/3] relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={bg.downloadURL}
                   alt={bg.name}
@@ -471,6 +472,7 @@ export default function BackgroundsManagement() {
               >
                 {uploadPreview ? (
                   <div className="space-y-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={uploadPreview}
                       alt="Preview"
@@ -651,6 +653,7 @@ export default function BackgroundsManagement() {
             <div className="p-4 space-y-4">
               {/* Preview */}
               <div className="rounded-xl overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={showEditModal.downloadURL}
                   alt={showEditModal.name}

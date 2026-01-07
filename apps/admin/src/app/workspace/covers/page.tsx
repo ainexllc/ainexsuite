@@ -435,6 +435,7 @@ export default function CoversManagement() {
                 >
                   {/* Image - portrait ratio for covers */}
                   <div className="aspect-[2/3] relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={cover.thumbnailURL || cover.downloadURL}
                       alt={cover.name}
@@ -525,6 +526,7 @@ export default function CoversManagement() {
                   >
                     {uploadPreview ? (
                       <div className="space-y-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={uploadPreview}
                           alt="Preview"
@@ -672,6 +674,7 @@ export default function CoversManagement() {
                 <div className="p-4 space-y-4">
                   {/* Preview */}
                   <div className="rounded-xl overflow-hidden flex justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={showEditModal.downloadURL}
                       alt={showEditModal.name}

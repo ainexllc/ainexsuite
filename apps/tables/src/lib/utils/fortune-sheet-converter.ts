@@ -326,9 +326,6 @@ export function createEmptyFortuneSheet(name: string = "Sheet1"): Sheet {
     celldata: [],
     config: {},
     showGridLines: 1,
-    // Default font settings
-    defaultFontSize: 11,
-    defaultFont: "Verdana",
   };
 }
 

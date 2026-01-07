@@ -66,9 +66,10 @@ function AdminLoginPageContent() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setError(err.message || 'Sign in failed');
+    } catch (err) {
+      const firebaseError = err as { code?: string; message?: string };
+      if (firebaseError.code !== 'auth/popup-closed-by-user') {
+        setError(firebaseError.message || 'Sign in failed');
       }
     } finally {
       setSignInLoading(false);
