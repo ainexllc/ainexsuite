@@ -1,0 +1,275 @@
+/* React Flow Theme Customizations - Dynamic Theme Colors */
+
+/* Light mode theme */
+.react-flow-light {
+  --xy-background-color: #f8fafc;
+  --xy-background-pattern-color: rgba(100, 116, 139, 0.25);
+
+  /* Node colors */
+  --xy-node-border: rgba(100, 116, 139, 0.3);
+  --xy-node-background: rgba(255, 255, 255, 0.95);
+  --xy-node-color: #1e293b;
+
+  /* Selected node */
+  --xy-node-border-selected: var(--theme-primary);
+  --xy-node-boxshadow-selected: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.4);
+
+  /* Edge colors */
+  --xy-edge-stroke: #64748b;
+  --xy-edge-stroke-selected: var(--theme-primary);
+
+  /* Handle colors */
+  --xy-handle: var(--theme-primary);
+  --xy-handle-border: #e2e8f0;
+
+  /* Controls */
+  --xy-controls-button-background: rgba(255, 255, 255, 0.9);
+  --xy-controls-button-background-hover: rgba(var(--theme-primary-rgb), 0.1);
+  --xy-controls-button-color: #475569;
+  --xy-controls-button-border-color: rgba(100, 116, 139, 0.2);
+
+  /* Minimap */
+  --xy-minimap-background: rgba(248, 250, 252, 0.95);
+  --xy-minimap-mask: rgba(255, 255, 255, 0.7);
+  --xy-minimap-node-background: rgba(var(--theme-primary-rgb), 0.5);
+  --xy-minimap-node-background-selected: var(--theme-primary);
+}
+
+/* Override React Flow dark theme with theme accent colors */
+.react-flow-dark {
+  --xy-background-color: #0a0a0a;
+  --xy-background-pattern-color: rgba(var(--theme-primary-rgb), 0.15);
+
+  /* Node colors */
+  --xy-node-border: rgba(var(--theme-primary-rgb), 0.3);
+  --xy-node-background: rgba(255, 255, 255, 0.05);
+  --xy-node-color: #ffffff;
+
+  /* Selected node */
+  --xy-node-border-selected: var(--theme-primary);
+  --xy-node-boxshadow-selected: 0 0 0 2px rgba(var(--theme-primary-rgb), 0.5);
+
+  /* Edge colors */
+  --xy-edge-stroke: var(--theme-primary);
+  --xy-edge-stroke-selected: var(--theme-primary-light);
+
+  /* Handle colors */
+  --xy-handle: var(--theme-primary);
+  --xy-handle-border: #1e1b4b;
+
+  /* Controls */
+  --xy-controls-button-background: rgba(var(--theme-primary-rgb), 0.15);
+  --xy-controls-button-background-hover: rgba(var(--theme-primary-rgb), 0.25);
+  --xy-controls-button-color: var(--theme-primary-light);
+  --xy-controls-button-border-color: rgba(var(--theme-primary-rgb), 0.3);
+
+  /* Minimap */
+  --xy-minimap-background: rgba(15, 15, 15, 0.9);
+  --xy-minimap-mask: rgba(0, 0, 0, 0.6);
+  --xy-minimap-node-background: rgba(var(--theme-primary-rgb), 0.4);
+  --xy-minimap-node-background-selected: var(--theme-primary);
+}
+
+/* Additional custom styles */
+.react-flow__node {
+  font-family: inherit;
+}
+
+.react-flow__edge {
+  cursor: pointer;
+  z-index: 10 !important;
+  pointer-events: all !important;
+}
+
+.react-flow__edge-path {
+  stroke: var(--theme-primary) !important;
+  stroke-width: 2px !important;
+  fill: none !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--theme-primary-light) !important;
+  stroke-width: 3px !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--theme-primary-light) !important;
+  stroke-width: 3px !important;
+}
+
+/* Ensure edge markers are visible */
+.react-flow__arrowhead {
+  fill: var(--theme-primary) !important;
+  stroke: none !important;
+}
+
+.react-flow__edge.selected .react-flow__arrowhead {
+  fill: var(--theme-primary-light) !important;
+}
+
+.react-flow__edges {
+  position: relative !important;
+  z-index: 5 !important;
+  pointer-events: all !important;
+}
+
+/* Force edge visibility */
+.react-flow__edge-path {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.react-flow__controls {
+  box-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.2);
+}
+
+.react-flow__minimap {
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.2);
+  box-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.2);
+}
+
+/* Attribution styling - Light mode */
+.react-flow-light .react-flow__attribution {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: rgba(71, 85, 105, 0.7);
+}
+
+.react-flow-light .react-flow__attribution a {
+  color: var(--theme-primary);
+  text-decoration: none;
+}
+
+/* Attribution styling - Dark mode */
+.react-flow-dark .react-flow__attribution {
+  background: rgba(var(--theme-primary-rgb), 0.1);
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.react-flow-dark .react-flow__attribution a {
+  color: var(--theme-primary);
+  text-decoration: none;
+}
+
+.react-flow__attribution a:hover {
+  color: var(--theme-primary-light);
+}
+
+/* Edge label styling - Light mode */
+.react-flow-light .react-flow__edge-text {
+  fill: #1e293b;
+  font-size: 12px;
+}
+
+.react-flow-light .react-flow__edge-textbg {
+  fill: rgba(255, 255, 255, 0.95);
+}
+
+/* Edge label styling - Dark mode */
+.react-flow-dark .react-flow__edge-text {
+  fill: #ffffff;
+  font-size: 12px;
+}
+
+.react-flow-dark .react-flow__edge-textbg {
+  fill: rgba(var(--theme-primary-rgb), 0.9);
+}
+
+/* Selection box styling */
+.react-flow__selection {
+  background: rgba(var(--theme-primary-rgb), 0.1);
+  border: 1px solid var(--theme-primary);
+}
+
+/* Resize control styling */
+.react-flow__resize-control.handle {
+  background: var(--theme-primary);
+  border: 2px solid #1e1b4b;
+}
+
+.react-flow__resize-control.handle:hover {
+  background: var(--theme-primary-light);
+}
+
+/* Panel background styling */
+.react-flow-light .react-flow__panel {
+  color: #1e293b;
+}
+
+.react-flow-dark .react-flow__panel {
+  color: #ffffff;
+}
+
+/* Light mode edge styling */
+.react-flow-light .react-flow__edge-path {
+  stroke: #64748b !important;
+}
+
+.react-flow-light .react-flow__edge:hover .react-flow__edge-path,
+.react-flow-light .react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--theme-primary) !important;
+}
+
+.react-flow-light .react-flow__arrowhead {
+  fill: #64748b !important;
+}
+
+.react-flow-light .react-flow__edge:hover .react-flow__arrowhead,
+.react-flow-light .react-flow__edge.selected .react-flow__arrowhead {
+  fill: var(--theme-primary) !important;
+}
+
+/* Light mode controls */
+.react-flow-light .react-flow__controls {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.react-flow-light .react-flow__controls-button {
+  background: transparent;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.1);
+  color: #475569;
+}
+
+.react-flow-light .react-flow__controls-button:hover {
+  background: rgba(var(--theme-primary-rgb), 0.1);
+}
+
+.react-flow-light .react-flow__controls-button svg {
+  fill: #475569;
+}
+
+/* Light mode minimap */
+.react-flow-light .react-flow__minimap {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.workflow-tool-menu {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--theme-primary-rgb), 0.5) transparent;
+}
+
+.workflow-tool-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.workflow-tool-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.workflow-tool-menu::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--theme-primary-rgb), 0.4);
+  border-radius: 9999px;
+}
