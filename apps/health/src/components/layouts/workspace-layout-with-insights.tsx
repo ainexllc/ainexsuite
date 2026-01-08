@@ -2,7 +2,6 @@
 
 import { ReactNode } from "react";
 import { WorkspaceLayout } from "@ainexsuite/ui";
-import { useWorkspaceInsights } from "@/hooks/use-workspace-insights";
 import type { QuickAction, NotificationItem } from "@ainexsuite/types";
 
 interface WorkspaceLayoutWithInsightsProps {
@@ -12,7 +11,6 @@ interface WorkspaceLayoutWithInsightsProps {
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
-    /** Square-cropped icon URL for circular avatars */
     iconURL?: string | null;
     subscriptionStatus?: string;
     subscriptionTier?: string;
@@ -28,8 +26,7 @@ interface WorkspaceLayoutWithInsightsProps {
 }
 
 /**
- * Wrapper component that adds AI Insights to WorkspaceLayout.
- * Uses the useWorkspaceInsights hook to get insights data from the HealthMetrics provider.
+ * Wrapper component for WorkspaceLayout.
  */
 export function WorkspaceLayoutWithInsights({
   children,
@@ -42,9 +39,6 @@ export function WorkspaceLayoutWithInsights({
   notifications = [],
   onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
-  // Get insights data from the hook (requires HealthMetricsProvider)
-  const insights = useWorkspaceInsights();
-
   return (
     <WorkspaceLayout
       user={user}
@@ -55,16 +49,6 @@ export function WorkspaceLayoutWithInsights({
       onAiAssistantClick={onAiAssistantClick}
       onSettingsClick={onSettingsClick}
       notifications={notifications}
-      // AI Insights Pulldown - always pass sections (pulldown handles empty state)
-      insightsSections={insights.sections}
-      insightsTitle={insights.title}
-      insightsLoading={insights.isLoading}
-      insightsLoadingMessage={insights.loadingMessage}
-      insightsError={insights.error}
-      insightsLastUpdated={insights.lastUpdated}
-      onInsightsRefresh={insights.onRefresh}
-      insightsRefreshDisabled={insights.refreshDisabled}
-      insightsStorageKey={insights.storageKey}
       onUpdatePreferences={onUpdatePreferences}
     >
       {children}

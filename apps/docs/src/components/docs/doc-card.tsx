@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
-import { ConfirmationDialog, PriorityIcon } from "@ainexsuite/ui";
+import { ConfirmationDialog, PriorityIcon, FocusGlow } from "@ainexsuite/ui";
 import type { Doc } from "@/lib/types/doc";
 import { useDocs } from "@/components/providers/docs-provider";
 import { DOC_COLORS } from "@/lib/constants/doc-colors";
@@ -124,6 +124,9 @@ export function DocCard({ doc, isSelectMode = false, isSelected = false, onSelec
           }
         }}
       >
+        {/* Animated glow effect for pinned cards */}
+        {doc.pinned && <FocusGlow />}
+
         {/* Selection Checkbox - shows on hover or in select mode */}
         {onSelect && (
           <button
@@ -442,7 +445,7 @@ export function DocCard({ doc, isSelectMode = false, isSelected = false, onSelec
                 ? "text-white/70"
                 : getTextColorClasses(backgroundImage, 'muted')
             )}>
-              {(doc.updatedAt.getTime() !== doc.createdAt.getTime() ? doc.updatedAt : doc.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              {(doc.updatedAt.getTime() !== doc.createdAt.getTime() ? doc.updatedAt : doc.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
               {' · '}
               {doc.updatedAt.getTime() !== doc.createdAt.getTime() ? 'Edited' : 'Created'}
             </span>

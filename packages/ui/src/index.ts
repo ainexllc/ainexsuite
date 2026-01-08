@@ -14,6 +14,8 @@ export * from './lib/utils';
 export * from './utils/reactFlowEdgeUtils';
 export * from './utils/navigation';
 export * from './utils/cross-app-navigation';
+export * from './utils/app-prefetch';
+export * from './utils/auth-token-cache';
 
 // Components and templates
 export * from './components';

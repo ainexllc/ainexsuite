@@ -12,8 +12,12 @@ import {
 } from '../lib/firebase-service';
 
 export function FirestoreSync() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { currentSpaceId } = useSpaces();
+
+  // Wait for auth to be fully complete to avoid permission errors
+  // authLoading is false only when authPhase is 'authenticated' or 'unauthenticated'
+  const isAuthReady = !authLoading && !!user;
 
   // Note: Permission error handler removed to prevent logout loops
   // Permission errors now just log warnings instead of triggering logout
@@ -28,7 +32,7 @@ export function FirestoreSync() {
 
   // Sync Notifications (User Level)
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isAuthReady) return;
 
     const unsubNotifs = subscribeToUserNotifications(user.uid, (notifs) => {
       setNotifications(notifs);
@@ -37,11 +41,11 @@ export function FirestoreSync() {
     return () => {
       unsubNotifs();
     };
-  }, [user, setNotifications]);
+  }, [user, isAuthReady, setNotifications]);
 
   // Sync Habits, Quests, Completions for Current Space
   useEffect(() => {
-    if (!currentSpaceId || !user) return;
+    if (!currentSpaceId || !user || !isAuthReady) return;
 
     // Pass userId for personal space queries to match security rules
     const unsubHabits = subscribeToSpaceHabits(currentSpaceId, (habits) => {
@@ -65,7 +69,7 @@ export function FirestoreSync() {
       if (typeof unsubQuests === 'function') unsubQuests();
       unsubCompletions();
     };
-  }, [currentSpaceId, user, setHabits, setQuests, setCompletions]);
+  }, [currentSpaceId, user, isAuthReady, setHabits, setQuests, setCompletions]);
 
   return null; // This component renders nothing, just logic
 }

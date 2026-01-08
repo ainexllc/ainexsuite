@@ -18,6 +18,10 @@ export interface FloatingDockItem {
   onClick?: () => void;
   color?: string;
   isActive?: boolean;
+  /** Called when mouse enters (for prefetching) */
+  onHoverStart?: () => void;
+  /** Called when mouse leaves */
+  onHoverEnd?: () => void;
 }
 
 interface FloatingDockProps {
@@ -165,6 +169,8 @@ function IconContainer({
   onClick,
   color,
   isActive,
+  onHoverStart,
+  onHoverEnd,
 }: {
   mouseX: MotionValue;
 } & FloatingDockItem) {
@@ -209,8 +215,14 @@ function IconContainer({
     <motion.div
       ref={ref}
       style={{ width, height }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => {
+        setHovered(true);
+        onHoverStart?.();
+      }}
+      onMouseLeave={() => {
+        setHovered(false);
+        onHoverEnd?.();
+      }}
       className={cn(
         "aspect-square rounded-xl flex items-center justify-center relative transition-colors",
         isActive

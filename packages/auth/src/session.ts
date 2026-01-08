@@ -138,6 +138,9 @@ export function clearSessionData(): void {
   removeSessionCookie();
   localStorage.removeItem(SESSION_TIMEOUT_KEY);
   localStorage.removeItem(SESSION_LAST_ACTIVITY_KEY);
+  // Also clear cross-app session for dev mode
+  localStorage.removeItem('__cross_app_session');
+  localStorage.removeItem('__cross_app_timestamp');
 }
 
 /**

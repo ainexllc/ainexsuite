@@ -598,7 +598,7 @@ export function DocsProvider({ children }: DocsProviderProps) {
     };
 
     // Priority sort function for Focus docs
-    // Sort by: priority (high > medium > low > null), then createdAt desc, then updatedAt desc
+    // Sort by: priority (high > medium > low > null), then updatedAt desc, then createdAt desc
     const sortPinnedDocs = (a: Doc, b: Doc) => {
       // Priority order: high=1, medium=2, low=3, null/undefined=4
       const priorityOrder = { high: 1, medium: 2, low: 3 };
@@ -610,17 +610,17 @@ export function DocsProvider({ children }: DocsProviderProps) {
         return aPriority - bPriority;
       }
 
-      // Then by createdAt desc (newest first)
-      const aCreated = a.createdAt.getTime();
-      const bCreated = b.createdAt.getTime();
-      if (aCreated !== bCreated) {
-        return bCreated - aCreated;
+      // Then by updatedAt desc (newest first)
+      const aUpdated = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const bUpdated = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      if (aUpdated !== bUpdated) {
+        return bUpdated - aUpdated;
       }
 
-      // Finally by updatedAt desc (newest first)
-      const aUpdated = a.updatedAt?.getTime() ?? aCreated;
-      const bUpdated = b.updatedAt?.getTime() ?? bCreated;
-      return bUpdated - aUpdated;
+      // Finally by createdAt desc (newest first)
+      const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bCreated - aCreated;
     };
 
     const trashed = merged

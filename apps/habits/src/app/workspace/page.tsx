@@ -258,6 +258,7 @@ function GrowWorkspaceContent() {
       <FirestoreSync />
 
       <WorkspacePageLayout
+        className="pt-[17px]"
         composer={<HabitComposer onAISuggestClick={() => setShowAISuggester(true)} onManagePeople={handleManagePeople} onManageSpaces={() => setShowSpaceManagement(true)} />}
       >
         {/* Main content with consistent section spacing */}

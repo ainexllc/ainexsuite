@@ -398,6 +398,7 @@ function TablesWorkspaceContent() {
   return (
     <>
     <WorkspacePageLayout
+      className="pt-[17px]"
       composer={
         <TableComposer
           onManagePeople={() => setShowMemberManager(true)}

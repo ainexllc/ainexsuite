@@ -41,3 +41,9 @@ export {
   type InlineSpacePickerProps,
   type InlineSpaceItem,
 } from './inline-space-picker';
+
+export {
+  SpaceTabSelector,
+  type SpaceTabSelectorProps,
+  type SpaceTabItem,
+} from './space-tab-selector';

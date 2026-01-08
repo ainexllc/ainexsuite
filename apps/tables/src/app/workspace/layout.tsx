@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import {
@@ -47,6 +47,13 @@ export default function WorkspaceRootLayout({
   } = useWorkspaceAuth();
   const { preferences, updatePreferences: updateAppPreferences, loading: preferencesLoading } = usePreferences();
   const { allSpaces, updateSpace, deleteSpace, refreshSpaces } = useSpaces();
+
+  // Explicit redirect when not authenticated - safety net for timing issues
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/');
+    }
+  }, [isLoading, user, router]);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
   const [spaceSettingsOpen, setSpaceSettingsOpen] = useState(false);

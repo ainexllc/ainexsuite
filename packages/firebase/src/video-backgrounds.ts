@@ -262,8 +262,14 @@ export async function updateVideoBackground(
 ): Promise<void> {
   const docRef = doc(db, COLLECTION_NAME, videoId);
 
+  // Filter out undefined values and convert to null for Firestore
+  const cleanUpdates: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(updates)) {
+    cleanUpdates[key] = value === undefined ? null : value;
+  }
+
   await updateDoc(docRef, {
-    ...updates,
+    ...cleanUpdates,
     updatedAt: serverTimestamp(),
   });
 }

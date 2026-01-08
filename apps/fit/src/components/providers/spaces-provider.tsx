@@ -9,7 +9,7 @@ import type { Space } from "@ainexsuite/types";
  */
 export const { SpacesProvider, useSpaces } = createSpacesProvider<Space>({
   appId: "fit",
-  collectionName: "fit_spaces",
+  collectionName: "spaces",
   storageKey: "fit-current-space",
   defaultSpace: {
     name: "My Fitness",

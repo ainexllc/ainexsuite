@@ -17,7 +17,7 @@ import {
   SESSION_COOKIE_MAX_AGE_MS,
   SESSION_COOKIE_MAX_AGE_SECONDS
 } from '@ainexsuite/firebase/config';
-import { getLatestSession } from './sso-session-store';
+import { getLatestSession, storeSession } from './sso-session-store';
 
 /**
  * Helper to determine if origin is allowed for CORS
@@ -522,6 +522,11 @@ export async function POST(request: NextRequest) {
           ...user, // Store full user object
         };
         const sessionCookie = Buffer.from(JSON.stringify(cookiePayload)).toString('base64');
+
+        // Store session in memory for cross-app SSO (Auth Hub needs this)
+        storeSession(sessionCookie);
+        // eslint-disable-next-line no-console
+        console.log('[Session POST] Stored session in memory for cross-app SSO');
 
         const res = NextResponse.json({ sessionCookie, user });
         res.cookies.set('__session', sessionCookie, {

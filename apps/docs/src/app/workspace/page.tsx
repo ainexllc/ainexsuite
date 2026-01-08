@@ -398,6 +398,7 @@ function DocsWorkspaceContent() {
   return (
     <>
     <WorkspacePageLayout
+      className="pt-[17px]"
       composer={
         <DocComposer
           onManagePeople={() => setShowMemberManager(true)}

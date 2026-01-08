@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '@ainexsuite/auth';
@@ -103,16 +103,38 @@ export function DashboardView({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
-  // Show error toast
+  // Track last shown error to prevent duplicate toasts
+  const lastShownErrorRef = useRef<string | null>(null);
+  const initialLoadRef = useRef(true);
+
+  // Show error toast (only once per unique error, skip permission errors during initial load)
   useEffect(() => {
-    if (error) {
+    // Skip errors during initial load phase - permission errors are expected when auth is initializing
+    if (initialLoadRef.current) {
+      if (!loading) {
+        initialLoadRef.current = false;
+      }
+      return;
+    }
+
+    // Only show toast for new errors that aren't permission-related
+    if (error && error !== lastShownErrorRef.current) {
+      // Skip permission-denied errors which are expected during auth transitions
+      if (error.toLowerCase().includes('permission') || error.toLowerCase().includes('unauthorized')) {
+        return;
+      }
+      lastShownErrorRef.current = error;
       toast({
         title: 'Error',
         description: error,
         variant: 'error',
       });
+    } else if (!error) {
+      // Reset when error clears
+      lastShownErrorRef.current = null;
     }
-  }, [error, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error, loading]);
 
   const filteredEntries = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();

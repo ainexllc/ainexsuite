@@ -112,6 +112,7 @@ export default function FitWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
+        className="pt-[17px]"
         composer={
           <FitComposer
             onManagePeople={() => setShowMemberManager(true)}

@@ -2,7 +2,6 @@
 
 import { ReactNode } from "react";
 import { WorkspaceLayout } from "@ainexsuite/ui";
-import { useHabitWorkspaceInsights } from "@/hooks/use-workspace-insights";
 import type { QuickAction, NotificationItem } from "@ainexsuite/types";
 
 interface WorkspaceLayoutWithInsightsProps {
@@ -12,12 +11,10 @@ interface WorkspaceLayoutWithInsightsProps {
     displayName?: string | null;
     email?: string | null;
     photoURL?: string | null;
-    /** Square-cropped icon URL for circular avatars */
     iconURL?: string | null;
     subscriptionStatus?: string;
     subscriptionTier?: string;
     trialStartDate?: number;
-    // Animated avatar fields
     animatedAvatarURL?: string | null;
     useAnimatedAvatar?: boolean;
   };
@@ -33,8 +30,7 @@ interface WorkspaceLayoutWithInsightsProps {
 }
 
 /**
- * Wrapper component that adds AI Insights to WorkspaceLayout.
- * Uses the useHabitWorkspaceInsights hook to get insights data from the Grow providers.
+ * Wrapper component for WorkspaceLayout.
  */
 export function WorkspaceLayoutWithInsights({
   children,
@@ -49,9 +45,6 @@ export function WorkspaceLayoutWithInsights({
   onDeclineInvitation,
   onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
-  // Get insights data from the hook (requires SpacesProvider and HabitsProvider)
-  const insights = useHabitWorkspaceInsights();
-
   return (
     <WorkspaceLayout
       user={user}
@@ -64,16 +57,6 @@ export function WorkspaceLayoutWithInsights({
       notifications={notifications}
       onAcceptInvitation={onAcceptInvitation}
       onDeclineInvitation={onDeclineInvitation}
-      // AI Insights Pulldown - always pass sections (pulldown handles empty state)
-      insightsSections={insights.sections}
-      insightsTitle={insights.title}
-      insightsLoading={insights.isLoading}
-      insightsLoadingMessage={insights.loadingMessage}
-      insightsError={insights.error}
-      insightsLastUpdated={insights.lastUpdated}
-      onInsightsRefresh={insights.onRefresh}
-      insightsRefreshDisabled={insights.refreshDisabled}
-      insightsStorageKey={insights.storageKey}
       onUpdatePreferences={onUpdatePreferences}
     >
       {children}

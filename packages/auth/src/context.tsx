@@ -29,11 +29,29 @@ import {
   clearSessionData,
   isSessionExpired,
 } from './session';
+import {
+  getCachedSession,
+  setCachedSession,
+  invalidateCache as invalidateSessionCache,
+  refreshCacheTimestamp,
+} from './session-cache';
 import { AuthBootstrap } from './auth-bootstrap';
 import { SSOBridge } from './components/sso-bridge';
-import { syncSessionWithAuthHub, syncLogoutWithAuthHub } from './utils/sso-protocol';
+import { syncSessionWithAuthHub, syncLogoutWithAuthHub, getAuthHubUrl, isAuthHub } from './utils/sso-protocol';
 
 export type BootstrapStatus = 'pending' | 'running' | 'complete' | 'failed';
+
+/**
+ * Auth Phase State Machine
+ * Provides deterministic auth state tracking to prevent race conditions
+ */
+export type AuthPhase =
+  | 'initializing'      // Initial state - checking for SSO token or cached session
+  | 'sso-processing'    // Processing auth_token from URL redirect
+  | 'bootstrapping'     // Checking session cookie/localStorage
+  | 'sso-bridge'        // Checking Auth Hub for cross-app SSO
+  | 'authenticated'     // User is logged in
+  | 'unauthenticated';  // No session found, show public content
 
 interface AuthContextType {
   user: User | null;
@@ -50,6 +68,8 @@ interface AuthContextType {
   setSsoComplete: () => void;
   /** Hydrate user directly from dev session (dev only) */
   hydrateFromDevSession: (sessionCookie: string) => void;
+  /** Hydrate user directly from fast-bootstrap response (dev only) */
+  hydrateFromFastBootstrap?: (userData: Record<string, unknown>) => void;
   /** Update user preferences (theme, etc) with backend sync */
   updatePreferences: (updates: Partial<UserPreferences>) => Promise<void>;
   /** Update user profile (displayName, etc) with backend sync */
@@ -99,9 +119,10 @@ function getInitialDevSession(): { user: User; session: string } | null {
       return null;
     }
 
-    // Check if session is less than 30 minutes old
+    // Check if session is less than 8 hours old (extended for dev workflow)
+    const DEV_SESSION_EXPIRY_MS = 8 * 60 * 60 * 1000; // 8 hours
     const age = Date.now() - parseInt(timestamp, 10);
-    if (age > 30 * 60 * 1000) {
+    if (age > DEV_SESSION_EXPIRY_MS) {
       return null;
     }
 
@@ -194,7 +215,6 @@ function createFallbackUser(firebaseUser: FirebaseUser): User {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
   const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('pending');
 
@@ -209,6 +229,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Track if SSOBridge has completed its check (to prevent premature "not authenticated" flash)
   const [ssoBridgeCompleted, setSsoBridgeCompleted] = useState(false);
+
+  // Track if Firebase Auth persistence has finished loading
+  // This prevents race conditions where onAuthStateChanged fires before persistence is ready
+  const [firebaseReady, setFirebaseReady] = useState(false);
+
+  // Auth phase state machine for deterministic loading state
+  // Initialized based on whether SSO token is present or cached session exists
+  const [authPhase, setAuthPhaseInternal] = useState<AuthPhase>(() => {
+    // If SSO token in URL, start in sso-processing
+    if (checkForSSOToken()) {
+      console.log('[Auth] Initial phase: sso-processing (has auth_token)');
+      return 'sso-processing';
+    }
+    // If dev session exists in localStorage, we'll resolve quickly in useLayoutEffect
+    // If no indicators, start in initializing (will transition to bootstrapping)
+    console.log('[Auth] Initial phase: initializing');
+    return 'initializing';
+  });
+
+  // Wrapper to log phase transitions
+  const setAuthPhase = (phase: AuthPhase) => {
+    console.log(`[Auth] Phase transition: ${authPhase} -> ${phase}`);
+    setAuthPhaseInternal(phase);
+  };
 
   // Cross-app profile sync via Firestore listener
   // This works across different ports (unlike BroadcastChannel which is same-origin only)
@@ -240,26 +284,249 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firestoreProfile, user?.uid]); // Only depend on firestoreProfile and uid to avoid loops
 
-  // Use useLayoutEffect to hydrate from dev session BEFORE paint
+  // Update session cache when user changes
+  // This ensures page refreshes load instantly from cached data
+  useEffect(() => {
+    if (user && authPhase === 'authenticated') {
+      setCachedSession(user);
+    }
+  }, [user, authPhase]);
+
+  // Use useLayoutEffect to hydrate from cached session BEFORE paint
   // This runs synchronously after DOM mutations but before browser paint
-  // Prevents visible loading flash while maintaining SSR compatibility
+  // Priority: 1. Session cache (instant), 2. Dev localStorage session, 3. Bootstrap
   const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
   useIsomorphicLayoutEffect(() => {
+    // First, try session cache (fastest - survives refresh within same tab)
+    const cachedSession = getCachedSession();
+    if (cachedSession) {
+      console.log('[Auth] Hydrating from session cache (instant)');
+      setUser(cachedSession.user);
+      setLoading(false);
+      setBootstrapStatus('complete');
+      setDevHydrated(true);
+      setAuthPhase('authenticated');
+      // Refresh cache timestamp
+      refreshCacheTimestamp();
+      return;
+    }
+
+    // Then try dev localStorage session
     const devSession = getInitialDevSession();
+    console.log('[Auth] useLayoutEffect - devSession:', devSession ? 'FOUND' : 'none', 'authPhase:', authPhase);
     if (devSession) {
+      console.log('[Auth] Hydrating from dev session in localStorage');
       setUser(devSession.user);
       setLoading(false);
       setBootstrapStatus('complete');
       setDevHydrated(true);
+      setAuthPhase('authenticated'); // Deterministic phase transition
       // Refresh timestamp
       localStorage.setItem('__cross_app_timestamp', Date.now().toString());
+      // Also cache for faster subsequent loads
+      setCachedSession(devSession.user);
+    } else if (authPhase === 'initializing' && !checkForSSOToken()) {
+      // No dev session and no SSO token - proceed to bootstrap
+      console.log('[Auth] No dev session, transitioning to bootstrapping');
+      setAuthPhase('bootstrapping');
     }
-  }, []);
+  }, [authPhase]);
+
+  // Track if we've already validated the dev session (to prevent re-validation loops)
+  const devSessionValidatedRef = React.useRef(false);
+
+  // Track if we've already attempted Firebase sign-in for cached session
+  const firebaseSignInAttemptedRef = React.useRef(false);
+
+  // Track if we're in dev mode without Admin SDK (can't get custom tokens)
+  const [devModeWithoutAdmin, setDevModeWithoutAdmin] = useState(false);
+
+  // Sign into Firebase when we have a cached session but no Firebase user
+  // This ensures Firestore queries work after instant UI hydration from cache
+  useEffect(() => {
+    // Only run if we have a user from cache/dev hydration but no Firebase user
+    if (!devHydrated || firebaseUser || firebaseSignInAttemptedRef.current) {
+      return;
+    }
+
+    // Mark as attempted to prevent re-running
+    firebaseSignInAttemptedRef.current = true;
+    console.log('[Auth] Cached session needs Firebase sign-in, requesting custom token...');
+
+    const signInToFirebase = async () => {
+      try {
+        // Request custom token from the session endpoint
+        // Uses POST because the handler expects it (reads session from httpOnly cookie)
+        const response = await fetch('/api/auth/custom-token', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}), // Empty body - session is in httpOnly cookie
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.customToken) {
+            const { signInWithCustomToken } = await import('firebase/auth');
+            await signInWithCustomToken(auth, data.customToken);
+            console.log('[Auth] Firebase sign-in from cached session successful');
+          } else if (data.devMode) {
+            // Dev mode without Admin SDK - we can't sign into Firebase
+            // but we have a valid session, so mark as dev mode
+            console.log('[Auth] Dev mode without Admin SDK - using session hydration');
+            setDevModeWithoutAdmin(true);
+          } else {
+            console.log('[Auth] No custom token returned, session may be invalid');
+          }
+        } else {
+          console.log('[Auth] Failed to get custom token:', response.status);
+        }
+      } catch (error) {
+        console.error('[Auth] Firebase sign-in from cached session failed:', error);
+        // Don't clear user here - let the validation effect handle invalid sessions
+      }
+    };
+
+    signInToFirebase();
+  }, [devHydrated, firebaseUser]);
+
+  // Validate dev session with Auth Hub after hydration
+  // This catches the case where user logged out from another app but this app's localStorage
+  // still has a cached session. Each port has its own localStorage, so we need to verify.
+  useEffect(() => {
+    console.log('[Auth] Validation check - devHydrated:', devHydrated, 'isAuthHub:', isAuthHub(), 'validated:', devSessionValidatedRef.current);
+
+    // Only validate once, and only if we dev-hydrated and are not on the Auth Hub itself
+    if (!devHydrated || isAuthHub() || devSessionValidatedRef.current) {
+      console.log('[Auth] Skipping validation - condition not met');
+      return;
+    }
+
+    // Mark as validated to prevent re-running
+    devSessionValidatedRef.current = true;
+    console.log('[Auth] Validating dev session with Auth Hub...');
+
+    const validateWithAuthHub = async () => {
+      try {
+        const authHubUrl = getAuthHubUrl();
+        const response = await fetch(`${authHubUrl}/api/auth/sso-status`, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          console.log('[Auth] Auth Hub unavailable, keeping local session');
+          return;
+        }
+
+        const data = await response.json();
+        console.log('[Auth] Auth Hub validation result:', data.authenticated ? 'VALID' : 'INVALID');
+
+        if (!data.authenticated) {
+          // User logged out from another app - clear local session
+          console.log('[Auth] Session invalidated on Auth Hub, logging out locally');
+          // IMPORTANT: Clear localStorage FIRST and synchronously to prevent re-hydration
+          // during Fast Refresh or component re-mounts
+          localStorage.removeItem('__cross_app_session');
+          localStorage.removeItem('__cross_app_timestamp');
+          // Reset the validation ref so future hydrations will be validated
+          devSessionValidatedRef.current = false;
+          // Update state synchronously
+          setUser(null);
+          setDevHydrated(false);
+          setAuthPhase('unauthenticated');
+          // Then sign out of Firebase Auth (async) to clear persisted session
+          try {
+            await firebaseSignOut(auth);
+          } catch {
+            // Ignore sign out errors
+          }
+        }
+      } catch (error) {
+        // Auth Hub unreachable - keep local session (network error, not invalid session)
+        console.log('[Auth] Auth Hub unreachable, keeping local session');
+      }
+    };
+
+    validateWithAuthHub();
+  }, [devHydrated]);
+
+  // Periodic session validation for cross-app logout detection (dev mode only)
+  // This catches the case where user logs out from another app after we've already validated
+  // Runs every 30 seconds to check if the session is still valid on Auth Hub
+  useEffect(() => {
+    // Only run in development mode and when we have a dev-hydrated user
+    if (process.env.NODE_ENV !== 'development' || !devHydrated || isAuthHub() || !user) {
+      return;
+    }
+
+    const VALIDATION_INTERVAL = 30000; // 30 seconds
+
+    const validateSession = async () => {
+      try {
+        const authHubUrl = getAuthHubUrl();
+        const response = await fetch(`${authHubUrl}/api/auth/sso-status`, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          // Auth Hub unavailable - keep local session
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!data.authenticated) {
+          // User logged out from another app - clear local session
+          console.log('[Auth] Periodic validation: Session invalidated on Auth Hub, logging out locally');
+          localStorage.removeItem('__cross_app_session');
+          localStorage.removeItem('__cross_app_timestamp');
+          devSessionValidatedRef.current = false;
+          setUser(null);
+          setDevHydrated(false);
+          setAuthPhase('unauthenticated');
+          try {
+            await firebaseSignOut(auth);
+          } catch {
+            // Ignore sign out errors
+          }
+        }
+      } catch {
+        // Network error - keep local session
+      }
+    };
+
+    // Run validation periodically
+    const intervalId = setInterval(validateSession, VALIDATION_INTERVAL);
+
+    // Cleanup on unmount
+    return () => clearInterval(intervalId);
+  }, [devHydrated, user]);
 
   // Callback for SSOHandler to signal completion
   const setSsoComplete = useCallback(() => {
     setSsoInProgress(false);
+    // If SSO completed successfully, onAuthStateChanged will set authenticated
+    // If it failed, we'll transition when SSOBridge completes
   }, []);
+
+  // Track auth phase transitions based on bootstrap status and SSO bridge completion
+  useEffect(() => {
+    console.log('[Auth] Phase transition check - bootstrapStatus:', bootstrapStatus, 'user:', !!user, 'devHydrated:', devHydrated, 'authPhase:', authPhase, 'ssoBridgeCompleted:', ssoBridgeCompleted);
+
+    // When bootstrap completes without finding a user, transition to sso-bridge phase
+    if (bootstrapStatus === 'complete' && !user && !devHydrated && authPhase === 'bootstrapping') {
+      console.log('[Auth] Bootstrap complete, no user -> transitioning to sso-bridge');
+      setAuthPhase('sso-bridge');
+      return;
+    }
+
+    // When SSOBridge completes without finding a session, transition to unauthenticated
+    // This handles the case where no session exists anywhere
+    if (ssoBridgeCompleted && !user && !devHydrated && authPhase === 'sso-bridge') {
+      console.log('[Auth] SSOBridge complete, no user -> transitioning to unauthenticated');
+      setAuthPhase('unauthenticated');
+    }
+  }, [bootstrapStatus, user, devHydrated, authPhase, ssoBridgeCompleted]);
 
   // Cross-tab/cross-app preference sync via BroadcastChannel
   // When theme or profile image changes in one tab, all other tabs update immediately
@@ -721,7 +988,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Wait for Firebase Auth persistence to be ready
+  // This prevents race conditions where we process stale auth state
   useEffect(() => {
+    // auth.authStateReady() returns a promise that resolves when persistence is loaded
+    // This is available in Firebase SDK v9.22.0+
+    const waitForReady = async () => {
+      if (typeof auth.authStateReady === 'function') {
+        await auth.authStateReady();
+      }
+      setFirebaseReady(true);
+      console.log('[Auth] Firebase persistence ready');
+    };
+    waitForReady();
+  }, []);
+
+  useEffect(() => {
+    // Don't subscribe until Firebase persistence is ready
+    if (!firebaseReady) {
+      return;
+    }
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setFirebaseUser(firebaseUser);
@@ -772,6 +1058,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return;
           }
 
+          // NOTE: Validation of stale sessions is handled by the post-hydration
+          // validation useEffect (which runs when devHydrated is true).
+          // We don't validate here because we can't reliably distinguish between:
+          // 1. Fresh login (user just clicked Google sign in)
+          // 2. Firebase persistence restoring an old session
+          // In both cases, we create/refresh the session and sync to Auth Hub.
+
           // Call Cloud Function to generate session cookie (only on fresh login)
           const response = await fetch('/api/auth/session', {
             method: 'POST',
@@ -816,9 +1109,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (ssoInProgress) {
           setSsoInProgress(false);
         }
+        // Deterministic phase transition to authenticated
+        setAuthPhase('authenticated');
       } else {
-        removeSessionCookie();
-        setUser(null);
+        // IMPORTANT: Don't clear user if we already hydrated from dev session
+        // In dev mode, we use hydrateFromDevSession which doesn't use Firebase Auth
+        // so onAuthStateChanged will fire with null even when user is valid
+        if (!devHydrated) {
+          removeSessionCookie();
+          setUser(null);
+          // Only transition to unauthenticated if bootstrap and sso-bridge have completed
+          // This prevents premature "not authenticated" state during initial load
+          if (bootstrapStatus === 'complete' && ssoBridgeCompleted) {
+            setAuthPhase('unauthenticated');
+          }
+        }
         // If SSO was in progress but no user, it failed - mark complete anyway
         if (ssoInProgress) {
           setSsoInProgress(false);
@@ -829,7 +1134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [isBootstrapping, ssoInProgress]);
+  }, [firebaseReady, isBootstrapping, ssoInProgress, bootstrapStatus, ssoBridgeCompleted]);
 
   // Automatic session refresh
   useEffect(() => {
@@ -877,6 +1182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [firebaseUser]);
 
   const signOutUser = useCallback(async () => {
+    console.log('[Auth] signOutUser called');
     // First: Sync logout with Auth Hub to clear in-memory session store
     // This ensures other apps won't get a stale session when they check for SSO
     if (user?.uid) {
@@ -898,30 +1204,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Sign out of Firebase Auth
     await firebaseSignOut(auth);
 
-    // Clear local session data
+    // Clear local session data (includes cross-app session in localStorage)
     clearSessionData();
+
+    // Clear session cache (sessionStorage)
+    invalidateSessionCache();
+
+    // Reset all auth state
     setUser(null);
     setFirebaseUser(null);
+    setDevHydrated(false);
+    setSsoBridgeCompleted(false);
+    setAuthPhase('unauthenticated');
+    // Reset refs for next sign-in
+    firebaseSignInAttemptedRef.current = false;
+    devSessionValidatedRef.current = false;
   }, [user?.uid]);
 
-  // Effective loading state: true if auth is loading OR SSO is in progress OR bootstrap hasn't checked yet
-  // Bootstrap must complete before showing public pages (to detect existing session cookies)
-  // SSOBridge runs AFTER bootstrap completes, so we must also wait for it to finish checking
-  const bootstrapPending = bootstrapStatus === 'pending' || bootstrapStatus === 'running';
-  const ssoBridgePending = !user && !devHydrated && bootstrapStatus === 'complete' && !ssoBridgeCompleted;
-  const effectiveLoading = loading || ssoInProgress || (!user && bootstrapPending) || ssoBridgePending;
+  // Effective loading state: simplified using auth phase state machine
+  // We're loading unless we've reached a terminal state (authenticated or unauthenticated)
+  // AND Firebase persistence is ready (to prevent Firestore queries before auth token is propagated)
+  // IMPORTANT: When authenticated, we must also have a firebaseUser for Firestore access
+  // EXCEPTION: In dev mode without Admin SDK, we allow proceeding with session hydration
+  // (Firestore will work because the user IS authenticated via the session cookie)
+  const needsFirebaseUser = authPhase === 'authenticated' && !firebaseUser && !devModeWithoutAdmin;
+  const effectiveLoading = !firebaseReady ||
+    (authPhase !== 'authenticated' && authPhase !== 'unauthenticated') ||
+    needsFirebaseUser;
 
   // Dev-only: Hydrate user directly from session cookie
   // Used when Firebase Admin SDK isn't available to create custom tokens
   const hydrateFromDevSession = useCallback((sessionCookie: string) => {
+    console.log('[Auth] hydrateFromDevSession called');
     if (process.env.NODE_ENV !== 'development') {
       console.warn('[Auth] hydrateFromDevSession called in production, ignoring');
+      return;
+    }
+
+    // IMPORTANT: Verify the session still exists in localStorage before hydrating
+    // This prevents race conditions where validation cleared the session but
+    // AuthBootstrap or SSOBridge already had the session in memory
+    const currentSession = localStorage.getItem('__cross_app_session');
+    if (!currentSession) {
+      console.log('[Auth] hydrateFromDevSession - localStorage session was cleared, skipping');
       return;
     }
 
     try {
       const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
       const uid = decoded.uid;
+      console.log('[Auth] hydrateFromDevSession - decoded uid:', uid);
 
       if (!uid) {
         console.error('[Auth] Invalid session cookie - no uid');
@@ -976,9 +1308,80 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(devUser);
       setDevHydrated(true);
+      setDevModeWithoutAdmin(true); // Dev mode uses session hydration, not Firebase Auth
       setLoading(false);
+      setAuthPhase('authenticated'); // Deterministic phase transition
     } catch (error) {
       console.error('[Auth] Failed to hydrate from dev session:', error);
+    }
+  }, []);
+
+  // Dev-only: Hydrate user directly from fast-bootstrap response
+  // Used for instant hydration when user data is returned with bootstrap response
+  const hydrateFromFastBootstrap = useCallback((userData: Record<string, unknown>) => {
+    console.log('[Auth] hydrateFromFastBootstrap called');
+    if (process.env.NODE_ENV !== 'development') {
+      console.warn('[Auth] hydrateFromFastBootstrap called in production, ignoring');
+      return;
+    }
+
+    try {
+      const uid = userData.uid as string;
+      if (!uid) {
+        console.error('[Auth] Invalid user data - no uid');
+        return;
+      }
+
+      // Use ainex-theme cookie as source of truth for theme
+      const cookieTheme = getThemeCookie();
+      const userPrefs = userData.preferences as Record<string, unknown> | undefined;
+      const sessionTheme = userPrefs?.theme as ThemeValue | undefined;
+      const authorativeTheme = cookieTheme || sessionTheme || 'dark';
+
+      const now = Date.now();
+      const basePreferences = userPrefs || {
+        theme: 'dark',
+        language: 'en',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        notifications: { email: true, push: false, inApp: true },
+      };
+
+      const devUser: User = {
+        uid,
+        email: (userData.email as string) || '',
+        displayName: (userData.displayName as string) || (userData.email as string) || 'Dev User',
+        photoURL: (userData.photoURL as string) || '',
+        iconURL: userData.iconURL as string | undefined,
+        animatedAvatarURL: userData.animatedAvatarURL as string | undefined,
+        animatedAvatarAction: userData.animatedAvatarAction as string | undefined,
+        animatedAvatarStyle: userData.animatedAvatarStyle as string | undefined,
+        useAnimatedAvatar: userData.useAnimatedAvatar as boolean | undefined,
+        preferences: {
+          ...basePreferences,
+          theme: authorativeTheme,
+        } as User['preferences'],
+        createdAt: now,
+        lastLoginAt: now,
+        apps: (userData.apps as User['apps']) || {
+          notes: true, journal: true, todo: true, health: true,
+          album: true, habits: true, hub: true, fit: true,
+          project: true, workflow: true, calendar: true,
+        },
+        appPermissions: {},
+        appsUsed: {},
+        appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit', 'projects', 'workflow', 'calendar'],
+        trialStartDate: now,
+        subscriptionStatus: (userData.subscriptionStatus as User['subscriptionStatus']) || 'trial',
+        suiteAccess: (userData.suiteAccess as boolean) ?? true,
+      };
+
+      setUser(devUser);
+      setDevHydrated(true);
+      setDevModeWithoutAdmin(true); // Dev mode uses session hydration, not Firebase Auth
+      setLoading(false);
+      setAuthPhase('authenticated');
+    } catch (error) {
+      console.error('[Auth] Failed to hydrate from fast bootstrap:', error);
     }
   }, []);
 
@@ -996,6 +1399,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setBootstrapStatus,
         setSsoComplete,
         hydrateFromDevSession,
+        hydrateFromFastBootstrap,
         updatePreferences,
         updateProfile,
         updateProfileImage,
@@ -1014,11 +1418,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {/* Disabled when devHydrated - dev hydration already succeeded without Firebase */}
       <SSOBridge
         enabled={!user && !devHydrated && bootstrapStatus === 'complete' && !ssoInProgress}
-        hydrateFromDevSession={hydrateFromDevSession}
+        hydrateFromDevSession={(sessionCookie) => {
+          console.log('[Auth] SSOBridge hydrateFromDevSession called');
+          hydrateFromDevSession(sessionCookie);
+          // SSO bridge successfully hydrated user - transition to authenticated
+          // This sets the authPhase BEFORE onComplete is called
+          setAuthPhase('authenticated');
+        }}
         onComplete={() => {
+          console.log('[Auth] SSOBridge onComplete called');
           // SSOBridge completed its check - mark as complete to stop showing loading state
           // If it found a session, signInWithCustomToken will trigger onAuthStateChanged
           setSsoBridgeCompleted(true);
+          // Note: We DON'T set authPhase to 'unauthenticated' here anymore
+          // If hydrateFromDevSession was called, it already set authPhase to 'authenticated'
+          // If no session was found, we'll rely on the useEffect that watches ssoBridgeCompleted
         }}
       />
       {children}

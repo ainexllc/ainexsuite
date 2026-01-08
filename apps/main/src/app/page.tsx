@@ -2,7 +2,10 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@ainexsuite/auth';
+import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
+import { auth } from '@ainexsuite/firebase';
+import { signOut as firebaseSignOut } from 'firebase/auth';
+import { useAppColors } from '@ainexsuite/theme';
 import {
   Loader2,
   Brain,
@@ -177,28 +180,34 @@ const legalLinks: FooterLink[] = [
 
 function MainHomePageContent() {
   const { user, loading, bootstrapStatus } = useAuth();
+  const { needsActivation, checking } = useAppActivation('main');
+  const { loading: colorsLoading } = useAppColors();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
+  const [showActivation, setShowActivation] = useState(false);
 
   const isFromLogout = searchParams.get('from') === 'logout';
   const isBootstrapping = bootstrapStatus === 'running';
 
   useEffect(() => {
-    if (loading || isBootstrapping) {
+    if (loading || checking || isBootstrapping) {
       setLoadingMessage('Checking authentication...');
       return;
     }
 
-    if (user && !isFromLogout) {
+    if (user && !needsActivation && !isFromLogout) {
       setLoadingMessage('Welcome back! Redirecting you to your workspace…');
+    } else if (user && needsActivation) {
+      setLoadingMessage('');
+      setShowActivation(true);
     } else {
       setLoadingMessage('');
     }
-  }, [loading, isBootstrapping, user, isFromLogout]);
+  }, [loading, checking, isBootstrapping, user, needsActivation, isFromLogout]);
 
   useEffect(() => {
-    if (!loading && !isBootstrapping && user && !isFromLogout) {
+    if (!loading && !checking && !isBootstrapping && user && !needsActivation && !isFromLogout) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -207,9 +216,9 @@ function MainHomePageContent() {
     }
 
     return undefined;
-  }, [loading, isBootstrapping, user, isFromLogout, router]);
+  }, [loading, checking, isBootstrapping, user, needsActivation, isFromLogout, router]);
 
-  if (loading || isBootstrapping || (user && !isFromLogout)) {
+  if (loading || checking || isBootstrapping || (user && !needsActivation && !isFromLogout)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">
@@ -230,6 +239,23 @@ function MainHomePageContent() {
               )}
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render until colors are loaded
+  if (colorsLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-[rgb(var(--color-primary-rgb)/0.2)] animate-pulse" />
+            </div>
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[var(--color-primary)]" />
+          </div>
+          <p className="text-lg font-medium text-white">Loading...</p>
         </div>
       </div>
     );
@@ -286,6 +312,18 @@ function MainHomePageContent() {
           resourceLinks,
           legalLinks,
         }}
+        showActivation={showActivation}
+        activationComponent={
+          <AppActivationBox
+            appName="main"
+            appDisplayName="Main"
+            onActivated={() => window.location.reload()}
+            onDifferentEmail={async () => {
+              await firebaseSignOut(auth);
+              setShowActivation(false);
+            }}
+          />
+        }
       />
     </>
   );

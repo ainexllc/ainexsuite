@@ -41,7 +41,7 @@ export function TopNav({
   return (
     <header
       className={clsx(
-        "fixed inset-x-0 top-0 z-30 backdrop-blur-2xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.3)] transition-colors",
+        "fixed inset-x-0 top-0 z-40 backdrop-blur-2xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.3)] transition-colors",
         navBackgroundClass,
         className,
       )}

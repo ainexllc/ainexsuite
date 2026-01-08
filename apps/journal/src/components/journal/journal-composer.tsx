@@ -6,7 +6,7 @@ import { clsx } from "clsx";
 import type { JournalEntryFormData, EntryColor, BackgroundOverlay } from "@ainexsuite/types";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAuth } from "@ainexsuite/auth";
-import { useToast, InlineSpacePicker } from "@ainexsuite/ui";
+import { useToast, SpaceTabSelector } from "@ainexsuite/ui";
 import { useBackgrounds } from "@/hooks/use-backgrounds";
 import { useCovers } from "@/hooks/use-covers";
 import { getBackgroundById, getOverlayClasses, OVERLAY_OPTIONS, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
@@ -67,8 +67,8 @@ export function JournalComposer({ onEntryCreated, onManagePeople, onManageSpaces
   // Cover settings (AI summary toggle)
   const { showAiSummary, setShowAiSummary } = useCoverSettings();
 
-  // Get current space for InlineSpacePicker
-  const currentSpace = spaces.find((s) => s.id === currentSpaceId) || null;
+  // Get current space name for placeholder
+  const currentSpaceName = spaces.find((s) => s.id === currentSpaceId)?.name || 'Personal';
 
   // Merge Firestore backgrounds with fallbacks
   const availableBackgrounds = useMemo(() => {
@@ -237,25 +237,30 @@ export function JournalComposer({ onEntryCreated, onManagePeople, onManageSpaces
   }, [expanded, handleClose, isSubmitting]);
 
   return (
-    <section className="w-full">
+    <section className="w-full space-y-3">
+      {/* Space tab selector - centered above */}
+      {spaces.length > 1 && (
+        <SpaceTabSelector
+          spaces={spaces}
+          currentSpaceId={currentSpaceId || 'personal'}
+          onSpaceChange={setCurrentSpace}
+          personalLabel="My Journal"
+          onManagePeople={onManagePeople}
+          onManageSpaces={onManageSpaces}
+        />
+      )}
+
       {!expanded ? (
         // Collapsed state
         <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+          <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-primary)] flex-shrink-0" />
           <button
             type="button"
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
             onClick={() => setExpanded(true)}
           >
-            <span>Write a journal entry...</span>
+            <span>Create a new entry in <span className="font-medium text-zinc-600 dark:text-zinc-300">{currentSpaceName}</span>...</span>
           </button>
-          {/* Inline space picker */}
-          <InlineSpacePicker
-            spaces={spaces}
-            currentSpace={currentSpace}
-            onSpaceChange={setCurrentSpace}
-            onManagePeople={onManagePeople}
-            onManageSpaces={onManageSpaces}
-          />
         </div>
       ) : (
         // Expanded state - inline editor

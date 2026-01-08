@@ -77,6 +77,8 @@ export async function POST(request: NextRequest) {
 
     // Prefer uid if provided (more direct)
     if (uid) {
+      // eslint-disable-next-line no-console
+      console.log(`[Logout Sync] Attempting to remove session for uid: ${uid}`);
       removed = removeSessionByUid(uid);
       // eslint-disable-next-line no-console
       console.log(`[Logout Sync] Removed session for uid ${uid}: ${removed}`);
@@ -85,6 +87,10 @@ export async function POST(request: NextRequest) {
       // eslint-disable-next-line no-console
       console.log(`[Logout Sync] Removed session by cookie: ${removed}`);
     }
+
+    // Log total sessions remaining
+    // eslint-disable-next-line no-console
+    console.log(`[Logout Sync] Complete. Session removed: ${removed}`);
 
     return NextResponse.json({ success: true, removed }, { headers: corsHeaders });
   } catch (error) {

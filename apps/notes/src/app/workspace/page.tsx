@@ -398,6 +398,7 @@ function NotesWorkspaceContent() {
   return (
     <>
     <WorkspacePageLayout
+      className="pt-[17px]"
       composer={
         <NoteComposer
           onManagePeople={() => setShowMemberManager(true)}

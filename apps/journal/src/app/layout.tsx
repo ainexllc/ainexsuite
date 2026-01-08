@@ -3,11 +3,9 @@ import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import { Plus_Jakarta_Sans, Inter, DM_Sans, Kanit, Bebas_Neue } from 'next/font/google';
 import { AuthProvider } from '@ainexsuite/auth';
-import { ThemeProvider, AppColorProvider } from '@ainexsuite/theme';
+import { ThemeProvider, AppColorProvider, themeSyncScriptContent } from '@ainexsuite/theme';
 import { getServerTheme } from '@ainexsuite/theme/server';
-
-// Inline script to sync cookie → localStorage BEFORE next-themes runs
-const THEME_SYNC_SCRIPT = `(function(){try{var c=document.cookie.match(/(^| )ainex-theme=([^;]+)/);if(c&&c[2]){localStorage.setItem('ainex-theme',c[2])}}catch(e){}})();`;
+import { AppProviders } from '@/components/providers/app-providers';
 import { Toaster } from '@ainexsuite/ui';
 import '@ainexsuite/ui/styles';
 import './globals.css';
@@ -61,15 +59,16 @@ export default async function RootLayout({
   const theme = await getServerTheme();
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${theme} ${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable}`}>
+    <html lang="en" suppressHydrationWarning className={theme}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SYNC_SCRIPT }} />
+        {/* Theme sync script - sanitized constant from theme package */}
+        <script dangerouslySetInnerHTML={{ __html: themeSyncScriptContent }} />
       </head>
-      <body className="font-sans antialiased">
+      <body className={`${plusJakartaSans.variable} ${inter.variable} ${GeistSans.variable} ${dmSans.variable} ${GeistMono.variable} ${kanit.variable} ${bebasNeue.variable} font-sans antialiased`}>
         <ThemeProvider defaultTheme={theme} enableSystem={true} storageKey="ainex-theme">
           <AuthProvider>
             <AppColorProvider appId="journal" fallbackPrimary="#f97316" fallbackSecondary="#fb923c">
-              {children}
+              <AppProviders>{children}</AppProviders>
               <Toaster />
             </AppColorProvider>
           </AuthProvider>

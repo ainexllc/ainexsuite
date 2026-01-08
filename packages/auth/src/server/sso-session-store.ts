@@ -68,9 +68,16 @@ export function storeSession(sessionCookie: string): boolean {
 export function getLatestSession(): string | null {
   const now = Date.now();
   let latestSession: StoredSession | null = null;
+  let latestSessionId: string | null = null;
+
+  // eslint-disable-next-line no-console
+  console.log(`[SSO Store] getLatestSession called. Store size: ${sessionStore.size}`);
 
   // Find the most recently created valid session
   for (const [sessionId, session] of sessionStore.entries()) {
+    // eslint-disable-next-line no-console
+    console.log(`[SSO Store] Checking session: ${sessionId}, expires in: ${Math.round((session.expiresAt - now) / 1000)}s`);
+
     // Skip expired sessions
     if (session.expiresAt < now) {
       sessionStore.delete(sessionId);
@@ -80,13 +87,18 @@ export function getLatestSession(): string | null {
     // Track the latest
     if (!latestSession || session.createdAt > latestSession.createdAt) {
       latestSession = session;
+      latestSessionId = sessionId;
     }
   }
 
   if (latestSession) {
+    // eslint-disable-next-line no-console
+    console.log(`[SSO Store] Returning session for uid: ${latestSessionId}`);
     return latestSession.sessionCookie;
   }
 
+  // eslint-disable-next-line no-console
+  console.log(`[SSO Store] No valid session found`);
   return null;
 }
 
@@ -125,7 +137,14 @@ export function removeSession(sessionCookie: string): boolean {
  * This is simpler than removeSession when you only have the uid
  */
 export function removeSessionByUid(uid: string): boolean {
-  return sessionStore.delete(uid);
+  // eslint-disable-next-line no-console
+  console.log(`[SSO Store] removeSessionByUid called for uid: ${uid}`);
+  // eslint-disable-next-line no-console
+  console.log(`[SSO Store] Store has uid? ${sessionStore.has(uid)}, Store size before: ${sessionStore.size}`);
+  const result = sessionStore.delete(uid);
+  // eslint-disable-next-line no-console
+  console.log(`[SSO Store] Delete result: ${result}, Store size after: ${sessionStore.size}`);
+  return result;
 }
 
 /**

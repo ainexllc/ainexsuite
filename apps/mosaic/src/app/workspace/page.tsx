@@ -112,6 +112,7 @@ export default function MosaicWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
+        className="pt-[17px]"
         insightsBanner={showWelcome ? <WelcomePanel onDismiss={dismissWelcome} /> : null}
         composerActions={
           <>

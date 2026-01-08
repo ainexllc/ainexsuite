@@ -108,6 +108,11 @@ export async function POST(request: NextRequest) {
 
     // In development, store in memory (cookies don't work cross-origin)
     if (isDev) {
+      // Log who is calling session-sync (to debug re-syncing after logout)
+      const origin = request.headers.get('origin');
+      // eslint-disable-next-line no-console
+      console.log(`[Session Sync] Storing session from origin: ${origin}`);
+
       const stored = storeSession(sessionCookie);
       if (!stored) {
         return NextResponse.json(
@@ -115,6 +120,8 @@ export async function POST(request: NextRequest) {
           { status: 500, headers: corsHeaders }
         );
       }
+      // eslint-disable-next-line no-console
+      console.log(`[Session Sync] Session stored successfully`);
       return NextResponse.json({ success: true }, { headers: corsHeaders });
     }
 

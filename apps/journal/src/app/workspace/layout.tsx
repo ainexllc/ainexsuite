@@ -5,12 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
-import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
-import { EntriesProvider, useEntries } from '@/components/providers/entries-provider';
-import { PreferencesProvider } from '@/components/providers/preferences-provider';
+import { useSpaces } from '@/components/providers/spaces-provider';
+import { EntriesProvider } from '@/components/providers/entries-provider';
 import { HintsProvider } from '@/components/hints';
 import { PrivacyProvider } from '@ainexsuite/privacy';
-import { CoverSettingsProvider } from '@/contexts/cover-settings-context';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 import { BookOpen } from 'lucide-react';
@@ -47,7 +45,6 @@ function WorkspaceLayoutInner({
 }) {
   const router = useRouter();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const { entries, loading: entriesLoading } = useEntries();
   const { allSpaces, updateSpace, deleteSpace } = useSpaces();
 
   // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
@@ -109,8 +106,6 @@ function WorkspaceLayoutInner({
         onSettingsClick={handleSettingsClick}
         notifications={[]}
         onUpdatePreferences={updatePreferences}
-        entries={entries}
-        entriesLoading={entriesLoading}
       >
         {children}
       </WorkspaceLayoutWithInsights>
@@ -192,32 +187,26 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <SpacesProvider>
-      <PrivacyProvider config={{ appName: 'journal' }}>
-        <CoverSettingsProvider>
-          <PreferencesProvider>
-            <HintsProvider>
-              <EntriesProvider>
-                <WorkspaceLayoutInner
-                  user={user}
-                  handleSignOut={handleSignOut}
-                  updatePreferences={updatePreferences}
-                  updateProfile={updateProfile}
-                  updateProfileImage={updateProfileImage}
-                  removeProfileImage={removeProfileImage}
-                  generateAnimatedAvatar={generateAnimatedAvatar}
-                  saveAnimatedAvatar={saveAnimatedAvatar}
-                  toggleAnimatedAvatar={toggleAnimatedAvatar}
-                  removeAnimatedAvatar={removeAnimatedAvatar}
-                  pollAnimationStatus={pollAnimationStatus}
-                >
-                  {children}
-                </WorkspaceLayoutInner>
-              </EntriesProvider>
-            </HintsProvider>
-          </PreferencesProvider>
-        </CoverSettingsProvider>
-      </PrivacyProvider>
-    </SpacesProvider>
+    <PrivacyProvider config={{ appName: 'journal' }}>
+      <HintsProvider>
+        <EntriesProvider>
+          <WorkspaceLayoutInner
+            user={user}
+            handleSignOut={handleSignOut}
+            updatePreferences={updatePreferences}
+            updateProfile={updateProfile}
+            updateProfileImage={updateProfileImage}
+            removeProfileImage={removeProfileImage}
+            generateAnimatedAvatar={generateAnimatedAvatar}
+            saveAnimatedAvatar={saveAnimatedAvatar}
+            toggleAnimatedAvatar={toggleAnimatedAvatar}
+            removeAnimatedAvatar={removeAnimatedAvatar}
+            pollAnimationStatus={pollAnimationStatus}
+          >
+            {children}
+          </WorkspaceLayoutInner>
+        </EntriesProvider>
+      </HintsProvider>
+    </PrivacyProvider>
   );
 }

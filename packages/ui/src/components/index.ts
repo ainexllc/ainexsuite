@@ -539,6 +539,7 @@ export {
   InviteMemberModal,
   AddChildModal,
   InlineSpacePicker,
+  SpaceTabSelector,
   type SpaceSwitcherProps,
   type SpaceSettingsProps,
   type SpacesHubModalProps,
@@ -550,6 +551,8 @@ export {
   type SpaceItem,
   type InlineSpacePickerProps,
   type InlineSpaceItem,
+  type SpaceTabSelectorProps,
+  type SpaceTabItem,
 } from "./spaces";
 
 // Toast/Notification Components
@@ -675,3 +678,6 @@ export {
   type PriorityIconProps,
   type PriorityLevel,
 } from "./priority";
+
+// Effects Components
+export { FocusGlow } from "./effects";

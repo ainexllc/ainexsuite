@@ -408,6 +408,7 @@ export default function MomentsWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
+        className="pt-[17px]"
         maxWidth="default"
         insightsBanner={<MomentsInsights moments={moments} />}
         composer={

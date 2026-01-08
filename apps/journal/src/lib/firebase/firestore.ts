@@ -325,8 +325,9 @@ export async function getUserJournalEntries(
   }
 
   // Personal space: only owned entries without a spaceId
+  // Use userId field for query as it exists on all entries (ownerId was added later)
   const constraints: QueryConstraint[] = [
-    where('ownerId', '==', userId),
+    where('userId', '==', userId),
     orderBy(sortField, sortOrder),
   ];
 

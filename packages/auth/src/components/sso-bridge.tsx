@@ -47,31 +47,45 @@ export function SSOBridge({ onComplete, enabled = true, hydrateFromDevSession }:
   const checkingRef = useRef(false);
 
   useEffect(() => {
-    // Skip if disabled, already completed, or this IS the auth hub
-    if (!enabled || completed || isAuthHub()) {
-      if (!completed && isAuthHub()) {
+    console.log('[SSOBridge] useEffect - enabled:', enabled, 'completed:', completed, 'isAuthHub:', isAuthHub());
+
+    // Early exit if disabled - don't mark as completed, just wait
+    if (!enabled) {
+      console.log('[SSOBridge] Disabled, waiting...');
+      return;
+    }
+
+    // Skip if already completed or this IS the auth hub
+    if (completed || isAuthHub()) {
+      console.log('[SSOBridge] Already completed or is AuthHub');
+      if (!completed) {
         setCompleted(true);
+        onComplete?.();
       }
-      onComplete?.();
       return;
     }
 
     // Prevent double-checking
     if (checkingRef.current) {
+      console.log('[SSOBridge] Already checking, skipping');
       return;
     }
     checkingRef.current = true;
+    console.log('[SSOBridge] Starting Auth Hub check...');
 
     checkAuthHub()
       .then(async (sessionCookie) => {
+        console.log('[SSOBridge] Auth Hub response:', sessionCookie ? 'GOT SESSION' : 'no session');
         if (sessionCookie) {
           await bootstrapWithSession(sessionCookie, hydrateFromDevSession);
+          console.log('[SSOBridge] Bootstrap complete');
         }
       })
       .catch((error) => {
         console.error('[SSOBridge] Error checking Auth Hub:', error);
       })
       .finally(() => {
+        console.log('[SSOBridge] Finishing, calling onComplete');
         setCompleted(true);
         checkingRef.current = false;
         onComplete?.();
@@ -85,39 +99,74 @@ export function SSOBridge({ onComplete, enabled = true, hydrateFromDevSession }:
 /**
  * Check the Auth Hub for an existing session
  * Returns the session cookie if authenticated, null otherwise
+ * Includes retry logic for reliability
  */
 async function checkAuthHub(): Promise<string | null> {
   const authHubUrl = getAuthHubUrl();
   const url = `${authHubUrl}/api/auth/sso-status`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      // Note: credentials:'include' won't send cookies cross-origin,
-      // but the auth hub reads its OWN cookies server-side
-    });
+  const maxRetries = 2;
+  const retryDelay = 1000; // 1 second
+  const timeout = 3000; // 3 seconds
 
-    if (!response.ok) {
-      console.warn('[SSOBridge] Auth Hub returned status:', response.status);
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+        // Note: credentials:'include' won't send cookies cross-origin,
+        // but the auth hub reads its OWN cookies server-side
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (attempt < maxRetries - 1) {
+          await new Promise(r => setTimeout(r, retryDelay));
+          continue;
+        }
+        console.warn('[SSOBridge] Auth Hub returned status:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+
+      if (data.authenticated && data.sessionCookie) {
+        return data.sessionCookie;
+      }
+
+      // Auth Hub reachable but user not authenticated - no need to retry
+      return null;
+    } catch (error) {
+      // Check if it's an abort error (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        if (attempt < maxRetries - 1) {
+          console.debug('[SSOBridge] Request timed out, retrying...');
+          await new Promise(r => setTimeout(r, retryDelay));
+          continue;
+        }
+        console.warn('[SSOBridge] Auth Hub timed out after retries');
+        return null;
+      }
+
+      // Network errors - retry if we have attempts left
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, retryDelay));
+        continue;
+      }
+
+      // Network errors are expected when auth hub isn't running (common in dev)
+      // Only log as debug, not error
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('[SSOBridge] Auth Hub unavailable after retries (this is normal if main app is not running)');
+      }
       return null;
     }
-
-    const data = await response.json();
-
-    if (data.authenticated && data.sessionCookie) {
-      return data.sessionCookie;
-    }
-
-    return null;
-  } catch (error) {
-    // Network errors are expected when auth hub isn't running (common in dev)
-    // Only log as debug, not error
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.debug('[SSOBridge] Auth Hub unavailable (this is normal if main app is not running)');
-    }
-    return null;
   }
+  return null;
 }
 
 /**

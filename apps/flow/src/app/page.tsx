@@ -2,7 +2,9 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@ainexsuite/auth';
+import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
+import { auth } from '@ainexsuite/firebase';
+import { signOut as firebaseSignOut } from 'firebase/auth';
 import { Loader2, Workflow, Cog, Play, Target, Zap, GitBranch } from 'lucide-react';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import type {
@@ -69,25 +71,31 @@ const legalLinks: FooterLink[] = [
 
 function WorkflowHomePageContent() {
   const { user, loading, bootstrapStatus } = useAuth();
+  const { needsActivation, checking } = useAppActivation('flow');
   const router = useRouter();
   const [loadingMessage, setLoadingMessage] = useState('Checking authentication...');
+  const [showActivation, setShowActivation] = useState(false);
+
   const isBootstrapping = bootstrapStatus === 'running';
 
   useEffect(() => {
-    if (loading || isBootstrapping) {
+    if (loading || checking || isBootstrapping) {
       setLoadingMessage('Checking authentication...');
       return;
     }
 
-    if (user) {
+    if (user && !needsActivation) {
       setLoadingMessage('Welcome back! Redirecting you to your workflow workspace…');
+    } else if (user && needsActivation) {
+      setLoadingMessage('');
+      setShowActivation(true);
     } else {
       setLoadingMessage('');
     }
-  }, [loading, isBootstrapping, user]);
+  }, [loading, checking, isBootstrapping, user, needsActivation]);
 
   useEffect(() => {
-    if (!loading && !isBootstrapping && user) {
+    if (!loading && !checking && !isBootstrapping && user && !needsActivation) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -96,9 +104,9 @@ function WorkflowHomePageContent() {
     }
 
     return undefined;
-  }, [loading, isBootstrapping, user, router]);
+  }, [loading, checking, isBootstrapping, user, needsActivation, router]);
 
-  if (loading || isBootstrapping || user) {
+  if (loading || checking || isBootstrapping || (user && !needsActivation)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">
@@ -111,7 +119,7 @@ function WorkflowHomePageContent() {
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
-              {user && (
+              {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a855f7] animate-pulse" />
                   Redirecting to your workspace
@@ -166,7 +174,18 @@ function WorkflowHomePageContent() {
           sectionDescription: 'Workflow combines visual design, automation, and execution into one intelligent platform.',
           cards: featureCards,
         }}
-        showActivation={false}
+        showActivation={showActivation}
+        activationComponent={
+          <AppActivationBox
+            appName="flow"
+            appDisplayName="Flow"
+            onActivated={() => window.location.reload()}
+            onDifferentEmail={async () => {
+              await firebaseSignOut(auth);
+              setShowActivation(false);
+            }}
+          />
+        }
         footer={{
           appDisplayName: "AINex Workflow",
           productLinks,

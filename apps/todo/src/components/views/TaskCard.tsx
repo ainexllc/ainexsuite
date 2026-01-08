@@ -9,7 +9,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
-import { ConfirmationDialog, PriorityIcon } from '@ainexsuite/ui';
+import { ConfirmationDialog, PriorityIcon, FocusGlow } from '@ainexsuite/ui';
 import { useTodoStore } from '../../lib/store';
 import type { Task } from '../../types/models';
 
@@ -126,6 +126,9 @@ export function TaskCard({ task, onEditTask }: TaskCardProps) {
         )}
         onClick={handleCardClick}
       >
+        {/* Animated glow effect for pinned cards */}
+        {task.pinned && <FocusGlow />}
+
         {/* Corner Heart Badge - clickable to unfavorite */}
         {task.pinned && (
           <button

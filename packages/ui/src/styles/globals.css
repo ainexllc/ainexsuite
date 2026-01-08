@@ -540,3 +540,9 @@
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.2); }
 }
+
+/* FocusGlow SVG border animation - stroke-dashoffset creates rotating segment */
+@keyframes glow-border-rotate {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -100; }
+}

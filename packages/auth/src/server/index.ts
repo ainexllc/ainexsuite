@@ -31,3 +31,9 @@ export {
   POST as LogoutSyncPOST,
   OPTIONS as LogoutSyncOPTIONS,
 } from './logout-sync-handler';
+
+// Fast bootstrap handler exports for optimized auth startup
+export {
+  POST as FastBootstrapPOST,
+  OPTIONS as FastBootstrapOPTIONS,
+} from './fast-bootstrap-handler';

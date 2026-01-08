@@ -66,13 +66,18 @@ export async function GET(request: NextRequest) {
   try {
     // First check the cookie (works in production with shared domain)
     let sessionCookie = request.cookies.get('__session')?.value;
+    const cookieSource = sessionCookie ? 'cookie' : null;
 
     // In development, also check the in-memory store (cross-origin cookies don't work)
     if (!sessionCookie && isDev) {
       sessionCookie = getLatestSession() ?? undefined;
     }
 
+    const source = cookieSource || (sessionCookie ? 'in-memory-store' : 'none');
+    console.log(`[SSO Status] Session source: ${source}, hasSession: ${!!sessionCookie}`);
+
     if (!sessionCookie) {
+      console.log('[SSO Status] No session found, returning authenticated: false');
       return NextResponse.json(
         { authenticated: false },
         { headers: corsHeaders }

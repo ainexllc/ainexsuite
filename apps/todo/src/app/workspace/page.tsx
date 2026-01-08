@@ -15,6 +15,7 @@ import {
   type SortConfig,
   type FilterChip,
   type FilterChipType,
+  type UserSpace,
 } from '@ainexsuite/ui';
 import { format, isSameDay, parseISO } from 'date-fns';
 import type { SpaceType } from '@ainexsuite/types';
@@ -31,6 +32,7 @@ import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
 import { MemberManager } from '@/components/spaces/MemberManager';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useSpaces } from '@/components/providers/spaces-provider';
+import { useAuth } from '@ainexsuite/auth';
 
 import { useTodoStore } from '@/lib/store';
 import type { TaskStatus } from '@/types/models';
@@ -71,6 +73,7 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 
 
 export default function TodoWorkspacePage() {
+  const { user } = useAuth();
   const { currentSpaceId, viewPreferences, setViewPreference, tasks, getCurrentSpace } = useTodoStore();
   const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
   const currentSpace = getCurrentSpace();
@@ -82,19 +85,18 @@ export default function TodoWorkspacePage() {
   const [sort, setSort] = useState<SortConfig>({ field: 'createdAt', direction: 'desc' });
 
   // Map spaces for SpaceManagementModal
-  const userSpaces = useMemo(() => {
+  const userSpaces = useMemo<UserSpace[]>(() => {
     return allSpaces
       .filter((s) => s.id !== 'personal')
       .map((s) => ({
         id: s.id,
         name: s.name,
-        type: s.type,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal || false,
+        type: s.type as SpaceType,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
         hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-        memberCount: s.memberUids?.length || 1,
-        isOwner: (s as { ownerId?: string; createdBy?: string }).ownerId === undefined,
       }));
-  }, [allSpaces]);
+  }, [allSpaces, user?.uid]);
 
   // Space management handlers
   const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
@@ -390,6 +392,7 @@ export default function TodoWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
+        className="pt-[17px]"
         composer={
           <TaskComposer
             onManagePeople={() => setShowMemberManager(true)}

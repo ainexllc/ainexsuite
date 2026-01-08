@@ -144,7 +144,7 @@ export default function WorkspacePage() {
 
       {/* Smart Dashboard Grid */}
       <motion.div variants={itemVariants}>
-        <WorkspacePageLayout maxWidth="wide">
+        <WorkspacePageLayout className="pt-[17px]" maxWidth="wide">
           <SmartGrid />
         </WorkspacePageLayout>
       </motion.div>

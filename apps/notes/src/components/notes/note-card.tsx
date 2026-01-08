@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
-import { ConfirmationDialog, PriorityIcon } from "@ainexsuite/ui";
+import { ConfirmationDialog, PriorityIcon, FocusGlow } from "@ainexsuite/ui";
 import type { Note } from "@/lib/types/note";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
@@ -122,6 +122,9 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           }
         }}
       >
+        {/* Animated glow effect for pinned cards */}
+        {note.pinned && <FocusGlow />}
+
         {/* Selection Checkbox - shows on hover or in select mode */}
         {onSelect && (
           <button
@@ -403,7 +406,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
 
         {/* Footer - outside overflow wrapper so it extends to card edges */}
         <footer className={clsx(
-          "relative z-10 mt-auto flex items-center justify-between pt-2 -mx-4 -mb-4 px-4 pb-3 rounded-b-2xl border-t",
+          "relative z-10 mt-auto flex items-center justify-between pt-1.5 -mx-4 -mb-4 px-4 pb-2 rounded-b-2xl border-t",
           backgroundImage?.brightness === 'light'
             ? "bg-white/30 backdrop-blur-sm border-black/10"
             : backgroundImage
@@ -440,7 +443,7 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                 ? "text-white/70"
                 : getTextColorClasses(backgroundImage, 'muted')
             )}>
-              {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              {(note.updatedAt.getTime() !== note.createdAt.getTime() ? note.updatedAt : note.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
               {' · '}
               {note.updatedAt.getTime() !== note.createdAt.getTime() ? 'Edited' : 'Created'}
             </span>

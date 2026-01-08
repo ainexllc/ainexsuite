@@ -5,6 +5,7 @@
 
 import { getAppUrl } from '../config/apps';
 import type { AppSlug } from '../config/apps';
+import { getTokenForNavigation } from './auth-token-cache';
 
 export interface NavigateOptions {
   /** Action to trigger in the target app (e.g., 'create' to open create mode) */
@@ -52,42 +53,32 @@ export async function navigateToApp(
   };
 
   try {
-    // Request custom token for SSO
-    const response = await fetch('/api/auth/custom-token', {
-      method: 'POST',
-      credentials: 'include', // Include httpOnly cookies
-    });
+    // Get token from cache or fetch (uses cache if available for instant nav)
+    const tokenData = await getTokenForNavigation();
 
-    if (response.ok) {
-      const data = await response.json();
-
-      // In dev mode, store session in localStorage for instant auth on target app
-      // This is the key optimization - no need for SSOBridge or extra API calls
-      if (data.devMode && data.sessionCookie) {
-        localStorage.setItem('__cross_app_session', data.sessionCookie);
+    if (tokenData) {
+      // Dev mode: store session in localStorage for instant auth on target app
+      if (tokenData.devMode && tokenData.sessionCookie) {
+        localStorage.setItem('__cross_app_session', tokenData.sessionCookie);
         localStorage.setItem('__cross_app_timestamp', String(Date.now()));
         window.location.href = appendActionParam(baseTargetUrl);
         return;
       }
 
-      // Dev mode without session (not logged in)
-      if (data.devMode) {
-        window.location.href = appendActionParam(baseTargetUrl);
+      // Production path: Add auth token to URL
+      if (tokenData.token) {
+        const urlWithToken = new URL(baseTargetUrl);
+        urlWithToken.searchParams.set('auth_token', tokenData.token);
+        if (options?.action) {
+          urlWithToken.searchParams.set('action', options.action);
+        }
+        window.location.href = urlWithToken.toString();
         return;
       }
-
-      // Production path: Add auth token to URL
-      const urlWithToken = new URL(baseTargetUrl);
-      urlWithToken.searchParams.set('auth_token', data.customToken);
-      if (options?.action) {
-        urlWithToken.searchParams.set('action', options.action);
-      }
-
-      window.location.href = urlWithToken.toString();
-    } else {
-      // No valid session - navigate without SSO (target app will handle auth)
-      window.location.href = appendActionParam(baseTargetUrl);
     }
+
+    // No valid session - navigate without SSO (target app will handle auth)
+    window.location.href = appendActionParam(baseTargetUrl);
   } catch (error) {
     // Fallback: Navigate without SSO
     console.error('❌ SSO: Error during navigation:', error);

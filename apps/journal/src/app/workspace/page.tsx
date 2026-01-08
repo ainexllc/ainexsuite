@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { LayoutGrid, Calendar, X } from 'lucide-react';
-import { useWorkspaceAuth } from '@ainexsuite/auth';
+import { useAuth } from '@ainexsuite/auth';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
@@ -65,7 +65,7 @@ const ENTRY_COLOR_MAP: Record<string, string> = {
 };
 
 export default function WorkspacePage() {
-  const { user } = useWorkspaceAuth({ redirectTo: '/' });
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const dateFilter = searchParams.get('date');
   const [refreshKey, setRefreshKey] = useState(0);
@@ -78,7 +78,7 @@ export default function WorkspacePage() {
   // Space management state
   const [showMemberManager, setShowMemberManager] = useState(false);
   const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-  const { spaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
 
   const handleEntryCreated = useCallback(() => {
     setRefreshKey((prev) => prev + 1);
@@ -205,7 +205,7 @@ export default function WorkspacePage() {
 
   // Map spaces to format expected by SpaceManagementModal
   const userSpaces = useMemo(() => {
-    return spaces
+    return allSpaces
       .filter((s) => s.id !== 'personal')
       .map((s) => ({
         id: s.id,
@@ -214,7 +214,7 @@ export default function WorkspacePage() {
         memberCount: s.memberUids?.length || 1,
         isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
       }));
-  }, [spaces, user?.uid]);
+  }, [allSpaces, user?.uid]);
 
   // Space management handlers
   const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
@@ -246,6 +246,7 @@ export default function WorkspacePage() {
 
   return (
     <WorkspacePageLayout
+      className="pt-[17px]"
       composer={
         <JournalComposer
           onEntryCreated={handleEntryCreated}

@@ -9,7 +9,7 @@ import type { WorkflowSpace } from "@/lib/types/workflow";
  */
 export const { SpacesProvider, useSpaces } = createSpacesProvider<WorkflowSpace>({
   appId: "workflow",
-  collectionName: "workflow_spaces",
+  collectionName: "spaces",
   storageKey: "workflow-current-space",
   defaultSpace: {
     name: "My Workflows",

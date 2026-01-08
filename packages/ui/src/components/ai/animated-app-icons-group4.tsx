@@ -1274,8 +1274,189 @@ export function AdminAnalyticsIcon({ size = 24, color = "#64748b", isAnimating =
 }
 
 // ============================================================================
+// SUBS APP ICONS (#22c55e)
+// ============================================================================
+
+// 1. Subs - Wallet with pulse
+// ============================================================================
+
+export function SubsWalletIcon({ size = 24, color = "#22c55e", isAnimating = true, className, style }: AnimatedIconProps) {
+  const pulseVariants: Variants = {
+    idle: { scale: 1, opacity: 0.5 },
+    animate: {
+      scale: [1, 1.15, 1],
+      opacity: [0.5, 1, 0.5],
+      transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+    },
+  };
+
+  const coinVariants: Variants = {
+    idle: { y: 0, opacity: 0.7 },
+    animate: {
+      y: [0, -2, 0],
+      opacity: [0.7, 1, 0.7],
+      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+    },
+  };
+
+  return (
+    <motion.svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+      <motion.circle cx="18" cy="14" r="1" fill={color} variants={coinVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+      <motion.circle cx="8" cy="12" r="3" stroke={color} strokeWidth={1} fill="none" opacity={0.3} variants={pulseVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+      <motion.circle cx="8" cy="12" r="1.5" fill={color} opacity={0.6} variants={pulseVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+    </motion.svg>
+  );
+}
+
+// 2. Subs - Credit card with scan
+// ============================================================================
+
+export function SubsCardIcon({ size = 24, color = "#22c55e", isAnimating = true, className, style }: AnimatedIconProps) {
+  const scanVariants: Variants = {
+    idle: { x: 0, opacity: 0 },
+    animate: {
+      x: [0, 16, 0],
+      opacity: [0, 1, 0],
+      transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+    },
+  };
+
+  return (
+    <motion.svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <rect x="1" y="4" width="22" height="16" rx="2" />
+      <line x1="1" y1="10" x2="23" y2="10" />
+      <motion.line x1="3" y1="4" x2="3" y2="20" stroke={color} strokeWidth={2} opacity={0.6} variants={scanVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+      <rect x="4" y="14" width="6" height="3" rx="1" opacity={0.5} />
+    </motion.svg>
+  );
+}
+
+// 3. Subs - Recurring payment
+// ============================================================================
+
+export function SubsRecurringIcon({ size = 24, color = "#22c55e", isAnimating = true, className, style }: AnimatedIconProps) {
+  const rotateVariants: Variants = {
+    idle: { rotate: 0 },
+    animate: {
+      rotate: 360,
+      transition: { duration: 3, repeat: Infinity, ease: "linear" },
+    },
+  };
+
+  return (
+    <motion.svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <motion.g style={{ originX: "12px", originY: "12px" }} variants={rotateVariants} initial="idle" animate={isAnimating ? "animate" : "idle"}>
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        <polyline points="21 3 21 9 15 9" />
+      </motion.g>
+      <circle cx="12" cy="12" r="3" fill={color} fillOpacity={0.3} />
+      <text x="12" y="13.5" fontSize="5" fill={color} textAnchor="middle" fontWeight="bold">$</text>
+    </motion.svg>
+  );
+}
+
+// ============================================================================
+// DOCS APP ICONS (#3b82f6)
+// ============================================================================
+
+// 1. Docs - Document with typing effect
+// ============================================================================
+
+export function DocsDocumentIcon({ size = 24, color = "#3b82f6", isAnimating = true, className, style }: AnimatedIconProps) {
+  const lineVariants: Variants = {
+    idle: { pathLength: 1, opacity: 0.5 },
+    animate: (i: number) => ({
+      pathLength: [0, 1],
+      opacity: [0.3, 0.8, 0.3],
+      transition: { duration: 1.5, repeat: Infinity, delay: i * 0.3, ease: "easeInOut" },
+    }),
+  };
+
+  const cursorVariants: Variants = {
+    idle: { opacity: 0 },
+    animate: {
+      opacity: [0, 1, 0],
+      transition: { duration: 0.8, repeat: Infinity, ease: "easeInOut" },
+    },
+  };
+
+  return (
+    <motion.svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      {[0, 1, 2].map((i) => (
+        <motion.line key={i} x1="8" y1={12 + i * 3} x2={16 - i * 2} y2={12 + i * 3} custom={i} variants={lineVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+      ))}
+      <motion.line x1="8" y1="18" x2="8.5" y2="18" strokeWidth={2} variants={cursorVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+    </motion.svg>
+  );
+}
+
+// 2. Docs - Rich text editing
+// ============================================================================
+
+export function DocsEditIcon({ size = 24, color = "#3b82f6", isAnimating = true, className, style }: AnimatedIconProps) {
+  const penVariants: Variants = {
+    idle: { x: 0, y: 0 },
+    animate: {
+      x: [0, 2, 0],
+      y: [0, 2, 0],
+      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+    },
+  };
+
+  return (
+    <motion.svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <motion.g variants={penVariants} initial="idle" animate={isAnimating ? "animate" : "idle"}>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </motion.g>
+    </motion.svg>
+  );
+}
+
+// 3. Docs - Page with formatting
+// ============================================================================
+
+export function DocsPageIcon({ size = 24, color = "#3b82f6", isAnimating = true, className, style }: AnimatedIconProps) {
+  const formatVariants: Variants = {
+    idle: { scale: 1, opacity: 0.5 },
+    animate: (i: number) => ({
+      scale: [1, 1.05, 1],
+      opacity: [0.5, 1, 0.5],
+      transition: { duration: 2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" },
+    }),
+  };
+
+  return (
+    <motion.svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <motion.rect x="6" y="6" width="5" height="2" rx="0.5" fill={color} fillOpacity={0.6} custom={0} variants={formatVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+      <motion.line x1="6" y1="11" x2="18" y2="11" opacity={0.4} custom={1} variants={formatVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+      <motion.line x1="6" y1="14" x2="18" y2="14" opacity={0.4} custom={2} variants={formatVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+      <motion.line x1="6" y1="17" x2="12" y2="17" opacity={0.4} custom={3} variants={formatVariants} initial="idle" animate={isAnimating ? "animate" : "idle"} />
+    </motion.svg>
+  );
+}
+
+// ============================================================================
 // Export all icons as collections
 // ============================================================================
+
+export const SubsIcons = {
+  Wallet: SubsWalletIcon,
+  Card: SubsCardIcon,
+  Recurring: SubsRecurringIcon,
+} as const;
+
+export const DocsIcons = {
+  Document: DocsDocumentIcon,
+  Edit: DocsEditIcon,
+  Page: DocsPageIcon,
+} as const;
 
 export const ProjectsIcons = {
   Folder: ProjectsFolderIcon,
@@ -1334,9 +1515,13 @@ export const AppIconsGroup4 = {
   Workflow: WorkflowIcons,
   Calendar: CalendarIcons,
   Admin: AdminIcons,
+  Subs: SubsIcons,
+  Docs: DocsIcons,
 } as const;
 
 export type ProjectsIconName = keyof typeof ProjectsIcons;
 export type WorkflowIconName = keyof typeof WorkflowIcons;
 export type CalendarIconName = keyof typeof CalendarIcons;
 export type AdminIconName = keyof typeof AdminIcons;
+export type SubsIconName = keyof typeof SubsIcons;
+export type DocsIconName = keyof typeof DocsIcons;

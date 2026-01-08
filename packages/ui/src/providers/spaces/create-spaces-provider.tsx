@@ -69,13 +69,17 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
   const SpacesContext = createContext<SpacesContextValue<TSpace> | null>(null);
 
   function SpacesProvider({ children }: { children: ReactNode }) {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [userSpaces, setUserSpaces] = useState<TSpace[]>([]);
     const [currentSpaceId, setCurrentSpaceId] = useState<string>('personal');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
     const userId = user?.uid ?? null;
+    // Wait for auth to be fully complete to avoid permission errors
+    // In dev mode, firebaseUser may be null (uses session hydration instead)
+    // authLoading is false only when authPhase is 'authenticated' or 'unauthenticated'
+    const isAuthReady = !authLoading && !!user;
 
     // Create virtual personal space (not stored in Firestore)
     const personalSpace = useMemo<TSpace>(
@@ -100,11 +104,15 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
     );
 
     // Subscribe to user's spaces from Firestore
+    // Wait for auth to be fully complete (not just cached user) to avoid permission errors
     useEffect(() => {
-      if (!userId) {
-        setUserSpaces([]);
-        setCurrentSpaceId('personal');
-        setLoading(false);
+      if (!userId || !isAuthReady) {
+        if (!userId && !authLoading) {
+          // Only reset to personal space if auth is done and there's no user
+          setUserSpaces([]);
+          setCurrentSpaceId('personal');
+          setLoading(false);
+        }
         return;
       }
 
@@ -180,7 +188,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
       );
 
       return () => unsubscribe();
-    }, [userId]);
+    }, [userId, isAuthReady, authLoading]);
 
     // All spaces including virtual personal space (unfiltered - for settings)
     const allSpaces = useMemo(

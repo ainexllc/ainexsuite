@@ -9,7 +9,7 @@ import type { Space } from "@ainexsuite/types";
  */
 export const { SpacesProvider, useSpaces } = createSpacesProvider<Space>({
   appId: "todo",
-  collectionName: "todo_spaces",
+  collectionName: "spaces",
   storageKey: "todo-current-space",
   defaultSpace: {
     name: "My Todos",

@@ -18,6 +18,7 @@ export default function WorkspacePage() {
 
   return (
     <WorkspacePageLayout
+      className="pt-[17px]"
       composer={<TrackComposer />}
       toolbar={
         <TrackToolbar

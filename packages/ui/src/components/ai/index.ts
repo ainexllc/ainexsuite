@@ -217,7 +217,7 @@ export {
   type FitIconName,
 } from "./animated-app-icons-group3";
 
-// Group 4: Projects, Workflow, Calendar, Admin
+// Group 4: Projects, Workflow, Calendar, Admin, Subs, Docs
 export {
   // Projects App Icons
   ProjectsFolderIcon,
@@ -263,14 +263,26 @@ export {
   AdminAPIIcon,
   AdminSecurityIcon,
   AdminAnalyticsIcon,
+  // Subs App Icons
+  SubsWalletIcon,
+  SubsCardIcon,
+  SubsRecurringIcon,
+  // Docs App Icons
+  DocsDocumentIcon,
+  DocsEditIcon,
+  DocsPageIcon,
   // Collections
   ProjectsIcons,
   WorkflowIcons,
   CalendarIcons,
   AdminIcons,
+  SubsIcons,
+  DocsIcons,
   AppIconsGroup4,
   type ProjectsIconName,
   type WorkflowIconName,
   type CalendarIconName,
   type AdminIconName,
+  type SubsIconName,
+  type DocsIconName,
 } from "./animated-app-icons-group4";

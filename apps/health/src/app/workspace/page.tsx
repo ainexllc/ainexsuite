@@ -305,6 +305,7 @@ export default function HealthWorkspacePage() {
   return (
     <>
       <WorkspacePageLayout
+        className="pt-[17px]"
         maxWidth="default"
         composer={
           <HealthCheckinComposer

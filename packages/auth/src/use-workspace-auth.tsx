@@ -68,6 +68,7 @@ export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWork
     loading,
     ssoInProgress,
     bootstrapStatus,
+    signOut,
     updatePreferences,
     updateProfile,
     updateProfileImage,
@@ -89,23 +90,22 @@ export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWork
   // Redirect to login if not authenticated
   // Wait for bootstrap and SSO to complete before redirecting to prevent interrupting auto-login
   useEffect(() => {
-    if (!loading && !ssoInProgress && !user && bootstrapStatus !== 'running') {
+    // Use isLoading to ensure all loading states are checked
+    if (!isLoading && !user) {
+      console.log('[useWorkspaceAuth] Redirecting to login - not authenticated');
       router.push(redirectTo);
     }
-  }, [user, loading, ssoInProgress, bootstrapStatus, router, redirectTo]);
+  }, [isLoading, user, router, redirectTo]);
 
-  // Shared sign out handler
+  // Shared sign out handler - uses signOut from auth context for proper cleanup
   const handleSignOut = useCallback(async () => {
     try {
-      const { auth } = await import('@ainexsuite/firebase');
-      const firebaseAuth = await import('firebase/auth');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (firebaseAuth as any).signOut(auth);
+      await signOut();
       router.push(redirectTo);
     } catch {
       // Ignore sign out errors
     }
-  }, [router, redirectTo]);
+  }, [signOut, router, redirectTo]);
 
   return {
     user,

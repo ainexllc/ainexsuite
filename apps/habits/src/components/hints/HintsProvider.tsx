@@ -33,14 +33,19 @@ interface HintsProviderProps {
 }
 
 export function HintsProvider({ children }: HintsProviderProps) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [dismissedHints, setDismissedHints] = useState<Set<HintId>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
+  // Wait for auth to be fully complete to avoid permission errors
+  // authLoading is false only when authPhase is 'authenticated' or 'unauthenticated'
+  const isAuthReady = !authLoading && !!user;
+
   // Load dismissed hints from Firestore on mount
+  // Wait for Firebase auth to be ready (not just cached user) to avoid permission errors
   useEffect(() => {
-    if (!user?.uid) {
-      setIsLoading(false);
+    if (!user?.uid || !isAuthReady) {
+      if (!user?.uid && !authLoading) setIsLoading(false);
       return;
     }
 
@@ -62,7 +67,7 @@ export function HintsProvider({ children }: HintsProviderProps) {
     };
 
     loadHints();
-  }, [user?.uid]);
+  }, [user?.uid, isAuthReady, authLoading]);
 
   // Check if a hint should be shown
   const shouldShowHint = useCallback(
