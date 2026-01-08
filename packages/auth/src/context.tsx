@@ -302,7 +302,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (cachedSession) {
       console.log('[Auth] Hydrating from session cache (instant)');
       setUser(cachedSession.user);
-      setLoading(false);
+      // Loading state managed by auth phase state machine
       setBootstrapStatus('complete');
       setDevHydrated(true);
       setAuthPhase('authenticated');
@@ -317,7 +317,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (devSession) {
       console.log('[Auth] Hydrating from dev session in localStorage');
       setUser(devSession.user);
-      setLoading(false);
+      // Loading state managed by auth phase state machine
       setBootstrapStatus('complete');
       setDevHydrated(true);
       setAuthPhase('authenticated'); // Deterministic phase transition
@@ -1050,7 +1050,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUser(createFallbackUser(firebaseUser));
             }
             setIsBootstrapping(false);
-            setLoading(false);
+            // Loading state managed by auth phase state machine
             // SSO is complete when we have a user
             if (ssoInProgress) {
               setSsoInProgress(false);
@@ -1130,7 +1130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      setLoading(false);
+      // Loading state managed by auth phase state machine
     });
 
     return () => unsubscribe();
@@ -1309,7 +1309,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(devUser);
       setDevHydrated(true);
       setDevModeWithoutAdmin(true); // Dev mode uses session hydration, not Firebase Auth
-      setLoading(false);
+      // Loading state managed by auth phase state machine
       setAuthPhase('authenticated'); // Deterministic phase transition
     } catch (error) {
       console.error('[Auth] Failed to hydrate from dev session:', error);
@@ -1378,7 +1378,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(devUser);
       setDevHydrated(true);
       setDevModeWithoutAdmin(true); // Dev mode uses session hydration, not Firebase Auth
-      setLoading(false);
+      // Loading state managed by auth phase state machine
       setAuthPhase('authenticated');
     } catch (error) {
       console.error('[Auth] Failed to hydrate from fast bootstrap:', error);

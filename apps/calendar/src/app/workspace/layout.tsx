@@ -5,7 +5,7 @@ import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
-import { EventsProvider, useEvents } from '@/components/providers/events-provider';
+import { EventsProvider } from '@/components/providers/events-provider';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { HintsProvider } from '@/components/hints';
 import { Calendar as CalendarIcon } from 'lucide-react';
@@ -24,7 +24,6 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
     removeAnimatedAvatar,
     pollAnimationStatus,
   } = useWorkspaceAuth();
-  const { events } = useEvents();
   const { allSpaces, updateSpace, deleteSpace } = useSpaces();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
@@ -63,7 +62,6 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
         onSignOut={handleSignOut}
         onUpdatePreferences={updatePreferences}
         onSettingsClick={handleSettingsClick}
-        events={events}
       >
         {children}
       </WorkspaceLayoutWithInsights>
