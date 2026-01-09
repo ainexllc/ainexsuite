@@ -14,6 +14,7 @@ let adminAppInitialized = false;
  * - Keys that already have actual newlines
  * - Keys with surrounding quotes (single or double)
  * - Keys with extra whitespace
+ * - Double-escaped newlines (\\n -> \n)
  */
 function normalizePrivateKey(rawKey: string): string {
   // Step 1: Trim whitespace
@@ -25,8 +26,13 @@ function normalizePrivateKey(rawKey: string): string {
     key = key.slice(1, -1);
   }
 
-  // Step 3: Convert literal \n strings to actual newlines
-  // Only do this if the key doesn't already contain actual newlines
+  // Step 3: Handle various newline escape sequences
+  // First, handle double-escaped newlines (\\n -> \n literal string)
+  if (key.includes('\\\\n')) {
+    key = key.replace(/\\\\n/g, '\n');
+  }
+  // Then handle single-escaped newlines (\n literal string -> actual newline)
+  // Only if there are no actual newlines present
   if (!key.includes('\n') && key.includes('\\n')) {
     key = key.replace(/\\n/g, '\n');
   }
@@ -36,19 +42,38 @@ function normalizePrivateKey(rawKey: string): string {
   const END_MARKER = '-----END PRIVATE KEY-----';
 
   if (!key.includes(BEGIN_MARKER) || !key.includes(END_MARKER)) {
+    // Log diagnostic info (without revealing the key)
+    console.error('Private key validation failed:', {
+      rawLength: rawKey.length,
+      processedLength: key.length,
+      hasBeginMarker: key.includes(BEGIN_MARKER),
+      hasEndMarker: key.includes(END_MARKER),
+      firstChars: key.substring(0, 30),
+      lastChars: key.substring(key.length - 30),
+    });
     throw new Error(
       'Invalid private key format: Missing PEM headers. ' +
       'Key must start with "-----BEGIN PRIVATE KEY-----" and end with "-----END PRIVATE KEY-----"'
     );
   }
 
-  // Step 5: Normalize line breaks
+  // Step 5: Normalize line breaks - extract header, base64 content, and footer
   const lines = key.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
   if (lines.length < 3) {
+    console.error('Private key has too few lines:', { lineCount: lines.length });
     throw new Error(
       'Invalid private key format: Key must have at least header, body, and footer lines'
     );
+  }
+
+  // Log diagnostic info about the key structure (without revealing the key)
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.log('Private key normalized:', {
+      lineCount: lines.length,
+      totalLength: lines.join('\n').length,
+    });
   }
 
   return lines.join('\n');

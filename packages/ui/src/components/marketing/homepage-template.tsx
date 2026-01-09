@@ -168,6 +168,7 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
     }, 3200);
 
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.demoSteps?.length]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -196,11 +197,14 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
       if (!sessionResponse.ok) {
         const errorData = await sessionResponse.json();
         console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
-      } else {
-        await sessionResponse.json();
-        // Small delay to ensure browser processes Set-Cookie header
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Sign out of Firebase since session creation failed
+        await auth.signOut();
+        throw new Error(errorData.error || 'Failed to create session. Please try again.');
       }
+
+      await sessionResponse.json();
+      // Small delay to ensure browser processes Set-Cookie header
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Use window.location for full page navigation to ensure cookies are sent
       window.location.href = '/workspace';
@@ -233,11 +237,14 @@ export function HomepageTemplate(props: HomepageTemplateProps) {
       if (!sessionResponse.ok) {
         const errorData = await sessionResponse.json();
         console.error('🔐 HomepageTemplate: Session creation failed:', errorData);
-      } else {
-        await sessionResponse.json();
-        // Small delay to ensure browser processes Set-Cookie header
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Sign out of Firebase since session creation failed
+        await auth.signOut();
+        throw new Error(errorData.error || 'Failed to create session. Please try again.');
       }
+
+      await sessionResponse.json();
+      // Small delay to ensure browser processes Set-Cookie header
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Use window.location for full page navigation to ensure cookies are sent
       window.location.href = '/workspace';

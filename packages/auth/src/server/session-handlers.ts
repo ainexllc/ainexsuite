@@ -563,12 +563,43 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify ID token
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch (verifyError) {
+      const errorCode = (verifyError as { code?: string }).code || 'unknown';
+      const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
+      console.error('ID token verification failed:', { errorCode, errorMessage });
+      return NextResponse.json(
+        {
+          error: 'Invalid ID token',
+          code: errorCode,
+          message: errorMessage,
+        },
+        { status: 401 }
+      );
+    }
 
     // Create session cookie (Firebase Admin SDK expects milliseconds)
-    const sessionCookie = await adminAuth.createSessionCookie(idToken, {
-      expiresIn: SESSION_COOKIE_MAX_AGE_MS,
-    });
+    let sessionCookie;
+    try {
+      sessionCookie = await adminAuth.createSessionCookie(idToken, {
+        expiresIn: SESSION_COOKIE_MAX_AGE_MS,
+      });
+    } catch (cookieError) {
+      const errorCode = (cookieError as { code?: string }).code || 'unknown';
+      const errorMessage = cookieError instanceof Error ? cookieError.message : String(cookieError);
+      console.error('Session cookie creation failed:', { errorCode, errorMessage, uid: decodedToken.uid });
+      return NextResponse.json(
+        {
+          error: 'Failed to create session cookie',
+          code: errorCode,
+          message: errorMessage,
+          hint: 'This may indicate an issue with Firebase Admin credentials. Check that FIREBASE_ADMIN_PRIVATE_KEY is properly formatted with actual newlines.',
+        },
+        { status: 500 }
+      );
+    }
 
     // Get or create user document
     const userRef = adminDb.collection('users').doc(decodedToken.uid);
