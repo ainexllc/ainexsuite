@@ -177,21 +177,16 @@ export function createAuthMiddleware(config: MiddlewareConfig = {}) {
       return NextResponse.next();
     }
 
-    // Verify session
-    const session = await verifySessionFromRequest(request);
-
-    if (!session) {
-      // Not authenticated - redirect to login
+    // Check if session cookie exists (Edge-compatible - no Firebase Admin)
+    // Full verification happens in API routes and client-side auth context
+    // This is a gatekeeper check - if no cookie, redirect to login
+    if (!hasSessionCookie(request)) {
       return createLoginRedirect(request, loginUrl);
     }
 
-    // Authenticated - allow request to proceed
-    // Optionally add user info to request headers for server components
-    const response = NextResponse.next();
-    response.headers.set('x-user-id', session.uid);
-    response.headers.set('x-user-email', session.email);
-
-    return response;
+    // Cookie exists - allow request to proceed
+    // Full session verification happens in the auth context
+    return NextResponse.next();
   };
 }
 
