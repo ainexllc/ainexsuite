@@ -6,12 +6,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  SESSION_COOKIE_NAME,
-  DEV_SESSION_KEY,
-  verifySessionCookie,
-  type SessionUser,
-} from './session-core';
+// Import types only - this doesn't import runtime code
+import type { SessionUser } from './session-core';
+
+// Edge-compatible: Define constants locally to avoid importing session-core
+// (which would pull in firebase-admin at module load time)
+const SESSION_COOKIE_NAME = '__session';
 
 // ============================================================================
 // Types
@@ -42,11 +42,11 @@ export interface MiddlewareConfig {
 // ============================================================================
 
 /**
- * Verify session from a Next.js middleware request.
- * Checks the httpOnly session cookie.
+ * Verify session from a Next.js API route request (NOT for Edge middleware).
+ * Uses dynamic import to avoid loading firebase-admin in Edge runtime.
  *
- * Note: In middleware, we can only read cookies, not localStorage.
- * For dev mode cross-port SSO, the client handles localStorage → cookie sync.
+ * Note: For Edge middleware, use hasSessionCookie() instead.
+ * Full verification should happen in API routes or client-side auth context.
  *
  * @returns SessionUser if authenticated, null otherwise
  */
@@ -59,6 +59,8 @@ export async function verifySessionFromRequest(
     return null;
   }
 
+  // Dynamic import to avoid loading firebase-admin in Edge runtime
+  const { verifySessionCookie } = await import('./session-core');
   return verifySessionCookie(sessionCookie);
 }
 
@@ -221,9 +223,5 @@ export function withAuth<T>(
   };
 }
 
-// ============================================================================
-// Exports for convenience
-// ============================================================================
-
-export { SESSION_COOKIE_NAME, DEV_SESSION_KEY };
-export type { SessionUser };
+// Note: SESSION_COOKIE_NAME and DEV_SESSION_KEY are exported from session-core.ts
+// They are defined locally here to avoid importing session-core (which loads firebase-admin)
