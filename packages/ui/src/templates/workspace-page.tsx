@@ -12,7 +12,7 @@ import { NavigationPanel, type NavSection } from '../components/layout/navigatio
 import { ActivityPanel } from '../components/layout/activity-panel';
 
 interface WorkspacePageProps {
-  user: { displayName?: string | null; photoURL?: string | null } | null;
+  user: { displayName?: string | null; photoURL?: string | null; email?: string | null } | null;
   loading: boolean;
   appName: string;
   appColor: string;

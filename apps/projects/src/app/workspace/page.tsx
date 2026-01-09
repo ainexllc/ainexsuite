@@ -12,8 +12,8 @@ import {
   SpaceTabSelector,
   WorkspaceToolbar,
   type ViewOption,
-  type SortOption,
 } from '@ainexsuite/ui';
+import type { SortField } from '@/lib/types/project';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { ProjectsBoard } from '@/components/projects-board';
 import { ProjectComposer } from '@/components/projects/project-composer';
@@ -37,13 +37,13 @@ const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
 ];
 
 // Sort options for toolbar
-const SORT_OPTIONS: SortOption[] = [
-  { field: 'updatedAt', label: 'Date modified' },
-  { field: 'createdAt', label: 'Date created' },
-  { field: 'dueDate', label: 'Due date' },
-  { field: 'title', label: 'Title' },
-  { field: 'priority', label: 'Priority' },
-  { field: 'status', label: 'Status' },
+const SORT_OPTIONS = [
+  { field: 'updatedAt' as const, label: 'Date modified' },
+  { field: 'createdAt' as const, label: 'Date created' },
+  { field: 'dueDate' as const, label: 'Due date' },
+  { field: 'title' as const, label: 'Title' },
+  { field: 'priority' as const, label: 'Priority' },
+  { field: 'status' as const, label: 'Status' },
 ];
 
 export default function WorkspacePage() {
@@ -142,7 +142,7 @@ export default function WorkspacePage() {
   // Handle sort change
   const handleSortChange = useCallback((sort: { field: string; direction: 'asc' | 'desc' }) => {
     setSortConfig({
-      field: sort.field as Project['status'],
+      field: sort.field as SortField,
       direction: sort.direction,
     });
   }, [setSortConfig]);
