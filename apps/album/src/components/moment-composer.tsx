@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { Camera, MapPin, Calendar, Tag, X, Smile, Users, Cloud, Palette, Pin, PinOff, Plus } from 'lucide-react';
+import { Camera, MapPin, Tag, X, Smile, Users, Cloud, Palette, Pin, PinOff, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
+import { DatePicker } from '@ainexsuite/ui';
 import { useAuth } from '@ainexsuite/auth';
 import { useAppColors } from '@ainexsuite/theme';
-import { InlineSpacePicker } from '@ainexsuite/ui';
 import { createMoment, uploadPhoto } from '@/lib/moments';
 import { useMomentsStore } from '@/lib/store';
 import { useSpaces } from '@/components/providers/spaces-provider';
@@ -13,8 +13,7 @@ import { MOMENT_COLORS, type MomentColor } from '@/lib/constants/moment-colors';
 
 interface MomentComposerProps {
   onMomentCreated?: () => void;
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
 const MOODS = [
@@ -28,14 +27,11 @@ const MOODS = [
 
 const WEATHER_OPTIONS = ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Windy', 'Foggy'];
 
-export function MomentComposer({ onMomentCreated, onManagePeople, onManageSpaces }: MomentComposerProps) {
+export function MomentComposer({ onMomentCreated, placeholder = 'Capture a moment...' }: MomentComposerProps) {
   const { user } = useAuth();
   const { fetchMoments } = useMomentsStore();
   const { primary: primaryColor } = useAppColors();
-  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
-
-  // Get current space for InlineSpacePicker
-  const currentSpace = spaces.find((s) => s.id === currentSpaceId) || null;
+  const { currentSpaceId } = useSpaces();
   const [expanded, setExpanded] = useState(false);
   const [caption, setCaption] = useState('');
   const [location, setLocation] = useState('');
@@ -179,7 +175,7 @@ export function MomentComposer({ onMomentCreated, onManagePeople, onManageSpaces
         weather: weather,
         photoUrl: photoUrl,
         collectionId: null,
-        spaceId: currentSpaceId || undefined,
+        spaceId: currentSpaceId || 'personal',
       });
 
       // Refresh moments list
@@ -219,16 +215,8 @@ export function MomentComposer({ onMomentCreated, onManagePeople, onManageSpaces
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
             onClick={() => setExpanded(true)}
           >
-            <span>Capture a moment...</span>
+            <span>{placeholder}</span>
           </button>
-          {/* Inline space picker */}
-          <InlineSpacePicker
-            spaces={spaces}
-            currentSpace={currentSpace}
-            onSpaceChange={setCurrentSpace}
-            onManagePeople={onManagePeople}
-            onManageSpaces={onManageSpaces}
-          />
         </div>
       ) : (
         <div
@@ -305,16 +293,12 @@ export function MomentComposer({ onMomentCreated, onManagePeople, onManageSpaces
 
             {/* Meta Row 1: Date & Location */}
             <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none"
-                  style={{ '--tw-border-opacity': '1', borderColor: primaryColor } as React.CSSProperties}
-                  onFocus={(e) => e.target.style.borderColor = primaryColor}
-                  onBlur={(e) => e.target.style.borderColor = ''}
+              <div className="flex-1 min-w-[150px]">
+                <DatePicker
+                  value={date ? new Date(date) : null}
+                  onChange={(d) => setDate(d ? d.toISOString().split('T')[0] : '')}
+                  placeholder="Select date"
+                  presets="smart"
                 />
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">

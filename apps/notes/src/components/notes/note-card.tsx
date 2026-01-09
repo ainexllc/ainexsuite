@@ -2,16 +2,17 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import {
   Trash2,
   Users,
-  Check,
+  Flame,
+  X,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
-import { ConfirmationDialog, PriorityIcon, FocusGlow } from "@ainexsuite/ui";
-import type { Note } from "@/lib/types/note";
+import { ConfirmationDialog, FocusGlow } from "@ainexsuite/ui";
+import type { Note, NotePriority } from "@/lib/types/note";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { NoteEditor } from "@/components/notes/note-editor";
@@ -20,23 +21,42 @@ import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BAC
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useCovers } from "@/components/providers/covers-provider";
 import { ImageModal } from "@/components/ui/image-modal";
+import { useAuth } from "@ainexsuite/auth";
 
 type NoteCardProps = {
   note: Note;
-  isSelectMode?: boolean;
-  isSelected?: boolean;
-  onSelect?: (noteId: string, event: React.MouseEvent) => void;
 };
 
-export function NoteCard({ note, isSelectMode = false, isSelected = false, onSelect }: NoteCardProps) {
-  const { togglePin, deleteNote } = useNotes();
+export function NoteCard({ note }: NoteCardProps) {
+  const { togglePin, deleteNote, updateNote } = useNotes();
   const { labels } = useLabels();
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
   const { covers } = useCovers();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
+  const priorityPickerRef = useRef<HTMLDivElement>(null);
+
+  // Close priority picker when clicking outside
+  useEffect(() => {
+    if (!showPriorityPicker) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (priorityPickerRef.current && !priorityPickerRef.current.contains(event.target as Node)) {
+        setShowPriorityPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPriorityPicker]);
+
+  // Only show delete button if current user is the note owner
+  // Also allow if ownerId is not set (backwards compatibility with older notes)
+  const canDelete = !note.ownerId || user?.uid === note.ownerId;
 
   const labelMap = useMemo(() => {
     return new Map(labels.map((label) => [label.id, label]));
@@ -97,6 +117,19 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
     await togglePin(note.id, !note.pinned);
   };
 
+  // Toggle priority picker
+  const handlePriorityClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setShowPriorityPicker((prev) => !prev);
+  }, []);
+
+  // Set specific priority
+  const handleSetPriority = useCallback(async (priority: NotePriority | null, event: React.MouseEvent) => {
+    event.stopPropagation();
+    await updateNote(note.id, { priority });
+    setShowPriorityPicker(false);
+  }, [note.id, updateNote]);
+
   return (
     <>
       <article
@@ -109,63 +142,11 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
           "hover:transition-[border-color,box-shadow,transform] hover:duration-200",
           "hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md",
           "break-inside-avoid px-4 py-4 h-[220px] flex flex-col",
-          // Selection styles - glow effect and scale
-          isSelected && "border-primary dark:border-primary ring-4 ring-primary/20 scale-[0.98]",
         )}
-        onClick={(event) => {
-          if (isSelectMode && onSelect) {
-            event.preventDefault();
-            event.stopPropagation();
-            onSelect(note.id, event);
-          } else {
-            setIsEditing(true);
-          }
-        }}
+        onClick={() => setIsEditing(true)}
       >
         {/* Animated glow effect for pinned cards */}
         {note.pinned && <FocusGlow />}
-
-        {/* Selection Checkbox - shows on hover or in select mode */}
-        {onSelect && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onSelect(note.id, event);
-            }}
-            className={clsx(
-              "absolute z-30 h-5 w-5 rounded-full transition-all duration-200",
-              "flex items-center justify-center",
-              "backdrop-blur-xl border shadow-sm",
-              // Position in title row, right side but left of pin corner
-              "top-3 right-[36px]",
-              isSelected
-                ? "bg-primary border-primary scale-110"
-                : clsx(
-                    "border-white/30 dark:border-zinc-600/50",
-                    backgroundImage || hasCover
-                      ? "bg-black/20"
-                      : "bg-white/80 dark:bg-zinc-800/80"
-                  ),
-              isSelectMode
-                ? "opacity-100"
-                : "opacity-0 group-hover:opacity-100 hover:scale-110",
-            )}
-            aria-label={isSelected ? "Deselect note" : "Select note"}
-          >
-            {isSelected ? (
-              <Check className="h-3 w-3 text-white" />
-            ) : (
-              <div className={clsx(
-                "h-2 w-2 rounded-full border-[1.5px]",
-                backgroundImage || hasCover
-                  ? "border-white/50"
-                  : "border-zinc-400 dark:border-zinc-500"
-              )} />
-            )}
-          </button>
-        )}
 
         {/* Cover Image Layer */}
         {hasCover && !backgroundImage && currentCover && (
@@ -459,32 +440,119 @@ export function NoteCard({ note, isSelectMode = false, isSelected = false, onSel
                 ? "bg-white/10 border-white/20"
                 : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
           )}>
-            {/* Priority Indicator */}
-            {note.priority && (
-              <div
-                className="h-5 w-5 rounded-full flex items-center justify-center"
-                title={`${note.priority.charAt(0).toUpperCase() + note.priority.slice(1)} priority`}
+            {/* Priority Indicator - clickable by any space member */}
+            <div className="relative" ref={priorityPickerRef}>
+              <button
+                type="button"
+                onClick={handlePriorityClick}
+                className={clsx(
+                  "h-5 w-5 rounded-full flex items-center justify-center transition-all",
+                  backgroundImage?.brightness === 'light'
+                    ? "hover:bg-black/10"
+                    : backgroundImage || hasCover
+                      ? "hover:bg-white/20"
+                      : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                )}
+                title={note.priority
+                  ? `${note.priority.charAt(0).toUpperCase() + note.priority.slice(1)} priority (click to change)`
+                  : "Set priority"
+                }
               >
-                <PriorityIcon priority={note.priority} size="sm" showOnlyHighPriority={false} />
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={handleDeleteClick}
-              className={clsx(
-                "h-5 w-5 rounded-full flex items-center justify-center transition",
-                backgroundImage?.brightness === 'light'
-                  ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
-                  : backgroundImage
-                    ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                    : hasCover
-                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                      : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
+                <Flame className={clsx(
+                  "h-3.5 w-3.5",
+                  note.priority === "high"
+                    ? "text-red-500"
+                    : note.priority === "medium"
+                      ? "text-amber-500"
+                      : note.priority === "low"
+                        ? "text-blue-500"
+                        : backgroundImage?.brightness === 'light'
+                          ? "text-zinc-500"
+                          : backgroundImage || hasCover
+                            ? "text-white/60"
+                            : "text-zinc-400 dark:text-zinc-500"
+                )} />
+              </button>
+              {showPriorityPicker && (
+                <div
+                  className="absolute bottom-7 right-0 z-50 flex flex-col gap-0.5 rounded-2xl bg-zinc-900 border border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={(e) => handleSetPriority("high", e)}
+                    className={clsx(
+                      "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
+                      note.priority === "high"
+                        ? "bg-red-500/20 text-red-400"
+                        : "text-zinc-300 hover:bg-zinc-800"
+                    )}
+                  >
+                    <Flame className="h-3 w-3 text-red-500" />
+                    High
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleSetPriority("medium", e)}
+                    className={clsx(
+                      "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
+                      note.priority === "medium"
+                        ? "bg-amber-500/20 text-amber-400"
+                        : "text-zinc-300 hover:bg-zinc-800"
+                    )}
+                  >
+                    <Flame className="h-3 w-3 text-amber-500" />
+                    Medium
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleSetPriority("low", e)}
+                    className={clsx(
+                      "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
+                      note.priority === "low"
+                        ? "bg-blue-500/20 text-blue-400"
+                        : "text-zinc-300 hover:bg-zinc-800"
+                    )}
+                  >
+                    <Flame className="h-3 w-3 text-blue-500" />
+                    Low
+                  </button>
+                  {note.priority && (
+                    <>
+                      <div className="h-px bg-zinc-700 my-0.5" />
+                      <button
+                        type="button"
+                        onClick={(e) => handleSetPriority(null, e)}
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium text-zinc-400 hover:bg-zinc-800 transition"
+                      >
+                        <X className="h-3 w-3" />
+                        Clear
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
-              aria-label="Delete note"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
+            </div>
+            {/* Only show delete button to the note owner */}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                className={clsx(
+                  "h-5 w-5 rounded-full flex items-center justify-center transition",
+                  backgroundImage?.brightness === 'light'
+                    ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
+                    : backgroundImage
+                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                      : hasCover
+                        ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                        : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
+                )}
+                aria-label="Delete note"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            )}
           </div>
         </footer>
       </article>

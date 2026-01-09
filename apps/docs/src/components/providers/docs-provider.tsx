@@ -279,8 +279,8 @@ export function DocsProvider({ children }: DocsProviderProps) {
           size: file.size,
         })) ?? [];
 
-      // Use the provided spaceId or fall back to current space (unless it's "personal" which means no spaceId)
-      const effectiveSpaceId = input.spaceId ?? (currentSpaceId === "personal" ? undefined : currentSpaceId);
+      // Use the provided spaceId or fall back to current space (default to "personal" if not set)
+      const effectiveSpaceId = input.spaceId ?? currentSpaceId ?? "personal";
 
       const optimisticDoc: Doc = {
         id: tempId,
@@ -649,11 +649,11 @@ export function DocsProvider({ children }: DocsProviderProps) {
       }
 
       // Filter by current space
-      // "personal" space shows docs with no spaceId (personal docs)
+      // "personal" space shows docs with spaceId "personal" or no spaceId (legacy docs)
       // Other spaces show docs with matching spaceId
       if (currentSpaceId === "personal") {
-        if (doc.spaceId) {
-          return false; // Personal view only shows docs without a spaceId
+        if (doc.spaceId && doc.spaceId !== "personal") {
+          return false; // Personal view only shows docs with "personal" spaceId or no spaceId
         }
       } else {
         if (doc.spaceId !== currentSpaceId) {

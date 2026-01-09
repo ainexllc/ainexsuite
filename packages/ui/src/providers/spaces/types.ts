@@ -52,6 +52,7 @@ export interface SpacesProviderConfig<TSpace extends BaseSpace = BaseSpace> {
 
   /**
    * localStorage key for persisting current space selection
+   * This is now used as the legacy key for migration when syncAcrossApps is enabled.
    * @example 'notes-current-space', 'journey-current-space'
    */
   storageKey: string;
@@ -81,6 +82,16 @@ export interface SpacesProviderConfig<TSpace extends BaseSpace = BaseSpace> {
    * Optional: Custom validation before creating a space
    */
   validateSpace?: (input: { name: string; type: SpaceType }) => boolean;
+
+  /**
+   * Enable cross-app space synchronization via BroadcastChannel.
+   * When enabled:
+   * - Switching space in one app will update all other open apps
+   * - Uses unified storage key 'ainex-current-space' instead of per-app key
+   * - Migrates from legacy per-app key (storageKey) if it exists
+   * @default false
+   */
+  syncAcrossApps?: boolean;
 }
 
 /**

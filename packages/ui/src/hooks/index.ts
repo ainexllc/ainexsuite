@@ -22,3 +22,17 @@ export type {
 } from './use-workspace-insights.types';
 export { useRealtimeThemeSync } from './use-realtime-theme-sync';
 export { useGlobalSpaces } from './use-global-spaces';
+export {
+  useSpaceSync,
+  getUnifiedSpaceId,
+  setUnifiedSpaceId,
+  SPACE_SYNC_CHANNEL,
+  UNIFIED_SPACE_KEY,
+  type SpaceSyncMessage,
+  type UseSpaceSyncOptions,
+} from './use-space-sync';
+export {
+  useSpaceChangeEffect,
+  usePreviousSpaceId,
+  type UseSpaceChangeEffectOptions,
+} from './use-space-change-effect';

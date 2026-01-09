@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
   useEffect,
+  useRef,
   type ReactNode,
 } from 'react';
 import { useAuth } from '@ainexsuite/auth';
@@ -24,6 +25,7 @@ import {
   doc,
   Timestamp,
 } from 'firebase/firestore';
+import { useSpaceSync } from '../../hooks/use-space-sync';
 
 // Helper to safely convert Firestore Timestamp, Date, string, or number to Date
 function toDate(value: unknown): Date {
@@ -74,12 +76,25 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
     const [currentSpaceId, setCurrentSpaceId] = useState<string>('personal');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
+    const initializedRef = useRef(false);
 
     const userId = user?.uid ?? null;
     // Wait for auth to be fully complete to avoid permission errors
     // In dev mode, firebaseUser may be null (uses session hydration instead)
     // authLoading is false only when authPhase is 'authenticated' or 'unauthenticated'
     const isAuthReady = !authLoading && !!user;
+
+    // Cross-app sync hook (only active when syncAcrossApps is enabled)
+    const { broadcastSpaceChange, getInitialSpaceId } = useSpaceSync({
+      appId: config.appId,
+      currentSpaceId,
+      onSpaceChange: (newSpaceId) => {
+        // Received space change from another app
+        setCurrentSpaceId(newSpaceId);
+      },
+      enabled: config.syncAcrossApps ?? false,
+      legacyStorageKey: config.syncAcrossApps ? config.storageKey : undefined,
+    });
 
     // Create virtual personal space (not stored in Firestore)
     const personalSpace = useMemo<TSpace>(
@@ -198,17 +213,26 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
 
     // Visible spaces for this app (filtered by hiddenInApps)
     const spaces = useMemo(
-      () => [
-        personalSpace,
-        ...userSpaces.filter((space) => {
-          // Global spaces are always visible
-          if ((space as BaseSpace & { isGlobal?: boolean }).isGlobal) return true;
-          // Check if this app is in the hidden list
+      () => {
+        const filtered = userSpaces.filter((space) => {
+          // Check if this app is explicitly hidden (takes precedence over isGlobal)
           const hiddenInApps = (space as BaseSpace & { hiddenInApps?: string[] }).hiddenInApps;
-          if (hiddenInApps?.includes(config.appId)) return false;
+          const isHiddenInThisApp = hiddenInApps?.includes(config.appId);
+
+          // Debug log for space visibility filtering
+          if (hiddenInApps && hiddenInApps.length > 0) {
+            // eslint-disable-next-line no-console
+            console.log(`[Spaces/${config.appId}] Space "${space.name}" hiddenInApps:`, hiddenInApps, `hidden in ${config.appId}:`, isHiddenInThisApp);
+          }
+
+          if (isHiddenInThisApp) return false;
+          // Global spaces are visible by default (unless explicitly hidden above)
+          if ((space as BaseSpace & { isGlobal?: boolean }).isGlobal) return true;
+          // Non-global spaces are visible unless explicitly hidden
           return true;
-        }),
-      ],
+        });
+        return [personalSpace, ...filtered];
+      },
       [personalSpace, userSpaces]
     );
 
@@ -218,23 +242,39 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
       [spaces, currentSpaceId]
     );
 
-    // Persist current space to localStorage
+    // Persist current space to localStorage and broadcast to other apps
     const handleSetCurrentSpace = useCallback((spaceId: string) => {
       setCurrentSpaceId(spaceId);
       if (typeof window !== 'undefined') {
-        localStorage.setItem(config.storageKey, spaceId);
+        if (config.syncAcrossApps) {
+          // Use unified storage and broadcast to other apps
+          broadcastSpaceChange(spaceId);
+        } else {
+          // Use legacy per-app storage
+          localStorage.setItem(config.storageKey, spaceId);
+        }
       }
-    }, []);
+    }, [broadcastSpaceChange]);
 
     // Restore current space from localStorage on mount
     useEffect(() => {
-      if (typeof window !== 'undefined') {
-        const savedSpaceId = localStorage.getItem(config.storageKey);
-        if (savedSpaceId) {
-          setCurrentSpaceId(savedSpaceId);
-        }
+      if (typeof window === 'undefined' || initializedRef.current) return;
+      initializedRef.current = true;
+
+      let savedSpaceId: string | null = null;
+
+      if (config.syncAcrossApps) {
+        // Use unified storage (with legacy migration)
+        savedSpaceId = getInitialSpaceId();
+      } else {
+        // Use legacy per-app storage
+        savedSpaceId = localStorage.getItem(config.storageKey);
       }
-    }, []);
+
+      if (savedSpaceId) {
+        setCurrentSpaceId(savedSpaceId);
+      }
+    }, [getInitialSpaceId]);
 
     // Create a new space
     const handleCreateSpace = useCallback(
@@ -287,8 +327,12 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
     // Update an existing space
     const handleUpdateSpace = useCallback(
       async (spaceId: string, updates: SpaceDraft): Promise<void> => {
+        // eslint-disable-next-line no-console
+        console.log(`[Spaces/${config.appId}] Updating space ${spaceId} with:`, updates);
         const spaceRef = doc(db, config.collectionName, spaceId);
         await updateDoc(spaceRef, updates);
+        // eslint-disable-next-line no-console
+        console.log(`[Spaces/${config.appId}] Update complete`);
       },
       []
     );

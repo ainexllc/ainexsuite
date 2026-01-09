@@ -3,7 +3,8 @@ import type { MoodType, Timestamp } from './common';
 export interface HealthMetric {
   id: string;
   ownerId: string;
-  spaceId?: string; // Space this metric belongs to
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   date: string; // YYYY-MM-DD
   sleep: number | null; // hours
   water: number | null; // glasses

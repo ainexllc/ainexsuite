@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { WorkspaceLayout } from "@ainexsuite/ui";
+import { useAppColors } from "@ainexsuite/theme";
 
 interface WorkspaceLayoutWithInsightsProps {
   children: ReactNode;
@@ -30,12 +31,14 @@ export function WorkspaceLayoutWithInsights({
   onUpdatePreferences,
   onSettingsClick,
 }: WorkspaceLayoutWithInsightsProps) {
+  const { primary } = useAppColors();
+
   return (
     <WorkspaceLayout
       user={user}
       onSignOut={onSignOut}
       appName="calendar"
-      appColor="#06b6d4"
+      appColor={primary}
       showBackground={true}
       onUpdatePreferences={onUpdatePreferences}
       onSettingsClick={onSettingsClick}

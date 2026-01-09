@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { Calendar, Repeat, Clock, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
-import { generateUUID, InlineSpacePicker } from "@ainexsuite/ui";
+import { generateUUID } from "@ainexsuite/ui";
 import { useGrowStore } from "@/lib/store";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useWorkspaceAuth } from "@ainexsuite/auth";
@@ -21,15 +21,12 @@ const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
 interface HabitComposerProps {
   onAISuggestClick?: () => void;
-  /** Callback to open member manager for current space */
-  onManagePeople?: () => void;
-  /** Callback to open space management modal */
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
-export function HabitComposer({ onAISuggestClick, onManagePeople, onManageSpaces }: HabitComposerProps) {
+export function HabitComposer({ onAISuggestClick, placeholder = 'Add a new habit...' }: HabitComposerProps) {
   const { user } = useWorkspaceAuth();
-  const { spaces, currentSpace, setCurrentSpace } = useSpaces();
+  const { currentSpace } = useSpaces();
   const { addHabit } = useGrowStore();
   const { totalHabits } = useHabits();
 
@@ -127,16 +124,8 @@ export function HabitComposer({ onAISuggestClick, onManagePeople, onManageSpaces
               className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
               onClick={() => setExpanded(true)}
             >
-              <span>Add a new habit...</span>
+              <span>{placeholder}</span>
             </button>
-          {/* Compact space selector */}
-          <InlineSpacePicker
-            spaces={spaces}
-            currentSpace={currentSpace}
-            onSpaceChange={setCurrentSpace}
-            onManagePeople={onManagePeople}
-            onManageSpaces={onManageSpaces}
-          />
           </div>
         </Hint>
       ) : (
@@ -221,7 +210,8 @@ export function HabitComposer({ onAISuggestClick, onManagePeople, onManageSpaces
                 </button>
               )}
             </div>
-            <button
+            <div className="flex items-center gap-3">
+              <button
               type="button"
               onClick={handleSubmit}
               disabled={!hasContent || isSubmitting}
@@ -233,7 +223,8 @@ export function HabitComposer({ onAISuggestClick, onManagePeople, onManageSpaces
               )}
             >
               {isSubmitting ? "Adding..." : "Add Habit"}
-            </button>
+              </button>
+            </div>
           </div>
         </div>
       )}

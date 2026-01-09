@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTodoStore } from '../../lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import type { Task, TaskStatus } from '../../types/models';
 import {
   CheckCircle2,
@@ -59,13 +60,12 @@ const STATUS_COLUMNS: StatusColumn[] = [
 
 export function TaskKanban({ onEditTask, searchQuery = '' }: TaskKanbanProps) {
   const {
-    getCurrentSpace,
     tasks,
     updateTask,
     kanbanCollapsedColumns,
     toggleKanbanColumnCollapse
   } = useTodoStore();
-  const currentSpace = getCurrentSpace();
+  const { currentSpace } = useSpaces();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeOverColumn, setActiveOverColumn] = useState<TaskStatus | null>(null);
 
@@ -94,8 +94,7 @@ export function TaskKanban({ onEditTask, searchQuery = '' }: TaskKanbanProps) {
   const spaceTasks = useMemo(() => {
     if (!currentSpace) return [];
     let filtered = tasks.filter(
-      (t: Task) =>
-        (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
+      (t: Task) => t.spaceId === currentSpace.id && !t.archived
     );
 
     // Apply search filter

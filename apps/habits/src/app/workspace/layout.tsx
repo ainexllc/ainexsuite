@@ -49,7 +49,7 @@ function WorkspaceLayoutInner({
   const [spaceSettingsOpen, setSpaceSettingsOpen] = useState(false);
   const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  const { allSpaces, currentSpace, updateSpace, deleteSpace, refreshSpaces } = useSpaces();
+  const { spaces, currentSpace, updateSpace, deleteSpace, refreshSpaces } = useSpaces();
   const { notifications, handleAcceptInvitation, handleDeclineInvitation } = useSpaceNotifications();
 
   // Open settings modal with optional tab selection
@@ -68,13 +68,13 @@ function WorkspaceLayoutInner({
   // Get current space being edited for SpaceSettings
   const editingSpace = useMemo(() => {
     if (!editingSpaceId) return null;
-    return allSpaces.find((s) => s.id === editingSpaceId) || null;
-  }, [editingSpaceId, allSpaces]);
+    return spaces.find((s) => s.id === editingSpaceId) || null;
+  }, [editingSpaceId, spaces]);
 
   // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
   // Use allSpaces so users can see and toggle visibility of hidden spaces
   const spaceSettingsItems = useMemo<SpaceSettingsItem[]>(() => {
-    return allSpaces
+    return spaces
       .filter((s) => s.id !== 'personal')
       .map((s) => ({
         id: s.id,
@@ -85,7 +85,7 @@ function WorkspaceLayoutInner({
         memberCount: s.memberUids?.length || 1,
         isOwner: s.createdBy === user?.uid,
       }));
-  }, [allSpaces, user?.uid]);
+  }, [spaces, user?.uid]);
 
   // Handle updating space visibility
   const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {

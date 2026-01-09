@@ -22,6 +22,7 @@ export interface ProjectSpace {
 
 export interface Project {
   id: string;
+  // Required - 'personal' for personal content, or actual space ID
   spaceId: string;
   userId: string;
   name: string;

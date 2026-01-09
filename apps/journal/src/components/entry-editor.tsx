@@ -5,7 +5,7 @@ import { useAuth } from '@ainexsuite/auth';
 import type { JournalEntry, MoodType } from '@ainexsuite/types';
 import { createJournalEntry, updateJournalEntry } from '@/lib/firebase/firestore';
 import { X } from 'lucide-react';
-import { format } from 'date-fns';
+import { DatePicker } from '@ainexsuite/ui';
 
 interface EntryEditorProps {
   entry: JournalEntry | null;
@@ -70,12 +70,12 @@ export function EntryEditor({ entry, initialDate, onClose, onSave }: EntryEditor
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-3xl surface-card rounded-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-6 border-b border-surface-hover">
-          <div className="flex-1">
-            <input
-              type="date"
-              value={format(new Date(date), 'yyyy-MM-dd')}
-              onChange={(e) => setDate(new Date(e.target.value).getTime())}
-              className="surface-elevated rounded px-3 py-2 border border-surface-hover"
+          <div className="w-48">
+            <DatePicker
+              value={new Date(date)}
+              onChange={(d) => d && setDate(d.getTime())}
+              placeholder="Select date"
+              presets="smart"
             />
           </div>
 

@@ -23,7 +23,7 @@ import { BottomNav } from '@/components/mobile/BottomNav';
 import { useHints } from '@/components/hints';
 
 function SettingsContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { resetHints } = useHints();
   const [isResettingHints, setIsResettingHints] = useState(false);
@@ -46,7 +46,7 @@ function SettingsContent() {
     }
   };
 
-  if (authLoading || bootstrapStatus === 'running') {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />

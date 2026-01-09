@@ -16,14 +16,12 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useSpaces } from '@/components/providers/spaces-provider';
-import { InlineSpacePicker } from '@ainexsuite/ui';
 
 interface HealthCheckinComposerProps {
   existingMetric?: HealthMetric | null;
   date: string;
   onSave: (data: Partial<HealthMetric>) => Promise<void>;
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
 const moodOptions: { value: MoodType; icon: typeof Smile; label: string; color: string }[] = [
@@ -38,17 +36,14 @@ export function HealthCheckinComposer({
   existingMetric,
   date,
   onSave,
-  onManagePeople,
-  onManageSpaces,
+  placeholder = 'Log a health check-in...',
 }: HealthCheckinComposerProps) {
-  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+  const { currentSpaceId } = useSpaces();
   const [expanded, setExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const composerRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
-
-  const currentSpace = spaces.find((s) => s.id === currentSpaceId) || null;
 
   const [formData, setFormData] = useState({
     title: '',
@@ -170,16 +165,8 @@ export function HealthCheckinComposer({
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
             onClick={() => setExpanded(true)}
           >
-            <span>{existingMetric ? 'Update today\'s check-in...' : 'Log a health check-in...'}</span>
+            <span>{existingMetric ? 'Update today\'s check-in...' : placeholder}</span>
           </button>
-          {/* Inline space picker */}
-          <InlineSpacePicker
-            spaces={spaces}
-            currentSpace={currentSpace}
-            onSpaceChange={setCurrentSpace}
-            onManagePeople={onManagePeople}
-            onManageSpaces={onManageSpaces}
-          />
         </div>
       ) : (
         <div

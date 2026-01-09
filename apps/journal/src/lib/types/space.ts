@@ -25,6 +25,9 @@ export type JournalSpaceDoc = {
 export type JournalSpace = Omit<JournalSpaceDoc, "createdAt"> & {
   id: string;
   createdAt: Date | number;
+  // Cross-app visibility
+  isGlobal?: boolean;
+  hiddenInApps?: string[];
 };
 
 export type JournalSpaceDraft = {

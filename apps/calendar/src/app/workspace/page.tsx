@@ -6,13 +6,12 @@ import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   ActiveFilterChips,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type FilterChip,
   type FilterChipType,
-  type UserSpace,
 } from '@ainexsuite/ui';
-import type { SpaceType } from '@ainexsuite/types';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import {
   Loader2,
   CalendarDays,
@@ -40,8 +39,6 @@ import { CalendarEvent, CreateEventInput, EventType } from '@/types/event';
 import { useReminders } from '@/hooks/use-reminders';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { MemberManager } from '@/components/spaces/MemberManager';
-import { useSpaces } from '@/components/providers/spaces-provider';
 
 const VIEW_OPTIONS: ViewOption<CalendarViewType>[] = [
   { value: 'month', icon: CalendarDays, label: 'Month view' },
@@ -80,72 +77,28 @@ export default function WorkspacePage() {
   const { toast } = useToast();
   const composerRef = useRef<EventComposerRef>(null);
   const { events, loading: isLoadingEvents, refreshEvents } = useEvents();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+
+  // Create space items for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }));
+  }, [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>('month');
   const [filters, setFilters] = useState<CalendarFilters>(DEFAULT_FILTERS);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [showMemberManager, setShowMemberManager] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-
-  // Map spaces to UserSpace format for SpaceManagementModal
-  const userSpaces = useMemo<UserSpace[]>(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type as SpaceType,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-      }));
-  }, [allSpaces, user?.uid]);
-
-  // Space management callbacks
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
-    if (!user) return;
-    const globalSpaceNames: Record<string, string> = {
-      family: 'Family',
-      couple: 'Couple',
-      squad: 'Team',
-      work: 'Group',
-    };
-    const spaceId = await createSpace({
-      name: globalSpaceNames[type] || type,
-      type,
-    });
-    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
-  }, [user, createSpace, updateSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
-    if (!user) return;
-    const spaceId = await createSpace({
-      name,
-      type: 'work',
-    });
-    if (hiddenInApps.length > 0) {
-      await updateSpace(spaceId, { hiddenInApps });
-    }
-  }, [user, createSpace, updateSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
 
   // Enable reminders
   useReminders(events);
@@ -439,14 +392,22 @@ export default function WorkspacePage() {
     <WorkspacePageLayout
       maxWidth="wide"
       className="pt-[17px] h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 pb-8 flex flex-col"
+      spaceSelector={
+        spaceItems.length > 1 && (
+          <SpaceTabSelector
+            spaces={spaceItems}
+            currentSpaceId={currentSpaceId}
+            onSpaceChange={setCurrentSpace}
+          />
+        )
+      }
       composer={
         <EventComposer
           ref={composerRef}
           onSave={handleComposerSave}
           onDelete={handleDeleteEvent}
           onDuplicate={handleDuplicateEvent}
-          onManagePeople={() => setShowMemberManager(true)}
-          onManageSpaces={() => setShowSpaceManagement(true)}
+          placeholder={`Create an event for ${currentSpaceName}...`}
         />
       }
       toolbar={
@@ -579,25 +540,6 @@ export default function WorkspacePage() {
 
         {/* Keyboard Shortcuts Modal */}
         <KeyboardShortcutsModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
-
-        {/* Member Manager Modal */}
-        <MemberManager
-          isOpen={showMemberManager}
-          onClose={() => setShowMemberManager(false)}
-        />
-
-        {/* Space Management Modal */}
-        <SpaceManagementModal
-          isOpen={showSpaceManagement}
-          onClose={() => setShowSpaceManagement(false)}
-          userSpaces={userSpaces}
-          onJoinGlobalSpace={handleJoinGlobalSpace}
-          onLeaveGlobalSpace={handleLeaveGlobalSpace}
-          onCreateCustomSpace={handleCreateCustomSpace}
-          onRenameCustomSpace={handleRenameCustomSpace}
-          onDeleteCustomSpace={handleDeleteCustomSpace}
-          onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-        />
     </WorkspacePageLayout>
   );
 }

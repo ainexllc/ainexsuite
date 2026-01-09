@@ -14,7 +14,7 @@ import { useSpaces } from '@/components/providers/spaces-provider';
 import { useGrowStore } from '@/lib/store';
 
 function NotificationsContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { habits } = useGrowStore();
   const { currentSpace } = useSpaces();
@@ -51,7 +51,7 @@ function NotificationsContent() {
     scheduleAllReminders();
   };
 
-  if (authLoading || bootstrapStatus === 'running') {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />

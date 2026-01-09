@@ -27,12 +27,15 @@ interface WorkspacePageLayoutProps {
     items: SpaceItem[];
     currentSpaceId: string | null;
     onSpaceChange: (spaceId: string) => void;
-    onManageSpaces?: () => void;
   };
   /**
    * Additional actions to show next to the composer (e.g., ViewToggle)
    */
   composerActions?: ReactNode;
+  /**
+   * Space selector tabs to show above the composer (centered)
+   */
+  spaceSelector?: ReactNode;
   /**
    * Toolbar area below the composer (e.g., View Switchers, Filters)
    */
@@ -73,7 +76,6 @@ const maxWidthClasses = {
  *     items: spaces,
  *     currentSpaceId,
  *     onSpaceChange: setCurrentSpace,
- *     onManageSpaces: () => setShowManageSpaces(true),
  *   }}
  *   toolbar={<ViewToggle />}
  * >
@@ -88,6 +90,7 @@ export function WorkspacePageLayout({
   children,
   spaces,
   composerActions,
+  spaceSelector,
   toolbar,
   maxWidth = 'default',
   className = '',
@@ -106,6 +109,13 @@ export function WorkspacePageLayout({
       {/* AI Insights Banner - Full Width */}
       {insightsBanner}
 
+      {/* Space Selector Tabs - Centered above composer */}
+      {spaceSelector && (
+        <div className="flex justify-center">
+          {spaceSelector}
+        </div>
+      )}
+
       {/* Composer Row: Form + SpaceSwitcher + Actions */}
       {hasComposerRow && (
         <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -123,7 +133,6 @@ export function WorkspacePageLayout({
                 spaces={spaces.items}
                 currentSpaceId={spaces.currentSpaceId}
                 onSpaceChange={spaces.onSpaceChange}
-                onManageSpaces={spaces.onManageSpaces}
               />
             )}
             {composerActions}

@@ -4,11 +4,14 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, GitBranch, Palette, Tag, X } from "lucide-react";
 import { clsx } from "clsx";
-import { InlineSpacePicker } from "@ainexsuite/ui";
 import { useWorkflows } from "@/components/providers/workflows-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useLabels } from "@/components/providers/labels-provider";
 import type { WorkflowColor } from "@/lib/types/workflow";
+
+interface WorkflowComposerProps {
+  placeholder?: string;
+}
 
 // Color options for workflows
 const COLOR_OPTIONS: { id: WorkflowColor; label: string; bgClass: string; dotClass: string }[] = [
@@ -21,10 +24,10 @@ const COLOR_OPTIONS: { id: WorkflowColor; label: string; bgClass: string; dotCla
   { id: "workflow-cyan", label: "Cyan", bgClass: "bg-cyan-100 dark:bg-cyan-900/30", dotClass: "bg-cyan-500" },
 ];
 
-export function WorkflowComposer() {
+export function WorkflowComposer({ placeholder = "Create a new workflow..." }: WorkflowComposerProps) {
   const router = useRouter();
   const { createWorkflow } = useWorkflows();
-  const { spaces, currentSpace, setCurrentSpace } = useSpaces();
+  const { currentSpaceId } = useSpaces();
   const { labels } = useLabels();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -72,7 +75,7 @@ export function WorkflowComposer() {
         title: title.trim() || "Untitled Workflow",
         color,
         labelIds: selectedLabelIds,
-        spaceId: currentSpace?.id === "personal" ? undefined : currentSpace?.id,
+        spaceId: currentSpaceId === "personal" ? undefined : currentSpaceId,
       });
 
       if (workflowId) {
@@ -88,7 +91,7 @@ export function WorkflowComposer() {
     } finally {
       setIsCreating(false);
     }
-  }, [createWorkflow, title, color, selectedLabelIds, currentSpace, router, isCreating]);
+  }, [createWorkflow, title, color, selectedLabelIds, currentSpaceId, router, isCreating]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -125,26 +128,8 @@ export function WorkflowComposer() {
           className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          <span>Create a workflow...</span>
+          <span>{placeholder}</span>
         </button>
-
-        <InlineSpacePicker
-          spaces={spaces.map((s) => ({
-            id: s.id,
-            name: s.name,
-            type: s.type,
-          }))}
-          currentSpace={
-            currentSpace
-              ? {
-                  id: currentSpace.id,
-                  name: currentSpace.name,
-                  type: currentSpace.type,
-                }
-              : null
-          }
-          onSpaceChange={(spaceId) => setCurrentSpace(spaceId)}
-        />
       </div>
     );
   }

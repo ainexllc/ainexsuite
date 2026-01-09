@@ -65,8 +65,8 @@ export const useTodoStore = create<TodoState>()(
       setSpaces: (spaces) => {
         const currentId = get().currentSpaceId;
         let nextId = currentId;
-        // Keep 'all' and 'personal' as valid virtual spaces
-        if (!currentId || (currentId !== 'all' && currentId !== 'personal' && !spaces.find(s => s.id === currentId))) {
+        // Keep 'personal' as valid virtual space (note: 'all' space was removed)
+        if (!currentId || currentId === 'all' || (currentId !== 'personal' && !spaces.find(s => s.id === currentId))) {
           // Default to 'personal' (My Todos) for new users
           nextId = 'personal';
         }
@@ -147,18 +147,6 @@ export const useTodoStore = create<TodoState>()(
 
       getCurrentSpace: () => {
         const { spaces, currentSpaceId } = get();
-        if (currentSpaceId === 'all') {
-          return {
-            id: 'all',
-            name: 'All Spaces',
-            type: 'work', // Default icon
-            members: [],
-            memberUids: [],
-            createdAt: new Date().toISOString(),
-            createdBy: '',
-            lists: []
-          } as TaskSpace;
-        }
         if (currentSpaceId === 'personal') {
           return {
             id: 'personal',
@@ -186,6 +174,15 @@ export const useTodoStore = create<TodoState>()(
     {
       name: 'todo-storage-client-prefs',
       partialize: (state) => ({ currentSpaceId: state.currentSpaceId, viewPreferences: state.viewPreferences }),
+      version: 1,
+      migrate: (persistedState, version) => {
+        const state = persistedState as { currentSpaceId?: string; viewPreferences?: Record<string, string> };
+        // Migration: 'all' space was removed, default to 'personal'
+        if (version === 0 && state.currentSpaceId === 'all') {
+          return { ...state, currentSpaceId: 'personal' };
+        }
+        return state;
+      },
     }
   )
 );

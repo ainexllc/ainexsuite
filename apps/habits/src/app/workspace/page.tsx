@@ -3,12 +3,10 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { Plus, Layout, Crown, Rocket, ChevronDown, Trophy, CheckSquare } from 'lucide-react';
-import type { SpaceType } from '@ainexsuite/types';
 
 // Core Components
-import { WorkspacePageLayout, EmptyState, SpaceManagementModal, type UserSpace } from '@ainexsuite/ui';
+import { WorkspacePageLayout, EmptyState, SpaceTabSelector } from '@ainexsuite/ui';
 import { useSettings } from '@/components/providers/settings-context';
-import { MemberManager } from '@/components/spaces/MemberManager';
 import { HabitEditor } from '@/components/habits/HabitEditor';
 import { HabitComposer } from '@/components/habits/HabitComposer';
 import { HabitDetailModal } from '@/components/habits/HabitDetailModal';
@@ -55,7 +53,22 @@ function GrowWorkspaceContent() {
   useSettings(); // Keep provider mounted
 
   // Spaces from context (createSpacesProvider)
-  const { currentSpace, allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, currentSpace, currentSpaceId, setCurrentSpace } = useSpaces();
+
+  // Create space items for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }));
+  }, [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   // Selection context for bulk operations
   const selection = useHabitSelectionContext();
@@ -71,73 +84,6 @@ function GrowWorkspaceContent() {
     hasActiveFilters,
     activeFilterCount,
   } = useHabitFilters();
-
-  // Handler to open member manager for current space
-  const handleManagePeople = useCallback(() => {
-    setShowMemberManager(true);
-  }, []);
-
-  // Map spaces to UserSpace format for SpaceManagementModal
-  const userSpaces = useMemo<UserSpace[]>(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type as SpaceType,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-      }));
-  }, [allSpaces, user?.uid]);
-
-  // Space management callbacks
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
-    if (!user) return;
-    const globalSpaceNames: Record<string, string> = {
-      family: 'Family',
-      couple: 'Couple',
-      squad: 'Team',
-      work: 'Group',
-    };
-    // Create the space first, then update with extra fields
-    const spaceId = await createSpace({
-      name: globalSpaceNames[type] || type,
-      type,
-    });
-    // Add isGlobal and hiddenInApps fields
-    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
-  }, [user, createSpace, updateSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
-    if (!user) return;
-    // Create the space first, then update with extra fields
-    // Use 'work' type for custom spaces since habits allows: personal, family, couple, work
-    const spaceId = await createSpace({
-      name,
-      type: 'work',
-    });
-    // Add hiddenInApps field
-    if (hiddenInApps.length > 0) {
-      await updateSpace(spaceId, { hiddenInApps });
-    }
-  }, [user, createSpace, updateSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
 
   // Zustand Store for habits/completions
   const {
@@ -177,11 +123,9 @@ function GrowWorkspaceContent() {
 
   // UI State
   const [showHabitEditor, setShowHabitEditor] = useState(false);
-  const [showMemberManager, setShowMemberManager] = useState(false);
   const [showHabitPacks, setShowHabitPacks] = useState(false);
   const [showQuestEditor, setShowQuestEditor] = useState(false);
   const [showAISuggester, setShowAISuggester] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState<string | undefined>(undefined);
   const [detailHabitId, setDetailHabitId] = useState<string | null>(null);
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
@@ -259,7 +203,16 @@ function GrowWorkspaceContent() {
 
       <WorkspacePageLayout
         className="pt-[17px]"
-        composer={<HabitComposer onAISuggestClick={() => setShowAISuggester(true)} onManagePeople={handleManagePeople} onManageSpaces={() => setShowSpaceManagement(true)} />}
+        spaceSelector={
+          spaceItems.length > 1 && (
+            <SpaceTabSelector
+              spaces={spaceItems}
+              currentSpaceId={currentSpaceId}
+              onSpaceChange={setCurrentSpace}
+            />
+          )
+        }
+        composer={<HabitComposer onAISuggestClick={() => setShowAISuggester(true)} placeholder={`Create a new habit for ${currentSpaceName}...`} />}
       >
         {/* Main content with consistent section spacing */}
         <div className="space-y-4">
@@ -371,7 +324,6 @@ function GrowWorkspaceContent() {
                   <TeamLeaderboard
                     data={teamStats}
                     spaceType={currentSpace?.type}
-                    onSettingsClick={() => setShowMemberManager(true)}
                     compact
                   />
                 </div>
@@ -380,7 +332,6 @@ function GrowWorkspaceContent() {
                   <TeamLeaderboard
                     data={teamStats}
                     spaceType={currentSpace?.type}
-                    onSettingsClick={() => setShowMemberManager(true)}
                   />
                 </div>
               </div>
@@ -568,11 +519,6 @@ function GrowWorkspaceContent() {
         }}
       />
 
-      <MemberManager
-        isOpen={showMemberManager}
-        onClose={() => setShowMemberManager(false)}
-      />
-
       <QuestEditor
         isOpen={showQuestEditor}
         onClose={() => setShowQuestEditor(false)}
@@ -596,19 +542,6 @@ function GrowWorkspaceContent() {
       <HabitSuggester
         isOpen={showAISuggester}
         onClose={() => setShowAISuggester(false)}
-      />
-
-      {/* Space Management Modal */}
-      <SpaceManagementModal
-        isOpen={showSpaceManagement}
-        onClose={() => setShowSpaceManagement(false)}
-        userSpaces={userSpaces}
-        onJoinGlobalSpace={handleJoinGlobalSpace}
-        onLeaveGlobalSpace={handleLeaveGlobalSpace}
-        onCreateCustomSpace={handleCreateCustomSpace}
-        onRenameCustomSpace={handleRenameCustomSpace}
-        onDeleteCustomSpace={handleDeleteCustomSpace}
-        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
       />
 
       {/* Mobile Bottom Navigation */}

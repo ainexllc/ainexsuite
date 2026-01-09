@@ -6,25 +6,23 @@ import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   ActiveFilterChips,
-  SpaceManagementModal,
   SettingsModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type FilterChip,
   type FilterChipType,
-  type UserSpace,
 } from '@ainexsuite/ui';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
-import type { SpaceType } from '@ainexsuite/types';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkflowBoard } from '@/components/workflows/workflow-board';
 import { WorkflowComposer } from "@/components/workflows/workflow-composer";
 import { useWorkflows } from "@/components/providers/workflows-provider";
 import { useLabels } from "@/components/providers/labels-provider";
-import { useSpaces } from "@/components/providers/spaces-provider";
 import { SelectionProvider, useSelection } from "@/components/providers/selection-provider";
-import { MemberManager } from "@/components/spaces/MemberManager";
+import { useSpaces } from "@/components/providers/spaces-provider";
 import { BulkActionBar } from "@/components/bulk-action-bar";
+import type { SpaceSettingsItem } from "@ainexsuite/ui";
 import { batchDeleteWorkflows, batchUpdateWorkflows } from "@/lib/firebase/workflow-service";
 import { useAuth } from "@ainexsuite/auth";
 import type { WorkflowColor } from "@/lib/types/workflow";
@@ -68,6 +66,27 @@ export default function WorkflowsWorkspace() {
     pollAnimationStatus,
   } = useWorkspaceAuth();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const { spaces, updateSpace, deleteSpace } = useSpaces();
+
+  // Map spaces to SpaceSettingsItem format
+  const spaceSettingsItems = useMemo<SpaceSettingsItem[]>(() => {
+    return spaces
+      .filter((s) => s.id !== 'personal')
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        isGlobal: (s as { isGlobal?: boolean }).isGlobal,
+        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+        memberCount: s.memberUids?.length || 1,
+        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
+      }));
+  }, [spaces, user?.uid]);
+
+  // Handle updating space visibility
+  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
+    await updateSpace(spaceId, { hiddenInApps });
+  }, [updateSpace]);
 
   if (!user) return null;
 
@@ -115,8 +134,10 @@ export default function WorkflowsWorkspace() {
         onRemoveAnimatedAvatar={removeAnimatedAvatar}
         onPollAnimationStatus={pollAnimationStatus}
         animateAvatarApiEndpoint="/api/animate-avatar"
-        spaces={[]}
+        spaces={spaceSettingsItems}
         currentAppId="flow"
+        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
+        onDeleteSpace={deleteSpace}
       />
     </>
   );
@@ -126,7 +147,7 @@ function WorkflowsWorkspaceContent() {
   const { user } = useAuth();
   const { displayedOthers, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useWorkflows();
   const { labels } = useLabels();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
   const {
     selectedIds,
     selectionCount,
@@ -134,65 +155,21 @@ function WorkflowsWorkspaceContent() {
     deselectAll,
   } = useSelection();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-  const [showMemberManager, setShowMemberManager] = useState(false);
 
-  // Map spaces to UserSpace format for SpaceManagementModal
-  const userSpaces = useMemo<UserSpace[]>(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type as SpaceType,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-      }));
-  }, [allSpaces, user?.uid]);
+  // Create space items for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }));
+  }, [spaces]);
 
-  // Space management callbacks
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
-    if (!user) return;
-    const globalSpaceNames: Record<string, string> = {
-      family: 'Family',
-      couple: 'Couple',
-      squad: 'Team',
-      work: 'Group',
-    };
-    const spaceId = await createSpace({
-      name: globalSpaceNames[type] || type,
-      type,
-    });
-    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
-  }, [user, createSpace, updateSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
-    if (!user) return;
-    const spaceId = await createSpace({
-      name,
-      type: 'work',
-    });
-    if (hiddenInApps.length > 0) {
-      await updateSpace(spaceId, { hiddenInApps });
-    }
-  }, [user, createSpace, updateSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   // Bulk action handlers
   const handleBulkDelete = useCallback(async () => {
@@ -314,9 +291,16 @@ function WorkflowsWorkspaceContent() {
     <>
       <WorkspacePageLayout
         className="pt-[17px]"
-        composer={
-          <WorkflowComposer />
+        spaceSelector={
+          spaceItems.length > 1 && (
+            <SpaceTabSelector
+              spaces={spaceItems}
+              currentSpaceId={currentSpaceId}
+              onSpaceChange={setCurrentSpace}
+            />
+          )
         }
+        composer={<WorkflowComposer placeholder={`Create a workflow for ${currentSpaceName}...`} />}
         toolbar={
           <div className="space-y-2">
             {isSearchOpen && (
@@ -384,25 +368,6 @@ function WorkflowsWorkspaceContent() {
           onLabelAdd={handleBulkLabelAdd}
         />
       </WorkspacePageLayout>
-
-      {/* Space Management Modal */}
-      <SpaceManagementModal
-        isOpen={showSpaceManagement}
-        onClose={() => setShowSpaceManagement(false)}
-        userSpaces={userSpaces}
-        onJoinGlobalSpace={handleJoinGlobalSpace}
-        onLeaveGlobalSpace={handleLeaveGlobalSpace}
-        onCreateCustomSpace={handleCreateCustomSpace}
-        onRenameCustomSpace={handleRenameCustomSpace}
-        onDeleteCustomSpace={handleDeleteCustomSpace}
-        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-      />
-
-      {/* Member Manager Modal */}
-      <MemberManager
-        isOpen={showMemberManager}
-        onClose={() => setShowMemberManager(false)}
-      />
     </>
   );
 }

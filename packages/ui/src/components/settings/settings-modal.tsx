@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { clsx } from "clsx";
-import { X, User, Palette, Bell, Globe, Settings2, Eye, EyeOff, Users, Loader2, Trash2, Video, Sparkles, Check, AlertCircle, Mail } from "lucide-react";
+import { X, User, UserPlus, Palette, Bell, Globe, Settings2, Eye, EyeOff, Loader2, Trash2, Video, Sparkles, Check, AlertCircle, Mail } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import type { UserPreferences, FontFamily, SpaceType } from "@ainexsuite/types";
@@ -28,6 +28,15 @@ export interface SettingsUser {
   useAnimatedAvatar?: boolean;
 }
 
+/** Member item for space settings */
+export interface SpaceSettingsMember {
+  uid: string;
+  displayName?: string | null;
+  photoURL?: string | null;
+  role?: 'admin' | 'member' | 'viewer';
+  isOwner?: boolean;
+}
+
 /** Space item for settings management */
 export interface SpaceSettingsItem {
   id: string;
@@ -37,6 +46,10 @@ export interface SpaceSettingsItem {
   hiddenInApps?: string[];
   memberCount?: number;
   isOwner?: boolean;
+  /** Members of the space (for member management) */
+  members?: SpaceSettingsMember[];
+  /** Owner ID for determining ownership */
+  ownerId?: string;
 }
 
 /** Global space item that user can join */
@@ -90,6 +103,12 @@ export interface SettingsModalProps {
   onUpdateSpaceVisibility?: (spaceId: string, hiddenInApps: string[]) => Promise<void>;
   /** Callback when user deletes a space */
   onDeleteSpace?: (spaceId: string) => Promise<void>;
+  /** Callback when user invites a member by email */
+  onInviteMember?: (spaceId: string, email: string) => Promise<void>;
+  /** Callback when user adds a member manually (without email) */
+  onAddManualMember?: (spaceId: string, name: string) => Promise<void>;
+  /** Callback when user removes a member from a space */
+  onRemoveMember?: (spaceId: string, memberUid: string) => Promise<void>;
   /** Available global spaces that user can join */
   globalSpaces?: GlobalSpaceItem[];
   /** Callback when user wants to join a global space */
@@ -138,6 +157,9 @@ export function SettingsModal({
   onEditSpace,
   onUpdateSpaceVisibility,
   onDeleteSpace,
+  onInviteMember,
+  onAddManualMember,
+  onRemoveMember,
   globalSpaces,
   onJoinSpace,
   globalSpacesLoading,
@@ -279,6 +301,9 @@ export function SettingsModal({
                 onEditSpace={onEditSpace}
                 onUpdateSpaceVisibility={onUpdateSpaceVisibility}
                 onDeleteSpace={onDeleteSpace}
+                onInviteMember={onInviteMember}
+                onAddManualMember={onAddManualMember}
+                onRemoveMember={onRemoveMember}
                 user={user}
                 globalSpaces={globalSpaces}
                 onJoinSpace={onJoinSpace}
@@ -1211,6 +1236,12 @@ interface SpacesSettingsProps {
   onEditSpace?: (spaceId: string) => void;
   onUpdateSpaceVisibility?: (spaceId: string, hiddenInApps: string[]) => Promise<void>;
   onDeleteSpace?: (spaceId: string) => Promise<void>;
+  /** Callback when user invites a member by email */
+  onInviteMember?: (spaceId: string, email: string) => Promise<void>;
+  /** Callback when user adds a member manually (without email) */
+  onAddManualMember?: (spaceId: string, name: string) => Promise<void>;
+  /** Callback when user removes a member */
+  onRemoveMember?: (spaceId: string, memberUid: string) => Promise<void>;
   /** User for fetching/joining global spaces */
   user?: { uid: string; displayName?: string | null; photoURL?: string | null } | null;
   /** Optional: Override with external global spaces data */
@@ -1221,6 +1252,7 @@ interface SpacesSettingsProps {
   showGlobalTab?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SpacesTab = "global" | "custom";
 
 function SpacesSettings({
@@ -1230,19 +1262,28 @@ function SpacesSettings({
   onEditSpace,
   onUpdateSpaceVisibility,
   onDeleteSpace,
+  onInviteMember,
+  onAddManualMember,
+  onRemoveMember,
   user,
   globalSpaces: externalGlobalSpaces,
   onJoinSpace: externalOnJoinSpace,
   globalSpacesLoading: externalGlobalSpacesLoading,
-  showGlobalTab = true,
+  showGlobalTab: _showGlobalTab = true,
 }: SpacesSettingsProps) {
-  // If global tab is hidden, default to "custom" tab
-  const [activeSpacesTab, setActiveSpacesTab] = React.useState<SpacesTab>(showGlobalTab ? "global" : "custom");
   const [expandedSpaceId, setExpandedSpaceId] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [joiningSpaceId, setJoiningSpaceId] = React.useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = React.useState<{ spaceId: string; spaceName: string } | null>(null);
   const [deleting, setDeleting] = React.useState(false);
+
+  // Member management state
+  const [addMemberSpaceId, setAddMemberSpaceId] = React.useState<string | null>(null);
+  const [addMemberMode, setAddMemberMode] = React.useState<'email' | 'manual'>('email');
+  const [inviteEmail, setInviteEmail] = React.useState('');
+  const [manualName, setManualName] = React.useState('');
+  const [addingMember, setAddingMember] = React.useState(false);
+  const [removingMemberId, setRemovingMemberId] = React.useState<string | null>(null);
 
   // Use internal hook for global spaces if external data not provided
   const {
@@ -1252,11 +1293,16 @@ function SpacesSettings({
   } = useInternalGlobalSpaces({ userId: user?.uid });
 
   // Use external data if provided, otherwise use internal
-  const globalSpaces = externalGlobalSpaces ?? internalGlobalSpaces;
-  const globalSpacesLoading = externalGlobalSpacesLoading ?? internalGlobalSpacesLoading;
+  // Note: These are intentionally unused - kept for future global spaces feature
+  const _globalSpaces = externalGlobalSpaces ?? internalGlobalSpaces;
+  const _globalSpacesLoading = externalGlobalSpacesLoading ?? internalGlobalSpacesLoading;
+  void _globalSpaces;
+  void _globalSpacesLoading;
 
   // Global space types (from templates)
-  const GLOBAL_SPACE_TYPES = new Set(TEMPLATE_GLOBAL_SPACES.map(t => t.type));
+  // Note: Currently unused - kept for future filtering
+  const _GLOBAL_SPACE_TYPES = new Set(TEMPLATE_GLOBAL_SPACES.map(t => t.type));
+  void _GLOBAL_SPACE_TYPES;
 
   // Filter template spaces based on what types the user already has
   const availableTemplates = React.useMemo(() => {
@@ -1264,11 +1310,6 @@ function SpacesSettings({
     return TEMPLATE_GLOBAL_SPACES.filter(template => !userSpaceTypes.has(template.type));
   }, [spaces]);
 
-  // User's global spaces (spaces matching template types)
-  const userGlobalSpaces = React.useMemo(() => {
-    return spaces.filter(s => GLOBAL_SPACE_TYPES.has(s.type));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spaces]);
 
   // Create a new space from a template
   const createSpaceFromTemplate = React.useCallback(
@@ -1325,14 +1366,24 @@ function SpacesSettings({
   };
 
   const handleToggleAppVisibility = async (spaceId: string, appId: string, currentHiddenApps: string[]) => {
-    if (!onUpdateSpaceVisibility) return;
+    // eslint-disable-next-line no-console
+    console.log('[Settings] Toggle visibility:', { spaceId, appId, currentHiddenApps, hasCallback: !!onUpdateSpaceVisibility });
+    if (!onUpdateSpaceVisibility) {
+      // eslint-disable-next-line no-console
+      console.warn('[Settings] No onUpdateSpaceVisibility callback provided!');
+      return;
+    }
     setSaving(true);
     try {
       const isCurrentlyHidden = currentHiddenApps.includes(appId);
       const newHiddenApps = isCurrentlyHidden
         ? currentHiddenApps.filter((id) => id !== appId)
         : [...currentHiddenApps, appId];
+      // eslint-disable-next-line no-console
+      console.log('[Settings] Calling onUpdateSpaceVisibility with:', { spaceId, newHiddenApps });
       await onUpdateSpaceVisibility(spaceId, newHiddenApps);
+      // eslint-disable-next-line no-console
+      console.log('[Settings] Update complete');
     } finally {
       setSaving(false);
     }
@@ -1349,316 +1400,63 @@ function SpacesSettings({
     }
   };
 
+  // Member management handlers
+  const handleOpenAddMember = (spaceId: string) => {
+    setAddMemberSpaceId(spaceId);
+    setAddMemberMode('email');
+    setInviteEmail('');
+    setManualName('');
+  };
+
+  const handleCloseAddMember = () => {
+    setAddMemberSpaceId(null);
+    setInviteEmail('');
+    setManualName('');
+  };
+
+  const handleAddMember = async () => {
+    if (!addMemberSpaceId) return;
+    setAddingMember(true);
+    try {
+      if (addMemberMode === 'email' && onInviteMember && inviteEmail.trim()) {
+        await onInviteMember(addMemberSpaceId, inviteEmail.trim());
+      } else if (addMemberMode === 'manual' && onAddManualMember && manualName.trim()) {
+        await onAddManualMember(addMemberSpaceId, manualName.trim());
+      }
+      handleCloseAddMember();
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
+  const handleRemoveMember = async (spaceId: string, memberUid: string) => {
+    if (!onRemoveMember) return;
+    setRemovingMemberId(memberUid);
+    try {
+      await onRemoveMember(spaceId, memberUid);
+    } finally {
+      setRemovingMemberId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Tabs - only show when global tab is enabled */}
-      {showGlobalTab && (
-        <div className="flex gap-1 p-1 rounded-xl bg-muted/50">
-          <button
-            type="button"
-            onClick={() => setActiveSpacesTab("global")}
-            className={clsx(
-              "flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-              activeSpacesTab === "global"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <Globe className="h-4 w-4" />
-              <span>Global</span>
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSpacesTab("custom")}
-            className={clsx(
-              "flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-              activeSpacesTab === "custom"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <div className="flex items-center justify-center gap-2">
-              <Users className="h-4 w-4" />
-              <span>My Spaces</span>
-              {spaces.length > 0 && (
-                <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                  {spaces.length}
-                </span>
-              )}
-            </div>
-          </button>
+      {/* Header */}
+      <div>
+        <p className="text-xs text-muted-foreground">
+          Manage your spaces and their visibility across apps
+        </p>
+      </div>
+
+      {/* All Spaces List */}
+      {spaces.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">
+          <Globe className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p>No spaces yet. Create your first space below!</p>
         </div>
-      )}
-
-      {/* Global Tab Content */}
-      {showGlobalTab && activeSpacesTab === "global" && (
-        <div className="space-y-6">
-          {/* User's Global Spaces with App Visibility */}
-          {userGlobalSpaces.length > 0 && (
-            <div className="space-y-3">
-              <div>
-                <h4 className="text-sm font-medium text-foreground">Your Global Spaces</h4>
-                <p className="text-xs text-muted-foreground">
-                  Configure which apps can access each space
-                </p>
-              </div>
-              <div className="space-y-2">
-                {userGlobalSpaces.map((space) => {
-                  const isExpanded = expandedSpaceId === space.id;
-                  const hiddenApps = space.hiddenInApps || [];
-                  return (
-                    <div
-                      key={space.id}
-                      className="rounded-xl border border-border bg-muted/30 overflow-hidden"
-                    >
-                      <div
-                        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors"
-                        onClick={() => setExpandedSpaceId(isExpanded ? null : space.id)}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Globe className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-foreground truncate">
-                              {space.name}
-                            </span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                              {SPACE_TYPE_LABELS[space.type]}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            {space.memberCount && space.memberCount > 1 && (
-                              <span>{space.memberCount} members</span>
-                            )}
-                            {hiddenApps.length > 0 && (
-                              <>
-                                {space.memberCount && space.memberCount > 1 && <span>•</span>}
-                                <span className="text-amber-500">
-                                  Hidden in {hiddenApps.length} app{hiddenApps.length !== 1 ? "s" : ""}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {space.isOwner && onEditSpace && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEditSpace(space.id);
-                              }}
-                              className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-                              title="Edit space"
-                            >
-                              <Settings2 className="h-4 w-4 text-muted-foreground" />
-                            </button>
-                          )}
-                          <span className={clsx("transition-transform text-xs", isExpanded && "rotate-180")}>
-                            ▼
-                          </span>
-                        </div>
-                      </div>
-                      {isExpanded && (
-                        <div className="px-3 pb-3 border-t border-border pt-3">
-                          <p className="text-xs font-medium text-muted-foreground mb-2">
-                            Show in Apps
-                          </p>
-                          <div className="grid grid-cols-3 gap-1.5">
-                            {AVAILABLE_APPS.map((app) => {
-                              const isVisible = !hiddenApps.includes(app.id);
-                              const isCurrentApp = app.id === currentAppId;
-                              return (
-                                <button
-                                  key={app.id}
-                                  type="button"
-                                  onClick={() => handleToggleAppVisibility(space.id, app.id, hiddenApps)}
-                                  disabled={saving}
-                                  className={clsx(
-                                    "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs transition-all",
-                                    isVisible
-                                      ? "bg-primary/10 text-foreground"
-                                      : "bg-muted text-muted-foreground",
-                                    isCurrentApp && "ring-1 ring-primary",
-                                    saving && "opacity-50 cursor-not-allowed"
-                                  )}
-                                >
-                                  {isVisible ? (
-                                    <Eye className="h-3 w-3 text-primary" />
-                                  ) : (
-                                    <EyeOff className="h-3 w-3" />
-                                  )}
-                                  <span className="font-medium">{app.label}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Available Global Spaces */}
-          {(availableTemplates.length > 0 || globalSpacesLoading || (globalSpaces && globalSpaces.length > 0)) && (
-            <div className="space-y-3">
-              <div>
-                <h4 className="text-sm font-medium text-foreground">Available Global Spaces</h4>
-                <p className="text-xs text-muted-foreground">
-                  Add a space to start collaborating with others
-                </p>
-              </div>
-              <div className="space-y-2">
-                {/* Template Spaces */}
-                {availableTemplates.map((template) => (
-              <div
-                key={template.id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
-              >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Globe className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground truncate">
-                      {template.name}
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                      {SPACE_TYPE_LABELS[template.type]}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {template.description}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleJoinSpace(template.id)}
-                  disabled={joiningSpaceId === template.id}
-                  className={clsx(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-                    joiningSpaceId === template.id
-                      ? "bg-muted text-muted-foreground cursor-not-allowed"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  )}
-                >
-                  {joiningSpaceId === template.id ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Adding...</span>
-                    </>
-                  ) : (
-                    <span>Add</span>
-                  )}
-                </button>
-              </div>
-            ))}
-
-            {/* Global Spaces from Firestore */}
-            {globalSpacesLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-xs text-muted-foreground">Loading shared spaces...</span>
-              </div>
-            ) : (
-              globalSpaces?.map((space) => (
-                <div
-                  key={space.id}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Globe className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground truncate">
-                        {space.name}
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-medium">
-                        Shared
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{SPACE_TYPE_LABELS[space.type]}</span>
-                      <span>•</span>
-                      <Users className="h-3 w-3" />
-                      <span>{space.memberCount} member{space.memberCount !== 1 ? "s" : ""}</span>
-                      {space.ownerName && (
-                        <>
-                          <span>•</span>
-                          <span>by {space.ownerName}</span>
-                        </>
-                      )}
-                    </div>
-                    {space.description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                        {space.description}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleJoinSpace(space.id)}
-                    disabled={joiningSpaceId === space.id}
-                    className={clsx(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-                      joiningSpaceId === space.id
-                        ? "bg-muted text-muted-foreground cursor-not-allowed"
-                        : "bg-primary text-primary-foreground hover:bg-primary/90"
-                    )}
-                  >
-                    {joiningSpaceId === space.id ? (
-                      <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        <span>Joining...</span>
-                      </>
-                    ) : (
-                      <span>Join</span>
-                    )}
-                  </button>
-                </div>
-              ))
-            )}
-
-              </div>
-            </div>
-          )}
-
-          {/* Empty state for global tab - when no global spaces exist and none available */}
-          {userGlobalSpaces.length === 0 && availableTemplates.length === 0 && !globalSpacesLoading && (!globalSpaces || globalSpaces.length === 0) && (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              <Globe className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No global spaces available.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* My Spaces Tab Content */}
-      {activeSpacesTab === "custom" && (
-        <div className="space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Manage your spaces and their visibility across apps
-            </p>
-          </div>
-
-          {/* Spaces List */}
-          <div className="space-y-2">
-        {spaces.length === 0 ? (
-          <div className="text-center py-8 text-sm text-muted-foreground">
-            <Globe className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            No spaces yet. Create your first space!
-          </div>
-        ) : (
-          spaces.map((space) => {
+      ) : (
+        <div className="space-y-2">
+          {spaces.map((space) => {
             const isExpanded = expandedSpaceId === space.id;
             const hiddenApps = space.hiddenInApps || [];
 
@@ -1680,23 +1478,17 @@ function SpacesSettings({
                       <span className="text-sm font-medium text-foreground truncate">
                         {space.name}
                       </span>
-                      {space.isGlobal && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-medium">
-                          Global
-                        </span>
-                      )}
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                        {SPACE_TYPE_LABELS[space.type]}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{SPACE_TYPE_LABELS[space.type]}</span>
                       {space.memberCount && space.memberCount > 1 && (
-                        <>
-                          <span>•</span>
-                          <span>{space.memberCount} members</span>
-                        </>
+                        <span>{space.memberCount} members</span>
                       )}
-                      {!space.isGlobal && hiddenApps.length > 0 && (
+                      {hiddenApps.length > 0 && (
                         <>
-                          <span>•</span>
+                          {space.memberCount && space.memberCount > 1 && <span>•</span>}
                           <span className="text-amber-500">
                             Hidden in {hiddenApps.length} app{hiddenApps.length !== 1 ? "s" : ""}
                           </span>
@@ -1742,59 +1534,150 @@ function SpacesSettings({
                   </div>
                 </div>
 
-                {/* Expanded: App Visibility */}
-                {isExpanded && !space.isGlobal && (
-                  <div className="px-3 pb-3 border-t border-border pt-3">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">
-                      Show in Apps
-                    </p>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {AVAILABLE_APPS.map((app) => {
-                        const isVisible = !hiddenApps.includes(app.id);
-                        const isCurrentApp = app.id === currentAppId;
-                        return (
-                          <button
-                            key={app.id}
-                            type="button"
-                            onClick={() =>
-                              handleToggleAppVisibility(space.id, app.id, hiddenApps)
-                            }
-                            disabled={saving}
-                            className={clsx(
-                              "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs transition-all",
-                              isVisible
-                                ? "bg-primary/10 text-foreground"
-                                : "bg-muted text-muted-foreground",
-                              isCurrentApp && "ring-1 ring-primary",
-                              saving && "opacity-50 cursor-not-allowed"
-                            )}
-                          >
-                            {isVisible ? (
-                              <Eye className="h-3 w-3 text-primary" />
-                            ) : (
-                              <EyeOff className="h-3 w-3" />
-                            )}
-                            <span className="font-medium">{app.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* Expanded Content */}
+                {isExpanded && (
+                  <div className="px-3 pb-3 border-t border-border pt-3 space-y-4">
+                    {/* Members Section */}
+                    {space.members && space.members.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Members ({space.members.length})
+                          </p>
+                          {space.isOwner && (onInviteMember || onAddManualMember) && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenAddMember(space.id)}
+                              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                            >
+                              <UserPlus className="h-3 w-3" />
+                              <span>Add</span>
+                            </button>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          {space.members.map((member) => (
+                            <div
+                              key={member.uid}
+                              className="flex items-center gap-2 p-2 rounded-lg bg-muted/50"
+                            >
+                              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                                {member.photoURL ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={member.photoURL}
+                                    alt={member.displayName || "Member"}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <User className="h-3 w-3 text-primary" />
+                                )}
+                              </div>
+                              <span className="text-xs text-foreground flex-1 truncate">
+                                {member.displayName || "Unknown"}
+                              </span>
+                              {member.isOwner || member.uid === space.ownerId ? (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-medium">
+                                  Owner
+                                </span>
+                              ) : (
+                                space.isOwner && onRemoveMember && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveMember(space.id, member.uid)}
+                                    disabled={removingMemberId === member.uid}
+                                    className="text-xs text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+                                  >
+                                    {removingMemberId === member.uid ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <X className="h-3 w-3" />
+                                    )}
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                {/* Global spaces can't have per-app visibility */}
-                {isExpanded && space.isGlobal && (
-                  <div className="px-3 pb-3 border-t border-border pt-3">
-                    <p className="text-xs text-muted-foreground">
-                      This is a global space. It&apos;s visible in all apps.
-                      To manage per-app visibility, disable the global setting when editing.
-                    </p>
+                    {/* App Visibility */}
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">
+                        Show in Apps
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {AVAILABLE_APPS.map((app) => {
+                          const isHidden = hiddenApps.includes(app.id);
+                          const isCurrentApp = app.id === currentAppId;
+                          return (
+                            <button
+                              key={app.id}
+                              type="button"
+                              onClick={() => handleToggleAppVisibility(space.id, app.id, hiddenApps)}
+                              disabled={saving}
+                              className={clsx(
+                                "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs transition-all",
+                                isHidden
+                                  ? "bg-muted/50 text-muted-foreground"
+                                  : "bg-primary/10 text-primary",
+                                isCurrentApp && "ring-1 ring-primary/50"
+                              )}
+                            >
+                              {isHidden ? (
+                                <EyeOff className="h-3 w-3 flex-shrink-0" />
+                              ) : (
+                                <Eye className="h-3 w-3 flex-shrink-0" />
+                              )}
+                              <span className="truncate">{app.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
             );
-          })
-        )}
+          })}
+        </div>
+      )}
+
+      {/* Create New Space Section */}
+      {availableTemplates.length > 0 && (
+        <div className="space-y-3 pt-2 border-t border-border">
+          <div>
+            <h4 className="text-sm font-medium text-foreground">Create a Space</h4>
+            <p className="text-xs text-muted-foreground">
+              Add a new space to collaborate with others
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {availableTemplates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => handleJoinSpace(template.id)}
+                disabled={joiningSpaceId === template.id}
+                className="flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 transition-colors text-left disabled:opacity-50"
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Globe className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-foreground block truncate">
+                    {template.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground block truncate">
+                    {template.description}
+                  </span>
+                </div>
+                {joiningSpaceId === template.id && (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
+                )}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -1839,6 +1722,136 @@ function SpacesSettings({
                     </>
                   ) : (
                     <span>Delete</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Member Modal */}
+      {addMemberSpaceId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-background/60 backdrop-blur-sm"
+            onClick={() => !addingMember && handleCloseAddMember()}
+          />
+          <div className="relative z-[201] w-full max-w-sm rounded-2xl bg-popover border border-border shadow-xl p-6 animate-in zoom-in-95 fade-in duration-200">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Add Member
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleCloseAddMember}
+                  disabled={addingMember}
+                  className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+
+              {/* Mode Toggle */}
+              <div className="flex gap-1 p-1 rounded-xl bg-muted/50 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setAddMemberMode('email')}
+                  disabled={!onInviteMember}
+                  className={clsx(
+                    "flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5",
+                    addMemberMode === 'email'
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                    !onInviteMember && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Mail className="h-3.5 w-3.5" />
+                  <span>By Email</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddMemberMode('manual')}
+                  disabled={!onAddManualMember}
+                  className={clsx(
+                    "flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5",
+                    addMemberMode === 'manual'
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                    !onAddManualMember && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  <span>Manual</span>
+                </button>
+              </div>
+
+              {/* Email Input */}
+              {addMemberMode === 'email' && (
+                <div className="space-y-2">
+                  <label htmlFor="invite-email" className="text-xs font-medium text-muted-foreground">
+                    Email Address
+                  </label>
+                  <input
+                    id="invite-email"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    disabled={addingMember}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    The user must have an AinexSuite account to receive the invitation.
+                  </p>
+                </div>
+              )}
+
+              {/* Manual Name Input */}
+              {addMemberMode === 'manual' && (
+                <div className="space-y-2">
+                  <label htmlFor="manual-name" className="text-xs font-medium text-muted-foreground">
+                    Name
+                  </label>
+                  <input
+                    id="manual-name"
+                    type="text"
+                    value={manualName}
+                    onChange={(e) => setManualName(e.target.value)}
+                    placeholder="Enter name (e.g., child's name)"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    disabled={addingMember}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Add someone without an account (e.g., children in a family space).
+                  </p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={handleCloseAddMember}
+                  disabled={addingMember}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddMember}
+                  disabled={addingMember || (addMemberMode === 'email' ? !inviteEmail.trim() : !manualName.trim())}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {addingMember ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Adding...</span>
+                    </>
+                  ) : (
+                    <span>{addMemberMode === 'email' ? 'Send Invite' : 'Add Member'}</span>
                   )}
                 </button>
               </div>

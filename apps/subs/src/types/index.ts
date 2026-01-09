@@ -15,7 +15,8 @@ export interface SubscriptionItem {
   status: SubscriptionStatus;
   description?: string;
   userId: string;
-  spaceId?: string;
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   createdAt: string;
   updatedAt: string;
   

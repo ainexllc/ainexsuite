@@ -6,6 +6,10 @@ import { useWorkspaceAuth } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
+import { PreferencesProvider } from '@/components/providers/preferences-provider';
+import { LabelsProvider } from '@/components/providers/labels-provider';
+import { ProjectsProvider } from '@/components/providers/projects-provider';
+import { SelectionProvider } from '@/components/providers/selection-provider';
 import { HintsProvider } from '@/components/hints';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { getQuickActionsForApp } from '@ainexsuite/types';
@@ -43,12 +47,11 @@ function WorkspaceLayoutInner({
 }) {
   const router = useRouter();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const { allSpaces, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, updateSpace, deleteSpace } = useSpaces();
 
   // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
-  // Use allSpaces so users can see and toggle visibility of hidden spaces
   const spaceSettingsItems = useMemo<SpaceSettingsItem[]>(() => {
-    return allSpaces
+    return spaces
       .filter((s) => s.id !== 'personal')
       .map((s) => ({
         id: s.id,
@@ -59,7 +62,7 @@ function WorkspaceLayoutInner({
         memberCount: s.memberUids?.length || 1,
         isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
       }));
-  }, [allSpaces, user?.uid]);
+  }, [spaces, user?.uid]);
 
   // Handle updating space visibility
   const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
@@ -185,24 +188,32 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <SpacesProvider>
-      <HintsProvider>
-        <WorkspaceLayoutInner
-          user={user}
-          handleSignOut={handleSignOut}
-          updatePreferences={updatePreferences}
-          updateProfile={updateProfile}
-          updateProfileImage={updateProfileImage}
-          removeProfileImage={removeProfileImage}
-          generateAnimatedAvatar={generateAnimatedAvatar}
-          saveAnimatedAvatar={saveAnimatedAvatar}
-          toggleAnimatedAvatar={toggleAnimatedAvatar}
-          removeAnimatedAvatar={removeAnimatedAvatar}
-          pollAnimationStatus={pollAnimationStatus}
-        >
-          {children}
-        </WorkspaceLayoutInner>
-      </HintsProvider>
-    </SpacesProvider>
+    <PreferencesProvider>
+      <SpacesProvider>
+        <LabelsProvider>
+          <ProjectsProvider>
+            <SelectionProvider>
+              <HintsProvider>
+                <WorkspaceLayoutInner
+                  user={user}
+                  handleSignOut={handleSignOut}
+                  updatePreferences={updatePreferences}
+                  updateProfile={updateProfile}
+                  updateProfileImage={updateProfileImage}
+                  removeProfileImage={removeProfileImage}
+                  generateAnimatedAvatar={generateAnimatedAvatar}
+                  saveAnimatedAvatar={saveAnimatedAvatar}
+                  toggleAnimatedAvatar={toggleAnimatedAvatar}
+                  removeAnimatedAvatar={removeAnimatedAvatar}
+                  pollAnimationStatus={pollAnimationStatus}
+                >
+                  {children}
+                </WorkspaceLayoutInner>
+              </HintsProvider>
+            </SelectionProvider>
+          </ProjectsProvider>
+        </LabelsProvider>
+      </SpacesProvider>
+    </PreferencesProvider>
   );
 }

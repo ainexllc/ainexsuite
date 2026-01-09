@@ -20,3 +20,5 @@ export * from './notification-service';
 export * from './email-service';
 export * from './profile-images';
 export * from './animated-avatars';
+export * from './space-query-helpers';
+export * from './space-migration';

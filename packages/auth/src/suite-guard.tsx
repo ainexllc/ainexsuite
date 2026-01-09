@@ -19,14 +19,14 @@ interface SuiteGuardProps {
 }
 
 export function SuiteGuard({ appName, children, PaywallComponent, LoadingComponent }: SuiteGuardProps) {
-  const { user, loading, ssoInProgress } = useAuth();
+  const { user, loading } = useAuth();
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [accessAllowed, setAccessAllowed] = useState(false);
 
   useEffect(() => {
 
-    // Wait for auth loading and SSO to complete before making decisions
-    if (loading || ssoInProgress) {
+    // Wait for auth loading to complete before making decisions
+    if (loading) {
       return;
     }
 
@@ -38,7 +38,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
 
     checkAccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, loading, ssoInProgress, appName]);
+  }, [user, loading, appName]);
 
   const checkAccess = async () => {
     if (!user) {
@@ -89,7 +89,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
     }
   };
 
-  if (loading || ssoInProgress || checkingAccess) {
+  if (loading || checkingAccess) {
     if (LoadingComponent) {
       return <LoadingComponent message="Checking access..." />;
     }

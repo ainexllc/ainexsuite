@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { LearningGoal, LearningResource } from '@ainexsuite/types';
 import { createLearningGoal, updateLearningGoal, deleteLearningGoal } from '@/lib/learning';
 import { Trash2, Plus, Link as LinkIcon, X } from 'lucide-react';
-import { GlassModal, GlassModalHeader, GlassModalTitle, GlassModalContent, GlassModalFooter } from '@ainexsuite/ui';
+import { GlassModal, GlassModalHeader, GlassModalTitle, GlassModalContent, GlassModalFooter, DatePicker } from '@ainexsuite/ui';
 import { useAppColors } from '@ainexsuite/theme';
 
 interface GoalEditorProps {
@@ -161,11 +161,11 @@ export function GoalEditor({ goal, onClose, onSave }: GoalEditorProps) {
 
             <div>
               <label className="block text-sm font-medium mb-2">Target Date</label>
-              <input
-                type="date"
-                value={targetDate}
-                onChange={(e) => setTargetDate(e.target.value)}
-                className="w-full px-3 py-2 surface-elevated rounded-lg border border-surface-hover focus:border-accent-500 focus:outline-none"
+              <DatePicker
+                value={targetDate ? new Date(targetDate) : null}
+                onChange={(d) => setTargetDate(d ? d.toISOString().split('T')[0] : '')}
+                placeholder="Select target date"
+                presets="smart"
               />
             </div>
 

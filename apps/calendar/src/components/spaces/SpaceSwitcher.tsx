@@ -5,17 +5,10 @@ import type { SpaceItem } from '@ainexsuite/ui';
 import type { SpaceType as SharedSpaceType } from '@ainexsuite/types';
 import { useSpaces } from '@/components/providers/spaces-provider';
 
-interface SpaceSwitcherProps {
-  /** Callback when user wants to manage spaces */
-  onManageSpaces?: () => void;
-  /** Callback when user wants to invite people to current space */
-  onManagePeople?: () => void;
-}
-
 /**
  * Calendar app SpaceSwitcher - wraps shared UI component with app-specific data
  */
-export function SpaceSwitcher({ onManageSpaces, onManagePeople }: SpaceSwitcherProps) {
+export function SpaceSwitcher() {
   const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
 
   // Map CalendarSpace to SpaceItem for the shared component
@@ -30,8 +23,6 @@ export function SpaceSwitcher({ onManageSpaces, onManagePeople }: SpaceSwitcherP
       spaces={spaceItems}
       currentSpaceId={currentSpaceId}
       onSpaceChange={setCurrentSpace}
-      onManageSpaces={onManageSpaces}
-      onManagePeople={onManagePeople}
       spacesLabel="Calendar Spaces"
       defaultSpaceName="Personal"
     />

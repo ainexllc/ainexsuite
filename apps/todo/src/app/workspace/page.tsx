@@ -9,16 +9,14 @@ import {
   ActiveFilterChips,
   ListItem,
   EmptyState,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type SortConfig,
   type FilterChip,
   type FilterChipType,
-  type UserSpace,
 } from '@ainexsuite/ui';
 import { format, isSameDay, parseISO } from 'date-fns';
-import type { SpaceType } from '@ainexsuite/types';
 
 // Components
 import { TaskEditor } from '@/components/tasks/TaskEditor';
@@ -29,10 +27,8 @@ import { MyDayView } from '@/components/views/MyDayView';
 import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
 import { TaskFilterContent, type TaskFilterValue } from '@/components/task-filter-content';
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
-import { MemberManager } from '@/components/spaces/MemberManager';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useSpaces } from '@/components/providers/spaces-provider';
-import { useAuth } from '@ainexsuite/auth';
 
 import { useTodoStore } from '@/lib/store';
 import type { TaskStatus } from '@/types/models';
@@ -73,55 +69,29 @@ const STATUS_LABELS: Record<TaskStatus, string> = {
 
 
 export default function TodoWorkspacePage() {
-  const { user } = useAuth();
-  const { currentSpaceId, viewPreferences, setViewPreference, tasks, getCurrentSpace } = useTodoStore();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
-  const currentSpace = getCurrentSpace();
+  const { viewPreferences, setViewPreference, tasks, getCurrentSpace } = useTodoStore();
+  const { spaces, currentSpaceId, currentSpace: spacesCurrentSpace, setCurrentSpace } = useSpaces();
+  const currentSpace = spacesCurrentSpace || getCurrentSpace();
+
+  // Create space items for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }));
+  }, [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   const [showEditor, setShowEditor] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
-  const [showMemberManager, setShowMemberManager] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
   const [sort, setSort] = useState<SortConfig>({ field: 'createdAt', direction: 'desc' });
 
-  // Map spaces for SpaceManagementModal
-  const userSpaces = useMemo<UserSpace[]>(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type as SpaceType,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-      }));
-  }, [allSpaces, user?.uid]);
-
-  // Space management handlers
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
-    await createSpace({ name: type === 'family' ? 'Family' : 'Partner', type });
-  }, [createSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
-    await createSpace({ name, type: 'project' });
-  }, [createSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
   const [filters, setFilters] = useState<TaskFilterValue>({
     priority: 'all',
     status: 'all',
@@ -148,9 +118,7 @@ export default function TodoWorkspacePage() {
   const activityData = useMemo(() => {
     const data: Record<string, number> = {};
     const spaceTasks = currentSpace
-      ? tasks.filter((t) =>
-          (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
-        )
+      ? tasks.filter((t) => t.spaceId === currentSpace.id && !t.archived)
       : tasks;
 
     spaceTasks.forEach((task) => {
@@ -167,9 +135,7 @@ export default function TodoWorkspacePage() {
   const tasksForSelectedDate = useMemo(() => {
     if (!selectedCalendarDate) return [];
     const spaceTasks = currentSpace
-      ? tasks.filter((t) =>
-          (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
-        )
+      ? tasks.filter((t) => t.spaceId === currentSpace.id && !t.archived)
       : tasks;
 
     return spaceTasks.filter((task) => {
@@ -218,7 +184,7 @@ export default function TodoWorkspacePage() {
     // List chips
     if (filters.lists && filters.lists.length > 0) {
       filters.lists.forEach((listId) => {
-        const list = currentSpace?.lists.find((l) => l.id === listId);
+        const list = (currentSpace as unknown as { lists?: { id: string; title: string }[] })?.lists?.find((l) => l.id === listId);
         if (list) {
           chips.push({
             id: listId,
@@ -393,12 +359,16 @@ export default function TodoWorkspacePage() {
     <>
       <WorkspacePageLayout
         className="pt-[17px]"
-        composer={
-          <TaskComposer
-            onManagePeople={() => setShowMemberManager(true)}
-            onManageSpaces={() => setShowSpaceManagement(true)}
-          />
+        spaceSelector={
+          spaceItems.length > 1 && (
+            <SpaceTabSelector
+              spaces={spaceItems}
+              currentSpaceId={currentSpaceId}
+              onSpaceChange={setCurrentSpace}
+            />
+          )
         }
+        composer={<TaskComposer placeholder={`Create a new todo for ${currentSpaceName}...`} />}
         toolbar={
           <div className="space-y-2">
             {isSearchOpen && (
@@ -562,25 +532,6 @@ export default function TodoWorkspacePage() {
 
       {/* Keyboard Shortcuts Help */}
       <KeyboardShortcutsHelp isOpen={showHelp} onClose={closeHelp} />
-
-      {/* Member Manager Modal */}
-      <MemberManager
-        isOpen={showMemberManager}
-        onClose={() => setShowMemberManager(false)}
-      />
-
-      {/* Space Management Modal */}
-      <SpaceManagementModal
-        isOpen={showSpaceManagement}
-        onClose={() => setShowSpaceManagement(false)}
-        userSpaces={userSpaces}
-        onJoinGlobalSpace={handleJoinGlobalSpace}
-        onLeaveGlobalSpace={handleLeaveGlobalSpace}
-        onCreateCustomSpace={handleCreateCustomSpace}
-        onRenameCustomSpace={handleRenameCustomSpace}
-        onDeleteCustomSpace={handleDeleteCustomSpace}
-        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-      />
     </>
   );
 }

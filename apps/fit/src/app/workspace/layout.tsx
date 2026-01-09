@@ -54,7 +54,7 @@ function WorkspaceLayoutInner({
 }) {
   const router = useRouter();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const { allSpaces, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, updateSpace, deleteSpace } = useSpaces();
 
   // Simple local state for Fit app preferences
   const [appPreferences, setAppPreferences] = useState<FitAppPreferences>({
@@ -66,7 +66,7 @@ function WorkspaceLayoutInner({
 
   // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
   const spaceSettingsItems = useMemo<SpaceSettingsItem[]>(() => {
-    return allSpaces
+    return spaces
       .filter((s) => s.id !== 'personal')
       .map((s) => ({
         id: s.id,
@@ -77,7 +77,7 @@ function WorkspaceLayoutInner({
         memberCount: s.memberUids?.length || 1,
         isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
       }));
-  }, [allSpaces, user?.uid]);
+  }, [spaces, user?.uid]);
 
   // Handle updating space visibility
   const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {

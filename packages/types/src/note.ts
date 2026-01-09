@@ -1,6 +1,8 @@
 import type { BaseDocument, NoteColor, NotePattern } from './common';
 
 export interface Note extends BaseDocument {
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   title: string;
   body: string;
   color: NoteColor;

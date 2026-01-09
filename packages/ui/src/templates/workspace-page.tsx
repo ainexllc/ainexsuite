@@ -12,7 +12,7 @@ import { NavigationPanel, type NavSection } from '../components/layout/navigatio
 import { ActivityPanel } from '../components/layout/activity-panel';
 
 interface WorkspacePageProps {
-  user: any;
+  user: { displayName?: string | null; photoURL?: string | null } | null;
   loading: boolean;
   appName: string;
   appColor: string;
@@ -130,7 +130,7 @@ export function WorkspacePage({
               <button
                 type="button"
                 onClick={() => handleNavToggle(!isNavOpen)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground/5 shadow-sm transition hover:bg-foreground/10"
+                className="flex lg:hidden h-10 w-10 items-center justify-center rounded-lg bg-foreground/5 shadow-sm transition hover:bg-foreground/10"
                 aria-label="Toggle navigation"
               >
                 <Menu className="h-5 w-5" />

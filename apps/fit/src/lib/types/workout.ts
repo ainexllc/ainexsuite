@@ -29,7 +29,8 @@ export interface WorkoutComment {
 export interface Workout {
   id: string;
   userId: string;
-  spaceId?: string; // Support for spaces in Fit
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   title: string;
   date: string;
   duration: number; // Total minutes

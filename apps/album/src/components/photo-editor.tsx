@@ -103,7 +103,7 @@ export function PhotoEditor({ moment, spaceId, onClose, onSave }: PhotoEditorPro
           photoUrl,
           date: Date.now(),
           collectionId: null,
-          spaceId: spaceId,
+          spaceId: spaceId || 'personal',
         });
       }
 

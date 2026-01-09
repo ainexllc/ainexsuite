@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Save, X } from 'lucide-react';
+import { DatePicker } from '@ainexsuite/ui';
 import { DateSuggestions } from '@ainexsuite/date-detection';
 import type { Appointment, AppointmentType, AppointmentStatus } from '@ainexsuite/types';
 
@@ -70,11 +71,11 @@ export function AppointmentEditor({ initialAppointment, onSave, onCancel }: Appo
           <label className="block text-sm font-medium text-ink-700 mb-2">
             Date <span className="text-red-500">*</span>
           </label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full px-4 py-2 border border-outline-subtle rounded-lg bg-surface-elevated text-ink-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          <DatePicker
+            value={date ? new Date(date) : null}
+            onChange={(d) => setDate(d ? d.toISOString().split('T')[0] : '')}
+            placeholder="Appointment date"
+            presets="smart"
           />
         </div>
         <div>

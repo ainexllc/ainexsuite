@@ -39,7 +39,7 @@ import {
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
 import { usePreferences } from "@/components/providers/preferences-provider";
-import { generateUUID, InlineSpacePicker } from "@ainexsuite/ui";
+import { generateUUID } from "@ainexsuite/ui";
 import { DateSuggestions } from "@ainexsuite/date-detection";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { Hint, HINTS } from "@/components/hints";
@@ -109,15 +109,12 @@ const NOTE_TEMPLATES: NoteTemplate[] = [
 ];
 
 interface NoteComposerProps {
-  /** Callback to open member manager for current space */
-  onManagePeople?: () => void;
-  /** Callback to open space management modal */
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
-export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerProps) {
+export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerProps) {
   const { createNote, updateNote, deleteNote } = useNotes();
-  const { spaces, currentSpace, setCurrentSpace } = useSpaces();
+  const { spaces } = useSpaces();
   const { createReminder } = useReminders();
   const { preferences } = usePreferences();
   const { labels, createLabel } = useLabels();
@@ -762,7 +759,7 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
               className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
               onClick={() => applyTemplate(NOTE_TEMPLATES[0])}
             >
-              <span>Take a note...</span>
+              <span>{placeholder}</span>
             </button>
             {/* Quick template buttons */}
             <div className="flex items-center gap-1">
@@ -779,14 +776,6 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
                 </button>
               ))}
             </div>
-            {/* Compact space selector */}
-            <InlineSpacePicker
-              spaces={spaces}
-              currentSpace={currentSpace}
-              onSpaceChange={setCurrentSpace}
-              onManagePeople={onManagePeople}
-              onManageSpaces={onManageSpaces}
-            />
           </div>
         </Hint>
       ) : (
@@ -1510,14 +1499,16 @@ export function NoteComposer({ onManagePeople, onManageSpaces }: NoteComposerPro
                 )}
               </div>
 
-              <button
-                type="button"
-                className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                onClick={() => void handleClose()}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : "Done"}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  onClick={() => void handleClose()}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Saving..." : "Done"}
+                </button>
+              </div>
             </div>
           </div>
 

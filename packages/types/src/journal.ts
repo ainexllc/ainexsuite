@@ -24,7 +24,8 @@ export interface JournalEntry extends BaseDocument {
   isPrivate: boolean;
   isDraft: boolean;
   wordCount?: number;
-  spaceId?: string; // Optional - null/undefined means personal default space
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   sharedWithUserIds?: string[]; // User IDs who can see this entry (populated from space members)
   color?: EntryColor; // Entry card background color
   archived?: boolean; // Whether entry is archived

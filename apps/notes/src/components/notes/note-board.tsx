@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import { FileText, Loader2 } from "lucide-react";
 import Masonry from "react-masonry-css";
 import { EmptyState, ListSection } from "@ainexsuite/ui";
@@ -8,7 +8,6 @@ import { NoteCard } from "@/components/notes/note-card";
 import { ColumnSelector } from "@/components/notes/column-selector";
 import { useNotes } from "@/components/providers/notes-provider";
 import { usePreferences } from "@/components/providers/preferences-provider";
-import { useNoteSelection } from "@/components/providers/selection-provider";
 
 const SKELETON_BREAKPOINTS = { default: 2, 640: 1 };
 
@@ -42,7 +41,6 @@ export function NoteBoard() {
     sentinelRef,
   } = useNotes();
   const { preferences } = usePreferences();
-  const { isSelected, isSelectMode, handleSelect } = useNoteSelection();
 
   // Separate breakpoints for Focus and Library sections
   const focusBreakpoints = useMemo(() => ({
@@ -74,16 +72,6 @@ export function NoteBoard() {
 
   const hasNotes = useMemo(() => sortedPinned.length + sortedOthers.length > 0, [sortedPinned, sortedOthers]);
 
-  // Get all note IDs for range selection
-  const allNoteIds = useMemo(() => {
-    return [...sortedPinned, ...sortedOthers].map(note => note.id);
-  }, [sortedPinned, sortedOthers]);
-
-  // Callback for handling selection
-  const onSelect = useCallback((noteId: string, event: React.MouseEvent) => {
-    handleSelect(noteId, event, allNoteIds);
-  }, [handleSelect, allNoteIds]);
-
   return (
     <div className="space-y-1 lg:px-0 cq-board">
       {loading ? (
@@ -103,12 +91,7 @@ export function NoteBoard() {
               >
                 {sortedPinned.map((note) => (
                   <div key={note.id} className="mb-4">
-                    <NoteCard
-                      note={note}
-                      isSelectMode={isSelectMode}
-                      isSelected={isSelected(note.id)}
-                      onSelect={onSelect}
-                    />
+                    <NoteCard note={note} />
                   </div>
                 ))}
               </Masonry>
@@ -128,12 +111,7 @@ export function NoteBoard() {
               >
                 {sortedOthers.map((note) => (
                   <div key={note.id} className="mb-4">
-                    <NoteCard
-                      note={note}
-                      isSelectMode={isSelectMode}
-                      isSelected={isSelected(note.id)}
-                      onSelect={onSelect}
-                    />
+                    <NoteCard note={note} />
                   </div>
                 ))}
               </Masonry>

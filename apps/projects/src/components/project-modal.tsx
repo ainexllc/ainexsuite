@@ -25,11 +25,9 @@ interface ProjectModalProps {
     content: string;
     type: 'app' | 'video';
   };
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
 }
 
-export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote, onManagePeople, onManageSpaces }: ProjectModalProps) {
+export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote }: ProjectModalProps) {
   const { spaces, currentSpace, currentSpaceId, setCurrentSpace } = useSpaces();
   const [name, setName] = useState(ideaNote?.content || '');
   const [type, setType] = useState<'app' | 'video'>(ideaNote?.type || 'app');
@@ -61,8 +59,6 @@ export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote, onMan
               spaces={spaces}
               currentSpace={currentSpace}
               onSpaceChange={setCurrentSpace}
-              onManagePeople={onManagePeople}
-              onManageSpaces={onManageSpaces}
             />
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
               <X className="w-5 h-5" />
@@ -95,7 +91,7 @@ export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote, onMan
               />
             )}
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Project Type
@@ -109,14 +105,14 @@ export function ProjectModal({ isOpen, onClose, onCreateProject, ideaNote, onMan
               <option value="video">Video</option>
             </select>
           </div>
-          
+
           {ideaNote && (
             <div className="mb-4 p-3 bg-gray-50 rounded-md">
               <p className="text-sm text-gray-600">From idea:</p>
               <p className="text-sm font-medium">{ideaNote.content}</p>
             </div>
           )}
-          
+
           <div className="flex justify-end space-x-3">
             <button
               type="button"

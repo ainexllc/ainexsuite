@@ -1,8 +1,9 @@
 'use client';
 
-import { Menu, ChevronDown, PanelTopClose, PanelTop, Maximize, Minimize } from 'lucide-react';
+import { Menu, ChevronDown, Maximize, Minimize, Search } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
-import { AIVoiceIcon } from '../ai';
+import { CommandPalette } from '../command-palette';
+import { MagicSparkMic } from '../ai';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
@@ -30,25 +31,6 @@ interface WorkspaceHeaderProps {
   appColor?: string;
   onNavigationToggle?: () => void;
   onProfileToggle?: () => void;
-  /**
-   * Whether the header is currently visible (for auto-hide feature)
-   */
-  isVisible?: boolean;
-  /**
-   * Whether auto-hide is enabled
-   */
-  autoHideEnabled?: boolean;
-  /**
-   * Callback to toggle auto-hide
-   */
-  onAutoHideToggle?: () => void;
-  /**
-   * Props to spread on the header for mouse events
-   */
-  headerMouseProps?: {
-    onMouseEnter: () => void;
-    onMouseLeave: () => void;
-  };
   // NEW: Breadcrumbs
   /**
    * Breadcrumb items for navigation
@@ -124,10 +106,6 @@ export function WorkspaceHeader({
   appColor,
   onNavigationToggle,
   onProfileToggle,
-  isVisible = true,
-  autoHideEnabled = false,
-  onAutoHideToggle,
-  headerMouseProps,
   breadcrumbs,
   notificationCount = 0,
   onNotificationsClick,
@@ -138,6 +116,8 @@ export function WorkspaceHeader({
   onQuickActionsToggle: _onQuickActionsToggle,
   onAiAssistantClick,
 }: WorkspaceHeaderProps) {
+  // Command palette state
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -151,6 +131,18 @@ export function WorkspaceHeader({
       document.removeEventListener('fullscreenchange', checkFullscreen);
     };
   }, [checkFullscreen]);
+
+  // Command palette keyboard shortcut (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const toggleFullscreen = async () => {
     try {
@@ -213,37 +205,8 @@ export function WorkspaceHeader({
 
   return (
     <>
-      {/* Floating controls when header is hidden (auto-hide mode) */}
-      {autoHideEnabled && !isVisible && (
-        <div className="fixed top-0 left-0 right-0 z-40 pointer-events-none">
-          <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center justify-between px-4 sm:px-6">
-            {/* Hamburger - left */}
-            <button
-              type="button"
-              onClick={onNavigationToggle}
-              className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm shadow-md border border-border transition bg-background/95 hover:bg-accent text-foreground"
-              aria-label="Toggle navigation"
-            >
-              <Menu className="h-4 w-4" />
-            </button>
-
-            {/* Profile - right */}
-            <button
-              type="button"
-              className="pointer-events-auto flex items-center gap-2 h-9 rounded-full backdrop-blur-sm shadow-md border border-border transition px-2 bg-background/95 hover:bg-accent text-foreground"
-              aria-label="Profile menu"
-              onClick={onProfileToggle}
-            >
-              {renderUserAvatar()}
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-      )}
-
       <header
-        className={`fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b-2 border-amber-500 transition-transform duration-300 ease-in-out bg-zinc-100/95 dark:bg-zinc-950/90 dark:border-zinc-800 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
-        {...headerMouseProps}
+        className="fixed inset-x-0 top-0 z-30 backdrop-blur-2xl border-b-2 border-amber-500 bg-zinc-100/95 dark:bg-zinc-950/90 dark:border-zinc-800"
       >
         <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1440px] items-center px-4 sm:px-6">
           {/* Left: Hamburger + Logo + Breadcrumbs */}
@@ -251,7 +214,7 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onNavigationToggle}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
+              className="flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition-colors bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
               aria-label="Toggle navigation"
             >
               <Menu className="h-4 w-4" />
@@ -270,8 +233,19 @@ export function WorkspaceHeader({
           {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Right: Actions */}
+          {/* Right: Actions - Order: Search, Notifications, AI, Fullscreen, Theme, Profile */}
           <div className="flex items-center gap-3">
+            {/* Search Button (opens command palette) */}
+            <button
+              type="button"
+              onClick={() => setShowCommandPalette(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              aria-label="Search (⌘K)"
+              title="Search (⌘K)"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+
             {/* Notifications Bell */}
             {onNotificationsClick && (
               <NotificationBell
@@ -281,26 +255,19 @@ export function WorkspaceHeader({
               />
             )}
 
-            {/* Auto-hide Toggle (desktop only) */}
-            {onAutoHideToggle && (
-              <button
-                type="button"
-                onClick={onAutoHideToggle}
-                className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                  autoHideEnabled
-                    ? 'bg-amber-200 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-                    : 'text-zinc-500 hover:bg-zinc-300/80 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300'
-                }`}
-                aria-label={autoHideEnabled ? 'Disable auto-hide navbar' : 'Enable auto-hide navbar'}
-                title={autoHideEnabled ? 'Disable auto-hide (Cmd+\\)' : 'Enable auto-hide (Cmd+\\)'}
-              >
-                {autoHideEnabled ? (
-                  <PanelTopClose className="h-4 w-4" />
-                ) : (
-                  <PanelTop className="h-4 w-4" />
-                )}
-              </button>
-            )}
+            {/* AI Assistant Button */}
+            <button
+              type="button"
+              onClick={onAiAssistantClick}
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95"
+              aria-label="AI Assistant"
+              style={{
+                backgroundColor: `${appColor || '#f59e0b'}20`,
+                boxShadow: `0 0 12px ${appColor || '#f59e0b'}40`,
+              }}
+            >
+              <MagicSparkMic size={24} color={appColor || '#f59e0b'} isAnimating={true} />
+            </button>
 
             {/* Fullscreen Toggle */}
             <button
@@ -317,18 +284,8 @@ export function WorkspaceHeader({
               )}
             </button>
 
-            {/* AI Assistant Button */}
-            <button
-              type="button"
-              onClick={onAiAssistantClick}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors bg-amber-200 hover:bg-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500/30"
-              aria-label="AI Assistant"
-              style={{
-                filter: 'drop-shadow(0 0 4px rgba(245, 158, 11, 0.4))',
-              }}
-            >
-              <AIVoiceIcon size={18} color="#f59e0b" isAnimating={true} />
-            </button>
+            {/* Animated Theme Toggle */}
+            <AnimatedThemeToggler />
 
             {/* Profile Sidebar Toggle */}
             <button
@@ -340,12 +297,15 @@ export function WorkspaceHeader({
               {renderUserAvatar()}
               <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </button>
-
-            {/* Animated Theme Toggle */}
-            <AnimatedThemeToggler />
           </div>
         </div>
       </header>
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+      />
     </>
   );
 }

@@ -8,14 +8,14 @@ import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   ActiveFilterChips,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type SortConfig,
   type FilterChip,
   type FilterChipType,
 } from '@ainexsuite/ui';
-import type { SpaceType } from '@ainexsuite/types';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { DashboardView } from '@/components/dashboard/dashboard-view';
 import { JournalComposer } from '@/components/journal/journal-composer';
 import {
@@ -23,8 +23,6 @@ import {
   type JournalFilterValue,
 } from '@/components/journal/journal-filter-content';
 import { moodConfig } from '@/lib/utils/mood';
-import { useSpaces } from '@/components/providers/spaces-provider';
-import { MemberManager } from '@/components/spaces/MemberManager';
 
 type ViewMode = 'masonry' | 'calendar';
 
@@ -68,6 +66,7 @@ export default function WorkspacePage() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const dateFilter = searchParams.get('date');
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
   const [refreshKey, setRefreshKey] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('masonry');
   const [filters, setFilters] = useState<JournalFilterValue>(DEFAULT_FILTERS);
@@ -75,10 +74,19 @@ export default function WorkspacePage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Space management state
-  const [showMemberManager, setShowMemberManager] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  // Space selector items
+  const spaceItems = useMemo(() => {
+    return spaces.map((space) => ({
+      id: space.id,
+      name: space.name,
+      type: space.type,
+    }));
+  }, [spaces]);
+
+  // Current space name for dynamic placeholder
+  const currentSpaceName = useMemo(() => {
+    return spaces.find((s) => s.id === currentSpaceId)?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   const handleEntryCreated = useCallback(() => {
     setRefreshKey((prev) => prev + 1);
@@ -203,43 +211,6 @@ export default function WorkspacePage() {
     }
   }, [filters]);
 
-  // Map spaces to format expected by SpaceManagementModal
-  const userSpaces = useMemo(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type,
-        memberCount: s.memberUids?.length || 1,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-      }));
-  }, [allSpaces, user?.uid]);
-
-  // Space management handlers
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
-    // Create a new global space of the specified type
-    const name = type.charAt(0).toUpperCase() + type.slice(1);
-    await createSpace({ name, type });
-  }, [createSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    // For now, leaving a global space is the same as deleting it
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
-    await createSpace({ name, type: 'project' });
-  }, [createSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
   if (!user) {
     return null;
   }
@@ -247,11 +218,20 @@ export default function WorkspacePage() {
   return (
     <WorkspacePageLayout
       className="pt-[17px]"
+      spaceSelector={
+        spaceItems.length > 1 ? (
+          <SpaceTabSelector
+            spaces={spaceItems}
+            currentSpaceId={currentSpaceId || 'personal'}
+            onSpaceChange={setCurrentSpace}
+            personalLabel="My Journal"
+          />
+        ) : undefined
+      }
       composer={
         <JournalComposer
           onEntryCreated={handleEntryCreated}
-          onManagePeople={() => setShowMemberManager(true)}
-          onManageSpaces={() => setShowSpaceManagement(true)}
+          placeholder={`Create a new entry for ${currentSpaceName}...`}
         />
       }
       toolbar={
@@ -319,23 +299,6 @@ export default function WorkspacePage() {
         onSearchQueryChange={setSearchQuery}
         isSearchOpen={isSearchOpen}
         viewMode={viewMode}
-      />
-
-      {/* Space Management Modals */}
-      <MemberManager
-        isOpen={showMemberManager}
-        onClose={() => setShowMemberManager(false)}
-      />
-
-      <SpaceManagementModal
-        isOpen={showSpaceManagement}
-        onClose={() => setShowSpaceManagement(false)}
-        userSpaces={userSpaces}
-        onJoinGlobalSpace={handleJoinGlobalSpace}
-        onLeaveGlobalSpace={handleLeaveGlobalSpace}
-        onCreateCustomSpace={handleCreateCustomSpace}
-        onRenameCustomSpace={handleRenameCustomSpace}
-        onDeleteCustomSpace={handleDeleteCustomSpace}
       />
     </WorkspacePageLayout>
   );

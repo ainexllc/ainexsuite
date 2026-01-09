@@ -103,7 +103,8 @@ export type NoteCollaborator = {
 
 export type NoteDoc = {
   ownerId: string;
-  spaceId?: string; // Optional - null/undefined means personal default space
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   title: string;
   body: string;
   type: NoteType;

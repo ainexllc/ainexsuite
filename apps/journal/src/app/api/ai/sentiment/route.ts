@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       content,
       userId: userId || 'temp-user',
       ownerId: userId || 'temp-user',
+      spaceId: 'personal', // Required - 'personal' for personal content
       tags: [],
       mood: 'neutral' as MoodType,
       date: new Date().toISOString().split('T')[0],

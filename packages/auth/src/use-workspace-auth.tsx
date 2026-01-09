@@ -1,73 +1,48 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+/**
+ * Simplified Workspace Auth Hook
+ *
+ * With middleware handling server-side route protection, this hook
+ * primarily provides user data and auth utilities to components.
+ */
+
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './context';
 
 interface UseWorkspaceAuthOptions {
-  /**
-   * Where to redirect if not authenticated
-   * @default '/'
-   */
   redirectTo?: string;
 }
 
 interface UseWorkspaceAuthReturn {
-  /** Current authenticated user */
   user: ReturnType<typeof useAuth>['user'];
-  /** Whether auth is loading */
   loading: boolean;
-  /** Whether SSO is in progress */
-  ssoInProgress: boolean;
-  /** Bootstrap status */
-  bootstrapStatus: ReturnType<typeof useAuth>['bootstrapStatus'];
-  /** Whether any loading state is active (auth, SSO, or bootstrap) */
   isLoading: boolean;
-  /** Whether user is authenticated and ready */
   isReady: boolean;
-  /** Sign out handler */
   handleSignOut: () => Promise<void>;
-  /** Update user preferences */
   updatePreferences: ReturnType<typeof useAuth>['updatePreferences'];
-  /** Update user profile (displayName, etc) */
   updateProfile: ReturnType<typeof useAuth>['updateProfile'];
-  /** Update user profile image */
   updateProfileImage: ReturnType<typeof useAuth>['updateProfileImage'];
-  /** Remove custom profile image */
   removeProfileImage: ReturnType<typeof useAuth>['removeProfileImage'];
-  /** Generate animated avatar (calls Veo API) */
   generateAnimatedAvatar: ReturnType<typeof useAuth>['generateAnimatedAvatar'];
-  /** Save animated avatar video to storage */
   saveAnimatedAvatar: ReturnType<typeof useAuth>['saveAnimatedAvatar'];
-  /** Toggle animated avatar preference */
   toggleAnimatedAvatar: ReturnType<typeof useAuth>['toggleAnimatedAvatar'];
-  /** Remove animated avatar */
   removeAnimatedAvatar: ReturnType<typeof useAuth>['removeAnimatedAvatar'];
-  /** Poll for animation operation status */
   pollAnimationStatus: ReturnType<typeof useAuth>['pollAnimationStatus'];
 }
 
 /**
- * Shared hook for workspace authentication logic.
- * Handles auth redirect, loading states, and sign out consistently across all apps.
+ * Workspace auth hook - provides user data and auth utilities.
  *
- * @example
- * ```tsx
- * const { user, isLoading, isReady, handleSignOut } = useWorkspaceAuth();
- *
- * if (isLoading) return <LoadingScreen />;
- * if (!isReady) return null;
- *
- * return <WorkspaceLayout user={user} onSignOut={handleSignOut}>...</WorkspaceLayout>;
- * ```
+ * Note: Route protection is handled by middleware (server-side).
+ * This hook is for accessing user data and auth functions in components.
  */
 export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWorkspaceAuthReturn {
   const { redirectTo = '/' } = options;
   const {
     user,
     loading,
-    ssoInProgress,
-    bootstrapStatus,
     signOut,
     updatePreferences,
     updateProfile,
@@ -81,37 +56,21 @@ export function useWorkspaceAuth(options: UseWorkspaceAuthOptions = {}): UseWork
   } = useAuth();
   const router = useRouter();
 
-  // Combined loading state
-  const isLoading = loading || ssoInProgress || bootstrapStatus === 'running';
+  const isLoading = loading;
+  const isReady = !loading && !!user;
 
-  // User is ready when not loading and authenticated
-  const isReady = !isLoading && !!user;
-
-  // Redirect to login if not authenticated
-  // Wait for bootstrap and SSO to complete before redirecting to prevent interrupting auto-login
-  useEffect(() => {
-    // Use isLoading to ensure all loading states are checked
-    if (!isLoading && !user) {
-      console.log('[useWorkspaceAuth] Redirecting to login - not authenticated');
-      router.push(redirectTo);
-    }
-  }, [isLoading, user, router, redirectTo]);
-
-  // Shared sign out handler - uses signOut from auth context for proper cleanup
   const handleSignOut = useCallback(async () => {
     try {
       await signOut();
       router.push(redirectTo);
     } catch {
-      // Ignore sign out errors
+      // Ignore errors
     }
   }, [signOut, router, redirectTo]);
 
   return {
     user,
     loading,
-    ssoInProgress,
-    bootstrapStatus,
     isLoading,
     isReady,
     handleSignOut,

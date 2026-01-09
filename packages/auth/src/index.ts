@@ -1,25 +1,33 @@
 /**
  * @ainexsuite/auth
  * SSO authentication with session cookies for AINexSuite
+ *
+ * Key features:
+ * - Server-side session cookies scoped to .ainexspace.com
+ * - Cookie is the single source of truth for auth state
+ * - Middleware protection for /workspace routes
+ * - Dev mode localStorage fallback for cross-port SSO
  */
 
-export * from './session';
+// Core auth exports
 export * from './context';
-export * from './auth-bootstrap';
-export * from './components/sso-bridge';
-export * from './utils/sso-protocol';
+export * from './use-workspace-auth';
+export * from './session';
+
+// UI components
 export * from './app-activation-modal';
 export * from './app-activation-box';
 export * from './use-app-activation';
+export * from './auth-box';
+export * from './suite-guard';
+
+// Utilities
 export * from './email-detection';
 export * from './auth-errors';
-export * from './suite-guard';
-export * from './auth-box';
-export * from './use-workspace-auth';
 export * from './user-utils';
 export * from './stripe-client';
 
-// Export suite-utils functions that don't conflict
+// Suite access utilities
 export {
   getAppsUsedCount,
   hasUsedMultipleApps,
@@ -27,7 +35,7 @@ export {
   markAppAsUsed,
 } from './suite-utils';
 
-// Export subscription-utils (includes re-exports of suite-utils functions)
+// Subscription utilities
 export * from './subscription-utils';
 export * from './subscription-guard';
 

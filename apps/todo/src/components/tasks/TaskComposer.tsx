@@ -4,7 +4,6 @@
 
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import {
-  Calendar,
   Flag,
   Users,
   Pin,
@@ -20,9 +19,10 @@ import {
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { Task, Priority, TaskList, Member, ChecklistItem, TaskType } from '@/types/models';
-import { ENTRY_COLORS, getEntryColorConfig, generateUUID, InlineSpacePicker } from '@ainexsuite/ui';
-import type { EntryColor, SpaceType } from '@ainexsuite/types';
+import { ENTRY_COLORS, getEntryColorConfig, generateUUID, DatePicker } from '@ainexsuite/ui';
+import type { EntryColor } from '@ainexsuite/types';
 import { InlineCalculator } from './inline-calculator';
 
 type AttachmentDraft = {
@@ -38,14 +38,31 @@ const checklistTemplate = (): ChecklistItem => ({
 });
 
 interface TaskComposerProps {
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
-export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerProps) {
+export function TaskComposer({ placeholder = 'Add a todo...' }: TaskComposerProps) {
   const { user } = useAuth();
-  const { spaces, currentSpaceId, setCurrentSpace, getCurrentSpace, addTask } = useTodoStore();
-  const currentSpace = getCurrentSpace();
+  const { currentSpace: spacesCurrentSpace } = useSpaces();
+  const { addTask } = useTodoStore();
+
+  // Build effective space with default lists for task creation
+  const defaultLists: TaskList[] = useMemo(() => [
+    { id: 'default_todo', title: 'To Do', order: 0 },
+    { id: 'default_progress', title: 'In Progress', order: 1 },
+    { id: 'default_done', title: 'Done', order: 2 },
+  ], []);
+
+  const effectiveSpace = useMemo(() => ({
+    id: spacesCurrentSpace?.id || 'personal',
+    name: spacesCurrentSpace?.name || 'My Todos',
+    type: spacesCurrentSpace?.type || 'personal',
+    members: ((spacesCurrentSpace as unknown as { members?: Member[] })?.members || []) as Member[],
+    memberUids: (spacesCurrentSpace?.memberUids || []) as string[],
+    lists: ((spacesCurrentSpace as unknown as { lists?: TaskList[] })?.lists || defaultLists) as TaskList[],
+    createdAt: new Date().toISOString(),
+    createdBy: '',
+  }), [spacesCurrentSpace, defaultLists]);
 
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState('');
@@ -77,10 +94,10 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
 
   // Set default list when space changes
   useEffect(() => {
-    if (currentSpace && currentSpace.lists.length > 0 && !listId) {
-      setListId(currentSpace.lists[0].id);
+    if (effectiveSpace && effectiveSpace.lists.length > 0 && !listId) {
+      setListId(effectiveSpace.lists[0].id);
     }
-  }, [currentSpace, listId]);
+  }, [effectiveSpace, listId]);
 
   // Focus new checklist item
   useEffect(() => {
@@ -114,7 +131,7 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
     setPriority('medium');
     setDueDate('');
     setAssignees([]);
-    setListId(currentSpace?.lists[0]?.id || '');
+    setListId(effectiveSpace?.lists[0]?.id || '');
     setTags([]);
     setTagInput('');
     setColor('default');
@@ -126,10 +143,10 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
       prev.forEach((item) => URL.revokeObjectURL(item.preview));
       return [];
     });
-  }, [currentSpace]);
+  }, [effectiveSpace?.lists]);
 
   const handleSubmit = useCallback(async () => {
-    if (isSubmittingRef.current || isSubmitting || !currentSpace || !user) return;
+    if (isSubmittingRef.current || isSubmitting || !effectiveSpace || !user) return;
 
     if (!hasContent) {
       resetState();
@@ -145,8 +162,8 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
 
       const newTask: Task = {
         id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        spaceId: currentSpace.id,
-        listId: listId || currentSpace.lists[0]?.id || 'default',
+        spaceId: effectiveSpace.id,
+        listId: listId || effectiveSpace.lists[0]?.id || 'default',
         title: title.trim(),
         description: mode === 'text' ? description.trim() : '',
         type: mode,
@@ -172,7 +189,7 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [isSubmitting, currentSpace, user, hasContent, resetState, title, description, mode, checklist, priority, dueDate, assignees, listId, tags, color, pinned, addTask]);
+  }, [isSubmitting, effectiveSpace, user, hasContent, resetState, title, description, mode, checklist, priority, dueDate, assignees, listId, tags, color, pinned, addTask]);
 
   const handleChecklistChange = (itemId: string, next: Partial<ChecklistItem>) => {
     setChecklist((prev) =>
@@ -253,26 +270,7 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
 
-  // Build space items for InlineSpacePicker (include virtual spaces)
-  const spaceItems = useMemo(() => [
-    { id: 'all', name: 'All Spaces', type: 'personal' as SpaceType },
-    { id: 'personal', name: 'My Todos', type: 'personal' as SpaceType },
-    ...spaces.filter((s) => s.id !== 'personal').map((s) => ({ id: s.id, name: s.name, type: s.type }))
-  ], [spaces]);
-
-  // Get current space for InlineSpacePicker
-  const currentSpaceForPicker = useMemo(() => {
-    if (currentSpaceId === 'all') {
-      return { id: 'all', name: 'All Spaces', type: 'personal' as SpaceType };
-    }
-    if (currentSpaceId === 'personal') {
-      return { id: 'personal', name: 'My Todos', type: 'personal' as SpaceType };
-    }
-    const space = spaces.find((s) => s.id === currentSpaceId);
-    return space ? { id: space.id, name: space.name, type: space.type } : null;
-  }, [currentSpaceId, spaces]);
-
-  if (!currentSpace || !user) return null;
+  if (!user) return null;
 
   const colorConfig = getEntryColorConfig(color);
 
@@ -286,16 +284,8 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
             onClick={() => setExpanded(true)}
           >
-            <span>Add a todo...</span>
+            <span>{placeholder}</span>
           </button>
-          {/* Inline space picker */}
-          <InlineSpacePicker
-            spaces={spaceItems}
-            currentSpace={currentSpaceForPicker}
-            onSpaceChange={setCurrentSpace}
-            onManagePeople={onManagePeople}
-            onManageSpaces={onManageSpaces}
-          />
         </div>
       ) : (
         <div
@@ -443,7 +433,7 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
 
             {/* List Selection */}
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {currentSpace.lists.map((list: TaskList) => (
+              {effectiveSpace.lists.map((list: TaskList) => (
                 <button
                   key={list.id}
                   type="button"
@@ -485,23 +475,22 @@ export function TaskComposer({ onManagePeople, onManageSpaces }: TaskComposerPro
               </div>
 
               {/* Due date */}
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="bg-transparent text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none"
+              <div className="w-48">
+                <DatePicker
+                  value={dueDate ? new Date(dueDate) : null}
+                  onChange={(date) => setDueDate(date ? date.toISOString().split('T')[0] : '')}
+                  placeholder="Due date"
+                  presets="smart"
                 />
               </div>
             </div>
 
             {/* Assignees */}
-            {currentSpace.members.length > 1 && (
+            {effectiveSpace.members.length > 1 && (
               <div className="flex items-center gap-2 pt-2">
                 <Users className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                 <div className="flex flex-wrap gap-2">
-                  {currentSpace.members.map((member: Member) => (
+                  {effectiveSpace.members.map((member: Member) => (
                     <button
                       key={member.uid}
                       type="button"

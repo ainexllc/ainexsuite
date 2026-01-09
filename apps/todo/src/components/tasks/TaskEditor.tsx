@@ -2,9 +2,8 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
-  Calendar,
   Flag,
   Users,
   Trash2,
@@ -18,10 +17,11 @@ import {
   PinOff,
   FolderOpen,
 } from 'lucide-react';
-import { EntryEditorShell, ConfirmationDialog, generateUUID } from '@ainexsuite/ui';
+import { EntryEditorShell, ConfirmationDialog, generateUUID, DatePicker } from '@ainexsuite/ui';
 import type { EntryColor } from '@ainexsuite/types';
 import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '../../lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { Task, Priority, TaskList, Member, ChecklistItem, TaskType } from '../../types/models';
 import { clsx } from 'clsx';
 import { InlineCalculator } from './inline-calculator';
@@ -47,8 +47,13 @@ interface TaskEditorProps {
 
 export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskEditorProps) {
   const { user } = useAuth();
-  const { spaces, getCurrentSpace, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskPin, toggleTaskArchive } = useTodoStore();
-  const currentSpace = getCurrentSpace();
+  const { spaces, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskPin, toggleTaskArchive } = useTodoStore();
+  const { currentSpace } = useSpaces();
+
+  // Get todo-specific properties from store's spaces array
+  const todoSpace = spaces.find(s => s.id === currentSpace?.id);
+  const lists = useMemo(() => todoSpace?.lists || [], [todoSpace?.lists]);
+  const members = useMemo(() => todoSpace?.members || [], [todoSpace?.members]);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -132,10 +137,10 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
   // Ensure listId is set if creating new
   useEffect(() => {
-    if (isOpen && !listId && currentSpace && currentSpace.lists.length > 0) {
-      setListId(currentSpace.lists[0].id);
+    if (isOpen && !listId && currentSpace && lists.length > 0) {
+      setListId(lists[0].id);
     }
-  }, [isOpen, listId, currentSpace]);
+  }, [isOpen, listId, currentSpace, lists]);
 
   const handleChecklistChange = (itemId: string, next: Partial<ChecklistItem>) => {
     setChecklist((prev) =>
@@ -228,7 +233,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           dueDate,
           assigneeIds: assignees,
           listId,
-          spaceId: selectedSpaceId === 'personal' ? undefined : selectedSpaceId,
+          spaceId: selectedSpaceId || 'personal',
           color,
           pinned,
           archived,
@@ -541,7 +546,7 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
           {/* List selector */}
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {currentSpace.lists.map((list: TaskList) => (
+            {lists.map((list: TaskList) => (
               <button
                 key={list.id}
                 type="button"
@@ -621,23 +626,22 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
             </div>
 
             {/* Due date */}
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="bg-transparent text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none"
+            <div className="w-48">
+              <DatePicker
+                value={dueDate ? new Date(dueDate) : null}
+                onChange={(date) => setDueDate(date ? date.toISOString().split('T')[0] : '')}
+                placeholder="Due date"
+                presets="smart"
               />
             </div>
           </div>
 
           {/* Assignees */}
-          {currentSpace.members.length > 0 && (
+          {members.length > 0 && (
             <div className="flex items-center gap-2 pt-2">
               <Users className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
               <div className="flex flex-wrap gap-2">
-                {currentSpace.members.map((member: Member) => (
+                {members.map((member: Member) => (
                   <button
                     key={member.uid}
                     type="button"

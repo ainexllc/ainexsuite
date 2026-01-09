@@ -1,28 +1,26 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { 
-  Sparkles, 
+import {
+  Sparkles,
   Repeat,
   X,
   Loader2,
   Plus
 } from "lucide-react";
+import { DatePicker } from "@ainexsuite/ui";
 import { useSubscriptions } from "@/components/providers/subscription-provider";
 import type { BillingCycle } from "@/types";
-import { InlineSpacePicker } from "@ainexsuite/ui";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { Hint, HINTS } from "@/components/hints";
 
-// Define props to match NoteComposer structure, allowing parent to handle modal opens
 interface TrackComposerProps {
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
-export function TrackComposer({ onManagePeople, onManageSpaces }: TrackComposerProps) {
+export function TrackComposer({ placeholder = 'Add a subscription...' }: TrackComposerProps) {
   const { createSubscription } = useSubscriptions();
-  const { spaces, currentSpace, setCurrentSpace } = useSpaces();
+  const { currentSpace, spaces } = useSpaces();
   const [expanded, setExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -157,16 +155,8 @@ export function TrackComposer({ onManagePeople, onManageSpaces }: TrackComposerP
               }}
             >
               <Sparkles className="h-5 w-5 text-emerald-500" />
-              <span>Add a subscription... (e.g. Netflix $15)</span>
+              <span>{placeholder}</span>
             </button>
-            {/* Compact space selector */}
-            <InlineSpacePicker
-              spaces={spaces}
-              currentSpace={currentSpace}
-              onSpaceChange={setCurrentSpace}
-              onManagePeople={onManagePeople}
-              onManageSpaces={onManageSpaces}
-            />
           </div>
         </Hint>
       ) : (
@@ -231,12 +221,12 @@ export function TrackComposer({ onManagePeople, onManageSpaces }: TrackComposerP
                 </div>
 
                 {/* Date */}
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={nextPayment}
-                    onChange={(e) => setNextPayment(e.target.value)}
-                    className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-xl py-2 pl-3 pr-3 text-sm outline-none focus:border-emerald-500/50"
+                <div>
+                  <DatePicker
+                    value={nextPayment ? new Date(nextPayment) : null}
+                    onChange={(d) => setNextPayment(d ? d.toISOString().split('T')[0] : '')}
+                    placeholder="Next payment"
+                    presets="smart"
                   />
                 </div>
               </div>

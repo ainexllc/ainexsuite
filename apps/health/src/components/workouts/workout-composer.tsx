@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Calendar, Clock, Plus, X, Loader2, Trash2, Smile } from 'lucide-react';
+import { Clock, Plus, X, Loader2, Trash2, Smile } from 'lucide-react';
 import { clsx } from 'clsx';
+import { DatePicker } from '@ainexsuite/ui';
 import { useAuth } from '@ainexsuite/auth';
 import { useAppColors } from '@ainexsuite/theme';
 import { useWorkouts } from '@/components/providers/workouts-provider';
@@ -164,14 +165,12 @@ export function WorkoutComposer({ onWorkoutCreated }: WorkoutComposerProps) {
 
             {/* Date & Duration Row */}
             <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  style={{ '--focus-color': primary } as React.CSSProperties}
-                  className="flex-1 bg-foreground/5 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-[var(--focus-color)]"
+              <div className="flex-1 min-w-[150px]">
+                <DatePicker
+                  value={date ? new Date(date) : null}
+                  onChange={(d) => setDate(d ? d.toISOString().split('T')[0] : '')}
+                  placeholder="Workout date"
+                  presets="smart"
                 />
               </div>
               <div className="flex items-center gap-2 flex-1 min-w-[150px]">

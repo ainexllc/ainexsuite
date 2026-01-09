@@ -7,21 +7,17 @@ import {
   WorkspaceToolbar,
   ActivityCalendar,
   ActiveFilterChips,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type FilterChip,
   type FilterChipType,
-  type UserSpace,
 } from '@ainexsuite/ui';
-import type { SpaceType } from '@ainexsuite/types';
 import { DocBoard } from '@/components/docs/doc-board';
 import { DocComposer } from "@/components/docs/doc-composer";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { useDocs } from "@/components/providers/docs-provider";
 import { useLabels } from "@/components/providers/labels-provider";
-import { useSpaces } from "@/components/providers/spaces-provider";
-import { MemberManager } from "@/components/spaces/MemberManager";
 import { DocFilterContent } from "@/components/docs/doc-filter-content";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
 import { BulkActionBar } from "@/components/bulk-action-bar";
@@ -29,6 +25,7 @@ import { SelectionProvider, useDocSelection } from "@/components/providers/selec
 import { useKeyboardShortcuts, type KeyboardShortcut } from "@/hooks/use-keyboard-shortcuts";
 import { batchDeleteDocs, batchUpdateDocs } from "@/lib/firebase/doc-service";
 import { useAuth } from "@ainexsuite/auth";
+import { useSpaces } from "@/components/providers/spaces-provider";
 import type { ViewMode } from "@/lib/types/settings";
 import type { DocColor } from "@/lib/types/doc";
 
@@ -73,7 +70,7 @@ function DocsWorkspaceContent() {
   const { preferences, updatePreferences } = usePreferences();
   const { docs, others, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useDocs();
   const { labels } = useLabels();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
   const {
     selectedIds,
     selectionCount,
@@ -82,67 +79,20 @@ function DocsWorkspaceContent() {
   } = useDocSelection();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-  const [showMemberManager, setShowMemberManager] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Map spaces to UserSpace format for SpaceManagementModal
-  const userSpaces = useMemo<UserSpace[]>(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type as SpaceType,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-      }));
-  }, [allSpaces, user?.uid]);
+  // Space selector items
+  const spaceItems = useMemo(() =>
+    spaces.map((s) => ({ id: s.id, name: s.name, type: s.type })),
+    [spaces]
+  );
 
-  // Space management callbacks
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
-    if (!user) return;
-    const globalSpaceNames: Record<string, string> = {
-      family: 'Family',
-      couple: 'Couple',
-      squad: 'Team',
-      work: 'Group',
-    };
-    const spaceId = await createSpace({
-      name: globalSpaceNames[type] || type,
-      type,
-    });
-    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
-  }, [user, createSpace, updateSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
-    if (!user) return;
-    const spaceId = await createSpace({
-      name,
-      type: 'work',
-    });
-    if (hiddenInApps.length > 0) {
-      await updateSpace(spaceId, { hiddenInApps });
-    }
-  }, [user, createSpace, updateSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
+  // Current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   // Bulk action handlers
   const handleBulkDelete = useCallback(async () => {
@@ -399,12 +349,14 @@ function DocsWorkspaceContent() {
     <>
     <WorkspacePageLayout
       className="pt-[17px]"
-      composer={
-        <DocComposer
-          onManagePeople={() => setShowMemberManager(true)}
-          onManageSpaces={() => setShowSpaceManagement(true)}
+      spaceSelector={spaceItems.length > 1 ? (
+        <SpaceTabSelector
+          spaces={spaceItems}
+          currentSpaceId={currentSpaceId}
+          onSpaceChange={setCurrentSpace}
         />
-      }
+      ) : undefined}
+      composer={<DocComposer placeholder={`Create a document for ${currentSpaceName}...`} />}
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (
@@ -490,25 +442,6 @@ function DocsWorkspaceContent() {
         onLabelAdd={handleBulkLabelAdd}
       />
     </WorkspacePageLayout>
-
-    {/* Space Management Modal */}
-    <SpaceManagementModal
-      isOpen={showSpaceManagement}
-      onClose={() => setShowSpaceManagement(false)}
-      userSpaces={userSpaces}
-      onJoinGlobalSpace={handleJoinGlobalSpace}
-      onLeaveGlobalSpace={handleLeaveGlobalSpace}
-      onCreateCustomSpace={handleCreateCustomSpace}
-      onRenameCustomSpace={handleRenameCustomSpace}
-      onDeleteCustomSpace={handleDeleteCustomSpace}
-      onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-    />
-
-    {/* Member Manager Modal */}
-    <MemberManager
-      isOpen={showMemberManager}
-      onClose={() => setShowMemberManager(false)}
-    />
     </>
   );
 }

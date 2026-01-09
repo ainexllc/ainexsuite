@@ -57,10 +57,8 @@ import {
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
 import { usePreferences } from "@/components/providers/preferences-provider";
-import { generateUUID, InlineSpacePicker } from "@ainexsuite/ui";
+import { generateUUID } from "@ainexsuite/ui";
 import { DateSuggestions } from "@ainexsuite/date-detection";
-import { useSpaces } from "@/components/providers/spaces-provider";
-import { Hint, HINTS } from "@/components/hints";
 import { getDocStats, formatDocStats } from "@/lib/document-stats";
 import { exportDoc, downloadFile, copyToClipboard, type ExportFormat } from "@/lib/export-utils";
 
@@ -129,15 +127,11 @@ const DOC_TEMPLATES: NoteTemplate[] = [
 ];
 
 interface DocComposerProps {
-  /** Callback to open member manager for current space */
-  onManagePeople?: () => void;
-  /** Callback to open space management modal */
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
-export function DocComposer({ onManagePeople, onManageSpaces }: DocComposerProps) {
+export function DocComposer({ placeholder = 'Create a new document...' }: DocComposerProps) {
   const { createDoc, updateDoc, deleteDoc } = useDocs();
-  const { spaces, currentSpace, setCurrentSpace } = useSpaces();
   const { createReminder } = useReminders();
   const { preferences } = usePreferences();
   const { labels, createLabel } = useLabels();
@@ -886,31 +880,18 @@ export function DocComposer({ onManagePeople, onManageSpaces }: DocComposerProps
     };
   }, [expanded, hasContent, mode, body]);
 
-  // Check if user only has personal space (for hint display)
-  const hasOnlyPersonalSpace = spaces.length === 1 && spaces[0]?.type === 'personal';
-
   return (
     <section className="w-full">
       {!expanded ? (
-        <Hint hint={HINTS.SHARED_NOTES} showWhen={hasOnlyPersonalSpace}>
-          <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
-            <button
-              type="button"
-              className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
-              onClick={() => applyTemplate(DOC_TEMPLATES[0])}
-            >
-              <span>Take a doc...</span>
-            </button>
-            {/* Compact space selector */}
-            <InlineSpacePicker
-              spaces={spaces}
-              currentSpace={currentSpace}
-              onSpaceChange={setCurrentSpace}
-              onManagePeople={onManagePeople}
-              onManageSpaces={onManageSpaces}
-            />
-          </div>
-        </Hint>
+        <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+          <button
+            type="button"
+            className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
+            onClick={() => applyTemplate(DOC_TEMPLATES[0])}
+          >
+            <span>{placeholder}</span>
+          </button>
+        </div>
       ) : (
         <div
           ref={composerRef}

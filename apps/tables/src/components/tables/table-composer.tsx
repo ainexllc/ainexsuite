@@ -41,7 +41,7 @@ import {
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
 import { usePreferences } from "@/components/providers/preferences-provider";
-import { generateUUID, InlineSpacePicker } from "@ainexsuite/ui";
+import { generateUUID } from "@ainexsuite/ui";
 import { DateSuggestions } from "@ainexsuite/date-detection";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { Hint, HINTS } from "@/components/hints";
@@ -118,15 +118,12 @@ const DOC_TEMPLATES: NoteTemplate[] = [
 ];
 
 interface TableComposerProps {
-  /** Callback to open member manager for current space */
-  onManagePeople?: () => void;
-  /** Callback to open space management modal */
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
-export function TableComposer({ onManagePeople, onManageSpaces }: TableComposerProps) {
+export function TableComposer({ placeholder = 'Create a new table...' }: TableComposerProps) {
   const { createTable, updateDoc, deleteTable } = useTables();
-  const { spaces, currentSpace, setCurrentSpace } = useSpaces();
+  const { spaces, currentSpace } = useSpaces();
   const { createReminder } = useReminders();
   const { preferences } = usePreferences();
   const { labels, createLabel } = useLabels();
@@ -801,16 +798,8 @@ export function TableComposer({ onManagePeople, onManageSpaces }: TableComposerP
               className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
               onClick={handleCreateSpreadsheet}
             >
-              <span>Create a spreadsheet...</span>
+              <span>{placeholder}</span>
             </button>
-            {/* Compact space selector */}
-            <InlineSpacePicker
-              spaces={spaces}
-              currentSpace={currentSpace}
-              onSpaceChange={setCurrentSpace}
-              onManagePeople={onManagePeople}
-              onManageSpaces={onManageSpaces}
-            />
           </div>
         </Hint>
       ) : (
@@ -1543,14 +1532,16 @@ export function TableComposer({ onManagePeople, onManageSpaces }: TableComposerP
                 )}
               </div>
 
-              <button
-                type="button"
-                className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                onClick={() => void handleClose()}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : "Done"}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="text-sm font-medium transition-colors text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  onClick={() => void handleClose()}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Saving..." : "Done"}
+                </button>
+              </div>
             </div>
           </div>
 

@@ -1,22 +1,70 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { collection, getDocs, query, orderBy, doc, setDoc, getDoc } from 'firebase/firestore';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { collection, getDocs, query, orderBy, doc, setDoc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
 import {
-  Layers, Users, Search, Filter, ChevronDown, User, Heart, Briefcase,
+  Layers, Users, ChevronDown, User, Heart, Briefcase,
   Dumbbell, Folder, RefreshCw, Settings, Save, Palette, Eye,
-  CheckCircle2, AlertCircle, X, LayoutGrid, Sparkles
+  CheckCircle2, AlertCircle, X, LayoutGrid, Sparkles, BarChart3, UserCheck
 } from 'lucide-react';
+import type { SpaceType, SpaceRole } from '@ainexsuite/types';
+
+// Import new tab components
+import { AllSpacesTab } from './_components/all-spaces-tab';
+import { AnalyticsTab } from './_components/analytics-tab';
+import { MembersTab } from './_components/members-tab';
+import { SpaceDetailModal } from '@/components/spaces/space-detail-modal';
 
 interface SpaceData {
   id: string;
   app: string;
   name: string;
-  type: string;
+  type: SpaceType;
   memberCount: number;
   createdBy: string;
+  createdByName?: string;
   createdAt: string;
+  lastActive?: string;
+  description?: string;
+  ownerId?: string;
+  members?: Array<{
+    uid: string;
+    displayName?: string;
+    email?: string;
+    photoURL?: string;
+    role: SpaceRole;
+    joinedAt: number;
+  }>;
+}
+
+interface MemberData {
+  uid: string;
+  displayName?: string;
+  email?: string;
+  photoURL?: string;
+  spaces: Array<{
+    spaceId: string;
+    spaceName: string;
+    spaceType: SpaceType;
+    app: string;
+    role: SpaceRole;
+    joinedAt: number;
+  }>;
+  firstJoined: number;
+}
+
+interface PendingInvitation {
+  id: string;
+  email: string;
+  spaceId: string;
+  spaceName: string;
+  spaceType: SpaceType;
+  app: string;
+  role: SpaceRole;
+  invitedAt: number;
+  invitedBy: string;
+  expiresAt: number;
 }
 
 interface SpaceTypeConfig {
@@ -40,7 +88,7 @@ interface SpacesUIConfig {
 }
 
 const APP_CONFIGS = [
-  { id: 'notes', name: 'Notes', collection: 'notes_spaces', color: '#3b82f6' },
+  { id: 'notes', name: 'Notes', collection: 'spaces', color: '#3b82f6' },
   { id: 'todo', name: 'Todo', collection: 'task_spaces', color: '#f59e0b' },
   { id: 'moments', name: 'Moments', collection: 'moments_spaces', color: '#ec4899' },
   { id: 'grow', name: 'Grow', collection: 'grow_spaces', color: '#8b5cf6' },
@@ -101,16 +149,14 @@ const SPACE_TYPE_ICONS: Record<string, typeof User> = {
   sparkles: Sparkles,
 };
 
+type TabId = 'all-spaces' | 'analytics' | 'members' | 'types' | 'ui';
+
 export default function SpacesManagement() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'types' | 'ui'>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>('all-spaces');
   const [spaces, setSpaces] = useState<SpaceData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedApp, setSelectedApp] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [showTypeFilter, setShowTypeFilter] = useState(false);
 
+  // Legacy state for types/ui tabs
   const [spaceTypes, setSpaceTypes] = useState<SpaceTypeConfig[]>(DEFAULT_SPACE_TYPES);
   const [uiConfig, setUiConfig] = useState<SpacesUIConfig>(DEFAULT_UI_CONFIG);
   const [saving, setSaving] = useState(false);
@@ -118,7 +164,12 @@ export default function SpacesManagement() {
   const [error, setError] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<string | null>(null);
 
-  const fetchAllSpaces = async () => {
+  // Modal state
+  const [selectedSpace, setSelectedSpace] = useState<SpaceData | null>(null);
+  const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchAllSpaces = useCallback(async () => {
     setLoading(true);
     const allSpaces: SpaceData[] = [];
 
@@ -138,7 +189,12 @@ export default function SpacesManagement() {
               type: data.type || 'personal',
               memberCount: data.memberUids?.length || data.members?.length || 1,
               createdBy: data.createdBy || 'Unknown',
+              createdByName: data.createdByName,
               createdAt: data.createdAt || new Date().toISOString(),
+              lastActive: data.updatedAt || data.createdAt,
+              description: data.description,
+              ownerId: data.ownerId,
+              members: data.members,
             });
           });
         } catch {
@@ -153,7 +209,7 @@ export default function SpacesManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const fetchConfig = async () => {
     try {
@@ -202,24 +258,139 @@ export default function SpacesManagement() {
   useEffect(() => {
     fetchAllSpaces();
     fetchConfig();
-  }, []);
+  }, [fetchAllSpaces]);
 
-  const filteredSpaces = spaces.filter((space) => {
-    const matchesSearch =
-      space.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      space.createdBy.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesApp = !selectedApp || space.app === selectedApp;
-    const matchesType = !selectedType || space.type === selectedType;
-    return matchesSearch && matchesApp && matchesType;
-  });
+  // Compute members data from spaces
+  const membersData = useMemo<MemberData[]>(() => {
+    const memberMap = new Map<string, MemberData>();
 
-  const totalSpaces = spaces.length;
-  const totalMembers = spaces.reduce((acc, s) => acc + s.memberCount, 0);
-  const spacesByApp = APP_CONFIGS.map((app) => ({
-    ...app,
-    count: spaces.filter((s) => s.app === app.id).length,
-  }));
-  const usedSpaceTypes = [...new Set(spaces.map((s) => s.type))];
+    spaces.forEach((space) => {
+      if (!space.members) return;
+
+      space.members.forEach((member) => {
+        const existing = memberMap.get(member.uid);
+        const spaceInfo = {
+          spaceId: space.id,
+          spaceName: space.name,
+          spaceType: space.type,
+          app: space.app,
+          role: member.role,
+          joinedAt: member.joinedAt,
+        };
+
+        if (existing) {
+          existing.spaces.push(spaceInfo);
+          if (member.joinedAt < existing.firstJoined) {
+            existing.firstJoined = member.joinedAt;
+          }
+        } else {
+          memberMap.set(member.uid, {
+            uid: member.uid,
+            displayName: member.displayName,
+            email: member.email,
+            photoURL: member.photoURL,
+            spaces: [spaceInfo],
+            firstJoined: member.joinedAt || Date.now(),
+          });
+        }
+      });
+    });
+
+    return Array.from(memberMap.values()).sort((a, b) => b.spaces.length - a.spaces.length);
+  }, [spaces]);
+
+  // Placeholder for pending invitations (would need separate fetch)
+  const pendingInvitations: PendingInvitation[] = [];
+
+  // Space action handlers
+  const handleViewSpace = (space: SpaceData) => {
+    setSelectedSpace(space);
+    setModalMode('view');
+    setIsModalOpen(true);
+  };
+
+  const handleEditSpace = (space: SpaceData) => {
+    setSelectedSpace(space);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteSpace = async (space: SpaceData) => {
+    if (!confirm(`Are you sure you want to delete "${space.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const appConfig = APP_CONFIGS.find((a) => a.id === space.app);
+      if (!appConfig) throw new Error('App not found');
+
+      await deleteDoc(doc(db, appConfig.collection, space.id));
+      setSpaces((prev) => prev.filter((s) => !(s.id === space.id && s.app === space.app)));
+      setSuccess(`Space "${space.name}" deleted successfully`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch {
+      setError('Failed to delete space');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const handleBulkDelete = async (spaceIds: string[]) => {
+    if (!confirm(`Are you sure you want to delete ${spaceIds.length} spaces? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      for (const spaceKey of spaceIds) {
+        const [app, ...idParts] = spaceKey.split('-');
+        const id = idParts.join('-');
+        const appConfig = APP_CONFIGS.find((a) => a.id === app);
+        if (appConfig) {
+          await deleteDoc(doc(db, appConfig.collection, id));
+        }
+      }
+      setSpaces((prev) => prev.filter((s) => !spaceIds.includes(`${s.app}-${s.id}`)));
+      setSuccess(`${spaceIds.length} spaces deleted successfully`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch {
+      setError('Failed to delete some spaces');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const handleSaveSpace = async (updates: Partial<SpaceData>) => {
+    if (!selectedSpace) return;
+
+    const appConfig = APP_CONFIGS.find((a) => a.id === selectedSpace.app);
+    if (!appConfig) throw new Error('App not found');
+
+    await updateDoc(doc(db, appConfig.collection, selectedSpace.id), {
+      name: updates.name,
+      type: updates.type,
+      description: updates.description,
+      updatedAt: new Date().toISOString(),
+    });
+
+    setSpaces((prev) =>
+      prev.map((s) =>
+        s.id === selectedSpace.id && s.app === selectedSpace.app
+          ? { ...s, ...updates }
+          : s
+      )
+    );
+    setSelectedSpace((prev) => (prev ? { ...prev, ...updates } : null));
+    setSuccess('Space updated successfully');
+    setTimeout(() => setSuccess(null), 3000);
+  };
+
+  const handleViewMember = (member: MemberData) => {
+    // Find first space for this member and open it
+    const firstSpace = spaces.find((s) =>
+      s.members?.some((m) => m.uid === member.uid)
+    );
+    if (firstSpace) {
+      handleViewSpace(firstSpace);
+    }
+  };
 
   const updateSpaceType = (id: string, updates: Partial<SpaceTypeConfig>) => {
     setSpaceTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
@@ -324,6 +495,14 @@ export default function SpacesManagement() {
     );
   };
 
+  const tabs = [
+    { id: 'all-spaces' as const, label: 'All Spaces', icon: Layers },
+    { id: 'analytics' as const, label: 'Analytics', icon: BarChart3 },
+    { id: 'members' as const, label: 'Members', icon: UserCheck },
+    { id: 'types' as const, label: 'Space Types', icon: Palette },
+    { id: 'ui' as const, label: 'UI Settings', icon: Eye },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -333,7 +512,7 @@ export default function SpacesManagement() {
             Space Management
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Configure workspace types and view all active spaces.
+            Manage all spaces across apps, view analytics, and configure settings.
           </p>
         </div>
         <button
@@ -346,16 +525,12 @@ export default function SpacesManagement() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-surface-elevated/50 border border-border rounded-lg w-fit">
-        {[
-          { id: 'overview', label: 'Overview', icon: Layers },
-          { id: 'types', label: 'Space Types', icon: Palette },
-          { id: 'ui', label: 'UI Settings', icon: Eye },
-        ].map((tab) => (
+      <div className="flex gap-1 p-1 bg-surface-elevated/50 border border-border rounded-lg w-fit overflow-x-auto">
+        {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as 'overview' | 'types' | 'ui')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? 'bg-surface-elevated text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground/90'
@@ -381,116 +556,29 @@ export default function SpacesManagement() {
         </div>
       )}
 
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Total Spaces</p>
-              <p className="text-2xl font-bold text-foreground">{totalSpaces}</p>
-            </div>
-            <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Total Members</p>
-              <p className="text-2xl font-bold text-foreground">{totalMembers}</p>
-            </div>
-            <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Active Apps</p>
-              <p className="text-2xl font-bold text-foreground">
-                {spacesByApp.filter((a) => a.count > 0).length}
-              </p>
-            </div>
-            <div className="glass-card p-5 rounded-xl">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Types Used</p>
-              <p className="text-2xl font-bold text-foreground">{usedSpaceTypes.length}</p>
-            </div>
-          </div>
+      {/* All Spaces Tab */}
+      {activeTab === 'all-spaces' && (
+        <AllSpacesTab
+          spaces={spaces}
+          onViewSpace={handleViewSpace}
+          onEditSpace={handleEditSpace}
+          onDeleteSpace={handleDeleteSpace}
+          onBulkDelete={handleBulkDelete}
+        />
+      )}
 
-          {/* Search & Filter */}
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search spaces..."
-                className="w-full pl-9 pr-4 py-2.5 bg-surface-elevated/50 border border-border rounded-lg text-sm text-foreground focus:outline-none focus:border-indigo-500/50 transition-colors"
-              />
-            </div>
-            <div className="relative">
-              <button
-                onClick={() => setShowTypeFilter(!showTypeFilter)}
-                className="px-4 py-2.5 bg-surface-elevated/50 border border-border rounded-lg flex items-center gap-2 text-sm text-foreground/90 hover:text-foreground transition-colors min-w-[160px] justify-between"
-              >
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedType ? selectedType.charAt(0).toUpperCase() + selectedType.slice(1) : 'All Types'}</span>
-                </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </button>
-              {showTypeFilter && (
-                <div className="absolute top-full mt-1 right-0 bg-surface-elevated border border-border rounded-lg shadow-xl z-20 min-w-[160px] py-1">
-                  <button
-                    onClick={() => { setSelectedType(null); setShowTypeFilter(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-foreground/5 text-foreground/90 hover:text-foreground"
-                  >
-                    All Types
-                  </button>
-                  {usedSpaceTypes.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => { setSelectedType(type); setShowTypeFilter(false); }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-foreground/5 text-foreground/90 hover:text-foreground capitalize"
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+      {/* Analytics Tab */}
+      {activeTab === 'analytics' && (
+        <AnalyticsTab spaces={spaces} appConfigs={APP_CONFIGS} />
+      )}
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredSpaces.slice(0, 12).map((space) => {
-              const app = APP_CONFIGS.find((a) => a.id === space.app);
-              const typeConfig = spaceTypes.find(t => t.id === space.type) || spaceTypes[0];
-              const Icon = SPACE_TYPE_ICONS[typeConfig?.icon || 'user'] || User;
-
-              return (
-                <div key={`${space.app}-${space.id}`} className="glass-card rounded-xl p-5 flex flex-col gap-4 group hover:bg-foreground/[0.02]">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="p-2.5 rounded-lg border bg-opacity-10"
-                        style={{
-                          backgroundColor: typeConfig?.bgColor,
-                          borderColor: typeConfig?.borderColor,
-                          color: typeConfig?.color
-                        }}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">{space.name}</h3>
-                        <p className="text-xs text-muted-foreground">{app?.name}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-4 border-t border-border">
-                    <div className="flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" />
-                      <span>{space.memberCount} members</span>
-                    </div>
-                    <span>{new Date(space.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {/* Members Tab */}
+      {activeTab === 'members' && (
+        <MembersTab
+          members={membersData}
+          pendingInvitations={pendingInvitations}
+          onViewMember={handleViewMember}
+        />
       )}
 
       {/* Types Tab */}
@@ -569,7 +657,7 @@ export default function SpacesManagement() {
                           />
                         </div>
                       </div>
-                      
+
                       <div>
                         <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Color Theme</label>
                          <div className="flex flex-wrap gap-2">
@@ -671,10 +759,10 @@ export default function SpacesManagement() {
               <h3 className="text-sm font-medium text-white mb-4">Live Preview</h3>
               <div className="p-8 bg-black rounded-xl border border-white/10 flex items-center justify-center min-h-[160px] relative overflow-hidden">
                 {/* Grid Pattern Background for Preview */}
-                <div className="absolute inset-0 opacity-20 pointer-events-none" 
-                     style={{ backgroundImage: 'radial-gradient(#4f4f4f 1px, transparent 1px)', backgroundSize: '20px 20px' }} 
+                <div className="absolute inset-0 opacity-20 pointer-events-none"
+                     style={{ backgroundImage: 'radial-gradient(#4f4f4f 1px, transparent 1px)', backgroundSize: '20px 20px' }}
                 />
-                
+
                 {/* The Preview Component */}
                 <div className="relative z-10">
                   {renderPreviewDropdown()}
@@ -687,6 +775,18 @@ export default function SpacesManagement() {
           </div>
         </div>
       )}
+
+      {/* Space Detail Modal */}
+      <SpaceDetailModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedSpace(null);
+        }}
+        space={selectedSpace}
+        mode={modalMode}
+        onSave={handleSaveSpace}
+      />
     </div>
   );
 }

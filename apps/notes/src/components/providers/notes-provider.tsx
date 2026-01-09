@@ -279,8 +279,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
           size: file.size,
         })) ?? [];
 
-      // Use the provided spaceId or fall back to current space (unless it's "personal" which means no spaceId)
-      const effectiveSpaceId = input.spaceId ?? (currentSpaceId === "personal" ? undefined : currentSpaceId);
+      // Use the provided spaceId or fall back to current space ('personal' for personal notes)
+      const effectiveSpaceId = input.spaceId ?? currentSpaceId ?? "personal";
 
       const optimisticNote: Note = {
         id: tempId,
@@ -649,11 +649,11 @@ export function NotesProvider({ children }: NotesProviderProps) {
       }
 
       // Filter by current space
-      // "personal" space shows notes with no spaceId (personal notes)
+      // "personal" space shows notes with spaceId === "personal" (or no spaceId for legacy notes)
       // Other spaces show notes with matching spaceId
       if (currentSpaceId === "personal") {
-        if (note.spaceId) {
-          return false; // Personal view only shows notes without a spaceId
+        if (note.spaceId && note.spaceId !== "personal") {
+          return false; // Personal view only shows personal notes
         }
       } else {
         if (note.spaceId !== currentSpaceId) {

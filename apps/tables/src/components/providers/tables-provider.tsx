@@ -280,8 +280,8 @@ export function TablesProvider({ children }: TablesProviderProps) {
           size: file.size,
         })) ?? [];
 
-      // Use the provided spaceId or fall back to current space (unless it's "personal" which means no spaceId)
-      const effectiveSpaceId = input.spaceId ?? (currentSpaceId === "personal" ? undefined : currentSpaceId);
+      // Use the provided spaceId or fall back to current space
+      const effectiveSpaceId = input.spaceId ?? currentSpaceId ?? "personal";
 
       const optimisticTable: Table = {
         id: tempId,
@@ -651,11 +651,11 @@ export function TablesProvider({ children }: TablesProviderProps) {
       }
 
       // Filter by current space
-      // "personal" space shows tables with no spaceId (personal tables)
+      // "personal" space shows tables with spaceId "personal" or no spaceId (legacy personal tables)
       // Other spaces show tables with matching spaceId
       if (currentSpaceId === "personal") {
-        if (table.spaceId) {
-          return false; // Personal view only shows tables without a spaceId
+        if (table.spaceId && table.spaceId !== "personal") {
+          return false; // Personal view only shows tables with "personal" spaceId or no spaceId
         }
       } else {
         if (table.spaceId !== currentSpaceId) {

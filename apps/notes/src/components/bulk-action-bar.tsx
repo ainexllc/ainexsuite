@@ -17,6 +17,8 @@ interface BulkActionBarProps {
   onArchive: () => void;
   onColorChange: (color: NoteColor) => void;
   onLabelAdd: (labelId: string) => void;
+  /** Whether the current user can delete the selected items (owns all of them) */
+  canDelete?: boolean;
 }
 
 export function BulkActionBar({
@@ -30,6 +32,7 @@ export function BulkActionBar({
   onArchive,
   onColorChange,
   onLabelAdd,
+  canDelete = true,
 }: BulkActionBarProps) {
   const { labels } = useLabels();
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -171,14 +174,16 @@ export function BulkActionBar({
           )}
         </div>
 
-        {/* Delete button - separate for emphasis */}
-        <button
-          onClick={onDelete}
-          className="h-8 w-8 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 transition-colors group"
-          title="Delete selected"
-        >
-          <Trash2 className="h-4 w-4 text-red-400 group-hover:text-red-300 transition-colors" />
-        </button>
+        {/* Delete button - separate for emphasis, only shown if user owns all selected */}
+        {canDelete && (
+          <button
+            onClick={onDelete}
+            className="h-8 w-8 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 transition-colors group"
+            title="Delete selected"
+          >
+            <Trash2 className="h-4 w-4 text-red-400 group-hover:text-red-300 transition-colors" />
+          </button>
+        )}
 
         {/* Close button */}
         <button

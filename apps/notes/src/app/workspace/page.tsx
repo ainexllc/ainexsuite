@@ -7,30 +7,22 @@ import {
   WorkspaceToolbar,
   ActivityCalendar,
   ActiveFilterChips,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type FilterChip,
   type FilterChipType,
-  type UserSpace,
 } from '@ainexsuite/ui';
-import type { SpaceType } from '@ainexsuite/types';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { NoteBoard } from '@/components/notes/note-board';
 import { NoteComposer } from "@/components/notes/note-composer";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { useNotes } from "@/components/providers/notes-provider";
 import { useLabels } from "@/components/providers/labels-provider";
-import { useSpaces } from "@/components/providers/spaces-provider";
-import { MemberManager } from "@/components/spaces/MemberManager";
 import { NoteFilterContent } from "@/components/notes/note-filter-content";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
-import { BulkActionBar } from "@/components/bulk-action-bar";
-import { SelectionProvider, useNoteSelection } from "@/components/providers/selection-provider";
 import { useKeyboardShortcuts, type KeyboardShortcut } from "@/hooks/use-keyboard-shortcuts";
-import { batchDeleteNotes, batchUpdateNotes } from "@/lib/firebase/note-service";
-import { useAuth } from "@ainexsuite/auth";
 import type { ViewMode } from "@/lib/types/settings";
-import type { NoteColor } from "@/lib/types/note";
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
   { value: 'masonry', icon: LayoutGrid, label: 'Masonry view' },
@@ -59,139 +51,31 @@ const NOTE_COLOR_MAP: Record<string, string> = {
   'note-coal': '#455a64',
 };
 
-// Wrapper component that provides selection context
 export default function NotesWorkspace() {
-  return (
-    <SelectionProvider>
-      <NotesWorkspaceContent />
-    </SelectionProvider>
-  );
-}
-
-function NotesWorkspaceContent() {
-  const { user } = useAuth();
   const { preferences, updatePreferences } = usePreferences();
-  const { notes, others, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
+  const { notes, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
   const { labels } = useLabels();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
-  const {
-    selectedIds,
-    selectionCount,
-    selectAll,
-    deselectAll,
-  } = useNoteSelection();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+
+  // Create space items for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }));
+  }, [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-  const [showMemberManager, setShowMemberManager] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Map spaces to UserSpace format for SpaceManagementModal
-  const userSpaces = useMemo<UserSpace[]>(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type as SpaceType,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-      }));
-  }, [allSpaces, user?.uid]);
-
-  // Space management callbacks
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
-    if (!user) return;
-    const globalSpaceNames: Record<string, string> = {
-      family: 'Family',
-      couple: 'Couple',
-      squad: 'Team',
-      work: 'Group',
-    };
-    const spaceId = await createSpace({
-      name: globalSpaceNames[type] || type,
-      type,
-    });
-    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
-  }, [user, createSpace, updateSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
-    if (!user) return;
-    const spaceId = await createSpace({
-      name,
-      type: 'work',
-    });
-    if (hiddenInApps.length > 0) {
-      await updateSpace(spaceId, { hiddenInApps });
-    }
-  }, [user, createSpace, updateSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
-
-  // Bulk action handlers
-  const handleBulkDelete = useCallback(async () => {
-    if (!user?.uid || selectionCount === 0) return;
-    await batchDeleteNotes(user.uid, Array.from(selectedIds));
-    deselectAll();
-  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
-
-  const handleBulkPin = useCallback(async () => {
-    if (!user?.uid || selectionCount === 0) return;
-    await batchUpdateNotes(user.uid, Array.from(selectedIds), { pinned: true });
-    deselectAll();
-  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
-
-  const handleBulkUnpin = useCallback(async () => {
-    if (!user?.uid || selectionCount === 0) return;
-    await batchUpdateNotes(user.uid, Array.from(selectedIds), { pinned: false });
-    deselectAll();
-  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
-
-  const handleBulkArchive = useCallback(async () => {
-    if (!user?.uid || selectionCount === 0) return;
-    await batchUpdateNotes(user.uid, Array.from(selectedIds), { archived: true });
-    deselectAll();
-  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
-
-  const handleBulkColorChange = useCallback(async (color: NoteColor) => {
-    if (!user?.uid || selectionCount === 0) return;
-    await batchUpdateNotes(user.uid, Array.from(selectedIds), { color });
-    deselectAll();
-  }, [user?.uid, selectedIds, selectionCount, deselectAll]);
-
-  const handleBulkLabelAdd = useCallback(async (labelId: string) => {
-    if (!user?.uid || selectionCount === 0) return;
-    // For adding labels, we need to get current labels and add the new one
-    // This is a simplified version - in production you'd want to handle this more carefully
-    const noteIds = Array.from(selectedIds);
-    for (const noteId of noteIds) {
-      const note = notes.find(n => n.id === noteId);
-      if (note && !note.labelIds.includes(labelId)) {
-        await batchUpdateNotes(user.uid, [noteId], { labelIds: [...note.labelIds, labelId] });
-      }
-    }
-    deselectAll();
-  }, [user?.uid, selectedIds, selectionCount, notes, deselectAll]);
-
-  const handleSelectAll = useCallback(() => {
-    selectAll(others.map(note => note.id));
-  }, [selectAll, others]);
 
   // Calculate activity data for calendar view
   const activityData = useMemo(() => {
@@ -399,11 +283,17 @@ function NotesWorkspaceContent() {
     <>
     <WorkspacePageLayout
       className="pt-[17px]"
+      spaceSelector={
+        spaceItems.length > 1 && (
+          <SpaceTabSelector
+            spaces={spaceItems}
+            currentSpaceId={currentSpaceId}
+            onSpaceChange={setCurrentSpace}
+          />
+        )
+      }
       composer={
-        <NoteComposer
-          onManagePeople={() => setShowMemberManager(true)}
-          onManageSpaces={() => setShowSpaceManagement(true)}
-        />
+        <NoteComposer placeholder={`Create a new note for ${currentSpaceName}...`} />
       }
       toolbar={
         <div className="space-y-2">
@@ -475,40 +365,7 @@ function NotesWorkspaceContent() {
         onClose={() => setIsShortcutsModalOpen(false)}
         shortcuts={shortcuts}
       />
-
-      {/* Bulk Action Bar */}
-      <BulkActionBar
-        selectedCount={selectionCount}
-        totalCount={others.length}
-        onSelectAll={handleSelectAll}
-        onDeselectAll={deselectAll}
-        onDelete={handleBulkDelete}
-        onPin={handleBulkPin}
-        onUnpin={handleBulkUnpin}
-        onArchive={handleBulkArchive}
-        onColorChange={handleBulkColorChange}
-        onLabelAdd={handleBulkLabelAdd}
-      />
     </WorkspacePageLayout>
-
-    {/* Space Management Modal */}
-    <SpaceManagementModal
-      isOpen={showSpaceManagement}
-      onClose={() => setShowSpaceManagement(false)}
-      userSpaces={userSpaces}
-      onJoinGlobalSpace={handleJoinGlobalSpace}
-      onLeaveGlobalSpace={handleLeaveGlobalSpace}
-      onCreateCustomSpace={handleCreateCustomSpace}
-      onRenameCustomSpace={handleRenameCustomSpace}
-      onDeleteCustomSpace={handleDeleteCustomSpace}
-      onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-    />
-
-    {/* Member Manager Modal */}
-    <MemberManager
-      isOpen={showMemberManager}
-      onClose={() => setShowMemberManager(false)}
-    />
     </>
   );
 }

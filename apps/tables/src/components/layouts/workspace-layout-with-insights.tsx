@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { WorkspaceLayout } from "@ainexsuite/ui";
+import { useAppColors } from "@ainexsuite/theme";
 import type { QuickAction, NotificationItem } from "@ainexsuite/types";
 
 interface WorkspaceLayoutWithInsightsProps {
@@ -41,11 +42,14 @@ export function WorkspaceLayoutWithInsights({
   notifications = [],
   onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
+  const { primary } = useAppColors();
+
   return (
     <WorkspaceLayout
       user={user}
       onSignOut={onSignOut}
       appName="tables"
+      appColor={primary}
       quickActions={quickActions}
       onQuickAction={onQuickAction}
       onAiAssistantClick={onAiAssistantClick}

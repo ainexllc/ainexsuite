@@ -78,4 +78,6 @@ export interface Task {
   pinned?: boolean;
   archived?: boolean;
   color?: EntryColor;
+  // For shared spaces - contains member UIDs who can see this task
+  sharedWithUserIds?: string[];
 }

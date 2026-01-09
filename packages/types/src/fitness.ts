@@ -19,6 +19,8 @@ export interface WorkoutExercise {
 export interface Workout {
   id: string;
   ownerId: string;
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   name: string;
   date: Timestamp;
   duration: number; // minutes

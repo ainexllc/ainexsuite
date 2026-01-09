@@ -29,13 +29,13 @@ function WorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
     pollAnimationStatus,
   } = useWorkspaceAuth();
   const { preferences, updatePreferences: updateAppPreferences, loading: preferencesLoading } = usePreferences();
-  const { allSpaces, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, updateSpace, deleteSpace } = useSpaces();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   // Map ALL spaces to SpaceSettingsItem format (excluding personal space)
   // Use allSpaces so users can see and toggle visibility of hidden spaces
   const spaceSettingsItems = useMemo<SpaceSettingsItem[]>(() => {
-    return allSpaces
+    return spaces
       .filter((s) => s.id !== 'personal')
       .map((s) => ({
         id: s.id,
@@ -46,7 +46,7 @@ function WorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
         memberCount: s.memberUids?.length || 1,
         isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
       }));
-  }, [allSpaces, user?.uid]);
+  }, [spaces, user?.uid]);
 
   // Handle updating space visibility
   const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {

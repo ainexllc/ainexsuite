@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import type { Moment, SpaceType } from '@ainexsuite/types';
+import type { Moment } from '@ainexsuite/types';
 import {
   EmptyState,
   WorkspacePageLayout,
@@ -10,7 +10,7 @@ import {
   WorkspaceLoadingScreen,
   ActivityCalendar,
   ActiveFilterChips,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type SortConfig,
@@ -27,7 +27,6 @@ import { MomentsInsights } from '@/components/moments-insights';
 import { useMomentsStore } from '@/lib/store';
 import { useSpaces } from '@/components/providers/spaces-provider';
 import { SpaceSettingsModal } from '@/components/space-settings-modal';
-import { MemberManager } from '@/components/spaces/MemberManager';
 import { FlashbackWidget } from '@/components/flashback-widget';
 import { TriviaGame } from '@/components/trivia-game';
 import { FlipbookPlayer } from '@/components/flipbook-player';
@@ -81,11 +80,22 @@ export default function MomentsWorkspacePage() {
   const { user, isReady } = useWorkspaceAuth();
 
   // Use shared SpacesProvider for spaces (auto-creates default space)
-  const { spaces, currentSpaceId, currentSpace, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, currentSpaceId, currentSpace, setCurrentSpace } = useSpaces();
 
-  // Space management modals
-  const [showMemberManager, setShowMemberManager] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
+  // Create space items for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }));
+  }, [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   // Use Zustand store for moments data
   const {
@@ -363,41 +373,6 @@ export default function MomentsWorkspacePage() {
 
   const isCalendarView = view === 'calendar';
 
-  // Map spaces to format expected by SpaceManagementModal
-  const userSpaces = useMemo(() => {
-    return spaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type,
-        memberCount: s.memberUids?.length || 1,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-      }));
-  }, [spaces, user?.uid]);
-
-  // Space management handlers
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
-    const name = type.charAt(0).toUpperCase() + type.slice(1);
-    await createSpace({ name, type });
-  }, [createSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
-    await createSpace({ name, type: 'project' });
-  }, [createSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
   // Show loading screen
   if (isLoadingMoments && moments.length === 0) {
     return <WorkspaceLoadingScreen />;
@@ -410,12 +385,20 @@ export default function MomentsWorkspacePage() {
       <WorkspacePageLayout
         className="pt-[17px]"
         maxWidth="default"
+        spaceSelector={
+          spaceItems.length > 1 && (
+            <SpaceTabSelector
+              spaces={spaceItems}
+              currentSpaceId={currentSpaceId}
+              onSpaceChange={setCurrentSpace}
+            />
+          )
+        }
         insightsBanner={<MomentsInsights moments={moments} />}
         composer={
           <MomentComposer
             onMomentCreated={handleUpdate}
-            onManagePeople={() => setShowMemberManager(true)}
-            onManageSpaces={() => setShowSpaceManagement(true)}
+            placeholder={`Add a moment for ${currentSpaceName}...`}
           />
         }
         toolbar={
@@ -607,23 +590,6 @@ export default function MomentsWorkspacePage() {
           onClose={() => setShowFlipbook(false)}
         />
       )}
-
-      {/* Space Management Modals */}
-      <MemberManager
-        isOpen={showMemberManager}
-        onClose={() => setShowMemberManager(false)}
-      />
-
-      <SpaceManagementModal
-        isOpen={showSpaceManagement}
-        onClose={() => setShowSpaceManagement(false)}
-        userSpaces={userSpaces}
-        onJoinGlobalSpace={handleJoinGlobalSpace}
-        onLeaveGlobalSpace={handleLeaveGlobalSpace}
-        onCreateCustomSpace={handleCreateCustomSpace}
-        onRenameCustomSpace={handleRenameCustomSpace}
-        onDeleteCustomSpace={handleDeleteCustomSpace}
-      />
     </>
   );
 }

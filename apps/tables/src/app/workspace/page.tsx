@@ -7,21 +7,18 @@ import {
   WorkspaceToolbar,
   ActivityCalendar,
   ActiveFilterChips,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type FilterChip,
   type FilterChipType,
-  type UserSpace,
 } from '@ainexsuite/ui';
-import type { SpaceType } from '@ainexsuite/types';
 import { TableBoard } from '@/components/tables/table-board';
 import { TableComposer } from "@/components/tables/table-composer";
 import { usePreferences } from "@/components/providers/preferences-provider";
 import { useTables } from "@/components/providers/tables-provider";
-import { useLabels } from "@/components/providers/labels-provider";
 import { useSpaces } from "@/components/providers/spaces-provider";
-import { MemberManager } from "@/components/spaces/MemberManager";
+import { useLabels } from "@/components/providers/labels-provider";
 import { TableFilterContent } from "@/components/tables/table-filter-content";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
 import { BulkActionBar } from "@/components/bulk-action-bar";
@@ -73,7 +70,7 @@ function TablesWorkspaceContent() {
   const { preferences, updatePreferences } = usePreferences();
   const { tables, others, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useTables();
   const { labels } = useLabels();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
   const {
     selectedIds,
     selectionCount,
@@ -82,67 +79,8 @@ function TablesWorkspaceContent() {
   } = useTableSelection();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-  const [showMemberManager, setShowMemberManager] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Map spaces to UserSpace format for SpaceManagementModal
-  const userSpaces = useMemo<UserSpace[]>(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type as SpaceType,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal ?? false,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-      }));
-  }, [allSpaces, user?.uid]);
-
-  // Space management callbacks
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, hiddenInApps: string[]) => {
-    if (!user) return;
-    const globalSpaceNames: Record<string, string> = {
-      family: 'Family',
-      couple: 'Couple',
-      squad: 'Team',
-      work: 'Group',
-    };
-    const spaceId = await createSpace({
-      name: globalSpaceNames[type] || type,
-      type,
-    });
-    await updateSpace(spaceId, { isGlobal: true, hiddenInApps });
-  }, [user, createSpace, updateSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, hiddenInApps: string[]) => {
-    if (!user) return;
-    const spaceId = await createSpace({
-      name,
-      type: 'work',
-    });
-    if (hiddenInApps.length > 0) {
-      await updateSpace(spaceId, { hiddenInApps });
-    }
-  }, [user, createSpace, updateSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
 
   // Bulk action handlers
   const handleBulkDelete = useCallback(async () => {
@@ -202,6 +140,21 @@ function TablesWorkspaceContent() {
     });
     return data;
   }, [tables]);
+
+  // Map spaces for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map(space => ({
+      id: space.id,
+      name: space.name,
+      type: space.type,
+    }));
+  }, [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const currentSpace = spaces.find(s => s.id === currentSpaceId);
+    return currentSpace?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
 
   // Generate filter chips for active filters
   const filterChips = useMemo(() => {
@@ -399,12 +352,14 @@ function TablesWorkspaceContent() {
     <>
     <WorkspacePageLayout
       className="pt-[17px]"
-      composer={
-        <TableComposer
-          onManagePeople={() => setShowMemberManager(true)}
-          onManageSpaces={() => setShowSpaceManagement(true)}
+      composer={<TableComposer placeholder={`Create a table for ${currentSpaceName}...`} />}
+      spaceSelector={spaceItems.length > 1 ? (
+        <SpaceTabSelector
+          spaces={spaceItems}
+          currentSpaceId={currentSpaceId}
+          onSpaceChange={setCurrentSpace}
         />
-      }
+      ) : undefined}
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (
@@ -490,25 +445,6 @@ function TablesWorkspaceContent() {
         onLabelAdd={handleBulkLabelAdd}
       />
     </WorkspacePageLayout>
-
-    {/* Space Management Modal */}
-    <SpaceManagementModal
-      isOpen={showSpaceManagement}
-      onClose={() => setShowSpaceManagement(false)}
-      userSpaces={userSpaces}
-      onJoinGlobalSpace={handleJoinGlobalSpace}
-      onLeaveGlobalSpace={handleLeaveGlobalSpace}
-      onCreateCustomSpace={handleCreateCustomSpace}
-      onRenameCustomSpace={handleRenameCustomSpace}
-      onDeleteCustomSpace={handleDeleteCustomSpace}
-      onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-    />
-
-    {/* Member Manager Modal */}
-    <MemberManager
-      isOpen={showMemberManager}
-      onClose={() => setShowMemberManager(false)}
-    />
     </>
   );
 }

@@ -29,10 +29,11 @@ export interface HealthSpace {
 export const { SpacesProvider, useSpaces } = createSpacesProvider<HealthSpace>({
   appId: "health",
   collectionName: "spaces",
-  storageKey: "health-current-space",
+  storageKey: "health-current-space", // Legacy key - will migrate to unified key
   defaultSpace: {
     name: "My Health",
     type: "personal",
   },
   allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
+  syncAcrossApps: true, // Enable cross-app space sync
 });

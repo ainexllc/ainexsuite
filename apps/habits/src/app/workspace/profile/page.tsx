@@ -23,7 +23,7 @@ import { useGrowStore } from '@/lib/store';
 import { useMemo } from 'react';
 
 function ProfileContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { habits, completions } = useGrowStore();
   const { currentSpace } = useSpaces();
@@ -71,7 +71,7 @@ function ProfileContent() {
     }
   };
 
-  if (authLoading || bootstrapStatus === 'running') {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />

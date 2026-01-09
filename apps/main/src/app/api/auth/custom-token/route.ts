@@ -1,9 +1,5 @@
 /**
- * Custom Token API Route
- *
- * Uses the shared handler from @ainexsuite/auth/server
+ * Custom Token API route - exchanges session cookie for Firebase custom token
+ * Required for Firestore security rules which check request.auth.uid
  */
-import { CustomTokenPOST, CustomTokenOPTIONS } from '@ainexsuite/auth/server';
-
-export const POST = CustomTokenPOST;
-export const OPTIONS = CustomTokenOPTIONS;
+export { CustomTokenPOST as POST, CustomTokenOPTIONS as OPTIONS } from '@ainexsuite/auth/server';

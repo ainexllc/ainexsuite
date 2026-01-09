@@ -10,10 +10,12 @@ import {
   ModalFooter,
   Button,
   Input,
-  Textarea
+  Textarea,
+  DateTimePicker
 } from '@ainexsuite/ui/components';
 import { navigateToApp } from '@ainexsuite/ui';
 import { format } from 'date-fns';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { CheckSquare, ExternalLink } from 'lucide-react';
 
 interface EventModalProps {
@@ -33,6 +35,7 @@ export function EventModal({
   initialDate,
   eventToEdit
 }: EventModalProps) {
+  const { currentSpaceId } = useSpaces();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -86,6 +89,7 @@ export function EventModal({
         endTime: new Date(endTime),
         type,
         allDay: false,
+        spaceId: currentSpaceId,
         recurrence: recurrenceFreq !== 'none' ? {
           frequency: recurrenceFreq,
           interval: 1 // Default to 1 for now
@@ -194,22 +198,24 @@ export function EventModal({
               <label className="text-sm font-medium text-foreground">
                 Start
               </label>
-              <Input
-                type="datetime-local"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
+              <DateTimePicker
+                value={startTime ? new Date(startTime) : null}
+                onChange={(date) => setStartTime(date ? format(date, "yyyy-MM-dd'T'HH:mm") : '')}
+                placeholder="Start time"
+                timeFormat="12h"
+                minuteStep={15}
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 End
               </label>
-              <Input
-                type="datetime-local"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
+              <DateTimePicker
+                value={endTime ? new Date(endTime) : null}
+                onChange={(date) => setEndTime(date ? format(date, "yyyy-MM-dd'T'HH:mm") : '')}
+                placeholder="End time"
+                timeFormat="12h"
+                minuteStep={15}
               />
             </div>
           </div>

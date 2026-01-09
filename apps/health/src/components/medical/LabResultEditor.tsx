@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Save, X, Plus, Trash2 } from 'lucide-react';
+import { DatePicker } from '@ainexsuite/ui';
 import type { LabResult, LabCategory, LabResultValue } from '@ainexsuite/types';
 
 interface LabResultEditorProps {
@@ -89,11 +90,11 @@ export function LabResultEditor({ initialResult, onSave, onCancel }: LabResultEd
           <label className="block text-sm font-medium text-ink-700 mb-2">
             Test Date
           </label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full px-4 py-2 border border-outline-subtle rounded-lg bg-surface-elevated text-ink-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          <DatePicker
+            value={date ? new Date(date) : null}
+            onChange={(d) => setDate(d ? d.toISOString().split('T')[0] : '')}
+            placeholder="Test date"
+            presets="smart"
           />
         </div>
         <div>

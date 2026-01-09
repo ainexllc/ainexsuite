@@ -3,6 +3,7 @@
 import { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import {
   StickyNote as StickyNoteIcon, Trash2, Sun, Moon, Undo2, Redo2, CheckSquare, Trash, Network, Download, Upload, Maximize2, Minimize2,
+  Link, Unlink, FolderKanban, ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@ainexsuite/auth';
 import { db } from '@ainexsuite/firebase';
@@ -31,6 +32,8 @@ import '@xyflow/react/dist/base.css';
 import './whiteboard.css';
 import StickyNoteNode from './StickyNoteNode';
 import { useUndoRedo } from './hooks/useUndoRedo';
+import { useProjects } from '@/components/providers/projects-provider';
+import { updateWhiteboardProjectLink } from '@/lib/firebase/whiteboard-service';
 
 // Touch drag state for creating notes from toolbar
 interface TouchDragState {
@@ -76,12 +79,56 @@ const validateEdges = (edges: Edge[], nodes: Node[]) => {
 };
 
 interface WhiteboardProps {
-  // No fixed dimensions; will use container size
+  // Optional project ID to link this whiteboard to a project
+  projectId?: string | null;
+  // Optional callback when project link changes
+  onProjectChange?: (projectId: string | null) => void;
 }
 
-function WhiteboardInner(_props: WhiteboardProps) {
+function WhiteboardInner({ projectId: initialProjectId, onProjectChange }: WhiteboardProps) {
   const { user } = useAuth();
   const { screenToFlowPosition } = useReactFlow();
+  const { projects } = useProjects();
+
+  // Project linking state
+  const [linkedProjectId, setLinkedProjectId] = useState<string | null>(initialProjectId ?? null);
+  const [showProjectPicker, setShowProjectPicker] = useState(false);
+  const [projectSearchQuery, setProjectSearchQuery] = useState('');
+
+  // Get linked project details
+  const linkedProject = useMemo(() => {
+    if (!linkedProjectId) return null;
+    return projects.find(p => p.id === linkedProjectId) ?? null;
+  }, [linkedProjectId, projects]);
+
+  // Filter projects for picker
+  const filteredProjects = useMemo(() => {
+    if (!projectSearchQuery.trim()) return projects.slice(0, 10);
+    const query = projectSearchQuery.toLowerCase();
+    return projects.filter(p =>
+      p.title.toLowerCase().includes(query) ||
+      p.description?.toLowerCase().includes(query)
+    ).slice(0, 10);
+  }, [projects, projectSearchQuery]);
+
+  // Handle project link change
+  const handleProjectLinkChange = useCallback(async (newProjectId: string | null) => {
+    if (!user) return;
+
+    const oldProjectId = linkedProjectId;
+    setLinkedProjectId(newProjectId);
+    setShowProjectPicker(false);
+    setProjectSearchQuery('');
+
+    try {
+      await updateWhiteboardProjectLink(user.uid, oldProjectId, newProjectId);
+      onProjectChange?.(newProjectId);
+    } catch (error) {
+      console.error('Error updating project link:', error);
+      // Revert on error
+      setLinkedProjectId(oldProjectId);
+    }
+  }, [user, linkedProjectId, onProjectChange]);
   const whiteboardRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       (window as Window & { whiteboardElement?: HTMLDivElement }).whiteboardElement = node;
@@ -240,6 +287,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
                     edgeType: data.edgeType,
                     arrowType: data.arrowType,
                     lineStyle: data.lineStyle,
+                    projectId: data.projectId || null,
                     updatedAt: new Date().toISOString(),
                   });
                 } catch (updateError) {
@@ -284,6 +332,11 @@ function WhiteboardInner(_props: WhiteboardProps) {
           // Load dark mode preference
           if (typeof data.isDarkMode === 'boolean') {
             setIsDarkMode(data.isDarkMode);
+          }
+
+          // Load project link if exists and no initialProjectId provided
+          if (data.projectId && !initialProjectId) {
+            setLinkedProjectId(data.projectId);
           }
         }
         setIsLoaded(true);
@@ -375,12 +428,13 @@ function WhiteboardInner(_props: WhiteboardProps) {
         edgeType,
         arrowType,
         lineStyle,
+        projectId: linkedProjectId,
         updatedAt: new Date().toISOString(),
       });
     } catch (error) {
       console.error('Error saving whiteboard:', error);
     }
-  }, [user, nodes, edges, isDarkMode, edgeType, arrowType, lineStyle, isLoaded]);
+  }, [user, nodes, edges, isDarkMode, edgeType, arrowType, lineStyle, linkedProjectId, isLoaded]);
 
   // Auto-save when nodes, edges, or dark mode changes
   useEffect(() => {
@@ -391,7 +445,7 @@ function WhiteboardInner(_props: WhiteboardProps) {
     }, 1000); // Debounce saves by 1 second
 
     return () => clearTimeout(timeoutId);
-  }, [nodes, edges, isDarkMode, saveWhiteboard, isLoaded]);
+  }, [nodes, edges, isDarkMode, linkedProjectId, saveWhiteboard, isLoaded]);
 
   // Update edges when edge type, arrow type, or line style changes
   useEffect(() => {
@@ -972,6 +1026,155 @@ function WhiteboardInner(_props: WhiteboardProps) {
           className={isDarkMode ? 'bg-gray-700' : ''}
           nodeColor={isDarkMode ? '#60a5fa' : '#3b82f6'}
         />
+
+        {/* Project Link Badge - Top Center */}
+        <Panel position="top-center" className={`backdrop-blur-xl rounded-xl shadow-lg border ${
+          isDarkMode
+            ? 'bg-gradient-to-br from-gray-800/90 to-gray-900/90 border-border'
+            : 'bg-gradient-to-br from-white/90 to-gray-50/90 border-gray-200'
+        }`}>
+          <div className="relative">
+            {linkedProject ? (
+              <div className="flex items-center gap-2 px-3 py-2">
+                <FolderKanban className={`w-4 h-4 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                <span className={`text-sm font-medium truncate max-w-[200px] ${isDarkMode ? 'text-foreground' : 'text-gray-900'}`}>
+                  {linkedProject.title}
+                </span>
+                <button
+                  onClick={() => setShowProjectPicker(true)}
+                  className={`p-1 rounded-md transition-colors ${
+                    isDarkMode
+                      ? 'hover:bg-foreground/10 text-muted-foreground hover:text-foreground'
+                      : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+                  }`}
+                  title="Change linked project"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => void handleProjectLinkChange(null)}
+                  className={`p-1 rounded-md transition-colors ${
+                    isDarkMode
+                      ? 'hover:bg-red-500/20 text-muted-foreground hover:text-red-400'
+                      : 'hover:bg-red-50 text-gray-500 hover:text-red-600'
+                  }`}
+                  title="Unlink from project"
+                >
+                  <Unlink className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowProjectPicker(true)}
+                className={`flex items-center gap-2 px-3 py-2 transition-colors rounded-xl ${
+                  isDarkMode
+                    ? 'text-muted-foreground hover:text-foreground hover:bg-foreground/10'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Link className="w-4 h-4" />
+                <span className="text-sm font-medium">Link to Project</span>
+              </button>
+            )}
+
+            {/* Project Picker Dropdown */}
+            {showProjectPicker && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => {
+                    setShowProjectPicker(false);
+                    setProjectSearchQuery('');
+                  }}
+                />
+                <div className={`absolute top-full left-0 mt-2 w-72 rounded-xl shadow-2xl border z-50 overflow-hidden ${
+                  isDarkMode
+                    ? 'bg-gray-900 border-border'
+                    : 'bg-white border-gray-200'
+                }`}>
+                  {/* Search Input */}
+                  <div className="p-2 border-b border-inherit">
+                    <input
+                      type="text"
+                      value={projectSearchQuery}
+                      onChange={(e) => setProjectSearchQuery(e.target.value)}
+                      placeholder="Search projects..."
+                      autoFocus
+                      className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
+                        isDarkMode
+                          ? 'bg-gray-800 border-border text-foreground placeholder:text-muted-foreground'
+                          : 'bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Project List */}
+                  <div className="max-h-64 overflow-y-auto">
+                    {filteredProjects.length > 0 ? (
+                      filteredProjects.map((project) => (
+                        <button
+                          key={project.id}
+                          onClick={() => void handleProjectLinkChange(project.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                            project.id === linkedProjectId
+                              ? isDarkMode
+                                ? 'bg-indigo-500/20 text-indigo-300'
+                                : 'bg-indigo-50 text-indigo-700'
+                              : isDarkMode
+                                ? 'hover:bg-foreground/10 text-foreground'
+                                : 'hover:bg-gray-50 text-gray-900'
+                          }`}
+                        >
+                          <FolderKanban className={`w-4 h-4 flex-shrink-0 ${
+                            project.id === linkedProjectId
+                              ? isDarkMode ? 'text-indigo-400' : 'text-indigo-600'
+                              : isDarkMode ? 'text-muted-foreground' : 'text-gray-400'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{project.title}</p>
+                            {project.description && (
+                              <p className={`text-xs truncate ${isDarkMode ? 'text-muted-foreground' : 'text-gray-500'}`}>
+                                {project.description}
+                              </p>
+                            )}
+                          </div>
+                          {project.id === linkedProjectId && (
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                              isDarkMode ? 'bg-indigo-500/30 text-indigo-300' : 'bg-indigo-100 text-indigo-700'
+                            }`}>
+                              Linked
+                            </span>
+                          )}
+                        </button>
+                      ))
+                    ) : (
+                      <div className={`px-3 py-6 text-center text-sm ${isDarkMode ? 'text-muted-foreground' : 'text-gray-500'}`}>
+                        {projectSearchQuery ? 'No projects found' : 'No projects available'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Unlink Option */}
+                  {linkedProjectId && (
+                    <div className={`border-t ${isDarkMode ? 'border-border' : 'border-gray-200'}`}>
+                      <button
+                        onClick={() => void handleProjectLinkChange(null)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                          isDarkMode
+                            ? 'hover:bg-red-500/20 text-red-400'
+                            : 'hover:bg-red-50 text-red-600'
+                        }`}
+                      >
+                        <Unlink className="w-4 h-4" />
+                        <span className="text-sm font-medium">Unlink from project</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </Panel>
 
         {/* Toolbar Panel - Full View No Scroll */}
         <Panel position="top-left" className={`backdrop-blur-xl rounded-xl shadow-2xl border ${

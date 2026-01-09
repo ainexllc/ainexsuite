@@ -4,6 +4,7 @@ export {
   type SettingsUser,
   type SettingsTab,
   type SpaceSettingsItem,
+  type SpaceSettingsMember,
   type GlobalSpaceItem,
 } from "./settings-modal";
 

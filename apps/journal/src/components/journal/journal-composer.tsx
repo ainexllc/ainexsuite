@@ -6,7 +6,7 @@ import { clsx } from "clsx";
 import type { JournalEntryFormData, EntryColor, BackgroundOverlay } from "@ainexsuite/types";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { useAuth } from "@ainexsuite/auth";
-import { useToast, SpaceTabSelector } from "@ainexsuite/ui";
+import { useToast } from "@ainexsuite/ui";
 import { useBackgrounds } from "@/hooks/use-backgrounds";
 import { useCovers } from "@/hooks/use-covers";
 import { getBackgroundById, getOverlayClasses, OVERLAY_OPTIONS, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
@@ -19,14 +19,13 @@ import { usePrivacy, PasscodeModal } from "@ainexsuite/privacy";
 
 interface JournalComposerProps {
   onEntryCreated?: () => void;
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
-export function JournalComposer({ onEntryCreated, onManagePeople, onManageSpaces }: JournalComposerProps) {
+export function JournalComposer({ onEntryCreated, placeholder = 'Create a new entry...' }: JournalComposerProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+  const { currentSpaceId } = useSpaces();
   const { hasPasscode, setupPasscode, lockNow } = usePrivacy();
 
   // Expand/collapse state
@@ -66,9 +65,6 @@ export function JournalComposer({ onEntryCreated, onManagePeople, onManageSpaces
 
   // Cover settings (AI summary toggle)
   const { showAiSummary, setShowAiSummary } = useCoverSettings();
-
-  // Get current space name for placeholder
-  const currentSpaceName = spaces.find((s) => s.id === currentSpaceId)?.name || 'Personal';
 
   // Merge Firestore backgrounds with fallbacks
   const availableBackgrounds = useMemo(() => {
@@ -238,18 +234,6 @@ export function JournalComposer({ onEntryCreated, onManagePeople, onManageSpaces
 
   return (
     <section className="w-full space-y-3">
-      {/* Space tab selector - centered above */}
-      {spaces.length > 1 && (
-        <SpaceTabSelector
-          spaces={spaces}
-          currentSpaceId={currentSpaceId || 'personal'}
-          onSpaceChange={setCurrentSpace}
-          personalLabel="My Journal"
-          onManagePeople={onManagePeople}
-          onManageSpaces={onManageSpaces}
-        />
-      )}
-
       {!expanded ? (
         // Collapsed state
         <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
@@ -259,7 +243,7 @@ export function JournalComposer({ onEntryCreated, onManagePeople, onManageSpaces
             className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
             onClick={() => setExpanded(true)}
           >
-            <span>Create a new entry in <span className="font-medium text-zinc-600 dark:text-zinc-300">{currentSpaceName}</span>...</span>
+            {placeholder}
           </button>
         </div>
       ) : (

@@ -56,8 +56,8 @@ function WorkspaceLayoutInner({
         id: s.id,
         name: s.name,
         type: s.type,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
+        isGlobal: s.isGlobal,
+        hiddenInApps: s.hiddenInApps || [],
         memberCount: s.memberUids?.length || 1,
         isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
       }));

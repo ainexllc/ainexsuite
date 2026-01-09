@@ -10,6 +10,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { useRef, useState } from "react";
+import { NoiseBackground } from "../noise-background";
 
 export interface FloatingDockItem {
   title: string;
@@ -53,7 +54,7 @@ function FloatingDockMobile({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={cn("relative block md:hidden", className)}>
+    <div className={cn("relative block lg:hidden", className)}>
       <AnimatePresence>
         {open && (
           <motion.div
@@ -137,26 +138,38 @@ function FloatingDockDesktop({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className={cn("mx-auto hidden md:block", className)}>
-      {/* Wrapper for overflow visibility */}
-      <motion.div
-        ref={scrollContainerRef}
-        onMouseMove={(e) => mouseX.set(e.pageX)}
-        onMouseLeave={() => mouseX.set(Infinity)}
-        className="flex h-16 gap-3 items-end rounded-2xl bg-surface-elevated/80 backdrop-blur-md px-4 pb-3 border border-ink-200/20 shadow-lg max-w-[90vw] overflow-visible"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
+    <div className={cn("mx-auto hidden lg:block", className)}>
+      <NoiseBackground
+        containerClassName="rounded-2xl p-[3px]"
+        gradientColors={[
+          "rgb(249, 115, 22)",   // orange (main)
+          "rgb(236, 72, 153)",   // pink (album)
+          "rgb(139, 92, 246)",   // purple (todo)
+          "rgb(16, 185, 129)",   // green (health)
+        ]}
+        noiseIntensity={0.1}
+        speed={0.15}
       >
-        {items.map((item) => (
-          <IconContainer
-            key={item.title}
-            mouseX={mouseX}
-            {...item}
-          />
-        ))}
-      </motion.div>
+        {/* Wrapper for overflow visibility */}
+        <motion.div
+          ref={scrollContainerRef}
+          onMouseMove={(e) => mouseX.set(e.pageX)}
+          onMouseLeave={() => mouseX.set(Infinity)}
+          className="flex h-16 gap-3 items-end rounded-[14px] bg-surface-elevated/95 backdrop-blur-md px-4 pb-3 shadow-lg max-w-[90vw] overflow-visible"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          {items.map((item) => (
+            <IconContainer
+              key={item.title}
+              mouseX={mouseX}
+              {...item}
+            />
+          ))}
+        </motion.div>
+      </NoiseBackground>
     </div>
   );
 }

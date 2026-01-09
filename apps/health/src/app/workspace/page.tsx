@@ -3,14 +3,14 @@
 import { useState, useMemo, useCallback } from 'react';
 import { List, LayoutGrid, Calendar, Activity, X, Sparkles, Pill, BarChart3, Apple, Stethoscope, Dumbbell } from 'lucide-react';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import type { HealthMetric, SpaceType } from '@ainexsuite/types';
+import type { HealthMetric } from '@ainexsuite/types';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   WorkspaceLoadingScreen,
   ActivityCalendar,
   ActiveFilterChips,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type FilterChip,
   type FilterChipType,
@@ -30,7 +30,6 @@ import { NutritionDashboard } from '@/components/nutrition';
 import { MedicalDashboard } from '@/components/medical';
 import { FitnessBoard } from '@/components/workouts';
 import { WorkoutsProvider } from '@/components/providers/workouts-provider';
-import { MemberManager } from '@/components/spaces/MemberManager';
 import type { ViewMode, SortField } from '@/lib/types/settings';
 
 const VIEW_OPTIONS: ViewOption<ViewMode>[] = [
@@ -84,51 +83,24 @@ export default function HealthWorkspacePage() {
     deleteMetric,
   } = useHealthMetrics();
   const { preferences, updatePreferences } = usePreferences();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+
+  // Create space items for SpaceTabSelector
+  const spaceItems = useMemo(() => {
+    return spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    }));
+  }, [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'Personal';
+  }, [spaces, currentSpaceId]);
   const [editingMetric, setEditingMetric] = useState<HealthMetric | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showMemberManager, setShowMemberManager] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
-
-  // Map spaces for SpaceManagementModal
-  const userSpaces = useMemo(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal || false,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-        memberCount: s.memberUids?.length || 1,
-        isOwner: ((s as { ownerId?: string; createdBy?: string }).ownerId || (s as { ownerId?: string; createdBy?: string }).createdBy) === user?.uid,
-      }));
-  }, [allSpaces, user?.uid]);
-
-  // Space management handlers
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
-    await createSpace({ name: type === 'family' ? 'Family' : 'Partner', type });
-  }, [createSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
-    await createSpace({ name, type: 'project' });
-  }, [createSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
 
   const handleSaveCheckin = async (data: Partial<HealthMetric>) => {
     try {
@@ -137,7 +109,7 @@ export default function HealthWorkspacePage() {
       } else {
         await createMetric({
           date: data.date || getTodayDate(),
-          spaceId: data.spaceId,
+          spaceId: data.spaceId || currentSpaceId || 'personal',
           sleep: data.sleep ?? null,
           water: data.water ?? null,
           exercise: data.exercise ?? null,
@@ -307,13 +279,21 @@ export default function HealthWorkspacePage() {
       <WorkspacePageLayout
         className="pt-[17px]"
         maxWidth="default"
+        spaceSelector={
+          spaceItems.length > 1 && (
+            <SpaceTabSelector
+              spaces={spaceItems}
+              currentSpaceId={currentSpaceId}
+              onSpaceChange={setCurrentSpace}
+            />
+          )
+        }
         composer={
           <HealthCheckinComposer
             existingMetric={todayMetric}
             date={getTodayDate()}
             onSave={handleSaveCheckin}
-            onManagePeople={() => setShowMemberManager(true)}
-            onManageSpaces={() => setShowSpaceManagement(true)}
+            placeholder={`Log health for ${currentSpaceName}...`}
           />
         }
         toolbar={
@@ -426,25 +406,6 @@ export default function HealthWorkspacePage() {
           onClose={() => setEditingMetric(null)}
         />
       )}
-
-      {/* Member Manager Modal */}
-      <MemberManager
-        isOpen={showMemberManager}
-        onClose={() => setShowMemberManager(false)}
-      />
-
-      {/* Space Management Modal */}
-      <SpaceManagementModal
-        isOpen={showSpaceManagement}
-        onClose={() => setShowSpaceManagement(false)}
-        userSpaces={userSpaces}
-        onJoinGlobalSpace={handleJoinGlobalSpace}
-        onLeaveGlobalSpace={handleLeaveGlobalSpace}
-        onCreateCustomSpace={handleCreateCustomSpace}
-        onRenameCustomSpace={handleRenameCustomSpace}
-        onDeleteCustomSpace={handleDeleteCustomSpace}
-        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-      />
     </>
   );
 }

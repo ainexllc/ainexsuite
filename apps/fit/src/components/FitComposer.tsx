@@ -1,50 +1,28 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Plus, Dumbbell, UtensilsCrossed, Scale, Droplets, ChevronDown } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
-import { InlineSpacePicker } from '@ainexsuite/ui';
-import type { SpaceType } from '@ainexsuite/types';
-import { useSpaces } from '@/components/providers/spaces-provider';
-import { useFitStore } from '@/lib/store';
-
-interface FitComposerProps {
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
-}
 
 type QuickAction = 'workout' | 'meal' | 'weight' | 'water';
+
+interface FitComposerProps {
+  placeholder?: string;
+}
 
 /**
  * Composer component for the Fit app workspace.
  * Provides quick actions for logging workouts, meals, water, and weight.
  */
-export function FitComposer({ onManagePeople, onManageSpaces }: FitComposerProps) {
+export function FitComposer({ placeholder = 'Log a workout...' }: FitComposerProps) {
   const { user } = useAuth();
-  const { allSpaces } = useSpaces();
-  const { currentSpaceId, setCurrentSpace } = useFitStore();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleQuickAction = (_action: QuickAction) => {
     // TODO: Implement quick actions - open respective modals
     setIsOpen(false);
   };
-
-  // Build space items for InlineSpacePicker
-  const spaceItems = useMemo(() => [
-    { id: 'personal', name: 'My Fitness', type: 'personal' as SpaceType },
-    ...allSpaces.filter((s) => s.id !== 'personal').map((s) => ({ id: s.id, name: s.name, type: s.type }))
-  ], [allSpaces]);
-
-  // Get current space for InlineSpacePicker
-  const currentSpaceForPicker = useMemo(() => {
-    if (currentSpaceId === 'personal') {
-      return { id: 'personal', name: 'My Fitness', type: 'personal' as SpaceType };
-    }
-    const space = allSpaces.find((s) => s.id === currentSpaceId);
-    return space ? { id: space.id, name: space.name, type: space.type } : null;
-  }, [currentSpaceId, allSpaces]);
 
   if (!user) return null;
 
@@ -105,17 +83,8 @@ export function FitComposer({ onManagePeople, onManageSpaces }: FitComposerProps
           )}
         </div>
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Inline space picker */}
-        <InlineSpacePicker
-          spaces={spaceItems}
-          currentSpace={currentSpaceForPicker}
-          onSpaceChange={setCurrentSpace}
-          onManagePeople={onManagePeople}
-          onManageSpaces={onManageSpaces}
-        />
+        {/* Placeholder text */}
+        <span className="flex-1 text-sm text-muted-foreground">{placeholder}</span>
       </div>
     </section>
   );

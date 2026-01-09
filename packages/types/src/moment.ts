@@ -25,7 +25,8 @@ export interface Moment extends BaseDocument {
   mood?: string;
   weather?: string;
   collectionId: string | null;
-  spaceId?: string;
+  // Required - 'personal' for personal content, or actual space ID
+  spaceId: string;
   reactions?: Reaction[];
   comments?: Comment[];
 }

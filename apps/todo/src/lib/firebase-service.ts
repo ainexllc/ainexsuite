@@ -6,7 +6,8 @@ import {
   deleteDoc,
   query,
   where,
-  onSnapshot
+  onSnapshot,
+  getDoc
 } from 'firebase/firestore';
 import { db } from '@ainexsuite/firebase';
 import { TaskSpace, Task } from '../types/models';
@@ -37,9 +38,27 @@ export function subscribeToUserTodoSpaces(userId: string, callback: (spaces: Tas
 
 // --- Tasks ---
 
+// Helper to get space members for shared spaces
+async function getSpaceMembers(spaceId: string): Promise<string[]> {
+  if (!spaceId || spaceId === 'personal') return [];
+  const spaceDoc = await getDoc(doc(db, 'todo_spaces', spaceId));
+  if (spaceDoc.exists()) {
+    return spaceDoc.data()?.memberUids || [];
+  }
+  return [];
+}
+
 export async function createTaskInDb(task: Task) {
   const taskRef = doc(collection(db, 'tasks'), task.id);
-  await setDoc(taskRef, task);
+
+  // For shared spaces, add all members to sharedWithUserIds (like notes app)
+  const taskData = { ...task };
+  if (task.spaceId && task.spaceId !== 'personal') {
+    const memberUids = await getSpaceMembers(task.spaceId);
+    taskData.sharedWithUserIds = memberUids.filter(uid => uid !== task.ownerId);
+  }
+
+  await setDoc(taskRef, taskData);
 }
 
 export async function updateTaskInDb(taskId: string, updates: Partial<Task>) {
@@ -52,11 +71,12 @@ export async function deleteTaskFromDb(taskId: string) {
   await deleteDoc(taskRef);
 }
 
-export function subscribeToSpaceTasks(spaceId: string, callback: (tasks: Task[]) => void) {
+export function subscribeToSpaceTasks(spaceId: string, userId: string, callback: (tasks: Task[]) => void) {
+  // Query by spaceId only - security rules allow read if user is a space member
+  // (see firestore.rules lines 274-280: allows read if user in todo_spaces/{spaceId}.memberUids)
   const q = query(
     collection(db, 'tasks'),
     where('spaceId', '==', spaceId)
-    // orderBy('order') // Indexes might be needed if we sort by order here, but client-side sort is fine for now
   );
 
   return onSnapshot(q, (snapshot) => {
@@ -80,17 +100,15 @@ export function subscribeToAllUserTasks(userId: string, callback: (tasks: Task[]
 
 export function subscribeToPersonalTasks(userId: string, callback: (tasks: Task[]) => void) {
   // Get tasks for the virtual "My Todos" personal space
-  // These are tasks where spaceId is "personal" OR ownerId matches and no shared space
+  // Query by ownerId to satisfy security rules (ownerId == request.auth.uid)
   const q = query(
     collection(db, 'tasks'),
-    where('spaceId', '==', 'personal')
+    where('spaceId', '==', 'personal'),
+    where('ownerId', '==', userId)
   );
 
   return onSnapshot(q, (snapshot) => {
-    // Filter to only include tasks where user is owner or assignee
-    const tasks = snapshot.docs
-      .map(doc => doc.data() as Task)
-      .filter(task => task.ownerId === userId || task.assigneeIds?.includes(userId));
+    const tasks = snapshot.docs.map(doc => doc.data() as Task);
     callback(tasks);
   });
 }

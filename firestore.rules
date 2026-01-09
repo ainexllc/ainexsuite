@@ -16,21 +16,28 @@ service cloud.firestore {
     // --- Grow App Rules ---
 
     match /spaces/{spaceId} {
-      // Allow read if: member OR space is public (for browsing joinable spaces)
+      // Allow read if: admin OR member OR space is public (for browsing joinable spaces)
       allow read: if isAuthenticated() && (
+        isAdmin() ||
         request.auth.uid in resource.data.memberUids ||
         resource.data.isPublic == true
       );
-      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
-      // Allow update if: member OR joining a public space (adding self to memberUids)
+      // Allow create if: admin OR member includes self
+      allow create: if isAuthenticated() && (
+        isAdmin() ||
+        request.auth.uid in request.resource.data.memberUids
+      );
+      // Allow update if: admin OR member OR joining a public space (adding self to memberUids)
       allow update: if isAuthenticated() && (
+        isAdmin() ||
         request.auth.uid in resource.data.memberUids ||
         (resource.data.isPublic == true &&
          request.auth.uid in request.resource.data.memberUids &&
          request.resource.data.memberUids.hasAll(resource.data.memberUids))
       );
-      // Support both ownerId and createdBy (legacy) for deletion
+      // Support both ownerId and createdBy (legacy) for deletion - admins can also delete
       allow delete: if isAuthenticated() && (
+        isAdmin() ||
         resource.data.ownerId == request.auth.uid ||
         resource.data.createdBy == request.auth.uid
       );
@@ -752,6 +759,69 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Project spaces
+    match /project_spaces/{spaceId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.memberUids;
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.memberUids;
+      allow delete: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.createdBy == request.auth.uid
+      );
+    }
+
+    // Projects: nested under users, supports collectionGroup queries for sharing
+    match /users/{userId}/projects/{projectId} {
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Read access: owner, shared via sharedWithUserIds, or space member
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      // Update access: owner or space member
+      allow update: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // CollectionGroup rule for projects - needed for cross-user queries
+    match /{path=**}/projects/{projectId} {
+      allow read: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.sharedWithUserIds != null &&
+         request.auth.uid in resource.data.sharedWithUserIds) ||
+        (resource.data.spaceId != null &&
+         resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+    }
+
+    // Project labels
+    match /users/{userId}/projectLabels/{labelId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Projects preferences
+    match /projects_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
     // --- Stripe / Subscriptions ---
     match /subscriptions/{userId} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
@@ -763,10 +833,29 @@ service cloud.firestore {
       allow write: if false; // Only server-side can write (Admin SDK bypasses rules)
     }
 
+    // --- Admin Logs (Admin dashboard audit trail) ---
+    match /admin_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false; // Logs are immutable
+    }
+
+    // --- Space Analytics (Admin dashboard metrics) ---
+    match /space_analytics/{analyticsId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only server-side/Cloud Functions can write
+    }
+
     // --- General / Legacy ---
     // Auth check restored
     match /users/{userId} {
-      allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      // Get single document: users can ALWAYS read their own doc (needed for isAdmin() to work)
+      // No isAdmin() check here to avoid circular dependency
+      allow get: if isAuthenticated() && request.auth.uid == userId;
+      // List/query users: admin only
+      allow list: if isAdmin();
+      // Write: own doc or admin
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
     }
   }
 }

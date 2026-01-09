@@ -156,6 +156,7 @@ export {
 
 export { AtmosphericGlows } from "./layouts/atmospheric-glows";
 export { WorkspaceHeader } from "./layouts/workspace-header";
+export { CommandPalette, type CommandItem } from "./command-palette";
 export { AnimatedAvatarPlayer, type AnimatedAvatarPlayerProps } from "./animated-avatar-player";
 // WorkspacePageHeader hidden - may be used later (see _workspace-page-header.tsx)
 export { WorkspaceLayout } from "./layouts/workspace-layout";
@@ -518,6 +519,53 @@ export {
   type WorkflowIconName,
   type CalendarIconName,
   type AdminIconName,
+  // AI Voice Icon Mockups (1-20)
+  CircularSoundWaves,
+  HorizontalEQBars,
+  SineWaveCircle,
+  RadialSoundBurst,
+  AudioWaveformRing,
+  PulsingBrainOutline,
+  NeuralNetworkNodes,
+  CircuitMind,
+  SynapseSpark,
+  AICore,
+  GlowingMic,
+  MicWithWaves,
+  VoiceBubble,
+  SoundwaveMic,
+  MorphingOrb,
+  RotatingGradientRing,
+  ParticleSwirl,
+  BreathingCircle,
+  AIEyeSoundwave,
+  MagicSparkMic,
+  AIVoiceMockups,
+  type AIVoiceMockupName,
+  // Mic-focused Mockups (21-40)
+  ClassicMicPulse,
+  MicLiveIndicator,
+  PodcastMic,
+  VoiceAssistantCircle,
+  RecordingMic,
+  SiriStyleMic,
+  TapToSpeak,
+  FrequencyMic,
+  VoiceRecognition,
+  AlexaStyleRing,
+  ListeningEars,
+  SoundInput,
+  GlowMicButton,
+  WaveformCircle,
+  VoiceCommand,
+  ActiveListening,
+  SmartAssistant,
+  VoiceDetector,
+  SpeakNow,
+  AudioCapture,
+  AIMicMockups,
+  type AIMicMockupName,
+  MockupShowcase,
 } from "./ai";
 
 // AI Insights Banner (Full-width collapsible banner for workspace pages)
@@ -540,6 +588,7 @@ export {
   AddChildModal,
   InlineSpacePicker,
   SpaceTabSelector,
+  MemberManager,
   type SpaceSwitcherProps,
   type SpaceSettingsProps,
   type SpacesHubModalProps,
@@ -553,6 +602,9 @@ export {
   type InlineSpaceItem,
   type SpaceTabSelectorProps,
   type SpaceTabItem,
+  type MemberManagerProps,
+  type MemberManagerMember,
+  type MemberManagerSpace,
 } from "./spaces";
 
 // Toast/Notification Components
@@ -647,6 +699,28 @@ export {
   type FilterChipType,
 } from "./filters";
 
+// Date Picker Components
+export {
+  DatePicker,
+  DateTimePicker,
+  DateRangePicker,
+  CalendarGrid,
+  TimeInput,
+  PresetButtons,
+  RangePresetButtons,
+  type DatePickerProps,
+  type DateTimePickerProps,
+  type DateRangePickerProps,
+  type DateRange,
+  type CalendarGridProps,
+  type TimeInputProps,
+  type PresetOption,
+  type RangePresetOption,
+  type PresetMode,
+  type TimeFormat,
+  type MinuteStep,
+} from "./date-picker";
+
 // Settings Components
 export {
   SettingsModal,
@@ -654,6 +728,7 @@ export {
   type SettingsUser,
   type SettingsTab,
   type SpaceSettingsItem,
+  type SpaceSettingsMember,
 } from "./settings";
 
 // Re-export hooks for convenience (main export is from '../hooks')
@@ -675,9 +750,41 @@ export {
 export {
   PriorityIcon,
   PriorityBadge,
+  AdaptivePriorityIcon,
+  AdaptivePriorityBadge,
   type PriorityIconProps,
   type PriorityLevel,
+  type AdaptivePriorityIconProps,
 } from "./priority";
 
 // Effects Components
 export { FocusGlow } from "./effects";
+
+// Noise Background
+export { NoiseBackground } from "./noise-background";
+
+// Adaptive Quality Icons
+export {
+  // Adaptive Quality System
+  useAdaptiveQuality,
+  useQualityTier,
+  QualityProvider,
+  useQuality,
+  useIs3DEnabled,
+  useIsCanvasEnabled,
+  type QualityTier,
+  type AdaptiveQualityResult,
+  // Fire Icon
+  FireIcon,
+  FireIconWithPreset,
+  FireIconSVG,
+  FireIconCanvas,
+  FireIcon3D,
+  FIRE_COLOR_PRESETS,
+  type FireIconProps,
+  type FireColorPreset,
+  type FireIconIntensity,
+  type FireIconSVGProps,
+  type FireIconCanvasProps,
+  type FireIcon3DProps,
+} from "./icons";

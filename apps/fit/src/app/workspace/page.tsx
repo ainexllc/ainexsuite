@@ -1,28 +1,26 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Dumbbell, UtensilsCrossed, ChefHat, Pill, Scale, LayoutDashboard } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   EmptyState,
-  SpaceManagementModal,
+  SpaceTabSelector,
   type ViewOption,
   type SortOption,
   type SortConfig,
 } from '@ainexsuite/ui';
-import type { SpaceType } from '@ainexsuite/types';
 
 // Components
 import { FitDashboard } from '@/components/views/FitDashboard';
 import { FitComposer } from '@/components/FitComposer';
-import { MemberManager } from '@/components/spaces/MemberManager';
 import { FitnessBoard } from '@/components/workouts';
 import { NutritionDashboard } from '@/components/nutrition';
 import { RecipeDashboard } from '@/components/recipes';
 import { SupplementsDashboard } from '@/components/supplements';
-import { useSpaces } from '@/components/providers/spaces-provider';
 import { useFitStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 
 type ViewType = 'dashboard' | 'workouts' | 'nutrition' | 'recipes' | 'supplements' | 'body-metrics';
 
@@ -42,14 +40,28 @@ const SORT_OPTIONS: SortOption[] = [
 ];
 
 export default function FitWorkspacePage() {
-  const { currentSpaceId, viewPreferences, setViewPreference } = useFitStore();
-  const { allSpaces, createSpace, updateSpace, deleteSpace } = useSpaces();
+  const { currentSpaceId, setCurrentSpace, viewPreferences, setViewPreference } = useFitStore();
+  const { spaces } = useSpaces();
 
-  const [showMemberManager, setShowMemberManager] = useState(false);
-  const [showSpaceManagement, setShowSpaceManagement] = useState(false);
   const [sort, setSort] = useState<SortConfig>({ field: 'createdAt', direction: 'desc' });
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Build space items for SpaceTabSelector
+  const spaceItems = useMemo(() =>
+    spaces.filter((s) => s.id !== 'personal').map((s) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+    })),
+  [spaces]);
+
+  // Get current space name for placeholder
+  const currentSpaceName = useMemo(() => {
+    if (currentSpaceId === 'personal') return 'My Fitness';
+    const space = spaces.find((s) => s.id === currentSpaceId);
+    return space?.name || 'My Fitness';
+  }, [currentSpaceId, spaces]);
 
   // Resolve view from preference or default
   const view = (viewPreferences[currentSpaceId] as ViewType) || 'dashboard';
@@ -59,46 +71,6 @@ export default function FitWorkspacePage() {
       setViewPreference(currentSpaceId, newView);
     }
   }, [currentSpaceId, setViewPreference]);
-
-  // Map spaces for SpaceManagementModal
-  const userSpaces = useMemo(() => {
-    return allSpaces
-      .filter((s) => s.id !== 'personal')
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        type: s.type,
-        isGlobal: (s as { isGlobal?: boolean }).isGlobal || false,
-        hiddenInApps: (s as { hiddenInApps?: string[] }).hiddenInApps || [],
-        memberCount: s.memberUids?.length || 1,
-        isOwner: (s as { ownerId?: string; createdBy?: string }).ownerId === undefined,
-      }));
-  }, [allSpaces]);
-
-  // Space management handlers
-  const handleJoinGlobalSpace = useCallback(async (type: SpaceType, _hiddenInApps: string[]) => {
-    await createSpace({ name: type === 'family' ? 'Family' : 'Partner', type });
-  }, [createSpace]);
-
-  const handleLeaveGlobalSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleCreateCustomSpace = useCallback(async (name: string, _hiddenInApps: string[]) => {
-    await createSpace({ name, type: 'project' });
-  }, [createSpace]);
-
-  const handleRenameCustomSpace = useCallback(async (spaceId: string, name: string) => {
-    await updateSpace(spaceId, { name });
-  }, [updateSpace]);
-
-  const handleDeleteCustomSpace = useCallback(async (spaceId: string) => {
-    await deleteSpace(spaceId);
-  }, [deleteSpace]);
-
-  const handleUpdateSpaceVisibility = useCallback(async (spaceId: string, hiddenInApps: string[]) => {
-    await updateSpace(spaceId, { hiddenInApps });
-  }, [updateSpace]);
 
   const handleSearchToggle = useCallback(() => {
     setIsSearchOpen((prev) => {
@@ -113,11 +85,16 @@ export default function FitWorkspacePage() {
     <>
       <WorkspacePageLayout
         className="pt-[17px]"
-        composer={
-          <FitComposer
-            onManagePeople={() => setShowMemberManager(true)}
-            onManageSpaces={() => setShowSpaceManagement(true)}
+        spaceSelector={spaceItems.length > 0 ? (
+          <SpaceTabSelector
+            spaces={spaceItems}
+            currentSpaceId={currentSpaceId}
+            onSpaceChange={setCurrentSpace}
+            personalLabel="My Fitness"
           />
+        ) : undefined}
+        composer={
+          <FitComposer placeholder={`Log a workout for ${currentSpaceName}...`} />
         }
         toolbar={
           <WorkspaceToolbar
@@ -167,25 +144,6 @@ export default function FitWorkspacePage() {
           )}
         </div>
       </WorkspacePageLayout>
-
-      {/* Member Manager Modal */}
-      <MemberManager
-        isOpen={showMemberManager}
-        onClose={() => setShowMemberManager(false)}
-      />
-
-      {/* Space Management Modal */}
-      <SpaceManagementModal
-        isOpen={showSpaceManagement}
-        onClose={() => setShowSpaceManagement(false)}
-        userSpaces={userSpaces}
-        onJoinGlobalSpace={handleJoinGlobalSpace}
-        onLeaveGlobalSpace={handleLeaveGlobalSpace}
-        onCreateCustomSpace={handleCreateCustomSpace}
-        onRenameCustomSpace={handleRenameCustomSpace}
-        onDeleteCustomSpace={handleDeleteCustomSpace}
-        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-      />
     </>
   );
 }

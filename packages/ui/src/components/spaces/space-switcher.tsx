@@ -32,10 +32,6 @@ export interface SpaceSwitcherProps {
   currentSpaceId: string | null;
   /** Callback when user selects a space */
   onSpaceChange: (spaceId: string) => void;
-  /** Callback when user clicks "Manage Spaces" */
-  onManageSpaces?: () => void;
-  /** Callback when user clicks "Manage People" for current space */
-  onManagePeople?: () => void;
   /** Label shown above the spaces list (default from admin config or "My Spaces") */
   spacesLabel?: string;
   /** Default name shown when no space is selected (default from admin config or "Personal") */
@@ -82,7 +78,6 @@ const SPACE_TYPE_ICONS: Record<SpaceType, typeof User> = {
  *   spaces={spaces}
  *   currentSpaceId={currentSpaceId}
  *   onSpaceChange={setCurrentSpace}
- *   onManageSpaces={() => setShowManageSpaces(true)}
  * />
  * ```
  */
@@ -90,8 +85,6 @@ export function SpaceSwitcher({
   spaces,
   currentSpaceId,
   onSpaceChange,
-  onManageSpaces,
-  onManagePeople,
   spacesLabel,
   defaultSpaceName,
   className = '',
@@ -108,7 +101,6 @@ export function SpaceSwitcher({
   // Use admin config values with prop overrides
   const effectiveSpacesLabel = spacesLabel || 'Spaces';
   const effectiveDefaultName = defaultSpaceName || uiConfig.defaultSpaceLabel || 'Personal';
-  const showManageButton = uiConfig.showCreateButton !== false && onManageSpaces;
   const showTypeIcons = uiConfig.showTypeIcons !== false;
   const showMemberCount = uiConfig.showMemberCount !== false;
   const animateTransitions = uiConfig.animateTransitions !== false;
@@ -143,11 +135,6 @@ export function SpaceSwitcher({
   const handleSelectSpace = (spaceId: string) => {
     onSpaceChange(spaceId);
     setIsOpen(false);
-  };
-
-  const handleManageSpaces = () => {
-    setIsOpen(false);
-    onManageSpaces?.();
   };
 
   // Dropdown style variations
@@ -230,10 +217,10 @@ export function SpaceSwitcher({
                   <button
                     key={space.id}
                     onClick={() => handleSelectSpace(space.id)}
-                    className={`flex items-center gap-2 w-full ${isMini ? 'px-3 py-1.5 text-xs' : `${dropdownItemPadding} ${textSizeClass}`} ${isMini ? '' : 'rounded-lg'} text-left ${transitionClass} ${
+                    className={`flex items-center gap-2 w-full ${isMini ? 'px-3 py-1.5 text-xs' : `${dropdownItemPadding} ${textSizeClass} rounded-lg`} text-left ${transitionClass} ${
                       isActive
-                        ? (isMini ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'bg-[#f97316]/10 text-[#f97316]')
-                        : (isMini ? 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' : 'text-ink-600 hover:bg-surface-hover hover:text-ink-900')
+                        ? (isMini ? 'bg-[var(--color-primary)]/5 text-[var(--color-primary)]' : 'bg-[#f97316]/10 text-[#f97316]')
+                        : (isMini ? 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800' : 'text-ink-600 hover:text-ink-900 hover:bg-surface-hover')
                     }`}
                     style={!isMini && isActive ? getTypeStyle(space.type, true) : {}}
                   >
@@ -250,33 +237,6 @@ export function SpaceSwitcher({
                   </button>
                 );
               })}
-
-            {(showManageButton || onManagePeople) && (
-              <div className={`border-t ${isMini ? 'border-zinc-200 dark:border-zinc-700 mt-1 pt-1' : 'border-outline-subtle p-1'}`}>
-                {/* Manage People button - only for non-personal spaces */}
-                {onManagePeople && currentSpace && currentSpace.type !== 'personal' && (
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      onManagePeople();
-                    }}
-                    className={`flex items-center gap-2 w-full ${isMini ? 'px-3 py-1.5 text-xs text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800' : `${dropdownItemPadding} rounded-lg ${textSizeClass} text-[#f97316] hover:bg-surface-hover`} ${transitionClass}`}
-                  >
-                    <Users className="h-3.5 w-3.5" />
-                    Manage People
-                  </button>
-                )}
-                {showManageButton && (
-                  <button
-                    onClick={handleManageSpaces}
-                    className={`flex items-center gap-2 w-full ${isMini ? 'px-3 py-1.5 text-xs text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800' : `${dropdownItemPadding} rounded-lg ${textSizeClass} text-[#f97316] hover:bg-surface-hover`} ${transitionClass}`}
-                  >
-                    <Folder className="h-3.5 w-3.5" />
-                    Manage Spaces
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         </>
       )}

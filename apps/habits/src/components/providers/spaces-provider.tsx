@@ -10,10 +10,11 @@ import type { Space } from "@/types/models";
 export const { SpacesProvider, useSpaces } = createSpacesProvider<Space>({
   appId: "habits",
   collectionName: "spaces",
-  storageKey: "habits-current-space",
+  storageKey: "habits-current-space", // Legacy key - will migrate to unified key
   defaultSpace: {
     name: "My Habits",
     type: "personal",
   },
   allowedTypes: ["personal", "family", "couple", "work"],
+  syncAcrossApps: true, // Enable cross-app space sync
 });

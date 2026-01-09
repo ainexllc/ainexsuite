@@ -42,6 +42,7 @@ export function MetricEntry({ onUpdate, existingMetrics }: MetricEntryProps) {
         customMetrics: {},
         notes: '',
         ownerId: '',
+        spaceId: 'personal', // Required - mosaic displays personal metrics
       };
 
       if (todayMetric) {

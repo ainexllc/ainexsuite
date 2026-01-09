@@ -10,10 +10,11 @@ import type { DocSpace } from "@/lib/types/doc";
 export const { SpacesProvider, useSpaces } = createSpacesProvider<DocSpace>({
   appId: "docs",
   collectionName: "spaces",
-  storageKey: "docs-current-space",
+  storageKey: "docs-current-space", // Legacy key - will migrate to unified key
   defaultSpace: {
     name: "My Notes",
     type: "personal",
   },
   allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
+  syncAcrossApps: true, // Enable cross-app space sync
 });

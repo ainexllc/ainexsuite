@@ -3,6 +3,7 @@
 import { ReactNode, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { WorkspaceLayout } from "@ainexsuite/ui";
+import { useAppColors } from "@ainexsuite/theme";
 import { useNotifications } from "@/hooks/use-notifications";
 import type { QuickAction } from "@ainexsuite/types";
 
@@ -46,6 +47,7 @@ export function WorkspaceLayoutWithInsights({
   onUpdatePreferences,
 }: WorkspaceLayoutWithInsightsProps) {
   const router = useRouter();
+  const { primary } = useAppColors();
 
   // Get notifications from the hook
   const {
@@ -76,7 +78,7 @@ export function WorkspaceLayoutWithInsights({
       user={user}
       onSignOut={onSignOut}
       appName="space"
-      appColor="#f97316"
+      appColor={primary}
       quickActions={quickActions}
       onQuickAction={onQuickAction}
       onAiAssistantClick={onAiAssistantClick}

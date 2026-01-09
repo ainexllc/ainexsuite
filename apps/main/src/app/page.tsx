@@ -179,7 +179,7 @@ const legalLinks: FooterLink[] = [
 ];
 
 function MainHomePageContent() {
-  const { user, loading, bootstrapStatus } = useAuth();
+  const { user, loading } = useAuth();
   const { needsActivation, checking } = useAppActivation('main');
   const { loading: colorsLoading } = useAppColors();
   const router = useRouter();
@@ -188,10 +188,9 @@ function MainHomePageContent() {
   const [showActivation, setShowActivation] = useState(false);
 
   const isFromLogout = searchParams.get('from') === 'logout';
-  const isBootstrapping = bootstrapStatus === 'running';
 
   useEffect(() => {
-    if (loading || checking || isBootstrapping) {
+    if (loading || checking) {
       setLoadingMessage('Checking authentication...');
       return;
     }
@@ -204,10 +203,10 @@ function MainHomePageContent() {
     } else {
       setLoadingMessage('');
     }
-  }, [loading, checking, isBootstrapping, user, needsActivation, isFromLogout]);
+  }, [loading, checking, user, needsActivation, isFromLogout]);
 
   useEffect(() => {
-    if (!loading && !checking && !isBootstrapping && user && !needsActivation && !isFromLogout) {
+    if (!loading && !checking && user && !needsActivation && !isFromLogout) {
       const timer = setTimeout(() => {
         router.push('/workspace');
       }, 800);
@@ -216,9 +215,9 @@ function MainHomePageContent() {
     }
 
     return undefined;
-  }, [loading, checking, isBootstrapping, user, needsActivation, isFromLogout, router]);
+  }, [loading, checking, user, needsActivation, isFromLogout, router]);
 
-  if (loading || checking || isBootstrapping || (user && !needsActivation && !isFromLogout)) {
+  if (loading || checking || (user && !needsActivation && !isFromLogout)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center space-y-4">

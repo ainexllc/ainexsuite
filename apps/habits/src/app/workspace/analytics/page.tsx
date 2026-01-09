@@ -24,7 +24,7 @@ import {
 import { calculateStreak } from '@/lib/date-utils';
 
 function AnalyticsContent() {
-  const { user, loading: authLoading, bootstrapStatus } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const { getSpaceHabits, completions } = useGrowStore();
@@ -56,7 +56,7 @@ function AnalyticsContent() {
     }
   };
 
-  if (authLoading || bootstrapStatus === 'running') {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />

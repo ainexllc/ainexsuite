@@ -11,7 +11,6 @@ import { ProfileSidebar } from '../layout/profile-sidebar';
 import { NotificationDropdown } from '../navigation/notification-dropdown';
 import { AIInsightsPulldown, type AIInsightsPulldownSection } from '../ai/ai-insights-pulldown';
 import { getNavigationApps } from '../../utils/navigation';
-import { useAutoHideNav } from '../../hooks/use-auto-hide-nav';
 import { useAppTheme } from '@ainexsuite/theme';
 import { useRealtimeThemeSync } from '../../hooks/use-realtime-theme-sync';
 import type { NotificationItem, QuickAction, BreadcrumbItem } from '@ainexsuite/types';
@@ -198,6 +197,11 @@ interface WorkspaceLayoutProps {
    * Custom message to show when there's not enough data for insights
    */
   insightsEmptyStateMessage?: string;
+  /**
+   * Whether to use full-width layout (edge-to-edge content)
+   * @default false
+   */
+  fullWidth?: boolean;
 }
 
 export function WorkspaceLayout({
@@ -239,6 +243,7 @@ export function WorkspaceLayout({
   onInsightsViewDetails,
   onUpdatePreferences,
   insightsEmptyStateMessage,
+  fullWidth = false,
 }: WorkspaceLayoutProps) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -299,15 +304,6 @@ export function WorkspaceLayout({
   const backgroundVariant = propBackgroundVariant ?? appTheme.backgroundVariant ?? 'dots';
   const backgroundIntensity = propBackgroundIntensity ?? appTheme.backgroundIntensity ?? 0.2;
 
-  // Auto-hide navigation hook
-  const {
-    isVisible: isNavVisible,
-    autoHideEnabled,
-    toggleAutoHide,
-    headerProps,
-    hoverZoneProps,
-  } = useAutoHideNav();
-
   // Generate default apps list if none provided
   // Use the environment-aware helper to get consistent apps config
   // Pass user email for access control filtering (e.g., admin app restricted to certain users)
@@ -342,9 +338,6 @@ export function WorkspaceLayout({
       {/* Background Effects */}
       {showBackground && <WorkspaceBackground variant={backgroundVariant} intensity={backgroundIntensity} />}
 
-      {/* Hover Zone for auto-hide reveal */}
-      <div {...hoverZoneProps} />
-
       {/* Header */}
       <WorkspaceHeader
         user={user}
@@ -353,10 +346,6 @@ export function WorkspaceLayout({
         appColor={appColor}
         onNavigationToggle={() => setIsNavOpen(!isNavOpen)}
         onProfileToggle={() => setIsProfileOpen(!isProfileOpen)}
-        isVisible={isNavVisible}
-        autoHideEnabled={autoHideEnabled}
-        onAutoHideToggle={toggleAutoHide}
-        headerMouseProps={headerProps}
         breadcrumbs={breadcrumbs}
         notificationCount={notificationCount}
         onNotificationsClick={handleNotificationsToggle}
@@ -415,8 +404,8 @@ export function WorkspaceLayout({
       {/* AI Insights Pulldown - positioned under the header */}
       {insightsSections && (
         <div
-          className={`fixed left-0 right-0 z-30 transition-[top,opacity,filter] duration-300 ${isProfileOpen ? 'blur-sm opacity-50 pointer-events-none' : ''}`}
-          style={{ top: isNavVisible ? '4rem' : '0' }}
+          className={`fixed left-0 right-0 z-30 transition-[opacity,filter] duration-300 ${isProfileOpen ? 'blur-sm opacity-50 pointer-events-none' : ''}`}
+          style={{ top: '4rem' }}
         >
           <AIInsightsPulldown
             title={insightsTitle}
@@ -442,7 +431,7 @@ export function WorkspaceLayout({
         </div>
       )}
 
-      {/* Main Content - adjusts padding based on header visibility and insights expanded state */}
+      {/* Main Content - adjusts padding based on insights expanded state */}
       {/* When expanded: panel (80-120px) + tab (~28-36px) + accent (2px) + 25px gap = 135-183px */}
       {/* When collapsed: accent (2px) + tab (~28-36px) + 25px gap = 55-63px */}
       {/* Duration matches AIInsightsPulldown animation (500ms) for smooth sync */}
@@ -450,18 +439,12 @@ export function WorkspaceLayout({
         className={`flex-1 transition-[padding-top] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           insightsSections
             ? isInsightsExpanded
-              ? isNavVisible
-                ? 'pt-[calc(4rem+135px)] sm:pt-[calc(4rem+149px)] lg:pt-[calc(4rem+159px)] xl:pt-[calc(4rem+173px)] 2xl:pt-[calc(4rem+183px)]'
-                : 'pt-[135px] sm:pt-[149px] lg:pt-[159px] xl:pt-[173px] 2xl:pt-[183px]'
-              : isNavVisible
-                ? 'pt-[calc(4rem+55px)] sm:pt-[calc(4rem+63px)]'
-                : 'pt-[55px] sm:pt-[63px]'
-            : isNavVisible
-              ? 'pt-16'
-              : 'pt-0'
+              ? 'pt-[calc(4rem+135px)] sm:pt-[calc(4rem+149px)] lg:pt-[calc(4rem+159px)] xl:pt-[calc(4rem+173px)] 2xl:pt-[calc(4rem+183px)]'
+              : 'pt-[calc(4rem+55px)] sm:pt-[calc(4rem+63px)]'
+            : 'pt-16'
         }`}
       >
-        <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]">
+        <div className={fullWidth ? "px-4 pb-12 sm:px-6 lg:px-8" : "mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8 2xl:max-w-[1440px]"}>
           {children}
         </div>
       </main>

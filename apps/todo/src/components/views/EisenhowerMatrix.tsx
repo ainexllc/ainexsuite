@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Task } from '@/types/models';
 import { useTodoStore } from '@/lib/store';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { format, isToday, isPast, parseISO, isValid } from 'date-fns';
 import { AlertCircle, Calendar, Clock, Archive } from 'lucide-react';
 
@@ -12,15 +13,14 @@ interface EisenhowerMatrixProps {
 }
 
 export function EisenhowerMatrix({ onEditTask, searchQuery = '' }: EisenhowerMatrixProps) {
-  const { tasks, getCurrentSpace } = useTodoStore();
-  const currentSpace = getCurrentSpace();
+  const { tasks } = useTodoStore();
+  const { currentSpace } = useSpaces();
 
   const matrixTasks = useMemo(() => {
     if (!currentSpace) return { q1: [], q2: [], q3: [], q4: [] };
 
     let spaceTasks = tasks.filter(t =>
-      (currentSpace.id === 'all' || t.spaceId === currentSpace.id) &&
-      t.status !== 'done'
+      t.spaceId === currentSpace.id && t.status !== 'done'
     );
 
     // Apply search filter

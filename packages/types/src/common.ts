@@ -11,6 +11,57 @@ export interface BaseDocument {
   updatedAt: Timestamp;
 }
 
+/**
+ * Personal space ID constant - used for content that belongs to the user's personal space.
+ * Personal space is virtual (not stored in Firestore) but content uses this ID.
+ */
+export const PERSONAL_SPACE_ID = 'personal';
+
+/**
+ * Standard fields for space-aware content.
+ * All content items should include these fields for consistent space filtering.
+ *
+ * @example
+ * ```typescript
+ * interface Note extends SpaceAwareDocument {
+ *   title: string;
+ *   content: string;
+ * }
+ * ```
+ */
+export interface SpaceAwareDocument extends BaseDocument {
+  /**
+   * The space this content belongs to.
+   * - 'personal' for personal/private content (virtual space, not in Firestore)
+   * - Actual spaceId for shared spaces
+   * - Should NEVER be undefined/null in new content
+   */
+  spaceId: string;
+
+  /**
+   * User IDs who can access this content (for shared spaces).
+   * Populated from space.memberUids when content is created or spaceId changes.
+   * Empty array or undefined for personal content.
+   */
+  sharedWithUserIds?: string[];
+}
+
+/**
+ * Check if a spaceId represents personal content.
+ * Handles legacy content that may have undefined/null spaceId.
+ */
+export function isPersonalSpace(spaceId: string | undefined | null): boolean {
+  return !spaceId || spaceId === PERSONAL_SPACE_ID || spaceId.endsWith('_personal');
+}
+
+/**
+ * Get the effective spaceId for creating new content.
+ * Ensures we never store undefined/null, always explicit ID.
+ */
+export function getEffectiveSpaceId(spaceId: string | undefined | null): string {
+  return spaceId && spaceId !== PERSONAL_SPACE_ID ? spaceId : PERSONAL_SPACE_ID;
+}
+
 export type FontFamily = 'plus-jakarta-sans' | 'inter' | 'geist' | 'dm-sans' | 'system';
 
 export interface UserPreferences {

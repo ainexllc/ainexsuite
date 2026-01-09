@@ -4,9 +4,9 @@ import { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardR
 import { Calendar, Clock, MapPin, Palette, Trash2, Copy } from 'lucide-react';
 import { clsx } from 'clsx';
 import { format, addHours, setHours, setMinutes } from 'date-fns';
+import { DatePicker } from '@ainexsuite/ui';
 import { CalendarEvent, CreateEventInput } from '@/types/event';
 import { useSpaces } from '@/components/providers/spaces-provider';
-import { InlineSpacePicker } from '@ainexsuite/ui';
 
 const EVENT_COLORS = [
   { value: '#3b82f6', label: 'Blue' },
@@ -30,14 +30,12 @@ interface EventComposerProps {
   onSave: (event: CreateEventInput, eventId?: string) => Promise<void>;
   onDelete?: (eventId: string) => Promise<void>;
   onDuplicate?: (event: CalendarEvent) => void;
-  onManagePeople?: () => void;
-  onManageSpaces?: () => void;
+  placeholder?: string;
 }
 
 export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
-  function EventComposer({ onSave, onDelete, onDuplicate, onManagePeople, onManageSpaces }, ref) {
-    const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
-    const currentSpace = spaces.find((s) => s.id === currentSpaceId) || null;
+  function EventComposer({ onSave, onDelete, onDuplicate, placeholder = 'Add a new event...' }, ref) {
+    const { currentSpaceId } = useSpaces();
     const [expanded, setExpanded] = useState(false);
     const [editingEventId, setEditingEventId] = useState<string | null>(null);
     const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -250,16 +248,8 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
               }}
             >
               <Calendar className="h-4 w-4 mr-3 text-white/40" />
-              <span>Add a new event...</span>
+              <span>{placeholder}</span>
             </button>
-            {/* Inline space picker */}
-            <InlineSpacePicker
-              spaces={spaces}
-              currentSpace={currentSpace}
-              onSpaceChange={setCurrentSpace}
-              onManagePeople={onManagePeople}
-              onManageSpaces={onManageSpaces}
-            />
           </div>
         ) : (
           <div
@@ -290,20 +280,20 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
               <div className="flex flex-col gap-2">
                 {/* Start Date/Time */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-white/40" />
-                    <span className="text-xs text-white/40 w-10">Start</span>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => {
-                        setStartDate(e.target.value);
+                  <span className="text-xs text-white/40 w-10">Start</span>
+                  <div className="w-44">
+                    <DatePicker
+                      value={startDate ? new Date(startDate) : null}
+                      onChange={(date) => {
+                        const newDate = date ? format(date, 'yyyy-MM-dd') : '';
+                        setStartDate(newDate);
                         // Auto-adjust end date if it's before start date
-                        if (e.target.value > endDate) {
-                          setEndDate(e.target.value);
+                        if (newDate > endDate) {
+                          setEndDate(newDate);
                         }
                       }}
-                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                      placeholder="Start date"
+                      presets="smart"
                     />
                   </div>
 
@@ -322,21 +312,20 @@ export const EventComposer = forwardRef<EventComposerRef, EventComposerProps>(
 
                 {/* End Date/Time */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-white/40 opacity-0" />
-                    <span className="text-xs text-white/40 w-10">End</span>
-                    <input
-                      type="date"
-                      value={endDate}
-                      min={startDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                  <span className="text-xs text-white/40 w-10">End</span>
+                  <div className="w-44">
+                    <DatePicker
+                      value={endDate ? new Date(endDate) : null}
+                      onChange={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                      placeholder="End date"
+                      minDate={startDate ? new Date(startDate) : undefined}
+                      presets="none"
                     />
                   </div>
 
                   {!allDay && (
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-white/40 opacity-0" />
+                      <Clock className="h-4 w-4 text-white/40" />
                       <input
                         type="time"
                         value={endTime}

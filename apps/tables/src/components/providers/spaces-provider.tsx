@@ -10,10 +10,11 @@ import type { TableSpace } from "@/lib/types/table";
 export const { SpacesProvider, useSpaces } = createSpacesProvider<TableSpace>({
   appId: "tables",
   collectionName: "spaces",
-  storageKey: "tables-current-space",
+  storageKey: "tables-current-space", // Legacy key - will migrate to unified key
   defaultSpace: {
     name: "My Tables",
     type: "personal",
   },
   allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
+  syncAcrossApps: true, // Enable cross-app space sync
 });

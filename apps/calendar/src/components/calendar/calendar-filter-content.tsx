@@ -2,6 +2,7 @@
 
 import { clsx } from 'clsx';
 import { Calendar, Tag, Palette } from 'lucide-react';
+import { DatePicker } from '@ainexsuite/ui';
 import type { EventType } from '@/types/event';
 
 export interface CalendarFilters {
@@ -222,36 +223,36 @@ export function CalendarFilterContent({ filters, onFiltersChange }: CalendarFilt
       {/* Custom Date Range */}
       <div>
         <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">Custom Date Range</h4>
-        <div className="flex gap-2">
-          <input
-            type="date"
-            value={filters.dateRange?.start?.toISOString().split('T')[0] || ''}
-            onChange={(e) => {
-              const start = e.target.value ? new Date(e.target.value) : null;
-              onFiltersChange({
-                ...filters,
-                datePreset: 'custom',
-                dateRange: { ...filters.dateRange, start, end: filters.dateRange?.end ?? null },
-              });
-            }}
-            className="flex-1 px-3 py-1.5 text-sm rounded-lg bg-white/5 border border-white/10 focus:border-white/20 focus:outline-none text-foreground placeholder:text-muted-foreground transition-colors"
-            placeholder="Start date"
-          />
-          <span className="text-muted-foreground self-center">to</span>
-          <input
-            type="date"
-            value={filters.dateRange?.end?.toISOString().split('T')[0] || ''}
-            onChange={(e) => {
-              const end = e.target.value ? new Date(e.target.value) : null;
-              onFiltersChange({
-                ...filters,
-                datePreset: 'custom',
-                dateRange: { ...filters.dateRange, start: filters.dateRange?.start ?? null, end },
-              });
-            }}
-            className="flex-1 px-3 py-1.5 text-sm rounded-lg bg-white/5 border border-white/10 focus:border-white/20 focus:outline-none text-foreground placeholder:text-muted-foreground transition-colors"
-            placeholder="End date"
-          />
+        <div className="flex gap-2 items-center">
+          <div className="flex-1">
+            <DatePicker
+              value={filters.dateRange?.start ?? null}
+              onChange={(start) => {
+                onFiltersChange({
+                  ...filters,
+                  datePreset: 'custom',
+                  dateRange: { ...filters.dateRange, start, end: filters.dateRange?.end ?? null },
+                });
+              }}
+              placeholder="Start date"
+              presets="none"
+            />
+          </div>
+          <span className="text-muted-foreground">to</span>
+          <div className="flex-1">
+            <DatePicker
+              value={filters.dateRange?.end ?? null}
+              onChange={(end) => {
+                onFiltersChange({
+                  ...filters,
+                  datePreset: 'custom',
+                  dateRange: { ...filters.dateRange, start: filters.dateRange?.start ?? null, end },
+                });
+              }}
+              placeholder="End date"
+              presets="none"
+            />
+          </div>
         </div>
       </div>
     </div>

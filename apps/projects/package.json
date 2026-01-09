@@ -20,12 +20,14 @@
     "@ainexsuite/types": "workspace:*",
     "@ainexsuite/ui": "workspace:*",
     "@xyflow/react": "^12.9.2",
+    "clsx": "^2.1.0",
     "firebase-admin": "^12.7.0",
     "geist": "^1.2.0",
     "lucide-react": "^0.312.0",
     "next": "15.5.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-masonry-css": "^1.0.16",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

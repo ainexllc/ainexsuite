@@ -102,11 +102,13 @@ export const useMomentsStore = create<MomentsState>()(
       },
 
       fetchMoments: async (userId, spaceId) => {
-        const targetSpaceId = spaceId || get().currentSpaceId || get().guestAccessSpace?.id;
+        const rawSpaceId = spaceId || get().currentSpaceId || get().guestAccessSpace?.id;
+        // 'personal' is a virtual space - pass undefined to getMoments to fetch personal moments
+        const targetSpaceId = rawSpaceId === 'personal' ? undefined : rawSpaceId;
 
         set({ isLoadingMoments: true });
         try {
-          const moments = await getMoments(userId, targetSpaceId || undefined);
+          const moments = await getMoments(userId, targetSpaceId);
           set({ moments, isLoadingMoments: false });
         } catch (error) {
           console.error('Failed to fetch moments:', error);

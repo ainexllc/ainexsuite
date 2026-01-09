@@ -12,7 +12,6 @@ import {
   X,
   BellRing,
   CalendarClock,
-  Calculator,
   Sparkles,
   Loader2,
   Undo2,
@@ -24,7 +23,26 @@ import {
   Check,
   Trash2,
   Copy,
+  GripVertical,
+  Flame,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
 import type {
@@ -48,12 +66,11 @@ import {
   formatDateTimeLocalInput,
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
-import { InlineCalculator } from "./inline-calculator";
 import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS, OVERLAY_OPTIONS } from "@/lib/backgrounds";
 import type { BackgroundOverlay } from "@/lib/types/note";
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useAutoSave } from "@/hooks/use-auto-save";
-import { ConfirmationDialog, generateUUID, PriorityIcon, type PriorityLevel } from "@ainexsuite/ui";
+import { ConfirmationDialog, generateUUID } from "@ainexsuite/ui";
 import { ImageModal } from "@/components/ui/image-modal";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
@@ -77,6 +94,51 @@ type NoteEditorProps = {
   note: Note;
   onClose: () => void;
 };
+
+// Sortable wrapper for checklist items with drag handle
+type SortableChecklistItemProps = {
+  id: string;
+  children: React.ReactNode;
+  indentLevel: number;
+};
+
+function SortableChecklistItem({ id, children, indentLevel }: SortableChecklistItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    paddingLeft: `${indentLevel * 24}px`,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="group flex items-center gap-2"
+    >
+      {/* Drag handle */}
+      <button
+        type="button"
+        className="cursor-grab touch-none opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity flex-shrink-0"
+        {...attributes}
+        {...listeners}
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="h-4 w-4 text-zinc-400" />
+      </button>
+      {children}
+    </div>
+  );
+}
 
 export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const {
@@ -106,6 +168,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [checklist, setChecklist] = useState<ChecklistItem[]>(
     note.checklist,
   );
+  const [autoSortCompleted, setAutoSortCompleted] = useState(true);
   const [color, setColor] = useState<NoteColor>(note.color);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(note.backgroundImage ?? null);
   const [backgroundOverlay, setBackgroundOverlay] = useState<BackgroundOverlay>(note.backgroundOverlay ?? 'auto');
@@ -186,13 +249,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
   }, [bodyHistory]);
 
-  const handleCalculatorInsert = useCallback((result: string) => {
-    setBody((prev) => {
-      const newBody = prev ? `${prev} ${result}` : result;
-      return newBody;
-    });
-    setShowCalculator(false);
-  }, []);
   const [showPalette, setShowPalette] = useState(false);
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
@@ -220,7 +276,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [customCron, setCustomCron] = useState("");
   const [reminderPrimed, setReminderPrimed] = useState(false);
   const [reminderPanelOpen, setReminderPanelOpen] = useState(false);
-  const [showCalculator, setShowCalculator] = useState(false);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(note.spaceId || "personal");
   const [showSpacePicker, setShowSpacePicker] = useState(false);
 
@@ -671,16 +726,50 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     itemId: string,
     next: Partial<ChecklistItem>,
   ) => {
-    setChecklist((prev) =>
-      prev.map((item) =>
+    setChecklist((prev) => {
+      // Update the item
+      const updated = prev.map((item) =>
         item.id === itemId
           ? {
             ...item,
             ...next,
           }
           : item,
-      ),
-    );
+      );
+
+      // If completion status changed AND auto-sort is enabled, sort: uncompleted first, completed last
+      if (next.completed !== undefined && autoSortCompleted) {
+        const uncompleted = updated.filter((item) => !item.completed);
+        const completed = updated.filter((item) => item.completed);
+        return [...uncompleted, ...completed];
+      }
+
+      return updated;
+    });
+  };
+
+  // Drag and drop sensors for checklist reordering
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle checklist drag end
+  const handleChecklistDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setChecklist((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   const handleRemoveExistingAttachment = (attachment: NoteAttachment) => {
@@ -789,7 +878,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         className={clsx(
           "relative w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] max-w-6xl min-h-[450px] max-h-[90vh] sm:max-h-[88vh] md:max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden",
           !currentBackground && currentColorConfig.cardClass,
-          "border-zinc-200 dark:border-zinc-800",
+          pinned
+            ? "border-[var(--color-primary)]"
+            : "border-zinc-200 dark:border-zinc-800",
         )}
       >
         {/* Background Image Layer */}
@@ -807,9 +898,45 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           </div>
         )}
 
+        {/* Corner Focus Badge - clickable to toggle focus */}
+        <button
+          type="button"
+          onClick={() => setPinned((prev) => !prev)}
+          className="absolute -top-0 -right-0 w-16 h-16 overflow-hidden rounded-tr-2xl z-30 group/pin"
+          aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
+        >
+          {pinned ? (
+            <>
+              <div className="absolute top-0 right-0 bg-[var(--color-primary)] group-hover/pin:brightness-90 w-24 h-24 rotate-45 translate-x-12 -translate-y-12 transition-all" />
+              <FocusIcon focused className="absolute top-2.5 right-2.5 h-5 w-5 text-white" />
+            </>
+          ) : (
+            <>
+              <div className={clsx(
+                "absolute top-0 right-0 w-24 h-24 rotate-45 translate-x-12 -translate-y-12 transition-all",
+                "opacity-0 group-hover:opacity-100",
+                currentBackground?.brightness === 'light'
+                  ? "bg-black/10"
+                  : currentBackground
+                    ? "bg-white/10"
+                    : "bg-zinc-200/50 dark:bg-zinc-700/50"
+              )} />
+              <FocusIcon className={clsx(
+                "absolute top-2.5 right-2.5 h-5 w-5 transition-all",
+                "opacity-0 group-hover:opacity-100",
+                currentBackground?.brightness === 'light'
+                  ? "text-[var(--color-primary)]"
+                  : currentBackground
+                    ? "text-[var(--color-primary)]/80"
+                    : "text-[var(--color-primary)]"
+              )} />
+            </>
+          )}
+        </button>
+
         {/* Header row - title and actions */}
         <div className={clsx(
-          "relative z-20 flex items-center justify-between gap-4 px-4 sm:px-6 py-3 sm:py-4 rounded-t-2xl border-b flex-shrink-0",
+          "relative z-20 flex items-center justify-between gap-4 pl-4 sm:pl-6 pr-20 py-3 sm:py-4 rounded-t-2xl border-b flex-shrink-0",
           currentBackground?.brightness === 'light'
             ? "bg-white/30 backdrop-blur-sm border-black/10"
             : currentBackground
@@ -833,30 +960,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             />
             {/* Header actions */}
             <div className="flex items-center gap-2">
-              {/* Pin button in its own glass pill */}
-              <div className={clsx(
-                  "flex items-center px-1.5 py-1 rounded-full backdrop-blur-xl border",
-                  currentBackground
-                    ? currentBackground.brightness === 'dark'
-                      ? "bg-white/10 border-white/20"
-                      : "bg-black/5 border-black/10"
-                    : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
-                )}>
-                  <button
-                    type="button"
-                    onClick={() => setPinned((prev) => !prev)}
-                    className={clsx(
-                      "h-7 w-7 rounded-full flex items-center justify-center transition",
-                      pinned
-                        ? "bg-[var(--color-primary)] text-white"
-                        : getActionColorClasses(currentBackground),
-                    )}
-                    aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
-                  >
-                    <FocusIcon focused={pinned} className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-
               {/* Priority selector in its own glass pill */}
               <div className="relative">
                 <div className={clsx(
@@ -877,20 +980,25 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           : priority === "medium"
                             ? "bg-amber-500/20"
                             : priority === "low"
-                              ? "bg-green-500/20"
+                              ? "bg-blue-500/20"
                               : getActionColorClasses(currentBackground),
                       )}
                       aria-label="Set priority"
                     >
-                      <PriorityIcon
-                        priority={(priority as PriorityLevel) || "none"}
-                        size="sm"
-                        showOnlyHighPriority={false}
-                      />
+                      <Flame className={clsx(
+                        "h-4 w-4",
+                        priority === "high"
+                          ? "text-red-500"
+                          : priority === "medium"
+                            ? "text-amber-500"
+                            : priority === "low"
+                              ? "text-blue-500"
+                              : "text-zinc-400 dark:text-zinc-500"
+                      )} />
                     </button>
                   </div>
                 {showPriorityPicker && (
-                  <div className="absolute top-10 right-0 z-50 flex flex-col gap-1 rounded-xl bg-zinc-900/95 border border-white/10 p-2 shadow-2xl backdrop-blur-xl min-w-[140px]">
+                  <div className="absolute top-10 right-0 z-50 flex flex-col gap-0.5 rounded-2xl bg-zinc-900 border border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-top-2 duration-200">
                     <button
                       type="button"
                       onClick={() => {
@@ -898,13 +1006,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         setShowPriorityPicker(false);
                       }}
                       className={clsx(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
                         priority === "high"
                           ? "bg-red-500/20 text-red-400"
-                          : "text-zinc-300 hover:bg-white/10"
+                          : "text-zinc-300 hover:bg-zinc-800"
                       )}
                     >
-                      <PriorityIcon priority="high" size="sm" showOnlyHighPriority={false} />
+                      <Flame className="h-3 w-3 text-red-500" />
                       High
                     </button>
                     <button
@@ -914,13 +1022,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         setShowPriorityPicker(false);
                       }}
                       className={clsx(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
                         priority === "medium"
                           ? "bg-amber-500/20 text-amber-400"
-                          : "text-zinc-300 hover:bg-white/10"
+                          : "text-zinc-300 hover:bg-zinc-800"
                       )}
                     >
-                      <PriorityIcon priority="medium" size="sm" showOnlyHighPriority={false} />
+                      <Flame className="h-3 w-3 text-amber-500" />
                       Medium
                     </button>
                     <button
@@ -930,27 +1038,27 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         setShowPriorityPicker(false);
                       }}
                       className={clsx(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition",
+                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
                         priority === "low"
-                          ? "bg-green-500/20 text-green-400"
-                          : "text-zinc-300 hover:bg-white/10"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : "text-zinc-300 hover:bg-zinc-800"
                       )}
                     >
-                      <PriorityIcon priority="low" size="sm" showOnlyHighPriority={false} />
+                      <Flame className="h-3 w-3 text-blue-500" />
                       Low
                     </button>
                     {priority && (
                       <>
-                        <div className="h-px bg-white/10 my-1" />
+                        <div className="h-px bg-zinc-700 my-0.5" />
                         <button
                           type="button"
                           onClick={() => {
                             setPriority(null);
                             setShowPriorityPicker(false);
                           }}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/10 transition"
+                          className="flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium text-zinc-400 hover:bg-zinc-800 transition"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3 w-3" />
                           Clear
                         </button>
                       </>
@@ -1117,18 +1225,27 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               )}
             </div>
           ) : (
-            <div className="space-y-3">
-              {checklist.map((item, idx) => {
-                const indentLevel = item.indent ?? 0;
-                return (
-                  <div
-                    key={item.id}
-                    className="group flex items-center gap-3"
-                    style={{ paddingLeft: `${indentLevel * 24}px` }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={item.completed}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleChecklistDragEnd}
+            >
+              <SortableContext
+                items={checklist.map((i) => i.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-3">
+                  {checklist.map((item, idx) => {
+                    const indentLevel = item.indent ?? 0;
+                    return (
+                      <SortableChecklistItem
+                        key={item.id}
+                        id={item.id}
+                        indentLevel={indentLevel}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={item.completed}
                       onChange={(event) =>
                         handleChecklistChange(item.id, {
                           completed: event.target.checked,
@@ -1232,7 +1349,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           delete checklistInputRefs.current[item.id];
                         }
                       }}
-                      className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-400 dark:focus:border-zinc-600 focus:outline-none"
+                      className={`flex-1 border-b border-transparent bg-transparent pb-1 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-400 dark:focus:border-zinc-600 focus:outline-none ${
+                        item.completed
+                          ? "text-zinc-400 dark:text-zinc-500 line-through"
+                          : "text-zinc-700 dark:text-zinc-300"
+                      }`}
                     />
                     <button
                       type="button"
@@ -1243,13 +1364,15 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         )
                       }
                       aria-label="Remove checklist item"
-                    >
-                      <X className="h-4 w-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" />
-                    </button>
-                  </div>
-                );
-              })}
-              <div className="flex flex-wrap items-center gap-2">
+                        >
+                          <X className="h-4 w-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" />
+                        </button>
+                      </SortableChecklistItem>
+                    );
+                  })}
+                </div>
+              </SortableContext>
+              <div className="flex flex-wrap items-center gap-2 mt-3">
                 <button
                   type="button"
                   onClick={() => handleAddChecklistItem()}
@@ -1268,20 +1391,38 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setChecklist((prev) => {
-                        const uncompleted = prev.filter((item) => !item.completed);
-                        const completed = prev.filter((item) => item.completed);
-                        return [...uncompleted, ...completed];
-                      })}
-                      className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                      onClick={() => setAutoSortCompleted(!autoSortCompleted)}
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition ${
+                        autoSortCompleted
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-400 dark:bg-emerald-900/30 dark:text-emerald-300'
+                          : 'border-zinc-400 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                      }`}
                     >
-                      Sort done ↓
+                      {autoSortCompleted ? 'Auto-sort ✓' : 'Auto-sort'}
                     </button>
                   </>
                 )}
               </div>
-            </div>
+            </DndContext>
           )}
+
+          {/* Word/char count - below content */}
+          <div className={clsx(
+            "text-[10px] tabular-nums",
+            currentBackground
+              ? currentBackground.brightness === 'dark'
+                ? "text-white/40"
+                : "text-black/40"
+              : "text-zinc-400 dark:text-zinc-500"
+          )}>
+            {mode === "checklist" ? (
+              <span>{checklist.filter(i => i.text.trim()).length} items</span>
+            ) : (
+              <span>
+                {body.trim().split(/\s+/).filter(w => w).length} words · {body.length} chars
+              </span>
+            )}
+          </div>
 
           {selectedLabelIds.length ? (
             <div className="flex flex-wrap items-center gap-2">
@@ -1585,7 +1726,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   onClick={() => {
                     setShowPalette((prev) => !prev);
                     setShowLabelPicker(false);
-                    setShowCalculator(false);
                   }}
                   className={clsx(
                     "h-7 w-7 rounded-full flex items-center justify-center transition",
@@ -1639,7 +1779,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     setShowBackgroundPicker((prev) => !prev);
                     setShowPalette(false);
                     setShowLabelPicker(false);
-                    setShowCalculator(false);
                   }}
                   className={clsx(
                     "h-7 w-7 rounded-full flex items-center justify-center transition",
@@ -1761,7 +1900,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   setShowLabelPicker((prev) => !prev);
                   setShowPalette(false);
                   setShowBackgroundPicker(false);
-                  setShowCalculator(false);
                 }}
                 className={clsx(
                   "h-7 w-7 rounded-full flex items-center justify-center transition",
@@ -1773,48 +1911,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               >
                 <Tag className="h-3.5 w-3.5" />
               </button>
-              {/* Calculator */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCalculator((prev) => !prev);
-                    setShowPalette(false);
-                    setShowLabelPicker(false);
-                  }}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    showCalculator
-                      ? "bg-[var(--color-primary)] text-white"
-                      : getActionColorClasses(currentBackground),
-                  )}
-                  aria-label="Calculator"
-                  title="Open calculator"
-                >
-                  <Calculator className="h-3.5 w-3.5" />
-                </button>
-                {showCalculator && (
-                  <>
-                    {/* Click outside to close */}
-                    <div
-                      className="fixed inset-0 z-20"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowCalculator(false);
-                      }}
-                    />
-                    <div
-                      className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <InlineCalculator
-                        onInsert={handleCalculatorInsert}
-                        onClose={() => setShowCalculator(false)}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
               {/* Separator */}
               <div className={clsx(
                 "w-px h-4",
@@ -1895,7 +1991,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       setShowSpacePicker((prev) => !prev);
                       setShowPalette(false);
                       setShowLabelPicker(false);
-                      setShowCalculator(false);
                     }}
                     className={clsx(
                       "h-7 flex items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition",
@@ -2122,24 +2217,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               </div>
             </div>
           ) : null}
-
-          {/* Word/character count */}
-          <div className={clsx(
-            "text-[10px] tabular-nums",
-            currentBackground
-              ? currentBackground.brightness === 'dark'
-                ? "text-white/40"
-                : "text-black/40"
-              : "text-zinc-400 dark:text-zinc-500"
-          )}>
-            {mode === "checklist" ? (
-              <span>{checklist.filter(i => i.text.trim()).length} items</span>
-            ) : (
-              <span>
-                {body.trim().split(/\s+/).filter(w => w).length} words · {body.length} chars
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Hidden file input - inside modal to prevent click propagation issues */}

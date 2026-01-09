@@ -7,6 +7,7 @@ import { EmptyState, ListSection } from '@ainexsuite/ui';
 import { TaskCard } from './TaskCard';
 import { ColumnSelector } from './column-selector';
 import { usePreferences } from '@/components/providers/preferences-provider';
+import { useSpaces } from '@/components/providers/spaces-provider';
 import { useTodoStore } from '../../lib/store';
 import type { Task } from '../../types/models';
 
@@ -31,8 +32,8 @@ function TasksSkeleton() {
 }
 
 export function TaskBoard({ onEditTask, searchQuery = '' }: TaskBoardProps) {
-  const { getCurrentSpace, tasks } = useTodoStore();
-  const currentSpace = getCurrentSpace();
+  const { tasks } = useTodoStore();
+  const { currentSpace } = useSpaces();
   const { preferences } = usePreferences();
 
   // Breakpoints for Pinned and All Tasks sections (matches notes app pattern)
@@ -50,8 +51,7 @@ export function TaskBoard({ onEditTask, searchQuery = '' }: TaskBoardProps) {
   const spaceTasks = useMemo(() => {
     if (!currentSpace) return [];
     let filtered = tasks.filter(
-      (t: Task) =>
-        (currentSpace.id === 'all' || t.spaceId === currentSpace.id) && !t.archived
+      (t: Task) => t.spaceId === currentSpace.id && !t.archived
     );
 
     // Apply search filter

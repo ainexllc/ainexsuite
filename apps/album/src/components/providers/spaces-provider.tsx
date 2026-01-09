@@ -31,10 +31,11 @@ export interface MomentsSpace {
 export const { SpacesProvider, useSpaces } = createSpacesProvider<MomentsSpace>({
   appId: "album",
   collectionName: "spaces",
-  storageKey: "moments-current-space",
+  storageKey: "moments-current-space", // Legacy key - will migrate to unified key
   defaultSpace: {
     name: "My Memories",
     type: "personal",
   },
   allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
+  syncAcrossApps: true, // Enable cross-app space sync
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FolderOpen, ChevronDown, Check, Users, Settings } from 'lucide-react';
+import { FolderOpen, ChevronDown, Check } from 'lucide-react';
 import type { SpaceType } from '@ainexsuite/types';
 import { cn } from '../../lib/utils';
 
@@ -18,10 +18,6 @@ export interface InlineSpacePickerProps {
   currentSpace: InlineSpaceItem | null;
   /** Callback when user selects a space */
   onSpaceChange: (spaceId: string) => void;
-  /** Callback when user clicks "Manage People" */
-  onManagePeople?: () => void;
-  /** Callback when user clicks "Manage Spaces" */
-  onManageSpaces?: () => void;
   /** Custom class for the container */
   className?: string;
 }
@@ -35,30 +31,15 @@ export function InlineSpacePicker({
   spaces,
   currentSpace,
   onSpaceChange,
-  onManagePeople,
-  onManageSpaces,
   className,
 }: InlineSpacePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const currentSpaceName = currentSpace?.name || 'Personal';
 
-  // Check if there are any non-personal (shared) spaces
-  const hasSharedSpaces = spaces.some((s) => s.type !== 'personal');
-
   const handleSelectSpace = (spaceId: string) => {
     onSpaceChange(spaceId);
     setIsOpen(false);
-  };
-
-  const handleManagePeople = () => {
-    setIsOpen(false);
-    onManagePeople?.();
-  };
-
-  const handleManageSpaces = () => {
-    setIsOpen(false);
-    onManageSpaces?.();
   };
 
   return (
@@ -103,41 +84,12 @@ export function InlineSpacePicker({
                       : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   )}
                 >
-                  <FolderOpen className="h-3.5 w-3.5" />
+                  <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
                   <span className="flex-1 truncate">{space.name}</span>
-                  {isActive && <Check className="h-3.5 w-3.5" />}
+                  {isActive && <Check className="h-3.5 w-3.5 flex-shrink-0" />}
                 </button>
               );
             })}
-
-            {/* Action Buttons */}
-            {(onManagePeople || onManageSpaces) && (
-              <div className="border-t border-zinc-200 dark:border-zinc-700 mt-1 pt-1">
-                {/* Manage People - show when there are shared spaces */}
-                {hasSharedSpaces && onManagePeople && (
-                  <button
-                    type="button"
-                    onClick={handleManagePeople}
-                    className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-left text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg"
-                  >
-                    <Users className="h-3.5 w-3.5" />
-                    <span>Manage People</span>
-                  </button>
-                )}
-
-                {/* Manage Spaces */}
-                {onManageSpaces && (
-                  <button
-                    type="button"
-                    onClick={handleManageSpaces}
-                    className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-left text-[var(--color-primary)] hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg"
-                  >
-                    <Settings className="h-3.5 w-3.5" />
-                    <span>Manage Spaces</span>
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         </>
       )}

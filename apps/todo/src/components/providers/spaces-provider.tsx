@@ -10,10 +10,11 @@ import type { Space } from "@ainexsuite/types";
 export const { SpacesProvider, useSpaces } = createSpacesProvider<Space>({
   appId: "todo",
   collectionName: "spaces",
-  storageKey: "todo-current-space",
+  storageKey: "todo-current-space", // Legacy key - will migrate to unified key
   defaultSpace: {
     name: "My Todos",
     type: "personal",
   },
   allowedTypes: ["personal", "family", "work", "couple", "buddy", "squad", "project"],
+  syncAcrossApps: true, // Enable cross-app space sync
 });

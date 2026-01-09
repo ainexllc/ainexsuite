@@ -47,3 +47,10 @@ export {
   type SpaceTabSelectorProps,
   type SpaceTabItem,
 } from './space-tab-selector';
+
+export {
+  MemberManager,
+  type MemberManagerProps,
+  type MemberManagerMember,
+  type MemberManagerSpace,
+} from './member-manager';
