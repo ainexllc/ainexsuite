@@ -15,15 +15,16 @@ export interface NavigateOptions {
 /**
  * Navigate to another app's workspace with automatic authentication via SSO
  *
- * Flow:
- * 1. Request custom token from current app's /api/auth/custom-token
- * 2. Navigate to target app with ?auth_token parameter
- * 3. Target app's SSOHandler picks up token and signs user in
- * 4. Creates server-side session cookie
- * 5. User is fully authenticated
+ * Production flow:
+ * 1. Navigate directly to target app (no auth_token in URL)
+ * 2. Browser automatically sends shared __session cookie (domain=.ainexspace.com)
+ * 3. Target app's AuthProvider verifies session and initializes Firebase Auth
+ * 4. User is fully authenticated - clean URLs, no token exposure
  *
- * In development:
- * - Also syncs session to localStorage as fallback
+ * Development flow:
+ * 1. Sync session to localStorage (cookies don't share across ports)
+ * 2. Navigate to target app
+ * 3. Target app reads localStorage session
  *
  * @param appSlug - The target app slug (e.g., 'notes', 'journal', 'hub')
  * @param currentAppSlug - Optional current app slug to avoid navigating to same app
@@ -53,31 +54,18 @@ export async function navigateToApp(
   };
 
   try {
-    // Get token from cache or fetch (uses cache if available for instant nav)
+    // Get token from cache or fetch (only needed for dev mode localStorage sync)
     const tokenData = await getTokenForNavigation();
 
-    if (tokenData) {
-      // Dev mode: store session in localStorage for instant auth on target app
-      if (tokenData.devMode && tokenData.sessionCookie) {
-        localStorage.setItem('__cross_app_session', tokenData.sessionCookie);
-        localStorage.setItem('__cross_app_timestamp', String(Date.now()));
-        window.location.href = appendActionParam(baseTargetUrl);
-        return;
-      }
-
-      // Production path: Add auth token to URL
-      if (tokenData.token) {
-        const urlWithToken = new URL(baseTargetUrl);
-        urlWithToken.searchParams.set('auth_token', tokenData.token);
-        if (options?.action) {
-          urlWithToken.searchParams.set('action', options.action);
-        }
-        window.location.href = urlWithToken.toString();
-        return;
-      }
+    // Dev mode: store session in localStorage for cross-port auth
+    // (cookies don't share across different localhost ports)
+    if (tokenData?.devMode && tokenData.sessionCookie) {
+      localStorage.setItem('__cross_app_session', tokenData.sessionCookie);
+      localStorage.setItem('__cross_app_timestamp', String(Date.now()));
     }
 
-    // No valid session - navigate without SSO (target app will handle auth)
+    // Navigate directly - the shared __session cookie (domain=.ainexspace.com)
+    // is automatically sent by the browser, so no auth_token needed in URL
     window.location.href = appendActionParam(baseTargetUrl);
   } catch (error) {
     // Fallback: Navigate without SSO

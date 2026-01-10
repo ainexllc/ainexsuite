@@ -218,7 +218,11 @@ export function AppSwitcher({
 
   /**
    * Handle app switching with SSO
-   * Requests a custom token and navigates with it
+   *
+   * Production: Navigate directly - the shared __session cookie (domain=.ainexspace.com)
+   * is automatically sent by the browser, so no auth_token needed in URL.
+   *
+   * Dev mode: Sync session to localStorage first (cookies don't share across ports).
    */
   const handleAppSwitch = async (app: AppConfig, event: React.MouseEvent) => {
     event.preventDefault(); // Prevent default link navigation
@@ -227,7 +231,7 @@ export function AppSwitcher({
     const targetUrl = getAppUrl(app);
 
     try {
-      // Call the custom-token API endpoint
+      // Call custom-token API to check if we're in dev mode (need localStorage sync)
       const response = await fetch('/api/auth/custom-token', {
         method: 'POST',
         credentials: 'include', // Include httpOnly cookies
@@ -236,25 +240,17 @@ export function AppSwitcher({
       if (response.ok) {
         const data = await response.json();
 
-        // In dev mode, store session in localStorage for instant auth on target app
+        // Dev mode: store session in localStorage for cross-port auth
+        // (cookies don't share across different localhost ports)
         if (data.devMode && data.sessionCookie) {
           localStorage.setItem('__cross_app_session', data.sessionCookie);
           localStorage.setItem('__cross_app_timestamp', String(Date.now()));
-          window.location.href = targetUrl;
-        } else if (data.devMode) {
-          // Dev mode without session (not logged in)
-          window.location.href = targetUrl;
-        } else {
-          // Production path: Add auth token to URL
-          const urlWithToken = new URL(targetUrl);
-          urlWithToken.searchParams.set('auth_token', data.customToken);
-          window.location.href = urlWithToken.toString();
         }
-      } else {
-        // Token generation failed - user probably not logged in on this app
-        // Navigate without SSO (target app will handle authentication)
-        window.location.href = targetUrl;
       }
+
+      // Navigate directly - shared cookie handles SSO in production,
+      // localStorage handles it in development
+      window.location.href = targetUrl;
     } catch (error) {
       // If anything fails, fall back to regular navigation
       console.error('❌ SSO: Error during app switch:', error);

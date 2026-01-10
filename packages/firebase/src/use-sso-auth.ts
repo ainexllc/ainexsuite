@@ -10,32 +10,26 @@ interface UseSSOAuthOptions {
 }
 
 /**
- * useSSOAuth Hook
+ * useSSOAuth Hook (DEPRECATED)
  *
- * Handles Single Sign-On authentication when users switch between apps.
- * Checks for auth token in URL parameters, exchanges it for a Firebase session,
- * and cleans up the URL.
+ * This hook is no longer needed for cross-app SSO. The auth system now uses
+ * shared session cookies (domain=.ainexspace.com) which are automatically
+ * sent by the browser when navigating between subdomains.
  *
- * Usage:
- * ```tsx
- * function MyApp() {
- *   const { isAuthenticating, authError } = useSSOAuth();
+ * The AuthProvider handles session verification and Firebase Auth initialization
+ * automatically via the shared cookie - no URL tokens required.
  *
- *   if (isAuthenticating) {
- *     return <LoadingScreen />;
- *   }
+ * This hook is kept for backward compatibility but is now a no-op.
+ * It will be removed in a future version.
  *
- *   return <MainContent />;
- * }
- * ```
- *
+ * @deprecated Use AuthProvider's built-in session handling instead
  * @param options - Optional configuration including onComplete callback
- * @returns {object} - Authentication state and any errors
+ * @returns {object} - Authentication state (always idle)
  */
 export function useSSOAuth(options?: UseSSOAuthOptions) {
   const { onComplete } = options || {};
 
-  // Check for auth token IMMEDIATELY on mount (synchronously)
+  // Legacy: Check for auth_token in URL (for backward compatibility during migration)
   const hasAuthTokenOnMount = typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).has('auth_token')
     : false;
@@ -46,61 +40,50 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
 
   useEffect(() => {
     const handleSSOAuth = async () => {
-      // Only run in browser
       if (typeof window === 'undefined') return;
 
-      // Get auth token from URL
+      // Check for legacy auth_token in URL (for backward compatibility)
       const urlParams = new URLSearchParams(window.location.search);
       const authToken = urlParams.get('auth_token');
 
+      // If no auth_token, signal completion immediately
+      // The new SSO flow uses shared cookies, no URL tokens needed
       if (!authToken) {
-        // No auth token, nothing to do
         setHasAuthToken(false);
-        // Still call onComplete to signal we're done checking
         onComplete?.();
         return;
       }
 
-      // Mark that we're processing an SSO auth token (redundant but ensures state consistency)
+      // Legacy path: Handle old-style URL tokens during migration period
+      // This code path should rarely be hit after deployment
       setHasAuthToken(true);
 
       try {
         setIsAuthenticating(true);
         setAuthError(null);
 
-        // Sign in with the custom token
-        // This triggers onAuthStateChanged in AuthProvider, which will:
-        // 1. Create the server-side session cookie
-        // 2. Set the user state
-        // 3. Mark ssoInProgress as false
+        // Sign in with the custom token (legacy support)
         await signInWithCustomToken(auth, authToken);
 
-        // Remove auth_token from URL without refreshing the page
+        // Remove auth_token from URL
         urlParams.delete('auth_token');
         const newUrl = window.location.pathname +
           (urlParams.toString() ? `?${urlParams.toString()}` : '') +
           window.location.hash;
 
         window.history.replaceState({}, '', newUrl);
-
-        // Note: We don't call onComplete() here anymore.
-        // AuthProvider's onAuthStateChanged will set ssoInProgress = false
-        // once the user is fully authenticated and user state is set.
 
       } catch (error) {
         console.error('SSO: signInWithCustomToken FAILED:', error);
         setAuthError(error instanceof Error ? error.message : 'Authentication failed');
 
-        // Still remove the token from URL even if auth failed
+        // Remove token from URL even on failure
         urlParams.delete('auth_token');
         const newUrl = window.location.pathname +
           (urlParams.toString() ? `?${urlParams.toString()}` : '') +
           window.location.hash;
 
         window.history.replaceState({}, '', newUrl);
-
-        // Signal completion on error so pages don't hang
-        // AuthProvider's onAuthStateChanged will also catch this (no user)
         onComplete?.();
       } finally {
         setIsAuthenticating(false);
@@ -109,7 +92,7 @@ export function useSSOAuth(options?: UseSSOAuthOptions) {
 
     handleSSOAuth();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount - onComplete should be stable
+  }, []);
 
   return {
     isAuthenticating,
