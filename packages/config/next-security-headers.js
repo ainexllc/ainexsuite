@@ -17,10 +17,25 @@
  */
 function buildCSP(options = {}) {
   const defaultSrc = options.defaultSrc || "'self'";
-  const scriptSrc = options.scriptSrc || "'self' 'unsafe-inline' 'unsafe-eval'";
-  const styleSrc = options.styleSrc || "'self' 'unsafe-inline'";
-  const imgSrc = options.imgSrc || "'self' data: https: blob:";
-  const fontSrc = options.fontSrc || "'self' data:";
+  const scriptSrc =
+    options.scriptSrc ||
+    [
+      "'self'",
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      "https://apis.google.com",
+      "https://www.gstatic.com",
+      "https://accounts.google.com",
+      "https://*.firebaseapp.com",
+      "https://js.stripe.com",
+    ].join(" ");
+  const styleSrc =
+    options.styleSrc ||
+    "'self' 'unsafe-inline' https://accounts.google.com https://fonts.googleapis.com";
+  const imgSrc =
+    options.imgSrc ||
+    "'self' data: https: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com";
+  const fontSrc = options.fontSrc || "'self' data: https://fonts.gstatic.com";
   const connectSrc =
     options.connectSrc ||
     [
@@ -33,6 +48,7 @@ function buildCSP(options = {}) {
       "https://identitytoolkit.googleapis.com",
       "https://securetoken.googleapis.com",
       "https://www.googleapis.com",
+      "https://accounts.google.com",
       "https://api.openai.com",
       "https://api.anthropic.com",
       "https://generativelanguage.googleapis.com",
@@ -45,7 +61,7 @@ function buildCSP(options = {}) {
     ].join(" ");
   const frameSrc =
     options.frameSrc ||
-    "'self' https://*.firebaseapp.com https://js.stripe.com";
+    "'self' https://*.firebaseapp.com https://js.stripe.com https://accounts.google.com";
   const frameAncestors = options.frameAncestors || "'none'";
   const objectSrc = options.objectSrc || "'none'";
   const baseUri = options.baseUri || "'self'";
