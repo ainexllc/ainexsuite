@@ -1,6 +1,54 @@
 import { db } from '@ainexsuite/firebase';
 import { collection, query, where, orderBy, limit, onSnapshot, Unsubscribe, doc } from 'firebase/firestore';
 
+// Port mapping for development mode
+const DEV_PORT_MAP: Record<string, number> = {
+  main: 3000,
+  notes: 3001,
+  journal: 3002,
+  todo: 3003,
+  health: 3004,
+  album: 3005,
+  habits: 3006,
+  mosaic: 3007,
+  fit: 3008,
+  projects: 3009,
+  flow: 3010,
+  subs: 3011,
+  docs: 3012,
+  tables: 3013,
+  calendar: 3014,
+  admin: 3020,
+};
+
+/**
+ * Generate absolute URL for app navigation
+ * In production: https://notes.ainexspace.com/workspace?id=xxx
+ * In dev: http://localhost:3001/workspace?id=xxx
+ */
+function getAbsoluteAppUrl(appSlug: string, queryParams?: Record<string, string>): string {
+  const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
+  let baseUrl: string;
+  if (isDev) {
+    const port = DEV_PORT_MAP[appSlug] || 3000;
+    baseUrl = `http://localhost:${port}/workspace`;
+  } else if (appSlug === 'main') {
+    baseUrl = 'https://ainexspace.com/workspace';
+  } else {
+    baseUrl = `https://${appSlug}.ainexspace.com/workspace`;
+  }
+
+  if (!queryParams || Object.keys(queryParams).length === 0) {
+    return baseUrl;
+  }
+  const url = new URL(baseUrl);
+  Object.entries(queryParams).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+  return url.toString();
+}
+
 export type InsightType = 'actionable' | 'status' | 'memory' | 'streak' | 'update';
 export type InsightPriority = 'high' | 'medium' | 'low';
 
@@ -117,7 +165,7 @@ export class SmartDashboardService {
           subtitle: 'No pending tasks. Add one?',
           priority: 'low' as InsightPriority,
           timestamp: new Date(),
-          actionUrl: '/todo',
+          actionUrl: getAbsoluteAppUrl('todo'),
           actions: [{
              label: 'Create Task',
              type: 'create_prompt',
@@ -135,7 +183,7 @@ export class SmartDashboardService {
           subtitle: 'Log your first workout',
           priority: 'low' as InsightPriority,
           timestamp: new Date(),
-          actionUrl: '/fit',
+          actionUrl: getAbsoluteAppUrl('fit'),
           actions: [{
              label: 'Log Workout',
              type: 'create_prompt',
@@ -153,7 +201,7 @@ export class SmartDashboardService {
           subtitle: 'How are you feeling today?',
           priority: 'low' as InsightPriority,
           timestamp: new Date(),
-          actionUrl: '/journal'
+          actionUrl: getAbsoluteAppUrl('journal')
         });
       }
 
@@ -212,7 +260,7 @@ export class SmartDashboardService {
           subtitle: isOverdue ? 'Overdue' : 'Due Today',
           priority: (isOverdue ? 'high' : 'medium') as InsightPriority,
           timestamp: dueDate,
-          actionUrl: `/todo?id=${doc.id}`,
+          actionUrl: getAbsoluteAppUrl('todo', { id: doc.id }),
           actions: [{
             label: 'Done',
             type: 'complete' as const,
@@ -251,7 +299,7 @@ export class SmartDashboardService {
           subtitle: 'Recently updated',
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.updatedAt),
-          actionUrl: `/notes?id=${doc.id}`
+          actionUrl: getAbsoluteAppUrl('notes', { id: doc.id })
         };
       });
       callback(insights);
@@ -285,7 +333,7 @@ export class SmartDashboardService {
           subtitle: `${data.name || 'Workout'} completed`,
           priority: 'medium' as InsightPriority,
           timestamp: this.parseDate(data.date),
-          actionUrl: '/fit'
+          actionUrl: getAbsoluteAppUrl('fit')
         };
       });
       callback(insights);
@@ -319,7 +367,7 @@ export class SmartDashboardService {
           subtitle: `Mood: ${data.mood || 'Recorded'}`,
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.createdAt),
-          actionUrl: '/journal'
+          actionUrl: getAbsoluteAppUrl('journal')
         };
       });
       callback(insights);
@@ -355,7 +403,7 @@ export class SmartDashboardService {
             subtitle: `${data.title} (${data.progress}% done)`,
             priority: 'medium' as InsightPriority,
             timestamp: this.parseDate(data.updatedAt),
-            actionUrl: '/habits'
+            actionUrl: getAbsoluteAppUrl('habits')
           });
         }
       });
@@ -390,7 +438,7 @@ export class SmartDashboardService {
           subtitle: `${data.metricType}: ${data.value}`,
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.date),
-          actionUrl: '/hub'
+          actionUrl: getAbsoluteAppUrl('health')
         };
       });
       callback(insights);
@@ -419,7 +467,7 @@ export class SmartDashboardService {
           subtitle: `Logged on ${data.date}`,
           priority: 'medium' as InsightPriority,
           timestamp: this.parseDate(data.createdAt),
-          actionUrl: '/health'
+          actionUrl: getAbsoluteAppUrl('health')
         };
       });
       callback(insights);
@@ -447,7 +495,7 @@ export class SmartDashboardService {
           subtitle: data.title || 'Untitled Moment',
           priority: 'low' as InsightPriority,
           timestamp: this.parseDate(data.date),
-          actionUrl: '/album'
+          actionUrl: getAbsoluteAppUrl('album')
         };
       });
       callback(insights);
@@ -473,7 +521,7 @@ export class SmartDashboardService {
                 subtitle: `${nodeCount} active items`,
                 priority: 'low' as InsightPriority,
                 timestamp: this.parseDate(data.updatedAt || new Date()),
-                actionUrl: '/projects'
+                actionUrl: getAbsoluteAppUrl('projects')
             });
         }
       }
@@ -534,7 +582,7 @@ export class SmartDashboardService {
               type: 'task',
               appSlug: 'todo',
               color: '#8b5cf6',
-              actionUrl: `/todo?id=${doc.id}`,
+              actionUrl: getAbsoluteAppUrl('todo', { id: doc.id }),
             });
           }
         });
@@ -571,7 +619,7 @@ export class SmartDashboardService {
               type: 'event',
               appSlug: 'calendar',
               color: data.color || '#06b6d4',
-              actionUrl: `/calendar?id=${doc.id}`,
+              actionUrl: getAbsoluteAppUrl('calendar', { id: doc.id }),
             });
           }
         });
@@ -627,7 +675,7 @@ export class SmartDashboardService {
             itemType: 'note',
             itemName: data.title || 'Untitled Note',
             timestamp: updatedAt,
-            actionUrl: `/notes?id=${doc.id}`,
+            actionUrl: getAbsoluteAppUrl('notes', { id: doc.id }),
           };
         });
         activityMap.notes = activities;
@@ -658,7 +706,7 @@ export class SmartDashboardService {
             itemType: 'task',
             itemName: data.title,
             timestamp: this.parseDate(data.completedAt),
-            actionUrl: `/todo?id=${doc.id}`,
+            actionUrl: getAbsoluteAppUrl('todo', { id: doc.id }),
           };
         });
         activityMap.tasks = activities;
@@ -688,7 +736,7 @@ export class SmartDashboardService {
             itemType: 'workout',
             itemName: data.name || 'Workout',
             timestamp: this.parseDate(data.date),
-            actionUrl: '/fit',
+            actionUrl: getAbsoluteAppUrl('fit'),
           };
         });
         activityMap.workouts = activities;
@@ -718,7 +766,7 @@ export class SmartDashboardService {
             itemType: 'journal entry',
             itemName: data.title || `Entry - ${data.mood || 'Reflection'}`,
             timestamp: this.parseDate(data.createdAt),
-            actionUrl: '/journal',
+            actionUrl: getAbsoluteAppUrl('journal'),
           };
         });
         activityMap.journal = activities;
