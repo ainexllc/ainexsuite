@@ -146,9 +146,13 @@ export async function updateJournalEntry(
   const docRef = doc(db, JOURNALS_COLLECTION, entryId);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sanitizedData: Record<string, any> = { ...data };
-  if (sanitizedData.isDraft === undefined) {
-    delete sanitizedData.isDraft;
-  }
+
+  // Remove undefined values - Firestore doesn't accept undefined
+  Object.keys(sanitizedData).forEach(key => {
+    if (sanitizedData[key] === undefined) {
+      delete sanitizedData[key];
+    }
+  });
 
   // Handle space changes - update sharedWithUserIds
   if ('spaceId' in data && userId) {
