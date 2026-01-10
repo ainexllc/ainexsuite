@@ -28,6 +28,7 @@ function buildCSP(options = {}) {
       "https://accounts.google.com",
       "https://*.firebaseapp.com",
       "https://js.stripe.com",
+      "https://www.googletagmanager.com",
     ].join(" ");
   const styleSrc =
     options.styleSrc ||
@@ -58,6 +59,9 @@ function buildCSP(options = {}) {
       "https://queue.fal.run",
       "https://fal.run",
       "wss://*.firebaseio.com",
+      "https://www.googletagmanager.com",
+      "https://www.google-analytics.com",
+      "https://analytics.google.com",
     ].join(" ");
   const frameSrc =
     options.frameSrc ||
