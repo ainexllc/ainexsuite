@@ -23,9 +23,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Identifying your keystone habits for the week…', emoji: '🧱' },
-  { text: 'Designing a morning ritual stack…', emoji: '☀️' },
-  { text: 'Reviewing streak data to optimize consistency…', emoji: '🔥' },
+  { text: 'Loading your habits and streaks…', emoji: '🔥' },
+  { text: 'Calculating your consistency score…', emoji: '📊' },
+  { text: 'Ready to build great habits…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -35,19 +35,19 @@ const navLinks: NavLink[] = [
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Habit Stacking',
+    title: 'Streak Tracking',
     description:
-      'Build robust routines by linking new habits to existing triggers in your daily flow.',
+      'Watch your streaks grow. Visual progress bars and calendars keep you motivated day after day.',
     icon: Target,
   },
   {
-    title: 'Streak Analytics',
-    description: 'Visualize your consistency with heatmaps and trend lines that highlight your best days.',
+    title: 'Flexible Schedules',
+    description: 'Daily, weekly, or custom schedules. Set habits for specific days or times that work for you.',
     icon: TrendingUp,
   },
   {
-    title: 'Smart Reminders',
-    description: 'Context-aware nudges that catch you at the right moment, not when you\'re busy.',
+    title: 'Shared Habits',
+    description: 'Track habits together with family or friends. Build accountability and celebrate wins.',
     icon: Zap,
   },
 ];
@@ -119,16 +119,16 @@ function GrowHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#8b5cf6]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#14b8a6]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#8b5cf6]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#14b8a6]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#8b5cf6] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#14b8a6] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -142,43 +142,43 @@ function GrowHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="habits" appColor="#8b5cf6" />}
-        backgroundComponent={<LayeredBackground primaryColor="#8b5cf6" secondaryColor="#a78bfa" variant="organic" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="habits" appColor="#14b8a6" />}
+        backgroundComponent={<LayeredBackground primaryColor="#14b8a6" secondaryColor="#2dd4bf" variant="organic" />}
         appName="habits"
-        accentColor="#8b5cf6"
-        gradientFrom="#8b5cf6"
-        gradientTo="#a78bfa"
+        accentColor="#14b8a6"
+        gradientFrom="#14b8a6"
+        gradientTo="#2dd4bf"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Consistency First' },
-          headline: 'Build unbreakable habits.',
-          subheadline: 'AINex Habits helps you design, track, and stick to the routines that shape your life.',
-          description: "Transform your goals into daily actions. Grow provides the structure and accountability you need to make habits stick.",
+          badge: { icon: Shield, text: 'Build Better Habits' },
+          headline: 'Small steps. Big changes.',
+          subheadline: 'Simple habit tracking that actually works.',
+          description: "Track your daily habits, build streaks, and watch yourself grow. Share habits with family or keep them private. The choice is yours.",
           highlights: [
             {
               icon: Repeat,
-              title: 'Routine Builder',
-              description: 'Design morning, evening, and focus routines that put success on autopilot.',
+              title: 'Visual Progress',
+              description: 'Beautiful calendars and charts show your consistency at a glance.',
             },
             {
               icon: CheckCircle,
-              title: 'Daily Tracking',
-              description: 'Log completions instantly and see your progress build over time.',
+              title: 'One-Tap Tracking',
+              description: 'Mark habits complete with a single tap. Quick, easy, satisfying.',
             },
           ],
         }}
         login={{
-          badgeText: 'Habit Hub',
-          signUpTitle: 'Join AINex Grow',
+          badgeText: 'Free to Start',
+          signUpTitle: 'Start Building Habits',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to start building better habits today.',
-          signInDescription: 'Sign in to access your habit dashboard.',
-          footerText: 'Your habit data is private and yours. Export anytime.',
+          signUpDescription: 'Create your account and start your first habit today.',
+          signInDescription: 'Sign in to continue building great habits.',
+          footerText: 'Your data is private. Sync across all devices.',
         }}
         features={{
-          sectionTitle: 'Built for consistency',
-          sectionDescription: 'Grow combines behavioral science with smart tracking to help you show up every day.',
+          sectionTitle: 'Simple but powerful',
+          sectionDescription: 'Everything you need to build habits that stick. Nothing you don\'t.',
           cards: featureCards,
         }}
         showActivation={showActivation}
@@ -194,7 +194,7 @@ function GrowHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "AINex Grow",
+          appDisplayName: "AINex Habits",
           productLinks,
           companyLinks,
           resourceLinks,

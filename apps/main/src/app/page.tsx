@@ -36,9 +36,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Syncing your journal, notes, tasks, and fitness data in real-time…', emoji: '🔄' },
-  { text: 'AI analyzing patterns across all your apps for insights…', emoji: '🧠' },
-  { text: 'Your unified workspace is ready—everything connected…', emoji: '✨' },
+  { text: 'Connecting your notes, journal, tasks, and fitness data…', emoji: '🔄' },
+  { text: 'AI analyzing your patterns and preparing insights…', emoji: '🧠' },
+  { text: 'Welcome to your personal command center…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -49,105 +49,105 @@ const navLinks: NavLink[] = [
 const appCards: AppCard[] = [
   {
     name: 'Notes',
-    description: 'AI-powered knowledge base with multimodal capture, auto-organization, and intelligent synthesis. Capture clarity.',
+    description: 'Beautiful, colorful notes with rich formatting. Organize ideas with labels, pin important notes, and find anything instantly.',
     icon: StickyNote,
-    color: '#3b82f6',
+    color: '#eab308',
     href: 'https://notes.ainexspace.com',
   },
   {
-    name: 'Journey',
-    description: 'Personal reflection studio with narrative intelligence, emotional analytics, and memory mapping. Write your story.',
+    name: 'Journal',
+    description: 'Daily reflections with mood tracking, AI-powered sentiment analysis, and beautiful cover images. Your story, beautifully captured.',
     icon: BookOpen,
     color: '#f97316',
-    href: 'https://journey.ainexspace.com',
+    href: 'https://journal.ainexspace.com',
   },
   {
     name: 'Todo',
-    description: 'Adaptive task management with AI prioritization, dependency tracking, and calendar-aware planning. Plan boldly.',
+    description: 'Smart task management with priorities, due dates, and recurring tasks. Organize with projects and get things done.',
     icon: CheckSquare,
-    color: '#f59e0b',
+    color: '#8b5cf6',
     href: 'https://todo.ainexspace.com',
   },
   {
     name: 'Fit',
-    description: 'Adaptive training & coaching with performance intelligence, recovery guardrails, and wearable sync. Train smarter.',
+    description: 'Complete workout tracking with exercise library, nutrition logging, and progress analytics. Train smarter, get stronger.',
     icon: Dumbbell,
-    color: '#22c55e',
+    color: '#3b82f6',
     href: 'https://fit.ainexspace.com',
   },
   {
-    name: 'Grow',
-    description: 'Habit consistency builder with streak analytics, smart reminders, and routine automation. Build unbreakable habits.',
+    name: 'Habits',
+    description: 'Build lasting habits with streak tracking, flexible schedules, and visual progress. Small steps, big transformations.',
     icon: TrendingUp,
-    color: '#8b5cf6',
-    href: 'https://grow.ainexspace.com',
-  },
-  {
-    name: 'Pulse',
-    description: 'Time mastery & focus companion with smart clock, Pomodoro timers, and circadian rhythm support. Master your time.',
-    icon: Heart,
-    color: '#ef4444',
-    href: 'https://pulse.ainexspace.com',
-  },
-  {
-    name: 'Moments',
-    description: 'Memory vault & storytelling with AI organization, mood clustering, and shareable highlight reels. Capture the moment.',
-    icon: Camera,
-    color: '#ec4899',
-    href: 'https://moments.ainexspace.com',
+    color: '#14b8a6',
+    href: 'https://habits.ainexspace.com',
   },
   {
     name: 'Health',
-    description: 'Track your body metrics, wellness, and health data. Monitor weight, sleep, vitals, and supplements.',
+    description: 'Track body metrics, sleep, vitals, and supplements. Visualize trends and understand your wellness over time.',
     icon: Activity,
     color: '#10b981',
     href: 'https://health.ainexspace.com',
   },
   {
-    name: 'Project',
-    description: 'Visual project management with interactive whiteboards, team collaboration, and progress analytics. Plan. Execute. Deliver.',
-    icon: FolderKanban,
-    color: '#6366f1',
-    href: 'https://project.ainexspace.com',
+    name: 'Album',
+    description: 'Curate and organize your photo memories. Create beautiful collections with stories and share special moments.',
+    icon: Camera,
+    color: '#ec4899',
+    href: 'https://album.ainexspace.com',
   },
   {
-    name: 'Workflow',
-    description: 'Visual automation engine with drag-and-drop designer, real-time monitoring, and custom logic. Build workflows.',
+    name: 'Projects',
+    description: 'Visual project management with kanban boards, milestones, and team collaboration. From idea to launch.',
+    icon: FolderKanban,
+    color: '#6366f1',
+    href: 'https://projects.ainexspace.com',
+  },
+  {
+    name: 'Flow',
+    description: 'Visual workflow automation with drag-and-drop canvas. Connect apps, automate tasks, build without code.',
     icon: WorkflowIcon,
+    color: '#06b6d4',
+    href: 'https://flow.ainexspace.com',
+  },
+  {
+    name: 'Subs',
+    description: 'Track all your subscriptions in one place. Monitor spending, get renewal reminders, and optimize costs.',
+    icon: Heart,
     color: '#10b981',
-    href: 'https://workflow.ainexspace.com',
+    href: 'https://subs.ainexspace.com',
   },
 ];
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Unified Data Layer',
-    description: 'All your apps share data seamlessly—tasks reference journal entries, fitness affects mood tracking, and insights flow everywhere.',
+    title: 'Unified Workspace',
+    description: 'All your apps share data seamlessly. Tasks link to projects, journal entries track moods, and everything stays in sync.',
     icon: Database,
   },
   {
-    title: 'Cross-App Intelligence',
-    description: 'AI learns from your entire life—journal insights inform goal tracking, health metrics guide energy planning, and patterns emerge across everything.',
+    title: 'AI-Powered Insights',
+    description: 'Smart analysis across your data—sentiment tracking in journals, pattern recognition in habits, and intelligent suggestions everywhere.',
     icon: Brain,
   },
   {
-    title: 'Single Sign-On Access',
-    description: 'One account unlocks everything. Switch between apps instantly without logging in again. Your workspace follows you.',
+    title: 'One Account, All Apps',
+    description: 'Single sign-on across every app. Log in once and move freely between notes, journal, fitness, and more.',
     icon: Users,
   },
   {
-    title: 'Connected Workflows',
-    description: 'Actions in one app trigger updates in others—complete a workout, update your journal mood. Hit a goal, celebrate in Moments.',
+    title: 'Shared Spaces',
+    description: 'Collaborate with family, friends, or teams. Share habits, projects, and notes in private spaces you control.',
     icon: LinkIcon,
   },
   {
-    title: 'Universal Search',
-    description: 'Search across all apps at once—find journal entries, notes, tasks, and memories from a single search bar.',
+    title: 'Beautiful Design',
+    description: 'Thoughtfully crafted interfaces with dark mode, custom themes, and delightful interactions across every app.',
     icon: BarChart3,
   },
   {
-    title: 'Privacy First',
-    description: 'Enterprise-grade encryption across all apps. Your data never leaves your control. Delete everything with one click.',
+    title: 'Your Data, Your Control',
+    description: 'Privacy-first architecture with secure authentication. Export your data anytime. No ads, no tracking, no compromises.',
     icon: Shield,
   },
 ];
@@ -269,39 +269,39 @@ function MainHomePageContent() {
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Privacy-First & Encrypted' },
-          headline: 'Ten apps. One workspace. Zero friction.',
-          subheadline: 'Your complete life operating system.',
-          description: 'Replace 10+ disconnected tools with one unified workspace. AINexSuite brings notes, journaling, fitness, projects, habits, time tracking, memories, and automation into an intelligent ecosystem powered by AI—where everything works together seamlessly.',
+          badge: { icon: Shield, text: 'Privacy-First Design' },
+          headline: 'Your life, beautifully organized.',
+          subheadline: 'One workspace for everything that matters.',
+          description: 'Notes, journal, tasks, fitness, habits, health, photos, projects, and more—all connected in one elegant workspace. Built for people who want to live intentionally.',
           highlights: [
             {
               icon: Brain,
-              title: 'AI-Powered Intelligence',
-              description: 'Grok 4 integration across every app learns from your entire life—journal insights inform goals, health metrics guide planning, patterns emerge everywhere.',
+              title: 'AI That Understands You',
+              description: 'Smart insights across your data—mood analysis in journals, pattern recognition in habits, and helpful suggestions when you need them.',
             },
             {
               icon: LinkIcon,
-              title: 'Unified & Connected',
-              description: 'Real-time data sync across all apps. Tasks reference journal entries. Workouts update mood tracking. Memories connect to moments. Everything flows together.',
+              title: 'Everything Connected',
+              description: 'Your apps work together. Share spaces with family. Sync across devices. One login for your entire digital life.',
             },
           ],
         }}
         apps={{
-          sectionTitle: 'Ten Specialized Apps, One Ecosystem',
-          sectionDescription: 'From knowledge capture to memory preservation, fitness to focus, habits to automation—each app is powerful alone, transformative together. Built on Firebase with real-time sync and Grok 4 AI intelligence.',
+          sectionTitle: 'Apps for Every Part of Your Life',
+          sectionDescription: 'Each app is crafted for a specific purpose—notes for ideas, journal for reflection, tasks for action, and more. Together, they create something greater.',
           cards: appCards,
         }}
         login={{
-          badgeText: 'Early Access',
-          signUpTitle: 'Start Your Journey',
+          badgeText: 'Free to Start',
+          signUpTitle: 'Create Your Account',
           signInTitle: 'Welcome Back',
-          signUpDescription: 'Create your account to unlock all 10 apps. One workspace, infinite possibilities.',
-          signInDescription: 'Sign in to access your unified workspace and all your apps.',
-          footerText: 'Enterprise-grade encryption. Your data is yours. 30-day free trial included.',
+          signUpDescription: 'Get started with all apps. No credit card required.',
+          signInDescription: 'Sign in to continue where you left off.',
+          footerText: 'Your data stays private. Always.',
         }}
         features={{
-          sectionTitle: 'Why Unified Matters',
-          sectionDescription: 'Individual apps are powerful. Together, they become a complete operating system for your life.',
+          sectionTitle: 'Built Different',
+          sectionDescription: 'Not just another productivity suite. A thoughtfully designed workspace that respects your time and privacy.',
           cards: featureCards,
         }}
         footer={{

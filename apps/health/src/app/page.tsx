@@ -24,9 +24,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Logging your morning health check-in…', emoji: '' },
-  { text: 'Calculating sleep quality trends…', emoji: '' },
-  { text: 'Analyzing your wellness patterns…', emoji: '' },
+  { text: 'Loading your health metrics…', emoji: '💚' },
+  { text: 'Analyzing your wellness trends…', emoji: '📊' },
+  { text: 'Your health dashboard is ready…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [

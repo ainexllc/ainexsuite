@@ -23,9 +23,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Prioritizing today\'s deep work blocks across projects…', emoji: '🧠' },
-  { text: 'Syncing meetings, deadlines, and rituals into one plan…', emoji: '🗓️' },
-  { text: 'Drafting focus prompts to keep every task crystal clear…', emoji: '✅' },
+  { text: 'Loading your tasks and projects…', emoji: '📋' },
+  { text: 'Organizing by priority and due date…', emoji: '🎯' },
+  { text: 'Your workspace is ready…', emoji: '✅' },
 ];
 
 const navLinks: NavLink[] = [
@@ -35,21 +35,21 @@ const navLinks: NavLink[] = [
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Priority Intelligence',
+    title: 'Smart Prioritization',
     description:
-      'Instantly see what matters most with AI-ranked tasks, dependencies, and commitments across every project.',
+      'Set priorities, due dates, and labels. Filter and sort to always see what needs attention now.',
     icon: BarChart3,
   },
   {
-    title: 'Calendar-Aware Planning',
+    title: 'Projects & Lists',
     description:
-      'Schedules, rituals, and deadlines integrate automatically so you can plan realistically in minutes.',
+      'Organize tasks into projects. Create recurring tasks for routines that repeat daily, weekly, or monthly.',
     icon: CalendarClock,
   },
   {
-    title: 'Focus Routines',
+    title: 'Shared Spaces',
     description:
-      'Turn recurring workflows into templates with automations that trigger when you enter focus mode.',
+      'Collaborate with family or teams. Assign tasks, share projects, and stay in sync together.',
     icon: Target,
   },
 ];
@@ -153,34 +153,34 @@ function TodoHomePageContent() {
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Operational clarity' },
-          headline: 'Plan boldly. Finish consistently.',
-          subheadline: 'AINex Todo keeps your commitments aligned with your focus.',
-          description: 'Combine projects, rituals, and meetings into one adaptive command center. AI ensures every priority has space to breathe—and gets done.',
+          badge: { icon: Shield, text: 'Get Things Done' },
+          headline: 'Tasks that actually get done.',
+          subheadline: 'Simple, powerful task management for your life.',
+          description: 'Create tasks, set priorities, organize into projects. With recurring tasks, due dates, and shared spaces—everything you need to stay on top of what matters.',
           highlights: [
             {
               icon: Kanban,
-              title: 'Workflow Templates',
-              description: 'Save your best routines as reusable blueprints with AI handoff.',
+              title: 'Flexible Views',
+              description: 'List, kanban, or calendar view. Work the way that fits you best.',
             },
             {
               icon: ClipboardList,
-              title: 'Team Assignments',
-              description: 'Delegate with context and automatic updates when priorities shift.',
+              title: 'Recurring Tasks',
+              description: 'Set it once, repeat forever. Perfect for habits and routines.',
             },
           ],
         }}
         login={{
-          badgeText: 'Planning Suite',
-          signUpTitle: 'Join AINex Tasks',
+          badgeText: 'Free to Start',
+          signUpTitle: 'Start Getting Things Done',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to orchestrate projects with AI.',
-          signInDescription: 'Sign in to access your adaptive planning workspace.',
-          footerText: 'Your tasks stay encrypted, exportable, and synced across every Ainex app.',
+          signUpDescription: 'Create your account and start organizing your tasks.',
+          signInDescription: 'Sign in to access your tasks and projects.',
+          footerText: 'Syncs across all your devices. Private and secure.',
         }}
         features={{
-          sectionTitle: 'Built for operators who refuse busywork',
-          sectionDescription: 'From solo founders to cross-functional teams, AINex Tasks keeps everyone locked on outcomes—not checklists.',
+          sectionTitle: 'Everything you need, nothing you don\'t',
+          sectionDescription: 'Powerful enough for complex projects. Simple enough for a grocery list.',
           cards: featureCards,
         }}
         showActivation={showActivation}
@@ -196,7 +196,7 @@ function TodoHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "AINex Tasks",
+          appDisplayName: "AINex Todo",
           productLinks,
           companyLinks,
           resourceLinks,

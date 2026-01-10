@@ -16,9 +16,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Indexing your latest captures and highlights…', emoji: '🗂️' },
-  { text: 'Generating synthesis cards from yesterday\'s thinking…', emoji: '📝' },
-  { text: 'Drafting prompts so your next note starts focused…', emoji: '✨' },
+  { text: 'Preparing your personal reflection space…', emoji: '📖' },
+  { text: 'Analyzing mood patterns from recent entries…', emoji: '💭' },
+  { text: 'Your journal is ready for today\'s story…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -28,21 +28,21 @@ const navLinks: NavLink[] = [
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Multimodal Capture',
+    title: 'Mood Tracking',
     description:
-      'Drop in ideas from voice, handwriting, or web snippets. Notes auto-transcribe, tag, and sync instantly.',
+      'Track how you feel with each entry. Visualize emotional patterns over time with beautiful charts and insights.',
     icon: PenSquare,
   },
   {
-    title: 'Dynamic Knowledge Spaces',
+    title: 'Beautiful Covers',
     description:
-      'Group notes into living canvases that reveal themes, backlinks, and dependencies without manual sorting.',
+      'Each entry gets a stunning cover image. Choose from curated backgrounds or let AI generate one from your words.',
     icon: FolderTree,
   },
   {
-    title: 'AI-Powered Synthesis',
+    title: 'AI Sentiment Analysis',
     description:
-      'Summaries, action items, and follow-up questions appear the moment you finish writing.',
+      'Understand your emotional journey. AI analyzes your writing to reveal patterns and trends in your wellbeing.',
     icon: Wand2,
   },
 ];
@@ -165,38 +165,38 @@ function JourneyHomePageContent() {
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Secure knowledge base' },
-          headline: 'Capture. Synthesize. Share clarity.',
-          subheadline: 'AINex Notes transforms scattered thoughts into searchable insight.',
-          description: 'Record ideas from anywhere, organize them automatically, and surface connections you didn\'t know existed.',
+          badge: { icon: Shield, text: 'Private & Secure' },
+          headline: 'Write your story. Understand yourself.',
+          subheadline: 'A beautiful space for daily reflection and self-discovery.',
+          description: 'Capture your thoughts, track your moods, and watch your personal story unfold. AI-powered insights help you understand patterns in your emotional journey.',
           highlights: [
             {
               icon: BookOpen,
-              title: 'Living Libraries',
-              description: 'Build narrative hubs that update as your projects evolve.',
+              title: 'Daily Reflections',
+              description: 'Rich text entries with mood tracking, tags, and beautiful cover images.',
             },
             {
               icon: Stamp,
-              title: 'Instant Summaries',
-              description: 'Every note ends with highlights, next steps, and shareable briefs.',
+              title: 'AI Cover Summaries',
+              description: 'Each entry gets a poetic summary that captures its essence.',
             },
           ],
         }}
         login={{
-          badgeText: 'Early Creators',
-          signUpTitle: 'Join AINex Notes',
+          badgeText: 'Free to Start',
+          signUpTitle: 'Start Your Journal',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to unlock AI-accelerated note-taking.',
-          signInDescription: 'Sign in to access your connected knowledge workspace.',
-          footerText: 'Your ideas stay encrypted and private. Export anytime.',
+          signUpDescription: 'Create your account and begin your journaling practice today.',
+          signInDescription: 'Sign in to continue your reflection journey.',
+          footerText: 'Your entries are private and encrypted. Always.',
         }}
         features={{
-          sectionTitle: 'Built for thinkers, strategists, and storytellers',
-          sectionDescription: 'Whether you\'re drafting a product spec or personal journal, Notes keeps every insight discoverable.',
+          sectionTitle: 'Journaling that grows with you',
+          sectionDescription: 'More than a diary. A personal companion that helps you understand your thoughts and emotions.',
           cards: featureCards,
         }}
         footer={{
-          appDisplayName: "AINex Notes",
+          appDisplayName: "AINex Journal",
           productLinks,
           companyLinks,
           resourceLinks,
@@ -205,8 +205,8 @@ function JourneyHomePageContent() {
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
-            appName="notes"
-            appDisplayName="Notes"
+            appName="journal"
+            appDisplayName="Journal"
             onActivated={() => window.location.reload()}
             onDifferentEmail={async () => {
               await firebaseSignOut(auth);

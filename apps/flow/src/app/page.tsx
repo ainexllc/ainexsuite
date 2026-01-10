@@ -15,9 +15,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Analyzing workflow automation opportunities…', emoji: '🔍' },
-  { text: 'Optimizing process connections and dependencies…', emoji: '📊' },
-  { text: 'Generating intelligent workflow recommendations…', emoji: '⚡' },
+  { text: 'Loading your workflows…', emoji: '🔄' },
+  { text: 'Preparing the visual canvas…', emoji: '🎨' },
+  { text: 'Your workspace is ready…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -110,16 +110,16 @@ function WorkflowHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#a855f7]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#06b6d4]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#a855f7]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#06b6d4]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a855f7] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#06b6d4] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -133,43 +133,43 @@ function WorkflowHomePageContent() {
   return (
     <>
       <HomepageTemplate
-        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="flow" appColor="#10b981" />}
-        backgroundComponent={<LayeredBackground primaryColor="#10b981" secondaryColor="#34d399" variant="structured" />}
+        logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="flow" appColor="#06b6d4" />}
+        backgroundComponent={<LayeredBackground primaryColor="#06b6d4" secondaryColor="#22d3ee" variant="structured" />}
         appName="flow"
-        accentColor="#10b981"
-        gradientFrom="#10b981"
-        gradientTo="#34d399"
+        accentColor="#06b6d4"
+        gradientFrom="#06b6d4"
+        gradientTo="#22d3ee"
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: GitBranch, text: 'Visual workflow builder' },
-          headline: 'Build Workflows.',
-          subheadline: 'AINexSuite Workflow brings visual workflow automation to your fingertips.',
-          description: 'Design, automate, and execute beautiful workflows with drag-and-drop simplicity. Transform complex processes into elegant visual diagrams.',
+          badge: { icon: GitBranch, text: 'Visual Automation' },
+          headline: 'Automate anything, visually.',
+          subheadline: 'Build powerful workflows with drag-and-drop simplicity.',
+          description: 'Connect apps, automate tasks, and build complex processes without writing code. Visual canvas makes it easy to see how everything connects.',
           highlights: [
             {
               icon: Target,
-              title: 'Visual Builder',
-              description: 'Design workflows visually with intuitive drag-and-drop interface.',
+              title: 'Drag & Drop',
+              description: 'Build workflows visually. No coding required.',
             },
             {
               icon: Zap,
-              title: 'Smart Automation',
-              description: 'Automate processes with triggers, conditions, and intelligent routing.',
+              title: 'Powerful Triggers',
+              description: 'Automate based on events, schedules, or conditions.',
             },
           ],
         }}
         login={{
-          badgeText: 'Workflow Hub',
-          signUpTitle: 'Join AINex Workflow',
+          badgeText: 'Free to Start',
+          signUpTitle: 'Start Automating',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to start building beautiful workflows.',
-          signInDescription: 'Sign in to access your workflow workspace.',
-          footerText: 'Your workflow data stays secure and private. Export anytime.',
+          signUpDescription: 'Create your account and build your first workflow.',
+          signInDescription: 'Sign in to access your workflows.',
+          footerText: 'Your workflows are private and secure.',
         }}
         features={{
-          sectionTitle: 'Built for teams that automate',
-          sectionDescription: 'Workflow combines visual design, automation, and execution into one intelligent platform.',
+          sectionTitle: 'Automation made simple',
+          sectionDescription: 'From simple automations to complex multi-step workflows, Flow handles it all.',
           cards: featureCards,
         }}
         showActivation={showActivation}
@@ -185,7 +185,7 @@ function WorkflowHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "AINex Workflow",
+          appDisplayName: "AINex Flow",
           productLinks,
           companyLinks,
           resourceLinks,
@@ -204,9 +204,9 @@ export default function WorkflowHomePage() {
           <div className="text-center space-y-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-16 w-16 rounded-full bg-[#10b981]/20 animate-pulse" />
+                <div className="h-16 w-16 rounded-full bg-[#06b6d4]/20 animate-pulse" />
               </div>
-              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#10b981]" />
+              <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#06b6d4]" />
             </div>
             <p className="text-lg font-medium text-white">Loading...</p>
           </div>

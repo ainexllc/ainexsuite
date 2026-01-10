@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useAppActivation, AppActivationBox } from '@ainexsuite/auth';
 import { auth } from '@ainexsuite/firebase';
 import { signOut as firebaseSignOut } from 'firebase/auth';
-import { Loader2, Shield, PenSquare, FolderTree, Wand2, BookOpen, Stamp } from 'lucide-react';
+import { Loader2, Shield, Palette, FolderTree, Wand2, ListChecks, Bell } from 'lucide-react';
 import { HomepageTemplate, AinexStudiosLogo, LayeredBackground } from '@ainexsuite/ui/components';
 import { useAppColors } from '@ainexsuite/theme';
 import type {
@@ -16,9 +16,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Indexing your latest captures and highlights…', emoji: '🗂️' },
-  { text: 'Generating synthesis cards from yesterday\'s thinking…', emoji: '📝' },
-  { text: 'Drafting prompts so your next note starts focused…', emoji: '✨' },
+  { text: 'Syncing your notes across all devices…', emoji: '🔄' },
+  { text: 'Organizing ideas with smart color-coded folders…', emoji: '🎨' },
+  { text: 'Your workspace is ready to go…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -28,21 +28,21 @@ const navLinks: NavLink[] = [
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Multimodal Capture',
+    title: 'Colorful & Customizable',
     description:
-      'Drop in ideas from voice, handwriting, or web snippets. Notes auto-transcribe, tag, and sync instantly.',
-    icon: PenSquare,
+      'Choose from 12 vibrant colors, patterns, and backgrounds. Make every note uniquely yours with covers and visual styling.',
+    icon: Palette,
   },
   {
-    title: 'Dynamic Knowledge Spaces',
+    title: 'Labels & Spaces',
     description:
-      'Group notes into living canvases that reveal themes, backlinks, and dependencies without manual sorting.',
+      'Organize with color-coded labels, create workspaces for personal, family, or work, and filter to find anything instantly.',
     icon: FolderTree,
   },
   {
-    title: 'AI-Powered Synthesis',
+    title: 'AI-Powered Insights',
     description:
-      'Summaries, action items, and follow-up questions appear the moment you finish writing.',
+      'Generate summaries, extract action items, and get smart tag suggestions. Let AI help you make sense of your notes.',
     icon: Wand2,
   },
 ];
@@ -165,34 +165,34 @@ function NotesHomePageContent() {
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Secure knowledge base' },
-          headline: 'Capture. Synthesize. Share clarity.',
-          subheadline: 'AINex Notes transforms scattered thoughts into searchable insight.',
-          description: 'Record ideas from anywhere, organize them automatically, and surface connections you didn\'t know existed.',
+          badge: { icon: Shield, text: 'Beautifully organized notes' },
+          headline: 'Colorful notes. Clear thinking.',
+          subheadline: 'Capture ideas in vibrant, organized notes that sync everywhere.',
+          description: 'Text notes, checklists, and quick templates — all color-coded and searchable. Set reminders, collaborate with others, and let AI help you stay on top of everything.',
           highlights: [
             {
-              icon: BookOpen,
-              title: 'Living Libraries',
-              description: 'Build narrative hubs that update as your projects evolve.',
+              icon: ListChecks,
+              title: 'Notes & Checklists',
+              description: 'Rich text editing, to-do lists, and ready-made templates for any purpose.',
             },
             {
-              icon: Stamp,
-              title: 'Instant Summaries',
-              description: 'Every note ends with highlights, next steps, and shareable briefs.',
+              icon: Bell,
+              title: 'Smart Reminders',
+              description: 'Get notified via push, email, or SMS. Never forget an important note.',
             },
           ],
         }}
         login={{
-          badgeText: 'Early Creators',
-          signUpTitle: 'Join AINex Notes',
+          badgeText: 'Free to start',
+          signUpTitle: 'Start taking notes',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to unlock AI-accelerated note-taking.',
-          signInDescription: 'Sign in to access your connected knowledge workspace.',
-          footerText: 'Your ideas stay encrypted and private. Export anytime.',
+          signUpDescription: 'Create your account to start capturing ideas in colorful, organized notes.',
+          signInDescription: 'Sign in to access your notes, labels, and workspaces.',
+          footerText: 'Your notes sync across all devices. Private and secure.',
         }}
         features={{
-          sectionTitle: 'Built for thinkers, strategists, and storytellers',
-          sectionDescription: 'Whether you\'re drafting a product spec or personal journal, Notes keeps every insight discoverable.',
+          sectionTitle: 'Everything you need to stay organized',
+          sectionDescription: 'From quick shopping lists to detailed project notes, with focus mode, sharing, and calendar views built in.',
           cards: featureCards,
         }}
         footer={{

@@ -23,9 +23,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Syncing your latest photos, voice notes, and clips…', emoji: '📸' },
-  { text: 'Tagging people, places, and vibes in seconds…', emoji: '🏷️' },
-  { text: 'Designing a story reel you can share instantly…', emoji: '🎞️' },
+  { text: 'Loading your photo collections…', emoji: '📸' },
+  { text: 'Organizing memories into albums…', emoji: '🖼️' },
+  { text: 'Your gallery is ready…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -35,21 +35,21 @@ const navLinks: NavLink[] = [
 
 const featureCards: FeatureCard[] = [
   {
-    title: 'Unified Memory Hub',
+    title: 'Beautiful Collections',
     description:
-      'Combine photos, audio, and notes into rich stories with automatic metadata and smart search.',
+      'Organize photos into themed albums. Add captions, dates, and stories to preserve context.',
     icon: Camera,
   },
   {
-    title: 'Mood-based Organization',
+    title: 'Easy Uploads',
     description:
-      'AI clusters memories by emotion, setting, and people so you can relive any moment instantly.',
+      'Drag and drop photos or upload from your device. Bulk upload makes it fast and simple.',
     icon: Palette,
   },
   {
-    title: 'Shareable Storyboards',
+    title: 'Share with Family',
     description:
-      'Turn captured moments into reels, letters, or highlight decks with one click.',
+      'Create shared albums for trips, events, or everyday moments. Everyone can contribute.',
     icon: Clapperboard,
   },
 ];
@@ -121,16 +121,16 @@ function MomentsHomePageContent() {
         <div className="text-center space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-[#f97316]/20 animate-pulse" />
+              <div className="h-16 w-16 rounded-full bg-[#ec4899]/20 animate-pulse" />
             </div>
-            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#f97316]" />
+            <Loader2 className="relative mx-auto h-12 w-12 animate-spin text-[#ec4899]" />
           </div>
           {loadingMessage && (
             <div className="space-y-2">
               <p className="text-lg font-medium text-white">{loadingMessage}</p>
               {user && !needsActivation && (
                 <p className="text-sm text-white/60 flex items-center justify-center gap-2">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f97316] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ec4899] animate-pulse" />
                   Redirecting to your workspace
                 </p>
               )}
@@ -153,41 +153,41 @@ function MomentsHomePageContent() {
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Private gallery vault' },
-          headline: 'Capture the moment.',
-          subheadline: "AINex Album organizes life's highlights into stories worth revisiting.",
-          description: 'From travel logs to family milestones, every memory gets context, tags, and a place in your personal timeline.',
+          badge: { icon: Shield, text: 'Your Private Gallery' },
+          headline: 'Your memories, beautifully kept.',
+          subheadline: "A home for your photos and the stories behind them.",
+          description: 'Upload, organize, and share your favorite photos. Create albums for trips, milestones, and everyday moments worth remembering.',
           highlights: [
             {
               icon: MapPin,
-              title: 'Location Tagging',
-              description: 'Auto-tag locations and rediscover memories by place.',
+              title: 'Albums & Collections',
+              description: 'Organize photos into albums with custom covers and descriptions.',
             },
             {
               icon: Share2,
-              title: 'One-Click Sharing',
-              description: 'Share stories privately with loved ones or publish highlight reels.',
+              title: 'Share with Anyone',
+              description: 'Create shared albums for family and friends to enjoy together.',
             },
           ],
         }}
         login={{
-          badgeText: 'Memory Vault',
-          signUpTitle: 'Join AINex Moments',
+          badgeText: 'Free to Start',
+          signUpTitle: 'Start Your Album',
           signInTitle: 'Welcome back',
-          signUpDescription: "Create your account to organize and relive life's best moments.",
-          signInDescription: 'Sign in to access your curated memory gallery.',
-          footerText: 'Your memories stay encrypted and private. Export or download anytime.',
+          signUpDescription: "Create your account and start building your photo collection.",
+          signInDescription: 'Sign in to access your photos and albums.',
+          footerText: 'Your photos are private and secure. Download anytime.',
         }}
         features={{
-          sectionTitle: 'Built for storytellers, travelers, and memory keepers',
-          sectionDescription: 'Moments transforms scattered media into searchable, shareable stories that honor your experiences.',
+          sectionTitle: 'Simple photo organization',
+          sectionDescription: 'No complicated features. Just a beautiful place for your photos and memories.',
           cards: featureCards,
         }}
         showActivation={showActivation}
         activationComponent={
           <AppActivationBox
             appName="album"
-            appDisplayName="Moments"
+            appDisplayName="Album"
             onActivated={() => window.location.reload()}
             onDifferentEmail={async () => {
               await firebaseSignOut(auth);
@@ -196,7 +196,7 @@ function MomentsHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "AINex Moments",
+          appDisplayName: "AINex Album",
           productLinks,
           companyLinks,
           resourceLinks,

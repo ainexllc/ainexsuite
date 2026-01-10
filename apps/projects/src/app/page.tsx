@@ -15,9 +15,9 @@ import type {
 } from '@ainexsuite/ui/components';
 
 const demoSteps: DemoStep[] = [
-  { text: 'Analyzing project dependencies and critical paths…', emoji: '🔍' },
-  { text: 'Organizing tasks by priority and team capacity…', emoji: '📊' },
-  { text: 'Generating intelligent project insights and recommendations…', emoji: '⚡' },
+  { text: 'Loading your projects and boards…', emoji: '📋' },
+  { text: 'Preparing your workspace…', emoji: '🎯' },
+  { text: 'Ready to build something great…', emoji: '✨' },
 ];
 
 const navLinks: NavLink[] = [
@@ -142,34 +142,34 @@ function ProjectsHomePageContent() {
         demoSteps={demoSteps}
         navLinks={navLinks}
         hero={{
-          badge: { icon: Shield, text: 'Enterprise-grade security' },
-          headline: 'Plan. Execute. Deliver.',
-          subheadline: 'Projects transforms planning into intelligent execution.',
-          description: 'From planning to delivery, track everything that matters. Coordinate teams, manage timelines, and drive results with AI-powered insights.',
+          badge: { icon: Shield, text: 'Visual Project Management' },
+          headline: 'From idea to done.',
+          subheadline: 'Visual project management that keeps teams aligned.',
+          description: 'Kanban boards, whiteboards, and progress tracking. Everything you need to plan, execute, and ship projects successfully.',
           highlights: [
             {
               icon: Target,
-              title: 'Goal Tracking',
-              description: 'Set objectives and track progress with intelligent milestone management.',
+              title: 'Kanban Boards',
+              description: 'Visualize progress and move work forward with intuitive boards.',
             },
             {
               icon: Zap,
-              title: 'Smart Automation',
-              description: 'Automate routine tasks and focus on what moves projects forward.',
+              title: 'Team Collaboration',
+              description: 'Share projects, assign tasks, and keep everyone in sync.',
             },
           ],
         }}
         login={{
-          badgeText: 'Project Hub',
-          signUpTitle: 'Join Projects',
+          badgeText: 'Free to Start',
+          signUpTitle: 'Start Your Project',
           signInTitle: 'Welcome back',
-          signUpDescription: 'Create your account to start managing projects with intelligence.',
-          signInDescription: 'Sign in to access your project workspace.',
-          footerText: 'Your project data stays secure and private. Export anytime.',
+          signUpDescription: 'Create your account and start managing projects visually.',
+          signInDescription: 'Sign in to access your projects.',
+          footerText: 'Your projects are private and secure.',
         }}
         features={{
-          sectionTitle: 'Built for teams that ship',
-          sectionDescription: 'Projects combines planning, execution, and analytics into one intelligent workspace.',
+          sectionTitle: 'Everything you need to ship',
+          sectionDescription: 'From planning to launch, Projects keeps your team organized and moving forward.',
           cards: featureCards,
         }}
         showActivation={showActivation}
@@ -185,7 +185,7 @@ function ProjectsHomePageContent() {
           />
         }
         footer={{
-          appDisplayName: "Projects",
+          appDisplayName: "AINex Projects",
           productLinks,
           companyLinks,
           resourceLinks,
