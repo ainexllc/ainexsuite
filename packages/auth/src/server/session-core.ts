@@ -69,13 +69,16 @@ const DEV_SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
  */
 export function getSessionCookieOptions(forClear = false): CookieOptions {
   const domain = getSessionCookieDomain();
-  const isProduction = process.env.NODE_ENV === 'production';
+  // Secure cookies on production, preview (Vercel), and any HTTPS environment
+  const isSecure = process.env.NODE_ENV === 'production' ||
+                   process.env.VERCEL_ENV === 'production' ||
+                   process.env.VERCEL_ENV === 'preview';
 
   return {
     ...(domain ? { domain } : {}),
     maxAge: forClear ? 0 : SESSION_COOKIE_MAX_AGE_SECONDS,
     httpOnly: true,
-    secure: isProduction,
+    secure: isSecure,
     sameSite: 'lax',
     path: '/',
   };

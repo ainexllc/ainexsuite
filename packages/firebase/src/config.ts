@@ -28,15 +28,34 @@ export const SESSION_COOKIE_MAX_AGE = SESSION_COOKIE_MAX_AGE_MS; // Keep for bac
 // Use a function for runtime evaluation since this package is built separately
 // and process.env.NODE_ENV would be evaluated at package build time otherwise
 export function getSessionCookieDomain(): string | undefined {
-  // Check for Vercel production environment or explicit production flag
-  if (process.env.VERCEL_ENV === 'production' ||
-    process.env.NODE_ENV === 'production') {
+  // Server-side: check environment variables
+  if (typeof window === 'undefined') {
+    // Vercel sets VERCEL_ENV automatically for all deployments
+    // Production and preview deployments on *.ainexspace.com need the shared domain
+    if (process.env.VERCEL_ENV === 'production' ||
+        process.env.VERCEL_ENV === 'preview' ||
+        process.env.NODE_ENV === 'production') {
+      return '.ainexspace.com';
+    }
+    // Development: Return undefined - cookies without a domain are "HostOnly"
+    // and will be sent to all ports on the same host (localhost)
+    return undefined;
+  }
+
+  // Client-side: check hostname directly (more reliable than env vars in browser)
+  const hostname = window.location.hostname;
+
+  // Production: all *.ainexspace.com subdomains share cookies
+  if (hostname.includes('ainexspace.com')) {
     return '.ainexspace.com';
   }
-  // Development: Return undefined - cookies without a domain are "HostOnly"
-  // and will be sent to all ports on the same host (localhost)
-  // Note: We rely on localStorage sync for cross-port SSO in dev since
-  // httpOnly cookies can't be read client-side for transfer
+
+  // Vercel preview deployments (*.vercel.app) - use host-only cookies
+  if (hostname.includes('vercel.app')) {
+    return undefined;
+  }
+
+  // Development (localhost) - use host-only cookies for cross-port SSO
   return undefined;
 }
 

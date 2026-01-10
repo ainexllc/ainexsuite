@@ -1,70 +1,30 @@
 /**
  * Shared Session Creation Handler
  * Consolidates session creation logic used across all apps
+ *
+ * @deprecated Prefer using handlers from '@ainexsuite/auth/server' instead:
+ * - LoginPOST for session creation
+ * - SessionGET for session verification
+ * - CustomTokenPOST for custom token generation
+ *
+ * This file is kept for backwards compatibility but uses the consolidated
+ * getSessionCookieDomain() from @ainexsuite/firebase/config.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { db as adminDb } from '@ainexsuite/firebase/admin'; // Use Admin SDK Firestore
+import { getSessionCookieDomain } from '@ainexsuite/firebase/config';
 import { migrateUserData, calculateTrialEndDate } from '../user-utils';
 import type { User } from '@ainexsuite/types';
 
 /**
  * Detect cookie domain based on hostname
+ * @deprecated Use getSessionCookieDomain() from @ainexsuite/firebase/config instead
  */
-function detectCookieDomain(hostname: string): string {
-  // Check for Vercel production environment or explicit production flag
-  if (process.env.VERCEL_ENV === 'production' ||
-    process.env.NODE_ENV === 'production') {
-    // Production logic remains same
-    if (hostname.includes('ainexspace.com')) {
-      return '.ainexspace.com';
-    }
-  }
-
-  // Development: Return undefined to create a "HostOnly" cookie
-  // This allows the cookie to be shared across all ports on localhost (3000, 3001, etc.)
-  return undefined as unknown as string;
-
-  // Production: check for subdomain vs standalone domain
-  if (hostname.includes('ainexspace.com')) {
-    return '.ainexspace.com'; // Subdomain SSO
-  }
-
-  if (hostname.includes('ainexnotes.com')) {
-    return '.ainexnotes.com';
-  }
-
-  if (hostname.includes('ainexjournal.com')) {
-    return '.ainexjournal.com';
-  }
-
-  if (hostname.includes('ainextodo.com')) {
-    return '.ainextodo.com';
-  }
-
-  if (hostname.includes('ainextrack.com')) {
-    return '.ainextrack.com';
-  }
-
-  if (hostname.includes('ainexalbum.com')) {
-    return '.ainexalbum.com';
-  }
-
-  if (hostname.includes('ainexhabits.com')) {
-    return '.ainexhabits.com';
-  }
-
-  if (hostname.includes('ainexhub.com')) {
-    return '.ainexhub.com';
-  }
-
-  if (hostname.includes('ainexfit.com')) {
-    return '.ainexfit.com';
-  }
-
-  // Default to current hostname for unknown domains
-  return hostname;
+function detectCookieDomain(_hostname: string): string | undefined {
+  // Delegate to the consolidated implementation
+  return getSessionCookieDomain();
 }
 
 /**
