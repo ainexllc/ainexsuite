@@ -37,6 +37,9 @@ function buildCSP(options = {}) {
     options.imgSrc ||
     "'self' data: https: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com";
   const fontSrc = options.fontSrc || "'self' data: https://fonts.gstatic.com";
+  const mediaSrc =
+    options.mediaSrc ||
+    "'self' blob: https://firebasestorage.googleapis.com https://*.firebasestorage.app";
   const connectSrc =
     options.connectSrc ||
     [
@@ -77,6 +80,7 @@ function buildCSP(options = {}) {
     `style-src ${styleSrc}`,
     `img-src ${imgSrc}`,
     `font-src ${fontSrc}`,
+    `media-src ${mediaSrc}`,
     `connect-src ${connectSrc}`,
     `frame-src ${frameSrc}`,
     `frame-ancestors ${frameAncestors}`,
