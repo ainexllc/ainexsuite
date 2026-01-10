@@ -1,7 +1,7 @@
 'use client';
 
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import { HintsProvider } from '@/components/hints';
 import { AppProviders } from '@/components/providers';
 
@@ -30,8 +30,6 @@ export default function WorkspaceRootLayout({
       <AppProviders>
         {children}
       </AppProviders>
-      {/* App Floating Dock - Desktop only */}
-      <AppFloatingDock currentApp="flow" />
     </HintsProvider>
   );
 }

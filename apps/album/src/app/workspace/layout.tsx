@@ -3,7 +3,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
@@ -143,9 +143,6 @@ function WorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
         appSettingsLabel="Album"
         appSettingsIcon={<Camera className="h-4 w-4" />}
       />
-
-      {/* App Floating Dock - Desktop only */}
-      <AppFloatingDock currentApp="album" />
     </>
   );
 }

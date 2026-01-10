@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { useFontPreference, useFontSizePreference, SettingsModal, AppFloatingDock, WorkspaceLoadingScreen } from '@ainexsuite/ui/components';
+import { useFontPreference, useFontSizePreference, SettingsModal, WorkspaceLoadingScreen } from '@ainexsuite/ui/components';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { LayoutDashboard } from 'lucide-react';
 import { ActivityPanel } from '@/components/activity-panel';
@@ -217,9 +217,6 @@ function WorkspaceLayoutInner({
         isOpen={isQuickCreateOpen}
         onClose={() => setIsQuickCreateOpen(false)}
       />
-
-      {/* App Floating Dock - Desktop only */}
-      <AppFloatingDock currentApp="main" />
     </>
   );
 }

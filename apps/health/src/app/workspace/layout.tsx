@@ -3,7 +3,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 import { Heart } from 'lucide-react';
@@ -167,9 +167,6 @@ function WorkspaceLayoutInner({
 
       {/* Export Modal */}
       <ExportModal isOpen={exportModalOpen} onClose={() => setExportModalOpen(false)} />
-
-      {/* App Floating Dock - Desktop only */}
-      <AppFloatingDock currentApp="health" />
     </>
   );
 }

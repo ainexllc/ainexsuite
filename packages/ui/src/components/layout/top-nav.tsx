@@ -60,7 +60,7 @@ export function TopNav({
             <button
               type="button"
               onClick={onMenuClick}
-              className="inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-full bg-muted/80 shadow-sm transition hover:bg-muted text-foreground"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted/80 shadow-sm transition hover:bg-muted text-foreground"
               aria-label="Toggle navigation"
             >
               <Menu className="h-5 w-5" />

@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { useFontPreference, useFontSizePreference, SettingsModal, AppFloatingDock, WorkspaceLoadingScreen } from '@ainexsuite/ui/components';
+import { useFontPreference, useFontSizePreference, SettingsModal, WorkspaceLoadingScreen } from '@ainexsuite/ui/components';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { LayoutDashboard } from 'lucide-react';
 import { HintsProvider } from '@/components/hints';
@@ -128,9 +128,6 @@ function WorkspaceLayoutInner({
         onPollAnimationStatus={pollAnimationStatus}
         animateAvatarApiEndpoint="/api/animate-avatar"
       />
-
-      {/* App Floating Dock - Desktop only */}
-      <AppFloatingDock currentApp="mosaic" />
     </HintsProvider>
   );
 }

@@ -3,7 +3,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference, AppFloatingDock } from '@ainexsuite/ui';
+import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
 import { SubscriptionProvider } from '@/components/providers/subscription-provider';
@@ -143,9 +143,6 @@ function WorkspaceLayoutInner({
         appSettingsLabel="Subs"
         appSettingsIcon={<Wallet className="h-4 w-4" />}
       />
-
-      {/* App Floating Dock - Desktop only */}
-      <AppFloatingDock currentApp="subs" />
     </>
   );
 }

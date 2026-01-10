@@ -10,7 +10,6 @@ import {
   AddChildModal,
   useFontPreference,
   useFontSizePreference,
-  AppFloatingDock,
 } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import type { SpaceType, SpaceRole, ChildMember } from '@ainexsuite/types';
@@ -366,9 +365,6 @@ export default function WorkspaceRootLayout({
           onUpdateChild={handleChildUpdate}
         />
       )}
-
-      {/* App Floating Dock - Desktop only */}
-      <AppFloatingDock currentApp="tables" />
     </HintsProvider>
   );
 }
