@@ -71,7 +71,7 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
   const SpacesContext = createContext<SpacesContextValue<TSpace> | null>(null);
 
   function SpacesProvider({ children }: { children: ReactNode }) {
-    const { user, loading: authLoading } = useAuth();
+    const { user, firebaseUser, loading: authLoading } = useAuth();
     const [userSpaces, setUserSpaces] = useState<TSpace[]>([]);
     const [currentSpaceId, setCurrentSpaceId] = useState<string>('personal');
     const [loading, setLoading] = useState(true);
@@ -79,10 +79,10 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
     const initializedRef = useRef(false);
 
     const userId = user?.uid ?? null;
-    // Wait for auth to be fully complete to avoid permission errors
-    // In dev mode, firebaseUser may be null (uses session hydration instead)
-    // authLoading is false only when authPhase is 'authenticated' or 'unauthenticated'
-    const isAuthReady = !authLoading && !!user;
+    // Wait for auth to be fully complete AND Firebase Auth to be signed in
+    // to avoid permission-denied errors from Firestore
+    // firebaseUser is required because Firestore security rules check Firebase Auth, not our session
+    const isAuthReady = !authLoading && !!user && !!firebaseUser;
 
     // Cross-app sync hook (only active when syncAcrossApps is enabled)
     const { broadcastSpaceChange, getInitialSpaceId } = useSpaceSync({

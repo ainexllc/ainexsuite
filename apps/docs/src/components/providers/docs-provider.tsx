@@ -95,7 +95,7 @@ type DocsProviderProps = {
 };
 
 export function DocsProvider({ children }: DocsProviderProps) {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const { currentSpaceId } = useSpaces();
   const { preferences, loading: preferencesLoading } = usePreferences();
   const [ownedDocs, setOwnedDocs] = useState<Doc[]>([]);
@@ -176,7 +176,8 @@ export function DocsProvider({ children }: DocsProviderProps) {
   }, [filters, sort, filtersInitialized, userId]);
 
   useEffect(() => {
-    if (!user || !userId) {
+    // Wait for Firebase Auth to be signed in before subscribing to Firestore
+    if (!user || !userId || !firebaseUser) {
       setOwnedDocs([]);
       setSharedDocs([]);
       setSpaceDocs([]);
@@ -220,11 +221,11 @@ export function DocsProvider({ children }: DocsProviderProps) {
       unsubscribeOwned();
       unsubscribeShared();
     };
-  }, [user, userId]);
+  }, [user, userId, firebaseUser]);
 
   // Subscribe to space docs (docs from other users in the current space)
   useEffect(() => {
-    if (!userId || !currentSpaceId || currentSpaceId === "personal") {
+    if (!userId || !firebaseUser || !currentSpaceId || currentSpaceId === "personal") {
       setSpaceDocs([]);
       setSpaceLoaded(true);
       return;
@@ -248,7 +249,7 @@ export function DocsProvider({ children }: DocsProviderProps) {
     return () => {
       unsubscribeSpace();
     };
-  }, [userId, currentSpaceId]);
+  }, [userId, firebaseUser, currentSpaceId]);
 
   useEffect(() => {
     if (!user || !userId) {

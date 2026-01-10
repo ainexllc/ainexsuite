@@ -32,18 +32,20 @@ type LabelsProviderProps = {
 };
 
 export function LabelsProvider({ children }: LabelsProviderProps) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, firebaseUser, loading: authLoading } = useAuth();
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
 
   const userId = user?.uid ?? null;
+  // Wait for Firebase Auth to be signed in before subscribing to Firestore
+  const isFirestoreReady = !authLoading && !!userId && !!firebaseUser;
 
   useEffect(() => {
     if (authLoading) {
       return;
     }
 
-    if (!userId) {
+    if (!isFirestoreReady) {
       setLabels([]);
       setLoading(false);
       return;
@@ -56,7 +58,7 @@ export function LabelsProvider({ children }: LabelsProviderProps) {
     });
 
     return () => unsubscribe();
-  }, [authLoading, userId]);
+  }, [authLoading, userId, isFirestoreReady]);
 
   const handleCreate = useCallback(
     async (draft: LabelDraft) => {

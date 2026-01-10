@@ -200,7 +200,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const devSession = getDevSession();
       if (devSession) {
         // Sync Firebase Auth BEFORE setting user state to prevent race conditions
-        await syncFirebaseAuthFirst();
+        const firebaseAuthSynced = await syncFirebaseAuthFirst();
+        if (!firebaseAuthSynced) {
+          // Firebase Auth sync failed - clear stale session and require re-login
+          console.warn('[Auth] Firebase Auth sync failed for dev session - clearing session');
+          clearDevSession();
+          setAuthPhase('unauthenticated');
+          return;
+        }
         setUser(devSession);
         setAuthPhase('authenticated');
         return;
@@ -241,7 +248,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Sync Firebase Auth BEFORE setting user state to prevent race conditions
             // This ensures Firestore subscriptions don't start until Firebase Auth is ready
-            await syncFirebaseAuthFirst();
+            const firebaseAuthSynced = await syncFirebaseAuthFirst();
+            if (!firebaseAuthSynced) {
+              // Firebase Auth sync failed - session is valid but Firestore won't work
+              // Still set user for basic functionality but log warning
+              console.warn('[Auth] Firebase Auth sync failed - Firestore features may not work');
+            }
 
             setUser(sessionUser);
             setAuthPhase('authenticated');

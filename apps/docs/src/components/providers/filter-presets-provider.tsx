@@ -32,14 +32,16 @@ type FilterPresetsProviderProps = {
 };
 
 export function FilterPresetsProvider({ children }: FilterPresetsProviderProps) {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [loading, setLoading] = useState(true);
 
   const userId = user?.uid ?? null;
+  // Wait for Firebase Auth to be signed in before subscribing to Firestore
+  const isFirestoreReady = !!userId && !!firebaseUser;
 
   useEffect(() => {
-    if (!userId) {
+    if (!isFirestoreReady) {
       setPresets([]);
       setLoading(false);
       return;
@@ -53,7 +55,7 @@ export function FilterPresetsProvider({ children }: FilterPresetsProviderProps) 
     });
 
     return () => unsubscribe();
-  }, [userId]);
+  }, [userId, isFirestoreReady]);
 
   const handleCreatePreset = useCallback(
     async (name: string, filters: FilterValue, sort?: SortConfig): Promise<string> => {

@@ -38,12 +38,14 @@ const INITIAL_PREFERENCES: UserPreference = {
 };
 
 export function PreferencesProvider({ children }: PreferencesProviderProps) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, firebaseUser, loading: authLoading } = useAuth();
   const [preferences, setPreferences] = useState<UserPreference>(INITIAL_PREFERENCES);
   const [loading, setLoading] = useState(true);
 
   // The shared auth package uses `uid`, not `id`
   const userId = user?.uid ?? null;
+  // Wait for Firebase Auth to be signed in before subscribing to Firestore
+  const isFirestoreReady = !authLoading && !!userId && !!firebaseUser;
 
   useEffect(() => {
     // Wait for auth to finish loading
@@ -51,8 +53,8 @@ export function PreferencesProvider({ children }: PreferencesProviderProps) {
       return;
     }
 
-    // No user = not authenticated
-    if (!userId) {
+    // No user or Firebase Auth not ready = don't subscribe to Firestore
+    if (!isFirestoreReady) {
       setPreferences(INITIAL_PREFERENCES);
       setLoading(false);
       return;
@@ -66,7 +68,7 @@ export function PreferencesProvider({ children }: PreferencesProviderProps) {
     });
 
     return () => unsubscribe();
-  }, [authLoading, userId]);
+  }, [authLoading, userId, isFirestoreReady]);
 
   const handleUpdate = useCallback(
     async (updates: Partial<Omit<UserPreference, "id" | "createdAt" | "updatedAt">>) => {
