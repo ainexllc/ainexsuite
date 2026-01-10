@@ -219,12 +219,6 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
           const hiddenInApps = (space as BaseSpace & { hiddenInApps?: string[] }).hiddenInApps;
           const isHiddenInThisApp = hiddenInApps?.includes(config.appId);
 
-          // Debug log for space visibility filtering
-          if (hiddenInApps && hiddenInApps.length > 0) {
-            // eslint-disable-next-line no-console
-            console.log(`[Spaces/${config.appId}] Space "${space.name}" hiddenInApps:`, hiddenInApps, `hidden in ${config.appId}:`, isHiddenInThisApp);
-          }
-
           if (isHiddenInThisApp) return false;
           // Global spaces are visible by default (unless explicitly hidden above)
           if ((space as BaseSpace & { isGlobal?: boolean }).isGlobal) return true;
@@ -327,12 +321,8 @@ export function createSpacesProvider<TSpace extends BaseSpace = BaseSpace>(
     // Update an existing space
     const handleUpdateSpace = useCallback(
       async (spaceId: string, updates: SpaceDraft): Promise<void> => {
-        // eslint-disable-next-line no-console
-        console.log(`[Spaces/${config.appId}] Updating space ${spaceId} with:`, updates);
         const spaceRef = doc(db, config.collectionName, spaceId);
         await updateDoc(spaceRef, updates);
-        // eslint-disable-next-line no-console
-        console.log(`[Spaces/${config.appId}] Update complete`);
       },
       []
     );
