@@ -87,14 +87,17 @@ function normalizePrivateKey(rawKey: string): string {
  * The projectId MUST match the client's project ID (alnexsuite) for proper SSO.
  */
 function getAdminOptions(): AppOptions {
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+  const rawClientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
-  if (!clientEmail || !privateKey) {
+  if (!rawClientEmail || !privateKey) {
     throw new Error(
       "Firebase admin environment variables are missing. Populate FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY in .env.local to enable secure server features.",
     );
   }
+
+  // Normalize client email - remove any trailing whitespace, newlines, or quotes
+  const clientEmail = rawClientEmail.trim().replace(/\\n/g, '').replace(/^["']|["']$/g, '');
 
   const normalizedPrivateKey = normalizePrivateKey(privateKey);
 
