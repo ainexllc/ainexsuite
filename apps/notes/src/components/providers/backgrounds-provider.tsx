@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
+import { useAuth } from '@ainexsuite/auth';
 import { getBackgroundOptions, subscribeToBackgrounds, toBackgroundOption } from '@ainexsuite/firebase';
 import type { BackgroundDoc, BackgroundOption } from '@ainexsuite/types';
 
@@ -23,12 +24,28 @@ interface BackgroundsProviderProps {
  * multiple subscriptions from individual components
  */
 export function BackgroundsProvider({ children }: BackgroundsProviderProps) {
+  const { firebaseUser, loading: authLoading } = useAuth();
   const [backgrounds, setBackgrounds] = useState<BackgroundOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Wait for Firebase Auth to be signed in before subscribing to Firestore
+  const isFirestoreReady = !authLoading && !!firebaseUser;
+
   // Subscribe to real-time updates (single subscription for entire app)
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return;
+    }
+
+    // No Firebase Auth user = don't subscribe to Firestore (backgrounds requires auth)
+    if (!isFirestoreReady) {
+      setBackgrounds([]);
+      setIsLoading(false);
+      return;
+    }
+
     let initialLoad = true;
 
     const unsubscribe = subscribeToBackgrounds((docs: BackgroundDoc[]) => {
@@ -41,7 +58,7 @@ export function BackgroundsProvider({ children }: BackgroundsProviderProps) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [authLoading, isFirestoreReady]);
 
   // Refresh function (manual refresh if needed)
   const refresh = useCallback(async () => {
