@@ -6,12 +6,14 @@
   "exports": {
     "./tailwind": "./tailwind.config.js",
     "./eslint": "./eslint.config.js",
-    "./typescript": "./tsconfig.json"
+    "./typescript": "./tsconfig.json",
+    "./next-security-headers": "./next-security-headers.js"
   },
   "files": [
     "tailwind.config.js",
     "eslint.config.js",
-    "tsconfig.json"
+    "tsconfig.json",
+    "next-security-headers.js"
   ],
   "dependencies": {},
   "devDependencies": {

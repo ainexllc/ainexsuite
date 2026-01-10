@@ -1,3 +1,7 @@
+const {
+  getSecurityHeaders,
+} = require("@ainexsuite/config/next-security-headers");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Core settings
@@ -37,6 +41,11 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-toast"],
+  },
+
+  // Security headers
+  async headers() {
+    return getSecurityHeaders();
   },
 };
 

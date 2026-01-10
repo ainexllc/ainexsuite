@@ -1,3 +1,7 @@
+const {
+  getSecurityHeaders,
+} = require("@ainexsuite/config/next-security-headers");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: [
@@ -17,6 +21,11 @@ const nextConfig = {
       "lh3.googleusercontent.com",
       "images.unsplash.com",
     ],
+  },
+
+  // Security headers
+  async headers() {
+    return getSecurityHeaders();
   },
 };
 

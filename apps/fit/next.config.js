@@ -1,3 +1,7 @@
+const {
+  getSecurityHeaders,
+} = require("@ainexsuite/config/next-security-headers");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -18,6 +22,11 @@ const nextConfig = {
       "lh3.googleusercontent.com",
       "spoonacular.com",
     ],
+  },
+
+  // Security headers
+  async headers() {
+    return getSecurityHeaders();
   },
 };
 

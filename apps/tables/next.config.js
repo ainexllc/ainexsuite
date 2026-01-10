@@ -1,3 +1,7 @@
+const {
+  getSecurityHeaders,
+} = require("@ainexsuite/config/next-security-headers");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -16,6 +20,11 @@ const nextConfig = {
   },
   images: {
     domains: ["firebasestorage.googleapis.com", "lh3.googleusercontent.com"],
+  },
+
+  // Security headers
+  async headers() {
+    return getSecurityHeaders();
   },
 };
 

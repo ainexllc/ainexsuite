@@ -1,3 +1,7 @@
+const {
+  getSecurityHeaders,
+} = require("@ainexsuite/config/next-security-headers");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Core settings
@@ -7,51 +11,41 @@ const nextConfig = {
 
   // Transpile shared packages
   transpilePackages: [
-    '@ainexsuite/ui',
-    '@ainexsuite/firebase',
-    '@ainexsuite/auth',
-    '@ainexsuite/ai',
-    '@ainexsuite/types',
+    "@ainexsuite/ui",
+    "@ainexsuite/firebase",
+    "@ainexsuite/auth",
+    "@ainexsuite/ai",
+    "@ainexsuite/types",
   ],
 
   // App-specific environment variables
   env: {
-    NEXT_PUBLIC_APP_NAME: 'journal',
-    NEXT_PUBLIC_MAIN_DOMAIN: 'www.ainexspace.com',
+    NEXT_PUBLIC_APP_NAME: "journal",
+    NEXT_PUBLIC_MAIN_DOMAIN: "www.ainexspace.com",
   },
 
   // Image optimization (updated to new syntax)
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },
 
   // Performance optimizations
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-toast'],
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-toast"],
   },
 
-  // Security headers - Allow Firebase Auth popup
+  // Security headers
   async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
-          },
-        ],
-      },
-    ];
+    return getSecurityHeaders();
   },
 };
 

@@ -1,19 +1,28 @@
+const {
+  getSecurityHeaders,
+} = require("@ainexsuite/config/next-security-headers");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [
-    '@ainexsuite/ui',
-    '@ainexsuite/firebase',
-    '@ainexsuite/auth',
-    '@ainexsuite/ai',
-    '@ainexsuite/types',
+    "@ainexsuite/ui",
+    "@ainexsuite/firebase",
+    "@ainexsuite/auth",
+    "@ainexsuite/ai",
+    "@ainexsuite/types",
   ],
   env: {
-    NEXT_PUBLIC_APP_NAME: 'todo',
-    NEXT_PUBLIC_MAIN_DOMAIN: 'www.ainexspace.com',
+    NEXT_PUBLIC_APP_NAME: "todo",
+    NEXT_PUBLIC_MAIN_DOMAIN: "www.ainexspace.com",
   },
   images: {
-    domains: ['firebasestorage.googleapis.com', 'lh3.googleusercontent.com'],
+    domains: ["firebasestorage.googleapis.com", "lh3.googleusercontent.com"],
+  },
+
+  // Security headers
+  async headers() {
+    return getSecurityHeaders();
   },
 };
 
