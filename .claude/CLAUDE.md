@@ -238,6 +238,7 @@ vercel env pull .env.local
 | `/build-check` | Run lint, type-check, build before push      |
 | `/commit`      | Create git commit with proper format         |
 | `/push`        | Lint, commit, push and monitor Vercel builds |
+| `/push-app`    | Lint, commit, push and monitor single app    |
 
 ---
 
