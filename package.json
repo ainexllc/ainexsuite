@@ -39,7 +39,6 @@
     "deploy:fit": "turbo run deploy --filter @ainexsuite/fit",
     "deploy:admin": "turbo run deploy --filter admin",
     "deploy:notenex": "turbo run deploy --filter @ainexsuite/notenex",
-    "mprocs": "mprocs",
     "prepare": "husky"
   },
   "workspaces": [

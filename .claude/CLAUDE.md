@@ -41,24 +41,11 @@
 ### Development
 
 ```bash
-pnpm mprocs                           # Start all apps (interactive UI)
+pnpm dev                              # Start all apps
 pnpm --filter @ainexsuite/main dev    # Single app
 pnpm build                            # REQUIRED before pushing to main
 pnpm lint
 pnpm format                           # Prettier format all files
-```
-
-### mprocs Process Management
-
-```bash
-pnpm mprocs         # Start all apps with interactive UI
-# In mprocs:
-#   j/k  - Navigate between apps
-#   r    - Restart selected app
-#   s    - Start selected app
-#   x    - Stop selected app
-#   ?    - Show help
-#   q    - Quit
 ```
 
 ### Build & Deploy
@@ -159,7 +146,6 @@ pnpm deploy:all                       # Deploy all apps to Vercel
 | `firebase` | Firebase CLI operations        | Authenticated |
 | `stripe`   | Payment testing, webhooks      | Authenticated |
 | `gh`       | GitHub CLI (PRs, issues, etc.) | Authenticated |
-| `mprocs`   | Process management (dev UI)    | Ready         |
 | `pnpm`     | Package manager                | Ready         |
 | `turbo`    | Monorepo build orchestration   | Ready         |
 
@@ -248,7 +234,7 @@ vercel env pull .env.local
 | `/stripe`      | Payments, subscriptions, webhooks           |
 | `/namecheap`   | DNS record management                       |
 | `/resend`      | Send transactional emails                   |
-| `/restart-all` | Kill ports 3000-3020 and restart all apps   |
+| `/restart-all` | Kill all dev ports (3000-3020)              |
 | `/build-check` | Run lint, type-check, build before push     |
 | `/commit`      | Create git commit with proper format        |
 
