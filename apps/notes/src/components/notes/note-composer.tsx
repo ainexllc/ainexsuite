@@ -17,6 +17,8 @@ import {
   Loader2,
   Brain,
   Flame,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
@@ -43,6 +45,13 @@ import { generateUUID } from "@ainexsuite/ui";
 import { DateSuggestions } from "@ainexsuite/date-detection";
 import { useSpaces } from "@/components/providers/spaces-provider";
 import { Hint, HINTS } from "@/components/hints";
+import {
+  hasChildren,
+  getSubtreeIndices,
+  getChildrenCompletionStats,
+  moveSubtree,
+  cascadeCompletionStatus,
+} from "@/lib/utils/checklist-utils";
 
 type AttachmentDraft = {
   id: string;
@@ -573,16 +582,40 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
   ]);
 
   const handleChecklistChange = (itemId: string, next: Partial<ChecklistItem>) => {
-    setChecklist((prev) =>
-      prev.map((item) =>
+    setChecklist((prev) => {
+      // Update the item
+      const updated = prev.map((item) =>
         item.id === itemId
           ? {
             ...item,
             ...next,
           }
           : item,
-      ),
-    );
+      );
+
+      // Cascade completion status to parent checkboxes
+      if (next.completed !== undefined) {
+        const itemIndex = updated.findIndex((item) => item.id === itemId);
+        if (itemIndex !== -1) {
+          cascadeCompletionStatus(updated, itemIndex, next.completed);
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  // Bulk complete/uncomplete a subtree (Shift+click)
+  const handleBulkToggle = (itemId: string, idx: number) => {
+    setChecklist((prev) => {
+      const item = prev[idx];
+      const newCompleted = !item.completed;
+      const subtreeIndices = [idx, ...getSubtreeIndices(prev, idx)];
+
+      return prev.map((it, i) =>
+        subtreeIndices.includes(i) ? { ...it, completed: newCompleted } : it
+      );
+    });
   };
 
   const handleAddChecklistItem = (afterIndex?: number, inheritIndent?: number) => {
@@ -958,15 +991,46 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
               <div className="space-y-3">
                 {checklist.map((item, idx) => {
                   const indentLevel = item.indent ?? 0;
+                  const itemHasChildren = hasChildren(checklist, idx);
+                  const completionStats = itemHasChildren ? getChildrenCompletionStats(checklist, idx) : null;
                   return (
                     <div
                       key={item.id}
                       className="group flex items-center gap-3"
                       style={{ paddingLeft: `${indentLevel * 24}px` }}
                     >
+                      {/* Collapse/expand indicator for parent items */}
+                      {itemHasChildren ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setChecklist((prev) =>
+                              prev.map((it) =>
+                                it.id === item.id ? { ...it, collapsed: !it.collapsed } : it
+                              )
+                            );
+                          }}
+                          className="h-4 w-4 flex items-center justify-center flex-shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+                        >
+                          {item.collapsed ? (
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      ) : (
+                        <div className="w-4 flex-shrink-0" />
+                      )}
                       <input
                         type="checkbox"
                         checked={item.completed}
+                        onClick={(event) => {
+                          // Shift+click for bulk toggle (parent + all children)
+                          if (event.shiftKey && itemHasChildren) {
+                            event.preventDefault();
+                            handleBulkToggle(item.id, idx);
+                          }
+                        }}
                         onChange={(event) =>
                           handleChecklistChange(item.id, {
                             completed: event.target.checked,
@@ -994,26 +1058,28 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
                             handleIndentChange(item.id, -1);
                             return;
                           }
-                          // Option/Alt + Up to move item up
+                          // Option/Alt + Up to move subtree up
                           if (event.key === "ArrowUp" && event.altKey && idx > 0) {
                             event.preventDefault();
-                            setChecklist((prev) => {
-                              const newList = [...prev];
-                              [newList[idx - 1], newList[idx]] = [newList[idx], newList[idx - 1]];
-                              return newList;
-                            });
+                            setChecklist((prev) => moveSubtree(prev, idx, idx - 1));
                             setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
                             return;
                           }
-                          // Option/Alt + Down to move item down
-                          if (event.key === "ArrowDown" && event.altKey && idx < checklist.length - 1) {
+                          // Option/Alt + Down to move subtree down
+                          if (event.key === "ArrowDown" && event.altKey) {
                             event.preventDefault();
-                            setChecklist((prev) => {
-                              const newList = [...prev];
-                              [newList[idx], newList[idx + 1]] = [newList[idx + 1], newList[idx]];
-                              return newList;
-                            });
+                            const subtreeSize = getSubtreeIndices(checklist, idx).length + 1;
+                            const targetIdx = idx + subtreeSize;
+                            if (targetIdx < checklist.length) {
+                              setChecklist((prev) => moveSubtree(prev, idx, targetIdx));
+                            }
                             setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
+                            return;
+                          }
+                          // Cmd/Ctrl+Enter to bulk toggle parent + children
+                          if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && itemHasChildren) {
+                            event.preventDefault();
+                            handleBulkToggle(item.id, idx);
                             return;
                           }
                           // Arrow Up to navigate to previous item
@@ -1070,6 +1136,12 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
                         }}
                         className="flex-1 border-b border-transparent bg-transparent pb-1 text-sm text-ink-700 placeholder:text-ink-400 focus:border-outline-strong focus:outline-none"
                       />
+                      {/* Progress badge for parent items */}
+                      {completionStats && completionStats.total > 0 && (
+                        <span className="text-xs text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0">
+                          {completionStats.completed}/{completionStats.total}
+                        </span>
+                      )}
                       <button
                         type="button"
                         className="opacity-0 transition group-hover:opacity-100"

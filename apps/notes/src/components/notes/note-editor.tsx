@@ -25,6 +25,8 @@ import {
   Copy,
   GripVertical,
   Flame,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import {
   DndContext,
@@ -40,7 +42,6 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
-  arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { FocusIcon } from "@/components/icons/focus-icon";
@@ -72,6 +73,16 @@ import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { ConfirmationDialog, generateUUID } from "@ainexsuite/ui";
 import { ImageModal } from "@/components/ui/image-modal";
+import {
+  getSubtreeIndices,
+  hasChildren,
+  getChildrenCompletionStats,
+  moveSubtree,
+  groupIntoSubtrees,
+  cascadeCompletionStatus,
+  isHiddenByCollapsedAncestor,
+  isInvalidDropTarget,
+} from "@/lib/utils/checklist-utils";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
   if (a.length !== b.length) {
@@ -95,14 +106,15 @@ type NoteEditorProps = {
   onClose: () => void;
 };
 
-// Sortable wrapper for checklist items with drag handle
+// Sortable wrapper for checklist items with drag handle and tree lines
 type SortableChecklistItemProps = {
   id: string;
   children: React.ReactNode;
   indentLevel: number;
+  subtreeCount?: number; // Number of children being dragged with this item
 };
 
-function SortableChecklistItem({ id, children, indentLevel }: SortableChecklistItemProps) {
+function SortableChecklistItem({ id, children, indentLevel, subtreeCount }: SortableChecklistItemProps) {
   const {
     attributes,
     listeners,
@@ -115,7 +127,6 @@ function SortableChecklistItem({ id, children, indentLevel }: SortableChecklistI
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    paddingLeft: `${indentLevel * 24}px`,
     opacity: isDragging ? 0.5 : 1,
   };
 
@@ -123,8 +134,30 @@ function SortableChecklistItem({ id, children, indentLevel }: SortableChecklistI
     <div
       ref={setNodeRef}
       style={style}
-      className="group flex items-center gap-2"
+      className="group relative flex items-center gap-2"
     >
+      {/* Tree lines for nested items */}
+      {indentLevel > 0 && (
+        <>
+          {Array.from({ length: indentLevel }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-700"
+              style={{ left: `${i * 24 + 10}px` }}
+            />
+          ))}
+          {/* Horizontal connector */}
+          <div
+            className="absolute top-1/2 h-px bg-zinc-200 dark:bg-zinc-700"
+            style={{
+              left: `${(indentLevel - 1) * 24 + 10}px`,
+              width: '14px',
+            }}
+          />
+        </>
+      )}
+      {/* Indentation spacer */}
+      <div style={{ width: `${indentLevel * 24}px`, flexShrink: 0 }} />
       {/* Drag handle */}
       <button
         type="button"
@@ -136,6 +169,12 @@ function SortableChecklistItem({ id, children, indentLevel }: SortableChecklistI
         <GripVertical className="h-4 w-4 text-zinc-400" />
       </button>
       {children}
+      {/* Show subtree count while dragging */}
+      {isDragging && subtreeCount && subtreeCount > 0 && (
+        <span className="ml-2 text-xs text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
+          +{subtreeCount} sub-items
+        </span>
+      )}
     </div>
   );
 }
@@ -169,6 +208,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     note.checklist,
   );
   const [autoSortCompleted, setAutoSortCompleted] = useState(true);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    itemId: string;
+    childCount: number;
+  } | null>(null);
   const [color, setColor] = useState<NoteColor>(note.color);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(note.backgroundImage ?? null);
   const [backgroundOverlay, setBackgroundOverlay] = useState<BackgroundOverlay>(note.backgroundOverlay ?? 'auto');
@@ -737,16 +780,88 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           : item,
       );
 
-      // If completion status changed AND auto-sort is enabled, sort: uncompleted first, completed last
+      // Cascade completion status to parent checkboxes
+      if (next.completed !== undefined) {
+        const itemIndex = updated.findIndex((item) => item.id === itemId);
+        if (itemIndex !== -1) {
+          cascadeCompletionStatus(updated, itemIndex, next.completed);
+        }
+      }
+
+      // If completion status changed AND auto-sort is enabled, sort subtrees together
       if (next.completed !== undefined && autoSortCompleted) {
-        const uncompleted = updated.filter((item) => !item.completed);
-        const completed = updated.filter((item) => item.completed);
-        return [...uncompleted, ...completed];
+        // Group items into subtrees (top-level parents with their children)
+        const subtrees = groupIntoSubtrees(updated);
+        // Sort subtrees by parent completion status
+        const uncompleted = subtrees.filter(tree => !tree[0].completed);
+        const completed = subtrees.filter(tree => tree[0].completed);
+        return [...uncompleted.flat(), ...completed.flat()];
       }
 
       return updated;
     });
   };
+
+  // Toggle collapse/expand for a parent item
+  const handleToggleCollapsed = (itemId: string) => {
+    setChecklist((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, collapsed: !item.collapsed } : item
+      )
+    );
+  };
+
+  // Bulk complete/uncomplete a subtree (Shift+click)
+  const handleBulkToggle = (itemId: string, idx: number) => {
+    setChecklist((prev) => {
+      const item = prev[idx];
+      const newCompleted = !item.completed;
+      const subtreeIndices = [idx, ...getSubtreeIndices(prev, idx)];
+
+      const updated = prev.map((it, i) =>
+        subtreeIndices.includes(i) ? { ...it, completed: newCompleted } : it
+      );
+
+      // Auto-sort if enabled
+      if (autoSortCompleted) {
+        const subtrees = groupIntoSubtrees(updated);
+        const uncompleted = subtrees.filter(tree => !tree[0].completed);
+        const completed = subtrees.filter(tree => tree[0].completed);
+        return [...uncompleted.flat(), ...completed.flat()];
+      }
+
+      return updated;
+    });
+  };
+
+  // Delete item with confirmation if it has children
+  const handleDeleteItem = (itemId: string, idx: number) => {
+    const childCount = getSubtreeIndices(checklist, idx).length;
+    if (childCount > 0) {
+      setDeleteConfirmation({ itemId, childCount });
+    } else {
+      setChecklist((prev) => prev.filter((item) => item.id !== itemId));
+    }
+  };
+
+  // Confirm deletion of item and all children
+  const confirmDeleteWithChildren = () => {
+    if (!deleteConfirmation) return;
+    const idx = checklist.findIndex((item) => item.id === deleteConfirmation.itemId);
+    if (idx !== -1) {
+      const subtreeSize = getSubtreeIndices(checklist, idx).length + 1;
+      setChecklist((prev) => [
+        ...prev.slice(0, idx),
+        ...prev.slice(idx + subtreeSize),
+      ]);
+    }
+    setDeleteConfirmation(null);
+  };
+
+  // Visible checklist items (filter out collapsed children)
+  const visibleChecklist = useMemo(() => {
+    return checklist.filter((_, idx) => !isHiddenByCollapsedAncestor(checklist, idx));
+  }, [checklist]);
 
   // Drag and drop sensors for checklist reordering
   const sensors = useSensors(
@@ -760,14 +875,21 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     })
   );
 
-  // Handle checklist drag end
+  // Handle checklist drag end - move entire subtree
   const handleChecklistDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       setChecklist((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+
+        // Check if trying to drop into own subtree (invalid)
+        if (isInvalidDropTarget(items, oldIndex, newIndex)) {
+          return items;
+        }
+
+        // Move the entire subtree
+        return moveSubtree(items, oldIndex, newIndex);
       });
     }
   };
@@ -1231,28 +1353,60 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               onDragEnd={handleChecklistDragEnd}
             >
               <SortableContext
-                items={checklist.map((i) => i.id)}
+                items={visibleChecklist.map((i) => i.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="space-y-3">
                   {checklist.map((item, idx) => {
+                    // Skip items hidden by collapsed ancestor
+                    if (isHiddenByCollapsedAncestor(checklist, idx)) {
+                      return null;
+                    }
                     const indentLevel = item.indent ?? 0;
+                    const itemHasChildren = hasChildren(checklist, idx);
+                    const subtreeCount = itemHasChildren ? getSubtreeIndices(checklist, idx).length : 0;
+                    const completionStats = itemHasChildren ? getChildrenCompletionStats(checklist, idx) : null;
                     return (
                       <SortableChecklistItem
                         key={item.id}
                         id={item.id}
                         indentLevel={indentLevel}
+                        subtreeCount={subtreeCount}
                       >
+                        {/* Collapse/expand button for parent items */}
+                        {itemHasChildren ? (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCollapsed(item.id)}
+                            className="h-4 w-4 flex items-center justify-center flex-shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+                            aria-label={item.collapsed ? "Expand children" : "Collapse children"}
+                          >
+                            {item.collapsed ? (
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        ) : (
+                          <div className="w-4 flex-shrink-0" />
+                        )}
                         <input
                           type="checkbox"
                           checked={item.completed}
-                      onChange={(event) =>
-                        handleChecklistChange(item.id, {
-                          completed: event.target.checked,
-                        })
-                      }
-                      className="h-4 w-4 accent-accent-500 flex-shrink-0"
-                    />
+                          onClick={(event) => {
+                            // Shift+click for bulk toggle (parent + all children)
+                            if (event.shiftKey && itemHasChildren) {
+                              event.preventDefault();
+                              handleBulkToggle(item.id, idx);
+                            }
+                          }}
+                          onChange={(event) =>
+                            handleChecklistChange(item.id, {
+                              completed: event.target.checked,
+                            })
+                          }
+                          className="h-4 w-4 accent-accent-500 flex-shrink-0"
+                        />
                     <input
                       value={item.text}
                       onChange={(event) =>
@@ -1273,28 +1427,30 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           handleIndentChange(item.id, -1);
                           return;
                         }
-                        // Option/Alt + Up to move item up
+                        // Option/Alt + Up to move subtree up
                         if (event.key === "ArrowUp" && event.altKey && idx > 0) {
                           event.preventDefault();
-                          setChecklist((prev) => {
-                            const newList = [...prev];
-                            [newList[idx - 1], newList[idx]] = [newList[idx], newList[idx - 1]];
-                            return newList;
-                          });
+                          setChecklist((prev) => moveSubtree(prev, idx, idx - 1));
                           // Keep focus on the moved item
                           setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
                           return;
                         }
-                        // Option/Alt + Down to move item down
-                        if (event.key === "ArrowDown" && event.altKey && idx < checklist.length - 1) {
+                        // Option/Alt + Down to move subtree down
+                        if (event.key === "ArrowDown" && event.altKey) {
                           event.preventDefault();
-                          setChecklist((prev) => {
-                            const newList = [...prev];
-                            [newList[idx], newList[idx + 1]] = [newList[idx + 1], newList[idx]];
-                            return newList;
-                          });
+                          const subtreeSize = getSubtreeIndices(checklist, idx).length + 1;
+                          const targetIdx = idx + subtreeSize;
+                          if (targetIdx < checklist.length) {
+                            setChecklist((prev) => moveSubtree(prev, idx, targetIdx));
+                          }
                           // Keep focus on the moved item
                           setTimeout(() => checklistInputRefs.current[item.id]?.focus(), 0);
+                          return;
+                        }
+                        // Cmd/Ctrl+Enter to bulk toggle parent + children
+                        if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && itemHasChildren) {
+                          event.preventDefault();
+                          handleBulkToggle(item.id, idx);
                           return;
                         }
                         // Arrow Up to navigate to previous item
@@ -1355,18 +1511,20 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           : "text-zinc-700 dark:text-zinc-300"
                       }`}
                     />
+                    {/* Progress badge for parent items */}
+                    {completionStats && completionStats.total > 0 && (
+                      <span className="text-xs text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0">
+                        {completionStats.completed}/{completionStats.total}
+                      </span>
+                    )}
                     <button
                       type="button"
                       className="opacity-0 transition group-hover:opacity-100"
-                      onClick={() =>
-                        setChecklist((prev) =>
-                          prev.filter((entry) => entry.id !== item.id),
-                        )
-                      }
+                      onClick={() => handleDeleteItem(item.id, idx)}
                       aria-label="Remove checklist item"
-                        >
-                          <X className="h-4 w-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" />
-                        </button>
+                    >
+                      <X className="h-4 w-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" />
+                    </button>
                       </SortableChecklistItem>
                     );
                   })}
@@ -2316,6 +2474,19 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         cancelText="Keep note"
         variant="danger"
       />
+
+      {/* Delete Checklist Item with Children Confirmation */}
+      <ConfirmationDialog
+        isOpen={!!deleteConfirmation}
+        onClose={() => setDeleteConfirmation(null)}
+        onConfirm={() => confirmDeleteWithChildren()}
+        title="Delete item and sub-items?"
+        description={`This will delete the item and ${deleteConfirmation?.childCount || 0} sub-item${(deleteConfirmation?.childCount || 0) === 1 ? '' : 's'}.`}
+        confirmText="Delete all"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
       <ImageModal
         isOpen={!!previewImage}
         onClose={() => setPreviewImage(null)}

@@ -74,6 +74,7 @@ export type ChecklistItem = {
   text: string;
   completed: boolean;
   indent?: number; // 0-3 levels of indentation (default 0)
+  collapsed?: boolean; // Hide children when true
 };
 
 export type NoteAttachment = {
