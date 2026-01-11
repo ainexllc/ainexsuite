@@ -3,5 +3,6 @@
   "buildCommand": "cd ../.. && pnpm turbo run build --filter=@ainexsuite/flow --force",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "ignoreCommand": "cd ../.. && git diff --quiet HEAD^ HEAD -- ./apps/flow ./packages ./package.json ./pnpm-lock.yaml ./turbo.json"
 }
