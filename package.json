@@ -39,6 +39,7 @@
     "deploy:fit": "turbo run deploy --filter @ainexsuite/fit",
     "deploy:admin": "turbo run deploy --filter admin",
     "deploy:notenex": "turbo run deploy --filter @ainexsuite/notenex",
+    "mprocs": "mprocs",
     "pm2:start": "pm2 start ecosystem.config.js",
     "pm2:stop": "pm2 stop all",
     "pm2:restart": "pm2 restart all",

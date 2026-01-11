@@ -1,0 +1,128 @@
+procs:
+  main:
+    cwd: ./apps/main
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3000"
+
+  notes:
+    cwd: ./apps/notes
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3001"
+
+  journal:
+    cwd: ./apps/journal
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3002"
+
+  todo:
+    cwd: ./apps/todo
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3003"
+
+  health:
+    cwd: ./apps/health
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3004"
+
+  album:
+    cwd: ./apps/album
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3005"
+
+  habits:
+    cwd: ./apps/habits
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3006"
+
+  mosaic:
+    cwd: ./apps/mosaic
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3007"
+
+  fit:
+    cwd: ./apps/fit
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3008"
+
+  projects:
+    cwd: ./apps/projects
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3009"
+
+  flow:
+    cwd: ./apps/flow
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3010"
+
+  subs:
+    cwd: ./apps/subs
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3011"
+
+  docs:
+    cwd: ./apps/docs
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3012"
+
+  tables:
+    cwd: ./apps/tables
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3013"
+
+  calendar:
+    cwd: ./apps/calendar
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3014"
+
+  admin:
+    cwd: ./apps/admin
+    shell: pnpm dev --turbo
+    autorestart: true
+    stop: hard-kill
+    env:
+      PORT: "3020"
