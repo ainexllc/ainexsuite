@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 import type { JournalEntry } from '@ainexsuite/types';
 import { deleteJournalEntry, toggleEntryPin, updateJournalEntry } from '@/lib/firebase/firestore';
 import { deleteAllEntryFiles } from '@/lib/firebase/storage';
-import { useToast, ConfirmationDialog, getEntryColorConfig, FocusGlow } from '@ainexsuite/ui';
+import { useToast, ConfirmationDialog, getEntryColorConfig } from '@ainexsuite/ui';
 import { useRouter } from 'next/navigation';
 import {
   Paperclip,
@@ -263,9 +263,6 @@ export function JournalCard({ entry, onUpdate }: JournalCardProps) {
         )}
         onClick={handleCardClick}
       >
-        {/* Animated glow effect for pinned cards */}
-        {entry.pinned && <FocusGlow />}
-
         {/* Cover image layer - highest priority, shows selected cover texture */}
         {hasCover && currentCover && (
           <div className="absolute inset-0 overflow-hidden rounded-2xl">

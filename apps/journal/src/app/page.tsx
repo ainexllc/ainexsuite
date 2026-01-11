@@ -157,7 +157,7 @@ function JourneyHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="journal" appColor={primary} />}
-        backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} variant="organic" />}
+        backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} />}
         appName="journal"
         accentColor={primary}
         gradientFrom={primary}

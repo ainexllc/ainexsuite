@@ -134,7 +134,7 @@ function WorkflowHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="flow" appColor="#06b6d4" />}
-        backgroundComponent={<LayeredBackground primaryColor="#06b6d4" secondaryColor="#22d3ee" variant="structured" />}
+        backgroundComponent={<LayeredBackground primaryColor="#06b6d4" secondaryColor="#22d3ee"  />}
         appName="flow"
         accentColor="#06b6d4"
         gradientFrom="#06b6d4"

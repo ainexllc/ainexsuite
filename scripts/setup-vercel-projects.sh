@@ -32,8 +32,8 @@ fi
 
 echo -e "${GREEN}✓ Authenticated as: $(vercel whoami)${NC}\n"
 
-# Project definitions (using simple arrays instead of associative)
-APPS="main journey notes todo moments grow track"
+# Project definitions - all apps in the monorepo
+APPS="main notes journal todo health album habits mosaic fit projects flow subs docs tables calendar admin"
 
 # Function to create or link project
 create_or_link_project() {
@@ -121,13 +121,23 @@ echo ""
 
 echo -e "${YELLOW}3. Add Custom Domains${NC}"
 echo "   → Project Settings → Domains → Add Domain"
-echo "   Main app: ainexspace.com, www.ainexspace.com"
-echo "   Journey app: journey.ainexspace.com, ainexjourney.com, www.ainexjourney.com"
-echo "   Notes app: notes.ainexspace.com, ainexnotes.com, www.ainexnotes.com"
-echo "   Todo app: tasks.ainexspace.com, ainextasks.com, www.ainextasks.com"
-echo "   Moments app: moments.ainexspace.com, ainexmoments.com, www.ainexmoments.com"
-echo "   Grow app: grow.ainexspace.com, ainexgrow.com, www.ainexgrow.com"
-echo "   Track app: track.ainexspace.com, ainextrack.com, www.ainextrack.com"
+echo "   All apps use *.ainexspace.com subdomains:"
+echo "   main:     ainexspace.com, www.ainexspace.com"
+echo "   notes:    notes.ainexspace.com"
+echo "   journal:  journal.ainexspace.com"
+echo "   todo:     todo.ainexspace.com"
+echo "   health:   health.ainexspace.com"
+echo "   album:    album.ainexspace.com"
+echo "   habits:   habits.ainexspace.com"
+echo "   mosaic:   mosaic.ainexspace.com"
+echo "   fit:      fit.ainexspace.com"
+echo "   projects: projects.ainexspace.com"
+echo "   flow:     flow.ainexspace.com"
+echo "   subs:     subs.ainexspace.com"
+echo "   docs:     docs.ainexspace.com"
+echo "   tables:   tables.ainexspace.com"
+echo "   calendar: calendar.ainexspace.com"
+echo "   admin:    admin.ainexspace.com"
 echo ""
 
 echo -e "${YELLOW}4. Configure DNS Records${NC}"

@@ -64,3 +64,6 @@ docs/reference/env-backups/
 # MCP servers (local installations)
 .mcp-servers/
 
+
+# Vercel check files
+.env.vercel-check

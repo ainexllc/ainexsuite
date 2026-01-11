@@ -145,7 +145,7 @@ function MomentsHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="album" appColor="#ec4899" />}
-        backgroundComponent={<LayeredBackground primaryColor="#ec4899" secondaryColor="#f472b6" variant="organic" />}
+        backgroundComponent={<LayeredBackground primaryColor="#ec4899" secondaryColor="#f472b6"  />}
         appName="album"
         accentColor="#ec4899"
         gradientFrom="#ec4899"

@@ -157,7 +157,7 @@ function MosaicHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="mosaic" appColor="#ef4444" />}
-        backgroundComponent={<LayeredBackground primaryColor="#ef4444" secondaryColor="#f87171" variant="energetic" />}
+        backgroundComponent={<LayeredBackground primaryColor="#ef4444" secondaryColor="#f87171" />}
         appName="mosaic"
         accentColor="#ef4444"
         gradientFrom="#ef4444"

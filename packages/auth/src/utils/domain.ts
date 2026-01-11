@@ -1,6 +1,8 @@
 /**
  * Cookie domain detection utility
  * Ensures consistent cookie domain between client and server
+ *
+ * All apps use *.ainexspace.com subdomains for SSO
  */
 
 /**
@@ -19,49 +21,9 @@ export function getCookieDomain(hostname?: string): string {
     return '.localhost';
   }
 
-  // Production subdomains: detect which domain family
+  // Production: all apps use *.ainexspace.com subdomains
   if (host.includes('ainexspace.com')) {
     return '.ainexspace.com';
-  }
-
-  if (host.includes('ainexnotes.com')) {
-    return '.ainexnotes.com';
-  }
-
-  if (host.includes('ainexjournal.com')) {
-    return '.ainexjournal.com';
-  }
-
-  if (host.includes('ainexfit.com')) {
-    return '.ainexfit.com';
-  }
-
-  if (host.includes('ainexhabits.com')) {
-    return '.ainexhabits.com';
-  }
-
-  if (host.includes('ainexdisplay.com')) {
-    return '.ainexdisplay.com';
-  }
-
-  if (host.includes('ainexalbum.com')) {
-    return '.ainexalbum.com';
-  }
-
-  if (host.includes('ainextrack.com')) {
-    return '.ainextrack.com';
-  }
-
-  if (host.includes('ainexproject.com')) {
-    return '.ainexproject.com';
-  }
-
-  if (host.includes('ainexworkflow.com')) {
-    return '.ainexworkflow.com';
-  }
-
-  if (host.includes('ainextodo.com')) {
-    return '.ainextodo.com';
   }
 
   // Vercel preview deployments

@@ -144,7 +144,7 @@ function FitHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="fit" appColor="#3b82f6" />}
-        backgroundComponent={<LayeredBackground primaryColor="#3b82f6" secondaryColor="#22c55e" variant="structured" />}
+        backgroundComponent={<LayeredBackground primaryColor="#3b82f6" secondaryColor="#22c55e" />}
         appName="fit"
         accentColor="#3b82f6"
         gradientFrom="#3b82f6"

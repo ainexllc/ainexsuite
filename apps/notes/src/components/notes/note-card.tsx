@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
-import { ConfirmationDialog, FocusGlow } from "@ainexsuite/ui";
+import { ConfirmationDialog } from "@ainexsuite/ui";
 import type { Note, NotePriority } from "@/lib/types/note";
 import { useNotes } from "@/components/providers/notes-provider";
 import { NOTE_COLORS } from "@/lib/constants/note-colors";
@@ -145,9 +145,6 @@ export function NoteCard({ note }: NoteCardProps) {
         )}
         onClick={() => setIsEditing(true)}
       >
-        {/* Animated glow effect for pinned cards */}
-        {note.pinned && <FocusGlow />}
-
         {/* Cover Image Layer */}
         {hasCover && !backgroundImage && currentCover && (
           <div className="absolute inset-0 overflow-hidden rounded-2xl">

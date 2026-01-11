@@ -4,19 +4,19 @@
 
 ## Apps
 
-| App      | Port | Color   | Purpose               | Vercel Domain           |
+| App      | Port | Color   | Purpose               | Domain                  |
 | -------- | ---- | ------- | --------------------- | ----------------------- |
 | main     | 3000 | #f97316 | Central dashboard     | ainexspace.com          |
-| notes    | 3001 | #eab308 | Colorful notes        | ainexnotes.com          |
+| notes    | 3001 | #eab308 | Colorful notes        | notes.ainexspace.com    |
 | journal  | 3002 | #f97316 | Mood/reflections      | journal.ainexspace.com  |
-| todo     | 3003 | #8b5cf6 | Task management       | ainextask.com           |
+| todo     | 3003 | #8b5cf6 | Task management       | todo.ainexspace.com     |
 | health   | 3004 | #10b981 | Body metrics          | health.ainexspace.com   |
 | album    | 3005 | #ec4899 | Memory curation       | album.ainexspace.com    |
-| habits   | 3006 | #14b8a6 | Personal development  | grow.ainexsuite.com     |
-| mosaic   | 3007 | #ef4444 | Dashboard display     | display.ainexspace.com  |
+| habits   | 3006 | #14b8a6 | Personal development  | habits.ainexspace.com   |
+| mosaic   | 3007 | #ef4444 | Dashboard display     | mosaic.ainexspace.com   |
 | fit      | 3008 | #3b82f6 | Workout tracking      | fit.ainexspace.com      |
-| projects | 3009 | #6366f1 | Project management    | ainexproject.com        |
-| flow     | 3010 | #06b6d4 | Visual automation     | ainexworkflow.com       |
+| projects | 3009 | #6366f1 | Project management    | projects.ainexspace.com |
+| flow     | 3010 | #06b6d4 | Visual automation     | flow.ainexspace.com     |
 | subs     | 3011 | #10b981 | Subscription tracking | subs.ainexspace.com     |
 | docs     | 3012 | #3b82f6 | Rich documents        | docs.ainexspace.com     |
 | tables   | 3013 | #10b981 | Spreadsheets          | tables.ainexspace.com   |
@@ -41,23 +41,24 @@
 ### Development
 
 ```bash
-pnpm dev                              # All apps (via PM2)
+pnpm mprocs                           # Start all apps (interactive UI)
 pnpm --filter @ainexsuite/main dev    # Single app
 pnpm build                            # REQUIRED before pushing to main
 pnpm lint
 pnpm format                           # Prettier format all files
 ```
 
-### PM2 Process Management
+### mprocs Process Management
 
 ```bash
-pnpm pm2:start      # Start all apps via PM2
-pnpm pm2:stop       # Stop all apps
-pnpm pm2:restart    # Restart all apps
-pnpm pm2:delete     # Delete all processes
-pnpm pm2:logs       # View logs
-pnpm pm2:status     # Check status
-pnpm pm2:monit      # Monitor dashboard
+pnpm mprocs         # Start all apps with interactive UI
+# In mprocs:
+#   j/k  - Navigate between apps
+#   r    - Restart selected app
+#   s    - Start selected app
+#   x    - Stop selected app
+#   ?    - Show help
+#   q    - Quit
 ```
 
 ### Build & Deploy
@@ -103,7 +104,6 @@ pnpm deploy:all                       # Deploy all apps to Vercel
 | ----------------- | ------------------------------------ |
 | context7          | Documentation lookup for any library |
 | frontend-design   | High-quality UI component generation |
-| github            | GitHub PR/issue management           |
 | commit-commands   | Git commit workflows                 |
 | security-guidance | Security best practices              |
 | vercel            | Deployment management                |
@@ -153,15 +153,36 @@ pnpm deploy:all                       # Deploy all apps to Vercel
 
 ## CLI Tools Available
 
-| Tool       | Purpose                        | Auth Status                 |
-| ---------- | ------------------------------ | --------------------------- |
-| `vercel`   | Deployments, env vars, domains | Authenticated               |
-| `firebase` | Firebase CLI operations        | Authenticated               |
-| `stripe`   | Payment testing, webhooks      | Install with `stripe login` |
-| `gh`       | GitHub CLI                     | Authenticated               |
-| `pm2`      | Process management             | Ready                       |
-| `pnpm`     | Package manager                | Ready                       |
-| `turbo`    | Monorepo build orchestration   | Ready                       |
+| Tool       | Purpose                        | Auth Status   |
+| ---------- | ------------------------------ | ------------- |
+| `vercel`   | Deployments, env vars, domains | Authenticated |
+| `firebase` | Firebase CLI operations        | Authenticated |
+| `stripe`   | Payment testing, webhooks      | Authenticated |
+| `gh`       | GitHub CLI (PRs, issues, etc.) | Authenticated |
+| `mprocs`   | Process management (dev UI)    | Ready         |
+| `pnpm`     | Package manager                | Ready         |
+| `turbo`    | Monorepo build orchestration   | Ready         |
+
+### GitHub CLI (`gh`) - Use for all GitHub operations
+
+```bash
+# Pull Requests
+gh pr create --title "Title" --body "Description"
+gh pr list
+gh pr view <number>
+gh pr merge <number>
+gh pr checkout <number>
+
+# Issues
+gh issue create --title "Title" --body "Description"
+gh issue list
+gh issue view <number>
+gh issue close <number>
+
+# Repo info
+gh repo view
+gh api repos/{owner}/{repo}/pulls/{number}/comments
+```
 
 ---
 
@@ -206,11 +227,13 @@ vercel env pull .env.local
 | ainexsuite-health   | apps/health    | @ainexsuite/health   |
 | ainexsuite-album    | apps/album     | @ainexsuite/album    |
 | ainexsuite-habits   | apps/habits    | @ainexsuite/habits   |
-| ainexsuite-display  | apps/mosaic    | @ainexsuite/mosaic   |
-| ainexsuite-workflow | apps/flow      | @ainexsuite/flow     |
+| ainexsuite-mosaic   | apps/mosaic    | @ainexsuite/mosaic   |
+| ainexsuite-flow     | apps/flow      | @ainexsuite/flow     |
 | ainexsuite-fit      | apps/fit       | @ainexsuite/fit      |
 | ainexsuite-projects | apps/projects  | @ainexsuite/projects |
 | ainexsuite-subs     | apps/subs      | @ainexsuite/subs     |
+| ainexsuite-docs     | apps/docs      | @ainexsuite/docs     |
+| ainexsuite-tables   | apps/tables    | @ainexsuite/tables   |
 | ainexsuite-calendar | apps/calendar  | @ainexsuite/calendar |
 | ainexsuite-admin    | apps/admin     | @ainexsuite/admin    |
 
@@ -273,3 +296,4 @@ Each app needs in Vercel:
 5. **No force push/rebase** without explicit request
 6. **Use MCP servers** - Firebase, Resend, Namecheap MCPs are available
 7. **Check Vercel first** - Use `vercel ls` to see deployment status before debugging
+8. **GitHub operations** - Use `gh` CLI (not MCP plugin) for PRs, issues, and repo operations

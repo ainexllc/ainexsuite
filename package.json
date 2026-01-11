@@ -40,13 +40,6 @@
     "deploy:admin": "turbo run deploy --filter admin",
     "deploy:notenex": "turbo run deploy --filter @ainexsuite/notenex",
     "mprocs": "mprocs",
-    "pm2:start": "pm2 start ecosystem.config.js",
-    "pm2:stop": "pm2 stop all",
-    "pm2:restart": "pm2 restart all",
-    "pm2:delete": "pm2 delete all",
-    "pm2:logs": "pm2 logs",
-    "pm2:status": "pm2 status",
-    "pm2:monit": "pm2 monit",
     "prepare": "husky"
   },
   "workspaces": [
@@ -62,7 +55,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "next": "15.5.9",
-    "pm2": "^5.3.0",
     "prettier": "^3.7.4",
     "turbo": "^1.11.3",
     "typescript": "^5.3.3"

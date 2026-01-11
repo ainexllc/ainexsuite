@@ -214,7 +214,7 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onNavigationToggle}
-              className="flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition-colors bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors bg-zinc-300/80 text-zinc-700 hover:bg-zinc-400/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
               aria-label="Toggle navigation"
             >
               <Menu className="h-4 w-4" />

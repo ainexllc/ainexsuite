@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Check, Calendar, AlertCircle } from "lucide-react";
 import { clsx } from "clsx";
-import { FocusGlow, PriorityIcon } from "@ainexsuite/ui";
+import { PriorityIcon } from "@ainexsuite/ui";
 import type { Project } from "@/lib/types/project";
 import { useLabels } from "@/components/providers/labels-provider";
 import { PROJECT_COLORS } from "@/lib/constants/project-colors";
@@ -173,9 +173,6 @@ export function ProjectCard({
       )}
       onClick={handleCardClick}
     >
-      {/* Focus glow for pinned cards */}
-      {project.pinned && <FocusGlow />}
-
       {/* Selection Checkbox */}
       {onSelect && (
         <button

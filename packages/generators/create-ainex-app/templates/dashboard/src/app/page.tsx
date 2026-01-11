@@ -52,7 +52,7 @@ const apps = [
     icon: TrendingUp,
     color: "bg-yellow-500",
     description: "Learning goals and progress",
-    domain: "grow.ainexspace.com",
+    domain: "habits.ainexspace.com",
   },
   {
     name: "Pulse",

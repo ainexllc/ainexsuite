@@ -157,7 +157,7 @@ function TablesHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="tables" appColor={primary} />}
-        backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} variant="organic" />}
+        backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} />}
         appName="tables"
         accentColor={primary}
         gradientFrom={primary}

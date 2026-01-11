@@ -22,7 +22,7 @@ ainexsuite/
 │   ├── todo/               # todo.ainexspace.com
 │   ├── track/              # track.ainexspace.com
 │   ├── moments/            # moments.ainexspace.com
-│   ├── grow/               # grow.ainexspace.com
+│   ├── habits/               # habits.ainexspace.com
 │   ├── pulse/              # pulse.ainexspace.com
 │   ├── fit/                # fit.ainexspace.com
 │   └── workflow/           # workflow.ainexspace.com
@@ -89,11 +89,13 @@ pnpm clean
 ### Agents (Automation)
 
 1. **App Generator** - Scaffold new apps in 10 minutes
+
    ```bash
    pnpm create-ainex-app <app-name> --type=<base|with-ai|dashboard>
    ```
 
 2. **Grok AI Integration** - Add AI to existing apps
+
    ```bash
    pnpm add-grok-ai <app-name>
    ```
@@ -106,6 +108,7 @@ pnpm clean
 ### Skills (Expert Guidance)
 
 6 custom skills in `.claude/skills/`:
+
 - Design System Enforcer
 - Firebase Security Architect
 - AI Prompt Engineer
@@ -122,6 +125,7 @@ Located in `functions/`:
 3. **chatWithGrok** - Handles AI requests
 
 Deploy:
+
 ```bash
 cd functions
 npm install
@@ -158,10 +162,11 @@ pnpm deploy:notes
 ✅ Phase 2: Main Dashboard with SSO - **COMPLETE**
 ✅ Phase 3: App Standardization (Layouts, Fonts, Themes) - **COMPLETE**
 ⏳ Phase 4: App Feature Implementation (11 Apps) - **IN PROGRESS**
-   - Implemented: Main, Projects, Notes, Journey, Todo, Fit, Grow, Pulse, Moments, Track, Workflow
-   - Status: Shared `WorkspaceLayout` & Branding applied.
-📋 Phase 5: Cross-App Integration - **PENDING**
-📋 Phase 6: Production Deployment - **PENDING**
+
+- Implemented: Main, Projects, Notes, Journey, Todo, Fit, Grow, Pulse, Moments, Track, Workflow
+- Status: Shared `WorkspaceLayout` & Branding applied.
+  📋 Phase 5: Cross-App Integration - **PENDING**
+  📋 Phase 6: Production Deployment - **PENDING**
 
 **Overall Progress: 50% Complete (3/6 phases done)**
 

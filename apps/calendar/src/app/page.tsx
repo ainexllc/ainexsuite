@@ -148,7 +148,7 @@ function CalendarHomePageContent() {
     <>
       <HomepageTemplate
         logo={<AinexStudiosLogo align="center" size="lg" asLink={false} appName="calendar" appColor={primary} />}
-        backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} variant="structured" />}
+        backgroundComponent={<LayeredBackground primaryColor={primary} secondaryColor={secondary} />}
         appName="calendar"
         accentColor={primary}
         gradientFrom={primary}
