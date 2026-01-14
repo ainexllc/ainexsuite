@@ -46,7 +46,8 @@ function CompactNoteCard({ note }: { note: MockNote }) {
       {/* Image placeholder - only show for favorites to save space */}
       {note.hasImage && isFavorite && (
         <div className="h-16 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-800 flex items-center justify-center flex-shrink-0">
-          <Image className="w-5 h-5 text-zinc-400 dark:text-zinc-500" aria-hidden="true" alt="" />
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image className="w-5 h-5 text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
         </div>
       )}
 

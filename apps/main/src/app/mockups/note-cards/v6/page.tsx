@@ -58,7 +58,8 @@ function NoteCard({ note, isFavorite }: { note: MockNote; isFavorite: boolean })
       {hasImageHeader && (
         <div className="w-full h-32 bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-800 relative overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
-            <Image className="w-8 h-8 text-zinc-400 dark:text-zinc-500" aria-hidden="true" alt="" />
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image className="w-8 h-8 text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
           </div>
           {/* Decorative pattern */}
           <div className="absolute inset-0 opacity-10">
