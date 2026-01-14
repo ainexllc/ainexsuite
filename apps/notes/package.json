@@ -1,10 +1,10 @@
 {
   "name": "@ainexsuite/notes",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Notes app - Capture your thoughts and ideas at notes.ainexspace.com",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3001}",
+    "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3001}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
