@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 // Helper to strip HTML tags for preview display
 function stripHtml(html: string): string {
@@ -84,12 +84,6 @@ function getContentSize(note: {
 }
 import {
   Trash2,
-  Flame,
-  X,
-  Copy,
-  FolderOpen,
-  Palette,
-  MoreHorizontal,
   Circle,
   CheckCircle2,
   Check,
@@ -97,10 +91,11 @@ import {
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
 import { ConfirmationDialog } from "@ainexsuite/ui";
-import type { Note, NoteColor, NotePriority } from "@/lib/types/note";
+import type { Note, NoteColor } from "@/lib/types/note";
 import { useNotes } from "@/components/providers/notes-provider";
-import { NOTE_COLORS, LIGHT_COLORS, DARK_COLORS, DEFAULT_COLOR } from "@/lib/constants/note-colors";
+import { NOTE_COLORS } from "@/lib/constants/note-colors";
 import { NoteEditor } from "@/components/notes/note-editor";
+import { NoteActionsToolbar } from "@/components/notes/note-actions-toolbar";
 import { useLabels } from "@/components/providers/labels-provider";
 import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BACKGROUNDS } from "@/lib/backgrounds";
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
@@ -124,10 +119,6 @@ export function NoteCard({ note }: NoteCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
-  const [showSpacePicker, setShowSpacePicker] = useState(false);
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [footerExpanded, setFooterExpanded] = useState(false);
   const [localColor, setLocalColor] = useState<NoteColor>(note.color);
   const [localBackgroundImage, setLocalBackgroundImage] = useState<string | null | undefined>(note.backgroundImage);
   const [localCoverImage, setLocalCoverImage] = useState<string | null | undefined>(note.coverImage);
@@ -139,83 +130,6 @@ export function NoteCard({ note }: NoteCardProps) {
     setLocalBackgroundImage(note.backgroundImage);
     setLocalCoverImage(note.coverImage);
   }, [note.color, note.backgroundImage, note.coverImage, note.updatedAt]);
-  const priorityPickerRef = useRef<HTMLDivElement>(null);
-  const spacePickerRef = useRef<HTMLDivElement>(null);
-  const colorPickerRef = useRef<HTMLDivElement>(null);
-  const colorSwatchRowRef = useRef<HTMLDivElement>(null);
-
-  // Close priority picker when clicking outside
-  useEffect(() => {
-    if (!showPriorityPicker) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (priorityPickerRef.current && !priorityPickerRef.current.contains(event.target as Node)) {
-        setShowPriorityPicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showPriorityPicker]);
-
-  // Close space picker when clicking outside
-  useEffect(() => {
-    if (!showSpacePicker) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (spacePickerRef.current && !spacePickerRef.current.contains(event.target as Node)) {
-        setShowSpacePicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showSpacePicker]);
-
-  // Handle moving note to a different space
-  const handleMoveToSpace = useCallback(async (spaceId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    await updateNote(note.id, { spaceId });
-    setShowSpacePicker(false);
-  }, [note.id, updateNote]);
-
-  // Handle duplicate
-  const handleDuplicate = useCallback(async (event: React.MouseEvent) => {
-    event.stopPropagation();
-    await duplicateNote(note.id);
-  }, [note.id, duplicateNote]);
-
-  // Close color picker when clicking outside
-  // Must check both the palette button ref AND the color swatch row ref
-  useEffect(() => {
-    if (!showColorPicker) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      const isInsidePaletteButton = colorPickerRef.current?.contains(target);
-      const isInsideSwatchRow = colorSwatchRowRef.current?.contains(target);
-
-      if (!isInsidePaletteButton && !isInsideSwatchRow) {
-        setShowColorPicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showColorPicker]);
-
-  // Handle color change - optimistic update for instant feedback
-  // Also clears background image and cover so the color is visible
-  // Picker stays open so user can preview multiple colors - closes on click outside
-  const handleColorChange = useCallback((color: NoteColor, event: React.MouseEvent) => {
-    event.stopPropagation();
-    // Instant local updates
-    setLocalColor(color);
-    setLocalBackgroundImage(null);
-    setLocalCoverImage(null);
-    // Clear background and cover so color takes effect
-    updateNote(note.id, { color, backgroundImage: null, coverImage: null });
-  }, [note.id, updateNote]);
 
   // Get current space name
   const currentSpace = useMemo(() => {
@@ -258,11 +172,6 @@ export function NoteCard({ note }: NoteCardProps) {
     note.checklist.length > 0 &&
     note.checklist.every(item => item.completed);
 
-  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setShowDeleteConfirm(true);
-  };
-
   const handleConfirmDelete = async () => {
     if (isDeleting) {
       return;
@@ -289,19 +198,6 @@ export function NoteCard({ note }: NoteCardProps) {
     await togglePin(note.id, !note.pinned);
   };
 
-  // Toggle priority picker
-  const handlePriorityClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setShowPriorityPicker((prev) => !prev);
-  }, []);
-
-  // Set specific priority
-  const handleSetPriority = useCallback(async (priority: NotePriority | null, event: React.MouseEvent) => {
-    event.stopPropagation();
-    await updateNote(note.id, { priority });
-    setShowPriorityPicker(false);
-  }, [note.id, updateNote]);
-
   // Determine text color based on the color's textMode (light or dark)
   // textMode: 'light' means light text on dark background
   // textMode: 'dark' means dark text on light background
@@ -327,15 +223,14 @@ export function NoteCard({ note }: NoteCardProps) {
     : (note.pinned ? FAVORITE_HEIGHT_MAP[contentSize] : HEIGHT_MAP[contentSize]);
 
   // Max height for text notes to prevent overly tall cards (checklists already capped by item limit)
-  const maxHeightClass = note.type !== "checklist" ? "max-h-[280px]" : undefined;
+  const maxHeightClass = note.type !== "checklist" ? "max-h-[320px] sm:max-h-[360px] md:max-h-[400px] lg:max-h-[450px]" : undefined;
 
   return (
     <>
       <article
         className={clsx(
           "border",
-          "group relative cursor-pointer rounded-2xl",
-          showColorPicker ? "overflow-visible" : "overflow-hidden",
+          "group relative cursor-pointer rounded-2xl overflow-hidden",
           // Only transition on hover, not on initial render (prevents blinking)
           "hover:transition-[border-color,box-shadow,transform] hover:duration-200",
           // Subtle shadow for depth, elevates on hover
@@ -452,10 +347,10 @@ export function NoteCard({ note }: NoteCardProps) {
               {canDelete && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 text-xs font-medium transition-all hover:scale-105"
+                  className="p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 transition-all hover:scale-105"
+                  aria-label="Delete note"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Delete
+                  <Trash2 className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -480,7 +375,7 @@ export function NoteCard({ note }: NoteCardProps) {
           </div>
         )}
 
-        <div className="relative z-10 w-full flex-1 flex flex-col overflow-hidden">
+        <div className="relative z-10 w-full flex-1 flex flex-col overflow-hidden [mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)]">
           <div
             className="overflow-hidden pr-1 flex-1"
           >
@@ -527,7 +422,7 @@ export function NoteCard({ note }: NoteCardProps) {
                 )}
                 {/* Checklist items */}
                 <ul className="space-y-1">
-                {note.checklist.slice(0, 8).map((item) => {
+                {note.checklist.slice(0, 12).map((item) => {
                   const indentLevel = item.indent ?? 0;
                   return (
                     <li
@@ -618,7 +513,7 @@ export function NoteCard({ note }: NoteCardProps) {
                     </li>
                   );
                 })}
-                {note.checklist.length > 8 ? (
+                {note.checklist.length > 12 ? (
                   <li className={clsx(
                     "text-[11px]",
                     hasCover && !backgroundImage
@@ -629,7 +524,7 @@ export function NoteCard({ note }: NoteCardProps) {
                           ? "text-white/70"
                           : getTextColorClasses(backgroundImage, 'muted')
                   )}>
-                    +{note.checklist.length - 8} more
+                    +{note.checklist.length - 12} more
                   </li>
                 ) : null}
                 </ul>
@@ -687,508 +582,34 @@ export function NoteCard({ note }: NoteCardProps) {
           </div>
         </div>
 
-        {/* Footer - outside overflow wrapper so it extends to card edges */}
-        <footer className="relative z-10 mt-auto flex flex-col pt-1.5 -mx-4 -mb-4 px-4 pb-3 rounded-b-2xl">
-          {/* Footer actions row */}
+        {/* Footer with shared toolbar */}
+        <footer className="relative z-10 mt-auto pt-1.5 -mx-4 -mb-4 px-4 pb-3 rounded-b-2xl">
           <div className="flex items-center justify-end">
-            {/* Glass pill for actions - matching editor style */}
-            <div className={clsx(
-              "flex items-center gap-0.5 px-1 py-0.5 rounded-full backdrop-blur-xl border transition-opacity",
-              // Hidden by default, visible on hover (desktop) or when expanded (touch)
-              // Don't show on hover when completion overlay is visible
-              isChecklistComplete ? "opacity-0" : "opacity-0 group-hover:opacity-100",
-              footerExpanded && !isChecklistComplete && "!opacity-100",
-              backgroundImage
-                ? backgroundImage.brightness === 'dark'
-                  ? "bg-white/20 border-white/30"
-                  : "bg-black/5 border-black/10"
-                : hasCover
-                  ? "bg-white/20 border-white/30"
-                  : forceDarkText
-                    ? "bg-black/5 border-black/10"  // Light pill on bright backgrounds
-                    : forceLightText
-                      ? "bg-white/20 border-white/30"  // Dark pill on dark backgrounds
-                      : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
-            )}>
-              {/* Space Selector - only show if user has more than one space */}
-              {spaces.length > 1 && (
-                <div className="relative" ref={spacePickerRef}>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowSpacePicker((prev) => !prev);
-                    setShowPriorityPicker(false);
-                  }}
-                  className={clsx(
-                    "h-6 flex items-center gap-1 rounded-full px-2 text-[10px] font-medium transition",
-                    showSpacePicker
-                      ? "bg-[var(--color-primary)] text-white"
-                      : forceDarkText
-                        ? "text-zinc-500 hover:bg-black/10"
-                        : forceLightText
-                          ? "text-white/80 hover:bg-white/30"
-                          : backgroundImage?.brightness === 'light'
-                            ? "text-zinc-500 hover:bg-black/10"
-                            : backgroundImage || hasCover
-                              ? "text-white/80 hover:bg-white/30"
-                              : "text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                  )}
-                  aria-label="Move to space"
-                  title="Move to a different space"
-                >
-                  <FolderOpen className="h-3.5 w-3.5" />
-                  <span className="max-w-[60px] truncate">
-                    {currentSpace?.name || "My Notes"}
-                  </span>
-                </button>
-                {showSpacePicker && (
-                  <div
-                    className={clsx(
-                      "absolute bottom-7 right-0 z-50 min-w-[140px] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",
-                      forceDarkText
-                        ? "bg-white border border-zinc-200"
-                        : forceLightText
-                          ? "bg-zinc-900 border border-zinc-700"
-                          : backgroundImage?.brightness === 'light'
-                            ? "bg-white border border-zinc-200"
-                            : backgroundImage || hasCover
-                              ? "bg-zinc-900 border border-zinc-700"
-                              : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
-                    )}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className={clsx(
-                      "px-3 py-2 border-b",
-                      forceDarkText
-                        ? "border-zinc-200"
-                        : forceLightText
-                          ? "border-zinc-700"
-                          : backgroundImage?.brightness === 'light'
-                            ? "border-zinc-200"
-                            : backgroundImage || hasCover
-                              ? "border-zinc-700"
-                              : "border-zinc-200 dark:border-zinc-700"
-                    )}>
-                      <p className={clsx(
-                        "text-xs font-semibold",
-                        forceDarkText
-                          ? "text-zinc-900"
-                          : forceLightText
-                            ? "text-white"
-                            : backgroundImage?.brightness === 'light'
-                              ? "text-zinc-900"
-                              : backgroundImage || hasCover
-                                ? "text-white"
-                                : "text-zinc-900 dark:text-white"
-                      )}>Move to Space</p>
-                    </div>
-                    <div className="p-1.5 max-h-36 overflow-y-auto scrollbar-styled">
-                      {spaces.map((space) => (
-                        <button
-                          key={space.id}
-                          type="button"
-                          onClick={(e) => handleMoveToSpace(space.id, e)}
-                          className={clsx(
-                            "w-full text-left px-2.5 py-1.5 rounded-xl text-xs transition-colors flex items-center gap-2",
-                            space.id === note.spaceId
-                              ? "bg-[var(--color-primary)] text-white"
-                              : forceDarkText
-                                ? "text-zinc-600 hover:bg-zinc-100"
-                                : forceLightText
-                                  ? "text-zinc-300 hover:bg-zinc-800"
-                                  : backgroundImage?.brightness === 'light'
-                                    ? "text-zinc-600 hover:bg-zinc-100"
-                                    : backgroundImage || hasCover
-                                      ? "text-zinc-300 hover:bg-zinc-800"
-                                      : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                          )}
-                        >
-                          <FolderOpen className="h-3 w-3 flex-shrink-0" />
-                          <span className="truncate">{space.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            {/* Vertical divider after space selector */}
-            {spaces.length > 1 && (
-              <div className={clsx(
-                "h-3 w-px mx-0.5",
-                forceDarkText
-                  ? "bg-black/20"
-                  : forceLightText
-                    ? "bg-white/20"
-                    : backgroundImage?.brightness === 'light'
-                      ? "bg-black/20"
-                      : backgroundImage || hasCover
-                        ? "bg-white/20"
-                        : "bg-zinc-300 dark:bg-zinc-600"
-              )} />
-            )}
-            {/* More button - only visible on touch devices, hidden on desktop */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setFooterExpanded((prev) => !prev);
+            <NoteActionsToolbar
+              note={note}
+              variant="card"
+              forceDarkText={forceDarkText}
+              forceLightText={forceLightText}
+              backgroundBrightness={backgroundImage?.brightness}
+              hasCover={hasCover}
+              spaces={spaces}
+              currentSpace={currentSpace}
+              onMoveToSpace={(spaceId) => updateNote(note.id, { spaceId })}
+              onColorChange={(color) => {
+                setLocalColor(color);
+                setLocalBackgroundImage(null);
+                setLocalCoverImage(null);
+                updateNote(note.id, { color, backgroundImage: null, coverImage: null });
               }}
-              className={clsx(
-                "h-6 w-6 rounded-full flex items-center justify-center transition",
-                // Hidden on desktop (hover-capable devices), visible on touch only
-                "hidden [@media(hover:none)]:flex",
-                footerExpanded && "!hidden",
-                forceDarkText
-                  ? "text-zinc-500 hover:bg-black/10"
-                  : forceLightText
-                    ? "text-white/60 hover:bg-white/20"
-                    : backgroundImage?.brightness === 'light'
-                      ? "text-zinc-500 hover:bg-black/10"
-                      : backgroundImage || hasCover
-                        ? "text-white/60 hover:bg-white/20"
-                        : "text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              )}
-              aria-label="More actions"
-              title="More actions"
-            >
-              <MoreHorizontal className="h-3.5 w-3.5" />
-            </button>
-            {/* Expandable actions - visible on hover (desktop) or when expanded (touch) */}
-            <div className={clsx(
-              "flex items-center gap-0.5 transition-all duration-200",
-              // Desktop: show on group hover
-              "opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[250px]",
-              // Only use overflow-hidden when collapsed (pickers need to overflow)
-              !showPriorityPicker && !showColorPicker && "overflow-hidden",
-              // Touch/expanded: show when footerExpanded
-              footerExpanded && "!opacity-100 !max-w-[250px]"
-            )}>
-            {/* Color Picker */}
-            <div className="relative" ref={colorPickerRef}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowColorPicker((prev) => !prev);
-                  setShowPriorityPicker(false);
-                  setShowSpacePicker(false);
-                }}
-                className={clsx(
-                  "h-6 w-6 rounded-full flex items-center justify-center transition",
-                  forceDarkText
-                    ? "hover:bg-black/10"
-                    : forceLightText
-                      ? "hover:bg-white/30"
-                      : backgroundImage?.brightness === 'light'
-                        ? "hover:bg-black/10"
-                        : backgroundImage || hasCover
-                          ? "hover:bg-white/30"
-                          : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                )}
-                aria-label="Change color"
-                title="Change color"
-              >
-                <Palette className={clsx(
-                  "h-3.5 w-3.5",
-                  forceDarkText
-                    ? "text-zinc-500"
-                    : forceLightText
-                      ? "text-white/80"
-                      : backgroundImage?.brightness === 'light'
-                        ? "text-zinc-500"
-                        : backgroundImage || hasCover
-                          ? "text-white/80"
-                          : "text-zinc-400 dark:text-zinc-500"
-                )} />
-              </button>
-            </div>
-            {/* Vertical divider */}
-            <div className={clsx(
-              "h-3 w-px mx-0.5",
-              forceDarkText
-                ? "bg-black/20"
-                : forceLightText
-                  ? "bg-white/30"
-                  : backgroundImage?.brightness === 'light'
-                    ? "bg-black/20"
-                    : backgroundImage || hasCover
-                      ? "bg-white/30"
-                      : "bg-zinc-300 dark:bg-zinc-600"
-            )} />
-            {/* Priority Indicator - clickable by any space member */}
-            <div className="relative" ref={priorityPickerRef}>
-              <button
-                type="button"
-                onClick={handlePriorityClick}
-                className={clsx(
-                  "h-6 w-6 rounded-full flex items-center justify-center transition",
-                  forceDarkText
-                    ? "hover:bg-black/10"
-                    : forceLightText
-                      ? "hover:bg-white/30"
-                      : backgroundImage?.brightness === 'light'
-                        ? "hover:bg-black/10"
-                        : backgroundImage || hasCover
-                          ? "hover:bg-white/30"
-                          : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                )}
-                title={note.priority
-                  ? `${note.priority.charAt(0).toUpperCase() + note.priority.slice(1)} priority (click to change)`
-                  : "Set priority"
-                }
-              >
-                <Flame className={clsx(
-                  "h-3.5 w-3.5",
-                  note.priority === "high"
-                    ? "text-red-500"
-                    : note.priority === "medium"
-                      ? "text-amber-500"
-                      : note.priority === "low"
-                        ? "text-blue-500"
-                        : forceDarkText
-                          ? "text-zinc-500"
-                          : forceLightText
-                            ? "text-white/80"
-                            : backgroundImage?.brightness === 'light'
-                              ? "text-zinc-500"
-                              : backgroundImage || hasCover
-                                ? "text-white/80"
-                                : "text-zinc-400 dark:text-zinc-500"
-                )} />
-              </button>
-              {showPriorityPicker && (
-                <div
-                  className="absolute bottom-7 right-0 z-[200] flex flex-col gap-0.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-bottom-2 duration-200"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    type="button"
-                    onClick={(e) => handleSetPriority("high", e)}
-                    className={clsx(
-                      "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                      note.priority === "high"
-                        ? "bg-red-500/20 text-red-500 dark:text-red-400"
-                        : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    )}
-                  >
-                    <Flame className="h-3 w-3 text-red-500" />
-                    High
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => handleSetPriority("medium", e)}
-                    className={clsx(
-                      "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                      note.priority === "medium"
-                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
-                        : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    )}
-                  >
-                    <Flame className="h-3 w-3 text-amber-500" />
-                    Medium
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => handleSetPriority("low", e)}
-                    className={clsx(
-                      "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                      note.priority === "low"
-                        ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                        : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    )}
-                  >
-                    <Flame className="h-3 w-3 text-blue-500" />
-                    Low
-                  </button>
-                  {note.priority && (
-                    <>
-                      <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-0.5" />
-                      <button
-                        type="button"
-                        onClick={(e) => handleSetPriority(null, e)}
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                      >
-                        <X className="h-3 w-3" />
-                        Clear
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-            {/* Vertical divider */}
-            <div className={clsx(
-              "h-3 w-px mx-0.5",
-              forceDarkText
-                ? "bg-black/20"
-                : forceLightText
-                  ? "bg-white/30"
-                  : backgroundImage?.brightness === 'light'
-                    ? "bg-black/20"
-                    : backgroundImage || hasCover
-                      ? "bg-white/30"
-                      : "bg-zinc-300 dark:bg-zinc-600"
-            )} />
-            {/* Duplicate button */}
-            <button
-              type="button"
-              onClick={handleDuplicate}
-              className={clsx(
-                "h-6 w-6 rounded-full flex items-center justify-center transition",
-                forceDarkText
-                  ? "hover:bg-black/10"
-                  : forceLightText
-                    ? "hover:bg-white/30"
-                    : backgroundImage?.brightness === 'light'
-                      ? "hover:bg-black/10"
-                      : backgroundImage || hasCover
-                        ? "hover:bg-white/30"
-                        : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
-              )}
-              aria-label="Duplicate note"
-              title="Duplicate note"
-            >
-              <Copy className={clsx(
-                "h-3.5 w-3.5",
-                forceDarkText
-                  ? "text-zinc-500"
-                  : forceLightText
-                    ? "text-white/80"
-                    : backgroundImage?.brightness === 'light'
-                      ? "text-zinc-500"
-                      : backgroundImage || hasCover
-                        ? "text-white/80"
-                        : "text-zinc-400 dark:text-zinc-500"
-              )} />
-            </button>
-            {/* Vertical divider */}
-            {canDelete && (
-              <div className={clsx(
-                "h-3 w-px mx-0.5",
-                forceDarkText
-                  ? "bg-black/20"
-                  : forceLightText
-                    ? "bg-white/30"
-                    : backgroundImage?.brightness === 'light'
-                      ? "bg-black/20"
-                      : backgroundImage || hasCover
-                        ? "bg-white/30"
-                        : "bg-zinc-300 dark:bg-zinc-600"
-              )} />
-            )}
-            {/* Delete button - only for owner */}
-            {canDelete && (
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className={clsx(
-                  "h-6 w-6 rounded-full flex items-center justify-center transition",
-                  forceDarkText
-                    ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
-                    : forceLightText
-                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                      : backgroundImage?.brightness === 'light'
-                        ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
-                        : backgroundImage || hasCover
-                          ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                          : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
-                )}
-                aria-label="Delete note"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            )}
-            </div>
+              onPriorityChange={(priority) => updateNote(note.id, { priority })}
+              onDuplicate={() => duplicateNote(note.id)}
+              onDelete={() => setShowDeleteConfirm(true)}
+              color={localColor}
+              priority={note.priority ?? null}
+              canDelete={canDelete}
+              visible={!isChecklistComplete}
+            />
           </div>
-          </div>
-          {/* Color picker popup with Default at top, then Light/Dark columns */}
-          {showColorPicker && (
-            <div
-              ref={colorSwatchRowRef}
-              className="absolute right-0 bottom-10 z-[200] flex flex-col rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-2 shadow-2xl min-w-[280px] animate-in fade-in slide-in-from-bottom-2 duration-200"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Default - full width at top */}
-              <button
-                type="button"
-                onClick={(e) => handleColorChange(DEFAULT_COLOR.id, e)}
-                className={clsx(
-                  "flex items-center gap-2 px-2 py-1.5 rounded-xl text-xs font-medium transition w-full mb-2",
-                  localColor === DEFAULT_COLOR.id
-                    ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white"
-                    : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                )}
-              >
-                <span
-                  className={clsx(
-                    "h-4 w-4 rounded-full flex-shrink-0",
-                    DEFAULT_COLOR.swatchClass
-                  )}
-                />
-                {DEFAULT_COLOR.label}
-              </button>
-
-              {/* Light/Dark columns */}
-              <div className="flex gap-2 border-t border-zinc-200 dark:border-zinc-700 pt-2">
-                {/* Light colors column */}
-                <div className="flex-1">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 px-2 py-1 mb-1">
-                    Light
-                  </div>
-                  {LIGHT_COLORS.map((colorOption) => (
-                    <button
-                      key={colorOption.id}
-                      type="button"
-                      onClick={(e) => handleColorChange(colorOption.id, e)}
-                      className={clsx(
-                        "flex items-center gap-2 px-2 py-1.5 rounded-xl text-xs font-medium transition w-full",
-                        localColor === colorOption.id
-                          ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white"
-                          : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      )}
-                    >
-                      <span
-                        className={clsx(
-                          "h-4 w-4 rounded-full flex-shrink-0",
-                          colorOption.swatchClass
-                        )}
-                      />
-                      {colorOption.label}
-                    </button>
-                  ))}
-                </div>
-                {/* Dark colors column */}
-                <div className="flex-1">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 px-2 py-1 mb-1">
-                    Dark
-                  </div>
-                  {DARK_COLORS.map((colorOption) => (
-                    <button
-                      key={colorOption.id}
-                      type="button"
-                      onClick={(e) => handleColorChange(colorOption.id, e)}
-                      className={clsx(
-                        "flex items-center gap-2 px-2 py-1.5 rounded-xl text-xs font-medium transition w-full",
-                        localColor === colorOption.id
-                          ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white"
-                          : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      )}
-                    >
-                      <span
-                        className={clsx(
-                          "h-4 w-4 rounded-full flex-shrink-0",
-                          colorOption.swatchClass
-                        )}
-                      />
-                      {colorOption.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </footer>
       </article>
 

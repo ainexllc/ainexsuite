@@ -7,28 +7,20 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckSquare,
-  Palette,
-  Tag,
   X,
   BellRing,
   CalendarClock,
   Sparkles,
   Loader2,
   Brain,
-  FolderOpen,
   Plus,
-  ImagePlus,
   Ban,
   Check,
   Trash2,
-  Copy,
   GripVertical,
-  Flame,
   ChevronRight,
   Circle,
   CheckCircle2,
-  MoreVertical,
-  Printer,
 } from "lucide-react";
 import { AnimatedCheckbox } from "./animated-checkbox";
 import { ChecklistDueDatePicker } from "./checklist-due-date";
@@ -77,12 +69,14 @@ import {
   formatDateTimeLocalInput,
   parseDateTimeLocalInput,
 } from "@/lib/utils/datetime";
-import { getBackgroundById, getTextColorClasses, getOverlayClasses, getActionColorClasses, FALLBACK_BACKGROUNDS, OVERLAY_OPTIONS } from "@/lib/backgrounds";
+import { getBackgroundById, getTextColorClasses, getOverlayClasses, FALLBACK_BACKGROUNDS, OVERLAY_OPTIONS } from "@/lib/backgrounds";
 import type { BackgroundOverlay } from "@/lib/types/note";
 import { useBackgrounds } from "@/components/providers/backgrounds-provider";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { ConfirmationDialog, generateUUID } from "@ainexsuite/ui";
+import { useAuth } from "@ainexsuite/auth";
 import { ImageModal } from "@/components/ui/image-modal";
+import { NoteActionsToolbar } from "@/components/notes/note-actions-toolbar";
 import {
   getSubtreeIndices,
   hasChildren,
@@ -209,6 +203,7 @@ function SortableChecklistItem({ id, children, indentLevel, subtreeCount: _subtr
 }
 
 export function NoteEditor({ note, onClose }: NoteEditorProps) {
+  const { user } = useAuth();
   const {
     updateNote,
     duplicateNote,
@@ -218,9 +213,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     deleteNote,
   } = useNotes();
   const { labels, createLabel } = useLabels();
+
+  // Only show delete button if current user is the note owner
+  const canDelete = !note.ownerId || user?.uid === note.ownerId;
   const { reminders, createReminder, updateReminder, deleteReminder } = useReminders();
   const { preferences } = usePreferences();
   const { spaces } = useSpaces();
+
+  // Get current space for toolbar
+  const currentSpace = useMemo(() => {
+    return spaces.find((s) => s.id === note.spaceId);
+  }, [spaces, note.spaceId]);
 
   // Get backgrounds from Firestore (with fallback)
   const { backgrounds: firestoreBackgrounds } = useBackgrounds();
@@ -265,7 +268,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
   const [pinned, setPinned] = useState(note.pinned);
   const [priority, setPriority] = useState<NotePriority>(note.priority ?? null);
-  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [existingAttachments, setExistingAttachments] = useState<NoteAttachment[]>(
     note.attachments,
   );
@@ -276,7 +278,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [enhanceError, setEnhanceError] = useState<string | null>(null);
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [bodyHistory, setBodyHistory] = useState<string[]>([]);
@@ -423,7 +424,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mode, handleUndo, handleRedo, bodyHistory.length, bodyFuture.length]);
 
-  const [showPalette, setShowPalette] = useState(false);
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [showLabelPicker, setShowLabelPicker] = useState(false);
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -459,30 +459,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const forceLightText = !currentBackground && hasColor && currentColorConfig?.textMode === 'light';
   const forceDarkText = !currentBackground && hasColor && currentColorConfig?.textMode === 'dark';
 
-  // Helper for action button classes - accounts for note color when no background image
-  const getEditorActionClasses = useCallback((isActive?: boolean) => {
-    if (isActive) {
-      return 'text-[var(--color-primary)] bg-[var(--color-primary)]/10';
-    }
-    if (currentBackground) {
-      return getActionColorClasses(currentBackground, isActive);
-    }
-    if (forceDarkText) {
-      return 'text-zinc-700 hover:text-zinc-900 hover:bg-black/10';
-    }
-    if (forceLightText) {
-      return 'text-white hover:text-white hover:bg-white/20';
-    }
-    // Default - use theme-aware classes with better contrast
-    return 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-300/50 dark:hover:bg-zinc-600/50';
-  }, [currentBackground, forceDarkText, forceLightText]);
-
   // Modal is now full-height responsive - no need for content-based sizing
   const [customCron, setCustomCron] = useState("");
   const [reminderPrimed, setReminderPrimed] = useState(false);
   const [reminderPanelOpen, setReminderPanelOpen] = useState(false);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(note.spaceId || "personal");
-  const [showSpacePicker, setShowSpacePicker] = useState(false);
 
   // Auto-save data - tracks all saveable fields
   const autoSaveData = useMemo(() => ({
@@ -1956,652 +1937,188 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 : "border-transparent"
           )}
         >
-          {/* Color palette row - shows when palette is open */}
-          {showPalette && (
-            <div className={clsx(
-              "flex items-center justify-center gap-2 pb-3 mb-3 border-b",
-              currentBackground
-                ? currentBackground.brightness === 'dark'
-                  ? "border-white/10"
-                  : "border-black/10"
-                : "border-zinc-200 dark:border-zinc-700"
-            )}>
-              {NOTE_COLORS.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => {
-                    setColor(option.id);
-                    setShowPalette(false);
-                  }}
-                  className={clsx(
-                    "inline-flex shrink-0 h-7 w-7 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--color-primary)]",
-                    option.swatchClass,
-                    option.id === color && "ring-2 ring-[var(--color-primary)]",
-                  )}
-                  aria-label={`Set color ${option.label}`}
-                />
-              ))}
-            </div>
-          )}
-          <div className="flex items-center justify-center">
-            {/* Unified glass pill toolbar - matches editor toolbar styling */}
-            <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full",
-              forceDarkText
-                ? "bg-black/5"
-                : forceLightText
-                  ? "bg-black/40"
-                  : currentBackground
-                    ? currentBackground.brightness === 'dark'
-                      ? "bg-black/40"
-                      : "bg-black/5"
-                    : ""
-            )}>
-              {/* Color Palette button */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowPalette((prev) => !prev);
-                    setShowLabelPicker(false);
-                  }}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    showPalette
-                      ? "bg-[var(--color-primary)] text-white"
-                      : getEditorActionClasses(),
-                  )}
-                  aria-label="Change color"
-                >
-                  <Palette className="h-3.5 w-3.5" />
-                </button>
-                {showPalette ? (
+          {/* Shared toolbar component - same as card footer */}
+          <div className="flex items-center justify-end">
+            <NoteActionsToolbar
+              note={note}
+              variant="editor"
+              backgroundBrightness={currentBackground?.brightness}
+              spaces={spaces}
+              currentSpace={currentSpace}
+              onMoveToSpace={(spaceId) => setSelectedSpaceId(spaceId)}
+              onColorChange={(newColor) => setColor(newColor)}
+              onPriorityChange={(newPriority) => setPriority(newPriority)}
+              onDuplicate={async () => {
+                const newNoteId = await duplicateNote(note.id);
+                if (newNoteId) {
+                  onClose();
+                }
+              }}
+              onDelete={() => setShowDeleteConfirm(true)}
+              color={color}
+              priority={priority}
+              showBackgroundPicker={showBackgroundPicker}
+              onBackgroundPickerToggle={() => setShowBackgroundPicker((prev) => !prev)}
+              hasBackgroundImage={!!backgroundImage}
+              showLabelPicker={showLabelPicker}
+              onLabelPickerToggle={() => setShowLabelPicker((prev) => !prev)}
+              hasLabels={selectedLabelIds.length > 0}
+              onSave={() => void handleFinalizeAndClose()}
+              onPrint={() => window.print()}
+              canDelete={canDelete}
+              editorExtraButtons={
+                mode === "text" ? (
                   <>
-                    {/* Click outside to close */}
-                    <div
-                      className="fixed inset-0 z-20"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowPalette(false);
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("checklist");
+                        if (body.trim()) {
+                          const lines = body.split('\n').filter(line => line.trim());
+                          const items = lines.map(line => ({
+                            id: generateUUID(),
+                            text: line.trim(),
+                            completed: false,
+                          }));
+                          setChecklist(items);
+                          setBody("");
+                        }
                       }}
-                    />
-                  </>
-                ) : null}
-              </div>
-              {mode === "text" && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode("checklist");
-                    // Convert text body to checklist items
-                    if (body.trim()) {
-                      const lines = body.split('\n').filter(line => line.trim());
-                      const items = lines.map(line => ({
-                        id: generateUUID(),
-                        text: line.trim(),
-                        completed: false,
-                      }));
-                      setChecklist(items);
-                      setBody("");
-                    }
-                  }}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    getEditorActionClasses()
-                  )}
-                  aria-label="Convert to list"
-                  title="Convert to list"
-                >
-                  <CheckSquare className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {/* Background Image Picker */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowBackgroundPicker((prev) => !prev);
-                    setShowPalette(false);
-                    setShowLabelPicker(false);
-                  }}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    showBackgroundPicker || backgroundImage
-                      ? "bg-[var(--color-primary)] text-white"
-                      : getEditorActionClasses(),
-                  )}
-                  aria-label="Change background"
-                  title="Change background image"
-                >
-                  <ImagePlus className="h-3.5 w-3.5" />
-                </button>
-                {showBackgroundPicker ? (
-                  <>
-                    {/* Click outside to close */}
-                    <div
-                      className="fixed inset-0 z-20"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowBackgroundPicker(false);
-                      }}
-                    />
-                    <div
-                      className="absolute bottom-12 left-0 z-30 w-[calc(100vw-2rem)] sm:w-[400px] md:w-[480px] rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
+                      className="h-6 w-6 rounded-full flex items-center justify-center transition text-zinc-400 hover:text-zinc-200 hover:bg-white/10"
+                      aria-label="Convert to list"
+                      title="Convert to list"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Background Image</p>
-                        <button
-                          type="button"
-                          onClick={() => setShowBackgroundPicker(false)}
-                          className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    <div className="grid grid-cols-6 gap-2">
-                      {/* No background option */}
+                      <CheckSquare className="h-3.5 w-3.5" />
+                    </button>
+                    {body.trim() && (
                       <button
                         type="button"
-                        onClick={() => void handleBackgroundChange(null)}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={() => setShowEnhanceMenu((prev) => !prev)}
+                        disabled={isEnhancing}
                         className={clsx(
-                          "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
-                          backgroundImage === null
-                            ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20"
-                            : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                          "transition-all flex items-center gap-1.5 rounded-full h-6 px-2",
+                          isEnhancing
+                            ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
+                            : selectedText
+                              ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
+                              : "text-zinc-400 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                         )}
+                        aria-label="Enhance with AI"
+                        title={selectedText ? `Enhance selected text` : "Enhance all text with AI"}
                       >
-                        <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                          <Ban className="h-4 w-4 text-zinc-400" />
-                        </div>
-                        {backgroundImage === null && (
-                          <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
-                            <Check className="h-2.5 w-2.5 text-white" />
-                          </div>
+                        {isEnhancing ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-3.5 w-3.5" />
                         )}
                       </button>
-                      {/* Background options */}
-                      {availableBackgrounds.map((bg) => (
+                    )}
+                  </>
+                ) : undefined
+              }
+            />
+          </div>
+          {/* Background picker popup - rendered separately */}
+          {showBackgroundPicker && (
+            <>
+              <div
+                className="fixed inset-0 z-20"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowBackgroundPicker(false);
+                }}
+              />
+              <div
+                className="absolute bottom-16 left-4 right-4 sm:left-auto sm:right-4 sm:w-[400px] md:w-[480px] z-30 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Background Image</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowBackgroundPicker(false)}
+                    className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-6 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleBackgroundChange(null)}
+                    className={clsx(
+                      "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
+                      backgroundImage === null
+                        ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20"
+                        : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                    )}
+                  >
+                    <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                      <Ban className="h-4 w-4 text-zinc-400" />
+                    </div>
+                    {backgroundImage === null && (
+                      <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                        <Check className="h-2.5 w-2.5 text-white" />
+                      </div>
+                    )}
+                  </button>
+                  {availableBackgrounds.map((bg) => (
+                    <button
+                      key={bg.id}
+                      type="button"
+                      onClick={() => void handleBackgroundChange(bg.id)}
+                      className={clsx(
+                        "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
+                        backgroundImage === bg.id
+                          ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20"
+                          : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                      )}
+                    >
+                      <img
+                        src={bg.thumbnail}
+                        alt={bg.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      {backgroundImage === bg.id && (
+                        <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                          <Check className="h-2.5 w-2.5 text-white" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {availableBackgrounds.length === 0 && (
+                  <p className="text-xs text-zinc-400 text-center py-2">No backgrounds available</p>
+                )}
+                {backgroundImage && (
+                  <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Overlay Style</p>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {OVERLAY_OPTIONS.map((option) => (
                         <button
-                          key={bg.id}
+                          key={option.id}
                           type="button"
-                          onClick={() => void handleBackgroundChange(bg.id)}
+                          onClick={() => void handleOverlayChange(option.id)}
                           className={clsx(
-                            "relative aspect-video rounded-lg overflow-hidden border-2 transition-all",
-                            backgroundImage === bg.id
-                              ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20"
-                              : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                            "px-2 py-1.5 rounded-lg text-xs font-medium transition-all",
+                            backgroundOverlay === option.id
+                              ? "bg-[var(--color-primary)] text-white"
+                              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                           )}
+                          title={option.description}
                         >
-                          <img
-                            src={bg.thumbnail}
-                            alt={bg.name}
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
-                          {backgroundImage === bg.id && (
-                            <div className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
-                              <Check className="h-2.5 w-2.5 text-white" />
-                            </div>
-                          )}
+                          {option.label}
                         </button>
                       ))}
                     </div>
-                    {availableBackgrounds.length === 0 && (
-                      <p className="text-xs text-zinc-400 text-center py-2">No backgrounds available</p>
-                    )}
-
-                    {/* Overlay selector - only show when background is selected */}
-                    {backgroundImage && (
-                      <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Overlay Style</p>
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {OVERLAY_OPTIONS.map((option) => (
-                            <button
-                              key={option.id}
-                              type="button"
-                              onClick={() => void handleOverlayChange(option.id)}
-                              className={clsx(
-                                "px-2 py-1.5 rounded-lg text-xs font-medium transition-all",
-                                backgroundOverlay === option.id
-                                  ? "bg-[var(--color-primary)] text-white"
-                                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                              )}
-                              title={option.description}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    </div>
-                  </>
-                ) : null}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLabelPicker((prev) => !prev);
-                  setShowPalette(false);
-                  setShowBackgroundPicker(false);
-                }}
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  showLabelPicker
-                    ? "bg-[var(--color-primary)] text-white"
-                    : getEditorActionClasses(),
-                )}
-                aria-label="Manage labels"
-              >
-                <Tag className="h-3.5 w-3.5" />
-              </button>
-              {/* Separator */}
-              <div className={clsx(
-                "w-px h-4",
-                currentBackground
-                  ? currentBackground.brightness === 'dark'
-                    ? "bg-white/20"
-                    : "bg-black/15"
-                  : "bg-zinc-300/60 dark:bg-zinc-600/60"
-              )} />
-              {/* AI Enhance button */}
-              {mode === "text" && body.trim() && (
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={() => setShowEnhanceMenu((prev) => !prev)}
-                  disabled={isEnhancing}
-                  className={clsx(
-                    "transition-all flex items-center gap-1.5 rounded-full h-7 px-2.5",
-                    isEnhancing
-                      ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
-                      : selectedText
-                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
-                        : currentBackground
-                          ? currentBackground.brightness === 'dark'
-                            ? "text-white hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                            : "text-zinc-700 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                          : forceLightText
-                            ? "text-white hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                            : forceDarkText
-                              ? "text-zinc-700 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                              : "text-zinc-600 dark:text-zinc-300 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                  )}
-                  aria-label="Enhance with AI"
-                  title={selectedText ? `Enhance selected text (${selectedText.text.length} chars)` : "Enhance all text with AI"}
-                >
-                  {isEnhancing ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span className="text-xs font-medium">Enhancing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-3.5 w-3.5" />
-                      <span className="text-xs font-medium">
-                        {selectedText ? "Selected" : "All"}
-                      </span>
-                    </>
-                  )}
-                </button>
-              )}
-              {/* Divider between edit tools and metadata */}
-              <div className={clsx(
-                "h-4 w-px mx-1",
-                currentBackground
-                  ? currentBackground.brightness === 'dark'
-                    ? "bg-white/40"
-                    : "bg-black/20"
-                  : forceLightText
-                    ? "bg-white/40"
-                    : forceDarkText
-                      ? "bg-black/20"
-                      : "bg-zinc-400 dark:bg-zinc-500"
-              )} />
-              {/* Space Selector - only show if user has more than one space */}
-              {spaces.length > 1 && (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowSpacePicker((prev) => !prev);
-                      setShowPalette(false);
-                      setShowLabelPicker(false);
-                    }}
-                    className={clsx(
-                      "h-7 flex items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition",
-                      showSpacePicker
-                        ? "bg-[var(--color-primary)] text-white"
-                        : getEditorActionClasses()
-                    )}
-                    aria-label="Move to space"
-                    title="Move to a different space"
-                  >
-                    <FolderOpen className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline max-w-[80px] truncate">
-                      {spaces.find((s) => s.id === selectedSpaceId)?.name || "My Notes"}
-                    </span>
-                  </button>
-                  {showSpacePicker && (
-                    <>
-                      {/* Click outside to close */}
-                      <div
-                        className="fixed inset-0 z-20"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowSpacePicker(false);
-                        }}
-                      />
-                      <div
-                        className={clsx(
-                          "absolute bottom-full mb-2 right-0 z-30 min-w-[180px] rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl border",
-                          currentBackground
-                            ? currentBackground.brightness === 'dark'
-                              ? "bg-black/70 border-white/20"
-                              : "bg-white/90 border-black/10"
-                            : forceLightText
-                              ? "bg-zinc-900 border-zinc-700"
-                              : forceDarkText
-                                ? "bg-white border-zinc-200"
-                                : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
-                        )}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className={clsx(
-                          "px-3 py-2 border-b",
-                          currentBackground
-                            ? currentBackground.brightness === 'dark'
-                              ? "border-white/10"
-                              : "border-black/5"
-                            : forceLightText
-                              ? "border-zinc-700"
-                              : forceDarkText
-                                ? "border-zinc-200"
-                                : "border-zinc-200 dark:border-zinc-700"
-                        )}>
-                          <p className={clsx(
-                            "text-xs font-semibold",
-                            currentBackground
-                              ? currentBackground.brightness === 'dark'
-                                ? "text-white"
-                                : "text-zinc-900"
-                              : forceLightText
-                                ? "text-white"
-                                : forceDarkText
-                                  ? "text-zinc-900"
-                                  : "text-zinc-900 dark:text-zinc-100"
-                          )}>Move to Space</p>
-                        </div>
-                        <div className="p-1.5 max-h-48 overflow-y-auto">
-                          {spaces.map((space) => (
-                            <button
-                              key={space.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedSpaceId(space.id);
-                                setShowSpacePicker(false);
-                              }}
-                              className={clsx(
-                                "w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors flex items-center gap-2",
-                                space.id === selectedSpaceId
-                                  ? "bg-[var(--color-primary)] text-white"
-                                  : currentBackground
-                                    ? currentBackground.brightness === 'dark'
-                                      ? "text-white/80 hover:bg-white/10 hover:text-white"
-                                      : "text-zinc-600 hover:bg-black/5 hover:text-zinc-900"
-                                    : forceLightText
-                                      ? "text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                                      : forceDarkText
-                                        ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-                                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200"
-                              )}
-                            >
-                              <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                              <span className="truncate">{space.name}</span>
-                              {space.id === selectedSpaceId && (
-                                <span className="ml-auto text-[11px] text-white/60">current</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-              {/* Priority button */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowPriorityPicker((prev) => !prev)}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    currentBackground?.brightness === 'light'
-                      ? "hover:bg-black/10"
-                      : currentBackground
-                        ? "hover:bg-white/20"
-                        : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                  )}
-                  title={priority
-                    ? `${priority.charAt(0).toUpperCase() + priority.slice(1)} priority (click to change)`
-                    : "Set priority"
-                  }
-                >
-                  <Flame className={clsx(
-                    "h-3.5 w-3.5",
-                    priority === "high"
-                      ? "text-red-500"
-                      : priority === "medium"
-                        ? "text-amber-500"
-                        : priority === "low"
-                          ? "text-blue-500"
-                          : currentBackground?.brightness === 'light'
-                            ? "text-zinc-500"
-                            : currentBackground
-                              ? "text-white/60"
-                              : "text-zinc-400 dark:text-zinc-500"
-                  )} />
-                </button>
-                {showPriorityPicker && (
-                  <div
-                    className="absolute bottom-full mb-2 right-full mr-2 z-[60] flex flex-col gap-0.5 rounded-2xl bg-zinc-900 border border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-bottom-2 duration-200"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPriority("high");
-                        setShowPriorityPicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                        priority === "high"
-                          ? "bg-red-500/20 text-red-400"
-                          : "text-zinc-300 hover:bg-zinc-800"
-                      )}
-                    >
-                      <Flame className="h-3 w-3 text-red-500" />
-                      High
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPriority("medium");
-                        setShowPriorityPicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                        priority === "medium"
-                          ? "bg-amber-500/20 text-amber-400"
-                          : "text-zinc-300 hover:bg-zinc-800"
-                      )}
-                    >
-                      <Flame className="h-3 w-3 text-amber-500" />
-                      Medium
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPriority("low");
-                        setShowPriorityPicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                        priority === "low"
-                          ? "bg-blue-500/20 text-blue-400"
-                          : "text-zinc-300 hover:bg-zinc-800"
-                      )}
-                    >
-                      <Flame className="h-3 w-3 text-blue-500" />
-                      Low
-                    </button>
-                    {priority && (
-                      <>
-                        <div className="h-px bg-zinc-700 my-0.5" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPriority(null);
-                            setShowPriorityPicker(false);
-                          }}
-                          className="flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium text-zinc-400 hover:bg-zinc-800 transition"
-                        >
-                          <X className="h-3 w-3" />
-                          Clear
-                        </button>
-                      </>
-                    )}
                   </div>
                 )}
               </div>
-              {/* Vertical divider */}
-              <div className={clsx(
-                "h-3 w-px mx-1",
-                currentBackground
-                  ? currentBackground.brightness === 'dark'
-                    ? "bg-white/20"
-                    : "bg-black/20"
-                  : "bg-zinc-300 dark:bg-zinc-600"
-              )} />
-              {/* More actions menu */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowMoreMenu((prev) => !prev)}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    currentBackground?.brightness === 'light'
-                      ? "hover:bg-black/10"
-                      : currentBackground
-                        ? "hover:bg-white/20"
-                        : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                  )}
-                  aria-label="More actions"
-                  title="More actions"
-                >
-                  <MoreVertical className={clsx(
-                    "h-3.5 w-3.5",
-                    currentBackground?.brightness === 'light'
-                      ? "text-zinc-500"
-                      : currentBackground
-                        ? "text-white/60"
-                        : "text-zinc-400 dark:text-zinc-500"
-                  )} />
-                </button>
-                {showMoreMenu && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-[59]"
-                      onClick={() => setShowMoreMenu(false)}
-                    />
-                    <div
-                      className="absolute bottom-full mb-2 right-0 z-[60] flex flex-col items-end gap-0.5 rounded-2xl bg-zinc-900 border border-zinc-700 p-1.5 shadow-2xl min-w-[130px] animate-in fade-in slide-in-from-bottom-2 duration-200"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setShowMoreMenu(false);
-                          const newNoteId = await duplicateNote(note.id);
-                          if (newNoteId) {
-                            onClose();
-                          }
-                        }}
-                        className="flex items-center justify-end gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition w-full"
-                      >
-                        Duplicate
-                        <Copy className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowMoreMenu(false);
-                          window.print();
-                        }}
-                        className="flex items-center justify-end gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition w-full"
-                      >
-                        Print
-                        <Printer className="h-3.5 w-3.5" />
-                      </button>
-                      {/* Divider */}
-                      <div className="h-px bg-zinc-700 my-1 w-full" />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowMoreMenu(false);
-                          setShowDeleteConfirm(true);
-                        }}
-                        className="flex items-center justify-end gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-red-400 hover:bg-red-500/20 transition w-full"
-                      >
-                        Delete
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-              {/* Vertical divider */}
-              <div className={clsx(
-                "h-3 w-px mx-1",
-                currentBackground
-                  ? currentBackground.brightness === 'dark'
-                    ? "bg-white/40"
-                    : "bg-black/20"
-                  : forceLightText
-                    ? "bg-white/40"
-                    : forceDarkText
-                      ? "bg-black/20"
-                      : "bg-zinc-400 dark:bg-zinc-500"
-              )} />
-              {/* Save button */}
-              <button
-                type="button"
-                onClick={() => void handleFinalizeAndClose()}
-                className={clsx(
-                  "h-7 px-2.5 rounded-full flex items-center justify-center gap-1 transition text-xs font-medium",
-                  currentBackground?.brightness === 'light'
-                    ? "hover:bg-black/10 text-zinc-700"
-                    : currentBackground
-                      ? "hover:bg-white/20 text-white"
-                      : forceLightText
-                        ? "hover:bg-white/20 text-white"
-                        : forceDarkText
-                          ? "hover:bg-black/10 text-zinc-700"
-                          : "hover:bg-zinc-300/50 dark:hover:bg-zinc-600/50 text-zinc-600 dark:text-zinc-300"
-                )}
-                aria-label="Save and close"
-              >
-                <Check className="h-3.5 w-3.5" />
-                <span>Save</span>
-              </button>
-            </div>
-          </div>
+            </>
+          )}
           {showLabelPicker ? (
             <div className="pt-3 mt-3 space-y-3">
               {/* Glass pill container for tags */}
