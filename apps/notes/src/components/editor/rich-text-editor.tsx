@@ -34,6 +34,7 @@ interface RichTextEditorProps {
   autofocus?: boolean;
   editable?: boolean;
   minHeight?: string;
+  onImageClick?: () => void;
 }
 
 export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
@@ -51,6 +52,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       autofocus = false,
       editable = true,
       minHeight = '120px',
+      onImageClick,
     },
     ref
   ) => {
@@ -239,6 +241,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
             className={toolbarClassName}
             showLinkInputExternal={showLinkInput}
             onLinkInputClosed={() => setShowLinkInput(false)}
+            onImageClick={onImageClick}
           />
         )}
         <div

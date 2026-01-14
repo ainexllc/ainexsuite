@@ -9,6 +9,7 @@ import {
 } from "./src/lib/constants/note-patterns";
 
 const noteTones = [
+  "cream",
   "white",
   "lemon",
   "peach",
@@ -45,40 +46,41 @@ const config: Config = {
     extend: {
       colors: {
         note: {
+          cream: "#FFFDF7", // Warm cream for default
           white: "#FFFFFF",
           "white-soft": "#F9FAFB",
           "white-dark": "#2B2B2B",
           // Bolder, more vibrant colors for glassmorphism glow
           lemon: "#FACC15", // Yellow-400
           "lemon-soft": "#FFFED2",
-          "lemon-dark": "#5D5C3D",
+          "lemon-dark": "#7D6B1A", // Golden amber (vibrant)
           peach: "#FB923C", // Orange-400
           "peach-soft": "#FFE1CE",
-          "peach-dark": "#5E4838",
+          "peach-dark": "#4A3728", // Rich coffee brown
           tangerine: "#F59E0B", // Amber-500
           "tangerine-soft": "#FFE7BA",
-          "tangerine-dark": "#5F4E35",
+          "tangerine-dark": "#8C5A1C", // Rich amber (vibrant)
           mint: "#34D399", // Emerald-400
           "mint-soft": "#DCFCE7",
-          "mint-dark": "#345940",
+          "mint-dark": "#2A6B4A", // Teal green (vibrant)
           fog: "#94A3B8", // Slate-400
           "fog-soft": "#EDF3FF",
-          "fog-dark": "#384A5E",
+          "fog-dark": "#4A5568", // Clean slate (vibrant)
           lavender: "#A78BFA", // Violet-400
           "lavender-soft": "#F3E8FF",
-          "lavender-dark": "#4E3D5E",
+          "lavender-dark": "#6B4A8C", // Rich purple (vibrant)
           blush: "#F472B6", // Pink-400
           "blush-soft": "#FCE6EF",
-          "blush-dark": "#5E3848",
+          "blush-dark": "#8C3A5C", // Vibrant rose
           sky: "#38BDF8", // Sky-400
           "sky-soft": "#E3F0FF",
-          "sky-dark": "#38495E",
+          "sky-dark": "#2A5A8C", // Rich blue (vibrant)
           moss: "#A3E635", // Lime-400
           "moss-soft": "#E8FAD9",
-          "moss-dark": "#3F5338",
+          "moss-dark": "#4A7A2A", // Lime green (vibrant)
           coal: "#1E293B", // Slate-800
           "coal-soft": "#E4E4E7", // zinc-200 - light gray for light mode
-          "coal-dark": "#0F172A",
+          "coal-dark": "#3D4A5C", // Cool slate blue-gray
         },
       },
       backgroundImage: {

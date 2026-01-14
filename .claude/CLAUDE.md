@@ -83,6 +83,61 @@ pnpm deploy:all                       # Deploy all apps to Vercel
 - **Client IP**: `136.33.77.24`
 - **Location**: `.mcp-servers/namecheap-mcp/`
 
+### Vercel MCP
+
+- **Purpose**: Deployment management, env vars, build logs
+- **Auth**: Uses Vercel CLI token from `~/Library/Application Support/com.vercel.cli/auth.json`
+- **Location**: `.mcp-servers/vercel-mcp/`
+- **Tools**:
+  - `vercel_list_deployments` - List deployments for a project
+  - `vercel_get_deployment` - Get deployment details
+  - `vercel_list_env_vars` - List env var names (values hidden)
+  - `vercel_add_env_var` - Add environment variable
+  - `vercel_delete_env_var` - Delete environment variable
+  - `vercel_get_build_logs` - Get build logs
+  - `vercel_rollback` - Rollback to previous deployment
+  - `vercel_trigger_deployment` - Trigger new deployment
+  - `vercel_cancel_deployment` - Cancel building deployment
+  - `vercel_get_project` - Get project details
+  - `vercel_list_projects` - List all projects
+
+### GitHub MCP
+
+- **Purpose**: Pull requests, issues, releases, workflows, branch protection
+- **Auth**: Uses `gh` CLI token (already authenticated)
+- **Location**: `.mcp-servers/github-mcp/`
+- **Repo**: `dinohorn/ainexsuite`
+- **Tools**:
+  - `github_list_prs` - List pull requests with filters
+  - `github_get_pr` - Get PR details including checks and reviews
+  - `github_create_pr` - Create a pull request
+  - `github_merge_pr` - Merge a PR (merge/squash/rebase)
+  - `github_list_issues` - List issues with filters
+  - `github_create_issue` - Create an issue
+  - `github_close_issue` - Close an issue
+  - `github_list_releases` - List releases
+  - `github_create_release` - Create a release with tag
+  - `github_get_workflow_runs` - Get GitHub Actions runs
+  - `github_get_branch_protection` - Get branch protection rules
+
+### Stripe MCP
+
+- **Purpose**: Test payment operations, customers, subscriptions
+- **Auth**: Stripe test key (`sk_test_*`) - TEST MODE ONLY
+- **Location**: `.mcp-servers/stripe-mcp/`
+- **Safety**: Refuses to start with live keys
+- **Tools**:
+  - `stripe_list_customers` - List customers with filters
+  - `stripe_get_customer` - Get customer details
+  - `stripe_create_test_customer` - Create test customer
+  - `stripe_list_subscriptions` - List subscriptions
+  - `stripe_get_subscription` - Get subscription details
+  - `stripe_cancel_subscription` - Cancel a subscription
+  - `stripe_list_products` - List products with prices
+  - `stripe_list_invoices` - List invoices
+  - `stripe_simulate_webhook` - Generate test webhook payloads
+  - `stripe_get_balance` - Get account balance
+
 ---
 
 ## Claude Plugins (Enabled)
@@ -227,19 +282,61 @@ vercel env pull .env.local
 
 ## Custom Skills (Invoke with /skill-name)
 
-| Skill             | Purpose                                      |
-| ----------------- | -------------------------------------------- |
-| `/vercel`         | Deploy apps, manage env vars, domains, logs  |
-| `/firebase`       | Firestore queries, Auth, Storage, Rules      |
-| `/firebase-rules` | Validate and deploy Firestore/Storage rules  |
-| `/stripe`         | Payments, subscriptions, webhooks            |
-| `/namecheap`      | DNS record management                        |
-| `/resend`         | Send transactional emails                    |
-| `/restart-all`    | Kill all dev ports and restart all apps      |
-| `/build-check`    | Run lint, type-check, build before push      |
-| `/commit`         | Create git commit with proper format         |
-| `/push-all`       | Lint, commit, push and monitor Vercel builds |
-| `/push-app`       | Lint, commit, push and monitor single app    |
+### Service Integration
+
+| Skill             | Purpose                                     |
+| ----------------- | ------------------------------------------- |
+| `/vercel`         | Deploy apps, manage env vars, domains, logs |
+| `/firebase`       | Firestore queries, Auth, Storage, Rules     |
+| `/firebase-rules` | Validate and deploy Firestore/Storage rules |
+| `/stripe`         | Payments, subscriptions, webhooks           |
+| `/namecheap`      | DNS record management                       |
+| `/resend`         | Send transactional emails                   |
+
+### App & Server Management
+
+| Skill          | Purpose                                          |
+| -------------- | ------------------------------------------------ |
+| `/create-app`  | Scaffold a new app with full configuration       |
+| `/start-all`   | Start all dev servers                            |
+| `/run-apps`    | Start specific apps (e.g., /run-apps main notes) |
+| `/restart-all` | Kill all dev ports and restart all apps          |
+| `/ports`       | Show which apps are running on which ports       |
+| `/logs`        | Tail logs for specific app                       |
+| `/open`        | Open app in browser (localhost or production)    |
+
+### Build & Deploy
+
+| Skill           | Purpose                                      |
+| --------------- | -------------------------------------------- |
+| `/build-check`  | Run lint, type-check, build before push      |
+| `/bundle-check` | Analyze bundle sizes, detect regressions     |
+| `/commit`       | Create git commit with proper format         |
+| `/push-all`     | Lint, commit, push and monitor Vercel builds |
+| `/push-app`     | Lint, commit, push and monitor single app    |
+
+### Cross-App Management
+
+| Skill            | Purpose                                   |
+| ---------------- | ----------------------------------------- |
+| `/sync-versions` | Bump versions across all or selected apps |
+| `/env-sync`      | Sync env vars between Vercel and local    |
+| `/deps`          | Show dependency tree for an app           |
+
+### Firebase & Data
+
+| Skill           | Purpose                                     |
+| --------------- | ------------------------------------------- |
+| `/rules-audit`  | Audit security rules for vulnerabilities    |
+| `/migrate-data` | Run Firestore migrations with safety checks |
+| `/type-gen`     | Generate TypeScript types from Firestore    |
+
+### Development Guides
+
+| Skill           | Purpose                                     |
+| --------------- | ------------------------------------------- |
+| `/ai-chatbot`   | AI chatbot development (prompts, streaming) |
+| `/health-check` | Monorepo health dashboard (builds, deploys) |
 
 ---
 
@@ -285,4 +382,4 @@ Each app needs in Vercel:
 5. **No force push/rebase** without explicit request
 6. **Use MCP servers** - Firebase, Resend, Namecheap MCPs are available
 7. **Check Vercel first** - Use `vercel ls` to see deployment status before debugging
-8. **GitHub operations** - Use `gh` CLI (not MCP plugin) for PRs, issues, and repo operations
+8. **GitHub operations** - Use `gh` CLI or GitHub MCP server for PRs, issues, and repo operations

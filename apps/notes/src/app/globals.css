@@ -81,3 +81,107 @@ html, body {
 .dark .scrollbar-styled::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Print styles for note editor */
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the note editor content */
+  [data-note-editor-modal],
+  [data-note-editor-modal] * {
+    visibility: visible;
+  }
+
+  /* Position the note editor content for print */
+  [data-note-editor-modal] {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    background: white !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide modal backdrop and action buttons */
+  [data-note-editor-backdrop],
+  [data-note-editor-actions],
+  [data-note-editor-toolbar] {
+    display: none !important;
+  }
+
+  /* Style the note title */
+  [data-note-editor-title] {
+    font-size: 18pt !important;
+    font-weight: 600 !important;
+    color: black !important;
+    margin-bottom: 12px !important;
+    border: none !important;
+    background: none !important;
+  }
+
+  /* Style the note body */
+  [data-note-editor-body] {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    color: black !important;
+  }
+
+  /* Style checklist items */
+  [data-checklist-item] {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 4px 0 !important;
+    break-inside: avoid !important;
+  }
+
+  /* Checklist checkbox visual indicator */
+  [data-checklist-checkbox] {
+    width: 14px !important;
+    height: 14px !important;
+    border: 1.5px solid #666 !important;
+    border-radius: 3px !important;
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
+  }
+
+  [data-checklist-checkbox][data-checked="true"] {
+    background: #666 !important;
+    position: relative !important;
+  }
+
+  [data-checklist-checkbox][data-checked="true"]::after {
+    content: "✓" !important;
+    position: absolute !important;
+    color: white !important;
+    font-size: 10px !important;
+    left: 1px !important;
+    top: -1px !important;
+  }
+
+  /* Hide interactive elements in print */
+  button,
+  [role="button"] {
+    display: none !important;
+  }
+
+  /* But show the checkboxes as visual indicators */
+  [data-checklist-checkbox] {
+    display: block !important;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 0.75in;
+    size: letter;
+  }
+}

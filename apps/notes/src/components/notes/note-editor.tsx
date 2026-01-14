@@ -7,7 +7,6 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckSquare,
-  Image as ImageIcon,
   Palette,
   Tag,
   X,
@@ -28,6 +27,8 @@ import {
   ChevronRight,
   Circle,
   CheckCircle2,
+  MoreVertical,
+  Printer,
 } from "lucide-react";
 import { AnimatedCheckbox } from "./animated-checkbox";
 import { ChecklistDueDatePicker } from "./checklist-due-date";
@@ -275,6 +276,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [enhanceError, setEnhanceError] = useState<string | null>(null);
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [bodyHistory, setBodyHistory] = useState<string[]>([]);
@@ -443,6 +445,37 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const currentColorConfig = useMemo(() => {
     return NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
   }, [color]);
+
+  // Determine text color based on the color's textMode (light or dark)
+  const hasColor = currentColorConfig && currentColorConfig.id !== 'default';
+
+  // Get the editor background class (single class, no theme switching)
+  const editorBgClass = useMemo(() => {
+    if (!currentColorConfig) return undefined;
+    return currentColorConfig.bgClass;
+  }, [currentColorConfig]);
+
+  // Text color requirements based on textMode
+  const forceLightText = !currentBackground && hasColor && currentColorConfig?.textMode === 'light';
+  const forceDarkText = !currentBackground && hasColor && currentColorConfig?.textMode === 'dark';
+
+  // Helper for action button classes - accounts for note color when no background image
+  const getEditorActionClasses = useCallback((isActive?: boolean) => {
+    if (isActive) {
+      return 'text-[var(--color-primary)] bg-[var(--color-primary)]/10';
+    }
+    if (currentBackground) {
+      return getActionColorClasses(currentBackground, isActive);
+    }
+    if (forceDarkText) {
+      return 'text-zinc-700 hover:text-zinc-900 hover:bg-black/10';
+    }
+    if (forceLightText) {
+      return 'text-white hover:text-white hover:bg-white/20';
+    }
+    // Default - use theme-aware classes with better contrast
+    return 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-300/50 dark:hover:bg-zinc-600/50';
+  }, [currentBackground, forceDarkText, forceLightText]);
 
   // Modal is now full-height responsive - no need for content-based sizing
   const [customCron, setCustomCron] = useState("");
@@ -1050,22 +1083,24 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
   const content = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 md:p-6 lg:p-8"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 md:p-6 lg:p-8 print:hidden"
+      data-note-editor-backdrop
       onMouseDown={() => void handleFinalizeAndClose()}
     >
       <div
         ref={editorContainerRef}
+        data-note-editor-modal
         onMouseDown={(e) => e.stopPropagation()}
         className={clsx(
-          "relative w-[95vw] sm:w-[90vw] md:w-[600px] lg:w-[650px] xl:w-[700px] max-w-[90vw] max-h-[90vh] sm:max-h-[88vh] md:max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden",
-          !currentBackground && currentColorConfig.cardClass,
+          "relative w-[95vw] sm:w-[90vw] md:w-[600px] lg:w-[650px] xl:w-[700px] max-w-[90vw] max-h-[90vh] sm:max-h-[88vh] md:max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden print:!static print:!w-full print:!max-w-none print:!max-h-none print:!rounded-none print:!border-none print:!shadow-none print:!bg-white",
+          !currentBackground && editorBgClass,
           "border-zinc-200 dark:border-zinc-800",
         )}
       >
         {/* Background Image Layer */}
         {currentBackground && (
           <div
-            className="absolute inset-0 z-0"
+            className="absolute inset-0 z-0 print:hidden"
             style={{
               backgroundImage: `url(${currentBackground.fullImage})`,
               backgroundSize: 'cover',
@@ -1081,7 +1116,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         <button
           type="button"
           onClick={() => setPinned((prev) => !prev)}
-          className="absolute -top-0 -right-0 w-16 h-16 overflow-hidden rounded-tr-2xl z-30 group/pin"
+          className="absolute -top-0 -right-0 w-16 h-16 overflow-hidden rounded-tr-2xl z-30 group/pin print:hidden"
           aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
         >
           {pinned ? (
@@ -1115,30 +1150,37 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
         {/* Header row - title and actions */}
         <div className={clsx(
-          "relative z-20 flex items-center justify-between gap-4 pl-4 sm:pl-6 pr-14 sm:pr-20 py-3 sm:py-4 rounded-t-2xl flex-shrink-0",
+          "relative z-20 flex items-center justify-between gap-4 pl-4 sm:pl-6 pr-14 sm:pr-20 py-3 sm:py-4 rounded-t-2xl flex-shrink-0 print:!bg-white print:!rounded-none print:!pr-4",
           currentBackground?.brightness === 'light'
             ? "bg-white/30 backdrop-blur-sm"
             : currentBackground
               ? "bg-black/30 backdrop-blur-sm"
-              : currentColorConfig.cardClass
+              : editorBgClass
         )}>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <input
+              data-note-editor-title
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Title"
               className={clsx(
-                "w-full bg-transparent text-base sm:text-lg font-semibold focus:outline-none",
-                getTextColorClasses(currentBackground, 'title'),
-                currentBackground?.brightness === 'light'
-                  ? "placeholder:text-zinc-500"
-                  : currentBackground
-                    ? "placeholder:text-white/60"
-                    : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                "w-full bg-transparent text-base sm:text-lg font-semibold focus:outline-none print:!text-black print:!text-xl print:!font-bold",
+                forceDarkText
+                  ? "text-zinc-800 placeholder:text-zinc-500"
+                  : forceLightText
+                    ? "text-zinc-100 placeholder:text-white/60"
+                    : clsx(
+                        getTextColorClasses(currentBackground, 'title'),
+                        currentBackground?.brightness === 'light'
+                          ? "placeholder:text-zinc-500"
+                          : currentBackground
+                            ? "placeholder:text-white/60"
+                            : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                      )
               )}
             />
             {/* Header actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 print:hidden">
               {/* Save status in glass pill */}
               {saveStatus !== "idle" && (
                 <div className={clsx(
@@ -1165,10 +1207,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         </div>
 
         {/* Content area */}
-        <div className={clsx(
-          "relative z-10 flex flex-col gap-3 px-3 sm:px-4 md:px-5 pt-2 pb-4 overflow-y-auto",
-          currentBackground && getTextColorClasses(currentBackground, 'body')
-        )}>
+        <div
+          data-note-editor-body
+          className={clsx(
+            "relative z-10 flex flex-col gap-3 px-3 sm:px-4 md:px-5 pt-2 pb-4 overflow-y-auto print:!text-black print:!overflow-visible",
+            forceDarkText
+              ? "text-zinc-700"
+              : forceLightText
+                ? "text-zinc-200"
+                : currentBackground && getTextColorClasses(currentBackground, 'body')
+          )}
+        >
           {mode === "text" ? (
             <div
               className="relative"
@@ -1197,21 +1246,32 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 )}
                 editorClassName={clsx(
                   "min-h-[120px] sm:min-h-[150px]",
-                  getTextColorClasses(currentBackground, 'body'),
-                  currentBackground?.brightness === 'light'
-                    ? "[&_.is-editor-empty]:before:text-zinc-500"
-                    : currentBackground
-                      ? "[&_.is-editor-empty]:before:text-white/50"
-                      : "[&_.is-editor-empty]:before:text-zinc-400 dark:[&_.is-editor-empty]:before:text-zinc-600"
+                  forceDarkText
+                    ? "text-zinc-700 [&_.is-editor-empty]:before:text-zinc-500"
+                    : forceLightText
+                      ? "text-zinc-200 [&_.is-editor-empty]:before:text-white/50"
+                      : clsx(
+                          getTextColorClasses(currentBackground, 'body'),
+                          currentBackground?.brightness === 'light'
+                            ? "[&_.is-editor-empty]:before:text-zinc-500"
+                            : currentBackground
+                              ? "[&_.is-editor-empty]:before:text-white/50"
+                              : "[&_.is-editor-empty]:before:text-zinc-400 dark:[&_.is-editor-empty]:before:text-zinc-600"
+                        )
                 )}
                 toolbarClassName={clsx(
                   "rounded-lg mb-2",
-                  currentBackground
-                    ? currentBackground.brightness === 'dark'
-                      ? "bg-white/10 border-white/20"
-                      : "bg-black/5 border-black/10"
-                    : ""
+                  forceDarkText
+                    ? "bg-black/5 border-transparent"
+                    : forceLightText
+                      ? "bg-white/10 border-transparent"
+                      : currentBackground
+                        ? currentBackground.brightness === 'dark'
+                          ? "bg-white/10 border-transparent"
+                          : "bg-black/5 border-transparent"
+                        : ""
                 )}
+                onImageClick={() => fileInputRef.current?.click()}
               />
               {/* AI Enhancement overlay */}
               {isEnhancing && (
@@ -1436,14 +1496,26 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           delete checklistInputRefs.current[item.id];
                         }
                       }}
-                      className={`flex-1 bg-transparent text-[13px] placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none transition-all duration-150 ${
-                        item.completed
-                          ? "text-zinc-400 dark:text-zinc-500 line-through decoration-zinc-300 dark:decoration-zinc-600"
-                          : "text-zinc-700 dark:text-zinc-300"
-                      }`}
+                      className={clsx(
+                        "flex-1 bg-transparent text-[13px] focus:outline-none transition-all duration-150",
+                        forceDarkText
+                          ? item.completed
+                            ? "text-zinc-500 line-through decoration-zinc-400 placeholder-zinc-500"
+                            : "text-zinc-800 placeholder-zinc-500"
+                          : forceLightText
+                            ? item.completed
+                              ? "text-zinc-500 line-through decoration-zinc-400 placeholder-zinc-400"
+                              : "text-zinc-100 placeholder-zinc-400"
+                            : item.completed
+                              ? "text-zinc-400 dark:text-zinc-500 line-through decoration-zinc-300 dark:decoration-zinc-600 placeholder-zinc-400 dark:placeholder-zinc-500"
+                              : "text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-500"
+                      )}
                     />
                     {/* Divider */}
-                    <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
+                    <div className={clsx(
+                      "h-3 w-px opacity-0 group-hover:opacity-40 flex-shrink-0",
+                      forceDarkText ? "bg-zinc-500" : forceLightText ? "bg-zinc-400" : "bg-zinc-300 dark:bg-zinc-600"
+                    )} />
                     {/* Priority picker */}
                     <ChecklistPriorityPicker
                       value={item.priority}
@@ -1452,7 +1524,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       }
                     />
                     {/* Divider */}
-                    <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
+                    <div className={clsx(
+                      "h-3 w-px opacity-0 group-hover:opacity-40 flex-shrink-0",
+                      forceDarkText ? "bg-zinc-500" : forceLightText ? "bg-zinc-400" : "bg-zinc-300 dark:bg-zinc-600"
+                    )} />
                     {/* Due date picker */}
                     <ChecklistDueDatePicker
                       value={item.dueDate}
@@ -1465,12 +1540,22 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     {completionStats && completionStats.total > 0 && (
                       <>
                       {/* Divider */}
-                      <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
+                      <div className={clsx(
+                        "h-3 w-px opacity-0 group-hover:opacity-40 flex-shrink-0",
+                        forceDarkText ? "bg-zinc-500" : forceLightText ? "bg-zinc-400" : "bg-zinc-300 dark:bg-zinc-600"
+                      )} />
                       <motion.span
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded"
+                        className={clsx(
+                          "text-[11px] font-medium tabular-nums flex-shrink-0 px-1.5 py-0.5 rounded",
+                          forceDarkText
+                            ? "text-zinc-600 bg-zinc-900/10"
+                            : forceLightText
+                              ? "text-zinc-300 bg-white/10"
+                              : "text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800"
+                        )}
                       >
                         {completionStats.completed}/{completionStats.total}
                       </motion.span>
@@ -1478,14 +1563,24 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     )}
                     </AnimatePresence>
                     {/* Divider */}
-                    <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
+                    <div className={clsx(
+                      "h-3 w-px opacity-0 group-hover:opacity-40 flex-shrink-0",
+                      forceDarkText ? "bg-zinc-500" : forceLightText ? "bg-zinc-400" : "bg-zinc-300 dark:bg-zinc-600"
+                    )} />
                     <button
                       type="button"
                       className="opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100 flex-shrink-0"
                       onClick={() => handleDeleteItem(item.id, idx)}
                       aria-label="Remove checklist item"
                     >
-                      <X className="h-3.5 w-3.5 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400" />
+                      <X className={clsx(
+                        "h-3.5 w-3.5",
+                        forceDarkText
+                          ? "text-zinc-600 hover:text-red-600"
+                          : forceLightText
+                            ? "text-zinc-400 hover:text-red-400"
+                            : "text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
+                      )} />
                     </button>
                           </div>
                         </div>
@@ -1495,14 +1590,35 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 </div>
                 </AnimatePresence>
               </SortableContext>
-              <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50">
-                <span className="text-[11px] tabular-nums text-zinc-400 dark:text-zinc-500 flex-shrink-0">
+              <div className={clsx(
+                "flex items-center gap-1.5 mt-2.5 pt-2 border-t",
+                forceDarkText
+                  ? "border-zinc-400/30"
+                  : forceLightText
+                    ? "border-zinc-500/30"
+                    : "border-zinc-200/50 dark:border-zinc-700/50"
+              )}>
+                <span className={clsx(
+                  "text-[11px] tabular-nums flex-shrink-0",
+                  forceDarkText
+                    ? "text-zinc-600"
+                    : forceLightText
+                      ? "text-zinc-400"
+                      : "text-zinc-400 dark:text-zinc-500"
+                )}>
                   {checklist.filter(i => i.text.trim()).length} items
                 </span>
                 <button
                   type="button"
                   onClick={() => handleAddChecklistItem()}
-                  className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  className={clsx(
+                    "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                    forceDarkText
+                      ? "text-zinc-600 hover:bg-zinc-900/10 hover:text-zinc-800"
+                      : forceLightText
+                        ? "text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                        : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  )}
                 >
                   <Plus className="h-3 w-3" /> Add
                 </button>
@@ -1511,18 +1627,34 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     <button
                       type="button"
                       onClick={() => setChecklist((prev) => prev.filter((item) => !item.completed))}
-                      className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
+                      className={clsx(
+                        "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                        forceDarkText
+                          ? "text-zinc-600 hover:bg-red-100/50 hover:text-red-700"
+                          : forceLightText
+                            ? "text-zinc-400 hover:bg-red-900/30 hover:text-red-300"
+                            : "text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
+                      )}
                     >
                       <Trash2 className="h-3 w-3" /> Clear done
                     </button>
                     <button
                       type="button"
                       onClick={() => setAutoSortCompleted(!autoSortCompleted)}
-                      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                      className={clsx(
+                        "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
                         autoSortCompleted
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                          : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300'
-                      }`}
+                          ? forceDarkText
+                            ? 'bg-emerald-100/50 text-emerald-800'
+                            : forceLightText
+                              ? 'bg-emerald-900/40 text-emerald-200'
+                              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                          : forceDarkText
+                            ? 'text-zinc-600 hover:bg-zinc-900/10 hover:text-zinc-800'
+                            : forceLightText
+                              ? 'text-zinc-400 hover:bg-white/10 hover:text-zinc-200'
+                              : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300'
+                      )}
                     >
                       <Check className="h-3 w-3" /> Auto-sort
                     </button>
@@ -1569,11 +1701,15 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           {mode !== "checklist" && (
             <div className={clsx(
               "text-[11px] tabular-nums",
-              currentBackground
-                ? currentBackground.brightness === 'dark'
-                  ? "text-white/40"
-                  : "text-black/40"
-                : "text-zinc-400 dark:text-zinc-500"
+              forceDarkText
+                ? "text-zinc-500"
+                : forceLightText
+                  ? "text-zinc-400"
+                  : currentBackground
+                    ? currentBackground.brightness === 'dark'
+                      ? "text-white/40"
+                      : "text-black/40"
+                    : "text-zinc-400 dark:text-zinc-500"
             )}>
               <span>
                 {body.trim().split(/\s+/).filter(w => w).length} words · {body.length} chars
@@ -1809,14 +1945,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         </div>
 
         {/* Bottom toolbar - anchored to bottom with color */}
-        <div className={clsx(
-          "relative z-10 flex-shrink-0 rounded-b-2xl px-4 sm:px-6 pb-3 sm:pb-4 border-t",
-          currentBackground?.brightness === 'light'
-            ? "bg-white/30 backdrop-blur-sm border-black/10"
-            : currentBackground
-              ? "bg-black/30 backdrop-blur-sm border-white/10"
-              : "border-transparent"
-        )}>
+        <div
+          data-note-editor-toolbar
+          className={clsx(
+            "relative z-10 flex-shrink-0 rounded-b-2xl px-4 sm:px-6 pb-3 sm:pb-4 border-t print:hidden",
+            currentBackground?.brightness === 'light'
+              ? "bg-white/30 backdrop-blur-sm border-transparent"
+              : currentBackground
+                ? "bg-black/30 backdrop-blur-sm border-transparent"
+                : "border-transparent"
+          )}
+        >
           {/* Color palette row - shows when palette is open */}
           {showPalette && (
             <div className={clsx(
@@ -1845,15 +1984,19 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               ))}
             </div>
           )}
-          <div className="flex items-center justify-between gap-2">
-            {/* Glass pill toolbar */}
+          <div className="flex items-center justify-center">
+            {/* Unified glass pill toolbar - matches editor toolbar styling */}
             <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
-              currentBackground
-                ? currentBackground.brightness === 'dark'
-                  ? "bg-white/10 border-white/20"
-                  : "bg-black/5 border-black/10"
-                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+              "flex items-center gap-1 px-2 py-1 rounded-full",
+              forceDarkText
+                ? "bg-black/5"
+                : forceLightText
+                  ? "bg-black/40"
+                  : currentBackground
+                    ? currentBackground.brightness === 'dark'
+                      ? "bg-black/40"
+                      : "bg-black/5"
+                    : ""
             )}>
               {/* Color Palette button */}
               <div className="relative">
@@ -1867,7 +2010,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     "h-7 w-7 rounded-full flex items-center justify-center transition",
                     showPalette
                       ? "bg-[var(--color-primary)] text-white"
-                      : getActionColorClasses(currentBackground),
+                      : getEditorActionClasses(),
                   )}
                   aria-label="Change color"
                 >
@@ -1906,25 +2049,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   }}
                   className={clsx(
                     "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    getActionColorClasses(currentBackground)
+                    getEditorActionClasses()
                   )}
                   aria-label="Convert to list"
                   title="Convert to list"
                 >
                   <CheckSquare className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {mode === "text" && (
-                <button
-                  type="button"
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    getActionColorClasses(currentBackground)
-                  )}
-                  onClick={() => fileInputRef.current?.click()}
-                  aria-label="Add images"
-                >
-                  <ImageIcon className="h-3.5 w-3.5" />
                 </button>
               )}
               {/* Background Image Picker */}
@@ -1940,7 +2070,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     "h-7 w-7 rounded-full flex items-center justify-center transition",
                     showBackgroundPicker || backgroundImage
                       ? "bg-[var(--color-primary)] text-white"
-                      : getActionColorClasses(currentBackground),
+                      : getEditorActionClasses(),
                   )}
                   aria-label="Change background"
                   title="Change background image"
@@ -2063,7 +2193,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   "h-7 w-7 rounded-full flex items-center justify-center transition",
                   showLabelPicker
                     ? "bg-[var(--color-primary)] text-white"
-                    : getActionColorClasses(currentBackground),
+                    : getEditorActionClasses(),
                 )}
                 aria-label="Manage labels"
               >
@@ -2093,9 +2223,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
                         : currentBackground
                           ? currentBackground.brightness === 'dark'
-                            ? "text-white/70 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                            : "text-zinc-600 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                          : "text-zinc-500 dark:text-zinc-400 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                            ? "text-white hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                            : "text-zinc-700 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                          : forceLightText
+                            ? "text-white hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                            : forceDarkText
+                              ? "text-zinc-700 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                              : "text-zinc-600 dark:text-zinc-300 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                   )}
                   aria-label="Enhance with AI"
                   title={selectedText ? `Enhance selected text (${selectedText.text.length} chars)` : "Enhance all text with AI"}
@@ -2115,17 +2249,19 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   )}
                 </button>
               )}
-            </div>
-
-            {/* Glass pill for timestamp, space selector and actions */}
-            <div className={clsx(
-              "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
-              currentBackground
-                ? currentBackground.brightness === 'dark'
-                  ? "bg-white/10 border-white/20"
-                  : "bg-black/5 border-black/10"
-                : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
-            )}>
+              {/* Divider between edit tools and metadata */}
+              <div className={clsx(
+                "h-4 w-px mx-1",
+                currentBackground
+                  ? currentBackground.brightness === 'dark'
+                    ? "bg-white/40"
+                    : "bg-black/20"
+                  : forceLightText
+                    ? "bg-white/40"
+                    : forceDarkText
+                      ? "bg-black/20"
+                      : "bg-zinc-400 dark:bg-zinc-500"
+              )} />
               {/* Space Selector - only show if user has more than one space */}
               {spaces.length > 1 && (
                 <div className="relative">
@@ -2140,7 +2276,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       "h-7 flex items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition",
                       showSpacePicker
                         ? "bg-[var(--color-primary)] text-white"
-                        : getActionColorClasses(currentBackground)
+                        : getEditorActionClasses()
                     )}
                     aria-label="Move to space"
                     title="Move to a different space"
@@ -2168,7 +2304,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                             ? currentBackground.brightness === 'dark'
                               ? "bg-black/70 border-white/20"
                               : "bg-white/90 border-black/10"
-                            : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                            : forceLightText
+                              ? "bg-zinc-900 border-zinc-700"
+                              : forceDarkText
+                                ? "bg-white border-zinc-200"
+                                : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
                         )}
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
@@ -2179,7 +2319,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                             ? currentBackground.brightness === 'dark'
                               ? "border-white/10"
                               : "border-black/5"
-                            : "border-zinc-200 dark:border-zinc-700"
+                            : forceLightText
+                              ? "border-zinc-700"
+                              : forceDarkText
+                                ? "border-zinc-200"
+                                : "border-zinc-200 dark:border-zinc-700"
                         )}>
                           <p className={clsx(
                             "text-xs font-semibold",
@@ -2187,7 +2331,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                               ? currentBackground.brightness === 'dark'
                                 ? "text-white"
                                 : "text-zinc-900"
-                              : "text-zinc-900 dark:text-zinc-100"
+                              : forceLightText
+                                ? "text-white"
+                                : forceDarkText
+                                  ? "text-zinc-900"
+                                  : "text-zinc-900 dark:text-zinc-100"
                           )}>Move to Space</p>
                         </div>
                         <div className="p-1.5 max-h-48 overflow-y-auto">
@@ -2207,7 +2355,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                                     ? currentBackground.brightness === 'dark'
                                       ? "text-white/80 hover:bg-white/10 hover:text-white"
                                       : "text-zinc-600 hover:bg-black/5 hover:text-zinc-900"
-                                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                    : forceLightText
+                                      ? "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                                      : forceDarkText
+                                        ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200"
                               )}
                             >
                               <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
@@ -2337,91 +2489,116 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     : "bg-black/20"
                   : "bg-zinc-300 dark:bg-zinc-600"
               )} />
-              {/* Duplicate button */}
-              <button
-                type="button"
-                onClick={async () => {
-                  const newNoteId = await duplicateNote(note.id);
-                  if (newNoteId) {
-                    onClose();
-                  }
-                }}
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  currentBackground?.brightness === 'light'
-                    ? "hover:bg-black/10"
-                    : currentBackground
-                      ? "hover:bg-white/20"
-                      : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              {/* More actions menu */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowMoreMenu((prev) => !prev)}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    currentBackground?.brightness === 'light'
+                      ? "hover:bg-black/10"
+                      : currentBackground
+                        ? "hover:bg-white/20"
+                        : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  )}
+                  aria-label="More actions"
+                  title="More actions"
+                >
+                  <MoreVertical className={clsx(
+                    "h-3.5 w-3.5",
+                    currentBackground?.brightness === 'light'
+                      ? "text-zinc-500"
+                      : currentBackground
+                        ? "text-white/60"
+                        : "text-zinc-400 dark:text-zinc-500"
+                  )} />
+                </button>
+                {showMoreMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-[59]"
+                      onClick={() => setShowMoreMenu(false)}
+                    />
+                    <div
+                      className="absolute bottom-full mb-2 right-0 z-[60] flex flex-col items-end gap-0.5 rounded-2xl bg-zinc-900 border border-zinc-700 p-1.5 shadow-2xl min-w-[130px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setShowMoreMenu(false);
+                          const newNoteId = await duplicateNote(note.id);
+                          if (newNoteId) {
+                            onClose();
+                          }
+                        }}
+                        className="flex items-center justify-end gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition w-full"
+                      >
+                        Duplicate
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          window.print();
+                        }}
+                        className="flex items-center justify-end gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition w-full"
+                      >
+                        Print
+                        <Printer className="h-3.5 w-3.5" />
+                      </button>
+                      {/* Divider */}
+                      <div className="h-px bg-zinc-700 my-1 w-full" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="flex items-center justify-end gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-red-400 hover:bg-red-500/20 transition w-full"
+                      >
+                        Delete
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </>
                 )}
-                aria-label="Duplicate note"
-                title="Duplicate note"
-              >
-                <Copy className={clsx(
-                  "h-3 w-3",
-                  currentBackground?.brightness === 'light'
-                    ? "text-zinc-500"
-                    : currentBackground
-                      ? "text-white/60"
-                      : "text-zinc-400 dark:text-zinc-500"
-                )} />
-              </button>
+              </div>
               {/* Vertical divider */}
               <div className={clsx(
                 "h-3 w-px mx-1",
                 currentBackground
                   ? currentBackground.brightness === 'dark'
-                    ? "bg-white/20"
+                    ? "bg-white/40"
                     : "bg-black/20"
-                  : "bg-zinc-300 dark:bg-zinc-600"
-              )} />
-              {/* Delete button */}
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  currentBackground?.brightness === 'light'
-                    ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
-                    : currentBackground
-                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
-                      : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
-                )}
-                aria-label="Delete note"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
-              {/* Vertical divider */}
-              <div className={clsx(
-                "h-3 w-px mx-1",
-                currentBackground
-                  ? currentBackground.brightness === 'dark'
-                    ? "bg-white/20"
-                    : "bg-black/20"
-                  : "bg-zinc-300 dark:bg-zinc-600"
+                  : forceLightText
+                    ? "bg-white/40"
+                    : forceDarkText
+                      ? "bg-black/20"
+                      : "bg-zinc-400 dark:bg-zinc-500"
               )} />
               {/* Save button */}
               <button
                 type="button"
                 onClick={() => void handleFinalizeAndClose()}
                 className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  "h-7 px-2.5 rounded-full flex items-center justify-center gap-1 transition text-xs font-medium",
                   currentBackground?.brightness === 'light'
-                    ? "hover:bg-black/10"
+                    ? "hover:bg-black/10 text-zinc-700"
                     : currentBackground
-                      ? "hover:bg-white/20"
-                      : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                      ? "hover:bg-white/20 text-white"
+                      : forceLightText
+                        ? "hover:bg-white/20 text-white"
+                        : forceDarkText
+                          ? "hover:bg-black/10 text-zinc-700"
+                          : "hover:bg-zinc-300/50 dark:hover:bg-zinc-600/50 text-zinc-600 dark:text-zinc-300"
                 )}
                 aria-label="Save and close"
               >
-                <Check className={clsx(
-                  "h-3.5 w-3.5",
-                  currentBackground?.brightness === 'light'
-                    ? "text-zinc-600"
-                    : currentBackground
-                      ? "text-white/70"
-                      : "text-zinc-500 dark:text-zinc-400"
-                )} />
+                <Check className="h-3.5 w-3.5" />
+                <span>Save</span>
               </button>
             </div>
           </div>

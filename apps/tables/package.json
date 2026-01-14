@@ -4,7 +4,7 @@
   "private": true,
   "description": "Tables app - Spreadsheet application like Google Sheets at tables.ainexspace.com",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3013}",
+    "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3013}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",

@@ -668,7 +668,7 @@ export function NoteComposer() {
   }, [labels, newLabelName]);
 
   const colorConfig = NOTE_COLORS.find((c) => c.id === color) || NOTE_COLORS[0];
-  const backgroundClass = colorConfig.cardClass;
+  const backgroundClass = colorConfig.bgClass;
 
 
   const canUseSms = Boolean(preferences.smsNumber?.trim());
@@ -713,7 +713,7 @@ export function NoteComposer() {
     <section className="w-full">
       {!expanded ? (
         <Hint hint={HINTS.SHARED_NOTES} showWhen={hasOnlyPersonalSpace}>
-          <div className="flex w-full items-center gap-3 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+          <div className="flex w-full items-center gap-3 rounded-2xl border px-5 py-4 shadow-sm dark:shadow-none transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
             {/* Note option */}
             <button
               type="button"

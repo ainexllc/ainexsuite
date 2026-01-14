@@ -20,6 +20,7 @@ import {
   Redo2,
   Minus,
   ChevronDown,
+  ImageIcon,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -46,6 +47,7 @@ interface EditorToolbarProps {
   className?: string;
   showLinkInputExternal?: boolean;
   onLinkInputClosed?: () => void;
+  onImageClick?: () => void;
 }
 
 interface ToolbarButtonProps {
@@ -92,7 +94,7 @@ function ToolbarDivider() {
   return <div className="w-px h-5 bg-white/20 mx-1" />;
 }
 
-export function EditorToolbar({ editor, className, showLinkInputExternal, onLinkInputClosed }: EditorToolbarProps) {
+export function EditorToolbar({ editor, className, showLinkInputExternal, onLinkInputClosed, onImageClick }: EditorToolbarProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [showHighlightColors, setShowHighlightColors] = useState(false);
@@ -383,6 +385,16 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
           </div>
         )}
       </div>
+
+      {/* Image */}
+      {onImageClick && (
+        <ToolbarButton
+          onClick={onImageClick}
+          title="Add image"
+        >
+          <ImageIcon className="h-4 w-4" />
+        </ToolbarButton>
+      )}
 
       <ToolbarDivider />
 

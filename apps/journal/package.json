@@ -4,7 +4,7 @@
   "private": true,
   "description": "Journal app - Daily reflections and mood tracking at journal.ainexspace.com",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3002}",
+    "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3002}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",

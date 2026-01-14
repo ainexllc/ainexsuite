@@ -177,6 +177,11 @@ export function groupIntoSubtrees(items: ChecklistItem[]): ChecklistItem[][] {
 /**
  * Cascade completion status to parent checkboxes
  * Uses all-children logic: parent completes when ALL children complete
+ *
+ * IMPORTANT: This function clones items instead of mutating in place
+ * to avoid React state mutation issues. When called from handleChecklistChange,
+ * the `items` array is a new array but contains references to the previous
+ * state's objects. Mutating those objects would corrupt the previous state.
  */
 export function cascadeCompletionStatus(
   items: ChecklistItem[],
@@ -192,13 +197,15 @@ export function cascadeCompletionStatus(
     const allChildrenComplete = childIndices.every(i => items[i].completed);
 
     if (allChildrenComplete) {
-      items[parentIdx].completed = true;
+      // Clone the item instead of mutating to preserve React state immutability
+      items[parentIdx] = { ...items[parentIdx], completed: true };
       cascadeCompletionStatus(items, parentIdx, true);
     }
   } else {
     // Unchecking any child unchecks parent
     if (items[parentIdx].completed) {
-      items[parentIdx].completed = false;
+      // Clone the item instead of mutating to preserve React state immutability
+      items[parentIdx] = { ...items[parentIdx], completed: false };
       cascadeCompletionStatus(items, parentIdx, false);
     }
   }

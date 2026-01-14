@@ -4,7 +4,7 @@
   "private": true,
   "description": "Mosaic app - Dashboard displays at mosaic.ainexspace.com",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3007}",
+    "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3007}",
     "build": "next build",
     "start": "next start -p ${PORT:-3007}",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache"

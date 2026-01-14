@@ -50,9 +50,57 @@
         }
       },
       "timeout_seconds": 60
+    },
+    {
+      "name": "vercel-mcp",
+      "type": "mcp",
+      "server": {
+        "command": "node",
+        "args": [
+          "/Users/dinohorn/ainex/ainexsuite/.mcp-servers/vercel-mcp/dist/index.js"
+        ],
+        "env": {}
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "name": "stripe-mcp",
+      "type": "mcp",
+      "server": {
+        "command": "node",
+        "args": [
+          "/Users/dinohorn/ainex/ainexsuite/.mcp-servers/stripe-mcp/dist/index.js"
+        ],
+        "env": {
+          "STRIPE_SECRET_KEY": "sk_test_REPLACE_WITH_YOUR_TEST_KEY"
+        }
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "name": "github-mcp",
+      "type": "mcp",
+      "server": {
+        "command": "node",
+        "args": [
+          "/Users/dinohorn/ainex/ainexsuite/.mcp-servers/github-mcp/dist/index.js"
+        ],
+        "env": {
+          "GITHUB_OWNER": "dinohorn",
+          "GITHUB_REPO": "ainexsuite"
+        }
+      },
+      "timeout_seconds": 60
     }
   ],
   "allow": {
-    "tools": ["firebase-mcp", "resend-mcp", "namecheap-mcp"]
+    "tools": [
+      "firebase-mcp",
+      "resend-mcp",
+      "namecheap-mcp",
+      "vercel-mcp",
+      "stripe-mcp",
+      "github-mcp"
+    ]
   }
 }

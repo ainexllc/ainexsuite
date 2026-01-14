@@ -79,7 +79,7 @@ export function FilterDropdown({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute right-0 top-full mt-2 z-50 min-w-[280px] max-w-[360px] bg-background/95 backdrop-blur-xl rounded-xl border border-border shadow-xl origin-top-right"
+            className="absolute right-0 top-full mt-2 z-50 min-w-[300px] max-w-[320px] bg-background/95 backdrop-blur-xl rounded-xl border border-border shadow-xl origin-top-right"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -105,7 +105,7 @@ export function FilterDropdown({
             </div>
 
             {/* Content */}
-            <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto">
+            <div className="p-3 max-h-[280px] overflow-y-auto">
               {children}
             </div>
           </motion.div>

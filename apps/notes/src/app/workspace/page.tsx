@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useCallback, useState, useRef } from 'react';
-import { LayoutGrid, Calendar, X, Settings, Trash2 } from 'lucide-react';
+import { LayoutGrid, Calendar, X, Trash2 } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
@@ -22,7 +22,6 @@ import { useNotes } from "@/components/providers/notes-provider";
 import { useLabels } from "@/components/providers/labels-provider";
 import { NoteFilterContent } from "@/components/notes/note-filter-content";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
-import { AppSettingsModal } from "@/components/notes/app-settings-modal";
 import { TrashModal } from "@/components/notes/trash-modal";
 import { useKeyboardShortcuts, type KeyboardShortcut } from "@/hooks/use-keyboard-shortcuts";
 import type { ViewMode } from "@/lib/types/settings";
@@ -37,6 +36,7 @@ const SORT_OPTIONS: SortOption[] = [
   { field: 'updatedAt', label: 'Date modified' },
   { field: 'noteDate', label: 'Note date' },
   { field: 'title', label: 'Title' },
+  { field: 'position', label: 'Manual' },
 ];
 
 const NOTE_COLOR_MAP: Record<string, string> = {
@@ -71,7 +71,6 @@ export default function NotesWorkspace() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  const [isAppSettingsOpen, setIsAppSettingsOpen] = useState(false);
   const [isTrashModalOpen, setIsTrashModalOpen] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -232,14 +231,6 @@ export default function NotesWorkspace() {
       category: 'actions',
       label: 'Reset Filters',
     },
-    {
-      key: ',',
-      modifiers: { meta: true },
-      action: () => setIsAppSettingsOpen((prev) => !prev),
-      description: 'Open app settings',
-      category: 'navigation',
-      label: 'App Settings',
-    },
   ], [isShortcutsModalOpen, isSearchOpen, setSearchQuery, updatePreferences, handleFilterReset]);
 
   useKeyboardShortcuts({ shortcuts });
@@ -296,6 +287,7 @@ export default function NotesWorkspace() {
             spaces={spaceItems}
             currentSpaceId={currentSpaceId}
             onSpaceChange={setCurrentSpace}
+            personalLabel="My Notes"
           />
         )
       }
@@ -351,7 +343,7 @@ export default function NotesWorkspace() {
               viewOptions={VIEW_OPTIONS}
               onSearchClick={handleSearchToggle}
               isSearchActive={isSearchOpen || !!searchQuery}
-              filterContent={<NoteFilterContent filters={filters} onFiltersChange={setFilters} sort={sort} />}
+              filterContent={<NoteFilterContent filters={filters} onFiltersChange={setFilters} />}
               activeFilterCount={activeFilterCount}
               onFilterReset={handleFilterReset}
               sort={sort}
@@ -359,17 +351,8 @@ export default function NotesWorkspace() {
               sortOptions={SORT_OPTIONS}
               viewPosition="right"
               viewTrailingContent={
-                <div className="ml-1 pl-1 border-l border-zinc-300/50 dark:border-zinc-600/50 flex items-center gap-1">
-                  <ToolbarButton
-                    variant="toggle"
-                    size="md"
-                    isActive={isAppSettingsOpen}
-                    onClick={() => setIsAppSettingsOpen(true)}
-                    aria-label="App settings"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </ToolbarButton>
-                  {trashed.length > 0 && (
+                trashed.length > 0 ? (
+                  <div className="ml-1 pl-1 border-l border-zinc-300/50 dark:border-zinc-600/50 flex items-center gap-1">
                     <ToolbarButton
                       variant="toggle"
                       size="md"
@@ -379,8 +362,8 @@ export default function NotesWorkspace() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </ToolbarButton>
-                  )}
-                </div>
+                  </div>
+                ) : undefined
               }
             />
           </div>
@@ -414,12 +397,6 @@ export default function NotesWorkspace() {
         shortcuts={shortcuts}
       />
     </WorkspacePageLayout>
-
-    {/* App Settings Modal - Outside WorkspacePageLayout to avoid z-index stacking context issues */}
-    <AppSettingsModal
-      isOpen={isAppSettingsOpen}
-      onClose={() => setIsAppSettingsOpen(false)}
-    />
 
     {/* Trash Modal */}
     <TrashModal

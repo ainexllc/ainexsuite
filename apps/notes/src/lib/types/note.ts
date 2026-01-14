@@ -38,6 +38,7 @@ export type NoteType = "text" | "checklist";
 export type NoteColor =
   | "default"
   | "note-white"
+  | "note-cream"
   | "note-lemon"
   | "note-peach"
   | "note-tangerine"
@@ -138,6 +139,8 @@ export type NoteDoc = {
   sharedWithUserIds: string[];
   width?: number;
   height?: number;
+  position?: number; // Manual sort order (lower = earlier in list)
+  pinnedPosition?: number; // Separate position for pinned/favorites section
 };
 
 export type Note = Omit<NoteDoc, "createdAt" | "updatedAt" | "reminderAt" | "noteDate" | "sharedWith" | "deletedAt"> & {
@@ -175,6 +178,8 @@ export type NoteDraft = {
   pinned?: boolean;
   priority?: NotePriority;
   archived?: boolean;
+  position?: number;
+  pinnedPosition?: number;
 };
 
 export type LabelDoc = {

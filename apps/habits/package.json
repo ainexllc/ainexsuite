@@ -4,7 +4,7 @@
   "private": true,
   "description": "Habits app - Personal development tracking at habits.ainexspace.com",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3006}",
+    "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3006}",
     "build": "next build",
     "start": "next start -p 3006",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache"

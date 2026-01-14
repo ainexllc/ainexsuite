@@ -82,6 +82,8 @@ type NotesContextValue = {
   destroyAllNotes: () => Promise<void>;
   removeAttachment: (noteId: string, attachment: NoteAttachment) => Promise<void>;
   attachFiles: (noteId: string, files: File[]) => Promise<void>;
+  // Drag and drop reordering
+  reorderNotes: (noteIds: string[], isPinned: boolean) => Promise<void>;
   // Infinite scroll
   hasMore: boolean;
   isLoadingMore: boolean;
@@ -118,7 +120,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
     dateRange: { start: null, end: null },
   });
   const [sort, setSort] = useState<SortConfig>({
-    field: 'updatedAt',
+    field: 'createdAt',
     direction: 'desc',
   });
   const [filtersInitialized, setFiltersInitialized] = useState(false);
@@ -562,6 +564,26 @@ export function NotesProvider({ children }: NotesProviderProps) {
     [userId, ownedNotes, sharedNotes, spaceNotes],
   );
 
+  // Handle drag-and-drop reordering
+  const handleReorderNotes = useCallback(
+    async (noteIds: string[], isPinned: boolean) => {
+      if (!userId || noteIds.length === 0) {
+        return;
+      }
+
+      // Update each note with its new position
+      const positionField = isPinned ? 'pinnedPosition' : 'position';
+      const updates = noteIds.map((noteId, index) => {
+        return updateNoteMutation(userId, noteId, {
+          [positionField]: index,
+        });
+      });
+
+      await Promise.all(updates);
+    },
+    [userId],
+  );
+
   // Load more notes for progressive rendering
   const loadMore = useCallback(() => {
     setIsLoadingMore(true);
@@ -611,6 +633,12 @@ export function NotesProvider({ children }: NotesProviderProps) {
       let bValue: number | string;
 
       switch (sort.field) {
+        case 'position':
+          // Manual sort by position, fallback to createdAt for notes without position
+          aValue = a.position ?? a.createdAt.getTime();
+          bValue = b.position ?? b.createdAt.getTime();
+          // Position is always ascending (lower position = earlier in list)
+          return (aValue as number) - (bValue as number);
         case 'title':
           aValue = (a.title || '').toLowerCase();
           bValue = (b.title || '').toLowerCase();
@@ -643,8 +671,16 @@ export function NotesProvider({ children }: NotesProviderProps) {
     };
 
     // Priority sort function for Focus notes
-    // Sort by: priority (high > medium > low > null), then updatedAt desc, then createdAt desc
+    // When in manual mode: sort by pinnedPosition
+    // Otherwise: sort by priority (high > medium > low > null), then updatedAt desc, then createdAt desc
     const sortPinnedNotes = (a: Note, b: Note) => {
+      // In manual sort mode, use pinnedPosition
+      if (sort.field === 'position') {
+        const aPos = a.pinnedPosition ?? a.createdAt.getTime();
+        const bPos = b.pinnedPosition ?? b.createdAt.getTime();
+        return aPos - bPos;
+      }
+
       // Priority order: high=1, medium=2, low=3, null/undefined=4
       const priorityOrder = { high: 1, medium: 2, low: 3 };
       const aPriority = a.priority ? priorityOrder[a.priority] : 4;
@@ -867,6 +903,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       destroyAllNotes: handleDestroyAll,
       removeAttachment: handleRemoveAttachment,
       attachFiles: handleAttachFiles,
+      reorderNotes: handleReorderNotes,
       // Infinite scroll
       hasMore: computedNotes.hasMore,
       isLoadingMore,
@@ -902,6 +939,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       handleDestroyAll,
       handleRemoveAttachment,
       handleAttachFiles,
+      handleReorderNotes,
       updateSearchQuery,
       updateActiveLabelIds,
     ],
@@ -929,7 +967,7 @@ const defaultContextValue: NotesContextValue = {
   setActiveLabelIds: () => {},
   filters: {},
   setFilters: () => {},
-  sort: { field: "updatedAt", direction: "desc" },
+  sort: { field: "createdAt", direction: "desc" },
   setSort: () => {},
   createNote: async () => null,
   updateNote: async () => {},
@@ -942,6 +980,7 @@ const defaultContextValue: NotesContextValue = {
   destroyAllNotes: async () => {},
   removeAttachment: async () => {},
   attachFiles: async () => {},
+  reorderNotes: async () => {},
   hasMore: false,
   isLoadingMore: false,
   loadMore: () => {},

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Health app - Body metrics, wellness tracking, and health monitoring at health.ainexspace.com",
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p ${PORT:-3004}",
+    "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3004}",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0 --cache",
