@@ -48,6 +48,11 @@ interface EditorToolbarProps {
   showLinkInputExternal?: boolean;
   onLinkInputClosed?: () => void;
   onImageClick?: () => void;
+  // Adaptive styling props
+  forceLightText?: boolean;
+  forceDarkText?: boolean;
+  backgroundBrightness?: 'light' | 'dark';
+  hasCover?: boolean;
 }
 
 interface ToolbarButtonProps {
@@ -56,9 +61,10 @@ interface ToolbarButtonProps {
   disabled?: boolean;
   title: string;
   children: React.ReactNode;
+  onDarkNote?: boolean;
 }
 
-function ToolbarButton({ onClick, isActive, disabled, title, children }: ToolbarButtonProps) {
+function ToolbarButton({ onClick, isActive, disabled, title, children, onDarkNote }: ToolbarButtonProps) {
   return (
     <button
       type="button"
@@ -80,8 +86,12 @@ function ToolbarButton({ onClick, isActive, disabled, title, children }: Toolbar
       className={clsx(
         'p-1.5 rounded-md transition-colors',
         isActive
-          ? 'bg-white/20 text-white'
-          : 'text-zinc-300 hover:text-white hover:bg-white/10',
+          ? onDarkNote
+            ? 'bg-white/25 text-white'
+            : 'bg-black/15 dark:bg-white/20 text-zinc-900 dark:text-white'
+          : onDarkNote
+            ? 'text-white/75 hover:text-white hover:bg-white/15'
+            : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/15',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
@@ -90,16 +100,36 @@ function ToolbarButton({ onClick, isActive, disabled, title, children }: Toolbar
   );
 }
 
-function ToolbarDivider() {
-  return <div className="w-px h-5 bg-white/20 mx-1" />;
+function ToolbarDivider({ onDarkNote }: { onDarkNote?: boolean }) {
+  return (
+    <div
+      className={clsx(
+        'w-px h-5 mx-1',
+        onDarkNote ? 'bg-white/25' : 'bg-zinc-400/40 dark:bg-zinc-500/50'
+      )}
+    />
+  );
 }
 
-export function EditorToolbar({ editor, className, showLinkInputExternal, onLinkInputClosed, onImageClick }: EditorToolbarProps) {
+export function EditorToolbar({
+  editor,
+  className,
+  showLinkInputExternal,
+  onLinkInputClosed,
+  onImageClick,
+  forceLightText,
+  forceDarkText: _forceDarkText,
+  backgroundBrightness,
+  hasCover,
+}: EditorToolbarProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [showHighlightColors, setShowHighlightColors] = useState(false);
   const highlightRef = useRef<HTMLDivElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
+
+  // Determine if we're on a dark note (needs light icons/text)
+  const onDarkNote = forceLightText || backgroundBrightness === 'dark' || hasCover;
 
   // Handle external trigger to show link input (from keyboard shortcut)
   useEffect(() => {
@@ -167,8 +197,10 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
   return (
     <div className={clsx(
       'flex items-center gap-0.5 flex-wrap p-2 border-b rounded-t-lg backdrop-blur-sm',
-      'bg-black/60 dark:bg-black/70',
-      'border-zinc-600/50 dark:border-zinc-600/50',
+      // Adaptive glass background
+      onDarkNote
+        ? 'bg-black/50 dark:bg-black/60 border-white/15 dark:border-white/20'
+        : 'bg-white/70 dark:bg-zinc-900/80 border-black/10 dark:border-white/15',
       className
     )}>
       {/* Text formatting */}
@@ -176,6 +208,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         onClick={() => runCommand(editor, (c) => c.toggleBold())}
         isActive={editor.isActive('bold')}
         title="Bold (Cmd+B)"
+        onDarkNote={onDarkNote}
       >
         <Bold className="h-4 w-4" />
       </ToolbarButton>
@@ -184,6 +217,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         onClick={() => runCommand(editor, (c) => c.toggleItalic())}
         isActive={editor.isActive('italic')}
         title="Italic (Cmd+I)"
+        onDarkNote={onDarkNote}
       >
         <Italic className="h-4 w-4" />
       </ToolbarButton>
@@ -192,6 +226,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         onClick={() => runCommand(editor, (c) => c.toggleUnderline())}
         isActive={editor.isActive('underline')}
         title="Underline (Cmd+U)"
+        onDarkNote={onDarkNote}
       >
         <Underline className="h-4 w-4" />
       </ToolbarButton>
@@ -200,6 +235,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         onClick={() => runCommand(editor, (c) => c.toggleStrike())}
         isActive={editor.isActive('strike')}
         title="Strikethrough"
+        onDarkNote={onDarkNote}
       >
         <Strikethrough className="h-4 w-4" />
       </ToolbarButton>
@@ -216,8 +252,10 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
           className={clsx(
             'flex items-center gap-0.5 p-1.5 rounded-md transition-colors',
             editor.isActive('highlight')
-              ? 'bg-primary/20 text-primary'
-              : 'text-muted-foreground hover:text-foreground hover:bg-surface-muted'
+              ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
+              : onDarkNote
+                ? 'text-white/75 hover:text-white hover:bg-white/15'
+                : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/15'
           )}
         >
           <Highlighter className="h-4 w-4" />
@@ -261,11 +299,12 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         onClick={() => runCommand(editor, (c) => c.toggleCode())}
         isActive={editor.isActive('code')}
         title="Inline code"
+        onDarkNote={onDarkNote}
       >
         <Code className="h-4 w-4" />
       </ToolbarButton>
 
-      <ToolbarDivider />
+      <ToolbarDivider onDarkNote={onDarkNote} />
 
       {/* Headings */}
       <ToolbarButton
@@ -274,6 +313,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         }}
         isActive={editor.isActive('heading', { level: 1 })}
         title="Heading 1"
+        onDarkNote={onDarkNote}
       >
         <Heading1 className="h-4 w-4" />
       </ToolbarButton>
@@ -284,6 +324,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         }}
         isActive={editor.isActive('heading', { level: 2 })}
         title="Heading 2"
+        onDarkNote={onDarkNote}
       >
         <Heading2 className="h-4 w-4" />
       </ToolbarButton>
@@ -294,17 +335,19 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         }}
         isActive={editor.isActive('heading', { level: 3 })}
         title="Heading 3"
+        onDarkNote={onDarkNote}
       >
         <Heading3 className="h-4 w-4" />
       </ToolbarButton>
 
-      <ToolbarDivider />
+      <ToolbarDivider onDarkNote={onDarkNote} />
 
       {/* Lists */}
       <ToolbarButton
         onClick={() => runCommand(editor, (c) => c.toggleBulletList())}
         isActive={editor.isActive('bulletList')}
         title="Bullet list"
+        onDarkNote={onDarkNote}
       >
         <List className="h-4 w-4" />
       </ToolbarButton>
@@ -313,17 +356,19 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         onClick={() => runCommand(editor, (c) => c.toggleOrderedList())}
         isActive={editor.isActive('orderedList')}
         title="Numbered list"
+        onDarkNote={onDarkNote}
       >
         <ListOrdered className="h-4 w-4" />
       </ToolbarButton>
 
-      <ToolbarDivider />
+      <ToolbarDivider onDarkNote={onDarkNote} />
 
       {/* Block elements */}
       <ToolbarButton
         onClick={() => runCommand(editor, (c) => c.toggleBlockquote())}
         isActive={editor.isActive('blockquote')}
         title="Quote"
+        onDarkNote={onDarkNote}
       >
         <Quote className="h-4 w-4" />
       </ToolbarButton>
@@ -331,6 +376,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
       <ToolbarButton
         onClick={() => runCommand(editor, (c) => c.setHorizontalRule())}
         title="Horizontal rule"
+        onDarkNote={onDarkNote}
       >
         <Minus className="h-4 w-4" />
       </ToolbarButton>
@@ -347,6 +393,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
           }}
           isActive={editor.isActive('link')}
           title="Link (Cmd+K)"
+          onDarkNote={onDarkNote}
         >
           <LinkIcon className="h-4 w-4" />
         </ToolbarButton>
@@ -391,18 +438,20 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         <ToolbarButton
           onClick={onImageClick}
           title="Add image"
+          onDarkNote={onDarkNote}
         >
           <ImageIcon className="h-4 w-4" />
         </ToolbarButton>
       )}
 
-      <ToolbarDivider />
+      <ToolbarDivider onDarkNote={onDarkNote} />
 
       {/* Undo/Redo */}
       <ToolbarButton
         onClick={() => runCommand(editor, (c) => c.undo())}
         disabled={!editor.can().undo()}
         title="Undo (Cmd+Z)"
+        onDarkNote={onDarkNote}
       >
         <Undo2 className="h-4 w-4" />
       </ToolbarButton>
@@ -411,6 +460,7 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         onClick={() => runCommand(editor, (c) => c.redo())}
         disabled={!editor.can().redo()}
         title="Redo (Cmd+Shift+Z)"
+        onDarkNote={onDarkNote}
       >
         <Redo2 className="h-4 w-4" />
       </ToolbarButton>

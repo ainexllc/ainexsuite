@@ -35,6 +35,11 @@ interface RichTextEditorProps {
   editable?: boolean;
   minHeight?: string;
   onImageClick?: () => void;
+  // Adaptive styling props
+  forceLightText?: boolean;
+  forceDarkText?: boolean;
+  backgroundBrightness?: 'light' | 'dark';
+  hasCover?: boolean;
 }
 
 export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
@@ -53,6 +58,10 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       editable = true,
       minHeight = '120px',
       onImageClick,
+      forceLightText,
+      forceDarkText,
+      backgroundBrightness,
+      hasCover,
     },
     ref
   ) => {
@@ -242,6 +251,10 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
             showLinkInputExternal={showLinkInput}
             onLinkInputClosed={() => setShowLinkInput(false)}
             onImageClick={onImageClick}
+            forceLightText={forceLightText}
+            forceDarkText={forceDarkText}
+            backgroundBrightness={backgroundBrightness}
+            hasCover={hasCover}
           />
         )}
         <div

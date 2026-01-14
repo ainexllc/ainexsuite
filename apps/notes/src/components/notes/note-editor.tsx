@@ -1240,19 +1240,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                               : "[&_.is-editor-empty]:before:text-zinc-400 dark:[&_.is-editor-empty]:before:text-zinc-600"
                         )
                 )}
-                toolbarClassName={clsx(
-                  "rounded-lg mb-2",
-                  forceDarkText
-                    ? "bg-black/5 border-transparent"
-                    : forceLightText
-                      ? "bg-white/10 border-transparent"
-                      : currentBackground
-                        ? currentBackground.brightness === 'dark'
-                          ? "bg-white/10 border-transparent"
-                          : "bg-black/5 border-transparent"
-                        : ""
-                )}
+                toolbarClassName="rounded-lg mb-2"
                 onImageClick={() => fileInputRef.current?.click()}
+                forceLightText={forceLightText}
+                forceDarkText={forceDarkText}
+                backgroundBrightness={currentBackground?.brightness}
+                hasCover={!!currentBackground}
               />
               {/* AI Enhancement overlay */}
               {isEnhancing && (
