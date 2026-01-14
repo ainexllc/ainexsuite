@@ -69,12 +69,20 @@ export type BackgroundOverlay =
 
 export type NotePriority = "high" | "medium" | "low" | null;
 
+export type ChecklistItemPriority = "high" | "medium" | "low" | null;
+
 export type ChecklistItem = {
   id: string;
   text: string;
   completed: boolean;
   indent?: number; // 0-3 levels of indentation (default 0)
   collapsed?: boolean; // Hide children when true
+  // Enhanced features
+  dueDate?: string | null; // ISO date string
+  priority?: ChecklistItemPriority;
+  notes?: string | null; // Expandable description/details
+  notesExpanded?: boolean; // UI state for showing details
+  completedAt?: number | null; // Timestamp when completed (for sorting)
 };
 
 export type NoteAttachment = {

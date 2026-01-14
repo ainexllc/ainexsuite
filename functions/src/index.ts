@@ -27,7 +27,7 @@ const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 14 * 1000; // 14 days in milliseco
  */
 export const generateSessionCookie = functions
   .region('us-central1')
-  .https.onCall(async (data: any, _context: any) => {
+  .https.onCall(async (data: { idToken?: string }) => {
     const { idToken } = data;
 
     if (!idToken) {
@@ -92,7 +92,7 @@ export const generateSessionCookie = functions
         userData = userDoc.data() || {};
 
         // Migrate existing users to new Suite tracking fields if needed
-        const updateFields: any = {
+        const updateFields: Record<string, unknown> = {
           lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
@@ -137,7 +137,7 @@ export const generateSessionCookie = functions
  */
 export const checkAuthStatus = functions
   .region('us-central1')
-  .https.onCall(async (data: any, _context: any) => {
+  .https.onCall(async (data: { sessionCookie?: string }) => {
     const { sessionCookie } = data;
 
     if (!sessionCookie) {
@@ -174,7 +174,7 @@ export const checkAuthStatus = functions
 export const chatWithGrok = functions
   .region('us-central1')
   .runWith({ timeoutSeconds: 120, memory: '512MB' })
-  .https.onCall(async (data: any, context: any) => {
+  .https.onCall(async (data: { appName?: string; messages?: Array<{ role: string; content: string }>; systemPrompt?: string; userContext?: Record<string, unknown> }, context: functions.https.CallableContext) => {
     // Verify user is authenticated
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
@@ -250,8 +250,8 @@ export const chatWithGrok = functions
  */
 function buildDefaultSystemPrompt(
   appName: string,
-  userData: any,
-  userContext: any
+  userData: Record<string, unknown> | undefined,
+  userContext: Record<string, unknown> | undefined
 ): string {
   const basePrompt = `You are the AI assistant for the ${appName} app, part of the AINexSuite productivity suite.
 
@@ -273,3 +273,6 @@ Be helpful, concise, and context-aware. Provide actionable suggestions based on 
 
 // Video processing
 export { processVideoBackground } from './video-transcoding';
+
+// Scheduled cleanup tasks
+export { cleanupTrashedNotes } from './trash-cleanup';

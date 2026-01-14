@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useCallback, useState, useRef } from 'react';
-import { LayoutGrid, Calendar, X } from 'lucide-react';
+import { LayoutGrid, Calendar, X, Settings, Trash2 } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
   ActivityCalendar,
   ActiveFilterChips,
   SpaceTabSelector,
+  ToolbarButton,
   type ViewOption,
   type SortOption,
   type FilterChip,
@@ -21,6 +22,8 @@ import { useNotes } from "@/components/providers/notes-provider";
 import { useLabels } from "@/components/providers/labels-provider";
 import { NoteFilterContent } from "@/components/notes/note-filter-content";
 import { KeyboardShortcutsModal } from "@/components/keyboard-shortcuts-modal";
+import { AppSettingsModal } from "@/components/notes/app-settings-modal";
+import { TrashModal } from "@/components/notes/trash-modal";
 import { useKeyboardShortcuts, type KeyboardShortcut } from "@/hooks/use-keyboard-shortcuts";
 import type { ViewMode } from "@/lib/types/settings";
 
@@ -53,7 +56,7 @@ const NOTE_COLOR_MAP: Record<string, string> = {
 
 export default function NotesWorkspace() {
   const { preferences, updatePreferences } = usePreferences();
-  const { notes, filters, setFilters, sort, setSort, searchQuery, setSearchQuery } = useNotes();
+  const { notes, trashed, filters, setFilters, sort, setSort, searchQuery, setSearchQuery, includeTrashInSearch, setIncludeTrashInSearch } = useNotes();
   const { labels } = useLabels();
   const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
 
@@ -66,14 +69,10 @@ export default function NotesWorkspace() {
     }));
   }, [spaces]);
 
-  // Get current space name for placeholder
-  const currentSpaceName = useMemo(() => {
-    const space = spaces.find((s) => s.id === currentSpaceId);
-    return space?.name || 'Personal';
-  }, [spaces, currentSpaceId]);
-
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isAppSettingsOpen, setIsAppSettingsOpen] = useState(false);
+  const [isTrashModalOpen, setIsTrashModalOpen] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -233,6 +232,14 @@ export default function NotesWorkspace() {
       category: 'actions',
       label: 'Reset Filters',
     },
+    {
+      key: ',',
+      modifiers: { meta: true },
+      action: () => setIsAppSettingsOpen((prev) => !prev),
+      description: 'Open app settings',
+      category: 'navigation',
+      label: 'App Settings',
+    },
   ], [isShortcutsModalOpen, isSearchOpen, setSearchQuery, updatePreferences, handleFilterReset]);
 
   useKeyboardShortcuts({ shortcuts });
@@ -293,7 +300,7 @@ export default function NotesWorkspace() {
         )
       }
       composer={
-        <NoteComposer placeholder={`Create a new note for ${currentSpaceName}...`} />
+        <NoteComposer />
       }
       toolbar={
         <div className="space-y-2">
@@ -318,6 +325,23 @@ export default function NotesWorkspace() {
                   </button>
                 )}
               </div>
+
+              {/* Include Trash Toggle - only show when there's a search query */}
+              {searchQuery.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setIncludeTrashInSearch(!includeTrashInSearch)}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-full transition-all border whitespace-nowrap ${
+                    includeTrashInSearch
+                      ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                      : "bg-white/5 text-muted-foreground border-white/10 hover:border-white/20"
+                  }`}
+                  title={includeTrashInSearch ? "Showing trash in search" : "Include trash in search"}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {includeTrashInSearch ? "Trash On" : "Trash Off"}
+                </button>
+              )}
             </div>
           )}
           <div className="flex items-center justify-center gap-2">
@@ -334,6 +358,30 @@ export default function NotesWorkspace() {
               onSortChange={setSort}
               sortOptions={SORT_OPTIONS}
               viewPosition="right"
+              viewTrailingContent={
+                <div className="ml-1 pl-1 border-l border-zinc-300/50 dark:border-zinc-600/50 flex items-center gap-1">
+                  <ToolbarButton
+                    variant="toggle"
+                    size="md"
+                    isActive={isAppSettingsOpen}
+                    onClick={() => setIsAppSettingsOpen(true)}
+                    aria-label="App settings"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </ToolbarButton>
+                  {trashed.length > 0 && (
+                    <ToolbarButton
+                      variant="toggle"
+                      size="md"
+                      isActive={isTrashModalOpen}
+                      onClick={() => setIsTrashModalOpen(true)}
+                      aria-label="Trash"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </ToolbarButton>
+                  )}
+                </div>
+              }
             />
           </div>
           {filterChips.length > 0 && (
@@ -366,6 +414,18 @@ export default function NotesWorkspace() {
         shortcuts={shortcuts}
       />
     </WorkspacePageLayout>
+
+    {/* App Settings Modal - Outside WorkspacePageLayout to avoid z-index stacking context issues */}
+    <AppSettingsModal
+      isOpen={isAppSettingsOpen}
+      onClose={() => setIsAppSettingsOpen(false)}
+    />
+
+    {/* Trash Modal */}
+    <TrashModal
+      isOpen={isTrashModalOpen}
+      onClose={() => setIsTrashModalOpen(false)}
+    />
     </>
   );
 }

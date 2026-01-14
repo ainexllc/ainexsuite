@@ -26,6 +26,7 @@ const noteColorSafelist = noteTones.flatMap((tone) => [
   `bg-note-${tone}`,
   `bg-note-${tone}-soft`,
   `bg-note-${tone}-dark`,
+  `dark:bg-note-${tone}-soft`,
   `dark:bg-note-${tone}-dark`,
   `hover:bg-note-${tone}`,
   `hover:bg-note-${tone}-soft`,
@@ -76,7 +77,7 @@ const config: Config = {
           "moss-soft": "#E8FAD9",
           "moss-dark": "#3F5338",
           coal: "#1E293B", // Slate-800
-          "coal-soft": "#A1A8B0",
+          "coal-soft": "#E4E4E7", // zinc-200 - light gray for light mode
           "coal-dark": "#0F172A",
         },
       },

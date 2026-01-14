@@ -11,6 +11,7 @@ const nextConfig = {
     "@ainexsuite/auth",
     "@ainexsuite/ai",
     "@ainexsuite/types",
+    "@ainexsuite/theme",
   ],
   env: {
     NEXT_PUBLIC_APP_NAME: "notes",

@@ -13,7 +13,6 @@ import {
   Heading3,
   List,
   ListOrdered,
-  CheckSquare,
   Quote,
   Link as LinkIcon,
   Highlighter,
@@ -37,7 +36,9 @@ const HIGHLIGHT_COLORS = [
 // Helper to execute editor commands safely
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const runCommand = (editor: Editor, fn: (chain: any) => any) => {
-  fn(editor.chain().focus()).run();
+  // Use focus() to ensure editor is focused and selection is restored
+  const chain = editor.chain().focus();
+  fn(chain).run();
 };
 
 interface EditorToolbarProps {
@@ -59,14 +60,26 @@ function ToolbarButton({ onClick, isActive, disabled, title, children }: Toolbar
   return (
     <button
       type="button"
-      onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault(); // Prevent focus loss - keeps text selected
+        e.stopPropagation();
+        // Execute immediately in onMouseDown to ensure editor state hasn't changed
+        if (!disabled) {
+          onClick();
+        }
+      }}
+      onClick={(e) => {
+        // Prevent any onClick handling since we handle everything in onMouseDown
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       disabled={disabled}
       title={title}
       className={clsx(
         'p-1.5 rounded-md transition-colors',
         isActive
-          ? 'bg-primary/20 text-primary'
-          : 'text-muted-foreground hover:text-foreground hover:bg-surface-muted',
+          ? 'bg-white/20 text-white'
+          : 'text-zinc-300 hover:text-white hover:bg-white/10',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
@@ -76,7 +89,7 @@ function ToolbarButton({ onClick, isActive, disabled, title, children }: Toolbar
 }
 
 function ToolbarDivider() {
-  return <div className="w-px h-5 bg-border mx-1" />;
+  return <div className="w-px h-5 bg-white/20 mx-1" />;
 }
 
 export function EditorToolbar({ editor, className, showLinkInputExternal, onLinkInputClosed }: EditorToolbarProps) {
@@ -151,7 +164,9 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
 
   return (
     <div className={clsx(
-      'flex items-center gap-0.5 flex-wrap p-2 border-b border-border bg-surface-muted/30 rounded-t-lg',
+      'flex items-center gap-0.5 flex-wrap p-2 border-b rounded-t-lg backdrop-blur-sm',
+      'bg-black/60 dark:bg-black/70',
+      'border-zinc-600/50 dark:border-zinc-600/50',
       className
     )}>
       {/* Text formatting */}
@@ -191,7 +206,10 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
       <div className="relative" ref={highlightRef}>
         <button
           type="button"
-          onClick={() => setShowHighlightColors(!showHighlightColors)}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setShowHighlightColors(!showHighlightColors);
+          }}
           title="Highlight"
           className={clsx(
             'flex items-center gap-0.5 p-1.5 rounded-md transition-colors',
@@ -211,7 +229,10 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
                 <button
                   key={item.name}
                   type="button"
-                  onClick={() => setHighlightColor(item.color)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setHighlightColor(item.color);
+                  }}
                   title={item.name}
                   className="w-6 h-6 rounded border border-border hover:scale-110 transition-transform"
                   style={{ backgroundColor: item.color }}
@@ -221,7 +242,10 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
             {editor.isActive('highlight') && (
               <button
                 type="button"
-                onClick={() => setHighlightColor(null)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setHighlightColor(null);
+                }}
                 className="w-full mt-2 px-2 py-1 text-xs text-muted-foreground hover:text-foreground bg-surface-muted rounded"
               >
                 Remove
@@ -243,7 +267,9 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
 
       {/* Headings */}
       <ToolbarButton
-        onClick={() => runCommand(editor, (c) => c.toggleHeading({ level: 1 }))}
+        onClick={() => {
+          editor.chain().focus().toggleHeading({ level: 1 }).run();
+        }}
         isActive={editor.isActive('heading', { level: 1 })}
         title="Heading 1"
       >
@@ -251,7 +277,9 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
       </ToolbarButton>
 
       <ToolbarButton
-        onClick={() => runCommand(editor, (c) => c.toggleHeading({ level: 2 }))}
+        onClick={() => {
+          editor.chain().focus().toggleHeading({ level: 2 }).run();
+        }}
         isActive={editor.isActive('heading', { level: 2 })}
         title="Heading 2"
       >
@@ -259,7 +287,9 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
       </ToolbarButton>
 
       <ToolbarButton
-        onClick={() => runCommand(editor, (c) => c.toggleHeading({ level: 3 }))}
+        onClick={() => {
+          editor.chain().focus().toggleHeading({ level: 3 }).run();
+        }}
         isActive={editor.isActive('heading', { level: 3 })}
         title="Heading 3"
       >
@@ -283,14 +313,6 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
         title="Numbered list"
       >
         <ListOrdered className="h-4 w-4" />
-      </ToolbarButton>
-
-      <ToolbarButton
-        onClick={() => runCommand(editor, (c) => c.toggleTaskList())}
-        isActive={editor.isActive('taskList')}
-        title="Task list"
-      >
-        <CheckSquare className="h-4 w-4" />
       </ToolbarButton>
 
       <ToolbarDivider />
@@ -340,14 +362,20 @@ export function EditorToolbar({ editor, className, showLinkInputExternal, onLink
             />
             <button
               type="button"
-              onClick={setLink}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setLink();
+              }}
               className="px-2 py-1 text-sm bg-primary text-white rounded hover:brightness-110"
             >
               Add
             </button>
             <button
               type="button"
-              onClick={closeLinkInput}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                closeLinkInput();
+              }}
               className="px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
             >
               Cancel

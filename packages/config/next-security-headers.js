@@ -73,6 +73,7 @@ function buildCSP(options = {}) {
   const objectSrc = options.objectSrc || "'none'";
   const baseUri = options.baseUri || "'self'";
   const formAction = options.formAction || "'self'";
+  const workerSrc = options.workerSrc || "'self' blob:"; // For canvas-confetti and other workers
 
   return [
     `default-src ${defaultSrc}`,
@@ -87,6 +88,7 @@ function buildCSP(options = {}) {
     `object-src ${objectSrc}`,
     `base-uri ${baseUri}`,
     `form-action ${formAction}`,
+    `worker-src ${workerSrc}`,
   ].join("; ");
 }
 

@@ -1,161 +1,73 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '@ainexsuite/auth';
-import { SmartDashboardService, InsightCardData, DashboardStats } from '@/lib/smart-dashboard';
-import { SmartGrid } from '@/components/smart-dashboard/smart-grid';
-import { WelcomeHeader, DailyFocus, QuickActions, TodaysSchedule, WeeklyProgress, AchievementsWidget } from '@/components/dashboard';
-import { DashboardSkeleton } from '@/components/loading/dashboard-skeleton';
-import { WorkspacePageLayout } from '@ainexsuite/ui/components';
-import { motion } from 'framer-motion';
-
-// Animation variants for staggered entrance
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.1, 0.25, 1],
-    },
-  },
-};
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight, MessageSquare, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ChatContainer } from '@/components/chat';
 
 export default function WorkspacePage() {
-  const { user } = useAuth();
-  const [insights, setInsights] = useState<InsightCardData[]>([]);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
-    currentStreak: 0,
-    bestStreak: 0,
-    tasksCompletedToday: 0,
-    tasksDueToday: 0,
-    habitsAtRisk: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  // Subscribe to insights and dashboard stats
-  useEffect(() => {
-    if (!user?.uid) return;
-
-    setLoading(true);
-    const service = new SmartDashboardService(user.uid);
-    const unsubscribes: (() => void)[] = [];
-
-    // Subscribe to insights
-    unsubscribes.push(
-      service.subscribeToInsights((data) => {
-        setInsights(data);
-        setLoading(false);
-      })
-    );
-
-    // Subscribe to dashboard stats for real streak data
-    unsubscribes.push(
-      service.subscribeToDashboardStats((stats) => {
-        setDashboardStats(stats);
-      })
-    );
-
-    return () => unsubscribes.forEach(unsub => unsub());
-  }, [user?.uid]);
-
-  // Handle focus item click
-  const handleFocusClick = (insight: InsightCardData) => {
-    if (insight.actionUrl) {
-      window.location.href = insight.actionUrl;
-    }
-  };
-
-  // Show skeleton while loading
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  const [isLeftExpanded, setIsLeftExpanded] = useState(true);
 
   return (
-    <motion.div
-      className="space-y-8 py-4"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {/* Welcome Header */}
-      <motion.section
-        className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8"
-        variants={itemVariants}
+    <div className="fixed inset-x-0 top-16 bottom-0 flex overflow-hidden">
+      {/* Left Panel - Chat History */}
+      <aside
+        className={cn(
+          'flex-shrink-0 border-r border-border bg-surface-base transition-all duration-300 flex flex-col',
+          isLeftExpanded ? 'w-72' : 'w-16'
+        )}
       >
-        <WelcomeHeader
-          userName={user?.displayName}
-          tasksDueToday={dashboardStats.tasksDueToday}
-          tasksCompletedToday={dashboardStats.tasksCompletedToday}
-          currentStreak={dashboardStats.currentStreak}
-          habitsAtRisk={dashboardStats.habitsAtRisk}
-        />
-      </motion.section>
+        {/* Header */}
+        <div className="h-14 flex items-center justify-between px-4 border-b border-border">
+          {isLeftExpanded && (
+            <div className="flex items-center gap-2 text-ink-600">
+              <MessageSquare className="w-4 h-4" />
+              <span className="text-sm font-medium">Chat History</span>
+            </div>
+          )}
+          <button
+            onClick={() => setIsLeftExpanded(!isLeftExpanded)}
+            className={cn(
+              'p-1.5 rounded-md hover:bg-surface-muted transition-colors text-ink-500 hover:text-ink-700',
+              !isLeftExpanded && 'mx-auto'
+            )}
+          >
+            {isLeftExpanded ? (
+              <ChevronLeft className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </button>
+        </div>
 
-      {/* Weekly Progress */}
-      <motion.section
-        className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8"
-        variants={itemVariants}
-      >
-        <WeeklyProgress />
-      </motion.section>
+        {/* Content placeholder */}
+        <div className="flex-1 p-4">
+          {isLeftExpanded && (
+            <p className="text-xs text-ink-400">No conversations yet</p>
+          )}
+        </div>
+      </aside>
 
-      {/* Quick Actions */}
-      <motion.section
-        className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8"
-        variants={itemVariants}
-      >
-        <QuickActions />
-      </motion.section>
+      {/* Middle - AI Chatbot */}
+      <main className="flex-1 flex flex-col bg-surface-base min-w-0">
+        <ChatContainer />
+      </main>
 
-      {/* Daily Focus - Top priority items */}
-      {insights.length > 0 && (
-        <motion.section
-          className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8"
-          variants={itemVariants}
-        >
-          <DailyFocus
-            insights={insights}
-            onItemClick={handleFocusClick}
-            maxItems={3}
-          />
-        </motion.section>
-      )}
+      {/* Right Panel - AINex Insights */}
+      <aside className="w-80 flex-shrink-0 border-l border-border bg-surface-base flex flex-col">
+        {/* Header */}
+        <div className="h-14 flex items-center px-4 border-b border-border">
+          <div className="flex items-center gap-2 text-ink-600">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-medium">AINex Insights</span>
+          </div>
+        </div>
 
-      {/* Today's Schedule */}
-      <motion.section
-        className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8"
-        variants={itemVariants}
-      >
-        <TodaysSchedule maxItems={5} />
-      </motion.section>
-
-      {/* Smart Dashboard Grid */}
-      <motion.div variants={itemVariants}>
-        <WorkspacePageLayout className="pt-[17px]" maxWidth="wide">
-          <SmartGrid />
-        </WorkspacePageLayout>
-      </motion.div>
-
-      {/* Achievements */}
-      <motion.section
-        className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-8"
-        variants={itemVariants}
-      >
-        <AchievementsWidget />
-      </motion.section>
-    </motion.div>
+        {/* Content placeholder */}
+        <div className="flex-1 p-4">
+          <p className="text-xs text-ink-400">No insights available</p>
+        </div>
+      </aside>
+    </div>
   );
 }

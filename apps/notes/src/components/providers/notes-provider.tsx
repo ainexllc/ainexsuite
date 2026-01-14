@@ -14,7 +14,7 @@ import {
 const DISPLAY_BATCH_SIZE = 20;
 import { useAuth } from "@ainexsuite/auth";
 import type { Note, NoteAttachment, NoteDraft, NoteType, NoteColor, NotePriority } from "@/lib/types/note";
-import { generateUUID, type FilterValue, type SortConfig } from "@ainexsuite/ui";
+import { generateUUID, type FilterValue, type SortConfig, toast, ToastAction } from "@ainexsuite/ui";
 import {
   addAttachments,
   createNote as createNoteMutation,
@@ -63,6 +63,8 @@ type NotesContextValue = {
   loading: boolean;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
+  includeTrashInSearch: boolean;
+  setIncludeTrashInSearch: (value: boolean) => void;
   activeLabelIds: string[];
   setActiveLabelIds: (labels: string[]) => void;
   filters: FilterValue;
@@ -107,6 +109,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
   const [spaceLoaded, setSpaceLoaded] = useState(false);
   const [pendingNotes, setPendingNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [includeTrashInSearch, setIncludeTrashInSearch] = useState(false);
   const [activeLabelIds, setActiveLabelIds] = useState<string[]>([]);
   const [deletedNoteIds, setDeletedNoteIds] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<FilterValue>({
@@ -418,26 +421,68 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return;
       }
 
-      // Optimistic update
+      // Find the note to get its title for the toast
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const noteToDelete = allNotes.find((n) => n.id === noteId);
+      const noteTitle = noteToDelete?.title?.trim() || "Untitled note";
+
+      // Optimistic update - hide note immediately
       setDeletedNoteIds((prev) => {
         const next = new Set(prev);
         next.add(noteId);
         return next;
       });
 
-      try {
-        await deleteNoteMutation(userId, noteId);
-      } catch (error) {
-        // Revert on error
-        console.error("Failed to delete note:", error);
-        setDeletedNoteIds((prev) => {
-          const next = new Set(prev);
-          next.delete(noteId);
-          return next;
-        });
-      }
+      // Track if user clicked undo
+      let undone = false;
+      const UNDO_DURATION = 8000;
+
+      // Show toast with undo action
+      const toastId = toast.default({
+        title: "Note moved to trash",
+        description: noteTitle.length > 40 ? noteTitle.slice(0, 40) + "…" : noteTitle,
+        duration: UNDO_DURATION,
+        action: (
+          <ToastAction
+            altText="Undo delete"
+            onClick={() => {
+              undone = true;
+              // Revert optimistic update
+              setDeletedNoteIds((prev) => {
+                const next = new Set(prev);
+                next.delete(noteId);
+                return next;
+              });
+              toast.dismiss(toastId);
+            }}
+          >
+            Undo
+          </ToastAction>
+        ),
+      });
+
+      // Delay actual deletion to allow for undo
+      setTimeout(async () => {
+        if (!undone) {
+          try {
+            await deleteNoteMutation(userId, noteId);
+          } catch (error) {
+            console.error("Failed to delete note:", error);
+            // Revert on error
+            setDeletedNoteIds((prev) => {
+              const next = new Set(prev);
+              next.delete(noteId);
+              return next;
+            });
+            toast.error({
+              title: "Failed to delete note",
+              description: "Please try again",
+            });
+          }
+        }
+      }, UNDO_DURATION);
     },
-    [userId],
+    [userId, ownedNotes, sharedNotes, spaceNotes],
   );
 
   const handleRestore = useCallback(
@@ -631,13 +676,25 @@ export function NotesProvider({ children }: NotesProviderProps) {
         return bDeleted - aDeleted;
       });
 
-    const activeNotes = merged.filter((note) => !note.deletedAt && !deletedNoteIds.has(note.id));
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const hasQuery = normalizedQuery.length > 1;
+
+    // Include trashed notes in active set when searching with toggle enabled
+    const activeNotes = merged.filter((note) => {
+      // Always exclude notes pending deletion in this session
+      if (deletedNoteIds.has(note.id)) return false;
+
+      // When searching with includeTrashInSearch, include trashed notes
+      if (hasQuery && includeTrashInSearch && note.deletedAt) {
+        return true;
+      }
+
+      // Otherwise, exclude trashed notes
+      return !note.deletedAt;
+    });
 
     // Count archived notes for badge display
     const archivedCount = activeNotes.filter((note) => note.archived).length;
-
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    const hasQuery = normalizedQuery.length > 1;
     const hasColorFilter = filters.colors && filters.colors.length > 0;
     const hasDateFilter = filters.dateRange?.start || filters.dateRange?.end;
     const hasNoteTypeFilter = filters.noteType && filters.noteType !== 'all';
@@ -740,7 +797,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       archivedCount,
       totalCount: others.length,
     };
-  }, [pendingNotes, ownedNotes, sharedNotes, spaceNotes, searchQuery, activeLabelIds, currentSpaceId, filters, sort, displayLimit, deletedNoteIds]);
+  }, [pendingNotes, ownedNotes, sharedNotes, spaceNotes, searchQuery, includeTrashInSearch, activeLabelIds, currentSpaceId, filters, sort, displayLimit, deletedNoteIds]);
 
   useEffect(() => {
     computedNotesRef.current = computedNotes;
@@ -791,6 +848,8 @@ export function NotesProvider({ children }: NotesProviderProps) {
       loading,
       searchQuery,
       setSearchQuery: updateSearchQuery,
+      includeTrashInSearch,
+      setIncludeTrashInSearch,
       activeLabelIds,
       setActiveLabelIds: updateActiveLabelIds,
       filters,
@@ -828,6 +887,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
       isLoadingMore,
       loadMore,
       searchQuery,
+      includeTrashInSearch,
       activeLabelIds,
       filters,
       sort,

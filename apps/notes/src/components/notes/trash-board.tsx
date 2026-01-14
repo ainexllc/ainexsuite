@@ -8,6 +8,16 @@ import { Container } from "@/components/layout/container";
 import { formatRelativeTime } from "@/lib/utils/datetime";
 import type { Note } from "@/lib/types/note";
 
+// Helper to strip HTML tags for preview display
+function stripHtml(html: string): string {
+  if (!html.includes('<')) return html;
+  if (typeof DOMParser !== 'undefined') {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  }
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 function Skeleton() {
   return (
     <div className="space-y-4">
@@ -26,7 +36,7 @@ function Skeleton() {
 
 function getPreview(note: Note): string {
   if (note.body?.trim()) {
-    return note.body.trim().slice(0, 160);
+    return stripHtml(note.body).slice(0, 160);
   }
   if (note.checklist?.length) {
     const first = note.checklist.find((item) => item.text.trim());

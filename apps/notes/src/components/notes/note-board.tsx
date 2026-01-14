@@ -42,7 +42,7 @@ export function NoteBoard() {
   } = useNotes();
   const { preferences } = usePreferences();
 
-  // Separate breakpoints for Focus and Library sections
+  // Separate breakpoints for Favorites and Library sections
   const focusBreakpoints = useMemo(() => ({
     default: preferences.focusColumns || 2,
     640: 1,
@@ -80,7 +80,7 @@ export function NoteBoard() {
         <div className="space-y-10">
           {sortedPinned.length ? (
             <ListSection
-              title="Focus"
+              title="Favorites"
               count={sortedPinned.length}
               action={<ColumnSelector section="focus" />}
             >

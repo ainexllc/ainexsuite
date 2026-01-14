@@ -19,6 +19,7 @@ import {
   Flame,
   ChevronRight,
   ChevronDown,
+  StickyNote,
 } from "lucide-react";
 import { FocusIcon } from "@/components/icons/focus-icon";
 import { clsx } from "clsx";
@@ -50,8 +51,12 @@ import {
   getSubtreeIndices,
   getChildrenCompletionStats,
   moveSubtree,
-  cascadeCompletionStatus,
 } from "@/lib/utils/checklist-utils";
+import {
+  useChecklistHandlers,
+  getChecklistPlaceholder,
+} from "@/hooks/use-checklist-handlers";
+import { fireCelebration } from "@/lib/confetti";
 
 type AttachmentDraft = {
   id: string;
@@ -59,24 +64,7 @@ type AttachmentDraft = {
   preview: string;
 };
 
-const checklistTemplate = (): ChecklistItem => ({
-  id: generateUUID(),
-  text: "",
-  completed: false,
-});
-
-// Contextual placeholder examples for checklist items
-const getChecklistPlaceholder = (index: number): string => {
-  const examples = [
-    "Add item...",
-    "e.g., Milk",
-    "e.g., Pick up dry cleaning",
-    "e.g., Call mom",
-    "e.g., Bread",
-    "e.g., Eggs",
-  ];
-  return examples[index % examples.length];
-};
+// checklistTemplate and getChecklistPlaceholder are now imported from @/hooks/use-checklist-handlers
 
 // Quick templates for new notes
 type NoteTemplate = {
@@ -117,11 +105,7 @@ const NOTE_TEMPLATES: NoteTemplate[] = [
   },
 ];
 
-interface NoteComposerProps {
-  placeholder?: string;
-}
-
-export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerProps) {
+export function NoteComposer() {
   const { createNote, updateNote, deleteNote } = useNotes();
   const { spaces } = useSpaces();
   const { createReminder } = useReminders();
@@ -189,7 +173,19 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
   const titleInputRef = useRef<HTMLInputElement>(null);
   const richTextEditorRef = useRef<RichTextEditorRef>(null);
   const checklistInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const pendingChecklistFocusId = useRef<string | null>(null);
+
+  // Use shared checklist handlers
+  const {
+    handleChecklistChange,
+    handleAddChecklistItem,
+    handleRemoveChecklistItem,
+    handleIndentChange,
+    handleBulkToggle,
+    pendingFocusId: pendingChecklistFocusId,
+  } = useChecklistHandlers(checklist, setChecklist, {
+    autoSortCompleted: true,
+    onAllComplete: fireCelebration,
+  });
 
   useEffect(
     () => () => {
@@ -209,7 +205,7 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
       target.focus();
       pendingChecklistFocusId.current = null;
     }
-  }, [checklist]);
+  }, [checklist, pendingChecklistFocusId]);
 
   useEffect(() => {
     const handleQuickCapture = () => {
@@ -581,76 +577,7 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
     customCron,
   ]);
 
-  const handleChecklistChange = (itemId: string, next: Partial<ChecklistItem>) => {
-    setChecklist((prev) => {
-      // Update the item
-      const updated = prev.map((item) =>
-        item.id === itemId
-          ? {
-            ...item,
-            ...next,
-          }
-          : item,
-      );
-
-      // Cascade completion status to parent checkboxes
-      if (next.completed !== undefined) {
-        const itemIndex = updated.findIndex((item) => item.id === itemId);
-        if (itemIndex !== -1) {
-          cascadeCompletionStatus(updated, itemIndex, next.completed);
-        }
-      }
-
-      return updated;
-    });
-  };
-
-  // Bulk complete/uncomplete a subtree (Shift+click)
-  const handleBulkToggle = (itemId: string, idx: number) => {
-    setChecklist((prev) => {
-      const item = prev[idx];
-      const newCompleted = !item.completed;
-      const subtreeIndices = [idx, ...getSubtreeIndices(prev, idx)];
-
-      return prev.map((it, i) =>
-        subtreeIndices.includes(i) ? { ...it, completed: newCompleted } : it
-      );
-    });
-  };
-
-  const handleAddChecklistItem = (afterIndex?: number, inheritIndent?: number) => {
-    const newItem = {
-      ...checklistTemplate(),
-      indent: inheritIndent ?? 0,
-    };
-    pendingChecklistFocusId.current = newItem.id;
-    if (afterIndex !== undefined) {
-      setChecklist((prev) => [
-        ...prev.slice(0, afterIndex + 1),
-        newItem,
-        ...prev.slice(afterIndex + 1),
-      ]);
-    } else {
-      setChecklist((prev) => [...prev, newItem]);
-    }
-  };
-
-  const handleIndentChange = (itemId: string, delta: number) => {
-    setChecklist((prev) =>
-      prev.map((item) => {
-        if (item.id === itemId) {
-          const currentIndent = item.indent ?? 0;
-          const newIndent = Math.max(0, Math.min(3, currentIndent + delta));
-          return { ...item, indent: newIndent };
-        }
-        return item;
-      })
-    );
-  };
-
-  const handleRemoveChecklistItem = (itemId: string) => {
-    setChecklist((prev) => prev.filter((item) => item.id !== itemId));
-  };
+  // Checklist handlers are now provided by useChecklistHandlers hook
 
   const handleFilesSelected = (files: FileList | null) => {
     if (!files || !files.length) {
@@ -786,29 +713,25 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
     <section className="w-full">
       {!expanded ? (
         <Hint hint={HINTS.SHARED_NOTES} showWhen={hasOnlyPersonalSpace}>
-          <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+          <div className="flex w-full items-center gap-3 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+            {/* Note option */}
             <button
               type="button"
-              className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
               onClick={() => applyTemplate(NOTE_TEMPLATES[0])}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 group"
             >
-              <span>{placeholder}</span>
+              <StickyNote className="h-5 w-5 text-zinc-400 group-hover:text-[var(--color-primary)]" />
+              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300 group-hover:text-[var(--color-primary)]">Note</span>
             </button>
-            {/* Quick template buttons */}
-            <div className="flex items-center gap-1">
-              {NOTE_TEMPLATES.slice(1).map((template) => (
-                <button
-                  key={template.id}
-                  type="button"
-                  onClick={() => applyTemplate(template)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
-                  title={template.label}
-                >
-                  <span>{template.icon}</span>
-                  <span className="hidden sm:inline">{template.label}</span>
-                </button>
-              ))}
-            </div>
+            {/* List option */}
+            <button
+              type="button"
+              onClick={() => applyTemplate(NOTE_TEMPLATES[2])}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 group"
+            >
+              <CheckSquare className="h-5 w-5 text-zinc-400 group-hover:text-[var(--color-primary)]" />
+              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300 group-hover:text-[var(--color-primary)]">List</span>
+            </button>
           </div>
         </Hint>
       ) : (
@@ -839,7 +762,7 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
                     ? "text-[var(--color-primary)] bg-[var(--color-primary)]/10"
                     : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
                 )}
-                aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
+                aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
               >
                 <FocusIcon focused={pinned} className="h-5 w-5" />
               </button>
@@ -1376,48 +1299,40 @@ export function NoteComposer({ placeholder = 'Take a note...' }: NoteComposerPro
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode((prev) => {
-                      if (prev === "text") {
-                        // Convert text body to checklist items
-                        if (body.trim()) {
-                          const lines = body.split('\n').filter(line => line.trim());
-                          const items = lines.map(line => ({
-                            id: generateUUID(),
-                            text: line.trim(),
-                            completed: false,
-                          }));
-                          setChecklist(items);
-                          setBody("");
-                        }
-                        return "checklist";
-                      } else {
-                        // Convert checklist items to text body
-                        if (checklist.length) {
-                          const text = checklist.map(item => item.text).filter(t => t.trim()).join('\n');
-                          setBody(text);
-                          setChecklist([]);
-                        }
-                        return "text";
+                {mode === "text" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("checklist");
+                      // Convert text body to checklist items
+                      if (body.trim()) {
+                        const lines = body.split('\n').filter(line => line.trim());
+                        const items = lines.map(line => ({
+                          id: generateUUID(),
+                          text: line.trim(),
+                          completed: false,
+                        }));
+                        setChecklist(items);
+                        setBody("");
                       }
-                    });
-                  }}
-                  className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  aria-label="Lists & checklists"
-                  title="Lists & checklists"
-                >
-                  <CheckSquare className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  onClick={() => fileInputRef.current?.click()}
-                  aria-label="Add image attachment"
-                >
-                  <ImageIcon className="h-5 w-5" />
-                </button>
+                    }}
+                    className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    aria-label="Convert to list"
+                    title="Convert to list"
+                  >
+                    <CheckSquare className="h-5 w-5" />
+                  </button>
+                )}
+                {mode === "text" && (
+                  <button
+                    type="button"
+                    className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Add image attachment"
+                  >
+                    <ImageIcon className="h-5 w-5" />
+                  </button>
+                )}
                 <div className="relative">
                   <button
                     type="button"

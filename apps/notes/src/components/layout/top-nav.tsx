@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, Activity, RefreshCw } from "lucide-react";
+import { Settings, Activity, RefreshCw, Trash2 } from "lucide-react";
 import { useAuth } from "@ainexsuite/auth";
 import { useTheme } from "@ainexsuite/theme";
 import { LogoWordmark } from "@/components/branding/logo-wordmark";
@@ -19,6 +19,7 @@ type TopNavProps = {
   onOpenSettings?: () => void;
   onOpenActivity?: () => void;
   onOpenAiAssistant?: () => void;
+  onOpenTrash?: () => void;
 };
 
 export function TopNav({
@@ -27,6 +28,7 @@ export function TopNav({
   onOpenSettings,
   onOpenActivity,
   onOpenAiAssistant,
+  onOpenTrash,
 }: TopNavProps) {
   const { user, loading: authLoading, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -59,6 +61,16 @@ export function TopNav({
       actions={
         <>
           <TopNavFullscreenButton />
+          {onOpenTrash && (
+            <button
+              type="button"
+              onClick={onOpenTrash}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-700 dark:hover:bg-white/10"
+              aria-label="Open trash"
+            >
+              <Trash2 className="h-[18px] w-[18px]" />
+            </button>
+          )}
           {onOpenAiAssistant && <TopNavAiButton onClick={onOpenAiAssistant} />}
           {user && !authLoading && (
             <div className="relative">

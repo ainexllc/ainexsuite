@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckSquare,
   Image as ImageIcon,
@@ -14,7 +15,6 @@ import {
   CalendarClock,
   Sparkles,
   Loader2,
-  Undo2,
   Brain,
   FolderOpen,
   Plus,
@@ -26,16 +26,25 @@ import {
   GripVertical,
   Flame,
   ChevronRight,
-  ChevronDown,
+  Circle,
+  CheckCircle2,
 } from "lucide-react";
+import { AnimatedCheckbox } from "./animated-checkbox";
+import { ChecklistDueDatePicker } from "./checklist-due-date";
+import { ChecklistPriorityPicker } from "./checklist-priority";
+// ChecklistItemDetails and DetailsToggleButton available in ./checklist-item-details if needed
+import { useChecklistHistory } from "@/hooks/use-checklist-history";
+import { RichTextEditor, type RichTextEditorRef } from "@/components/editor/rich-text-editor";
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -78,11 +87,14 @@ import {
   hasChildren,
   getChildrenCompletionStats,
   moveSubtree,
-  groupIntoSubtrees,
-  cascadeCompletionStatus,
   isHiddenByCollapsedAncestor,
   isInvalidDropTarget,
 } from "@/lib/utils/checklist-utils";
+import {
+  useChecklistHandlers,
+  getChecklistPlaceholder,
+} from "@/hooks/use-checklist-handlers";
+import { fireCelebration } from "@/lib/confetti";
 
 function channelsEqual(a: ReminderChannel[], b: ReminderChannel[]) {
   if (a.length !== b.length) {
@@ -112,9 +124,10 @@ type SortableChecklistItemProps = {
   children: React.ReactNode;
   indentLevel: number;
   subtreeCount?: number; // Number of children being dragged with this item
+  isAnyDragging?: boolean; // True when any item is being dragged
 };
 
-function SortableChecklistItem({ id, children, indentLevel, subtreeCount }: SortableChecklistItemProps) {
+function SortableChecklistItem({ id, children, indentLevel, subtreeCount: _subtreeCount, isAnyDragging = false }: SortableChecklistItemProps) {
   const {
     attributes,
     listeners,
@@ -127,55 +140,70 @@ function SortableChecklistItem({ id, children, indentLevel, subtreeCount }: Sort
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
+  const INDENT_WIDTH = 12; // Compact indent
+
+  // When dragging, show a gray placeholder
+  if (isDragging) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="relative flex items-start gap-1 py-0.5 rounded-md"
+      >
+        {/* Indentation spacer */}
+        <div style={{ width: `${indentLevel * INDENT_WIDTH}px`, flexShrink: 0 }} />
+        {/* Placeholder box */}
+        <div className="flex-1 h-7 rounded-md bg-zinc-200/50 dark:bg-zinc-700/50 border-2 border-dashed border-zinc-300 dark:border-zinc-600" />
+      </div>
+    );
+  }
+
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
       style={style}
-      className="group relative flex items-center gap-2"
+      layout={!isAnyDragging}
+      layoutId={isAnyDragging ? undefined : id}
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{
+        layout: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.15 },
+        y: { type: "spring", stiffness: 500, damping: 30 },
+        scale: { duration: 0.15 },
+      }}
+      className="group relative flex items-start gap-1 py-0.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
     >
-      {/* Tree lines for nested items */}
+      {/* Left border accent for nested items */}
       {indentLevel > 0 && (
-        <>
-          {Array.from({ length: indentLevel }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-700"
-              style={{ left: `${i * 24 + 10}px` }}
-            />
-          ))}
-          {/* Horizontal connector */}
-          <div
-            className="absolute top-1/2 h-px bg-zinc-200 dark:bg-zinc-700"
-            style={{
-              left: `${(indentLevel - 1) * 24 + 10}px`,
-              width: '14px',
-            }}
-          />
-        </>
+        <motion.div
+          className="absolute top-0 bottom-0 rounded-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.3 }}
+          style={{
+            left: '2px',
+            width: '2px',
+            backgroundColor: 'var(--color-primary)',
+          }}
+        />
       )}
       {/* Indentation spacer */}
-      <div style={{ width: `${indentLevel * 24}px`, flexShrink: 0 }} />
-      {/* Drag handle */}
+      <div style={{ width: `${indentLevel * INDENT_WIDTH}px`, flexShrink: 0 }} />
+      {/* Drag handle - compact */}
       <button
         type="button"
-        className="cursor-grab touch-none opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity flex-shrink-0"
+        className="cursor-grab touch-none opacity-0 group-hover:opacity-50 hover:!opacity-80 transition-opacity flex-shrink-0 mt-0.5"
         {...attributes}
         {...listeners}
         aria-label="Drag to reorder"
       >
-        <GripVertical className="h-4 w-4 text-zinc-400" />
+        <GripVertical className="h-3 w-3 text-zinc-400" />
       </button>
       {children}
-      {/* Show subtree count while dragging */}
-      {isDragging && subtreeCount && subtreeCount > 0 && (
-        <span className="ml-2 text-xs text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
-          +{subtreeCount} sub-items
-        </span>
-      )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -208,6 +236,17 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     note.checklist,
   );
   const [autoSortCompleted, setAutoSortCompleted] = useState(true);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  // Undo/redo for checklist (keyboard shortcuts Cmd+Z/Cmd+Shift+Z still work)
+  const {
+    pushHistory: pushChecklistHistory,
+  } = useChecklistHistory({
+    onUndo: (newChecklist) => setChecklist(newChecklist),
+    onRedo: (newChecklist) => setChecklist(newChecklist),
+    maxHistorySize: 50,
+    enableKeyboardShortcuts: mode === "checklist",
+  });
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     itemId: string;
     childCount: number;
@@ -233,64 +272,154 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const [newAttachments, setNewAttachments] = useState<AttachmentDraft[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhanceError, setEnhanceError] = useState<string | null>(null);
   const [showEnhanceMenu, setShowEnhanceMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedText, setSelectedText] = useState<{ text: string; start: number; end: number } | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [bodyHistory, setBodyHistory] = useState<string[]>([]);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [bodyFuture, setBodyFuture] = useState<string[]>([]);
+  const editorRef = useRef<RichTextEditorRef>(null);
 
-  const lastSavedBodyRef = useRef(note.body);
-  const hasEditedRef = useRef(false);
+  // Undo/redo state and refs
+  const lastHistorySnapshotRef = useRef(note.body); // Last body value captured to history
+  const hasEditedRef = useRef(false); // Track if user has made any edits
+  const isUndoRedoRef = useRef(false); // Track when undo/redo is in progress
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // Store debounce timer for cancellation
 
-  // Auto-resize textarea to fit content
+
+  // Capture body changes to history with debouncing
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${Math.max(200, textarea.scrollHeight)}px`;
-    }
-  }, [body]);
+    // Don't save if body hasn't changed from last snapshot
+    if (body === lastHistorySnapshotRef.current) return;
 
-  // Capture initial state immediately on first edit, then debounce subsequent saves
-  useEffect(() => {
-    // Don't save if body hasn't effectively changed from last save
-    if (body === lastSavedBodyRef.current) return;
-
-    // On first edit, immediately save the original state to history
-    if (!hasEditedRef.current) {
-      hasEditedRef.current = true;
-      setBodyHistory([lastSavedBodyRef.current]);
-      lastSavedBodyRef.current = body;
+    // Skip history changes if this was an undo/redo operation
+    if (isUndoRedoRef.current) {
+      isUndoRedoRef.current = false;
+      lastHistorySnapshotRef.current = body;
       return;
     }
 
-    // For subsequent edits, debounce
-    const timer = setTimeout(() => {
-      setBodyHistory(prev => [...prev.slice(-19), lastSavedBodyRef.current]); // Keep last 20 states
-      lastSavedBodyRef.current = body;
-    }, 1000); // 1 second debounce
+    // Clear any existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
 
-    return () => clearTimeout(timer);
+    // Capture the original state before first edit (for proper undo to initial state)
+    const originalState = lastHistorySnapshotRef.current;
+    const isFirstEdit = !hasEditedRef.current;
+
+    if (isFirstEdit) {
+      hasEditedRef.current = true;
+    }
+
+    // Debounce all history saves (1 second) for consistent behavior
+    debounceTimerRef.current = setTimeout(() => {
+      if (isFirstEdit) {
+        // First edit: save the original state so user can undo back to it
+        setBodyHistory([originalState]);
+      } else {
+        // Subsequent edits: append to history (keep max 20 states)
+        setBodyHistory(prev => [...prev.slice(-19), originalState]);
+      }
+      setBodyFuture([]); // Clear redo stack on new edit
+      lastHistorySnapshotRef.current = body;
+      debounceTimerRef.current = null;
+    }, 1000);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [body]);
 
-  // Save to history before AI changes (immediate)
+  // Save to history before AI changes (immediate, bypasses debounce)
   const saveToHistory = useCallback(() => {
-    if (body !== lastSavedBodyRef.current) {
-      setBodyHistory(prev => [...prev.slice(-19), lastSavedBodyRef.current]);
-      lastSavedBodyRef.current = body;
+    if (body !== lastHistorySnapshotRef.current) {
+      // Clear pending debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      setBodyHistory(prev => [...prev.slice(-19), lastHistorySnapshotRef.current]);
+      lastHistorySnapshotRef.current = body;
     }
   }, [body]);
 
   // Undo function
   const handleUndo = useCallback(() => {
     if (bodyHistory.length > 0) {
+      // Clear any pending debounce timer to prevent race condition
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+
       const previousState = bodyHistory[bodyHistory.length - 1];
+      isUndoRedoRef.current = true; // Mark as undo/redo operation
+      // Move current state to future for redo
+      setBodyFuture(prev => [body, ...prev]);
       setBodyHistory(prev => prev.slice(0, -1));
       setBody(previousState);
-      lastSavedBodyRef.current = previousState; // Sync ref so we don't auto-save the undo
     }
-  }, [bodyHistory]);
+  }, [bodyHistory, body]);
+
+  // Redo function
+  const handleRedo = useCallback(() => {
+    if (bodyFuture.length > 0) {
+      // Clear any pending debounce timer to prevent race condition
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+
+      const nextState = bodyFuture[0];
+      isUndoRedoRef.current = true; // Mark as undo/redo operation
+      // Move current state to history
+      setBodyHistory(prev => [...prev, body]);
+      setBodyFuture(prev => prev.slice(1));
+      setBody(nextState);
+    }
+  }, [bodyFuture, body]);
+
+  // Keyboard shortcuts for undo/redo in text mode
+  useEffect(() => {
+    if (mode !== "text") return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Skip if user is in an input/textarea (let native browser undo work)
+      const target = event.target as HTMLElement;
+      const tagName = target.tagName.toLowerCase();
+      if (tagName === 'input' || tagName === 'textarea') {
+        return;
+      }
+
+      const isUndo =
+        (event.metaKey || event.ctrlKey) &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === "z";
+
+      const isRedo =
+        ((event.metaKey || event.ctrlKey) &&
+          event.shiftKey &&
+          event.key.toLowerCase() === "z") ||
+        ((event.metaKey || event.ctrlKey) &&
+          !event.shiftKey &&
+          event.key.toLowerCase() === "y");
+
+      if (isUndo && bodyHistory.length > 0) {
+        event.preventDefault();
+        handleUndo();
+      } else if (isRedo && bodyFuture.length > 0) {
+        event.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mode, handleUndo, handleRedo, bodyHistory.length, bodyFuture.length]);
 
   const [showPalette, setShowPalette] = useState(false);
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
@@ -382,7 +511,24 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const checklistInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const pendingChecklistFocusId = useRef<string | null>(null);
+
+  // Use shared checklist handlers with history and auto-sort
+  // Note: handleRemoveChecklistItem is not used here because NoteEditor has
+  // handleDeleteItem which includes confirmation for items with children
+  const {
+    handleChecklistChange,
+    handleAddChecklistItem,
+    handleIndentChange,
+    handleBulkToggle,
+    handleToggleCollapsed,
+    pendingFocusId: pendingChecklistFocusId,
+  } = useChecklistHandlers(checklist, setChecklist, {
+    onHistoryPush: pushChecklistHistory,
+    autoSortCompleted,
+    trackCompletedAt: true,
+    onAllComplete: fireCelebration,
+  });
+
   const existingReminder = useMemo(() => {
     if (!note.reminderId) {
       return null;
@@ -419,59 +565,65 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     });
   }, []);
 
-  type EnhanceStyle = "professional" | "casual" | "concise" | "grammar";
+  type EnhanceStyle = "professional" | "casual" | "concise" | "grammar" | "expand";
 
   const ENHANCE_STYLES: { id: EnhanceStyle; label: string; description: string }[] = [
     { id: "professional", label: "Professional", description: "Polished & formal tone" },
     { id: "casual", label: "Casual", description: "Friendly & conversational" },
     { id: "concise", label: "Concise", description: "Brief & to the point" },
     { id: "grammar", label: "Clean Grammar", description: "Fix spelling & grammar" },
+    { id: "expand", label: "Expand", description: "Add more details & depth" },
   ];
 
-  // Handle text selection in textarea
-  const handleTextSelect = () => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  // Handle text selection in rich text editor
+  const handleEditorSelectionUpdate = useCallback(() => {
+    const editor = editorRef.current?.editor;
+    if (!editor) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = body.substring(start, end);
-
-    if (text.trim()) {
-      setSelectedText({ text, start, end });
-    } else {
-      setSelectedText(null);
+    const { from, to } = editor.state.selection;
+    if (from !== to) {
+      const text = editor.state.doc.textBetween(from, to, ' ');
+      if (text.trim()) {
+        setSelectedText({ text, start: from, end: to });
+        return;
+      }
     }
-  };
+    setSelectedText(null);
+  }, []);
 
-  // Handle right-click context menu
-  const handleContextMenu = (e: React.MouseEvent) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  // Handle right-click context menu for rich text editor
+  const handleEditorContextMenu = useCallback((e: React.MouseEvent) => {
+    const editor = editorRef.current?.editor;
+    if (!editor) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = body.substring(start, end);
-
-    if (text.trim()) {
-      e.preventDefault();
-      setSelectedText({ text, start, end });
-      setContextMenuPos({ x: e.clientX, y: e.clientY });
+    const { from, to } = editor.state.selection;
+    if (from !== to) {
+      const text = editor.state.doc.textBetween(from, to, ' ');
+      if (text.trim()) {
+        e.preventDefault();
+        setSelectedText({ text, start: from, end: to });
+        setContextMenuPos({ x: e.clientX, y: e.clientY });
+      }
     }
-  };
+  }, []);
 
   const handleEnhanceBody = async (style: EnhanceStyle) => {
     if (isEnhancing) return;
 
+    const editor = editorRef.current?.editor;
+
     // Determine what text to enhance - selected text or all
-    const textToEnhance = selectedText?.text || body;
+    const textToEnhance = selectedText?.text || (editor ? editor.getText() : body);
     if (!textToEnhance.trim()) return;
 
     setShowEnhanceMenu(false);
     setContextMenuPos(null);
+    setEnhanceError(null); // Clear previous error
 
     // Save current state for undo
     saveToHistory();
+
+    const startTime = Date.now();
 
     try {
       setIsEnhancing(true);
@@ -482,6 +634,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         casual: { task: "rewrite", tone: "casual" },
         concise: { task: "simplify" },
         grammar: { task: "grammar" },
+        expand: { task: "expand" },
       };
 
       const { task, tone } = taskMap[style];
@@ -492,22 +645,38 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         body: JSON.stringify({ text: textToEnhance, task, tone }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.enhanced) {
-          if (selectedText) {
-            // Replace only the selected portion
-            const newBody = body.substring(0, selectedText.start) + data.enhanced + body.substring(selectedText.end);
-            setBody(newBody);
-            setSelectedText(null);
-          } else {
-            // Replace entire body
-            setBody(data.enhanced);
-          }
+      // Ensure loading shows for at least 500ms for better UX
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 500) {
+        await new Promise(resolve => setTimeout(resolve, 500 - elapsed));
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Enhancement failed (${response.status})`);
+      }
+
+      const data = await response.json();
+      if (data.enhanced) {
+        if (selectedText && editor) {
+          // Replace only the selected portion using TipTap
+          editor.chain()
+            .focus()
+            .setTextSelection({ from: selectedText.start, to: selectedText.end })
+            .insertContent(data.enhanced)
+            .run();
+          setSelectedText(null);
+        } else if (editor) {
+          // Replace entire content using TipTap (API returns HTML-formatted content)
+          editor.commands.setContent(data.enhanced);
+        } else {
+          // Fallback for plain text
+          setBody(data.enhanced);
         }
       }
     } catch (error) {
       console.error("Failed to enhance body:", error);
+      setEnhanceError(error instanceof Error ? error.message : "Failed to enhance text");
     } finally {
       setIsEnhancing(false);
     }
@@ -706,7 +875,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       target.focus();
       pendingChecklistFocusId.current = null;
     }
-  }, [checklist]);
+  }, [checklist, pendingChecklistFocusId]);
 
   const canUseSms = Boolean(preferences.smsNumber?.trim());
 
@@ -716,123 +885,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
     }
   }, [canUseSms]);
 
-  const checklistTemplate = (): ChecklistItem => ({
-    id: generateUUID(),
-    text: "",
-    completed: false,
-  });
-
-  // Contextual placeholder examples for checklist items
-  const getChecklistPlaceholder = (index: number): string => {
-    const examples = [
-      "Add item...",
-      "e.g., Milk",
-      "e.g., Pick up dry cleaning",
-      "e.g., Call mom",
-      "e.g., Bread",
-      "e.g., Eggs",
-    ];
-    return examples[index % examples.length];
-  };
-
-  const handleAddChecklistItem = (afterIndex?: number, inheritIndent?: number) => {
-    const newItem = {
-      ...checklistTemplate(),
-      indent: inheritIndent ?? 0,
-    };
-    pendingChecklistFocusId.current = newItem.id;
-    if (afterIndex !== undefined) {
-      setChecklist((prev) => [
-        ...prev.slice(0, afterIndex + 1),
-        newItem,
-        ...prev.slice(afterIndex + 1),
-      ]);
-    } else {
-      setChecklist((prev) => [...prev, newItem]);
-    }
-  };
-
-  const handleIndentChange = (itemId: string, delta: number) => {
-    setChecklist((prev) =>
-      prev.map((item) => {
-        if (item.id === itemId) {
-          const currentIndent = item.indent ?? 0;
-          const newIndent = Math.max(0, Math.min(3, currentIndent + delta));
-          return { ...item, indent: newIndent };
-        }
-        return item;
-      })
-    );
-  };
-
-  const handleChecklistChange = (
-    itemId: string,
-    next: Partial<ChecklistItem>,
-  ) => {
-    setChecklist((prev) => {
-      // Update the item
-      const updated = prev.map((item) =>
-        item.id === itemId
-          ? {
-            ...item,
-            ...next,
-          }
-          : item,
-      );
-
-      // Cascade completion status to parent checkboxes
-      if (next.completed !== undefined) {
-        const itemIndex = updated.findIndex((item) => item.id === itemId);
-        if (itemIndex !== -1) {
-          cascadeCompletionStatus(updated, itemIndex, next.completed);
-        }
-      }
-
-      // If completion status changed AND auto-sort is enabled, sort subtrees together
-      if (next.completed !== undefined && autoSortCompleted) {
-        // Group items into subtrees (top-level parents with their children)
-        const subtrees = groupIntoSubtrees(updated);
-        // Sort subtrees by parent completion status
-        const uncompleted = subtrees.filter(tree => !tree[0].completed);
-        const completed = subtrees.filter(tree => tree[0].completed);
-        return [...uncompleted.flat(), ...completed.flat()];
-      }
-
-      return updated;
-    });
-  };
-
-  // Toggle collapse/expand for a parent item
-  const handleToggleCollapsed = (itemId: string) => {
-    setChecklist((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, collapsed: !item.collapsed } : item
-      )
-    );
-  };
-
-  // Bulk complete/uncomplete a subtree (Shift+click)
-  const handleBulkToggle = (itemId: string, idx: number) => {
-    setChecklist((prev) => {
-      const item = prev[idx];
-      const newCompleted = !item.completed;
-      const subtreeIndices = [idx, ...getSubtreeIndices(prev, idx)];
-
-      const updated = prev.map((it, i) =>
-        subtreeIndices.includes(i) ? { ...it, completed: newCompleted } : it
-      );
-
-      // Auto-sort if enabled
-      if (autoSortCompleted) {
-        const subtrees = groupIntoSubtrees(updated);
-        const uncompleted = subtrees.filter(tree => !tree[0].completed);
-        const completed = subtrees.filter(tree => tree[0].completed);
-        return [...uncompleted.flat(), ...completed.flat()];
-      }
-
-      return updated;
-    });
-  };
+  // Checklist handlers (handleChecklistChange, handleAddChecklistItem, etc.)
+  // are now provided by useChecklistHandlers hook
 
   // Delete item with confirmation if it has children
   const handleDeleteItem = (itemId: string, idx: number) => {
@@ -874,6 +928,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // Handle checklist drag start - track active drag for subtree visual grouping
+  const handleChecklistDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
 
   // Handle checklist drag end - move entire subtree
   const handleChecklistDragEnd = (event: DragEndEvent) => {
@@ -998,11 +1057,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         ref={editorContainerRef}
         onMouseDown={(e) => e.stopPropagation()}
         className={clsx(
-          "relative w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] max-w-6xl min-h-[450px] max-h-[90vh] sm:max-h-[88vh] md:max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden",
+          "relative w-[95vw] sm:w-[90vw] md:w-[600px] lg:w-[650px] xl:w-[700px] max-w-[90vw] max-h-[90vh] sm:max-h-[88vh] md:max-h-[85vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden",
           !currentBackground && currentColorConfig.cardClass,
-          pinned
-            ? "border-[var(--color-primary)]"
-            : "border-zinc-200 dark:border-zinc-800",
+          "border-zinc-200 dark:border-zinc-800",
         )}
       >
         {/* Background Image Layer */}
@@ -1020,12 +1077,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
           </div>
         )}
 
-        {/* Corner Focus Badge - clickable to toggle focus */}
+        {/* Corner Favorites Badge - clickable to toggle */}
         <button
           type="button"
           onClick={() => setPinned((prev) => !prev)}
           className="absolute -top-0 -right-0 w-16 h-16 overflow-hidden rounded-tr-2xl z-30 group/pin"
-          aria-label={pinned ? "Remove from Focus" : "Add to Focus"}
+          aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
         >
           {pinned ? (
             <>
@@ -1058,12 +1115,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
         {/* Header row - title and actions */}
         <div className={clsx(
-          "relative z-20 flex items-center justify-between gap-4 pl-4 sm:pl-6 pr-20 py-3 sm:py-4 rounded-t-2xl border-b flex-shrink-0",
+          "relative z-20 flex items-center justify-between gap-4 pl-4 sm:pl-6 pr-14 sm:pr-20 py-3 sm:py-4 rounded-t-2xl flex-shrink-0",
           currentBackground?.brightness === 'light'
-            ? "bg-white/30 backdrop-blur-sm border-black/10"
+            ? "bg-white/30 backdrop-blur-sm"
             : currentBackground
-              ? "bg-black/30 backdrop-blur-sm border-white/10"
-              : "bg-zinc-50/80 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-700/50"
+              ? "bg-black/30 backdrop-blur-sm"
+              : currentColorConfig.cardClass
         )}>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <input
@@ -1071,7 +1128,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Title"
               className={clsx(
-                "w-full bg-transparent text-lg font-semibold focus:outline-none",
+                "w-full bg-transparent text-base sm:text-lg font-semibold focus:outline-none",
                 getTextColorClasses(currentBackground, 'title'),
                 currentBackground?.brightness === 'light'
                   ? "placeholder:text-zinc-500"
@@ -1082,206 +1139,48 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             />
             {/* Header actions */}
             <div className="flex items-center gap-2">
-              {/* Priority selector in its own glass pill */}
-              <div className="relative">
+              {/* Save status in glass pill */}
+              {saveStatus !== "idle" && (
                 <div className={clsx(
-                    "flex items-center px-1.5 py-1 rounded-full backdrop-blur-xl border",
-                    currentBackground
-                      ? currentBackground.brightness === 'dark'
-                        ? "bg-white/10 border-white/20"
-                        : "bg-black/5 border-black/10"
-                      : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
-                  )}>
-                    <button
-                      type="button"
-                      onClick={() => setShowPriorityPicker((prev) => !prev)}
-                      className={clsx(
-                        "h-7 w-7 rounded-full flex items-center justify-center transition",
-                        priority === "high"
-                          ? "bg-red-500/20"
-                          : priority === "medium"
-                            ? "bg-amber-500/20"
-                            : priority === "low"
-                              ? "bg-blue-500/20"
-                              : getActionColorClasses(currentBackground),
-                      )}
-                      aria-label="Set priority"
-                    >
-                      <Flame className={clsx(
-                        "h-4 w-4",
-                        priority === "high"
-                          ? "text-red-500"
-                          : priority === "medium"
-                            ? "text-amber-500"
-                            : priority === "low"
-                              ? "text-blue-500"
-                              : "text-zinc-400 dark:text-zinc-500"
-                      )} />
-                    </button>
-                  </div>
-                {showPriorityPicker && (
-                  <div className="absolute top-10 right-0 z-50 flex flex-col gap-0.5 rounded-2xl bg-zinc-900 border border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-top-2 duration-200">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPriority("high");
-                        setShowPriorityPicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                        priority === "high"
-                          ? "bg-red-500/20 text-red-400"
-                          : "text-zinc-300 hover:bg-zinc-800"
-                      )}
-                    >
-                      <Flame className="h-3 w-3 text-red-500" />
-                      High
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPriority("medium");
-                        setShowPriorityPicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                        priority === "medium"
-                          ? "bg-amber-500/20 text-amber-400"
-                          : "text-zinc-300 hover:bg-zinc-800"
-                      )}
-                    >
-                      <Flame className="h-3 w-3 text-amber-500" />
-                      Medium
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPriority("low");
-                        setShowPriorityPicker(false);
-                      }}
-                      className={clsx(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
-                        priority === "low"
-                          ? "bg-blue-500/20 text-blue-400"
-                          : "text-zinc-300 hover:bg-zinc-800"
-                      )}
-                    >
-                      <Flame className="h-3 w-3 text-blue-500" />
-                      Low
-                    </button>
-                    {priority && (
-                      <>
-                        <div className="h-px bg-zinc-700 my-0.5" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPriority(null);
-                            setShowPriorityPicker(false);
-                          }}
-                          className="flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium text-zinc-400 hover:bg-zinc-800 transition"
-                        >
-                          <X className="h-3 w-3" />
-                          Clear
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Save status, delete, close in glass pill */}
-              <div className={clsx(
-                "flex items-center gap-1 px-1.5 py-1 rounded-full backdrop-blur-xl border",
-                currentBackground
-                  ? currentBackground.brightness === 'dark'
-                    ? "bg-white/10 border-white/20"
-                    : "bg-black/5 border-black/10"
-                  : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
-              )}>
-                {/* Save status indicator - only render when saving/saved */}
-                {saveStatus !== "idle" && (
-                  <div className="flex items-center justify-center w-7 h-7">
-                    {saveStatus === "saving" && (
-                      <Loader2 className={clsx(
-                        "h-3.5 w-3.5 animate-spin",
-                        getTextColorClasses(currentBackground, 'muted')
-                      )} />
-                    )}
-                    {saveStatus === "saved" && (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
-                    )}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const newNoteId = await duplicateNote(note.id);
-                    if (newNoteId) {
-                      onClose();
-                    }
-                  }}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    getActionColorClasses(currentBackground),
-                  )}
-                  aria-label="Duplicate note"
-                  title="Duplicate note"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    currentBackground
-                      ? currentBackground.brightness === 'dark'
-                        ? "text-red-300 hover:bg-red-500/20 hover:text-red-200"
-                        : "text-red-500 hover:bg-red-500/10 hover:text-red-600"
-                      : "text-red-400 hover:bg-red-500/10 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
-                  )}
-                  aria-label="Delete note"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-                {/* Spacer */}
-                <div className={clsx(
-                  "w-px h-4",
+                  "flex items-center gap-1 px-2 py-1.5 rounded-full backdrop-blur-xl border",
                   currentBackground
                     ? currentBackground.brightness === 'dark'
-                      ? "bg-white/20"
-                      : "bg-black/15"
-                    : "bg-zinc-300/60 dark:bg-zinc-600/60"
-                )} />
-                <button
-                  type="button"
-                  onClick={() => void handleFinalizeAndClose()}
-                  className={clsx(
-                    "h-7 w-7 rounded-full flex items-center justify-center transition",
-                    getActionColorClasses(currentBackground),
+                      ? "bg-white/10 border-white/20"
+                      : "bg-black/5 border-black/10"
+                    : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
+                )}>
+                  {saveStatus === "saving" && (
+                    <Loader2 className={clsx(
+                      "h-3.5 w-3.5 animate-spin",
+                      getTextColorClasses(currentBackground, 'muted')
+                    )} />
                   )}
-                  aria-label="Close"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
+                  {saveStatus === "saved" && (
+                    <Check className="h-3.5 w-3.5 text-green-500" />
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Content area */}
         <div className={clsx(
-          "relative z-10 flex flex-col gap-4 px-6 py-5 flex-1 overflow-y-auto",
+          "relative z-10 flex flex-col gap-3 px-3 sm:px-4 md:px-5 pt-2 pb-4 overflow-y-auto",
           currentBackground && getTextColorClasses(currentBackground, 'body')
         )}>
           {mode === "text" ? (
-            <div className="relative">
-              <textarea
-                ref={textareaRef}
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                onSelect={handleTextSelect}
-                onContextMenu={handleContextMenu}
+            <div
+              className="relative"
+              onContextMenu={handleEditorContextMenu}
+            >
+              <RichTextEditor
+                ref={editorRef}
+                content={body}
+                onChange={(html) => {
+                  setBody(html);
+                  handleEditorSelectionUpdate();
+                }}
                 onBlur={() => {
                   // Delay clearing selection to allow button click
                   setTimeout(() => {
@@ -1289,36 +1188,33 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   }, 200);
                 }}
                 placeholder="Write your note…"
+                showToolbar={true}
+                minHeight="120px"
+                editable={!isEnhancing}
                 className={clsx(
-                  "min-h-[20vh] sm:min-h-[22vh] md:min-h-[25vh] w-full resize-none overflow-hidden bg-transparent text-[15px] leading-7 tracking-[-0.01em] focus:outline-none transition-all duration-300",
+                  "transition-all duration-300",
+                  isEnhancing && "blur-sm opacity-50"
+                )}
+                editorClassName={clsx(
+                  "min-h-[120px] sm:min-h-[150px]",
                   getTextColorClasses(currentBackground, 'body'),
                   currentBackground?.brightness === 'light'
-                    ? "placeholder:text-zinc-500"
+                    ? "[&_.is-editor-empty]:before:text-zinc-500"
                     : currentBackground
-                      ? "placeholder:text-white/50"
-                      : "placeholder:text-zinc-400 dark:placeholder:text-zinc-600",
-                  isEnhancing && !selectedText && "blur-sm opacity-50",
-                  isEnhancing && selectedText && "opacity-0"
+                      ? "[&_.is-editor-empty]:before:text-white/50"
+                      : "[&_.is-editor-empty]:before:text-zinc-400 dark:[&_.is-editor-empty]:before:text-zinc-600"
                 )}
-                disabled={isEnhancing}
+                toolbarClassName={clsx(
+                  "rounded-lg mb-2",
+                  currentBackground
+                    ? currentBackground.brightness === 'dark'
+                      ? "bg-white/10 border-white/20"
+                      : "bg-black/5 border-black/10"
+                    : ""
+                )}
               />
-              {/* Text overlay for selected text enhancement - shows text with only selected portion blurred */}
-              {isEnhancing && selectedText && (
-                <div className="absolute inset-0 pointer-events-none text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words overflow-hidden">
-                  <span>{body.substring(0, selectedText.start)}</span>
-                  <span className="relative inline">
-                    <span className="blur-sm bg-[var(--color-primary)]/20 rounded px-0.5">{body.substring(selectedText.start, selectedText.end)}</span>
-                    {/* Small floating indicator above selected text */}
-                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-zinc-900/95 px-2 py-1 rounded-full border border-[var(--color-primary)]/30 whitespace-nowrap">
-                      <Brain className="h-3 w-3 text-[var(--color-primary)] animate-pulse" />
-                      <span className="text-[10px] text-white/70">Enhancing...</span>
-                    </span>
-                  </span>
-                  <span>{body.substring(selectedText.end)}</span>
-                </div>
-              )}
-              {/* AI Enhancement overlay - shown when enhancing all text */}
-              {isEnhancing && !selectedText && (
+              {/* AI Enhancement overlay */}
+              {isEnhancing && (
                 <div className="absolute inset-0 flex items-center justify-center z-10">
                   <div className="flex flex-col items-center gap-4 rounded-2xl bg-zinc-900 px-10 py-6 border border-[var(--color-primary)]/40 shadow-2xl">
                     {/* Animated Brain */}
@@ -1334,7 +1230,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     </div>
                     <div className="text-center">
                       <p className="text-base font-semibold text-white">AI is thinking...</p>
-                      <p className="text-sm text-white/60 mt-1">Enhancing your entire note</p>
+                      <p className="text-sm text-white/60 mt-1">
+                        {selectedText ? "Enhancing selection..." : "Enhancing your entire note"}
+                      </p>
                     </div>
                     {/* Animated dots loading indicator */}
                     <div className="flex items-center gap-1.5">
@@ -1345,22 +1243,55 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   </div>
                 </div>
               )}
+              {/* AI Enhancement error message */}
+              {enhanceError && !isEnhancing && (
+                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                  <div className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-red-500/95 px-5 py-3 border border-red-400/50 shadow-2xl max-w-sm">
+                    <div className="flex-1 text-center">
+                      <p className="text-sm font-medium text-white">Enhancement failed</p>
+                      <p className="text-xs text-white/80 mt-0.5">{enhanceError}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEnhanceError(null)}
+                      className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-white/20 transition text-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
-              onDragEnd={handleChecklistDragEnd}
+              onDragStart={handleChecklistDragStart}
+              onDragEnd={(event) => {
+                handleChecklistDragEnd(event);
+                setActiveDragId(null);
+              }}
             >
               <SortableContext
                 items={visibleChecklist.map((i) => i.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="space-y-3">
+                <AnimatePresence mode="popLayout">
+                <div className="space-y-1.5">
                   {checklist.map((item, idx) => {
                     // Skip items hidden by collapsed ancestor
                     if (isHiddenByCollapsedAncestor(checklist, idx)) {
                       return null;
+                    }
+                    // Skip children of actively dragged parent (they move with parent)
+                    if (activeDragId && activeDragId !== item.id) {
+                      const dragIdx = checklist.findIndex(i => i.id === activeDragId);
+                      if (dragIdx !== -1) {
+                        const subtreeIndices = getSubtreeIndices(checklist, dragIdx);
+                        if (subtreeIndices.includes(idx)) {
+                          return null;
+                        }
+                      }
                     }
                     const indentLevel = item.indent ?? 0;
                     const itemHasChildren = hasChildren(checklist, idx);
@@ -1372,26 +1303,26 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                         id={item.id}
                         indentLevel={indentLevel}
                         subtreeCount={subtreeCount}
+                        isAnyDragging={!!activeDragId}
                       >
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <div className="flex items-center gap-1">
                         {/* Collapse/expand button for parent items */}
                         {itemHasChildren ? (
-                          <button
+                          <motion.button
                             type="button"
                             onClick={() => handleToggleCollapsed(item.id)}
-                            className="h-4 w-4 flex items-center justify-center flex-shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+                            className="h-3.5 w-3.5 flex items-center justify-center flex-shrink-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                             aria-label={item.collapsed ? "Expand children" : "Collapse children"}
+                            animate={{ rotate: item.collapsed ? 0 : 90 }}
+                            transition={{ duration: 0.15 }}
                           >
-                            {item.collapsed ? (
-                              <ChevronRight className="h-3.5 w-3.5" />
-                            ) : (
-                              <ChevronDown className="h-3.5 w-3.5" />
-                            )}
-                          </button>
+                            <ChevronRight className="h-3 w-3" />
+                          </motion.button>
                         ) : (
-                          <div className="w-4 flex-shrink-0" />
+                          <div className="w-3.5 flex-shrink-0" />
                         )}
-                        <input
-                          type="checkbox"
+                        <AnimatedCheckbox
                           checked={item.completed}
                           onClick={(event) => {
                             // Shift+click for bulk toggle (parent + all children)
@@ -1400,12 +1331,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                               handleBulkToggle(item.id, idx);
                             }
                           }}
-                          onChange={(event) =>
+                          onChange={(checked) =>
                             handleChecklistChange(item.id, {
-                              completed: event.target.checked,
+                              completed: checked,
                             })
                           }
-                          className="h-4 w-4 accent-accent-500 flex-shrink-0"
+                          className="mt-0.5"
                         />
                     <input
                       value={item.text}
@@ -1505,82 +1436,150 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           delete checklistInputRefs.current[item.id];
                         }
                       }}
-                      className={`flex-1 border-b border-transparent bg-transparent pb-1 text-sm placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-400 dark:focus:border-zinc-600 focus:outline-none ${
+                      className={`flex-1 bg-transparent text-[13px] placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none transition-all duration-150 ${
                         item.completed
-                          ? "text-zinc-400 dark:text-zinc-500 line-through"
+                          ? "text-zinc-400 dark:text-zinc-500 line-through decoration-zinc-300 dark:decoration-zinc-600"
                           : "text-zinc-700 dark:text-zinc-300"
                       }`}
                     />
+                    {/* Divider */}
+                    <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
+                    {/* Priority picker */}
+                    <ChecklistPriorityPicker
+                      value={item.priority}
+                      onChange={(priority) =>
+                        handleChecklistChange(item.id, { priority })
+                      }
+                    />
+                    {/* Divider */}
+                    <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
+                    {/* Due date picker */}
+                    <ChecklistDueDatePicker
+                      value={item.dueDate}
+                      onChange={(dueDate) =>
+                        handleChecklistChange(item.id, { dueDate })
+                      }
+                    />
                     {/* Progress badge for parent items */}
+                    <AnimatePresence>
                     {completionStats && completionStats.total > 0 && (
-                      <span className="text-xs text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0">
+                      <>
+                      {/* Divider */}
+                      <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 tabular-nums flex-shrink-0 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded"
+                      >
                         {completionStats.completed}/{completionStats.total}
-                      </span>
+                      </motion.span>
+                      </>
                     )}
+                    </AnimatePresence>
+                    {/* Divider */}
+                    <div className="h-3 w-px bg-zinc-300 dark:bg-zinc-600 opacity-0 group-hover:opacity-40 flex-shrink-0" />
                     <button
                       type="button"
-                      className="opacity-0 transition group-hover:opacity-100"
+                      className="opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100 flex-shrink-0"
                       onClick={() => handleDeleteItem(item.id, idx)}
                       aria-label="Remove checklist item"
                     >
-                      <X className="h-4 w-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200" />
+                      <X className="h-3.5 w-3.5 text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400" />
                     </button>
+                          </div>
+                        </div>
                       </SortableChecklistItem>
                     );
                   })}
                 </div>
+                </AnimatePresence>
               </SortableContext>
-              <div className="flex flex-wrap items-center gap-2 mt-3">
+              <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50">
+                <span className="text-[11px] tabular-nums text-zinc-400 dark:text-zinc-500 flex-shrink-0">
+                  {checklist.filter(i => i.text.trim()).length} items
+                </span>
                 <button
                   type="button"
                   onClick={() => handleAddChecklistItem()}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300"
                 >
-                  <CheckSquare className="h-3.5 w-3.5" /> Add item
+                  <Plus className="h-3 w-3" /> Add
                 </button>
                 {checklist.some((item) => item.completed) && (
                   <>
                     <button
                       type="button"
                       onClick={() => setChecklist((prev) => prev.filter((item) => !item.completed))}
-                      className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-600 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-red-400 dark:hover:border-red-500 hover:text-red-600 dark:hover:text-red-400"
+                      className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
                     >
-                      Clear done
+                      <Trash2 className="h-3 w-3" /> Clear done
                     </button>
                     <button
                       type="button"
                       onClick={() => setAutoSortCompleted(!autoSortCompleted)}
-                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition ${
+                      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
                         autoSortCompleted
-                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-400 dark:bg-emerald-900/30 dark:text-emerald-300'
-                          : 'border-zinc-400 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                          : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-300'
                       }`}
                     >
-                      {autoSortCompleted ? 'Auto-sort ✓' : 'Auto-sort'}
+                      <Check className="h-3 w-3" /> Auto-sort
                     </button>
                   </>
                 )}
               </div>
+              {/* Drag overlay - shows the actual item being dragged */}
+              <DragOverlay>
+                {activeDragId ? (() => {
+                  const draggedItem = checklist.find(item => item.id === activeDragId);
+                  const draggedIndex = checklist.findIndex(item => item.id === activeDragId);
+                  if (!draggedItem) return null;
+                  const subtreeCount = hasChildren(checklist, draggedIndex)
+                    ? getSubtreeIndices(checklist, draggedIndex).length
+                    : 0;
+                  return (
+                    <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-xl ring-2 ring-[var(--color-primary)] px-3 py-2 flex items-center gap-2">
+                      <GripVertical className="h-3 w-3 text-[var(--color-primary)]" />
+                      {draggedItem.completed ? (
+                        <CheckCircle2
+                          className="h-4 w-4 flex-shrink-0 text-[var(--color-primary)]"
+                          fill="var(--color-primary)"
+                          strokeWidth={0}
+                        />
+                      ) : (
+                        <Circle className="h-4 w-4 flex-shrink-0 text-zinc-400" strokeWidth={2} />
+                      )}
+                      <span className={`text-[13px] ${draggedItem.completed ? 'line-through text-zinc-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
+                        {draggedItem.text || 'New item'}
+                      </span>
+                      {subtreeCount > 0 && (
+                        <span className="ml-1 text-[11px] font-medium text-white bg-[var(--color-primary)] px-1.5 py-0.5 rounded-full">
+                          +{subtreeCount}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })() : null}
+              </DragOverlay>
             </DndContext>
           )}
 
-          {/* Word/char count - below content */}
-          <div className={clsx(
-            "text-[10px] tabular-nums",
-            currentBackground
-              ? currentBackground.brightness === 'dark'
-                ? "text-white/40"
-                : "text-black/40"
-              : "text-zinc-400 dark:text-zinc-500"
-          )}>
-            {mode === "checklist" ? (
-              <span>{checklist.filter(i => i.text.trim()).length} items</span>
-            ) : (
+          {/* Word/char count - below content (only for text mode) */}
+          {mode !== "checklist" && (
+            <div className={clsx(
+              "text-[11px] tabular-nums",
+              currentBackground
+                ? currentBackground.brightness === 'dark'
+                  ? "text-white/40"
+                  : "text-black/40"
+                : "text-zinc-400 dark:text-zinc-500"
+            )}>
               <span>
                 {body.trim().split(/\s+/).filter(w => w).length} words · {body.length} chars
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           {selectedLabelIds.length ? (
             <div className="flex flex-wrap items-center gap-2">
@@ -1811,14 +1810,42 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
 
         {/* Bottom toolbar - anchored to bottom with color */}
         <div className={clsx(
-          "relative z-10 flex-shrink-0 mt-auto rounded-b-2xl px-4 sm:px-6 py-3 sm:py-4 border-t",
+          "relative z-10 flex-shrink-0 rounded-b-2xl px-4 sm:px-6 pb-3 sm:pb-4 border-t",
           currentBackground?.brightness === 'light'
             ? "bg-white/30 backdrop-blur-sm border-black/10"
             : currentBackground
               ? "bg-black/30 backdrop-blur-sm border-white/10"
-              : clsx(currentColorConfig.footerClass, "border-zinc-200 dark:border-zinc-700/50")
+              : "border-transparent"
         )}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Color palette row - shows when palette is open */}
+          {showPalette && (
+            <div className={clsx(
+              "flex items-center justify-center gap-2 pb-3 mb-3 border-b",
+              currentBackground
+                ? currentBackground.brightness === 'dark'
+                  ? "border-white/10"
+                  : "border-black/10"
+                : "border-zinc-200 dark:border-zinc-700"
+            )}>
+              {NOTE_COLORS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => {
+                    setColor(option.id);
+                    setShowPalette(false);
+                  }}
+                  className={clsx(
+                    "inline-flex shrink-0 h-7 w-7 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--color-primary)]",
+                    option.swatchClass,
+                    option.id === color && "ring-2 ring-[var(--color-primary)]",
+                  )}
+                  aria-label={`Set color ${option.label}`}
+                />
+              ))}
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-2">
             {/* Glass pill toolbar */}
             <div className={clsx(
               "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
@@ -1828,56 +1855,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   : "bg-black/5 border-black/10"
                 : "bg-zinc-100/80 dark:bg-zinc-800/80 border-zinc-200/50 dark:border-zinc-700/50"
             )}>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode((prev) => {
-                    if (prev === "text") {
-                      // Convert text body to checklist items
-                      if (body.trim()) {
-                        const lines = body.split('\n').filter(line => line.trim());
-                        const items = lines.map(line => ({
-                          id: generateUUID(),
-                          text: line.trim(),
-                          completed: false,
-                        }));
-                        setChecklist(items);
-                        setBody("");
-                      }
-                      return "checklist";
-                    } else {
-                      // Convert checklist items to text body
-                      if (checklist.length) {
-                        const text = checklist.map(item => item.text).filter(t => t.trim()).join('\n');
-                        setBody(text);
-                        setChecklist([]);
-                      }
-                      return "text";
-                    }
-                  });
-                }}
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  mode === "checklist"
-                    ? "bg-[var(--color-primary)] text-white"
-                    : getActionColorClasses(currentBackground)
-                )}
-                aria-label="Lists & checklists"
-                title="Lists & checklists"
-              >
-                <CheckSquare className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  getActionColorClasses(currentBackground)
-                )}
-                onClick={() => fileInputRef.current?.click()}
-                aria-label="Add images"
-              >
-                <ImageIcon className="h-3.5 w-3.5" />
-              </button>
+              {/* Color Palette button */}
               <div className="relative">
                 <button
                   type="button"
@@ -1900,35 +1878,55 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     {/* Click outside to close */}
                     <div
                       className="fixed inset-0 z-20"
+                      onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowPalette(false);
                       }}
                     />
-                    <div
-                      className="absolute bottom-12 left-1/2 z-30 flex flex-row flex-nowrap items-center -translate-x-1/2 gap-2 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {NOTE_COLORS.map((option) => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => {
-                            setColor(option.id);
-                            setShowPalette(false);
-                          }}
-                          className={clsx(
-                            "inline-flex shrink-0 h-8 w-8 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-primary)]",
-                            option.swatchClass,
-                            option.id === color && "ring-2 ring-[var(--color-primary)]",
-                          )}
-                          aria-label={`Set color ${option.label}`}
-                        />
-                      ))}
-                    </div>
                   </>
                 ) : null}
               </div>
+              {mode === "text" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("checklist");
+                    // Convert text body to checklist items
+                    if (body.trim()) {
+                      const lines = body.split('\n').filter(line => line.trim());
+                      const items = lines.map(line => ({
+                        id: generateUUID(),
+                        text: line.trim(),
+                        completed: false,
+                      }));
+                      setChecklist(items);
+                      setBody("");
+                    }
+                  }}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    getActionColorClasses(currentBackground)
+                  )}
+                  aria-label="Convert to list"
+                  title="Convert to list"
+                >
+                  <CheckSquare className="h-3.5 w-3.5" />
+                </button>
+              )}
+              {mode === "text" && (
+                <button
+                  type="button"
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    getActionColorClasses(currentBackground)
+                  )}
+                  onClick={() => fileInputRef.current?.click()}
+                  aria-label="Add images"
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                </button>
+              )}
               {/* Background Image Picker */}
               <div className="relative">
                 <button
@@ -1954,13 +1952,15 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     {/* Click outside to close */}
                     <div
                       className="fixed inset-0 z-20"
+                      onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowBackgroundPicker(false);
                       }}
                     />
                     <div
-                      className="absolute bottom-12 left-0 z-30 w-[480px] rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                      className="absolute bottom-12 left-0 z-30 w-[calc(100vw-2rem)] sm:w-[400px] md:w-[480px] rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                      onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -2078,25 +2078,11 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     : "bg-black/15"
                   : "bg-zinc-300/60 dark:bg-zinc-600/60"
               )} />
-              {/* Undo button */}
-              <button
-                type="button"
-                onClick={handleUndo}
-                disabled={bodyHistory.length === 0}
-                className={clsx(
-                  "h-7 w-7 rounded-full flex items-center justify-center transition",
-                  getActionColorClasses(currentBackground),
-                  bodyHistory.length === 0 && "opacity-30 cursor-not-allowed"
-                )}
-                aria-label="Undo"
-                title={bodyHistory.length > 0 ? `Undo (${bodyHistory.length} available)` : "Nothing to undo"}
-              >
-                <Undo2 className="h-3.5 w-3.5" />
-              </button>
               {/* AI Enhance button */}
               {mode === "text" && body.trim() && (
                 <button
                   type="button"
+                  onMouseDown={(e) => e.stopPropagation()}
                   onClick={() => setShowEnhanceMenu((prev) => !prev)}
                   disabled={isEnhancing}
                   className={clsx(
@@ -2131,7 +2117,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               )}
             </div>
 
-            {/* Glass pill for space selector and done */}
+            {/* Glass pill for timestamp, space selector and actions */}
             <div className={clsx(
               "flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-xl border",
               currentBackground
@@ -2160,7 +2146,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     title="Move to a different space"
                   >
                     <FolderOpen className="h-3.5 w-3.5" />
-                    <span className="max-w-[80px] truncate">
+                    <span className="hidden sm:inline max-w-[80px] truncate">
                       {spaces.find((s) => s.id === selectedSpaceId)?.name || "My Notes"}
                     </span>
                   </button>
@@ -2169,6 +2155,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                       {/* Click outside to close */}
                       <div
                         className="fixed inset-0 z-20"
+                        onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowSpacePicker(false);
@@ -2183,6 +2170,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                               : "bg-white/90 border-black/10"
                             : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
                         )}
+                        onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className={clsx(
@@ -2225,7 +2213,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                               <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
                               <span className="truncate">{space.name}</span>
                               {space.id === selectedSpaceId && (
-                                <span className="ml-auto text-[10px] text-white/60">current</span>
+                                <span className="ml-auto text-[11px] text-white/60">current</span>
                               )}
                             </button>
                           ))}
@@ -2235,15 +2223,205 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                   )}
                 </div>
               )}
+              {/* Priority button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowPriorityPicker((prev) => !prev)}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition",
+                    currentBackground?.brightness === 'light'
+                      ? "hover:bg-black/10"
+                      : currentBackground
+                        ? "hover:bg-white/20"
+                        : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  )}
+                  title={priority
+                    ? `${priority.charAt(0).toUpperCase() + priority.slice(1)} priority (click to change)`
+                    : "Set priority"
+                  }
+                >
+                  <Flame className={clsx(
+                    "h-3.5 w-3.5",
+                    priority === "high"
+                      ? "text-red-500"
+                      : priority === "medium"
+                        ? "text-amber-500"
+                        : priority === "low"
+                          ? "text-blue-500"
+                          : currentBackground?.brightness === 'light'
+                            ? "text-zinc-500"
+                            : currentBackground
+                              ? "text-white/60"
+                              : "text-zinc-400 dark:text-zinc-500"
+                  )} />
+                </button>
+                {showPriorityPicker && (
+                  <div
+                    className="absolute bottom-full mb-2 right-full mr-2 z-[60] flex flex-col gap-0.5 rounded-2xl bg-zinc-900 border border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("high");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
+                        priority === "high"
+                          ? "bg-red-500/20 text-red-400"
+                          : "text-zinc-300 hover:bg-zinc-800"
+                      )}
+                    >
+                      <Flame className="h-3 w-3 text-red-500" />
+                      High
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("medium");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
+                        priority === "medium"
+                          ? "bg-amber-500/20 text-amber-400"
+                          : "text-zinc-300 hover:bg-zinc-800"
+                      )}
+                    >
+                      <Flame className="h-3 w-3 text-amber-500" />
+                      Medium
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPriority("low");
+                        setShowPriorityPicker(false);
+                      }}
+                      className={clsx(
+                        "flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition",
+                        priority === "low"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : "text-zinc-300 hover:bg-zinc-800"
+                      )}
+                    >
+                      <Flame className="h-3 w-3 text-blue-500" />
+                      Low
+                    </button>
+                    {priority && (
+                      <>
+                        <div className="h-px bg-zinc-700 my-0.5" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPriority(null);
+                            setShowPriorityPicker(false);
+                          }}
+                          className="flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium text-zinc-400 hover:bg-zinc-800 transition"
+                        >
+                          <X className="h-3 w-3" />
+                          Clear
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Vertical divider */}
+              <div className={clsx(
+                "h-3 w-px mx-1",
+                currentBackground
+                  ? currentBackground.brightness === 'dark'
+                    ? "bg-white/20"
+                    : "bg-black/20"
+                  : "bg-zinc-300 dark:bg-zinc-600"
+              )} />
+              {/* Duplicate button */}
+              <button
+                type="button"
+                onClick={async () => {
+                  const newNoteId = await duplicateNote(note.id);
+                  if (newNoteId) {
+                    onClose();
+                  }
+                }}
+                className={clsx(
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  currentBackground?.brightness === 'light'
+                    ? "hover:bg-black/10"
+                    : currentBackground
+                      ? "hover:bg-white/20"
+                      : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                )}
+                aria-label="Duplicate note"
+                title="Duplicate note"
+              >
+                <Copy className={clsx(
+                  "h-3 w-3",
+                  currentBackground?.brightness === 'light'
+                    ? "text-zinc-500"
+                    : currentBackground
+                      ? "text-white/60"
+                      : "text-zinc-400 dark:text-zinc-500"
+                )} />
+              </button>
+              {/* Vertical divider */}
+              <div className={clsx(
+                "h-3 w-px mx-1",
+                currentBackground
+                  ? currentBackground.brightness === 'dark'
+                    ? "bg-white/20"
+                    : "bg-black/20"
+                  : "bg-zinc-300 dark:bg-zinc-600"
+              )} />
+              {/* Delete button */}
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className={clsx(
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  currentBackground?.brightness === 'light'
+                    ? "text-red-600 hover:bg-red-500/20 hover:text-red-700"
+                    : currentBackground
+                      ? "text-red-300 hover:bg-red-500/30 hover:text-red-200"
+                      : "text-red-400 hover:bg-red-500/20 hover:text-red-500"
+                )}
+                aria-label="Delete note"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+              {/* Vertical divider */}
+              <div className={clsx(
+                "h-3 w-px mx-1",
+                currentBackground
+                  ? currentBackground.brightness === 'dark'
+                    ? "bg-white/20"
+                    : "bg-black/20"
+                  : "bg-zinc-300 dark:bg-zinc-600"
+              )} />
+              {/* Save button */}
               <button
                 type="button"
                 onClick={() => void handleFinalizeAndClose()}
                 className={clsx(
-                  "h-7 px-2.5 rounded-full text-xs font-medium transition flex items-center",
-                  getActionColorClasses(currentBackground)
+                  "h-7 w-7 rounded-full flex items-center justify-center transition",
+                  currentBackground?.brightness === 'light'
+                    ? "hover:bg-black/10"
+                    : currentBackground
+                      ? "hover:bg-white/20"
+                      : "hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 )}
+                aria-label="Save and close"
               >
-                Done
+                <Check className={clsx(
+                  "h-3.5 w-3.5",
+                  currentBackground?.brightness === 'light'
+                    ? "text-zinc-600"
+                    : currentBackground
+                      ? "text-white/70"
+                      : "text-zinc-500 dark:text-zinc-400"
+                )} />
               </button>
             </div>
           </div>
@@ -2393,9 +2571,13 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         <>
           <div
             className="fixed inset-0 z-[60] bg-black/20"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={() => setShowEnhanceMenu(false)}
           />
-          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-64 rounded-2xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
+          <div
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-[85vw] sm:w-64 rounded-2xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className="px-4 py-3 border-b border-white/10 bg-white/5">
               <p className="text-sm font-semibold text-white flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[var(--color-primary)]" />
@@ -2427,6 +2609,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
         <>
           <div
             className="fixed inset-0 z-[60]"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={() => setContextMenuPos(null)}
           />
           <div
@@ -2435,6 +2618,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
               left: Math.min(contextMenuPos.x, window.innerWidth - 220),
               top: Math.min(contextMenuPos.y, window.innerHeight - 200),
             }}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="px-3 py-2 border-b border-white/10 bg-white/5">
               <p className="text-xs font-semibold text-white flex items-center gap-2">

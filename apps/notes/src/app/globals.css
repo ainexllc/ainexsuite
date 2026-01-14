@@ -13,6 +13,9 @@ html, body {
   --app-primary-foreground: 0 0% 100%;
   --app-secondary: 32 95% 44%;     /* Amber-600 #d97706 */
   --app-secondary-foreground: 0 0% 100%;
+
+  /* Use Inter as default font for better screen readability */
+  --font-primary: var(--font-inter);
 }
 
 .dark {
@@ -41,4 +44,40 @@ html, body {
   .animate-slide-in-up {
     animation: slide-in-up 300ms ease-out;
   }
+}
+
+/* Custom scrollbar - light/dark mode */
+.scrollbar-styled {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.dark .scrollbar-styled {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.scrollbar-styled::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-styled::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-styled::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.scrollbar-styled::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dark .scrollbar-styled::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .scrollbar-styled::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

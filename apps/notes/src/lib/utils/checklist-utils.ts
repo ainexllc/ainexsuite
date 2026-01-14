@@ -236,3 +236,87 @@ export function isInvalidDropTarget(
   const subtreeIndices = getSubtreeIndices(items, dragIndex);
   return subtreeIndices.includes(dropIndex);
 }
+
+/**
+ * Get priority order for sorting (lower = higher priority)
+ * high=1, medium=2, low=3, none=4
+ */
+export function getPriorityOrder(priority: ChecklistItem["priority"]): number {
+  switch (priority) {
+    case "high":
+      return 1;
+    case "medium":
+      return 2;
+    case "low":
+      return 3;
+    default:
+      return 4;
+  }
+}
+
+/**
+ * Get the earliest due date in a subtree (parent + all children)
+ * Returns null if no items have due dates
+ */
+export function getSubtreeEarliestDueDate(
+  subtree: ChecklistItem[]
+): string | null {
+  let earliest: string | null = null;
+  for (const item of subtree) {
+    if (item.dueDate) {
+      if (!earliest || item.dueDate < earliest) {
+        earliest = item.dueDate;
+      }
+    }
+  }
+  return earliest;
+}
+
+/**
+ * Get the highest priority in a subtree (parent + all children)
+ * Returns the lowest priority order number (1=high, 2=medium, 3=low, 4=none)
+ */
+export function getSubtreeHighestPriority(subtree: ChecklistItem[]): number {
+  let highestPriority = 4; // none
+  for (const item of subtree) {
+    const itemPriority = getPriorityOrder(item.priority);
+    if (itemPriority < highestPriority) {
+      highestPriority = itemPriority;
+    }
+  }
+  return highestPriority;
+}
+
+/**
+ * Sort subtrees by priority, then due date
+ * Parents inherit highest priority and earliest due date from children
+ * Order: Priority (high>med>low>none) → Due date (earlier first) → Original order
+ */
+export function sortSubtreesByPriority(
+  subtrees: ChecklistItem[][]
+): ChecklistItem[][] {
+  return [...subtrees].sort((a, b) => {
+    // Get effective values for each subtree (considering all children)
+    const aPriority = getSubtreeHighestPriority(a);
+    const bPriority = getSubtreeHighestPriority(b);
+
+    // 1. Sort by priority first (lower number = higher priority)
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    // 2. Sort by due date (earlier first, with-date before no-date)
+    const aDueDate = getSubtreeEarliestDueDate(a);
+    const bDueDate = getSubtreeEarliestDueDate(b);
+
+    if (aDueDate && !bDueDate) return -1;
+    if (!aDueDate && bDueDate) return 1;
+    if (aDueDate && bDueDate) {
+      if (aDueDate < bDueDate) return -1;
+      if (aDueDate > bDueDate) return 1;
+    }
+
+    // 3. Maintain original order
+    return 0;
+  });
+}

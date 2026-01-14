@@ -227,18 +227,19 @@ vercel env pull .env.local
 
 ## Custom Skills (Invoke with /skill-name)
 
-| Skill          | Purpose                                      |
-| -------------- | -------------------------------------------- |
-| `/vercel`      | Deploy apps, manage env vars, domains, logs  |
-| `/firebase`    | Firestore queries, Auth, Storage, Rules      |
-| `/stripe`      | Payments, subscriptions, webhooks            |
-| `/namecheap`   | DNS record management                        |
-| `/resend`      | Send transactional emails                    |
-| `/restart-all` | Kill all dev ports (3000-3020)               |
-| `/build-check` | Run lint, type-check, build before push      |
-| `/commit`      | Create git commit with proper format         |
-| `/push`        | Lint, commit, push and monitor Vercel builds |
-| `/push-app`    | Lint, commit, push and monitor single app    |
+| Skill             | Purpose                                      |
+| ----------------- | -------------------------------------------- |
+| `/vercel`         | Deploy apps, manage env vars, domains, logs  |
+| `/firebase`       | Firestore queries, Auth, Storage, Rules      |
+| `/firebase-rules` | Validate and deploy Firestore/Storage rules  |
+| `/stripe`         | Payments, subscriptions, webhooks            |
+| `/namecheap`      | DNS record management                        |
+| `/resend`         | Send transactional emails                    |
+| `/restart-all`    | Kill all dev ports and restart all apps      |
+| `/build-check`    | Run lint, type-check, build before push      |
+| `/commit`         | Create git commit with proper format         |
+| `/push-all`       | Lint, commit, push and monitor Vercel builds |
+| `/push-app`       | Lint, commit, push and monitor single app    |
 
 ---
 

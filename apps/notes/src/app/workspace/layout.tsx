@@ -18,32 +18,48 @@ import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layo
 import { getQuickActionsForApp } from '@ainexsuite/types';
 import { StickyNote } from 'lucide-react';
 import { SettingsPanel } from '@/components/layout/settings-panel';
-import { usePreferences } from '@/components/providers/preferences-provider';
-import { useSpaces } from '@/components/providers/spaces-provider';
+import { PreferencesProvider, usePreferences } from '@/components/providers/preferences-provider';
+import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
+import { NotesProvider } from '@/components/providers/notes-provider';
+import { RemindersProvider } from '@/components/providers/reminders-provider';
+import { LabelsProvider } from '@/components/providers/labels-provider';
+import { FilterPresetsProvider } from '@/components/providers/filter-presets-provider';
+import { BackgroundsProvider } from '@/components/providers/backgrounds-provider';
 import { useSpaceInvitations, useChildMembers } from '@/hooks/use-space-invitations';
 import { HintsProvider } from '@/components/hints';
 
-export default function WorkspaceRootLayout({
+/**
+ * Inner layout that has access to SpacesProvider context.
+ * This component is rendered inside SpacesProvider after auth is confirmed.
+ */
+function WorkspaceLayoutInner({
   children,
+  user,
+  handleSignOut,
+  updatePreferences,
+  updateProfile,
+  updateProfileImage,
+  removeProfileImage,
+  generateAnimatedAvatar,
+  saveAnimatedAvatar,
+  toggleAnimatedAvatar,
+  removeAnimatedAvatar,
+  pollAnimationStatus,
 }: {
   children: React.ReactNode;
+  user: NonNullable<ReturnType<typeof useWorkspaceAuth>['user']>;
+  handleSignOut: () => Promise<void>;
+  updatePreferences: ReturnType<typeof useWorkspaceAuth>['updatePreferences'];
+  updateProfile: ReturnType<typeof useWorkspaceAuth>['updateProfile'];
+  updateProfileImage: ReturnType<typeof useWorkspaceAuth>['updateProfileImage'];
+  removeProfileImage: ReturnType<typeof useWorkspaceAuth>['removeProfileImage'];
+  generateAnimatedAvatar: ReturnType<typeof useWorkspaceAuth>['generateAnimatedAvatar'];
+  saveAnimatedAvatar: ReturnType<typeof useWorkspaceAuth>['saveAnimatedAvatar'];
+  toggleAnimatedAvatar: ReturnType<typeof useWorkspaceAuth>['toggleAnimatedAvatar'];
+  removeAnimatedAvatar: ReturnType<typeof useWorkspaceAuth>['removeAnimatedAvatar'];
+  pollAnimationStatus: ReturnType<typeof useWorkspaceAuth>['pollAnimationStatus'];
 }) {
   const router = useRouter();
-  const {
-    user,
-    isLoading,
-    isReady,
-    handleSignOut,
-    updatePreferences,
-    updateProfile,
-    updateProfileImage,
-    removeProfileImage,
-    generateAnimatedAvatar,
-    saveAnimatedAvatar,
-    toggleAnimatedAvatar,
-    removeAnimatedAvatar,
-    pollAnimationStatus,
-  } = useWorkspaceAuth();
   const { preferences, updatePreferences: updateAppPreferences, loading: preferencesLoading } = usePreferences();
   const { spaces, updateSpace, deleteSpace, refreshSpaces } = useSpaces();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
@@ -192,10 +208,6 @@ export default function WorkspaceRootLayout({
     [editChild, refreshSpaces]
   );
 
-  // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
-  useFontPreference(user?.preferences?.fontFamily);
-  useFontSizePreference(user?.preferences?.fontSize);
-
   // Get quick actions for Notes app
   const quickActions = getQuickActionsForApp('notes');
 
@@ -226,137 +238,200 @@ export default function WorkspaceRootLayout({
     setSettingsModalOpen(true);
   }, []);
 
+  return (
+    <NotesProvider>
+      <RemindersProvider>
+        <HintsProvider>
+          <WorkspaceLayoutWithInsights
+            user={user}
+            onSignOut={handleSignOut}
+            quickActions={quickActions}
+            onQuickAction={handleQuickAction}
+            onAiAssistantClick={handleAiAssistantClick}
+            onSettingsClick={handleSettingsClick}
+            // Notifications - empty for now, will be populated by notification service
+            notifications={[]}
+            onUpdatePreferences={updatePreferences}
+          >
+            {children}
+          </WorkspaceLayoutWithInsights>
+
+          {/* Global Settings Modal */}
+          <SettingsModal
+            isOpen={settingsModalOpen}
+            onClose={() => setSettingsModalOpen(false)}
+            user={user ? {
+              uid: user.uid,
+              displayName: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL,
+              iconURL: user.iconURL,
+              animatedAvatarURL: user.animatedAvatarURL,
+              animatedAvatarStyle: user.animatedAvatarStyle,
+              useAnimatedAvatar: user.useAnimatedAvatar,
+            } : null}
+            preferences={user?.preferences ?? {
+              theme: 'dark',
+              language: 'en',
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              notifications: { email: true, push: false, inApp: true },
+            }}
+            onUpdatePreferences={updatePreferences}
+            onUpdateProfile={updateProfile}
+            onUpdateProfileImage={updateProfileImage}
+            onRemoveProfileImage={removeProfileImage}
+            profileImageApiEndpoint="/api/generate-profile-image"
+            onGenerateAnimatedAvatar={generateAnimatedAvatar}
+            onSaveAnimatedAvatar={saveAnimatedAvatar}
+            onToggleAnimatedAvatar={toggleAnimatedAvatar}
+            onRemoveAnimatedAvatar={removeAnimatedAvatar}
+            onPollAnimationStatus={pollAnimationStatus}
+            animateAvatarApiEndpoint="/api/animate-avatar"
+            spaces={spaceSettingsItems}
+            currentAppId="notes"
+            onEditSpace={handleEditSpace}
+            onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
+            onDeleteSpace={deleteSpace}
+            appSettings={
+              <SettingsPanel
+                preferences={preferences}
+                isLoading={preferencesLoading}
+                onUpdate={updateAppPreferences}
+                onClose={() => setSettingsModalOpen(false)}
+              />
+            }
+            appSettingsLabel="Notes"
+            appSettingsIcon={<StickyNote className="h-4 w-4" />}
+          />
+
+          {/* Space Settings Modal */}
+          {editingSpace && (
+            <SpaceSettings
+              isOpen={spaceSettingsOpen}
+              onClose={() => {
+                setSpaceSettingsOpen(false);
+                setEditingSpaceId(null);
+              }}
+              space={{
+                id: editingSpace.id,
+                name: editingSpace.name,
+                type: editingSpace.type as SpaceType,
+                color: (editingSpace as { color?: string }).color as Parameters<typeof SpaceSettings>[0]['space']['color'],
+                icon: (editingSpace as { icon?: string }).icon as Parameters<typeof SpaceSettings>[0]['space']['icon'],
+                isGlobal: (editingSpace as { isGlobal?: boolean }).isGlobal,
+                members: (editingSpace.members || []).map((m: NoteSpaceMember) => ({
+                  uid: m.uid,
+                  displayName: m.displayName,
+                  email: undefined as string | undefined,
+                  photoURL: m.photoURL,
+                  role: m.role as SpaceRole,
+                  joinedAt: typeof m.joinedAt === 'string' ? new Date(m.joinedAt).getTime() : m.joinedAt,
+                })),
+                childMembers: (editingSpace as { childMembers?: ChildMember[] }).childMembers,
+                pendingInviteCount: pendingInvitations.length,
+              }}
+              pendingInvitations={pendingInvitations}
+              currentUserId={user.uid}
+              onSave={handleSaveSpaceSettings}
+              onDelete={handleDeleteSpace}
+              onInviteMember={handleInviteMemberVoid}
+              onCancelInvitation={handleCancelInvitation}
+              onAddChild={handleAddChild}
+              onEditChild={handleEditChild}
+              onRemoveChild={handleRemoveChild}
+              canEdit={
+                (editingSpace.members || []).find((m: NoteSpaceMember) => m.uid === user.uid)?.role === 'admin'
+              }
+              canDelete={
+                ((editingSpace as { ownerId?: string; createdBy?: string }).ownerId ||
+                  (editingSpace as { ownerId?: string; createdBy?: string }).createdBy) === user.uid
+              }
+            />
+          )}
+
+          {/* Add Child Modal */}
+          {editingSpace && (
+            <AddChildModal
+              isOpen={addChildModalOpen}
+              onClose={() => {
+                setAddChildModalOpen(false);
+                setEditingChild(undefined);
+              }}
+              space={{
+                id: editingSpace.id,
+                name: editingSpace.name,
+              }}
+              onAddChild={handleChildSubmit}
+              editChild={editingChild}
+              onUpdateChild={handleChildUpdate}
+            />
+          )}
+        </HintsProvider>
+      </RemindersProvider>
+    </NotesProvider>
+  );
+}
+
+/**
+ * Workspace root layout that handles auth and wraps with SpacesProvider.
+ * SpacesProvider is only rendered after auth is confirmed to prevent
+ * Firestore calls before auth is ready.
+ */
+export default function WorkspaceRootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const {
+    user,
+    isLoading,
+    isReady,
+    handleSignOut,
+    updatePreferences,
+    updateProfile,
+    updateProfileImage,
+    removeProfileImage,
+    generateAnimatedAvatar,
+    saveAnimatedAvatar,
+    toggleAnimatedAvatar,
+    removeAnimatedAvatar,
+    pollAnimationStatus,
+  } = useWorkspaceAuth();
+
+  // Sync user font preferences from Firestore (theme sync is handled by WorkspaceLayout)
+  useFontPreference(user?.preferences?.fontFamily);
+  useFontSizePreference(user?.preferences?.fontSize);
+
   // Show loading screen while checking auth - prevents Firestore calls before auth is confirmed
   if (isLoading || !isReady || !user) {
     return <WorkspaceLoadingScreen />;
   }
 
   return (
-    <HintsProvider>
-      <WorkspaceLayoutWithInsights
-        user={user}
-        onSignOut={handleSignOut}
-        quickActions={quickActions}
-        onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
-        onSettingsClick={handleSettingsClick}
-        // Notifications - empty for now, will be populated by notification service
-        notifications={[]}
-        onUpdatePreferences={updatePreferences}
-      >
-        {children}
-      </WorkspaceLayoutWithInsights>
-
-      {/* Global Settings Modal */}
-      <SettingsModal
-        isOpen={settingsModalOpen}
-        onClose={() => setSettingsModalOpen(false)}
-        user={user ? {
-          uid: user.uid,
-          displayName: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          iconURL: user.iconURL,
-          animatedAvatarURL: user.animatedAvatarURL,
-          animatedAvatarStyle: user.animatedAvatarStyle,
-          useAnimatedAvatar: user.useAnimatedAvatar,
-        } : null}
-        preferences={user?.preferences ?? {
-          theme: 'dark',
-          language: 'en',
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          notifications: { email: true, push: false, inApp: true },
-        }}
-        onUpdatePreferences={updatePreferences}
-        onUpdateProfile={updateProfile}
-        onUpdateProfileImage={updateProfileImage}
-        onRemoveProfileImage={removeProfileImage}
-        profileImageApiEndpoint="/api/generate-profile-image"
-        onGenerateAnimatedAvatar={generateAnimatedAvatar}
-        onSaveAnimatedAvatar={saveAnimatedAvatar}
-        onToggleAnimatedAvatar={toggleAnimatedAvatar}
-        onRemoveAnimatedAvatar={removeAnimatedAvatar}
-        onPollAnimationStatus={pollAnimationStatus}
-        animateAvatarApiEndpoint="/api/animate-avatar"
-        spaces={spaceSettingsItems}
-        currentAppId="notes"
-        onEditSpace={handleEditSpace}
-        onUpdateSpaceVisibility={handleUpdateSpaceVisibility}
-        onDeleteSpace={deleteSpace}
-        appSettings={
-          <SettingsPanel
-            preferences={preferences}
-            isLoading={preferencesLoading}
-            onUpdate={updateAppPreferences}
-            onClose={() => setSettingsModalOpen(false)}
-          />
-        }
-        appSettingsLabel="Notes"
-        appSettingsIcon={<StickyNote className="h-4 w-4" />}
-      />
-
-      {/* Space Settings Modal */}
-      {editingSpace && (
-        <SpaceSettings
-          isOpen={spaceSettingsOpen}
-          onClose={() => {
-            setSpaceSettingsOpen(false);
-            setEditingSpaceId(null);
-          }}
-          space={{
-            id: editingSpace.id,
-            name: editingSpace.name,
-            type: editingSpace.type as SpaceType,
-            color: (editingSpace as { color?: string }).color as Parameters<typeof SpaceSettings>[0]['space']['color'],
-            icon: (editingSpace as { icon?: string }).icon as Parameters<typeof SpaceSettings>[0]['space']['icon'],
-            isGlobal: (editingSpace as { isGlobal?: boolean }).isGlobal,
-            members: (editingSpace.members || []).map((m: NoteSpaceMember) => ({
-              uid: m.uid,
-              displayName: m.displayName,
-              email: undefined as string | undefined,
-              photoURL: m.photoURL,
-              role: m.role as SpaceRole,
-              joinedAt: typeof m.joinedAt === 'string' ? new Date(m.joinedAt).getTime() : m.joinedAt,
-            })),
-            childMembers: (editingSpace as { childMembers?: ChildMember[] }).childMembers,
-            pendingInviteCount: pendingInvitations.length,
-          }}
-          pendingInvitations={pendingInvitations}
-          currentUserId={user.uid}
-          onSave={handleSaveSpaceSettings}
-          onDelete={handleDeleteSpace}
-          onInviteMember={handleInviteMemberVoid}
-          onCancelInvitation={handleCancelInvitation}
-          onAddChild={handleAddChild}
-          onEditChild={handleEditChild}
-          onRemoveChild={handleRemoveChild}
-          canEdit={
-            (editingSpace.members || []).find((m: NoteSpaceMember) => m.uid === user.uid)?.role === 'admin'
-          }
-          canDelete={
-            ((editingSpace as { ownerId?: string; createdBy?: string }).ownerId ||
-              (editingSpace as { ownerId?: string; createdBy?: string }).createdBy) === user.uid
-          }
-        />
-      )}
-
-      {/* Add Child Modal */}
-      {editingSpace && (
-        <AddChildModal
-          isOpen={addChildModalOpen}
-          onClose={() => {
-            setAddChildModalOpen(false);
-            setEditingChild(undefined);
-          }}
-          space={{
-            id: editingSpace.id,
-            name: editingSpace.name,
-          }}
-          onAddChild={handleChildSubmit}
-          editChild={editingChild}
-          onUpdateChild={handleChildUpdate}
-        />
-      )}
-    </HintsProvider>
+    <SpacesProvider>
+      <LabelsProvider>
+        <PreferencesProvider>
+          <FilterPresetsProvider>
+            <BackgroundsProvider>
+              <WorkspaceLayoutInner
+                user={user}
+                handleSignOut={handleSignOut}
+                updatePreferences={updatePreferences}
+                updateProfile={updateProfile}
+                updateProfileImage={updateProfileImage}
+                removeProfileImage={removeProfileImage}
+                generateAnimatedAvatar={generateAnimatedAvatar}
+                saveAnimatedAvatar={saveAnimatedAvatar}
+                toggleAnimatedAvatar={toggleAnimatedAvatar}
+                removeAnimatedAvatar={removeAnimatedAvatar}
+                pollAnimationStatus={pollAnimationStatus}
+              >
+                {children}
+              </WorkspaceLayoutInner>
+            </BackgroundsProvider>
+          </FilterPresetsProvider>
+        </PreferencesProvider>
+      </LabelsProvider>
+    </SpacesProvider>
   );
 }

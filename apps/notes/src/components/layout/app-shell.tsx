@@ -23,6 +23,17 @@ import {
 } from "lucide-react";
 import { SettingsPanel } from "./settings-panel";
 import { FeedbackWidget } from "@ainexsuite/ui/components";
+import { TrashModal } from "@/components/notes/trash-modal";
+
+// Helper to strip HTML tags for preview display
+function stripHtml(html: string): string {
+  if (!html.includes('<')) return html;
+  if (typeof DOMParser !== 'undefined') {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  }
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -44,6 +55,7 @@ export function AppShell({ children }: AppShellProps) {
   const [isNavOpen, setNavOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [trashModalOpen, setTrashModalOpen] = useState(false);
 
   const navSections = useMemo(
     () => [
@@ -100,7 +112,7 @@ export function AppShell({ children }: AppShellProps) {
       .slice(0, 5)
       .map((note) => ({
         id: note.id,
-        title: note.title || (note.body ? note.body.slice(0, 48) : "Untitled note"),
+        title: note.title || (note.body ? stripHtml(note.body).slice(0, 48) : "Untitled note"),
         timestamp: note.updatedAt,
         pinned: note.pinned,
         type: note.type,
@@ -116,6 +128,7 @@ export function AppShell({ children }: AppShellProps) {
           onOpenSettings={() => setSettingsModalOpen(true)}
           onOpenAiAssistant={() => togglePanel("ai-assistant")}
           onOpenActivity={() => togglePanel("notifications")}
+          onOpenTrash={() => setTrashModalOpen(true)}
         />
         <div className="pointer-events-none fixed inset-x-0 top-16 z-20 h-3 bg-gradient-to-b from-accent-500/45 via-accent-500/15 to-transparent blur-md" />
 
@@ -161,6 +174,12 @@ export function AppShell({ children }: AppShellProps) {
           }
           appSettingsLabel="Notes"
           appSettingsIcon={<StickyNote className="h-4 w-4" />}
+        />
+
+        {/* Trash Modal */}
+        <TrashModal
+          isOpen={trashModalOpen}
+          onClose={() => setTrashModalOpen(false)}
         />
 
         {/* Navigation overlay panel */}

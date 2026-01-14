@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, forwardRef, useImperativeHandle, useState, useRef } from 'react';
+import { useCallback, useEffect, forwardRef, useImperativeHandle, useState, useRef, useMemo } from 'react';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -54,64 +54,69 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     },
     ref
   ) => {
+    // Memoize extensions to prevent duplicate registration warnings
+    const extensions = useMemo(() => [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+      }),
+      Placeholder.configure({
+        placeholder,
+        emptyEditorClass: 'is-editor-empty',
+      }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          class: 'text-primary underline cursor-pointer hover:opacity-80',
+        },
+      }),
+      TaskList.configure({
+        HTMLAttributes: {
+          class: 'not-prose pl-0',
+        },
+      }),
+      TaskItem.configure({
+        nested: true,
+        HTMLAttributes: {
+          class: 'flex items-start gap-2',
+        },
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Underline,
+    ], [placeholder]);
+
     const editor = useEditor({
       immediatelyRender: false, // Required for SSR to avoid hydration mismatches
-      extensions: [
-        StarterKit.configure({
-          heading: {
-            levels: [1, 2, 3],
-          },
-          bulletList: {
-            keepMarks: true,
-            keepAttributes: false,
-          },
-          orderedList: {
-            keepMarks: true,
-            keepAttributes: false,
-          },
-        }),
-        Placeholder.configure({
-          placeholder,
-          emptyEditorClass: 'is-editor-empty',
-        }),
-        Link.configure({
-          openOnClick: false,
-          autolink: true,
-          linkOnPaste: true,
-          HTMLAttributes: {
-            class: 'text-primary underline cursor-pointer hover:opacity-80',
-          },
-        }),
-        TaskList.configure({
-          HTMLAttributes: {
-            class: 'not-prose pl-0',
-          },
-        }),
-        TaskItem.configure({
-          nested: true,
-          HTMLAttributes: {
-            class: 'flex items-start gap-2',
-          },
-        }),
-        Highlight.configure({
-          multicolor: true,
-        }),
-        Underline,
-      ],
+      extensions,
       content,
       editable,
       autofocus,
       editorProps: {
         attributes: {
           class: clsx(
-            'prose prose-sm dark:prose-invert max-w-none focus:outline-none',
-            'prose-p:my-1.5 prose-p:leading-relaxed',
-            'prose-headings:my-2 prose-headings:font-semibold',
-            'prose-h1:text-xl prose-h2:text-lg prose-h3:text-base',
-            'prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5',
-            'prose-code:bg-surface-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm',
-            'prose-pre:bg-surface-muted prose-pre:p-3 prose-pre:rounded-lg',
-            'prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic',
+            'max-w-none focus:outline-none text-[13px] leading-relaxed p-3',
+            '[&_p]:my-1',
+            '[&_h1]:text-[14px] [&_h1]:font-semibold [&_h1]:my-1.5',
+            '[&_h2]:text-[13px] [&_h2]:font-semibold [&_h2]:my-1.5',
+            '[&_h3]:text-[12px] [&_h3]:font-semibold [&_h3]:my-1.5',
+            '[&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5',
+            '[&_code]:bg-surface-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px]',
+            '[&_pre]:bg-surface-muted [&_pre]:p-3 [&_pre]:rounded-lg',
+            '[&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic',
+            '[&_a]:text-primary [&_a]:underline',
             editorClassName
           ),
         },
