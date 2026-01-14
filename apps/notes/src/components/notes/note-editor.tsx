@@ -1942,7 +1942,10 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             <NoteActionsToolbar
               note={note}
               variant="editor"
+              forceLightText={forceLightText}
+              forceDarkText={forceDarkText}
               backgroundBrightness={currentBackground?.brightness}
+              hasCover={!!currentBackground}
               spaces={spaces}
               currentSpace={currentSpace}
               onMoveToSpace={(spaceId) => setSelectedSpaceId(spaceId)}
@@ -1984,7 +1987,12 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                           setBody("");
                         }
                       }}
-                      className="h-6 w-6 rounded-full flex items-center justify-center transition text-zinc-400 hover:text-zinc-200 hover:bg-white/10"
+                      className={clsx(
+                        "h-6 w-6 rounded-full flex items-center justify-center transition",
+                        forceLightText || currentBackground?.brightness === "dark"
+                          ? "text-white/75 hover:text-white hover:bg-white/20"
+                          : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/20"
+                      )}
                       aria-label="Convert to list"
                       title="Convert to list"
                     >
@@ -2002,7 +2010,9 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                             ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
                             : selectedText
                               ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
-                              : "text-zinc-400 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                              : forceLightText || currentBackground?.brightness === "dark"
+                                ? "text-white/75 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                                : "text-zinc-600 dark:text-zinc-300 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
                         )}
                         aria-label="Enhance with AI"
                         title={selectedText ? `Enhance selected text` : "Enhance all text with AI"}
