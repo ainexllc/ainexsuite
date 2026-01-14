@@ -111,11 +111,21 @@ export function LabelsProvider({ children }: LabelsProviderProps) {
   return <LabelsContext.Provider value={value}>{children}</LabelsContext.Provider>;
 }
 
+// Default context value for SSG/SSR when no provider is present
+const defaultLabelsValue: LabelsContextValue = {
+  labels: [],
+  loading: true,
+  createLabel: async () => null,
+  updateLabel: async () => {},
+  deleteLabel: async () => {},
+};
+
 export function useLabels() {
   const context = useContext(LabelsContext);
 
+  // Return default values during SSG/SSR instead of throwing
   if (!context) {
-    throw new Error("useLabels must be used within a LabelsProvider.");
+    return defaultLabelsValue;
   }
 
   return context;

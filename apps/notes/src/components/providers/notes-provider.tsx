@@ -912,11 +912,50 @@ export function NotesProvider({ children }: NotesProviderProps) {
   );
 }
 
+// Default context value for SSG/SSR when no provider is present
+const defaultContextValue: NotesContextValue = {
+  notes: [],
+  pinned: [],
+  others: [],
+  displayedOthers: [],
+  allNotes: [],
+  trashed: [],
+  loading: true,
+  searchQuery: "",
+  setSearchQuery: () => {},
+  includeTrashInSearch: false,
+  setIncludeTrashInSearch: () => {},
+  activeLabelIds: [],
+  setActiveLabelIds: () => {},
+  filters: {},
+  setFilters: () => {},
+  sort: { field: "updatedAt", direction: "desc" },
+  setSort: () => {},
+  createNote: async () => null,
+  updateNote: async () => {},
+  duplicateNote: async () => null,
+  togglePin: async () => {},
+  toggleArchive: async () => {},
+  deleteNote: async () => {},
+  restoreNote: async () => {},
+  destroyNote: async () => {},
+  destroyAllNotes: async () => {},
+  removeAttachment: async () => {},
+  attachFiles: async () => {},
+  hasMore: false,
+  isLoadingMore: false,
+  loadMore: () => {},
+  totalCount: 0,
+  sentinelRef: { current: null },
+};
+
 export function useNotes() {
   const context = useContext(NotesContext);
 
+  // Return default values during SSG/SSR instead of throwing
+  // This allows pages to render statically without NotesProvider
   if (!context) {
-    throw new Error("useNotes must be used within a NotesProvider.");
+    return defaultContextValue;
   }
 
   return context;

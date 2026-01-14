@@ -94,11 +94,19 @@ export function PreferencesProvider({ children }: PreferencesProviderProps) {
   return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>;
 }
 
+// Default context value for SSG/SSR when no provider is present
+const defaultPreferencesValue: PreferencesContextValue = {
+  preferences: INITIAL_PREFERENCES,
+  loading: true,
+  updatePreferences: async () => {},
+};
+
 export function usePreferences() {
   const context = useContext(PreferencesContext);
 
+  // Return default values during SSG/SSR instead of throwing
   if (!context) {
-    throw new Error("usePreferences must be used within a PreferencesProvider.");
+    return defaultPreferencesValue;
   }
 
   return context;
