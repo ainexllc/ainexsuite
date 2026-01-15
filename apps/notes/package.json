@@ -1,6 +1,6 @@
 {
   "name": "@ainexsuite/notes",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Notes app - Capture your thoughts and ideas at notes.ainexspace.com",
   "scripts": {
