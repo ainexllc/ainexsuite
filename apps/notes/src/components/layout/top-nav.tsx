@@ -71,7 +71,13 @@ export function TopNav({
               <Trash2 className="h-[18px] w-[18px]" />
             </button>
           )}
-          {onOpenAiAssistant && <TopNavAiButton onClick={onOpenAiAssistant} />}
+          {onOpenAiAssistant && (
+            <TopNavAiButton
+              onClick={onOpenAiAssistant}
+              variant="pill"
+              text="AINex"
+            />
+          )}
           {user && !authLoading && (
             <div className="relative">
               <TopNavProfileButton

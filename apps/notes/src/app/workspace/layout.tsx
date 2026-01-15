@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
 import {
@@ -20,13 +20,47 @@ import { StickyNote } from 'lucide-react';
 import { SettingsPanel } from '@/components/layout/settings-panel';
 import { PreferencesProvider, usePreferences } from '@/components/providers/preferences-provider';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
-import { NotesProvider } from '@/components/providers/notes-provider';
+import { NotesProvider, useNotes } from '@/components/providers/notes-provider';
 import { RemindersProvider } from '@/components/providers/reminders-provider';
-import { LabelsProvider } from '@/components/providers/labels-provider';
+import { LabelsProvider, useLabels } from '@/components/providers/labels-provider';
 import { FilterPresetsProvider } from '@/components/providers/filter-presets-provider';
 import { BackgroundsProvider } from '@/components/providers/backgrounds-provider';
 import { useSpaceInvitations, useChildMembers } from '@/hooks/use-space-invitations';
 import { HintsProvider } from '@/components/hints';
+import { AIFloatingPanel } from '@/components/ai';
+
+/**
+ * AIFloatingPanelWithContext - Wrapper that provides notes/labels context to the floating panel.
+ * Must be rendered inside NotesProvider and LabelsProvider.
+ */
+function AIFloatingPanelWithContext({
+  isOpen,
+  onClose,
+  user,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  user?: {
+    displayName?: string | null;
+    photoURL?: string | null;
+    subscriptionTier?: string;
+  } | null;
+}) {
+  const { notes } = useNotes();
+  const { labels } = useLabels();
+
+  return (
+    <AIFloatingPanel
+      isOpen={isOpen}
+      onClose={onClose}
+      notes={notes}
+      labels={labels}
+      appName="Notes"
+      appColor="#eab308"
+      user={user}
+    />
+  );
+}
 
 /**
  * Inner layout that has access to SpacesProvider context.
@@ -67,6 +101,7 @@ function WorkspaceLayoutInner({
   const [spaceSettingsOpen, setSpaceSettingsOpen] = useState(false);
   const [addChildModalOpen, setAddChildModalOpen] = useState(false);
   const [editingChild, setEditingChild] = useState<ChildMember | undefined>(undefined);
+  const [isAIOpen, setIsAIOpen] = useState(false);
 
   // Get current space being edited for SpaceSettings
   const editingSpace = useMemo(() => {
@@ -228,9 +263,22 @@ function WorkspaceLayoutInner({
     }
   }, [router]);
 
-  // Handle AI assistant
+  // Handle AI assistant toggle (⌘J keyboard shortcut)
   const handleAiAssistantClick = useCallback(() => {
-    // TODO: Open AI assistant panel
+    setIsAIOpen((prev) => !prev);
+  }, []);
+
+  // Keyboard shortcut for AI panel (⌘J)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault();
+        setIsAIOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Handle settings click
@@ -366,6 +414,17 @@ function WorkspaceLayoutInner({
               onUpdateChild={handleChildUpdate}
             />
           )}
+
+          {/* AINex Floating AI Panel */}
+          <AIFloatingPanelWithContext
+            isOpen={isAIOpen}
+            onClose={() => setIsAIOpen(false)}
+            user={{
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+              subscriptionTier: user.subscriptionTier,
+            }}
+          />
         </HintsProvider>
       </RemindersProvider>
     </NotesProvider>

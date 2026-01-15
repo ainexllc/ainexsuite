@@ -120,7 +120,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
     dateRange: { start: null, end: null },
   });
   const [sort, setSort] = useState<SortConfig>({
-    field: 'createdAt',
+    field: 'updatedAt',
     direction: 'desc',
   });
   const [filtersInitialized, setFiltersInitialized] = useState(false);

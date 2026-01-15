@@ -51,7 +51,7 @@ export default function NotesAboutPage() {
             Built for thinkers, makers, and teams who never stop learning
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            Notes is the backbone of AINexSuite. It keeps ideas flowing between productivity, learning, and reflection—without losing context.
+            Notes is the backbone of AINexSpace. It keeps ideas flowing between productivity, learning, and reflection—without losing context.
           </p>
         </section>
 

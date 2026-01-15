@@ -16,6 +16,9 @@ interface WorkspaceLayoutWithInsightsProps {
     subscriptionStatus?: string;
     subscriptionTier?: string;
     trialStartDate?: number;
+    // Animated avatar fields
+    animatedAvatarURL?: string | null;
+    useAnimatedAvatar?: boolean;
   };
   onSignOut: () => void;
   quickActions?: QuickAction[];

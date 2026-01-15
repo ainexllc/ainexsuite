@@ -118,11 +118,11 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       editorProps: {
         attributes: {
           class: clsx(
-            'max-w-none focus:outline-none text-[13px] leading-relaxed p-3',
-            '[&_p]:my-1',
-            '[&_h1]:text-[14px] [&_h1]:font-semibold [&_h1]:my-1.5',
-            '[&_h2]:text-[13px] [&_h2]:font-semibold [&_h2]:my-1.5',
-            '[&_h3]:text-[12px] [&_h3]:font-semibold [&_h3]:my-1.5',
+            'max-w-none focus:outline-none text-sm leading-relaxed p-3',
+            '[&_p]:my-px',
+            '[&_h1]:text-base [&_h1]:font-semibold [&_h1]:my-1.5',
+            '[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:my-1.5',
+            '[&_h3]:text-[13px] [&_h3]:font-semibold [&_h3]:my-1.5',
             '[&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0.5',
             '[&_code]:bg-surface-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px]',
             '[&_pre]:bg-surface-muted [&_pre]:p-3 [&_pre]:rounded-lg',

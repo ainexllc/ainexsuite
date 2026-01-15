@@ -62,7 +62,7 @@ const config: Config = {
           "tangerine-dark": "#8C5A1C", // Rich amber (vibrant)
           mint: "#34D399", // Emerald-400
           "mint-soft": "#DCFCE7",
-          "mint-dark": "#2A6B4A", // Teal green (vibrant)
+          "mint-dark": "#171717", // Super dark gray
           fog: "#94A3B8", // Slate-400
           "fog-soft": "#EDF3FF",
           "fog-dark": "#4A5568", // Clean slate (vibrant)

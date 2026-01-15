@@ -1671,23 +1671,53 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
             </DndContext>
           )}
 
-          {/* Word/char count - below content (only for text mode) */}
+          {/* Word/char count and AI button - below content (only for text mode) */}
           {mode !== "checklist" && (
-            <div className={clsx(
-              "text-[11px] tabular-nums",
-              forceDarkText
-                ? "text-zinc-500"
-                : forceLightText
-                  ? "text-zinc-400"
-                  : currentBackground
-                    ? currentBackground.brightness === 'dark'
-                      ? "text-white/40"
-                      : "text-black/40"
-                    : "text-zinc-400 dark:text-zinc-500"
-            )}>
-              <span>
-                {body.trim().split(/\s+/).filter(w => w).length} words · {body.length} chars
-              </span>
+            <div className="flex items-center justify-between">
+              <div className={clsx(
+                "text-[11px] tabular-nums",
+                forceDarkText
+                  ? "text-zinc-500"
+                  : forceLightText
+                    ? "text-zinc-400"
+                    : currentBackground
+                      ? currentBackground.brightness === 'dark'
+                        ? "text-white/40"
+                        : "text-black/40"
+                      : "text-zinc-400 dark:text-zinc-500"
+              )}>
+                <span>
+                  {body.trim().split(/\s+/).filter(w => w).length} words · {body.length} chars
+                </span>
+              </div>
+
+              {/* Floating AI button */}
+              {body.trim() && (
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={() => setShowEnhanceMenu((prev) => !prev)}
+                  disabled={isEnhancing}
+                  className={clsx(
+                    "h-7 w-7 rounded-full flex items-center justify-center transition-all",
+                    isEnhancing
+                      ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
+                      : selectedText
+                        ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
+                        : forceLightText || currentBackground?.brightness === "dark"
+                          ? "text-white/50 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                          : "text-zinc-400 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
+                  )}
+                  aria-label="Enhance with AI"
+                  title={selectedText ? `Enhance selected text` : "Enhance all text with AI"}
+                >
+                  {isEnhancing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                </button>
+              )}
             </div>
           )}
 
@@ -1991,32 +2021,6 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                     >
                       <CheckSquare className="h-3.5 w-3.5" />
                     </button>
-                    {body.trim() && (
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={() => setShowEnhanceMenu((prev) => !prev)}
-                        disabled={isEnhancing}
-                        className={clsx(
-                          "transition-all flex items-center gap-1.5 rounded-full h-6 px-2",
-                          isEnhancing
-                            ? "text-[var(--color-primary)] cursor-wait bg-[var(--color-primary)]/20"
-                            : selectedText
-                              ? "text-[var(--color-primary)] bg-[var(--color-primary)]/20"
-                              : forceLightText || currentBackground?.brightness === "dark"
-                                ? "text-white/75 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
-                                : "text-zinc-600 dark:text-zinc-300 hover:text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10"
-                        )}
-                        aria-label="Enhance with AI"
-                        title={selectedText ? `Enhance selected text` : "Enhance all text with AI"}
-                      >
-                        {isEnhancing ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Sparkles className="h-3.5 w-3.5" />
-                        )}
-                      </button>
-                    )}
                   </>
                 ) : undefined
               }

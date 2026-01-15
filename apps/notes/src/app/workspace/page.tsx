@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback, useState, useRef } from 'react';
 import { LayoutGrid, Calendar, X, Trash2 } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
@@ -231,6 +232,7 @@ export default function NotesWorkspace() {
       category: 'actions',
       label: 'Reset Filters',
     },
+    // Note: ⌘J for AI assistant is handled in workspace/layout.tsx
   ], [isShortcutsModalOpen, isSearchOpen, setSearchQuery, updatePreferences, handleFilterReset]);
 
   useKeyboardShortcuts({ shortcuts });
@@ -291,9 +293,7 @@ export default function NotesWorkspace() {
           />
         )
       }
-      composer={
-        <NoteComposer />
-      }
+      composer={<NoteComposer />}
       toolbar={
         <div className="space-y-2">
           {isSearchOpen && (
@@ -379,16 +379,19 @@ export default function NotesWorkspace() {
       }
       maxWidth="default"
     >
-      {isCalendarView ? (
-        <ActivityCalendar
-          activityData={activityData}
-          size="large"
-          view={preferences.calendarView || 'month'}
-          onViewChange={(view) => updatePreferences({ calendarView: view })}
-        />
-      ) : (
-        <NoteBoard />
-      )}
+      <AnimatePresence mode="wait">
+        {isCalendarView ? (
+          <ActivityCalendar
+            key="calendar-view"
+            activityData={activityData}
+            size="large"
+            view={preferences.calendarView || 'month'}
+            onViewChange={(view) => updatePreferences({ calendarView: view })}
+          />
+        ) : (
+          <NoteBoard key="note-board" />
+        )}
+      </AnimatePresence>
 
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal

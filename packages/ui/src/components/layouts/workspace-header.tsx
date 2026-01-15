@@ -259,8 +259,9 @@ export function WorkspaceHeader({
             <button
               type="button"
               onClick={onAiAssistantClick}
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95"
-              aria-label="AI Assistant"
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              aria-label="AI Assistant (⌘J)"
+              title="AI Assistant (⌘J)"
               style={{
                 backgroundColor: `${appColor || '#f59e0b'}20`,
                 boxShadow: `0 0 12px ${appColor || '#f59e0b'}40`,

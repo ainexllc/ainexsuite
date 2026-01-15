@@ -4,24 +4,6 @@
 
 import { useMemo, useState, useEffect } from "react";
 
-// Helper to strip HTML tags for preview display
-function stripHtml(html: string): string {
-  // Quick check - if no HTML tags, return as-is
-  if (!html.includes('<')) return html;
-
-  // Use DOMParser if available (browser environment)
-  if (typeof DOMParser !== 'undefined') {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || '';
-  }
-
-  // Fallback: regex-based stripping for SSR
-  return html
-    .replace(/<[^>]*>/g, ' ')  // Replace tags with space
-    .replace(/\s+/g, ' ')       // Collapse multiple spaces
-    .trim();
-}
-
 // Smart-sized min-height tiers based on content (allows natural growth)
 type ContentSize = "tiny" | "small" | "medium" | "large";
 
@@ -530,18 +512,19 @@ export function NoteCard({ note }: NoteCardProps) {
                 </ul>
               </div>
             ) : note.body ? (
-              <p className={clsx(
-                "whitespace-pre-wrap text-sm leading-relaxed tracking-[-0.01em] line-clamp-8",
-                hasCover && !backgroundImage
-                  ? "text-white/90"
-                  : forceDarkText
-                    ? "text-zinc-700"  // Dark text on bright backgrounds
-                    : forceLightText
-                      ? "text-zinc-200"  // Light text on dark backgrounds
-                      : getTextColorClasses(backgroundImage, 'body')
-              )}>
-                {stripHtml(note.body)}
-              </p>
+              <div
+                className={clsx(
+                  "text-sm leading-relaxed tracking-[-0.01em] line-clamp-8 [&>p]:mb-2 [&>p:last-child]:mb-0",
+                  hasCover && !backgroundImage
+                    ? "text-white/90"
+                    : forceDarkText
+                      ? "text-zinc-700"  // Dark text on bright backgrounds
+                      : forceLightText
+                        ? "text-zinc-200"  // Light text on dark backgrounds
+                        : getTextColorClasses(backgroundImage, 'body')
+                )}
+                dangerouslySetInnerHTML={{ __html: note.body }}
+              />
             ) : null}
 
             {noteLabels.length ? (
