@@ -7,7 +7,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { clsx } from 'clsx';
 import { EmptyState, ListSection } from '@ainexsuite/ui';
 import { TaskCard } from './TaskCard';
-import { GroupHeader, GroupManager } from '../groups';
+import { GroupHeader, GroupManager, GroupDropZone } from '../groups';
 import { useSpaces } from '@/components/providers/spaces-provider';
 import { useTodoStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
@@ -236,10 +236,10 @@ export function TaskBoard({ searchQuery = '' }: TaskBoardProps) {
           onRename={(newName) => handleRenameGroup(group.id, newName)}
           onDelete={() => handleDeleteGroup(group.id)}
         />
-        {!isCollapsed && groupTasks.length > 0 && (
-          <div className="pl-6">
+        {!isCollapsed && (
+          <GroupDropZone groupId={group.id} isEmpty={groupTasks.length === 0} isCollapsed={isCollapsed}>
             {renderTaskList(groupTasks, true)}
-          </div>
+          </GroupDropZone>
         )}
       </div>
     );
