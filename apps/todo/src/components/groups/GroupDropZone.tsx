@@ -31,17 +31,16 @@ export function GroupDropZone({
       ref={setNodeRef}
       className={clsx(
         'rounded-lg transition-all duration-150',
-        isOver && 'bg-blue-50 dark:bg-blue-950/30 ring-2 ring-blue-400 ring-inset'
       )}
     >
       {isEmpty ? (
-        // Empty state - show drop zone hint
+        // Empty state - show drop zone hint with glow
         <div
           className={clsx(
-            'px-4 py-8 rounded-lg border-2 border-dashed transition-colors',
+            'px-4 py-8 rounded-lg border-2 border-dashed transition-all duration-200',
             isOver
-              ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/30'
-              : 'border-zinc-300 dark:border-zinc-600 bg-zinc-50/50 dark:bg-zinc-900/20'
+              ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/40 ring-2 ring-blue-400/50'
+              : 'border-zinc-300 dark:border-zinc-600 bg-zinc-50/30 dark:bg-zinc-900/10'
           )}
         >
           <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
@@ -49,8 +48,13 @@ export function GroupDropZone({
           </p>
         </div>
       ) : (
-        // Has tasks - show them with drop zone around
-        <div className="pl-6">{children}</div>
+        // Has tasks - show them without indentation
+        <div className={clsx(
+          'transition-colors duration-200',
+          isOver && 'bg-blue-50/40 dark:bg-blue-950/20 rounded-lg p-2'
+        )}>
+          {children}
+        </div>
       )}
     </div>
   );

@@ -13,6 +13,26 @@ import { useTodoStore } from '../../lib/store';
 import { useAuth } from '@ainexsuite/auth';
 import type { Task, TaskGroup } from '../../types/models';
 
+// Droppable zone for favorited tasks
+function FavoritesDropZone({ children }: { children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'favorites',
+    data: { type: 'favorites' },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={clsx(
+        'rounded-lg transition-all duration-200',
+        isOver && 'bg-blue-50/40 dark:bg-blue-950/20 rounded-lg p-2'
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 // Droppable zone for ungrouped tasks
 function UngroupedDropZone({ children, hasGroups }: { children: React.ReactNode; hasGroups: boolean }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -28,8 +48,8 @@ function UngroupedDropZone({ children, hasGroups }: { children: React.ReactNode;
     <div
       ref={setNodeRef}
       className={clsx(
-        'rounded-lg transition-colors',
-        isOver && 'bg-zinc-100 dark:bg-zinc-800/50 ring-2 ring-zinc-400 ring-inset'
+        'rounded-lg transition-all duration-200',
+        isOver && 'bg-blue-50/40 dark:bg-blue-950/20 rounded-lg p-2'
       )}
     >
       {children}
@@ -195,9 +215,9 @@ export function TaskBoard({ searchQuery = '' }: TaskBoardProps) {
     const parentTasks = items.filter((t) => !t.parentId);
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-3">
         {parentTasks.map((task) => (
-          <div key={task.id}>
+          <div key={task.id} className="space-y-1">
             <TaskCard
               task={task}
               isSubtask={false}
@@ -205,7 +225,7 @@ export function TaskBoard({ searchQuery = '' }: TaskBoardProps) {
             />
             {/* Render subtasks */}
             {getSubtasks(task.id, items).length > 0 && (
-              <div className="ml-6 mt-2 space-y-2">
+              <div className="ml-6 space-y-1">
                 {getSubtasks(task.id, items).map((subtask) => (
                   <TaskCard
                     key={subtask.id}
@@ -252,12 +272,14 @@ export function TaskBoard({ searchQuery = '' }: TaskBoardProps) {
           <div className="space-y-8">
             {/* Favorited Tasks */}
             {favoritedTasks.length > 0 && (
-              <ListSection
-                title="Favorites"
-                count={favoritedTasks.length}
-              >
-                {renderTaskList(favoritedTasks)}
-              </ListSection>
+              <FavoritesDropZone>
+                <ListSection
+                  title="Favorites"
+                  count={favoritedTasks.length}
+                >
+                  {renderTaskList(favoritedTasks)}
+                </ListSection>
+              </FavoritesDropZone>
             )}
 
             {/* Custom Groups */}

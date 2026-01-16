@@ -206,7 +206,7 @@ export function TaskCard({ task, isSubtask = false, parentTasks = [] }: TaskCard
         className={clsx(
           'group relative transition-all duration-200',
           // Minimal row design - no pill/card appearance
-          'flex items-center gap-2 px-2 py-2',
+          'flex items-center gap-2 px-2 py-0',
           // Subtle color tint background
           colorConfig.cardClass,
           // Subtle hover state
