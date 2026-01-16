@@ -10,6 +10,7 @@ import {
   type FunctionDeclaration,
   type FunctionCall,
   type Part,
+  type Content,
 } from '@google/generative-ai';
 
 // Use Gemini 3 Flash Preview
@@ -18,10 +19,9 @@ const MODEL_NAME = 'gemini-2.0-flash';
 // Use the same API key pattern as main app
 const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-export interface GeminiMessage {
-  role: 'user' | 'model';
-  parts: Array<{ text: string } | { functionCall: FunctionCall } | { functionResponse: { name: string; response: unknown } }>;
-}
+// Using SDK's Content type directly for history
+// GeminiMessage is an alias for convenience
+export type GeminiMessage = Content;
 
 export interface GeminiCompletionOptions {
   messages: Array<{ role: string; content: string }>;
@@ -262,13 +262,13 @@ export class GeminiClient {
       history: history.length > 0 ? history : undefined,
     });
 
-    // Send function results
-    const functionResponseParts: Part[] = functionResults.map((fr) => ({
+    // Send function results - use type assertion as SDK expects this structure
+    const functionResponseParts = functionResults.map((fr) => ({
       functionResponse: {
         name: fr.name,
-        response: fr.response,
+        response: fr.response as object,
       },
-    }));
+    })) as Part[];
 
     const result = await chat.sendMessage(functionResponseParts);
     return result.response.text();

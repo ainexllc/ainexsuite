@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Palette,
   Flame,
@@ -194,48 +195,53 @@ export function NoteActionsToolbar({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [priorityPickerPos, setPriorityPickerPos] = useState({ x: 0, y: 0 });
   const footerExpanded = false; // Controlled by parent in future
 
   const spacePickerRef = useRef<HTMLDivElement>(null);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const colorPickerDropdownRef = useRef<HTMLDivElement>(null);
   const priorityPickerRef = useRef<HTMLDivElement>(null);
+  const priorityPickerDropdownRef = useRef<HTMLDivElement>(null);
 
   // Styling props to pass down
   const styleProps = { forceDarkText, forceLightText, backgroundBrightness, hasCover };
 
-  // Close pickers when clicking outside
+  // Unified click-outside handler for all pickers
   useEffect(() => {
-    if (!showSpacePicker) return;
+    const anyPickerOpen = showSpacePicker || showColorPicker || showPriorityPicker;
+    if (!anyPickerOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
-      if (spacePickerRef.current && !spacePickerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      // Space picker - only check the container ref
+      if (showSpacePicker && spacePickerRef.current && !spacePickerRef.current.contains(target)) {
         setShowSpacePicker(false);
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showSpacePicker]);
 
-  useEffect(() => {
-    if (!showColorPicker) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
-        setShowColorPicker(false);
+      // Color picker - check both button ref and portal dropdown ref
+      if (showColorPicker) {
+        const clickedColorButton = colorPickerRef.current?.contains(target);
+        const clickedColorDropdown = colorPickerDropdownRef.current?.contains(target);
+        if (!clickedColorButton && !clickedColorDropdown) {
+          setShowColorPicker(false);
+        }
+      }
+
+      // Priority picker - check both button ref and portal dropdown ref
+      if (showPriorityPicker) {
+        const clickedPriorityButton = priorityPickerRef.current?.contains(target);
+        const clickedPriorityDropdown = priorityPickerDropdownRef.current?.contains(target);
+        if (!clickedPriorityButton && !clickedPriorityDropdown) {
+          setShowPriorityPicker(false);
+        }
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showColorPicker]);
 
-  useEffect(() => {
-    if (!showPriorityPicker) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (priorityPickerRef.current && !priorityPickerRef.current.contains(event.target as Node)) {
-        setShowPriorityPicker(false);
-      }
-    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showPriorityPicker]);
+  }, [showSpacePicker, showColorPicker, showPriorityPicker]);
 
   // Handlers
   const handleSpaceSelect = useCallback(
@@ -374,7 +380,7 @@ export function NoteActionsToolbar({
           {showSpacePicker && (
             <div
               className={clsx(
-                "absolute bottom-7 right-0 z-50 min-w-[140px] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",
+                "absolute bottom-9 left-1/2 -translate-x-1/2 z-50 min-w-[140px] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200",
                 forceDarkText
                   ? "bg-white border border-zinc-200"
                   : forceLightText
@@ -482,17 +488,31 @@ export function NoteActionsToolbar({
           icon={Palette}
           onClick={(e) => {
             e.stopPropagation();
-            setShowColorPicker((prev) => !prev);
             setShowSpacePicker(false);
             setShowPriorityPicker(false);
+            // Calculate position for portal
+            if (colorPickerRef.current) {
+              const rect = colorPickerRef.current.getBoundingClientRect();
+              setColorPickerPos({
+                x: rect.left + rect.width / 2,
+                y: rect.top - 8, // 8px gap above button
+              });
+            }
+            setShowColorPicker((prev) => !prev);
           }}
           active={showColorPicker}
           tooltip="Change color"
           {...styleProps}
         />
-        {showColorPicker && (
+        {showColorPicker && typeof document !== 'undefined' && createPortal(
           <div
-            className="absolute bottom-7 right-0 z-[200] flex flex-col rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-2 shadow-2xl min-w-[280px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+            ref={colorPickerDropdownRef}
+            className="fixed z-[9999] flex flex-col rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-2 shadow-2xl min-w-[280px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+            style={{
+              left: colorPickerPos.x,
+              top: colorPickerPos.y,
+              transform: 'translate(-50%, -100%)',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Default - full width at top */}
@@ -561,7 +581,8 @@ export function NoteActionsToolbar({
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 
@@ -573,6 +594,14 @@ export function NoteActionsToolbar({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            // Calculate position for portal
+            if (priorityPickerRef.current) {
+              const rect = priorityPickerRef.current.getBoundingClientRect();
+              setPriorityPickerPos({
+                x: rect.left + rect.width / 2,
+                y: rect.top - 8,
+              });
+            }
             setShowPriorityPicker((prev) => !prev);
             setShowColorPicker(false);
             setShowSpacePicker(false);
@@ -602,9 +631,15 @@ export function NoteActionsToolbar({
             )}
           />
         </button>
-        {showPriorityPicker && (
+        {showPriorityPicker && typeof document !== 'undefined' && createPortal(
           <div
-            className="absolute bottom-7 right-0 z-[200] flex flex-col gap-0.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+            ref={priorityPickerDropdownRef}
+            className="fixed z-[9999] flex flex-col gap-0.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-1.5 shadow-2xl min-w-[100px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+            style={{
+              left: priorityPickerPos.x,
+              top: priorityPickerPos.y,
+              transform: 'translate(-50%, -100%)',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -659,7 +694,8 @@ export function NoteActionsToolbar({
                 </button>
               </>
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 
