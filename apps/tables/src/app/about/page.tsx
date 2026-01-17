@@ -1,5 +1,6 @@
 'use client';
 
+// Build: 2026-01-16
 import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { BookOpenCheck, Share2, Lightbulb, ShieldCheck, Users, Sparkles } from 'lucide-react';
 

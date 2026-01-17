@@ -1,3 +1,4 @@
+// Build: 2026-01-16
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Inter, DM_Sans, Geist_Mono, Kanit, Bebas_Neue, League_Spartan } from 'next/font/google';
 import { GeistSans } from 'geist/font/sans';

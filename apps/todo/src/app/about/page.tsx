@@ -1,5 +1,6 @@
 'use client';
 
+// Build: 2026-01-16
 import { FooterPageLayout } from '@ainexsuite/ui/components';
 import { Target, Workflow, Users, Sparkles, ShieldCheck, Hourglass } from 'lucide-react';
 
