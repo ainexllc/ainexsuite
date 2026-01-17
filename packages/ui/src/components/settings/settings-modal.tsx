@@ -1803,7 +1803,7 @@ function SpacesSettings({
                     disabled={addingMember}
                   />
                   <p className="text-[10px] text-muted-foreground">
-                    The user must have an AinexSuite account to receive the invitation.
+                    The user must have an AinexSpace account to receive the invitation.
                   </p>
                 </div>
               )}

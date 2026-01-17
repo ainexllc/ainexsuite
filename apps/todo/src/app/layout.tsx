@@ -49,7 +49,7 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: 'Todo - AINexSuite',
+  title: 'Todo - AINexSpace',
   description: 'Project management and task tracking with AI assistance',
   icons: {
     icon: '/favicon.svg',

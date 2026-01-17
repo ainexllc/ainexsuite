@@ -119,7 +119,7 @@ export function AdminWorkspaceLayout({ children }: AdminWorkspaceLayoutProps) {
             }}
             className="w-full py-2.5 px-4 bg-[#3b82f6] text-white font-medium rounded-lg hover:bg-[#2563eb] transition-colors"
           >
-            Return to Suite Hub
+            Return to Space Hub
           </button>
         </div>
       </div>

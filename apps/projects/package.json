@@ -2,7 +2,7 @@
   "name": "@ainexsuite/projects",
   "version": "1.0.0",
   "private": true,
-  "description": "AINexSuite projects app for project management and tracking",
+  "description": "AINexSpace projects app for project management and tracking",
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3009}",
     "build": "next build",

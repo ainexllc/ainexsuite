@@ -195,6 +195,7 @@ export function NoteActionsToolbar({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [colorPickerPos, setColorPickerPos] = useState({ x: 0, y: 0 });
   const [priorityPickerPos, setPriorityPickerPos] = useState({ x: 0, y: 0 });
   const footerExpanded = false; // Controlled by parent in future
 

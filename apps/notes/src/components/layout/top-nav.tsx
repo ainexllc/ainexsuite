@@ -75,7 +75,7 @@ export function TopNav({
             <TopNavAiButton
               onClick={onOpenAiAssistant}
               variant="pill"
-              text="AINex"
+              text="Lumi"
             />
           )}
           {user && !authLoading && (

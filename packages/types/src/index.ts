@@ -1,6 +1,6 @@
 /**
  * @ainexsuite/types
- * Shared TypeScript types for all AINexSuite apps
+ * Shared TypeScript types for all AINexSpace apps
  */
 
 // Common types
@@ -46,3 +46,6 @@ export * from './background';
 
 // Cover types
 export * from './cover';
+
+// Bot Avatar types
+export * from './bot-avatar';

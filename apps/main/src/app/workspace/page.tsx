@@ -49,7 +49,7 @@ export default function WorkspacePage() {
       </aside>
 
       {/* Middle - AI Chatbot */}
-      <main className="flex-1 flex flex-col bg-surface-base min-w-0">
+      <main className="flex-1 flex flex-col bg-surface-base min-w-0 min-h-0">
         <ChatContainer />
       </main>
 

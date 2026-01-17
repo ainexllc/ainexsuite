@@ -1,5 +1,5 @@
 /**
- * Design Tokens - AINexSuite Unified Design System
+ * Design Tokens - AINexSpace Unified Design System
  *
  * This module provides a centralized token system that works seamlessly with:
  * - Tailwind CSS classes

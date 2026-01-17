@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
+import { useWorkspaceAuth, SpaceGuard } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts/workspace-layout-with-insights';
@@ -69,11 +69,6 @@ function WorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
-  // Handle AI assistant
-  const handleAiAssistantClick = useCallback(() => {
-    // TODO: Open AI assistant panel
-  }, []);
-
   // Handle settings click
   const handleSettingsClick = useCallback(() => {
     setSettingsModalOpen(true);
@@ -88,7 +83,6 @@ function WorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
         onSignOut={handleSignOut}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
         onSettingsClick={handleSettingsClick}
         // Notifications - empty for now, will be populated by notification service
         notifications={[]}
@@ -164,7 +158,7 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <SuiteGuard appName="album">
+    <SpaceGuard appName="album">
       <SpacesProvider>
         <PreferencesProvider>
           <HintsProvider>
@@ -174,6 +168,6 @@ export default function WorkspaceRootLayout({
           </HintsProvider>
         </PreferencesProvider>
       </SpacesProvider>
-    </SuiteGuard>
+    </SpaceGuard>
   );
 }

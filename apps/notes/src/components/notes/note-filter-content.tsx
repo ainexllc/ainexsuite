@@ -149,7 +149,8 @@ function ColorGrid({
               <Check
                 className={clsx(
                   'w-3.5 h-3.5',
-                  color.id === 'note-coal' ? 'text-zinc-400' : 'text-zinc-600 dark:text-zinc-300'
+                  // Use light checkmark on dark colors
+                  color.textMode === 'light' ? 'text-zinc-400' : 'text-zinc-600 dark:text-zinc-300'
                 )}
                 strokeWidth={3}
               />

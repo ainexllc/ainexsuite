@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       })
       .join("\n\n");
 
-    const prompt = `Analyze the user's activity across their personal productivity suite and provide a helpful daily summary.
+    const prompt = `Analyze the user's activity across their personal productivity space and provide a helpful daily summary.
 
 Current Activity Data:
 ${insightsContext}
@@ -87,7 +87,7 @@ Return ONLY valid JSON, no markdown formatting.`;
     } catch {
       console.error("Failed to parse AI response:", responseContent);
       return NextResponse.json({
-        dailySummary: "Your suite is active with recent updates across your apps.",
+        dailySummary: "Your space is active with recent updates across your apps.",
         topPriorities: [],
         suggestions: ["Keep up the great work!"],
         wellnessNote: "Remember to take breaks and stay hydrated."
@@ -96,7 +96,7 @@ Return ONLY valid JSON, no markdown formatting.`;
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Suite Insights Error:", error);
+    console.error("Space Insights Error:", error);
     if (error instanceof Error && (error.message.includes("API_KEY") || error.message.includes("XAI"))) {
       return NextResponse.json(
         { error: "AI configuration missing (API Key)." },

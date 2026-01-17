@@ -401,7 +401,7 @@ async function createUserInFirestore(user: SessionUser): Promise<void> {
       trialStartDate: now,
       trialEndDate: trialEndDate,
       subscriptionStatus: 'trial',
-      suiteAccess: true,
+      spaceAccess: true,
     });
   } catch (error) {
     console.error('[session-core] Failed to create user in Firestore:', error);
@@ -434,7 +434,7 @@ async function createNewUserDocument(
     trialStartDate: now,
     trialEndDate: trialEndDate,
     subscriptionStatus: 'trial',
-    suiteAccess: true,
+    spaceAccess: true,
   };
 
   await userRef.set(userData);

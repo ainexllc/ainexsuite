@@ -13,38 +13,38 @@ import {
 } from "@ainexsuite/ui";
 import { useAppColors } from "@ainexsuite/theme";
 
-const INSIGHTS_STORAGE_KEY = "suite-insights-collapsed";
+const INSIGHTS_STORAGE_KEY = "space-insights-collapsed";
 
-interface SuiteInsightData {
+interface SpaceInsightData {
   dailySummary: string;
   topPriorities: string[];
   suggestions: string[];
   wellnessNote: string;
 }
 
-interface SuiteInsightsProps {
+interface SpaceInsightsProps {
   variant?: "default" | "sidebar" | "condensed";
   onExpand?: () => void;
 }
 
-export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsProps) {
+export function SpaceInsights({ variant = "default", onExpand }: SpaceInsightsProps) {
   const { user } = useAuth();
   const { primary } = useAppColors();
   const isCollapsed = useInsightsCollapsed(INSIGHTS_STORAGE_KEY);
 
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState<InsightCardData[]>([]);
-  const [data, setData] = useState<SuiteInsightData | null>(null);
+  const [data, setData] = useState<SpaceInsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const previousUserIdRef = useRef<string | null>(null);
 
-  const STORAGE_KEY = `ainex-suite-insights-${user?.uid || "anon"}`;
+  const STORAGE_KEY = `ainex-space-insights-${user?.uid || "anon"}`;
   const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
 
   const hasEnoughData = dashboardData.length >= 1;
 
-  const saveToCache = (insights: SuiteInsightData) => {
+  const saveToCache = (insights: SpaceInsightData) => {
     const cacheData = {
       insights,
       timestamp: Date.now(),
@@ -68,7 +68,7 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
         priority: item.priority,
       }));
 
-      const response = await fetch("/api/ai/suite-insights", {
+      const response = await fetch("/api/ai/space-insights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ insights: payload }),
@@ -89,7 +89,7 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
       saveToCache(result);
     } catch (err) {
       console.error(err);
-      setError("Could not analyze your suite data.");
+      setError("Could not analyze your space data.");
     } finally {
       setLoading(false);
     }
@@ -197,7 +197,7 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
   if (!user?.uid) return null;
 
   const errorMessage = error?.includes("API")
-    ? "AI features require configuration. Suite insights will be available once set up."
+    ? "AI features require configuration. Space insights will be available once set up."
     : error;
 
   // Show prompt if not enough data
@@ -212,9 +212,9 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
             <Sparkles className="h-4 w-4" style={{ color: primary }} />
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">AI Suite Insights</p>
+            <p className="text-sm font-medium text-foreground">AI Space Insights</p>
             <p className="text-xs text-muted-foreground">
-              Start using your apps to unlock AI-powered insights across your suite
+              Start using your apps to unlock AI-powered insights across your space
             </p>
           </div>
         </div>
@@ -224,12 +224,12 @@ export function SuiteInsights({ variant = "default", onExpand }: SuiteInsightsPr
 
   return (
     <AIInsightsCard
-      title="AI Suite Insights"
+      title="AI Space Insights"
       sections={sections}
       accentColor={primary}
       variant={variant}
       isLoading={loading}
-      loadingMessage="Analyzing your suite activity..."
+      loadingMessage="Analyzing your space activity..."
       error={errorMessage}
       lastUpdated={lastUpdated}
       onRefresh={generateInsights}

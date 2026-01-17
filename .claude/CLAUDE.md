@@ -375,11 +375,13 @@ Each app needs in Vercel:
 
 ## Rules
 
-1. **Build before push** - `pnpm build` must pass before pushing to main
-2. **Multi-app changes** - Apply consistently across all affected apps
-3. **Shared components** - Edit in `packages/ui`, not per-app
-4. **Types** - Define in `packages/types`
-5. **No force push/rebase** without explicit request
-6. **Use MCP servers** - Firebase, Resend, Namecheap MCPs are available
-7. **Check Vercel first** - Use `vercel ls` to see deployment status before debugging
-8. **GitHub operations** - Use `gh` CLI or GitHub MCP server for PRs, issues, and repo operations
+1. **Ask before build** - Always ask for user approval before running `pnpm build` locally
+2. **Ask before push** - Always ask for user approval before pushing code to the server (git push)
+3. **Build before push** - `pnpm build` must pass before pushing to main
+4. **Multi-app changes** - Apply consistently across all affected apps
+5. **Shared components** - Edit in `packages/ui`, not per-app
+6. **Types** - Define in `packages/types`
+7. **No force push/rebase** without explicit request
+8. **Use MCP servers** - Firebase, Resend, Namecheap MCPs are available
+9. **Check Vercel first** - Use `vercel ls` to see deployment status before debugging
+10. **GitHub operations** - Use `gh` CLI or GitHub MCP server for PRs, issues, and repo operations

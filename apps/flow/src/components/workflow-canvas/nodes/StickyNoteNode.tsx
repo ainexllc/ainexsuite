@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useState } from 'react';
-import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeResizer, useReactFlow, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 import { LockBadge } from './LockBadge';
 
@@ -14,7 +14,8 @@ interface StickyNoteNodeData extends Record<string, unknown> {
 
 export type StickyNoteNodeType = Node<StickyNoteNodeData, 'sticky-note'>;
 
-function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
+function StickyNoteNode({ id, data, selected }: NodeProps<StickyNoteNodeType>) {
+  const { setNodes } = useReactFlow();
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || '#713f12';
   const noteBg = (data.bgColor as string) || '#fef3c7'; // Solid amber
@@ -34,7 +35,15 @@ function StickyNoteNode({ data, selected }: NodeProps<StickyNoteNodeType>) {
     transition: 'opacity 0.2s',
   } as const;
 
-  const stopEditing = useCallback(() => setIsEditing(false), []);
+  const stopEditing = useCallback(() => {
+    setIsEditing(false);
+    // Update node data in parent state to trigger auto-save
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, label } } : node
+      )
+    );
+  }, [id, label, setNodes]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

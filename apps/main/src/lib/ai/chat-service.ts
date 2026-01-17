@@ -53,6 +53,81 @@ import {
   setNotePriority,
 } from './notes-service';
 
+// Analytics Service
+import {
+  getNoteStatistics,
+  getProductivityInsights,
+  getActivityTrends,
+  getChecklistProgress,
+  getLabelAnalytics,
+  getSpaceComparison,
+  getWeeklyDigest,
+  getActivityHeatmap,
+} from './analytics-service';
+
+// Content Analysis Service
+import {
+  analyzeNoteSentiment,
+  extractThemes,
+  generateSummary,
+  findSimilarNotes,
+  extractKeywords,
+  detectDuplicates,
+} from './content-analysis-service';
+
+// Suggestions Service
+import {
+  suggestLabels,
+  predictPriority,
+  suggestRelatedNotes,
+  suggestNextActions,
+  suggestOrganization,
+} from './suggestions-service';
+
+// Batch Operations Service
+import {
+  bulkUpdateNotes,
+  bulkArchive,
+  bulkDelete,
+  bulkLabel,
+  autoOrganize,
+} from './batch-service';
+
+// Writing Service
+import {
+  enhanceNote,
+  expandNote,
+  condenseNote,
+  formatNote,
+  translateNote,
+  type EnhancementType,
+  type ExpandStyle,
+  type CondenseTarget,
+  type FormatStyle,
+} from './writing-service';
+
+// Knowledge Service
+import {
+  getKnowledgeGraph,
+  getTopicClusters,
+  discoverInsights,
+} from './knowledge-service';
+
+// Planning Service
+import {
+  setDeadline,
+  getUpcomingDeadlines,
+  createReminder,
+  type RecurringType,
+} from './planning-service';
+
+// Wellness Service
+import {
+  getMoodTrends,
+  getEmotionalInsights,
+  getWellnessRecommendations,
+} from './wellness-service';
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -157,7 +232,7 @@ function resolveChecklistItem(
 /**
  * Format note for response
  */
-function formatNote(note: Note) {
+function formatNoteForResponse(note: Note) {
   return {
     id: note.id,
     title: note.title,
@@ -175,8 +250,8 @@ function formatNote(note: Note) {
 /**
  * Format notes list for response
  */
-function formatNotes(notes: Note[]) {
-  return notes.map(formatNote);
+function formatNotesForResponse(notes: Note[]) {
+  return notes.map(formatNoteForResponse);
 }
 
 // ============================================
@@ -263,7 +338,7 @@ async function executeFunction(userId: string, functionCall: FunctionCall): Prom
         );
         return JSON.stringify({
           success: true,
-          notes: formatNotes(notes),
+          notes: formatNotesForResponse(notes),
           count: notes.length,
         });
       }
@@ -273,7 +348,7 @@ async function executeFunction(userId: string, functionCall: FunctionCall): Prom
         const notes = await listNotes(userId, limit, args.spaceId as string | undefined);
         return JSON.stringify({
           success: true,
-          notes: formatNotes(notes),
+          notes: formatNotesForResponse(notes),
           count: notes.length,
         });
       }
@@ -289,7 +364,7 @@ async function executeFunction(userId: string, functionCall: FunctionCall): Prom
         });
         return JSON.stringify({
           success: true,
-          notes: formatNotes(notes),
+          notes: formatNotesForResponse(notes),
           count: notes.length,
         });
       }
@@ -427,7 +502,7 @@ async function executeFunction(userId: string, functionCall: FunctionCall): Prom
         const notes = await listFavorites(userId, args.spaceId as string | undefined);
         return JSON.stringify({
           success: true,
-          notes: formatNotes(notes),
+          notes: formatNotesForResponse(notes),
           count: notes.length,
         });
       }
@@ -523,7 +598,7 @@ async function executeFunction(userId: string, functionCall: FunctionCall): Prom
         return JSON.stringify({
           success: true,
           label: { id: label.id, name: label.name },
-          notes: formatNotes(notes),
+          notes: formatNotesForResponse(notes),
           count: notes.length,
         });
       }
@@ -573,7 +648,7 @@ async function executeFunction(userId: string, functionCall: FunctionCall): Prom
         const notes = await listArchivedNotes(userId, args.spaceId as string | undefined);
         return JSON.stringify({
           success: true,
-          notes: formatNotes(notes),
+          notes: formatNotesForResponse(notes),
           count: notes.length,
         });
       }
@@ -867,6 +942,530 @@ async function executeFunction(userId: string, functionCall: FunctionCall): Prom
           noteId: newNoteId,
           message: `Created copy of "${note.title}"`,
         });
+      }
+
+      // ============================================
+      // ANALYTICS & INSIGHTS
+      // ============================================
+      case 'getNoteStatistics': {
+        const stats = await getNoteStatistics(
+          userId,
+          args.spaceId as string | undefined,
+          (args.period as string) || 'all'
+        );
+        return JSON.stringify({ success: true, ...stats });
+      }
+
+      case 'getProductivityInsights': {
+        const insights = await getProductivityInsights(
+          userId,
+          (args.period as string) || 'month'
+        );
+        return JSON.stringify({ success: true, ...insights });
+      }
+
+      case 'getActivityTrends': {
+        const trends = await getActivityTrends(
+          userId,
+          (args.period as string) || 'month',
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...trends });
+      }
+
+      case 'getChecklistProgress': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        const progress = await getChecklistProgress(
+          userId,
+          noteId,
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...progress });
+      }
+
+      case 'getLabelAnalytics': {
+        const analytics = await getLabelAnalytics(
+          userId,
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...analytics });
+      }
+
+      case 'getSpaceComparison': {
+        const comparison = await getSpaceComparison(userId);
+        return JSON.stringify({ success: true, ...comparison });
+      }
+
+      case 'getWeeklyDigest': {
+        const digest = await getWeeklyDigest(
+          userId,
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...digest });
+      }
+
+      case 'getActivityHeatmap': {
+        const heatmap = await getActivityHeatmap(
+          userId,
+          (args.period as string) || 'month'
+        );
+        return JSON.stringify({ success: true, ...heatmap });
+      }
+
+      // ============================================
+      // CONTENT ANALYSIS
+      // ============================================
+      case 'analyzeNoteSentiment': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        // If analyzeRecent is true or no noteId is provided, analyze recent notes
+        const noteIdOrAnalyzeRecent: string = args.analyzeRecent || !noteId ? 'analyzeRecent' : noteId;
+        const sentiment = await analyzeNoteSentiment(
+          userId,
+          noteIdOrAnalyzeRecent,
+          args.limit as number | undefined
+        );
+        return JSON.stringify({ success: true, ...sentiment });
+      }
+
+      case 'extractThemes': {
+        const themes = await extractThemes(
+          userId,
+          args.spaceId as string | undefined,
+          args.limit as number | undefined
+        );
+        return JSON.stringify({ success: true, ...themes });
+      }
+
+      case 'generateSummary': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        const noteIdOrSummarizeRecent: string = args.summarizeRecent || !noteId ? 'summarizeRecent' : noteId;
+        const style = args.style as string | undefined;
+        const summaryStyle = style === 'detailed' ? 'detailed' : style === 'bullet-points' || style === 'bullets' ? 'bullet-points' : 'brief';
+        const summary = await generateSummary(
+          userId,
+          noteIdOrSummarizeRecent,
+          args.limit as number | undefined,
+          summaryStyle
+        );
+        return JSON.stringify({ success: true, ...summary });
+      }
+
+      case 'findSimilarNotes': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to find similar notes for',
+          });
+        }
+        const similar = await findSimilarNotes(
+          userId,
+          noteId,
+          args.threshold as number | undefined
+        );
+        return JSON.stringify({ success: true, ...similar });
+      }
+
+      case 'extractKeywords': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        const noteIdOrExtractFromRecent: string = args.extractFromRecent || !noteId ? 'extractFromRecent' : noteId;
+        const keywords = await extractKeywords(
+          userId,
+          noteIdOrExtractFromRecent,
+          args.limit as number | undefined
+        );
+        return JSON.stringify({ success: true, ...keywords });
+      }
+
+      case 'detectDuplicates': {
+        const duplicates = await detectDuplicates(
+          userId,
+          args.spaceId as string | undefined,
+          args.threshold as number | undefined
+        );
+        return JSON.stringify({ success: true, ...duplicates });
+      }
+
+      // ============================================
+      // SMART SUGGESTIONS
+      // ============================================
+      case 'suggestLabels': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to suggest labels for',
+          });
+        }
+        const suggestions = await suggestLabels(
+          userId,
+          noteId,
+          args.createMissing as boolean | undefined
+        );
+        return JSON.stringify({ success: true, ...suggestions });
+      }
+
+      case 'predictPriority': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to predict priority for',
+          });
+        }
+        const prediction = await predictPriority(userId, noteId);
+        return JSON.stringify({ success: true, ...prediction });
+      }
+
+      case 'suggestRelatedNotes': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to find related notes for',
+          });
+        }
+        const related = await suggestRelatedNotes(userId, noteId);
+        return JSON.stringify({ success: true, ...related });
+      }
+
+      case 'suggestNextActions': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to suggest actions for',
+          });
+        }
+        const actions = await suggestNextActions(userId, noteId);
+        return JSON.stringify({ success: true, ...actions });
+      }
+
+      case 'suggestOrganization': {
+        const suggestions = await suggestOrganization(
+          userId,
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...suggestions });
+      }
+
+      // ============================================
+      // BATCH OPERATIONS
+      // ============================================
+      case 'bulkUpdateNotes': {
+        const criteria = {
+          noteIds: args.noteIds as string[] | undefined,
+          searchQuery: args.searchQuery as string | undefined,
+        };
+        const updates = {
+          color: args.color as NoteColor | undefined,
+          priority: args.priority as NotePriority | undefined,
+          spaceId: args.spaceId as string | undefined,
+        };
+        const result = await bulkUpdateNotes(userId, criteria, updates);
+        return JSON.stringify(result);
+      }
+
+      case 'bulkArchive': {
+        const result = await bulkArchive(userId, {
+          noteIds: args.noteIds as string[] | undefined,
+          olderThanDays: args.olderThanDays as number | undefined,
+          color: args.color as NoteColor | undefined,
+          spaceId: args.spaceId as string | undefined,
+        });
+        return JSON.stringify(result);
+      }
+
+      case 'bulkDelete': {
+        const result = await bulkDelete(userId, {
+          noteIds: args.noteIds as string[] | undefined,
+          olderThanDays: args.olderThanDays as number | undefined,
+        });
+        return JSON.stringify(result);
+      }
+
+      case 'bulkLabel': {
+        const result = await bulkLabel(userId, {
+          noteIds: args.noteIds as string[] | undefined,
+          searchQuery: args.searchQuery as string | undefined,
+          addLabels: (args.addLabels as string[]) || [],
+          removeLabels: (args.removeLabels as string[]) || [],
+        });
+        return JSON.stringify(result);
+      }
+
+      case 'autoOrganize': {
+        const validActions = ['auto-label', 'auto-priority', 'archive-old', 'detect-duplicates', 'color-by-type', 'merge-similar'] as const;
+        const requestedActions = (args.actions as string[]) || ['auto-label', 'auto-priority'];
+        const filteredActions = requestedActions.filter((a): a is typeof validActions[number] =>
+          (validActions as readonly string[]).includes(a)
+        );
+        const result = await autoOrganize(userId, {
+          spaceId: args.spaceId as string | undefined,
+          actions: filteredActions,
+          dryRun: args.dryRun !== false, // Default to true for safety
+        });
+        return JSON.stringify(result);
+      }
+
+      // ============================================
+      // WRITING ASSISTANCE
+      // ============================================
+      case 'enhanceNote': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to enhance',
+          });
+        }
+        const result = await enhanceNote(
+          userId,
+          noteId,
+          (args.enhancementType as EnhancementType) || 'grammar',
+          args.applyChanges as boolean | undefined
+        );
+        return JSON.stringify({ success: true, ...result });
+      }
+
+      case 'expandNote': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to expand',
+          });
+        }
+        const result = await expandNote(
+          userId,
+          noteId,
+          args.focus as string | undefined,
+          args.style as ExpandStyle | undefined,
+          args.applyChanges as boolean | undefined
+        );
+        return JSON.stringify({ success: true, ...result });
+      }
+
+      case 'condenseNote': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to condense',
+          });
+        }
+        const result = await condenseNote(
+          userId,
+          noteId,
+          (args.targetLength as CondenseTarget) || 'brief',
+          args.applyChanges as boolean | undefined
+        );
+        return JSON.stringify({ success: true, ...result });
+      }
+
+      case 'formatNote': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to format',
+          });
+        }
+        const result = await formatNote(
+          userId,
+          noteId,
+          (args.formatStyle as FormatStyle) || 'sections',
+          args.applyChanges as boolean | undefined
+        );
+        return JSON.stringify({ success: true, ...result });
+      }
+
+      case 'translateNote': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to translate',
+          });
+        }
+        const result = await translateNote(
+          userId,
+          noteId,
+          args.targetLanguage as string,
+          args.replaceOriginal as boolean | undefined
+        );
+        return JSON.stringify({ success: true, ...result });
+      }
+
+      // ============================================
+      // KNOWLEDGE GRAPH
+      // ============================================
+      case 'getKnowledgeGraph': {
+        let centerNoteId = args.centerNoteId as string | undefined;
+        if (!centerNoteId && args.centerNoteTitle) {
+          const note = await resolveNote(userId, undefined, args.centerNoteTitle as string);
+          centerNoteId = note?.id;
+        }
+        const graph = await getKnowledgeGraph(
+          userId,
+          args.spaceId as string | undefined,
+          centerNoteId,
+          args.depth as number | undefined
+        );
+        return JSON.stringify({ success: true, ...graph });
+      }
+
+      case 'getTopicClusters': {
+        const clusters = await getTopicClusters(
+          userId,
+          args.spaceId as string | undefined,
+          args.maxClusters as number | undefined
+        );
+        return JSON.stringify({ success: true, ...clusters });
+      }
+
+      case 'discoverInsights': {
+        const insights = await discoverInsights(
+          userId,
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...insights });
+      }
+
+      // ============================================
+      // PLANNING TOOLS
+      // ============================================
+      case 'setDeadline': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to set a deadline for',
+          });
+        }
+        const result = await setDeadline(
+          userId,
+          noteId,
+          (args.itemId as string | undefined) || null,
+          args.deadline as string
+        );
+        return JSON.stringify({ success: true, ...result });
+      }
+
+      case 'getUpcomingDeadlines': {
+        const deadlines = await getUpcomingDeadlines(
+          userId,
+          args.spaceId as string | undefined,
+          args.days as number | undefined,
+          args.includeOverdue !== false
+        );
+        return JSON.stringify({ success: true, ...deadlines });
+      }
+
+      case 'createReminder': {
+        let noteId = args.noteId as string | undefined;
+        if (!noteId && args.noteTitle) {
+          const note = await resolveNote(userId, undefined, args.noteTitle as string);
+          noteId = note?.id;
+        }
+        if (!noteId) {
+          return JSON.stringify({
+            success: false,
+            message: 'Please specify a note to set a reminder for',
+          });
+        }
+        const result = await createReminder(
+          userId,
+          noteId,
+          args.reminderTime as string,
+          args.recurring as RecurringType | undefined
+        );
+        return JSON.stringify({ success: true, ...result });
+      }
+
+      // ============================================
+      // WELLNESS INSIGHTS
+      // ============================================
+      case 'getMoodTrends': {
+        const trends = await getMoodTrends(
+          userId,
+          (args.period as 'week' | 'month' | 'quarter') || 'month',
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...trends });
+      }
+
+      case 'getEmotionalInsights': {
+        const insights = await getEmotionalInsights(
+          userId,
+          args.spaceId as string | undefined
+        );
+        return JSON.stringify({ success: true, ...insights });
+      }
+
+      case 'getWellnessRecommendations': {
+        const recommendations = await getWellnessRecommendations(userId);
+        return JSON.stringify({ success: true, ...recommendations });
       }
 
       default:

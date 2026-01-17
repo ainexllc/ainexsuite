@@ -29,6 +29,7 @@ import {
 import { signOut as firebaseSignOut, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import type { User, UserPreferences } from '@ainexsuite/types';
 import { setThemeCookie, getThemeCookie, type ThemeValue } from '@ainexsuite/theme';
+import { getCachedSession, setCachedSession, invalidateCache, refreshCacheTimestamp } from './session-cache';
 
 // ============================================================================
 // Constants
@@ -175,28 +176,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize auth state from session cookie
   useEffect(() => {
-    const initAuth = async () => {
-      // Helper to sync Firebase Auth before setting user state
-      // This prevents race conditions where Firestore subscriptions start before Firebase Auth is ready
-      const syncFirebaseAuthFirst = async (): Promise<boolean> => {
-        try {
-          const tokenResponse = await fetch('/api/auth/custom-token', {
-            method: 'POST',
-            credentials: 'include',
-          });
+    // Helper to sync Firebase Auth before setting user state
+    // This prevents race conditions where Firestore subscriptions start before Firebase Auth is ready
+    const syncFirebaseAuthFirst = async (): Promise<boolean> => {
+      try {
+        const tokenResponse = await fetch('/api/auth/custom-token', {
+          method: 'POST',
+          credentials: 'include',
+        });
 
-          if (tokenResponse.ok) {
-            const { customToken } = await tokenResponse.json();
-            await signInWithCustomToken(auth, customToken);
-            return true;
-          }
-          return false;
-        } catch {
-          return false;
+        if (tokenResponse.ok) {
+          const { customToken } = await tokenResponse.json();
+          await signInWithCustomToken(auth, customToken);
+          return true;
         }
-      };
+        return false;
+      } catch {
+        return false;
+      }
+    };
 
-      // First, try dev localStorage session (dev mode fast path)
+    // Background validation for cached sessions
+    const validateSessionInBackground = async () => {
+      try {
+        // Quick check - just verify session cookie is valid (skip Firestore read)
+        const response = await fetch('/api/auth/session?quick=true', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          // Session invalid - clear cache and show login
+          console.warn('[Auth] Session validation failed - clearing cache');
+          invalidateCache();
+          clearDevSession();
+          setUser(null);
+          setAuthPhase('unauthenticated');
+          return;
+        }
+
+        // Session valid - sync Firebase Auth in background (for Firestore rules)
+        const firebaseAuthSynced = await syncFirebaseAuthFirst();
+        if (firebaseAuthSynced) {
+          refreshCacheTimestamp();
+        }
+      } catch {
+        // Network error - keep cached state, will retry on next page load
+        console.warn('[Auth] Background validation failed - keeping cached state');
+      }
+    };
+
+    const initAuth = async () => {
+      // 1. INSTANT HYDRATION: Check session cache first (sessionStorage - per tab)
+      const cached = getCachedSession();
+      if (cached) {
+        // Instantly show authenticated UI from cache
+        setUser(cached.user);
+        setAuthPhase('authenticated');
+
+        // Validate session in background (non-blocking)
+        validateSessionInBackground();
+        return;
+      }
+
+      // 2. DEV MODE: Try dev localStorage session (cross-port SSO)
       const devSession = getDevSession();
       if (devSession) {
         // Sync Firebase Auth BEFORE setting user state to prevent race conditions
@@ -210,10 +253,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setUser(devSession);
         setAuthPhase('authenticated');
+
+        // Cache for instant hydration on next page load
+        setCachedSession(devSession);
         return;
       }
 
-      // Check session cookie via API
+      // 3. FULL AUTH FLOW: Check session cookie via API (blocking, but only on first load)
       try {
         const response = await fetch('/api/auth/session', {
           method: 'GET',
@@ -243,7 +289,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               appsEligible: data.user.appsEligible || [],
               trialStartDate: data.user.trialStartDate || Date.now(),
               subscriptionStatus: data.user.subscriptionStatus || 'trial',
-              suiteAccess: data.user.suiteAccess ?? true,
+              spaceAccess: data.user.spaceAccess ?? true,
             };
 
             // Sync Firebase Auth BEFORE setting user state to prevent race conditions
@@ -258,7 +304,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(sessionUser);
             setAuthPhase('authenticated');
 
-            // Cache in dev localStorage for cross-port SSO
+            // Cache for instant hydration on next page load
+            setCachedSession(sessionUser);
+
+            // Also cache in dev localStorage for cross-port SSO
             if (process.env.NODE_ENV === 'development') {
               setDevSession(sessionUser);
             }
@@ -346,8 +395,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Ignore Firebase sign out errors
     }
 
-    // Clear dev localStorage session
+    // Clear all session caches
     clearDevSession();
+    invalidateCache();
 
     // Reset state
     setUser(null);

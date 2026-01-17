@@ -5,16 +5,17 @@ import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '../lib/store';
 import {
   subscribeToSpaceTasks,
-  subscribeToPersonalTasks
+  subscribeToPersonalTasks,
+  subscribeToSpaceGroups
 } from '../lib/firebase-service';
 
 /**
- * Syncs tasks from Firestore based on current space.
+ * Syncs tasks and groups from Firestore based on current space.
  * Spaces are managed by SpacesProvider (unified 'spaces' collection).
  */
 export function TodoFirestoreSync() {
   const { user } = useAuth();
-  const { currentSpaceId, setTasks } = useTodoStore();
+  const { currentSpaceId, setTasks, setGroups } = useTodoStore();
 
   // Sync Tasks for Current Space
   useEffect(() => {
@@ -33,6 +34,15 @@ export function TodoFirestoreSync() {
 
     return () => unsubTasks();
   }, [user, currentSpaceId, setTasks]);
+
+  // Sync Groups for Current Space
+  useEffect(() => {
+    if (!user || !currentSpaceId) return;
+
+    const unsubGroups = subscribeToSpaceGroups(currentSpaceId, user.uid, setGroups);
+
+    return () => unsubGroups();
+  }, [user, currentSpaceId, setGroups]);
 
   return null;
 }

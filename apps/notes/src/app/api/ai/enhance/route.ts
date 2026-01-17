@@ -4,23 +4,40 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getOpenRouterClient } from "@/lib/ai";
+import { getUserFromSession } from "@/lib/auth/server-verify";
+
+// Request validation schema with max length
+const MAX_TEXT_LENGTH = 50000; // 50KB limit
+
+const enhanceRequestSchema = z.object({
+  text: z.string().min(1, "Text is required").max(MAX_TEXT_LENGTH, `Text exceeds maximum length of ${MAX_TEXT_LENGTH} characters`),
+  task: z.enum(["improve", "simplify", "expand", "rewrite", "grammar"]),
+  tone: z.enum(["professional", "casual", "friendly", "formal"]).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { text, task, tone } = body as {
-      text: string;
-      task: "improve" | "simplify" | "expand" | "rewrite" | "grammar";
-      tone?: "professional" | "casual" | "friendly" | "formal";
-    };
-
-    if (!text || !task) {
+    // Authentication check (session cookie)
+    const user = await getUserFromSession();
+    if (!user) {
       return NextResponse.json(
-        { error: "Text and task are required" },
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Validate request body
+    const parseResult = enhanceRequestSchema.safeParse(await request.json());
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: parseResult.error.issues },
         { status: 400 }
       );
     }
+
+    const { text, task, tone } = parseResult.data;
 
     const client = getOpenRouterClient();
 
@@ -63,9 +80,7 @@ Return ONLY the enhanced text as plain text. Use paragraphs (blank lines between
   } catch (error) {
     console.error("AI Enhance Error:", error);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "An error occurred",
-      },
+      { error: "Failed to enhance text. Please try again." },
       { status: 500 }
     );
   }

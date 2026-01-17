@@ -1,5 +1,5 @@
 /**
- * Component Variants - AINexSuite Design System
+ * Component Variants - AINexSpace Design System
  *
  * Shared variant definitions using class-variance-authority (cva).
  * These variants ensure consistent component styling across all apps.

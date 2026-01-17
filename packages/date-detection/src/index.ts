@@ -1,7 +1,7 @@
 /**
  * @ainexsuite/date-detection
  *
- * Date detection and calendar integration for AINexSuite apps.
+ * Date detection and calendar integration for AINexSpace apps.
  * Detects natural language dates, relative dates, and times in text
  * and provides UI components for adding them to the calendar.
  */

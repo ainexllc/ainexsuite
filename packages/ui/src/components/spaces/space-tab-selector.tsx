@@ -1,9 +1,29 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Users, Settings } from 'lucide-react';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Users, Settings, User, Heart, Briefcase, UserPlus, Users2, FolderKanban } from 'lucide-react';
 import type { SpaceType } from '@ainexsuite/types';
 import { cn } from '../../lib/utils';
+
+const SPACE_COLORS: Record<SpaceType, string> = {
+  personal: '#3b82f6',
+  couple: '#ec4899',
+  family: '#8b5cf6',
+  work: '#f97316',
+  buddy: '#10b981',
+  squad: '#06b6d4',
+  project: '#6366f1',
+};
+
+const SPACE_ICONS: Record<SpaceType, typeof User> = {
+  personal: User,
+  couple: Heart,
+  family: Users,
+  work: Briefcase,
+  buddy: UserPlus,
+  squad: Users2,
+  project: FolderKanban,
+};
 
 export interface SpaceTabItem {
   id: string;
@@ -50,9 +70,12 @@ export function SpaceTabSelector({
   const [showRightArrow, setShowRightArrow] = useState(false);
 
   // Build the list of spaces to display
-  const displaySpaces: SpaceTabItem[] = showPersonal
-    ? [{ id: 'personal', name: personalLabel, type: 'personal' as SpaceType }, ...spaces.filter(s => s.id !== 'personal')]
-    : spaces;
+  const displaySpaces: SpaceTabItem[] = useMemo(() =>
+    showPersonal
+      ? [{ id: 'personal', name: personalLabel, type: 'personal' as SpaceType }, ...spaces.filter(s => s.id !== 'personal')]
+      : spaces,
+    [showPersonal, personalLabel, spaces]
+  );
 
   // Check scroll position to show/hide arrows
   const checkScroll = () => {
@@ -109,10 +132,14 @@ export function SpaceTabSelector({
         className="flex items-center justify-center gap-1 overflow-x-auto scrollbar-hide px-2 py-1 max-w-full"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <div className="flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800/50 p-1">
-          {displaySpaces.map((space) => {
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 flex-shrink-0">Space:</span>
+          <div className="flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800/50 p-1">
+            {displaySpaces.map((space) => {
             const isActive = space.id === currentSpaceId ||
               (space.id === 'personal' && !currentSpaceId);
+            const SpaceIcon = SPACE_ICONS[space.type] || User;
+            const spaceColor = SPACE_COLORS[space.type] || '#3b82f6';
 
             return (
               <button
@@ -120,16 +147,23 @@ export function SpaceTabSelector({
                 type="button"
                 onClick={() => onSpaceChange(space.id)}
                 className={cn(
-                  'px-4 py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap',
+                  'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap',
                   isActive
                     ? 'bg-[var(--color-primary)] text-white shadow-sm'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
                 )}
               >
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: spaceColor }}
+                >
+                  <SpaceIcon className="w-3 h-3 text-white" />
+                </div>
                 {space.name}
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 

@@ -21,7 +21,7 @@ interface CommandPaletteProps {
 }
 
 const defaultItems: CommandItem[] = [
-  // Apps section - navigate to other AinexSuite apps
+  // Apps section - navigate to other AinexSpace apps
   { id: 'app-main', label: 'Main Dashboard', description: 'Central hub', icon: <ExternalLink className="h-4 w-4" />, section: 'apps', onSelect: () => window.location.href = 'http://localhost:3000/workspace' },
   { id: 'app-notes', label: 'Notes', description: 'Colorful notes', icon: <ExternalLink className="h-4 w-4" />, section: 'apps', onSelect: () => window.location.href = 'http://localhost:3001/workspace' },
   { id: 'app-journal', label: 'Journal', description: 'Mood & reflections', icon: <ExternalLink className="h-4 w-4" />, section: 'apps', onSelect: () => window.location.href = 'http://localhost:3002/workspace' },

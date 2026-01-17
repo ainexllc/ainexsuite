@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState, useMemo } from 'react';
-import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
+import { useWorkspaceAuth, SpaceGuard } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, SpaceSettings, InviteMemberModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import type { SpaceSettingsItem, SettingsTab } from '@ainexsuite/ui';
 import type { SpaceType, SpaceRole } from '@ainexsuite/types';
@@ -290,7 +290,7 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <SuiteGuard appName="habits">
+    <SpaceGuard appName="habits">
       <SpacesProvider>
         <WorkspaceLayoutInner
           user={user}
@@ -308,6 +308,6 @@ export default function WorkspaceRootLayout({
           {children}
         </WorkspaceLayoutInner>
       </SpacesProvider>
-    </SuiteGuard>
+    </SpaceGuard>
   );
 }

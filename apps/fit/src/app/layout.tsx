@@ -49,7 +49,7 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: 'Fit - AINexSuite',
+  title: 'Fit - AINexSpace',
   description: 'Track workouts, nutrition, recipes, and body metrics with AI assistance',
   icons: {
     icon: '/favicon.svg',

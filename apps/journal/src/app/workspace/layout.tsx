@@ -85,11 +85,6 @@ function WorkspaceLayoutInner({
     }
   }, [router]);
 
-  // Handle AI assistant
-  const handleAiAssistantClick = useCallback(() => {
-    // TODO: Open AI assistant panel
-  }, []);
-
   // Handle settings click
   const handleSettingsClick = useCallback(() => {
     setSettingsModalOpen(true);
@@ -102,7 +97,6 @@ function WorkspaceLayoutInner({
         onSignOut={handleSignOut}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
         onSettingsClick={handleSettingsClick}
         notifications={[]}
         onUpdatePreferences={updatePreferences}

@@ -11,8 +11,8 @@ import type { User, AccountType } from '@ainexsuite/types';
 export function calculateAccountType(user: User): AccountType {
   const appsCount = user.appsEligible?.length || 0;
 
-  if (user.suiteAccess) {
-    return 'suite';
+  if (user.spaceAccess) {
+    return 'space';
   } else if (appsCount >= 2) {
     return 'multi-app';
   } else {
@@ -87,9 +87,9 @@ export function calculateTrialEndDate(trialStartDate: number | Date): number {
 
 /**
  * Check if user's trial is still active
- * NOTE: This function is exported from suite-utils.ts to avoid duplicate exports
+ * NOTE: This function is exported from space-utils.ts to avoid duplicate exports
  */
-// Commented out to avoid conflict with suite-utils export
+// Commented out to avoid conflict with space-utils export
 // export function isTrialActive(user: User): boolean {
 //   if (!user.trialStartDate) {
 //     return false;
@@ -158,9 +158,9 @@ export function getPreferredDomain(user: User, currentHostname: string): 'subdom
     return user.preferredDomain;
   }
 
-  // If multi-app or suite user, prefer subdomain for SSO
+  // If multi-app or space user, prefer subdomain for SSO
   const accountType = user.accountType || calculateAccountType(user);
-  if (accountType === 'multi-app' || accountType === 'suite') {
+  if (accountType === 'multi-app' || accountType === 'space') {
     return 'subdomain';
   }
 
@@ -173,13 +173,13 @@ export function getPreferredDomain(user: User, currentHostname: string): 'subdom
 }
 
 /**
- * Check if user should be redirected to suite dashboard
+ * Check if user should be redirected to space dashboard
  */
-export function shouldRedirectToSuite(user: User, currentHostname: string): boolean {
+export function shouldRedirectToSpace(user: User, currentHostname: string): boolean {
   const accountType = user.accountType || calculateAccountType(user);
 
-  // Multi-app or suite users on standalone domains should consider redirecting
-  if ((accountType === 'multi-app' || accountType === 'suite') &&
+  // Multi-app or space users on standalone domains should consider redirecting
+  if ((accountType === 'multi-app' || accountType === 'space') &&
       !currentHostname.includes('ainexspace.com')) {
     return true;
   }

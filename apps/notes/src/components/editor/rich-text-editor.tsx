@@ -1,13 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, forwardRef, useImperativeHandle, useState, useRef, useMemo } from 'react';
+import { useCallback, useEffect, forwardRef, useImperativeHandle, useRef, useMemo } from 'react';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Link from '@tiptap/extension-link';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import Highlight from '@tiptap/extension-highlight';
+import Color from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
 import { clsx } from 'clsx';
 import { EditorToolbar } from './editor-toolbar';
@@ -103,9 +104,8 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
           class: 'flex items-start gap-2',
         },
       }),
-      Highlight.configure({
-        multicolor: true,
-      }),
+      TextStyle,
+      Color,
       Underline,
     ], [placeholder]);
 
@@ -193,9 +193,6 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       editor,
     }));
 
-    // State for triggering link input in toolbar
-    const [showLinkInput, setShowLinkInput] = useState(false);
-
     // Helper to execute editor commands safely
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const runCommand = useCallback((fn: (chain: any) => any) => {
@@ -223,19 +220,10 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
               event.preventDefault();
               runCommand((c) => c.toggleUnderline());
               break;
-            case 'k':
-              event.preventDefault();
-              // Toggle link - if link exists, remove it; otherwise show toolbar link input
-              if (editor.isActive('link')) {
-                runCommand((c) => c.unsetLink());
-              } else if (showToolbar) {
-                setShowLinkInput(true);
-              }
-              break;
           }
         }
       },
-      [editor, runCommand, showToolbar]
+      [editor, runCommand]
     );
 
     if (!editor) {
@@ -248,8 +236,6 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
           <EditorToolbar
             editor={editor}
             className={toolbarClassName}
-            showLinkInputExternal={showLinkInput}
-            onLinkInputClosed={() => setShowLinkInput(false)}
             onImageClick={onImageClick}
             forceLightText={forceLightText}
             forceDarkText={forceDarkText}

@@ -93,7 +93,7 @@ export default function BlogPage() {
         {/* Header */}
         <div className="text-center space-y-6">
           <h1 className="text-4xl font-semibold text-white sm:text-5xl lg:text-6xl">
-            The AINexSuite Blog
+            The AINexSpace Blog
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
             Insights on productivity, habits, personal growth, and the science behind behavior change.

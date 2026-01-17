@@ -1,14 +1,11 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { LayoutGrid, Calendar, Sun, Grid2X2, Columns, X, CheckCircle2, Circle, ArrowLeft } from 'lucide-react';
+import { List, Sun, X, Trash2 } from 'lucide-react';
 import {
   WorkspacePageLayout,
   WorkspaceToolbar,
-  ActivityCalendar,
   ActiveFilterChips,
-  ListItem,
-  EmptyState,
   SpaceTabSelector,
   type ViewOption,
   type SortOption,
@@ -16,15 +13,13 @@ import {
   type FilterChip,
   type FilterChipType,
 } from '@ainexsuite/ui';
-import { format, isSameDay, parseISO } from 'date-fns';
 
 // Components
 import { TaskEditor } from '@/components/tasks/TaskEditor';
 import { TaskComposer } from '@/components/tasks/TaskComposer';
 import { TaskBoard } from '@/components/views/TaskBoard';
-import { TaskKanban } from '@/components/views/TaskKanban';
 import { MyDayView } from '@/components/views/MyDayView';
-import { EisenhowerMatrix } from '@/components/views/EisenhowerMatrix';
+import { TrashModal } from '@/components/tasks/trash-modal';
 import { TaskFilterContent, type TaskFilterValue } from '@/components/task-filter-content';
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -34,14 +29,11 @@ import { useTodoStore } from '@/lib/store';
 import type { TaskStatus } from '@/types/models';
 import type { Priority } from '@ainexsuite/types';
 
-type ViewType = 'list' | 'board' | 'my-day' | 'matrix' | 'calendar';
+type ViewType = 'list' | 'my-day';
 
 const VIEW_OPTIONS: ViewOption<ViewType>[] = [
-  { value: 'list', icon: LayoutGrid, label: 'List view' },
-  { value: 'board', icon: Columns, label: 'Board view' },
+  { value: 'list', icon: List, label: 'All Tasks' },
   { value: 'my-day', icon: Sun, label: 'My Day' },
-  { value: 'matrix', icon: Grid2X2, label: 'Eisenhower Matrix' },
-  { value: 'calendar', icon: Calendar, label: 'Calendar view' },
 ];
 
 const SORT_OPTIONS: SortOption[] = [
@@ -82,12 +74,6 @@ export default function TodoWorkspacePage() {
     }));
   }, [spaces]);
 
-  // Get current space name for placeholder
-  const currentSpaceName = useMemo(() => {
-    const space = spaces.find((s) => s.id === currentSpaceId);
-    return space?.name || 'Personal';
-  }, [spaces, currentSpaceId]);
-
   const [showEditor, setShowEditor] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(undefined);
   const [sort, setSort] = useState<SortConfig>({ field: 'createdAt', direction: 'desc' });
@@ -103,7 +89,7 @@ export default function TodoWorkspacePage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
+  const [isTrashModalOpen, setIsTrashModalOpen] = useState(false);
 
   // Resolve view from preference or default
   const view = (viewPreferences[currentSpaceId] as ViewType) || 'list';
@@ -114,50 +100,10 @@ export default function TodoWorkspacePage() {
     }
   }, [currentSpaceId, setViewPreference]);
 
-  // Calculate activity data for calendar view (based on due dates)
-  const activityData = useMemo(() => {
-    const data: Record<string, number> = {};
-    const spaceTasks = currentSpace
-      ? tasks.filter((t) => t.spaceId === currentSpace.id && !t.archived)
-      : tasks;
-
-    spaceTasks.forEach((task) => {
-      // Use dueDate for calendar view
-      if (task.dueDate) {
-        const date = task.dueDate.split('T')[0];
-        data[date] = (data[date] || 0) + 1;
-      }
-    });
-    return data;
+  // Get trashed tasks for showing trash icon
+  const trashedTasks = useMemo(() => {
+    return tasks.filter((t) => t.deletedAt && t.spaceId === currentSpace?.id);
   }, [tasks, currentSpace]);
-
-  // Get tasks for the selected calendar date
-  const tasksForSelectedDate = useMemo(() => {
-    if (!selectedCalendarDate) return [];
-    const spaceTasks = currentSpace
-      ? tasks.filter((t) => t.spaceId === currentSpace.id && !t.archived)
-      : tasks;
-
-    return spaceTasks.filter((task) => {
-      if (!task.dueDate) return false;
-      const dueDate = parseISO(task.dueDate);
-      return isSameDay(dueDate, selectedCalendarDate);
-    });
-  }, [tasks, currentSpace, selectedCalendarDate]);
-
-  const handleCalendarDateSelect = useCallback((date: Date) => {
-    setSelectedCalendarDate((prev) =>
-      prev && isSameDay(prev, date) ? null : date
-    );
-  }, []);
-
-  const handleToggleTaskComplete = useCallback(async (taskId: string) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-    const { updateTask } = useTodoStore.getState();
-    const newStatus = task.status === 'done' ? 'todo' : 'done';
-    await updateTask(taskId, { status: newStatus });
-  }, [tasks]);
 
   // Generate filter chips for active filters
   const filterChips = useMemo(() => {
@@ -324,27 +270,12 @@ export default function TodoWorkspacePage() {
     {
       key: '1',
       action: () => handleSetView('list'),
-      description: 'List view',
+      description: 'All Tasks view',
     },
     {
       key: '2',
-      action: () => handleSetView('board'),
-      description: 'Board view',
-    },
-    {
-      key: '3',
       action: () => handleSetView('my-day'),
       description: 'My Day view',
-    },
-    {
-      key: '4',
-      action: () => handleSetView('matrix'),
-      description: 'Matrix view',
-    },
-    {
-      key: '5',
-      action: () => handleSetView('calendar'),
-      description: 'Calendar view',
     },
   ], [handleSetView, isSearchOpen]);
 
@@ -352,8 +283,6 @@ export default function TodoWorkspacePage() {
     enabled: !showEditor,
     shortcuts: keyboardShortcuts,
   });
-
-  const isCalendarView = view === 'calendar';
 
   return (
     <>
@@ -368,7 +297,7 @@ export default function TodoWorkspacePage() {
             />
           )
         }
-        composer={<TaskComposer placeholder={`Create a new todo for ${currentSpaceName}...`} />}
+        composer={<TaskComposer placeholder="Create todo" />}
         toolbar={
           <div className="space-y-2">
             {isSearchOpen && (
@@ -393,20 +322,35 @@ export default function TodoWorkspacePage() {
                 </div>
               </div>
             )}
-            <WorkspaceToolbar
-              viewMode={view}
-              onViewModeChange={handleSetView}
-              viewOptions={VIEW_OPTIONS}
-              onSearchClick={handleSearchToggle}
-              isSearchActive={isSearchOpen || !!searchQuery}
-              filterContent={<TaskFilterContent filters={filters} onFiltersChange={setFilters} sort={sort} />}
-              activeFilterCount={activeFilterCount}
-              onFilterReset={handleFilterReset}
-              sort={sort}
-              onSortChange={setSort}
-              sortOptions={SORT_OPTIONS}
-              viewPosition="right"
-            />
+            <div className="flex items-center gap-2">
+              <WorkspaceToolbar
+                viewMode={view}
+                onViewModeChange={handleSetView}
+                viewOptions={VIEW_OPTIONS}
+                onSearchClick={handleSearchToggle}
+                isSearchActive={isSearchOpen || !!searchQuery}
+                filterContent={<TaskFilterContent filters={filters} onFiltersChange={setFilters} sort={sort} />}
+                activeFilterCount={activeFilterCount}
+                onFilterReset={handleFilterReset}
+                sort={sort}
+                onSortChange={setSort}
+                sortOptions={SORT_OPTIONS}
+                viewPosition="right"
+                viewTrailingContent={
+                  <button
+                    onClick={() => setIsTrashModalOpen(true)}
+                    className={`p-1.5 rounded-md hover:bg-foreground/10 transition-colors ${
+                      trashedTasks.length > 0
+                        ? 'text-foreground/70 hover:text-foreground'
+                        : 'text-foreground/30 hover:text-foreground/50'
+                    }`}
+                    title={trashedTasks.length > 0 ? `Trash (${trashedTasks.length})` : 'Trash is empty'}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                }
+              />
+            </div>
             {filterChips.length > 0 && (
               <ActiveFilterChips
                 chips={filterChips}
@@ -421,104 +365,17 @@ export default function TodoWorkspacePage() {
       >
         {/* Content Area */}
         <div className="min-h-[60vh]">
-          {isCalendarView ? (
-            <div className="space-y-6">
-              <ActivityCalendar
-                activityData={activityData}
-                size="large"
-                selectedDate={selectedCalendarDate ?? undefined}
-                onDateSelect={handleCalendarDateSelect}
-              />
+          {view === 'list' && (
+            <TaskBoard
+              searchQuery={searchQuery}
+            />
+          )}
 
-              {/* Date drill-down: show tasks for selected date */}
-              {selectedCalendarDate && (
-                <div className="bg-background/40 backdrop-blur-sm rounded-xl border border-border p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setSelectedCalendarDate(null)}
-                        className="p-1.5 hover:bg-foreground/10 rounded-full transition-colors"
-                      >
-                        <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-                      </button>
-                      <h3 className="text-lg font-semibold text-foreground">
-                        Tasks for {format(selectedCalendarDate, 'MMMM d, yyyy')}
-                      </h3>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {tasksForSelectedDate.length} task{tasksForSelectedDate.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-
-                  {tasksForSelectedDate.length > 0 ? (
-                    <div className="space-y-2">
-                      {tasksForSelectedDate.map((task) => (
-                        <ListItem
-                          key={task.id}
-                          variant="default"
-                          title={
-                            <span className={task.status === 'done' ? 'line-through text-muted-foreground' : ''}>
-                              {task.title}
-                            </span>
-                          }
-                          subtitle={task.description || undefined}
-                          icon={task.status === 'done' ? CheckCircle2 : Circle}
-                          onClick={(e) => {
-                            const target = e.target as HTMLElement;
-                            const isIconClick = target.closest('svg')?.parentElement?.classList.contains('flex-shrink-0');
-                            if (isIconClick) {
-                              handleToggleTaskComplete(task.id);
-                            } else {
-                              setSelectedTaskId(task.id);
-                              setShowEditor(true);
-                            }
-                          }}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyState
-                      icon={Calendar}
-                      title="No tasks due"
-                      description="No tasks are due on this date. Click the + button to add one."
-                      variant="default"
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              {view === 'list' && (
-                <TaskBoard
-                  onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
-                  searchQuery={searchQuery}
-                />
-              )}
-
-              {view === 'board' && (
-                <div className="overflow-x-auto">
-                  <TaskKanban
-                    onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
-                    searchQuery={searchQuery}
-                  />
-                </div>
-              )}
-
-              {view === 'my-day' && (
-                <MyDayView
-                  onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
-                  searchQuery={searchQuery}
-                />
-              )}
-
-              {view === 'matrix' && (
-                <EisenhowerMatrix
-                  onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
-                  searchQuery={searchQuery}
-                />
-              )}
-            </>
+          {view === 'my-day' && (
+            <MyDayView
+              onEditTask={(id) => { setSelectedTaskId(id); setShowEditor(true); }}
+              searchQuery={searchQuery}
+            />
           )}
         </div>
       </WorkspacePageLayout>
@@ -532,6 +389,12 @@ export default function TodoWorkspacePage() {
 
       {/* Keyboard Shortcuts Help */}
       <KeyboardShortcutsHelp isOpen={showHelp} onClose={closeHelp} />
+
+      {/* Trash Modal */}
+      <TrashModal
+        isOpen={isTrashModalOpen}
+        onClose={() => setIsTrashModalOpen(false)}
+      />
     </>
   );
 }

@@ -146,6 +146,7 @@ export interface CreateNoteParams {
   color?: string;
   pinned?: boolean;
   type?: 'text' | 'checklist';
+  items?: string[];
 }
 
 export interface UpdateNoteParams {
@@ -155,6 +156,7 @@ export interface UpdateNoteParams {
   color?: string;
   pinned?: boolean;
   archived?: boolean;
+  items?: string[];
 }
 
 export interface DeleteNoteParams {
@@ -169,6 +171,42 @@ export interface TogglePinParams {
 export interface ToggleArchiveParams {
   noteId: string;
   archived: boolean;
+}
+
+export interface MoveNoteParams {
+  noteId: string;
+  targetSpaceId: string;
+}
+
+export interface ChangeNoteColorParams {
+  noteId: string;
+  color: string;
+}
+
+export interface DuplicateNoteParams {
+  noteId: string;
+  targetSpaceId?: string;
+}
+
+export interface ChangeNotePriorityParams {
+  noteId: string;
+  priority: 'high' | 'medium' | 'low' | 'none';
+}
+
+export interface ManageNoteLabelsParams {
+  noteId: string;
+  labelIds?: string[];
+  labelNames: string[];
+  action: 'add' | 'remove' | 'set';
+}
+
+export interface GetNoteContentParams {
+  noteId: string;
+}
+
+export interface SearchNotesSemanticParams {
+  query: string;
+  limit?: number;
 }
 
 export type ToolCallParams =

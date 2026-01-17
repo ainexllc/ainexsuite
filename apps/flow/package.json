@@ -2,7 +2,7 @@
   "name": "@ainexsuite/flow",
   "version": "1.0.0",
   "private": true,
-  "description": "AINexSuite flow app for visual flow automation and building",
+  "description": "AINexSpace flow app for visual flow automation and building",
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3010}",
     "build": "next build",

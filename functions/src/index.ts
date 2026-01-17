@@ -1,5 +1,5 @@
 /**
- * Firebase Cloud Functions for AINexSuite
+ * Firebase Cloud Functions for AINexSpace
  *
  * Functions:
  * 1. generateSessionCookie - Creates SSO session cookies on .ainexspace.com domain
@@ -80,18 +80,18 @@ export const generateSessionCookie = functions
             pulse: false,
             fit: false,
           },
-          // Suite upsell tracking
+          // Space upsell tracking
           appsUsed: {},
           trialStartDate: now,
           subscriptionStatus: 'trial',
-          suiteAccess: false,
+          spaceAccess: false,
         };
 
         await admin.firestore().collection('users').doc(decodedToken.uid).set(userData);
       } else {
         userData = userDoc.data() || {};
 
-        // Migrate existing users to new Suite tracking fields if needed
+        // Migrate existing users to new Space tracking fields if needed
         const updateFields: Record<string, unknown> = {
           lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
         };
@@ -105,8 +105,8 @@ export const generateSessionCookie = functions
         if (!userData?.subscriptionStatus) {
           updateFields.subscriptionStatus = 'trial';
         }
-        if (userData?.suiteAccess === undefined) {
-          updateFields.suiteAccess = false;
+        if (userData?.spaceAccess === undefined) {
+          updateFields.spaceAccess = false;
         }
         
         // Only update if there are fields to migrate
@@ -253,7 +253,7 @@ function buildDefaultSystemPrompt(
   userData: Record<string, unknown> | undefined,
   userContext: Record<string, unknown> | undefined
 ): string {
-  const basePrompt = `You are the AI assistant for the ${appName} app, part of the AINexSuite productivity suite.
+  const basePrompt = `You are the AI assistant for the ${appName} app, part of the AINexSpace productivity suite.
 
 User Information:
 - Name: ${userData?.displayName || 'User'}
@@ -276,3 +276,6 @@ export { processVideoBackground } from './video-transcoding';
 
 // Scheduled cleanup tasks
 export { cleanupTrashedNotes } from './trash-cleanup';
+
+// AI functions with Genkit streaming
+export { lumiChat, lumiChatStream, searchNotesAI } from './ai/lumi-chat';

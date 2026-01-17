@@ -17,9 +17,9 @@ export type { WorkspaceInsightsResult };
 const INSIGHTS_STORAGE_KEY = "main-ai-insights-expanded";
 
 /**
- * Suite insight data schema from API
+ * Space insight data schema from API
  */
-interface SuiteInsightData {
+interface SpaceInsightData {
   dailySummary: string;
   topPriorities: string[];
   suggestions: string[];
@@ -67,8 +67,8 @@ function calculateActivityStats(insights: InsightCardData[]): ActivityStats {
  * Build insight sections from API data
  * Uses animated AI icons for the expanded pulldown display
  */
-function buildSuiteSections(
-  data: SuiteInsightData,
+function buildSpaceSections(
+  data: SpaceInsightData,
   primaryColor: string,
   localStats?: object
 ): AIInsightsPulldownSection[] {
@@ -146,8 +146,8 @@ function buildSuiteSections(
 }
 
 /**
- * Suite workspace insights hook.
- * Uses the shared useWorkspaceInsights hook with suite-specific configuration.
+ * Space workspace insights hook.
+ * Uses the shared useWorkspaceInsights hook with space-specific configuration.
  * Aggregates data from all apps via SmartDashboardService.
  */
 export function useWorkspaceInsights(): WorkspaceInsightsResult {
@@ -189,21 +189,21 @@ export function useWorkspaceInsights(): WorkspaceInsightsResult {
   }, [insights]);
 
   // Config for the shared hook
-  const config: WorkspaceInsightsConfig<typeof apiPayloadData[0], SuiteInsightData> = useMemo(
+  const config: WorkspaceInsightsConfig<typeof apiPayloadData[0], SpaceInsightData> = useMemo(
     () => ({
-      appName: "suite",
+      appName: "space",
       expandedStorageKey: INSIGHTS_STORAGE_KEY,
-      apiEndpoint: "/api/ai/suite-insights",
+      apiEndpoint: "/api/ai/space-insights",
 
       preparePayload: (data) => ({
         insights: data,
       }),
 
-      buildSections: buildSuiteSections,
+      buildSections: buildSpaceSections,
 
-      title: () => "Suite Insights",
+      title: () => "Space Insights",
 
-      loadingMessage: "Analyzing your suite activity...",
+      loadingMessage: "Analyzing your space activity...",
       minimumDataCount: 1,
 
       // Calculate activity stats client-side

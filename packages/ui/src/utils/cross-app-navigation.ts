@@ -1,6 +1,6 @@
 /**
  * Cross-app navigation utilities
- * Handles navigation between different apps in the AinexSuite with automatic authentication
+ * Handles navigation between different apps in the AinexSpace with automatic authentication
  */
 
 import { getAppUrl } from '../config/apps';

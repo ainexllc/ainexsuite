@@ -1,5 +1,5 @@
 /**
- * App Registry - Complete list of all AINexSuite applications
+ * App Registry - Complete list of all AINexSpace applications
  * Single source of truth for app configuration and metadata
  */
 
@@ -39,7 +39,7 @@ export interface AppConfig {
 }
 
 /**
- * Complete registry of all AINexSuite applications
+ * Complete registry of all AINexSpace applications
  */
 export const APP_REGISTRY: Record<AppSlug, AppConfig> = {
   main: {

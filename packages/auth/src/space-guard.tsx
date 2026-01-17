@@ -1,24 +1,24 @@
 /**
- * Suite Guard Component
- * Protects apps and enforces Suite access requirements
+ * Space Guard Component
+ * Protects apps and enforces Space access requirements
  */
 
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './context';
-import { canAccessApp, getSubscriptionSummary, type AppName } from './suite-utils';
+import { canAccessApp, getSubscriptionSummary, type AppName } from './space-utils';
 import { db } from '@ainexsuite/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
-interface SuiteGuardProps {
+interface SpaceGuardProps {
   appName: AppName;
   children: React.ReactNode;
   PaywallComponent?: React.ComponentType<{ message: string; daysRemaining?: number; onUpgrade?: () => void }>;
   LoadingComponent?: React.ComponentType<{ message?: string }>;
 }
 
-export function SuiteGuard({ appName, children, PaywallComponent, LoadingComponent }: SuiteGuardProps) {
+export function SpaceGuard({ appName, children, PaywallComponent, LoadingComponent }: SpaceGuardProps) {
   const { user, loading } = useAuth();
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [accessAllowed, setAccessAllowed] = useState(false);
@@ -126,9 +126,9 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-background rounded-2xl shadow-xl border border-border p-8 text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Suite Access Required</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Space Access Required</h2>
           <p className="text-muted-foreground mb-6">
-            You need Suite access to use multiple apps. Your 30-day trial has expired.
+            You need Space access to use multiple apps. Your 30-day trial has expired.
           </p>
           <button
             onClick={() => {
@@ -138,7 +138,7 @@ export function SuiteGuard({ appName, children, PaywallComponent, LoadingCompone
             }}
             className="w-full bg-accent-500 hover:bg-accent-600 text-foreground font-semibold py-3 px-6 rounded-lg transition-colors"
           >
-            Upgrade to Suite
+            Upgrade to Space
           </button>
         </div>
       </div>

@@ -81,6 +81,40 @@ export async function deleteTaskFromDb(taskId: string) {
   await deleteDoc(taskRef);
 }
 
+// Soft delete - move to trash (30-day retention)
+export async function softDeleteTask(taskId: string) {
+  const taskRef = doc(db, 'tasks', taskId);
+  await updateDoc(taskRef, {
+    deletedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+// Restore from trash
+export async function restoreTaskFromTrash(taskId: string) {
+  const taskRef = doc(db, 'tasks', taskId);
+  await updateDoc(taskRef, {
+    deletedAt: deleteField(),
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+// Permanently delete (used for emptying trash)
+export async function permanentlyDeleteTask(taskId: string) {
+  const taskRef = doc(db, 'tasks', taskId);
+  await deleteDoc(taskRef);
+}
+
+// Permanently delete all trashed tasks
+export async function permanentlyDeleteAllTrashedTasks(taskIds: string[]) {
+  const batch = writeBatch(db);
+  for (const taskId of taskIds) {
+    const taskRef = doc(db, 'tasks', taskId);
+    batch.delete(taskRef);
+  }
+  await batch.commit();
+}
+
 export function subscribeToSpaceTasks(spaceId: string, userId: string, callback: (tasks: Task[]) => void) {
   // Query by spaceId only - security rules allow read if user is a space member
   // (see firestore.rules lines 274-280: allows read if user in todo_spaces/{spaceId}.memberUids)

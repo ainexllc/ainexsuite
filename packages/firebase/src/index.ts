@@ -1,6 +1,6 @@
 /**
  * @ainexsuite/firebase
- * Firebase SDK integration for all AINexSuite apps
+ * Firebase SDK integration for all AINexSpace apps
  */
 
 export * from './config';
@@ -22,3 +22,4 @@ export * from './profile-images';
 export * from './animated-avatars';
 export * from './space-query-helpers';
 export * from './space-migration';
+export * from './bot-avatars';

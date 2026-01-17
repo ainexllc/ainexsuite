@@ -1,4 +1,4 @@
-export const SUITE_APPS = {
+export const SPACE_APPS = {
   notes: {
     name: 'Notes',
     slug: 'notes',
@@ -92,7 +92,7 @@ export const SUITE_APPS = {
   },
 } as const;
 
-export type AppSlug = keyof typeof SUITE_APPS;
+export type AppSlug = keyof typeof SPACE_APPS;
 
 export function getAppUrl(slug: string, isDev: boolean = false): string {
   const portMap: Record<string, number> = {

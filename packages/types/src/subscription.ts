@@ -101,16 +101,6 @@ export interface SubscriptionPlan {
  * Maps subscription tiers to Stripe product IDs and prices
  */
 export const STRIPE_PRODUCTS = {
-  'single-app': {
-    productId: 'prod_TSZfPaoma0SjJn',
-    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_SINGLE_APP_PRICE_ID || '',
-    price: 2.99,
-  },
-  'three-apps': {
-    productId: 'prod_TSZfYyEMgPZ9N4',
-    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_THREE_APPS_PRICE_ID || '',
-    price: 5.99,
-  },
   pro: {
     productId: 'prod_TSZaHygYbs8rg8',
     monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || '',
@@ -126,13 +116,27 @@ export const STRIPE_PRODUCTS = {
 /**
  * Default subscription plans with pricing and limits
  * Tiers:
+ * - free: Free tier with limited features
  * - trial: 30-day free trial (all 8 apps, 200 queries/month)
- * - single-app: $2.99/month for 1 app (200 queries/month)
- * - three-apps: $5.99/month for 3 apps (500 queries/month)
  * - pro: $7.99/month for all 8 apps (2,000 queries/month)
  * - premium: $14.99/month for all 8 apps (10,000+ queries/month)
  */
 export const DEFAULT_SUBSCRIPTION_PLANS: Record<SubscriptionTier, Omit<SubscriptionPlan, 'stripePriceId' | 'stripeYearlyPriceId'>> = {
+  free: {
+    tier: 'free',
+    name: 'Free',
+    description: 'Get started with basic features at no cost.',
+    price: 0,
+    queryLimit: 50,
+    appCount: 8,
+    features: [
+      'Access to all 8 apps',
+      '50 AI queries per month',
+      'Basic features',
+      'Web access',
+      'Community support',
+    ],
+  },
   trial: {
     tier: 'trial',
     name: 'Free Trial',
@@ -148,40 +152,6 @@ export const DEFAULT_SUBSCRIPTION_PLANS: Record<SubscriptionTier, Omit<Subscript
       'Community support',
       'Data export',
       '30 days free, then upgrade or cancel',
-    ],
-  },
-  'single-app': {
-    tier: 'single-app',
-    name: 'Single App',
-    description: 'Perfect for focused users who want one app.',
-    price: 2.99,
-    queryLimit: 200,
-    appCount: 1,
-    features: [
-      'Access to 1 app of your choice',
-      '200 AI queries per month',
-      'Basic AI insights',
-      'Web access',
-      'Community support',
-      'Data export',
-      'Cancel anytime',
-    ],
-  },
-  'three-apps': {
-    tier: 'three-apps',
-    name: '3-App Bundle',
-    description: 'Access to 3 apps of your choice.',
-    price: 5.99,
-    queryLimit: 500,
-    appCount: 3,
-    features: [
-      'Access to 3 apps of your choice',
-      '500 AI queries per month',
-      'Basic AI insights',
-      'Web access',
-      'Community support',
-      'Data export',
-      'Cancel anytime',
     ],
   },
   pro: {

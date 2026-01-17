@@ -129,10 +129,10 @@ export function MainOverviewIcon({ size = 24, color = "#f97316", isAnimating = t
 }
 
 // ============================================================================
-// 5. Main Suite - Rotating modules
+// 5. Main Space - Rotating modules
 // ============================================================================
 
-export function MainSuiteIcon({ size = 24, color = "#f97316", isAnimating = true, className, style }: AnimatedIconProps) {
+export function MainSpaceIcon({ size = 24, color = "#f97316", isAnimating = true, className, style }: AnimatedIconProps) {
   const rotateVariants: Variants = {
     idle: { rotate: 0 },
     animate: { rotate: 360, transition: { duration: 8, repeat: Infinity, ease: "linear" } },
@@ -913,7 +913,7 @@ export const AppIconsGroup1 = {
   MainHome: MainHomeIcon,
   MainHub: MainHubIcon,
   MainOverview: MainOverviewIcon,
-  MainSuite: MainSuiteIcon,
+  MainSpace: MainSpaceIcon,
   MainNotifications: MainNotificationsIcon,
   MainSearch: MainSearchIcon,
   MainSettings: MainSettingsIcon,

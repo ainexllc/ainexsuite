@@ -1,0 +1,29 @@
+# Firebase Extensions Manifest
+# Deploy with: firebase deploy --only extensions
+
+extensions:
+  firestore-vector-search:
+    # Vector Search Extension for Notes AI
+    specVersion: v0.1.0
+    params:
+      # Collection containing documents to embed
+      # Notes are stored at users/{userId}/notes
+      COLLECTION_PATH: users/{userId}/notes
+
+      # Field containing text content to embed
+      INPUT_FIELD_NAME: searchContent
+
+      # Field to store the generated embedding vector
+      OUTPUT_FIELD_NAME: embedding
+
+      # Embedding provider (gemini for free tier)
+      EMBEDDING_MODEL: gemini
+
+      # Distance measure for similarity calculations
+      DISTANCE_MEASURE: COSINE
+
+      # Backfill existing documents with embeddings
+      DO_BACKFILL: "true"
+
+      # Cloud Functions location
+      LOCATION: us-central1

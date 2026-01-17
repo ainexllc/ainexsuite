@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeResizer, useReactFlow, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 import { LockBadge } from './LockBadge';
 
@@ -15,7 +15,8 @@ interface SubprocessNodeData extends Record<string, unknown> {
 
 export type SubprocessNodeType = Node<SubprocessNodeData, 'subprocess'>;
 
-function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
+function SubprocessNode({ id, data, selected }: NodeProps<SubprocessNodeType>) {
+  const { setNodes } = useReactFlow();
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const nodeBgColor = (data.bgColor as string) || '#1a1a1a';
@@ -37,8 +38,23 @@ function SubprocessNode({ data, selected }: NodeProps<SubprocessNodeType>) {
     transition: 'opacity 0.2s',
   } as const;
 
-  const stopEditingLabel = useCallback(() => setIsEditingLabel(false), []);
-  const stopEditingDetail = useCallback(() => setIsEditingDetail(false), []);
+  const stopEditingLabel = useCallback(() => {
+    setIsEditingLabel(false);
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, label } } : node
+      )
+    );
+  }, [id, label, setNodes]);
+
+  const stopEditingDetail = useCallback(() => {
+    setIsEditingDetail(false);
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, detail } } : node
+      )
+    );
+  }, [id, detail, setNodes]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

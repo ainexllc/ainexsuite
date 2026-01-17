@@ -47,7 +47,7 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            AINexSuite is a comprehensive productivity platform that brings together AI-powered tools
+            AINexSpace is a comprehensive productivity platform that brings together AI-powered tools
             to help you track, understand, and improve every aspect of your life.
           </p>
         </div>
@@ -64,13 +64,13 @@ export default function AboutPage() {
               </h2>
               <p className="text-white/70 leading-relaxed">
                 We believe that everyone has the capacity for growth, but modern life makes it hard to
-                track progress and stay consistent. That’s why we created AINexSuite—a unified platform
+                track progress and stay consistent. That&apos;s why we created AINexSpace—a unified platform
                 that makes self-improvement intuitive, insightful, and sustainable.
               </p>
               <p className="text-white/70 leading-relaxed">
                 Our AI-powered apps work together to give you a complete picture of your habits, goals,
                 and growth. Whether you’re journaling, tracking fitness, managing tasks, or building new
-                habits, AINexSuite provides the insights you need to keep moving forward.
+                habits, AINexSpace provides the insights you need to keep moving forward.
               </p>
             </div>
             <div className="space-y-4">
@@ -129,7 +129,7 @@ export default function AboutPage() {
             <h2 className="text-3xl font-semibold text-white sm:text-4xl text-center">Our Story</h2>
             <div className="space-y-4 text-white/70 leading-relaxed">
               <p>
-                AINexSuite was born from a simple observation: people want to improve themselves, but
+                AINexSpace was born from a simple observation: people want to improve themselves, but
                 existing tools are fragmented, overwhelming, or lack the intelligence to provide real insights.
               </p>
               <p>
@@ -139,7 +139,7 @@ export default function AboutPage() {
                 that no single tool could achieve alone.
               </p>
               <p>
-                Today, AINexSuite brings together 8 specialized apps into one powerful suite. Each app is
+                Today, AINexSpace brings together 8 specialized apps into one powerful space. Each app is
                 designed to excel at its specific function while contributing to a holistic view of your
                 personal growth journey.
               </p>
@@ -155,7 +155,7 @@ export default function AboutPage() {
         <div className="text-center space-y-6 py-8">
           <h2 className="text-3xl font-semibold text-white sm:text-4xl">Ready to Get Started?</h2>
           <p className="text-white/70 max-w-2xl mx-auto">
-            Join thousands of users who are already using AINexSuite to transform their productivity
+            Join thousands of users who are already using AINexSpace to transform their productivity
             and achieve their goals.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

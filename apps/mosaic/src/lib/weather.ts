@@ -72,7 +72,7 @@ export async function getLocationFromSearch(query: string) {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'AinexSuite-Weather-App',
+        'User-Agent': 'AinexSpace-Weather-App',
         'Accept': 'application/json'
       }
     });
@@ -134,7 +134,7 @@ export async function getLocationSuggestions(query: string): Promise<Array<{ nam
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'AinexSuite-Weather-App',
+        'User-Agent': 'AinexSpace-Weather-App',
         'Accept': 'application/json'
       }
     });
@@ -190,7 +190,7 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'AinexSuite-Weather-App',
+        'User-Agent': 'AinexSpace-Weather-App',
         'Accept': 'application/json'
       }
     });

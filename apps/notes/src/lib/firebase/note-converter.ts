@@ -4,6 +4,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import type { Note, NoteDoc, NoteCollaborator } from "@/lib/types/note";
+import { migrateNoteColor } from "@/lib/constants/note-colors";
 
 function toDate(value?: Timestamp | null) {
   return value instanceof Timestamp ? value.toDate() : new Date();
@@ -58,7 +59,7 @@ export const noteConverter: FirestoreDataConverter<Note> = {
       body: data.body,
       type: data.type,
       checklist: data.checklist ?? [],
-      color: (data.color ?? "default") as NoteDoc["color"],
+      color: migrateNoteColor(data.color) as NoteDoc["color"],
       pattern: data.pattern ?? "none",
       backgroundImage: data.backgroundImage ?? null,
       backgroundOverlay: data.backgroundOverlay ?? "auto",
@@ -81,6 +82,8 @@ export const noteConverter: FirestoreDataConverter<Note> = {
       createdAt: toDate(data.createdAt),
       updatedAt: toDate(data.updatedAt),
       deletedAt: toOptionalDate(data.deletedAt),
+      position: data.position,
+      pinnedPosition: data.pinnedPosition,
     };
   },
 };
@@ -136,5 +139,7 @@ export function createNotePayload(
     deletedAt: overrides.deletedAt ? Timestamp.fromDate(overrides.deletedAt) : null,
     createdAt: now,
     updatedAt: now,
+    ...(overrides.position !== undefined ? { position: overrides.position } : {}),
+    ...(overrides.pinnedPosition !== undefined ? { pinnedPosition: overrides.pinnedPosition } : {}),
   };
 }

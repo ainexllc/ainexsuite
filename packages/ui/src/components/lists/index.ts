@@ -2,7 +2,7 @@
  * List Components
  *
  * Unified, reusable list components with consistent glassmorphism styling
- * and accent color support across all AinexSuite apps.
+ * and accent color support across all AinexSpace apps.
  */
 
 export {

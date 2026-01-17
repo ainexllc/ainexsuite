@@ -67,6 +67,7 @@ export function BulkActionBar({
           <button
             onClick={allSelected ? onDeselectAll : onSelectAll}
             className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+            aria-label={allSelected ? 'Deselect all' : 'Select all'}
             title={allSelected ? 'Deselect all' : 'Select all'}
           >
             {allSelected ? (
@@ -89,6 +90,7 @@ export function BulkActionBar({
           <button
             onClick={onPin}
             className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors group"
+            aria-label="Add to Focus"
             title="Add to Focus"
           >
             <Pin className="h-4 w-4 text-zinc-400 group-hover:text-amber-400 transition-colors" />
@@ -98,6 +100,7 @@ export function BulkActionBar({
           <button
             onClick={onUnpin}
             className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors group"
+            aria-label="Remove from Focus"
             title="Remove from Focus"
           >
             <PinOff className="h-4 w-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
@@ -107,6 +110,7 @@ export function BulkActionBar({
           <button
             onClick={onArchive}
             className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors group"
+            aria-label="Archive selected"
             title="Archive selected"
           >
             <Archive className="h-4 w-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
@@ -117,6 +121,8 @@ export function BulkActionBar({
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
               className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors group"
+              aria-label="Change color"
+              aria-expanded={showColorPicker}
               title="Change color"
             >
               <Palette className="h-4 w-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
@@ -147,6 +153,8 @@ export function BulkActionBar({
               <button
                 onClick={() => setShowLabelPicker(!showLabelPicker)}
                 className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors group"
+                aria-label="Add label"
+                aria-expanded={showLabelPicker}
                 title="Add label"
               >
                 <Tag className="h-4 w-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
@@ -179,6 +187,7 @@ export function BulkActionBar({
           <button
             onClick={onDelete}
             className="h-8 w-8 rounded-full flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 transition-colors group"
+            aria-label="Delete selected"
             title="Delete selected"
           >
             <Trash2 className="h-4 w-4 text-red-400 group-hover:text-red-300 transition-colors" />
@@ -189,6 +198,7 @@ export function BulkActionBar({
         <button
           onClick={onDeselectAll}
           className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+          aria-label="Clear selection"
           title="Clear selection"
         >
           <X className="h-4 w-4 text-zinc-400" />

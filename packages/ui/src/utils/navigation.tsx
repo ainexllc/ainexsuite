@@ -15,7 +15,7 @@ import {
   FileText,
   Table2,
 } from 'lucide-react';
-import { SUITE_APPS, getAppUrl } from '../config/apps';
+import { SPACE_APPS, getAppUrl } from '../config/apps';
 import { NotesStickyIcon } from '../components/ai';
 
 // Wrapper to make animated icon fill the container as a background-style element
@@ -43,7 +43,7 @@ const ICON_MAP = {
 };
 
 export function getNavigationApps(isDev: boolean = false, userEmail?: string | null) {
-  return Object.values(SUITE_APPS)
+  return Object.values(SPACE_APPS)
     .filter(app => {
       // Check if app has email restrictions
       const allowedEmails = (app as { allowedEmails?: string[] }).allowedEmails;

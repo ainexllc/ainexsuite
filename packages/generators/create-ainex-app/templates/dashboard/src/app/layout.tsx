@@ -49,8 +49,8 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: "{{APP_NAME_CAPITALIZED}} - AINexSuite",
-  description: "{{APP_NAME_CAPITALIZED}} app - part of the AINexSuite productivity suite",
+  title: "{{APP_NAME_CAPITALIZED}} - AINexSpace",
+  description: "{{APP_NAME_CAPITALIZED}} app - part of the AINexSpace productivity suite",
   icons: { icon: "/favicon.svg" },
 };
 

@@ -3,16 +3,26 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWorkspaceAuth } from '@ainexsuite/auth';
-import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
+import {
+  WorkspaceLoadingScreen,
+  SettingsModal,
+  useFontPreference,
+  useFontSizePreference,
+  HintsProvider,
+  createLocalStorageAdapter,
+} from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { WorkspaceLayoutWithInsights } from '@/components/layouts';
 import { TodoFirestoreSync } from '@/components/TodoFirestoreSync';
 import { SpacesProvider, useSpaces } from '@/components/providers/spaces-provider';
 import { PreferencesProvider } from '@/components/providers/preferences-provider';
-import { HintsProvider } from '@/components/hints';
 import { getQuickActionsForApp } from '@ainexsuite/types';
 import { CheckSquare } from 'lucide-react';
 import { SettingsPanel } from '@/components/layout/settings-panel';
+import type { HintId } from '@/components/hints/hints-config';
+
+// Create storage adapter for Todo hints
+const todoHintsStorage = createLocalStorageAdapter<HintId>('todo-dismissed-hints');
 
 // Simple Todo app preferences
 interface TodoAppPreferences {
@@ -102,11 +112,6 @@ function WorkspaceLayoutInner({
     }
   }, [router]);
 
-  // Handle AI assistant
-  const handleAiAssistantClick = useCallback(() => {
-    // TODO: Open AI assistant panel
-  }, []);
-
   // Handle settings click
   const handleSettingsClick = useCallback(() => {
     setSettingsModalOpen(true);
@@ -125,7 +130,6 @@ function WorkspaceLayoutInner({
         onSignOut={handleSignOut}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
         onSettingsClick={handleSettingsClick}
         notifications={[]}
         onUpdatePreferences={updatePreferences}
@@ -217,7 +221,7 @@ export default function WorkspaceRootLayout({
   return (
     <SpacesProvider>
       <PreferencesProvider>
-        <HintsProvider>
+        <HintsProvider storage={todoHintsStorage}>
           <WorkspaceLayoutInner
             user={user}
             handleSignOut={handleSignOut}

@@ -1,5 +1,5 @@
 /**
- * Common types used across all AINexSuite apps
+ * Common types used across all AINexSpace apps
  */
 
 export type Timestamp = number;
@@ -136,20 +136,22 @@ export type HabitType = 'boolean' | 'numeric' | 'scale';
 export type ExerciseCategory = 'strength' | 'cardio' | 'flexibility';
 
 // Shared entry color system for consistent styling across apps
+// Light: Sunshine, Apricot, Cloud, Rose, Sage, Ivory
+// Dark: Graphite, Espresso, Midnight, Plum, Ocean, Stone
 export type EntryColor =
   | 'default'
-  | 'entry-white'
-  | 'entry-lemon'
-  | 'entry-peach'
-  | 'entry-tangerine'
-  | 'entry-mint'
-  | 'entry-fog'
-  | 'entry-lavender'
-  | 'entry-blush'
-  | 'entry-sky'
-  | 'entry-moss'
-  | 'entry-coal'
-  | 'entry-leather';
+  | 'entry-lemon'      // Sunshine
+  | 'entry-tangerine'  // Apricot
+  | 'entry-fog'        // Cloud
+  | 'entry-blush'      // Rose
+  | 'entry-moss'       // Sage
+  | 'entry-cream'      // Ivory
+  | 'entry-coal'       // Graphite
+  | 'entry-leather'    // Espresso
+  | 'entry-midnight'   // Midnight
+  | 'entry-lavender'   // Plum
+  | 'entry-sky'        // Ocean
+  | 'entry-slate';     // Stone
 
 // Background overlay options for background images
 export type BackgroundOverlay =
@@ -170,4 +172,38 @@ export interface StandardEntryFields {
   backgroundImage?: string | null;
   backgroundOverlay?: BackgroundOverlay;
   coverImage?: string | null; // ID of a cover image from Firestore (for card covers)
+}
+
+// ============ Checklist Types ============
+
+/**
+ * Priority level for checklist items
+ */
+export type ChecklistItemPriority = 'high' | 'medium' | 'low' | null;
+
+/**
+ * A single item in a checklist/task list
+ * Used by Notes (checklists) and Todo (subtasks/items)
+ */
+export interface ChecklistItem {
+  /** Unique identifier for the item */
+  id: string;
+  /** The text content of the item */
+  text: string;
+  /** Whether the item is completed */
+  completed: boolean;
+  /** Indentation level (0-3) for nested items */
+  indent?: number;
+  /** When true, child items are hidden */
+  collapsed?: boolean;
+  /** Optional due date (ISO string) */
+  dueDate?: string | null;
+  /** Optional priority level */
+  priority?: ChecklistItemPriority;
+  /** Optional notes/description for the item */
+  notes?: string | null;
+  /** UI state - whether notes section is expanded */
+  notesExpanded?: boolean;
+  /** Timestamp when completed (for sorting completed items) */
+  completedAt?: number | null;
 }

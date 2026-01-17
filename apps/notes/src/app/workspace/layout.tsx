@@ -28,10 +28,11 @@ import { BackgroundsProvider } from '@/components/providers/backgrounds-provider
 import { useSpaceInvitations, useChildMembers } from '@/hooks/use-space-invitations';
 import { HintsProvider } from '@/components/hints';
 import { AIFloatingPanel } from '@/components/ai';
+import { AIProvider, useAIPanel } from '@/components/providers/ai-provider';
 
 /**
- * AIFloatingPanelWithContext - Wrapper that provides notes/labels context to the floating panel.
- * Must be rendered inside NotesProvider and LabelsProvider.
+ * AIFloatingPanelWithContext - Wrapper that provides notes/labels/spaces context to the floating panel.
+ * Must be rendered inside NotesProvider, LabelsProvider, and SpacesProvider.
  */
 function AIFloatingPanelWithContext({
   isOpen,
@@ -41,13 +42,15 @@ function AIFloatingPanelWithContext({
   isOpen: boolean;
   onClose: () => void;
   user?: {
+    uid?: string;
     displayName?: string | null;
     photoURL?: string | null;
-    subscriptionTier?: string;
+    subscriptionTier?: 'free' | 'trial' | 'pro' | 'premium';
   } | null;
 }) {
-  const { notes } = useNotes();
+  const { notes, createNote, updateNote, deleteNote, togglePin, toggleArchive, duplicateNote } = useNotes();
   const { labels } = useLabels();
+  const { spaces, currentSpaceId } = useSpaces();
 
   return (
     <AIFloatingPanel
@@ -55,9 +58,19 @@ function AIFloatingPanelWithContext({
       onClose={onClose}
       notes={notes}
       labels={labels}
+      spaces={spaces}
+      currentSpaceId={currentSpaceId}
       appName="Notes"
       appColor="#eab308"
       user={user}
+      mutations={{
+        createNote,
+        updateNote,
+        deleteNote,
+        togglePin,
+        toggleArchive,
+        duplicateNote,
+      }}
     />
   );
 }
@@ -96,12 +109,12 @@ function WorkspaceLayoutInner({
   const router = useRouter();
   const { preferences, updatePreferences: updateAppPreferences, loading: preferencesLoading } = usePreferences();
   const { spaces, updateSpace, deleteSpace, refreshSpaces } = useSpaces();
+  const { isAIOpen, toggleAI, closeAI } = useAIPanel();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
   const [spaceSettingsOpen, setSpaceSettingsOpen] = useState(false);
   const [addChildModalOpen, setAddChildModalOpen] = useState(false);
   const [editingChild, setEditingChild] = useState<ChildMember | undefined>(undefined);
-  const [isAIOpen, setIsAIOpen] = useState(false);
 
   // Get current space being edited for SpaceSettings
   const editingSpace = useMemo(() => {
@@ -263,23 +276,18 @@ function WorkspaceLayoutInner({
     }
   }, [router]);
 
-  // Handle AI assistant toggle (⌘J keyboard shortcut)
-  const handleAiAssistantClick = useCallback(() => {
-    setIsAIOpen((prev) => !prev);
-  }, []);
-
   // Keyboard shortcut for AI panel (⌘J)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
         e.preventDefault();
-        setIsAIOpen((prev) => !prev);
+        toggleAI();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [toggleAI]);
 
   // Handle settings click
   const handleSettingsClick = useCallback(() => {
@@ -295,7 +303,6 @@ function WorkspaceLayoutInner({
             onSignOut={handleSignOut}
             quickActions={quickActions}
             onQuickAction={handleQuickAction}
-            onAiAssistantClick={handleAiAssistantClick}
             onSettingsClick={handleSettingsClick}
             // Notifications - empty for now, will be populated by notification service
             notifications={[]}
@@ -418,11 +425,12 @@ function WorkspaceLayoutInner({
           {/* AINex Floating AI Panel */}
           <AIFloatingPanelWithContext
             isOpen={isAIOpen}
-            onClose={() => setIsAIOpen(false)}
+            onClose={closeAI}
             user={{
+              uid: user.uid,
               displayName: user.displayName,
               photoURL: user.photoURL,
-              subscriptionTier: user.subscriptionTier,
+              subscriptionTier: user.subscriptionTier as 'free' | 'trial' | 'pro' | 'premium',
             }}
           />
         </HintsProvider>
@@ -472,21 +480,23 @@ export default function WorkspaceRootLayout({
         <PreferencesProvider>
           <FilterPresetsProvider>
             <BackgroundsProvider>
-              <WorkspaceLayoutInner
-                user={user}
-                handleSignOut={handleSignOut}
-                updatePreferences={updatePreferences}
-                updateProfile={updateProfile}
-                updateProfileImage={updateProfileImage}
-                removeProfileImage={removeProfileImage}
-                generateAnimatedAvatar={generateAnimatedAvatar}
-                saveAnimatedAvatar={saveAnimatedAvatar}
-                toggleAnimatedAvatar={toggleAnimatedAvatar}
-                removeAnimatedAvatar={removeAnimatedAvatar}
-                pollAnimationStatus={pollAnimationStatus}
-              >
-                {children}
-              </WorkspaceLayoutInner>
+              <AIProvider>
+                <WorkspaceLayoutInner
+                  user={user}
+                  handleSignOut={handleSignOut}
+                  updatePreferences={updatePreferences}
+                  updateProfile={updateProfile}
+                  updateProfileImage={updateProfileImage}
+                  removeProfileImage={removeProfileImage}
+                  generateAnimatedAvatar={generateAnimatedAvatar}
+                  saveAnimatedAvatar={saveAnimatedAvatar}
+                  toggleAnimatedAvatar={toggleAnimatedAvatar}
+                  removeAnimatedAvatar={removeAnimatedAvatar}
+                  pollAnimationStatus={pollAnimationStatus}
+                >
+                  {children}
+                </WorkspaceLayoutInner>
+              </AIProvider>
             </BackgroundsProvider>
           </FilterPresetsProvider>
         </PreferencesProvider>

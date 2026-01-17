@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useMemo, useState, useEffect } from "react";
+import DOMPurify from "isomorphic-dompurify";
 
 // Smart-sized min-height tiers based on content (allows natural growth)
 type ContentSize = "tiny" | "small" | "medium" | "large";
@@ -189,7 +190,7 @@ export function NoteCard({ note }: NoteCardProps) {
 
   // Get the card background class (single class, no theme switching)
   const cardBgClass = !backgroundImage && !hasCover && noteColorConfig
-    ? noteColorConfig.bgClass
+    ? noteColorConfig.cardClass
     : undefined;
 
   // Get color-matched border class
@@ -223,10 +224,9 @@ export function NoteCard({ note }: NoteCardProps) {
           maxHeightClass,
           // Background: use color class if set, otherwise default (respects color mode preference)
           cardBgClass || "bg-white dark:bg-zinc-800",
-          // Border styling - favorites get accent left border, all use color-matched borders
+          // Border styling - favorites get enhanced shadow, all use color-matched borders
           note.pinned
             ? clsx(
-                "border-l-[3px] border-l-[var(--color-primary)]",
                 colorBorderClass,
                 "shadow-lg shadow-[var(--color-primary)]/10 hover:shadow-xl hover:shadow-[var(--color-primary)]/15"
               )
@@ -499,11 +499,11 @@ export function NoteCard({ note }: NoteCardProps) {
                   <li className={clsx(
                     "text-[11px]",
                     hasCover && !backgroundImage
-                      ? "text-white/70"
+                      ? "text-white/80"
                       : forceDarkText
                         ? "text-zinc-500"
                         : forceLightText
-                          ? "text-white/70"
+                          ? "text-white/80"  // Improved from 70% to 80% opacity
                           : getTextColorClasses(backgroundImage, 'muted')
                   )}>
                     +{note.checklist.length - 12} more
@@ -520,10 +520,10 @@ export function NoteCard({ note }: NoteCardProps) {
                     : forceDarkText
                       ? "text-zinc-700"  // Dark text on bright backgrounds
                       : forceLightText
-                        ? "text-zinc-200"  // Light text on dark backgrounds
+                        ? "text-white/90"  // Improved contrast: white/90 instead of zinc-200
                         : getTextColorClasses(backgroundImage, 'body')
                 )}
-                dangerouslySetInnerHTML={{ __html: note.body }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(note.body) }}
               />
             ) : null}
 

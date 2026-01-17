@@ -20,7 +20,7 @@ export function TermsOfService() {
             </p>
 
             <p className="text-muted-foreground">
-              By using AINexSuite, you agree to use our services responsibly and in compliance with applicable laws.
+              By using AINexSpace, you agree to use our services responsibly and in compliance with applicable laws.
               We reserve the right to modify these terms as our platform evolves.
             </p>
 

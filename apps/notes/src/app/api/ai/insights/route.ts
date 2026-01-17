@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { getUserFromSession } from "@/lib/auth/server-verify";
 
 export const maxDuration = 60;
+
+// Request validation schema with max length
+const MAX_CONTENT_LENGTH = 50000; // 50KB limit
+
+const insightsRequestSchema = z.object({
+  title: z.string().max(500).optional(),
+  content: z.string().max(MAX_CONTENT_LENGTH).optional(),
+}).refine(
+  (data) => data.title || data.content,
+  { message: "Either title or content is required" }
+);
 
 const SYSTEM_PROMPT = `You are a helpful AI assistant that analyzes notes and extracts structured insights. You only speak JSON.
 
@@ -18,28 +31,42 @@ Guidelines:
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { title, content } = body as { title: string; content: string };
-
-    if (!content && !title) {
+    // Authentication check (session cookie)
+    const user = await getUserFromSession();
+    if (!user) {
       return NextResponse.json(
-        { error: "Content or title is required" },
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Validate request body
+    const parseResult = insightsRequestSchema.safeParse(await request.json());
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: parseResult.error.issues },
         { status: 400 }
       );
     }
 
+    const { title, content } = parseResult.data;
+
     const apiKey = process.env.GROK_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "AI API key is missing (GROK_API_KEY)" },
+        { error: "AI service is not configured" },
         { status: 500 }
       );
     }
 
+    // Sanitize user input for prompt (basic escaping)
+    const sanitizedTitle = (title || "Untitled").replace(/[<>]/g, '');
+    const sanitizedContent = (content || "(No content)").replace(/[<>]/g, '');
+
     const userMessage = `Analyze the following note content and provide insights.
 
-Title: ${title || "Untitled"}
-Content: ${content || "(No content)"}`;
+Title: ${sanitizedTitle}
+Content: ${sanitizedContent}`;
 
     // Call xAI Grok directly
     const response = await fetch("https://api.x.ai/v1/chat/completions", {
@@ -60,8 +87,7 @@ Content: ${content || "(No content)"}`;
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("xAI API Error:", errorText);
+      console.error("xAI API Error:", await response.text());
       return NextResponse.json(
         { error: "Failed to generate insights" },
         { status: 500 }
@@ -89,7 +115,7 @@ Content: ${content || "(No content)"}`;
 
       insights = JSON.parse(jsonStr);
     } catch {
-      console.error("Failed to parse AI response:", aiResponse);
+      console.error("Failed to parse AI response");
       return NextResponse.json(
         { error: "Failed to generate valid insights" },
         { status: 500 }
@@ -105,7 +131,7 @@ Content: ${content || "(No content)"}`;
   } catch (error) {
     console.error("AI Insights Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "An error occurred" },
+      { error: "Failed to generate insights. Please try again." },
       { status: 500 }
     );
   }

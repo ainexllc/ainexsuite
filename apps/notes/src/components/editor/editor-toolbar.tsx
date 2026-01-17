@@ -14,8 +14,7 @@ import {
   List,
   ListOrdered,
   Quote,
-  Link as LinkIcon,
-  Highlighter,
+  Type,
   Undo2,
   Redo2,
   Minus,
@@ -24,14 +23,16 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-// Highlight color options
-const HIGHLIGHT_COLORS = [
-  { name: 'Yellow', color: '#fef08a' },
-  { name: 'Green', color: '#bbf7d0' },
-  { name: 'Blue', color: '#bfdbfe' },
-  { name: 'Pink', color: '#fbcfe8' },
-  { name: 'Orange', color: '#fed7aa' },
-  { name: 'Purple', color: '#ddd6fe' },
+// Font color options
+const FONT_COLORS = [
+  { name: 'Red', color: '#ef4444' },
+  { name: 'Orange', color: '#f97316' },
+  { name: 'Amber', color: '#f59e0b' },
+  { name: 'Green', color: '#22c55e' },
+  { name: 'Blue', color: '#3b82f6' },
+  { name: 'Purple', color: '#8b5cf6' },
+  { name: 'Pink', color: '#ec4899' },
+  { name: 'Gray', color: '#6b7280' },
 ] as const;
 
 // Helper to execute editor commands safely
@@ -45,8 +46,6 @@ const runCommand = (editor: Editor, fn: (chain: any) => any) => {
 interface EditorToolbarProps {
   editor: Editor;
   className?: string;
-  showLinkInputExternal?: boolean;
-  onLinkInputClosed?: () => void;
   onImageClick?: () => void;
   // Adaptive styling props
   forceLightText?: boolean;
@@ -82,6 +81,8 @@ function ToolbarButton({ onClick, isActive, disabled, title, children, onDarkNot
         e.stopPropagation();
       }}
       disabled={disabled}
+      aria-label={title}
+      aria-pressed={isActive}
       title={title}
       className={clsx(
         'p-1.5 rounded-md transition-colors',
@@ -114,84 +115,36 @@ function ToolbarDivider({ onDarkNote }: { onDarkNote?: boolean }) {
 export function EditorToolbar({
   editor,
   className,
-  showLinkInputExternal,
-  onLinkInputClosed,
   onImageClick,
   forceLightText,
   forceDarkText: _forceDarkText,
   backgroundBrightness,
   hasCover,
 }: EditorToolbarProps) {
-  const [showLinkInput, setShowLinkInput] = useState(false);
-  const [linkUrl, setLinkUrl] = useState('');
-  const [showHighlightColors, setShowHighlightColors] = useState(false);
-  const highlightRef = useRef<HTMLDivElement>(null);
-  const linkInputRef = useRef<HTMLInputElement>(null);
+  const [showFontColors, setShowFontColors] = useState(false);
+  const fontColorRef = useRef<HTMLDivElement>(null);
 
   // Determine if we're on a dark note (needs light icons/text)
   const onDarkNote = forceLightText || backgroundBrightness === 'dark' || hasCover;
 
-  // Handle external trigger to show link input (from keyboard shortcut)
-  useEffect(() => {
-    if (showLinkInputExternal && !showLinkInput) {
-      setShowLinkInput(true);
-    }
-  }, [showLinkInputExternal, showLinkInput]);
-
-  // Focus link input when it opens
-  useEffect(() => {
-    if (showLinkInput && linkInputRef.current) {
-      linkInputRef.current.focus();
-    }
-  }, [showLinkInput]);
-
-  // Close highlight picker when clicking outside
+  // Close font color picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (highlightRef.current && !highlightRef.current.contains(event.target as Node)) {
-        setShowHighlightColors(false);
+      if (fontColorRef.current && !fontColorRef.current.contains(event.target as Node)) {
+        setShowFontColors(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const closeLinkInput = useCallback(() => {
-    setShowLinkInput(false);
-    setLinkUrl('');
-    onLinkInputClosed?.();
-  }, [onLinkInputClosed]);
-
-  const setLink = useCallback(() => {
-    if (!linkUrl) {
-      runCommand(editor, (c) => c.unsetLink());
-      closeLinkInput();
-      return;
-    }
-
-    // Add https:// if no protocol is specified
-    const url = linkUrl.match(/^https?:\/\//) ? linkUrl : `https://${linkUrl}`;
-
-    runCommand(editor, (c) => c.setLink({ href: url }));
-    closeLinkInput();
-  }, [editor, linkUrl, closeLinkInput]);
-
-  const handleLinkKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      setLink();
-    } else if (e.key === 'Escape') {
-      closeLinkInput();
-    }
-  };
-
-  const setHighlightColor = useCallback((color: string | null) => {
+  const setFontColor = useCallback((color: string | null) => {
     if (color === null) {
-      runCommand(editor, (c) => c.unsetHighlight());
+      runCommand(editor, (c) => c.unsetColor());
     } else {
-      runCommand(editor, (c) => c.toggleHighlight({ color }));
+      runCommand(editor, (c) => c.setColor(color));
     }
-    setShowHighlightColors(false);
+    setShowFontColors(false);
   }, [editor]);
 
   return (
@@ -240,55 +193,61 @@ export function EditorToolbar({
         <Strikethrough className="h-4 w-4" />
       </ToolbarButton>
 
-      {/* Highlight with color picker */}
-      <div className="relative" ref={highlightRef}>
+      {/* Font color picker */}
+      <div className="relative" ref={fontColorRef}>
         <button
           type="button"
           onMouseDown={(e) => {
             e.preventDefault();
-            setShowHighlightColors(!showHighlightColors);
+            setShowFontColors(!showFontColors);
           }}
-          title="Highlight"
+          aria-label="Text color"
+          aria-expanded={showFontColors}
+          title="Text color"
           className={clsx(
             'flex items-center gap-0.5 p-1.5 rounded-md transition-colors',
-            editor.isActive('highlight')
+            editor.getAttributes('textStyle').color
               ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
               : onDarkNote
                 ? 'text-white/75 hover:text-white hover:bg-white/15'
                 : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/15'
           )}
         >
-          <Highlighter className="h-4 w-4" />
+          <Type className="h-4 w-4" />
           <ChevronDown className="h-3 w-3" />
         </button>
 
-        {showHighlightColors && (
+        {showFontColors && (
           <div className="absolute top-full left-0 mt-1 z-50 p-2 bg-surface border border-border rounded-lg shadow-lg">
-            <div className="grid grid-cols-3 gap-1.5">
-              {HIGHLIGHT_COLORS.map((item) => (
+            <div className="grid grid-cols-4 gap-1.5">
+              {FONT_COLORS.map((item) => (
                 <button
                   key={item.name}
                   type="button"
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    setHighlightColor(item.color);
+                    setFontColor(item.color);
                   }}
+                  aria-label={`Set text color to ${item.name}`}
                   title={item.name}
-                  className="w-6 h-6 rounded border border-border hover:scale-110 transition-transform"
+                  className="w-6 h-6 rounded border border-border hover:scale-110 transition-transform flex items-center justify-center"
                   style={{ backgroundColor: item.color }}
-                />
+                >
+                  <span className="text-white text-[10px] font-bold drop-shadow" aria-hidden="true">A</span>
+                </button>
               ))}
             </div>
-            {editor.isActive('highlight') && (
+            {editor.getAttributes('textStyle').color && (
               <button
                 type="button"
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  setHighlightColor(null);
+                  setFontColor(null);
                 }}
+                aria-label="Reset text color to default"
                 className="w-full mt-2 px-2 py-1 text-xs text-muted-foreground hover:text-foreground bg-surface-muted rounded"
               >
-                Remove
+                Default
               </button>
             )}
           </div>
@@ -380,58 +339,6 @@ export function EditorToolbar({
       >
         <Minus className="h-4 w-4" />
       </ToolbarButton>
-
-      {/* Link */}
-      <div className="relative">
-        <ToolbarButton
-          onClick={() => {
-            if (editor.isActive('link')) {
-              runCommand(editor, (c) => c.unsetLink());
-            } else {
-              setShowLinkInput(!showLinkInput);
-            }
-          }}
-          isActive={editor.isActive('link')}
-          title="Link (Cmd+K)"
-          onDarkNote={onDarkNote}
-        >
-          <LinkIcon className="h-4 w-4" />
-        </ToolbarButton>
-
-        {showLinkInput && (
-          <div className="absolute top-full left-0 mt-1 z-50 flex items-center gap-1 p-2 bg-surface border border-border rounded-lg shadow-lg">
-            <input
-              ref={linkInputRef}
-              type="url"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              onKeyDown={handleLinkKeyDown}
-              placeholder="Enter URL..."
-              className="w-48 px-2 py-1 text-sm bg-surface-muted border border-border rounded focus:outline-none focus:border-primary"
-            />
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                setLink();
-              }}
-              className="px-2 py-1 text-sm bg-primary text-white rounded hover:brightness-110"
-            >
-              Add
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                closeLinkInput();
-              }}
-              className="px-2 py-1 text-sm text-muted-foreground hover:text-foreground"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* Image */}
       {onImageClick && (

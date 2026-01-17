@@ -66,7 +66,7 @@ export async function GET(_request: NextRequest) {
 
     const headers: HeadersInit = {
       'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'AINexSuite-Admin',
+      'User-Agent': 'AINexSpace-Admin',
     };
 
     if (token) {

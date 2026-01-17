@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { FileText, Loader2, GripVertical } from "lucide-react";
 import Masonry from "react-masonry-css";
-import { EmptyState, ListSection } from "@ainexsuite/ui";
+import { EmptyState, ListSection, SectionDivider } from "@ainexsuite/ui";
 import { NoteCard } from "@/components/notes/note-card";
 import { ColumnSelector } from "@/components/notes/column-selector";
 import { useNotes } from "@/components/providers/notes-provider";
@@ -233,16 +233,7 @@ export function NoteBoard() {
 
           {/* Hero Divider - only shown when both Favorites and Library have notes */}
           {sortedPinned.length > 0 && sortedOthers.length > 0 && (
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-zinc-300 dark:border-zinc-700" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-4 py-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest bg-zinc-100 dark:bg-zinc-950">
-                  All Notes
-                </span>
-              </div>
-            </div>
+            <SectionDivider label="All Notes" />
           )}
 
           {sortedOthers.length ? (

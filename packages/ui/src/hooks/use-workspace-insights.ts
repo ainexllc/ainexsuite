@@ -37,7 +37,7 @@ function shouldRefreshCache<TInsights>(
 }
 
 /**
- * Shared workspace insights hook for all AinexSuite apps.
+ * Shared workspace insights hook for all AinexSpace apps.
  *
  * Features:
  * - Daily caching with localStorage

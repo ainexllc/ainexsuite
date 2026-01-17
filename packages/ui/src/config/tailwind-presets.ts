@@ -1,5 +1,5 @@
 /**
- * Tailwind Class Presets - AINexSuite Design System
+ * Tailwind Class Presets - AINexSpace Design System
  *
  * Pre-configured Tailwind class combinations for common UI patterns.
  * These presets ensure consistency across all apps while reducing duplication.

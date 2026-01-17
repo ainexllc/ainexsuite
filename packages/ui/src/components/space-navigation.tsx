@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * SuiteNavigation Component
- * Unified navigation bar for all AINexSuite apps
+ * SpaceNavigation Component
+ * Unified navigation bar for all AINexSpace apps
  * Provides consistent layout, app switcher, search, and profile access
  */
 
@@ -11,7 +11,7 @@ import { Search, X, Sparkles, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import type { AppConfig } from '@ainexsuite/types';
 
-export interface SuiteNavigationProps {
+export interface SpaceNavigationProps {
   currentApp: AppConfig;
   showAppSwitcher?: boolean;
   showSearch?: boolean;
@@ -30,7 +30,7 @@ export interface SuiteNavigationProps {
   style?: React.CSSProperties;
 }
 
-export function SuiteNavigation({
+export function SpaceNavigation({
   currentApp,
   showAppSwitcher = true,
   showSearch = true,
@@ -43,7 +43,7 @@ export function SuiteNavigation({
   onAIAssistantClick,
   className = '',
   style = {},
-}: SuiteNavigationProps) {
+}: SpaceNavigationProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchChange = (value: string) => {

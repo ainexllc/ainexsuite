@@ -52,8 +52,8 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: 'Admin - AINexSuite',
-  description: 'Administrative control center for AINexSuite platform.',
+  title: 'Admin - AINexSpace',
+  description: 'Administrative control center for AINexSpace platform.',
   icons: {
     icon: '/favicon.svg',
   },

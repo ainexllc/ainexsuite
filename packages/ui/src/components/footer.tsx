@@ -15,7 +15,7 @@ interface FooterProps {
 }
 
 export function Footer({
-  appName = 'AINexSuite',
+  appName = 'AINexSpace',
   productLinks,
   companyLinks,
   resourceLinks,

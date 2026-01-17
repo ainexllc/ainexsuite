@@ -421,7 +421,7 @@ export default function PlansPage() {
                   <Zap className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Pro Suite</h3>
+                  <h3 className="text-xl font-bold text-white">Pro Space</h3>
                   <p className="text-sm text-white/60">Total personal growth</p>
                 </div>
               </div>
@@ -685,7 +685,7 @@ export default function PlansPage() {
               Start Your Journey
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Join thousands of users transforming their lives with AINexSuite.
+              Join thousands of users transforming their lives with AINexSpace.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">

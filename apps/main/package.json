@@ -2,7 +2,7 @@
   "name": "@ainexsuite/main",
   "version": "1.0.1",
   "private": true,
-  "description": "AinexSuite main dashboard at ainexspace.com",
+  "description": "AinexSpace main dashboard at ainexspace.com",
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3000}",
     "build": "next build",
@@ -15,6 +15,7 @@
   "dependencies": {
     "@ainexsuite/ai": "workspace:*",
     "@ainexsuite/auth": "workspace:*",
+    "@ainexsuite/date-detection": "workspace:*",
     "@ainexsuite/firebase": "workspace:*",
     "@ainexsuite/theme": "workspace:*",
     "@ainexsuite/types": "workspace:*",

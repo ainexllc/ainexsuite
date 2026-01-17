@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeResizer, useReactFlow, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 import { LockBadge } from './LockBadge';
 
@@ -14,7 +14,8 @@ interface RectangleNodeData extends Record<string, unknown> {
 
 export type RectangleNodeType = Node<RectangleNodeData, 'rectangle'>;
 
-function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
+function RectangleNode({ id, data, selected }: NodeProps<RectangleNodeType>) {
+  const { setNodes } = useReactFlow();
   const theme = useWorkflowTheme();
   const nodeColor = data.color || theme.primary;
   const nodeBgColor = data.bgColor || '#1a1a1a';
@@ -29,7 +30,13 @@ function RectangleNode({ data, selected }: NodeProps<RectangleNodeType>) {
 
   const handleBlur = useCallback(() => {
     setIsEditing(false);
-  }, []);
+    // Update node data in parent state to trigger auto-save
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, label } } : node
+      )
+    );
+  }, [id, label, setNodes]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

@@ -8,6 +8,26 @@ import { firebaseConfig } from '../config';
 
 let app: admin.app.App;
 
+/**
+ * Get Admin SDK credential from environment variables
+ */
+function getAdminCredential(): admin.credential.Credential | undefined {
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID || firebaseConfig.projectId;
+
+  if (clientEmail && privateKey) {
+    return admin.credential.cert({
+      projectId,
+      clientEmail,
+      // Handle escaped newlines in the private key
+      privateKey: privateKey.replace(/\\n/g, '\n'),
+    });
+  }
+
+  return undefined;
+}
+
 export function initializeAdmin(): {
   app: admin.app.App;
   auth: admin.auth.Auth;
@@ -15,8 +35,12 @@ export function initializeAdmin(): {
   storage: admin.storage.Storage;
 } {
   if (!admin.apps.length) {
+    const credential = getAdminCredential();
+
     app = admin.initializeApp({
       projectId: firebaseConfig.projectId,
+      ...(credential && { credential }),
+      storageBucket: firebaseConfig.storageBucket,
     });
   } else {
     app = admin.apps[0] as admin.app.App;
@@ -41,3 +65,6 @@ export default admin;
 
 // Export Stripe utilities
 export * from './stripe';
+
+// Export bot avatars admin utilities
+export * from './bot-avatars';

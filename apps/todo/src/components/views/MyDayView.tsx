@@ -1,10 +1,12 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTodoStore } from '../../lib/store';
 import { Task, TaskSpace } from '../../types/models';
-import { CheckCircle2, Circle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Circle, ArrowRight, Sun } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
 import { ListSection, ListItem, EmptyState } from '@ainexsuite/ui';
+import { useSpaces } from '@/components/providers/spaces-provider';
 
 interface MyDayViewProps {
   onEditTask: (taskId: string) => void;
@@ -12,11 +14,28 @@ interface MyDayViewProps {
 }
 
 export function MyDayView({ onEditTask, searchQuery = '' }: MyDayViewProps) {
-  const { myTasks, updateTask, spaces } = useTodoStore();
+  const { tasks, updateTask, spaces } = useTodoStore();
+  const { currentSpaceId } = useSpaces();
+
+  // Get today's date string for My Day filtering
+  const todayString = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  // Get My Day tasks - filtered by myDayDate === today
+  const myDayTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      // Must have myDayDate set to today
+      if (task.myDayDate !== todayString) return false;
+      // Must be in current space
+      if (task.spaceId !== currentSpaceId) return false;
+      // Must not be archived or deleted
+      if (task.archived || task.deletedAt) return false;
+      return true;
+    });
+  }, [tasks, currentSpaceId, todayString]);
 
   // Filter tasks based on search query
   const filteredTasks = searchQuery.trim()
-    ? myTasks.filter((task) => {
+    ? myDayTasks.filter((task) => {
         const query = searchQuery.toLowerCase().trim();
         return (
           task.title.toLowerCase().includes(query) ||
@@ -25,7 +44,7 @@ export function MyDayView({ onEditTask, searchQuery = '' }: MyDayViewProps) {
           task.subtasks?.some((st) => st.title.toLowerCase().includes(query))
         );
       })
-    : myTasks;
+    : myDayTasks;
 
   // Sort by: Overdue -> Today -> Upcoming -> No Date
   const sortedTasks = [...filteredTasks].sort((a, b) => {
@@ -123,9 +142,9 @@ export function MyDayView({ onEditTask, searchQuery = '' }: MyDayViewProps) {
 
       {sortedTasks.length === 0 && (
         <EmptyState
-          icon={CheckCircle2}
-          title="All caught up!"
-          description="No tasks assigned to you right now."
+          icon={Sun}
+          title="Your day is clear"
+          description="Add tasks to My Day by clicking the sun icon on any task."
           variant="default"
         />
       )}

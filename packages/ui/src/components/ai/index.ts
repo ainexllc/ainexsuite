@@ -88,7 +88,7 @@ export {
   MainHomeIcon,
   MainHubIcon,
   MainOverviewIcon,
-  MainSuiteIcon,
+  MainSpaceIcon,
   MainNotificationsIcon,
   MainSearchIcon,
   MainSettingsIcon,

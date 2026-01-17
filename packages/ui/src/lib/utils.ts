@@ -13,6 +13,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Alias for cn (used by Tremor components)
+ */
+export const cx = cn;
+
+/**
+ * Focus ring utility for consistent focus styling
+ */
+export const focusRing =
+  'outline outline-offset-2 outline-0 focus-visible:outline-2 outline-blue-500 dark:outline-blue-500';
+
+/**
  * Generate a UUID with fallback for browsers without crypto.randomUUID
  * (crypto.randomUUID requires secure context - HTTPS or localhost)
  */

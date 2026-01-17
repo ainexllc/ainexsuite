@@ -241,7 +241,7 @@ export default function FeaturesPage() {
           <div className="text-center mb-10">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl mb-4">Platform Features</h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Built-in capabilities that make AINexSuite more than just 8 separate apps.
+              Built-in capabilities that make AINexSpace more than just 8 separate apps.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -269,7 +269,7 @@ export default function FeaturesPage() {
               The Power of Integration
             </h2>
             <p className="text-white/70 max-w-3xl mx-auto text-lg">
-              Unlike standalone apps, AINexSuite connects your data to reveal powerful insights about your life.
+              Unlike standalone apps, AINexSpace connects your data to reveal powerful insights about your life.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -318,7 +318,7 @@ export default function FeaturesPage() {
             Ready to Experience the Difference?
           </h2>
           <p className="text-white/70 max-w-2xl mx-auto">
-            Start your 14-day free trial and discover how AINexSuite can transform your productivity.
+            Start your 14-day free trial and discover how AINexSpace can transform your productivity.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a

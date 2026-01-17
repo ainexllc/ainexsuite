@@ -7,8 +7,8 @@ Real-world examples of using the unified design tokens system across AINexSuite 
 Using presets for quick implementation:
 
 ```tsx
-import { cardStyles } from '@ainexsuite/ui';
-import { cn } from '@ainexsuite/ui';
+import { cardStyles } from "@ainexsuite/ui";
+import { cn } from "@ainexsuite/ui";
 
 export function NoteCard({ title, content, onClick }: NoteCardProps) {
   return (
@@ -25,8 +25,8 @@ export function NoteCard({ title, content, onClick }: NoteCardProps) {
 Using component variants for type-safe props:
 
 ```tsx
-import { cardVariants, type CardVariantProps } from '@ainexsuite/ui';
-import { cn } from '@ainexsuite/ui';
+import { cardVariants, type CardVariantProps } from "@ainexsuite/ui";
+import { cn } from "@ainexsuite/ui";
 
 interface CardProps extends CardVariantProps {
   children: React.ReactNode;
@@ -34,8 +34,8 @@ interface CardProps extends CardVariantProps {
 }
 
 export function Card({
-  variant = 'default',
-  padding = 'md',
+  variant = "default",
+  padding = "md",
   interactive = false,
   rounded,
   className,
@@ -45,7 +45,7 @@ export function Card({
     <div
       className={cn(
         cardVariants({ variant, padding, interactive, rounded }),
-        className
+        className,
       )}
     >
       {children}
@@ -56,7 +56,7 @@ export function Card({
 // Usage
 <Card variant="elevated" padding="lg" interactive>
   <h2>Clickable elevated card</h2>
-</Card>
+</Card>;
 ```
 
 ## Example 3: Journey App Glass Card
@@ -64,13 +64,13 @@ export function Card({
 Using glassmorphism presets:
 
 ```tsx
-import { glass, spacing, radius } from '@ainexsuite/ui';
-import { cn } from '@ainexsuite/ui';
+import { glass, spacing, radius } from "@ainexsuite/ui";
+import { cn } from "@ainexsuite/ui";
 
 export function JourneyEntryCard({ entry }: { entry: JournalEntry }) {
   return (
     <div
-      className={cn(glass.card, 'p-6')}
+      className={cn(glass.card, "p-6")}
       style={{
         borderRadius: radius.xl,
         marginBottom: spacing.md,
@@ -127,13 +127,13 @@ export function Button({
 Using input variants for consistent form styling:
 
 ```tsx
-import { inputVariants, type InputVariantProps } from '@ainexsuite/ui';
-import { cn } from '@ainexsuite/ui';
-import { useState } from 'react';
+import { inputVariants, type InputVariantProps } from "@ainexsuite/ui";
+import { cn } from "@ainexsuite/ui";
+import { useState } from "react";
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -145,8 +145,8 @@ export function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className={inputVariants({
-            size: 'md',
-            state: error ? 'error' : 'default',
+            size: "md",
+            state: error ? "error" : "default",
           })}
           placeholder="you@example.com"
         />
@@ -158,18 +158,18 @@ export function LoginForm() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={inputVariants({ size: 'md', state: 'default' })}
+          className={inputVariants({ size: "md", state: "default" })}
           placeholder="••••••••"
         />
       </div>
 
       {error && (
-        <div className={alertVariants({ variant: 'error' })}>{error}</div>
+        <div className={alertVariants({ variant: "error" })}>{error}</div>
       )}
 
       <button
         type="submit"
-        className={buttonVariants({ variant: 'primary', fullWidth: true })}
+        className={buttonVariants({ variant: "primary", fullWidth: true })}
       >
         Sign In
       </button>
@@ -183,11 +183,11 @@ export function LoginForm() {
 Using navigation presets for consistent header/sidebar:
 
 ```tsx
-import { navigationStyles } from '@ainexsuite/ui';
-import { Home, FileText, Calendar } from 'lucide-react';
+import { navigationStyles } from "@ainexsuite/ui";
+import { Home, FileText, Calendar } from "lucide-react";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const [activeRoute, setActiveRoute] = useState('/');
+  const [activeRoute, setActiveRoute] = useState("/");
 
   return (
     <div>
@@ -208,7 +208,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <a
             href="/"
             className={
-              activeRoute === '/'
+              activeRoute === "/"
                 ? navigationStyles.navLinkActive
                 : navigationStyles.navLink
             }
@@ -219,7 +219,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <a
             href="/notes"
             className={
-              activeRoute === '/notes'
+              activeRoute === "/notes"
                 ? navigationStyles.navLinkActive
                 : navigationStyles.navLink
             }
@@ -230,7 +230,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <a
             href="/calendar"
             className={
-              activeRoute === '/calendar'
+              activeRoute === "/calendar"
                 ? navigationStyles.navLinkActive
                 : navigationStyles.navLink
             }
@@ -253,8 +253,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 Using modal presets for consistent dialogs:
 
 ```tsx
-import { modalStyles, buttonStyles } from '@ainexsuite/ui';
-import { X } from 'lucide-react';
+import { modalStyles, buttonStyles } from "@ainexsuite/ui";
+import { X } from "lucide-react";
 
 export function ConfirmDeleteModal({
   isOpen,
@@ -272,7 +272,10 @@ export function ConfirmDeleteModal({
         {/* Header */}
         <div className={modalStyles.dialogHeader}>
           <h2 className="text-xl font-semibold">Confirm Deletion</h2>
-          <button onClick={onClose} className="p-2 hover:bg-surface-hover rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-surface-hover rounded-lg"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -335,7 +338,7 @@ export function StatusBadge({ status }: { status: Status }) {
 Using layout presets for consistent grids:
 
 ```tsx
-import { layoutStyles, cardStyles } from '@ainexsuite/ui';
+import { layoutStyles, cardStyles } from "@ainexsuite/ui";
 
 export function NotesGrid({ notes }: { notes: Note[] }) {
   return (
@@ -374,23 +377,29 @@ export function NotesMasonry({ notes }: { notes: Note[] }) {
 Using skeleton and spinner variants:
 
 ```tsx
-import { skeletonVariants, spinnerVariants } from '@ainexsuite/ui';
+import { skeletonVariants, spinnerVariants } from "@ainexsuite/ui";
 
 export function CardSkeleton() {
   return (
     <div className="p-6 space-y-4">
-      <div className={skeletonVariants({ variant: 'text' })} style={{ width: '60%' }} />
-      <div className={skeletonVariants({ variant: 'text' })} />
-      <div className={skeletonVariants({ variant: 'text' })} />
-      <div className={skeletonVariants({ variant: 'text' })} style={{ width: '80%' }} />
+      <div
+        className={skeletonVariants({ variant: "text" })}
+        style={{ width: "60%" }}
+      />
+      <div className={skeletonVariants({ variant: "text" })} />
+      <div className={skeletonVariants({ variant: "text" })} />
+      <div
+        className={skeletonVariants({ variant: "text" })}
+        style={{ width: "80%" }}
+      />
     </div>
   );
 }
 
-export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   return (
     <div className="flex items-center justify-center p-8">
-      <div className={spinnerVariants({ size, variant: 'primary' })} />
+      <div className={spinnerVariants({ size, variant: "primary" })} />
     </div>
   );
 }
@@ -400,7 +409,7 @@ export function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <div className={spinnerVariants({ size: 'xl', variant: 'primary' })} />
+        <div className={spinnerVariants({ size: "xl", variant: "primary" })} />
         <p className="mt-4 text-[rgb(var(--color-ink-600))]">Loading...</p>
       </div>
     </div>
@@ -413,13 +422,7 @@ export function PageLoader() {
 Using raw tokens for complete customization:
 
 ```tsx
-import {
-  spacing,
-  radius,
-  shadows,
-  typography,
-  zIndex,
-} from '@ainexsuite/ui';
+import { spacing, radius, shadows, typography, zIndex } from "@ainexsuite/ui";
 
 export function FloatingActionButton({
   onClick,
@@ -429,11 +432,11 @@ export function FloatingActionButton({
     <button
       onClick={onClick}
       style={{
-        position: 'fixed',
+        position: "fixed",
         bottom: spacing.xl,
         right: spacing.xl,
-        width: '56px',
-        height: '56px',
+        width: "56px",
+        height: "56px",
         borderRadius: radius.full,
         boxShadow: shadows.floating,
         zIndex: zIndex.sticky,
@@ -453,24 +456,32 @@ export function FloatingActionButton({
 Building components that work across all app themes:
 
 ```tsx
-import { cardVariants, badgeVariants } from '@ainexsuite/ui';
-import { SUITE_APPS } from '@ainexsuite/ui';
+import { cardVariants, badgeVariants } from "@ainexsuite/ui";
+import { SPACE_APPS } from "@ainexsuite/ui";
 
-export function AppCard({ appSlug }: { appSlug: keyof typeof SUITE_APPS }) {
-  const app = SUITE_APPS[appSlug];
+export function AppCard({ appSlug }: { appSlug: keyof typeof SPACE_APPS }) {
+  const app = SPACE_APPS[appSlug];
 
   return (
-    <div className={cardVariants({ variant: 'elevated', padding: 'lg', interactive: true })}>
+    <div
+      className={cardVariants({
+        variant: "elevated",
+        padding: "lg",
+        interactive: true,
+      })}
+    >
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-xl font-semibold">{app.name}</h3>
         <span
-          className={badgeVariants({ variant: 'primary' })}
+          className={badgeVariants({ variant: "primary" })}
           style={{ backgroundColor: `${app.color}15`, color: app.color }}
         >
           {appSlug}
         </span>
       </div>
-      <p className="text-sm text-[rgb(var(--color-ink-700))]">{app.description}</p>
+      <p className="text-sm text-[rgb(var(--color-ink-700))]">
+        {app.description}
+      </p>
     </div>
   );
 }

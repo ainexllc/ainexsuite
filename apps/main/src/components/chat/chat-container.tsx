@@ -13,10 +13,71 @@ import {
 import { cn } from '@/lib/utils';
 import { MarkdownMessage } from './markdown-message';
 import { ToolCallCard } from './tool-call-card';
+import { useBotAvatar } from '@/hooks/use-bot-avatar';
 
 interface MessageBubbleProps {
   message: ChatMessage;
   userPhotoURL?: string | null;
+  botAvatarURL?: string | null;
+}
+
+// Animated bot avatar component with optional continuous looping
+function BotAvatarDisplay({
+  videoURL,
+  loop = false,
+  size = 'sm',
+}: {
+  videoURL?: string | null;
+  loop?: boolean;
+  size?: 'sm' | 'lg';
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Auto-play with optional continuous looping
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !videoURL) return;
+
+    let playCount = 0;
+    const maxPlays = loop ? Infinity : 2;
+
+    const handleEnded = () => {
+      playCount++;
+      if (playCount < maxPlays) {
+        setTimeout(() => {
+          video.currentTime = 0;
+          video.play().catch(() => {});
+        }, loop ? 100 : 500);
+      }
+    };
+
+    video.addEventListener('ended', handleEnded);
+    video.play().catch(() => {});
+
+    return () => {
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, [videoURL, loop]);
+
+  if (videoURL) {
+    return (
+      <video
+        ref={videoRef}
+        src={videoURL}
+        muted
+        playsInline
+        className="w-full h-full object-cover"
+      />
+    );
+  }
+
+  // Fallback to sparkles icon with gradient background
+  const iconSize = size === 'lg' ? 'w-10 h-10' : 'w-5 h-5';
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-amber-500/20">
+      <Sparkles className={cn(iconSize, 'text-orange-500')} />
+    </div>
+  );
 }
 
 function TypingIndicator() {
@@ -42,7 +103,7 @@ function TypingIndicator() {
   );
 }
 
-function MessageBubble({ message, userPhotoURL }: MessageBubbleProps) {
+function MessageBubble({ message, userPhotoURL, botAvatarURL }: MessageBubbleProps) {
   const isUser = message.role === 'user';
 
   return (
@@ -77,13 +138,7 @@ function MessageBubble({ message, userPhotoURL }: MessageBubbleProps) {
             <User className="w-4 h-4" />
           )
         ) : (
-          <Image
-            src="/ainex-bot.png"
-            alt="AINex"
-            width={36}
-            height={36}
-            className="w-full h-full object-contain"
-          />
+          <BotAvatarDisplay videoURL={botAvatarURL} />
         )}
       </div>
 
@@ -141,7 +196,7 @@ function InputForm({ input, setInput, onSubmit, isLoading, centered = false, inp
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Ask AINex anything about your notes..."
+        placeholder="Ask Lumi anything about your notes..."
         className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500/50 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
         disabled={isLoading}
       />
@@ -164,6 +219,12 @@ export function ChatContainer() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Get the bot avatar (animated video if available)
+  const { botAvatarURL } = useBotAvatar({
+    userId: user?.uid,
+    tier: (user as { subscriptionTier?: 'free' | 'trial' | 'pro' | 'premium' })?.subscriptionTier,
+  });
 
   const hasMessages = messages.length > 0;
 
@@ -228,7 +289,7 @@ export function ChatContainer() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-zinc-900">
+    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-zinc-900">
       {!hasMessages ? (
         // ========== EMPTY STATE: Centered layout (Gemini-style) ==========
         <div className="flex-1 flex flex-col items-center justify-center p-5">
@@ -238,14 +299,18 @@ export function ChatContainer() {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center mb-8"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-orange-500" />
+            {/* Animated avatar with glow */}
+            <div className="relative mb-4 mx-auto w-20 h-20">
+              <div className="absolute inset-[-8px] rounded-full bg-gradient-to-r from-orange-500 to-amber-500 blur-xl opacity-25 animate-pulse" />
+              <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-orange-500/50 bg-zinc-100 dark:bg-zinc-800">
+                <BotAvatarDisplay videoURL={botAvatarURL} loop size="lg" />
+              </div>
             </div>
             <p className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-              AINex Assistant
+              Lumi
             </p>
             <p className="text-sm mt-2 max-w-[320px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Ask me to manage your notes, create checklists, or organize your spaces.
+              Hey there! 👋 How can I help with your notes today?
             </p>
 
             {/* Suggestion chips */}
@@ -282,10 +347,15 @@ export function ChatContainer() {
         // ========== WITH MESSAGES: Top messages, bottom input ==========
         <>
           {/* Messages area - scrollable */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-5">
             <AnimatePresence mode="popLayout">
               {messages.map((message) => (
-                <MessageBubble key={message.id} message={message} userPhotoURL={user?.photoURL} />
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  userPhotoURL={user?.photoURL}
+                  botAvatarURL={botAvatarURL}
+                />
               ))}
             </AnimatePresence>
 
@@ -297,13 +367,7 @@ export function ChatContainer() {
                 className="flex gap-3"
               >
                 <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center overflow-hidden">
-                  <Image
-                    src="/ainex-bot.png"
-                    alt="AINex"
-                    width={36}
-                    height={36}
-                    className="w-full h-full object-contain"
-                  />
+                  <BotAvatarDisplay videoURL={botAvatarURL} />
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-2xl rounded-tl-md px-4 py-3">
                   <TypingIndicator />

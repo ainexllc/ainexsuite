@@ -20,7 +20,7 @@ export function PrivacyPolicy() {
             </p>
 
             <p className="text-muted-foreground">
-              AINexSuite is committed to protecting your privacy and ensuring the security of your personal information.
+              AINexSpace is committed to protecting your privacy and ensuring the security of your personal information.
               We implement industry-standard security measures and will never sell your data to third parties.
             </p>
 

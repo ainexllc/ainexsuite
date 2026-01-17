@@ -79,7 +79,7 @@ async function createOrUpdateUser(firebaseUser: { uid: string; email?: string | 
       appsEligible: isDev
         ? ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit']
         : [],
-      accountType: isDev ? 'suite' : 'single-app',
+      accountType: isDev ? 'space' : 'single-app',
       appPermissions: {},
       apps: {
         notes: isDev,
@@ -95,7 +95,7 @@ async function createOrUpdateUser(firebaseUser: { uid: string; email?: string | 
       trialStartDate: now,
       trialEndDate: calculateTrialEndDate(now),
       subscriptionStatus: 'trial',
-      suiteAccess: isDev, // Dev users get suite access
+      spaceAccess: isDev, // Dev users get space access
     };
 
     await userRef.set(newUser);
@@ -139,7 +139,7 @@ export async function handleSessionCreation(req: NextRequest) {
         createdAt: Date.now(),
         lastLoginAt: Date.now(),
         appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit'],
-        accountType: 'suite',
+        accountType: 'space',
         appPermissions: {},
         apps: {
           notes: true,
@@ -155,7 +155,7 @@ export async function handleSessionCreation(req: NextRequest) {
         trialStartDate: Date.now(),
         trialEndDate: calculateTrialEndDate(Date.now()),
         subscriptionStatus: 'trial',
-        suiteAccess: true,
+        spaceAccess: true,
       };
 
       const mockSessionCookie = `dev-session-${Date.now()}`;

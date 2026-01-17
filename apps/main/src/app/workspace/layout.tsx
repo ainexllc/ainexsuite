@@ -122,11 +122,6 @@ function WorkspaceLayoutInner({
     }
   }, [setIsQuickCreateOpen]);
 
-  // Handle AI assistant
-  const handleAiAssistantClick = useCallback(() => {
-    setActivePanel('ai-assistant');
-  }, []);
-
   // Handle settings click
   const handleSettingsClick = useCallback(() => {
     setSettingsModalOpen(true);
@@ -141,7 +136,6 @@ function WorkspaceLayoutInner({
         onActivityClick={() => setActivePanel('activity')}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
         onUpdatePreferences={updatePreferences}
       >
         {children}

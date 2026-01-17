@@ -714,6 +714,873 @@ export const notesTools: FunctionDeclaration[] = [
       properties: EMPTY_PROPERTIES,
     },
   },
+
+  // ============================================
+  // ANALYTICS & INSIGHTS (8 tools)
+  // ============================================
+  {
+    name: 'getNoteStatistics',
+    description:
+      'Get statistics about notes: total count, types distribution, color usage, labels popularity, activity by time period. Use when user asks "how many notes do I have", "show my note stats", "note overview", "analytics".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+        period: {
+          type: SchemaType.STRING,
+          enum: ['day', 'week', 'month', 'quarter', 'year', 'all'],
+          description: 'Time period for stats (default: all)',
+        },
+      },
+    },
+  },
+  {
+    name: 'getProductivityInsights',
+    description:
+      'Analyze productivity patterns: most productive days/times, completion rates for checklists, note creation trends. Use when user asks "when am I most productive", "show productivity patterns", "my writing habits".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        period: {
+          type: SchemaType.STRING,
+          enum: ['week', 'month', 'quarter'],
+          description: 'Analysis period (default: month)',
+        },
+      },
+    },
+  },
+  {
+    name: 'getActivityTrends',
+    description:
+      'Show note activity trends over time: creation rate, update frequency, archive patterns. Use when user asks "show my activity", "how active have I been", "activity trends".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        period: {
+          type: SchemaType.STRING,
+          enum: ['week', 'month', 'quarter', 'year'],
+          description: 'Time period for trends',
+        },
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+      },
+    },
+  },
+  {
+    name: 'getChecklistProgress',
+    description:
+      'Analyze checklist completion progress across all or specific checklists. Use when user asks "show my task progress", "how are my checklists doing", "task completion rate".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Specific checklist note ID',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Specific checklist note title',
+        },
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+      },
+    },
+  },
+  {
+    name: 'getLabelAnalytics',
+    description:
+      'Analyze label usage patterns: most used labels, notes per label, label combinations. Use when user asks "which labels do I use most", "label statistics", "tag usage".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+      },
+    },
+  },
+  {
+    name: 'getSpaceComparison',
+    description:
+      'Compare activity and note counts across different spaces. Use when user asks "compare my spaces", "which space is most active", "space overview".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: EMPTY_PROPERTIES,
+    },
+  },
+  {
+    name: 'getWeeklyDigest',
+    description:
+      'Generate a weekly digest summarizing note activity, accomplishments, and suggestions. Use when user asks "weekly summary", "what did I do this week", "week in review".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+      },
+    },
+  },
+  {
+    name: 'getActivityHeatmap',
+    description:
+      'Get activity heatmap data showing when user is most active (by day and hour). Use when user asks "show my activity heatmap", "when do I use notes most", "peak activity times".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        period: {
+          type: SchemaType.STRING,
+          enum: ['month', 'quarter', 'year'],
+          description: 'Time period for heatmap',
+        },
+      },
+    },
+  },
+
+  // ============================================
+  // CONTENT ANALYSIS (6 tools)
+  // ============================================
+  {
+    name: 'analyzeNoteSentiment',
+    description:
+      'Analyze the emotional tone and sentiment of a note or all recent notes. Use when user asks "what is the mood of my notes", "analyze sentiment", "how do my notes feel".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Specific note ID to analyze',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Specific note title to find and analyze',
+        },
+        analyzeRecent: {
+          type: SchemaType.BOOLEAN,
+          description: 'If true, analyze recent notes instead of specific one',
+        },
+        limit: {
+          type: SchemaType.NUMBER,
+          description: 'Number of recent notes to analyze (default: 10)',
+        },
+      },
+    },
+  },
+  {
+    name: 'extractThemes',
+    description:
+      'Extract common themes and topics from notes. Use when user asks "what topics do I write about", "find themes in my notes", "common topics".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+        limit: {
+          type: SchemaType.NUMBER,
+          description: 'Number of notes to analyze (default: 20)',
+        },
+      },
+    },
+  },
+  {
+    name: 'generateSummary',
+    description:
+      'Generate an AI-powered summary of a note or collection of notes. Use when user asks "summarize this note", "give me a summary", "TLDR".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Specific note ID to summarize',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Specific note title to find and summarize',
+        },
+        summarizeRecent: {
+          type: SchemaType.BOOLEAN,
+          description: 'If true, summarize recent notes',
+        },
+        limit: {
+          type: SchemaType.NUMBER,
+          description: 'Number of recent notes to summarize',
+        },
+        style: {
+          type: SchemaType.STRING,
+          enum: ['brief', 'detailed', 'bullet-points'],
+          description: 'Summary style (default: brief)',
+        },
+      },
+    },
+  },
+  {
+    name: 'findSimilarNotes',
+    description:
+      'Find notes similar to a given note based on content, themes, or keywords. Use when user asks "find similar notes", "related notes", "notes like this".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to find similar notes for',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find similar notes for',
+        },
+        threshold: {
+          type: SchemaType.NUMBER,
+          description: 'Similarity threshold 0-1 (default: 0.5)',
+        },
+      },
+    },
+  },
+  {
+    name: 'extractKeywords',
+    description:
+      'Extract important keywords from a note or notes. Use when user asks "what are the keywords", "important terms", "key concepts".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Specific note ID',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Specific note title',
+        },
+        extractFromRecent: {
+          type: SchemaType.BOOLEAN,
+          description: 'Extract from recent notes instead',
+        },
+        limit: {
+          type: SchemaType.NUMBER,
+          description: 'Number of notes to analyze',
+        },
+      },
+    },
+  },
+  {
+    name: 'detectDuplicates',
+    description:
+      'Find potential duplicate or very similar notes. Use when user asks "find duplicates", "are there any similar notes", "duplicate detection".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+        threshold: {
+          type: SchemaType.NUMBER,
+          description: 'Similarity threshold 0-1 (default: 0.8)',
+        },
+      },
+    },
+  },
+
+  // ============================================
+  // SMART SUGGESTIONS (5 tools)
+  // ============================================
+  {
+    name: 'suggestLabels',
+    description:
+      'Suggest appropriate labels for a note based on its content. Use when user asks "what labels should I add", "suggest tags", "auto-tag this note".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to suggest labels for',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and suggest labels for',
+        },
+        createMissing: {
+          type: SchemaType.BOOLEAN,
+          description: 'Create suggested labels if they do not exist',
+        },
+      },
+    },
+  },
+  {
+    name: 'predictPriority',
+    description:
+      'Predict and suggest priority level for a note based on content and context. Use when user asks "what priority should this be", "is this urgent", "prioritize this".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to predict priority for',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and predict priority for',
+        },
+      },
+    },
+  },
+  {
+    name: 'suggestRelatedNotes',
+    description:
+      'Suggest notes that might be related and could be linked. Use when user asks "what notes are related", "find connections", "link suggestions".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to find related notes for',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find related notes for',
+        },
+      },
+    },
+  },
+  {
+    name: 'suggestNextActions',
+    description:
+      'Suggest next actions based on note content or checklist items. Use when user asks "what should I do next", "suggest actions", "next steps".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to suggest actions for',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and suggest actions for',
+        },
+      },
+    },
+  },
+  {
+    name: 'suggestOrganization',
+    description:
+      'Suggest how to better organize notes: merge candidates, archive suggestions, label improvements. Use when user asks "how can I organize better", "cleanup suggestions", "organization tips".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter suggestions by space ID',
+        },
+      },
+    },
+  },
+
+  // ============================================
+  // BATCH OPERATIONS (5 tools)
+  // ============================================
+  {
+    name: 'bulkUpdateNotes',
+    description:
+      'Update multiple notes at once: change color, priority, labels, or space. Use when user asks "change color of all my work notes", "move all meeting notes to work space", "update multiple notes".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteIds: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Array of note IDs to update',
+        },
+        searchQuery: {
+          type: SchemaType.STRING,
+          description: 'Find notes to update by search query',
+        },
+        color: {
+          type: SchemaType.STRING,
+          enum: NOTE_COLORS,
+          description: 'New color for all notes',
+        },
+        priority: {
+          type: SchemaType.STRING,
+          enum: NOTE_PRIORITIES,
+          description: 'New priority for all notes',
+        },
+        addLabels: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Label names to add',
+        },
+        removeLabels: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Label names to remove',
+        },
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Move notes to this space',
+        },
+      },
+    },
+  },
+  {
+    name: 'bulkArchive',
+    description:
+      'Archive multiple notes at once based on criteria. Use when user asks "archive all old notes", "clean up my notes", "archive notes older than X".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteIds: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Array of note IDs to archive',
+        },
+        olderThanDays: {
+          type: SchemaType.NUMBER,
+          description: 'Archive notes older than this many days',
+        },
+        color: {
+          type: SchemaType.STRING,
+          enum: NOTE_COLORS,
+          description: 'Archive notes with this color',
+        },
+        labelName: {
+          type: SchemaType.STRING,
+          description: 'Archive notes with this label',
+        },
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Archive notes in this space',
+        },
+      },
+    },
+  },
+  {
+    name: 'bulkDelete',
+    description:
+      'Move multiple notes to trash at once. Use when user asks "delete all drafts", "remove old notes", "trash these notes".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteIds: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Array of note IDs to delete',
+        },
+        searchQuery: {
+          type: SchemaType.STRING,
+          description: 'Find notes to delete by search query',
+        },
+        olderThanDays: {
+          type: SchemaType.NUMBER,
+          description: 'Delete notes older than this many days',
+        },
+        archived: {
+          type: SchemaType.BOOLEAN,
+          description: 'Delete only archived notes',
+        },
+      },
+    },
+  },
+  {
+    name: 'bulkLabel',
+    description:
+      'Add or remove labels from multiple notes. Use when user asks "add project label to all meeting notes", "tag all recipes", "label multiple notes".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteIds: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Array of note IDs to update',
+        },
+        searchQuery: {
+          type: SchemaType.STRING,
+          description: 'Find notes by search query',
+        },
+        addLabels: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Label names to add',
+        },
+        removeLabels: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: 'Label names to remove',
+        },
+      },
+    },
+  },
+  {
+    name: 'autoOrganize',
+    description:
+      'Automatically organize notes: apply suggested labels, set priorities, archive old notes. Use when user asks "organize my notes", "auto-tag everything", "clean up and organize".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Space to organize',
+        },
+        actions: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.STRING,
+            enum: ['auto-label', 'auto-priority', 'archive-old', 'detect-duplicates'],
+          },
+          description: 'Actions to perform',
+        },
+        dryRun: {
+          type: SchemaType.BOOLEAN,
+          description: 'Preview changes without applying (default: true)',
+        },
+      },
+    },
+  },
+
+  // ============================================
+  // WRITING ASSISTANCE (5 tools)
+  // ============================================
+  {
+    name: 'enhanceNote',
+    description:
+      'Improve writing quality: fix grammar, improve clarity, enhance style. Use when user asks "improve this note", "fix my writing", "make this clearer", "proofread".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to enhance',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and enhance',
+        },
+        enhancementType: {
+          type: SchemaType.STRING,
+          enum: ['grammar', 'clarity', 'professional', 'casual', 'concise'],
+          description: 'Type of enhancement to apply',
+        },
+        applyChanges: {
+          type: SchemaType.BOOLEAN,
+          description: 'Apply changes directly or just preview (default: false)',
+        },
+      },
+    },
+  },
+  {
+    name: 'expandNote',
+    description:
+      'Expand a note with more details, examples, or explanations. Use when user asks "expand on this", "add more details", "elaborate", "flesh this out".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to expand',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and expand',
+        },
+        focus: {
+          type: SchemaType.STRING,
+          description: 'Specific area to expand on',
+        },
+        style: {
+          type: SchemaType.STRING,
+          enum: ['detailed', 'examples', 'explanatory', 'creative'],
+          description: 'Expansion style',
+        },
+        applyChanges: {
+          type: SchemaType.BOOLEAN,
+          description: 'Apply changes directly or just preview',
+        },
+      },
+    },
+  },
+  {
+    name: 'condenseNote',
+    description:
+      'Shorten a note while keeping key information. Use when user asks "make this shorter", "summarize this note", "condense", "trim this down".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to condense',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and condense',
+        },
+        targetLength: {
+          type: SchemaType.STRING,
+          enum: ['brief', 'half', 'bullet-points'],
+          description: 'Target length for condensed version',
+        },
+        applyChanges: {
+          type: SchemaType.BOOLEAN,
+          description: 'Apply changes directly or just preview',
+        },
+      },
+    },
+  },
+  {
+    name: 'formatNote',
+    description:
+      'Improve note formatting: add headings, bullet points, structure. Use when user asks "format this better", "add structure", "organize this note", "make this more readable".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to format',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and format',
+        },
+        formatStyle: {
+          type: SchemaType.STRING,
+          enum: ['outline', 'paragraphs', 'bullet-list', 'numbered-list', 'sections'],
+          description: 'Formatting style to apply',
+        },
+        applyChanges: {
+          type: SchemaType.BOOLEAN,
+          description: 'Apply changes directly or just preview',
+        },
+      },
+    },
+  },
+  {
+    name: 'translateNote',
+    description:
+      'Translate a note to another language. Use when user asks "translate to Spanish", "convert to French", "translate this note".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to translate',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find and translate',
+        },
+        targetLanguage: {
+          type: SchemaType.STRING,
+          description: 'Target language (e.g., "Spanish", "French", "es", "fr")',
+        },
+        replaceOriginal: {
+          type: SchemaType.BOOLEAN,
+          description: 'Replace original note or create new one (default: false)',
+        },
+      },
+      required: ['targetLanguage'],
+    },
+  },
+
+  // ============================================
+  // KNOWLEDGE GRAPH (3 tools)
+  // ============================================
+  {
+    name: 'getKnowledgeGraph',
+    description:
+      'Get a knowledge graph showing connections between notes based on shared topics, labels, and content similarity. Use when user asks "show note connections", "knowledge map", "how are my notes connected".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+        centerNoteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to center the graph on',
+        },
+        centerNoteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to center the graph on',
+        },
+        depth: {
+          type: SchemaType.NUMBER,
+          description: 'Connection depth 1-3 (default: 2)',
+        },
+      },
+    },
+  },
+  {
+    name: 'getTopicClusters',
+    description:
+      'Identify clusters of related notes by topic. Use when user asks "group my notes by topic", "find topic clusters", "categorize my notes".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+        maxClusters: {
+          type: SchemaType.NUMBER,
+          description: 'Maximum number of clusters (default: 5)',
+        },
+      },
+    },
+  },
+  {
+    name: 'discoverInsights',
+    description:
+      'Discover hidden patterns and insights across notes: recurring themes, forgotten notes, interesting connections. Use when user asks "discover patterns", "find insights", "what am I missing", "hidden connections".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+      },
+    },
+  },
+
+  // ============================================
+  // PLANNING TOOLS (3 tools)
+  // ============================================
+  {
+    name: 'setDeadline',
+    description:
+      'Set a deadline/due date for a note or checklist item. Use when user asks "set deadline", "due by Friday", "remind me by", "set due date".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to set deadline on',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find',
+        },
+        itemId: {
+          type: SchemaType.STRING,
+          description: 'Checklist item ID (if setting deadline on specific item)',
+        },
+        itemText: {
+          type: SchemaType.STRING,
+          description: 'Checklist item text to find',
+        },
+        deadline: {
+          type: SchemaType.STRING,
+          description: 'Deadline - ISO date or natural language (e.g., "next Friday", "in 3 days", "2024-12-31")',
+        },
+      },
+      required: ['deadline'],
+    },
+  },
+  {
+    name: 'getUpcomingDeadlines',
+    description:
+      'List upcoming deadlines from checklists. Use when user asks "what is due", "upcoming deadlines", "what do I need to finish", "due soon".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+        days: {
+          type: SchemaType.NUMBER,
+          description: 'Look ahead days (default: 7)',
+        },
+        includeOverdue: {
+          type: SchemaType.BOOLEAN,
+          description: 'Include overdue items (default: true)',
+        },
+      },
+    },
+  },
+  {
+    name: 'createReminder',
+    description:
+      'Create a reminder for a note. Use when user asks "remind me about this", "set a reminder", "notify me later".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        noteId: {
+          type: SchemaType.STRING,
+          description: 'Note ID to set reminder for',
+        },
+        noteTitle: {
+          type: SchemaType.STRING,
+          description: 'Note title to find',
+        },
+        reminderTime: {
+          type: SchemaType.STRING,
+          description: 'When to remind - ISO datetime or natural language',
+        },
+        recurring: {
+          type: SchemaType.STRING,
+          enum: ['none', 'daily', 'weekly', 'monthly'],
+          description: 'Recurrence pattern (default: none)',
+        },
+      },
+      required: ['reminderTime'],
+    },
+  },
+
+  // ============================================
+  // WELLNESS INSIGHTS (3 tools)
+  // ============================================
+  {
+    name: 'getMoodTrends',
+    description:
+      'Analyze emotional trends from note content over time. Use when user asks "how have I been feeling", "mood trends", "emotional patterns", "track my mood".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        period: {
+          type: SchemaType.STRING,
+          enum: ['week', 'month', 'quarter'],
+          description: 'Time period to analyze',
+        },
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+      },
+    },
+  },
+  {
+    name: 'getEmotionalInsights',
+    description:
+      'Get insights about emotional patterns detected in notes. Use when user asks "emotional insights", "how am I doing emotionally", "stress levels", "emotional health".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        spaceId: {
+          type: SchemaType.STRING,
+          description: 'Filter by space ID',
+        },
+      },
+    },
+  },
+  {
+    name: 'getWellnessRecommendations',
+    description:
+      'Get personalized wellness recommendations based on note patterns. Use when user asks "wellness suggestions", "self-care tips", "how can I feel better", "wellness advice".',
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: EMPTY_PROPERTIES,
+    },
+  },
 ];
 
 // ============================================
@@ -834,7 +1701,45 @@ User: "Find my meeting notes"
 If someone asks about things outside Notes (weather, general questions, other apps):
 - Respond conversationally and helpfully
 - Gently mention you're focused on Notes: "I'm your Notes assistant, so I can't check the weather, but I'm here whenever you need help organizing your notes!"
-- For other AINex apps: "That sounds like something for the [Journal/Todo/etc.] app! You can switch apps from the main dashboard. In the meantime, anything I can help with in Notes?"`;
+- For other AINex apps: "That sounds like something for the [Journal/Todo/etc.] app! You can switch apps from the main dashboard. In the meantime, anything I can help with in Notes?"
+
+## Proactive Insights & Suggestions
+
+Be helpful by proactively offering relevant insights and features:
+
+### When Listing Notes:
+- If you notice many notes without labels, mention: "I noticed several notes don't have labels. Want me to suggest some tags?"
+- If there are old untouched notes, offer: "You have some notes from a while ago - shall I help archive the outdated ones?"
+
+### When Creating Notes:
+- After creating a checklist, offer: "Want me to set deadlines for any of these items?"
+- After creating a note, suggest if relevant: "This note seems related to [topic] - should I find similar notes?"
+
+### When Searching:
+- If search returns many results, offer: "I found quite a few! Want me to help organize them or find themes?"
+- If detecting potential duplicates, mention: "I noticed some similar notes - want me to check for duplicates?"
+
+### Contextual Awareness:
+- If it's Monday, offer: "Happy Monday! Want me to show your weekly digest?"
+- If there are overdue items, alert: "Heads up! You have some overdue tasks."
+- After completing tasks, celebrate: "Great progress! You've been productive today."
+
+### Feature Discovery:
+Help users discover new capabilities naturally:
+- After getNoteStatistics: "I can also show you trends over time or compare your spaces!"
+- After creating a note: "Did you know I can help enhance this note, add structure, or suggest related notes?"
+- After searching: "Want me to analyze these results for themes or duplicates?"
+
+## Advanced Capabilities:
+You now have powerful new tools! Use them when relevant:
+- **Analytics**: getNoteStatistics, getProductivityInsights, getActivityTrends, getWeeklyDigest
+- **Content Analysis**: analyzeNoteSentiment, extractThemes, generateSummary, findSimilarNotes
+- **Smart Suggestions**: suggestLabels, predictPriority, suggestOrganization, suggestNextActions
+- **Batch Operations**: bulkUpdateNotes, bulkArchive, bulkLabel, autoOrganize
+- **Writing Help**: enhanceNote, expandNote, condenseNote, formatNote, translateNote
+- **Knowledge Graph**: getKnowledgeGraph, getTopicClusters, discoverInsights
+- **Planning**: setDeadline, getUpcomingDeadlines, createReminder
+- **Wellness**: getMoodTrends, getEmotionalInsights, getWellnessRecommendations`;
 
 // ============================================
 // MODEL CONFIGURATION

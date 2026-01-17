@@ -4,34 +4,57 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getGeminiClient } from "@/lib/ai/gemini-client";
 import { NOTE_TOOLS } from "@/lib/ai/note-tools";
+import { getUserFromSession } from "@/lib/auth/server-verify";
 
-interface ChatRequestBody {
-  messages: Array<{ role: string; content: string }>;
-  systemPrompt?: string;
-  appName?: string;
-  context?: Record<string, unknown>;
-  enableTools?: boolean;
-  functionResults?: Array<{ name: string; response: unknown }>;
-}
+// Request validation schema
+const chatRequestSchema = z.object({
+  messages: z.array(z.object({
+    role: z.string(),
+    content: z.string(),
+  })).min(1, "At least one message is required"),
+  systemPrompt: z.string().optional(),
+  appName: z.string().optional(),
+  context: z.record(z.unknown()).optional(),
+  enableTools: z.boolean().default(true),
+  functionResults: z.array(z.object({
+    name: z.string(),
+    response: z.unknown(),
+  })).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as ChatRequestBody;
-    const { messages, systemPrompt, enableTools = true, functionResults } = body;
-
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    // Authentication check (session cookie)
+    const user = await getUserFromSession();
+    if (!user) {
       return NextResponse.json(
-        { error: "Messages array is required" },
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Validate request body
+    const parseResult = chatRequestSchema.safeParse(await request.json());
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request", details: parseResult.error.issues },
         { status: 400 }
       );
     }
+
+    const { messages, systemPrompt, enableTools, functionResults } = parseResult.data;
 
     const client = getGeminiClient();
 
     // If function results are provided, continue the conversation
     if (functionResults && functionResults.length > 0) {
+      // Filter to ensure all results have responses
+      const validResults = functionResults.filter(
+        (r): r is { name: string; response: unknown } => r.response !== undefined
+      );
       const text = await client.continueWithFunctionResults(
         {
           messages,
@@ -40,7 +63,7 @@ export async function POST(request: NextRequest) {
           maxTokens: 2000,
           tools: enableTools ? NOTE_TOOLS : undefined,
         },
-        functionResults
+        validResults
       );
 
       return NextResponse.json({
@@ -104,14 +127,13 @@ export async function POST(request: NextRequest) {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
       },
     });
   } catch (error) {
     console.error('[AI Chat] Error:', error);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "An error occurred",
-      },
+      { error: "Failed to process chat request. Please try again." },
       { status: 500 }
     );
   }

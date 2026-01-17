@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
       const emailConfig: EmailConfig = {
         apiKey: resendApiKey,
         fromEmail: resendFromEmail,
-        fromName: 'AINexSuite',
+        fromName: 'AINexSpace',
       };
 
       // Build the accept URL

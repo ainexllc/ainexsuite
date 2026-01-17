@@ -1,4 +1,8 @@
 import type { Timestamp } from "firebase/firestore";
+import type { EntryColor } from "@ainexsuite/types";
+
+// Re-export EntryColor as NoteColor for backwards compatibility
+export type NoteColor = EntryColor;
 
 // ============ Space Types ============
 export type SpaceType = "personal" | "family" | "work";
@@ -34,21 +38,6 @@ export type NoteSpaceDraft = {
 
 // ============ Note Types ============
 export type NoteType = "text" | "checklist";
-
-export type NoteColor =
-  | "default"
-  | "note-white"
-  | "note-cream"
-  | "note-lemon"
-  | "note-peach"
-  | "note-tangerine"
-  | "note-mint"
-  | "note-fog"
-  | "note-lavender"
-  | "note-blush"
-  | "note-sky"
-  | "note-moss"
-  | "note-coal";
 
 export type NotePattern =
   | "none"

@@ -56,9 +56,16 @@ function getCorsHeaders(request: NextRequest) {
 /**
  * GET /api/auth/session
  * Check if user has a valid session cookie (for SSO status checking)
+ *
+ * Query params:
+ * - quick=true: Skip Firestore read and return only basic user data from cookie
+ *               Used for fast validation during background session checks
  */
 export async function GET(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
+
+  // Check for quick mode (skip Firestore for fast validation)
+  const isQuickCheck = request.nextUrl.searchParams.get('quick') === 'true';
 
   try {
     const sessionCookie = request.cookies.get('__session')?.value;
@@ -71,12 +78,27 @@ export async function GET(request: NextRequest) {
     }
 
     // For local development, decode the simple base64 session
-    // Also try to fetch latest user data from Firestore
+    // Also try to fetch latest user data from Firestore (unless quick mode)
     if (process.env.NODE_ENV === 'development') {
       try {
         const decoded = JSON.parse(Buffer.from(sessionCookie, 'base64').toString());
 
-        // Try to get latest user data from Firestore (displayName, photoURL, iconURL, preferences, animated avatar)
+        // Quick mode: Return minimal user data from cookie only (no Firestore read)
+        // This is used for fast background validation during instant hydration
+        if (isQuickCheck) {
+          return NextResponse.json(
+            {
+              user: {
+                uid: decoded.uid,
+                email: decoded.email,
+              },
+              authenticated: true,
+            },
+            { headers: corsHeaders }
+          );
+        }
+
+        // Full mode: Try to get latest user data from Firestore (displayName, photoURL, iconURL, preferences, animated avatar)
         let displayName = decoded.displayName;
         let photoURL = decoded.photoURL;
         let iconURL: string | undefined;
@@ -160,11 +182,25 @@ export async function GET(request: NextRequest) {
 
     // Production: Verify session cookie with Firebase Admin
     const adminAuth = getAdminAuth();
-    const adminDb = getAdminFirestore();
-
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
 
-    // Get user data from Firestore
+    // Quick mode: Return minimal user data (skip Firestore read)
+    // This is used for fast background validation during instant hydration
+    if (isQuickCheck) {
+      return NextResponse.json(
+        {
+          user: {
+            uid: decodedClaims.uid,
+            email: decodedClaims.email,
+          },
+          authenticated: true,
+        },
+        { headers: corsHeaders }
+      );
+    }
+
+    // Full mode: Get user data from Firestore
+    const adminDb = getAdminFirestore();
     const userDoc = await adminDb.collection('users').doc(decodedClaims.uid).get();
     const userData = userDoc.exists ? userDoc.data() : null;
 
@@ -493,7 +529,7 @@ export async function POST(request: NextRequest) {
           appsEligible: ['notes', 'journal', 'todo', 'health', 'album', 'habits', 'hub', 'fit', 'projects', 'workflow', 'calendar'],
           trialStartDate: Date.now(),
           subscriptionStatus: 'trial' as const,
-          suiteAccess: true,
+          spaceAccess: true,
         };
 
         // Create user document in Firestore if it doesn't exist (dev mode)
@@ -634,7 +670,7 @@ export async function POST(request: NextRequest) {
         trialStartDate: now,
         trialEndDate: trialEndDate,
         subscriptionStatus: 'trial',
-        suiteAccess: true, // Grant suite access during trial
+        spaceAccess: true, // Grant space access during trial
       };
 
       await userRef.set(user);
@@ -650,7 +686,7 @@ export async function POST(request: NextRequest) {
           apps: allApps.reduce((acc, app) => ({ ...acc, [app]: true }), {}),
           appsEligible: allApps,
           trialEndDate: trialEndDate,
-          suiteAccess: true,
+          spaceAccess: true,
           lastLoginAt: FieldValue.serverTimestamp(),
         });
 

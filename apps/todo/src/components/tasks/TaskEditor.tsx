@@ -13,8 +13,6 @@ import {
   Image as ImageIcon,
   Calculator,
   Plus,
-  Pin,
-  PinOff,
   FolderOpen,
 } from 'lucide-react';
 import { EntryEditorShell, ConfirmationDialog, generateUUID, DatePicker } from '@ainexsuite/ui';
@@ -47,7 +45,7 @@ interface TaskEditorProps {
 
 export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskEditorProps) {
   const { user } = useAuth();
-  const { spaces, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskPin, toggleTaskArchive } = useTodoStore();
+  const { spaces, addTask, updateTask, deleteTask, tasks, updateTaskColor, toggleTaskArchive } = useTodoStore();
   const { currentSpace } = useSpaces();
 
   // Get todo-specific properties from store's spaces array
@@ -71,7 +69,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
 
   // Shell state
   const [color, setColor] = useState<EntryColor>('default');
-  const [pinned, setPinned] = useState(false);
   const [archived, setArchived] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
 
@@ -111,7 +108,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
         setListId(task.listId);
         setSelectedSpaceId(task.spaceId || 'personal');
         setColor((task.color as EntryColor) || 'default');
-        setPinned(task.pinned || false);
         setArchived(task.archived || false);
         setAttachments([]);
       }
@@ -127,7 +123,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
       setListId(defaultListId || '');
       setSelectedSpaceId(currentSpace?.id || 'personal');
       setColor('default');
-      setPinned(false);
       setArchived(false);
       setAttachments([]);
       setShowCalculator(false);
@@ -235,7 +230,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           listId,
           spaceId: selectedSpaceId || 'personal',
           color,
-          pinned,
           archived,
         });
       } else {
@@ -259,7 +253,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
           ownerId: user.uid,
           order: 0,
           color,
-          pinned,
           archived,
         };
         await addTask(newTask);
@@ -284,12 +277,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
     }
   };
 
-  const handlePinChange = async (newPinned: boolean) => {
-    setPinned(newPinned);
-    if (editTaskId) {
-      await toggleTaskPin(editTaskId, newPinned);
-    }
-  };
 
   const handleArchiveChange = async (newArchived: boolean) => {
     setArchived(newArchived);
@@ -427,19 +414,6 @@ export function TaskEditor({ isOpen, onClose, editTaskId, defaultListId }: TaskE
               className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
               autoFocus
             />
-            <button
-              type="button"
-              onClick={() => handlePinChange(!pinned)}
-              className={clsx(
-                'p-2 rounded-full transition-colors',
-                pinned
-                  ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                  : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-              )}
-              aria-label={pinned ? 'Unpin task' : 'Pin task'}
-            >
-              {pinned ? <PinOff className="h-5 w-5" /> : <Pin className="h-5 w-5" />}
-            </button>
             <button
               type="button"
               onClick={onClose}

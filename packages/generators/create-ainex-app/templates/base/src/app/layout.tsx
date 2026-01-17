@@ -6,8 +6,8 @@ import { AppProviders } from "@ainexsuite/ui/providers/app-providers";
 import { AppShell } from "@ainexsuite/ui/layout/app-shell";
 
 export const metadata: Metadata = {
-  title: "{{APP_NAME_CAPITALIZED}} | AINexSuite",
-  description: "{{APP_NAME_CAPITALIZED}} app - part of the AINexSuite productivity suite",
+  title: "{{APP_NAME_CAPITALIZED}} | AINexSpace",
+  description: "{{APP_NAME_CAPITALIZED}} app - part of the AINexSpace productivity suite",
 };
 
 export default function RootLayout({

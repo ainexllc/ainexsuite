@@ -179,7 +179,7 @@ function CalendarHomePageContent() {
           signInTitle: 'Welcome back',
           signUpDescription: 'Start organizing your life with intelligent scheduling.',
           signInDescription: 'Sign in to access your calendar workspace.',
-          footerText: 'Your schedule data stays private. Syncs with AINexSuite.',
+          footerText: 'Your schedule data stays private. Syncs with AINexSpace.',
         }}
         features={{
           sectionTitle: 'Time management, reimagined',

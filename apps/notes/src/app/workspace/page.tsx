@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useCallback, useState, useRef } from 'react';
-import { LayoutGrid, Calendar, X, Trash2 } from 'lucide-react';
+import { LayoutGrid, Calendar, X, Trash2, Sparkles } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import {
   WorkspacePageLayout,
@@ -15,7 +15,10 @@ import {
   type FilterChip,
   type FilterChipType,
 } from '@ainexsuite/ui';
+import { useAuth } from '@ainexsuite/auth';
 import { useSpaces } from '@/components/providers/spaces-provider';
+import { useBotAvatar } from '@/hooks/use-bot-avatar';
+import { useAIPanel } from '@/components/providers/ai-provider';
 import { NoteBoard } from '@/components/notes/note-board';
 import { NoteComposer } from "@/components/notes/note-composer";
 import { usePreferences } from "@/components/providers/preferences-provider";
@@ -60,6 +63,12 @@ export default function NotesWorkspace() {
   const { notes, trashed, filters, setFilters, sort, setSort, searchQuery, setSearchQuery, includeTrashInSearch, setIncludeTrashInSearch } = useNotes();
   const { labels } = useLabels();
   const { spaces, currentSpaceId, setCurrentSpace } = useSpaces();
+  const { toggleAI } = useAIPanel();
+  const { user } = useAuth();
+  const { botAvatarURL } = useBotAvatar({
+    userId: user?.uid,
+    tier: (user as { subscriptionTier?: 'free' | 'trial' | 'pro' | 'premium' })?.subscriptionTier,
+  });
 
   // Create space items for SpaceTabSelector
   const spaceItems = useMemo(() => {
@@ -292,6 +301,34 @@ export default function NotesWorkspace() {
             personalLabel="My Notes"
           />
         )
+      }
+      aiButton={
+        <button
+          onClick={toggleAI}
+          className="flex items-center h-9 bg-zinc-100 dark:bg-zinc-800/80 rounded-full pl-0 pr-4 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700/80 transition-colors border-0"
+          title="AI Assistant (⌘J)"
+          aria-label="Open AI assistant"
+        >
+          {/* Lumi avatar - fills left side edge-to-edge */}
+          <div className="h-[34px] w-[34px] rounded-full overflow-hidden flex-shrink-0 bg-zinc-200 dark:bg-zinc-700">
+            {botAvatarURL ? (
+              <video
+                src={botAvatarURL}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+              </div>
+            )}
+          </div>
+          {/* Text on right with padding */}
+          <span className="pl-2">Lumi</span>
+        </button>
       }
       composer={<NoteComposer />}
       toolbar={

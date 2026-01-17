@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
+import { useAuth, SpaceGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import { Loader2, ArrowLeft, BarChart3, Calendar, Flame, TrendingUp } from 'lucide-react';
@@ -209,8 +209,8 @@ function AnalyticsContent() {
 
 export default function AnalyticsPage() {
   return (
-    <SuiteGuard appName="habits">
+    <SpaceGuard appName="habits">
       <AnalyticsContent />
-    </SuiteGuard>
+    </SpaceGuard>
   );
 }

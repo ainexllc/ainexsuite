@@ -1,186 +1,158 @@
 'use client';
 
-/* eslint-disable @next/next/no-img-element */
-
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import {
-  Flag,
-  Users,
-  Pin,
-  PinOff,
-  Palette,
-  X,
-  Tag,
-  CheckSquare,
-  Image as ImageIcon,
-  Calculator,
-  Plus,
-} from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Flame, Plus, Calendar, X, Clock } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '@/lib/store';
 import { useSpaces } from '@/components/providers/spaces-provider';
-import { Task, Priority, TaskList, Member, ChecklistItem, TaskType } from '@/types/models';
-import { ENTRY_COLORS, getEntryColorConfig, generateUUID, DatePicker } from '@ainexsuite/ui';
-import type { EntryColor } from '@ainexsuite/types';
-import { InlineCalculator } from './inline-calculator';
-
-type AttachmentDraft = {
-  id: string;
-  file: File;
-  preview: string;
-};
-
-const checklistTemplate = (): ChecklistItem => ({
-  id: generateUUID(),
-  text: '',
-  completed: false,
-});
+import { Task, Priority, TaskList, Member } from '@/types/models';
+import { TremorCalendar } from '@ainexsuite/ui';
 
 interface TaskComposerProps {
   placeholder?: string;
 }
 
-export function TaskComposer({ placeholder = 'Add a todo...' }: TaskComposerProps) {
+const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; iconColor: string; bgColor: string }> = {
+  low: { label: 'Low', color: 'text-blue-600 dark:text-blue-400', iconColor: 'text-blue-500', bgColor: 'bg-blue-500/20' },
+  medium: { label: 'Medium', color: 'text-amber-600 dark:text-amber-400', iconColor: 'text-amber-500', bgColor: 'bg-amber-500/20' },
+  high: { label: 'High', color: 'text-red-500 dark:text-red-400', iconColor: 'text-red-500', bgColor: 'bg-red-500/20' },
+  urgent: { label: 'Urgent', color: 'text-purple-600 dark:text-purple-400', iconColor: 'text-purple-500', bgColor: 'bg-purple-500/20' },
+};
+
+export function TaskComposer({ placeholder = 'Create todo' }: TaskComposerProps) {
   const { user } = useAuth();
   const { currentSpace: spacesCurrentSpace } = useSpaces();
   const { addTask } = useTodoStore();
 
   // Build effective space with default lists for task creation
-  const defaultLists: TaskList[] = useMemo(() => [
-    { id: 'default_todo', title: 'To Do', order: 0 },
-    { id: 'default_progress', title: 'In Progress', order: 1 },
-    { id: 'default_done', title: 'Done', order: 2 },
-  ], []);
+  const defaultLists: TaskList[] = useMemo(
+    () => [
+      { id: 'default_todo', title: 'To Do', order: 0 },
+      { id: 'default_progress', title: 'In Progress', order: 1 },
+      { id: 'default_done', title: 'Done', order: 2 },
+    ],
+    []
+  );
 
-  const effectiveSpace = useMemo(() => ({
-    id: spacesCurrentSpace?.id || 'personal',
-    name: spacesCurrentSpace?.name || 'My Todos',
-    type: spacesCurrentSpace?.type || 'personal',
-    members: ((spacesCurrentSpace as unknown as { members?: Member[] })?.members || []) as Member[],
-    memberUids: (spacesCurrentSpace?.memberUids || []) as string[],
-    lists: ((spacesCurrentSpace as unknown as { lists?: TaskList[] })?.lists || defaultLists) as TaskList[],
-    createdAt: new Date().toISOString(),
-    createdBy: '',
-  }), [spacesCurrentSpace, defaultLists]);
+  const effectiveSpace = useMemo(
+    () => ({
+      id: spacesCurrentSpace?.id || 'personal',
+      name: spacesCurrentSpace?.name || 'My Todos',
+      type: spacesCurrentSpace?.type || 'personal',
+      members: ((spacesCurrentSpace as unknown as { members?: Member[] })?.members || []) as Member[],
+      memberUids: (spacesCurrentSpace?.memberUids || []) as string[],
+      lists: ((spacesCurrentSpace as unknown as { lists?: TaskList[] })?.lists || defaultLists) as TaskList[],
+      createdAt: new Date().toISOString(),
+      createdBy: '',
+    }),
+    [spacesCurrentSpace, defaultLists]
+  );
 
-  const [expanded, setExpanded] = useState(false);
+  // Simplified state - just title, dueDate, dueTime, priority
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [mode, setMode] = useState<TaskType>('text');
-  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
-  const [priority, setPriority] = useState<Priority>('medium');
   const [dueDate, setDueDate] = useState('');
-  const [assignees, setAssignees] = useState<string[]>([]);
-  const [listId, setListId] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
+  const [dueTime, setDueTime] = useState('');
+  const [priority, setPriority] = useState<Priority>('medium');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
 
-  // Visual state
-  const [color, setColor] = useState<EntryColor>('default');
-  const [pinned, setPinned] = useState(false);
-  const [showPalette, setShowPalette] = useState(false);
-  const [showTagInput, setShowTagInput] = useState(false);
-  const [showCalculator, setShowCalculator] = useState(false);
+  // Picker positions for portals
+  const [datePickerPos, setDatePickerPos] = useState({ x: 0, y: 0 });
+  const [priorityPickerPos, setPriorityPickerPos] = useState({ x: 0, y: 0 });
 
-  const composerRef = useRef<HTMLDivElement | null>(null);
-  const titleInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const checklistInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const pendingChecklistFocusId = useRef<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const datePickerRef = useRef<HTMLDivElement>(null);
+  const datePickerDropdownRef = useRef<HTMLDivElement>(null);
+  const priorityPickerRef = useRef<HTMLDivElement>(null);
+  const priorityPickerDropdownRef = useRef<HTMLDivElement>(null);
   const isSubmittingRef = useRef(false);
+  const shouldFocusAfterSubmit = useRef(false);
 
-  // Set default list when space changes
+  // Focus input after submission completes
   useEffect(() => {
-    if (effectiveSpace && effectiveSpace.lists.length > 0 && !listId) {
-      setListId(effectiveSpace.lists[0].id);
+    if (!isSubmitting && shouldFocusAfterSubmit.current) {
+      shouldFocusAfterSubmit.current = false;
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 10);
     }
-  }, [effectiveSpace, listId]);
+  }, [isSubmitting]);
 
-  // Focus new checklist item
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    if (!pendingChecklistFocusId.current) return;
-    const target = checklistInputRefs.current[pendingChecklistFocusId.current];
-    if (target) {
-      target.focus();
-      pendingChecklistFocusId.current = null;
-    }
-  }, [checklist]);
+    if (!showDatePicker && !showPriorityPicker) return;
 
-  // Cleanup attachment previews
-  useEffect(() => {
-    return () => {
-      attachments.forEach((item) => URL.revokeObjectURL(item.preview));
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (showDatePicker) {
+        const clickedDateButton = datePickerRef.current?.contains(target);
+        const clickedDateDropdown = datePickerDropdownRef.current?.contains(target);
+        if (!clickedDateButton && !clickedDateDropdown) {
+          setShowDatePicker(false);
+        }
+      }
+
+      if (showPriorityPicker) {
+        const clickedPriorityButton = priorityPickerRef.current?.contains(target);
+        const clickedPriorityDropdown = priorityPickerDropdownRef.current?.contains(target);
+        if (!clickedPriorityButton && !clickedPriorityDropdown) {
+          setShowPriorityPicker(false);
+        }
+      }
     };
-  }, [attachments]);
 
-  const hasContent = useMemo(() => {
-    if (title.trim() || description.trim() || attachments.length) return true;
-    if (mode === 'checklist') return checklist.some((item) => item.text.trim());
-    return false;
-  }, [title, description, attachments, checklist, mode]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDatePicker, showPriorityPicker]);
 
   const resetState = useCallback(() => {
-    setExpanded(false);
     setTitle('');
-    setDescription('');
-    setMode('text');
-    setChecklist([]);
-    setPriority('medium');
     setDueDate('');
-    setAssignees([]);
-    setListId(effectiveSpace?.lists[0]?.id || '');
-    setTags([]);
-    setTagInput('');
-    setColor('default');
-    setPinned(false);
-    setShowPalette(false);
-    setShowTagInput(false);
-    setShowCalculator(false);
-    setAttachments((prev) => {
-      prev.forEach((item) => URL.revokeObjectURL(item.preview));
-      return [];
-    });
-  }, [effectiveSpace?.lists]);
+    setDueTime('');
+    setPriority('medium');
+    setShowDatePicker(false);
+    setShowPriorityPicker(false);
+  }, []);
 
   const handleSubmit = useCallback(async () => {
     if (isSubmittingRef.current || isSubmitting || !effectiveSpace || !user) return;
-
-    if (!hasContent) {
-      resetState();
-      return;
-    }
+    if (!title.trim()) return;
 
     try {
       isSubmittingRef.current = true;
+      shouldFocusAfterSubmit.current = true;
       setIsSubmitting(true);
 
-      // TODO: Upload attachments to storage and get URLs
-      // For now, we'll skip actual file upload
+      // Combine date and time if both are set
+      const fullDueDate = dueDate && dueTime
+        ? `${dueDate}T${dueTime}`
+        : dueDate;
 
       const newTask: Task = {
         id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         spaceId: effectiveSpace.id,
-        listId: listId || effectiveSpace.lists[0]?.id || 'default',
+        listId: effectiveSpace.lists[0]?.id || 'default',
         title: title.trim(),
-        description: mode === 'text' ? description.trim() : '',
-        type: mode,
-        checklist: mode === 'checklist' ? checklist : [],
+        description: '',
+        type: 'text',
+        checklist: [],
         status: 'todo',
         priority,
-        dueDate,
-        assigneeIds: assignees.length > 0 ? assignees : [user.uid],
+        dueDate: fullDueDate,
+        assigneeIds: [user.uid],
         subtasks: [],
-        tags,
+        tags: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         createdBy: user.uid,
         ownerId: user.uid,
         order: 0,
-        color,
-        pinned,
+        color: 'default',
       };
 
       await addTask(newTask);
@@ -189,550 +161,246 @@ export function TaskComposer({ placeholder = 'Add a todo...' }: TaskComposerProp
       isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, [isSubmitting, effectiveSpace, user, hasContent, resetState, title, description, mode, checklist, priority, dueDate, assignees, listId, tags, color, pinned, addTask]);
+  }, [isSubmitting, effectiveSpace, user, title, priority, dueDate, dueTime, addTask, resetState]);
 
-  const handleChecklistChange = (itemId: string, next: Partial<ChecklistItem>) => {
-    setChecklist((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, ...next } : item
-      )
-    );
-  };
-
-  const handleAddChecklistItem = () => {
-    const newItem = checklistTemplate();
-    pendingChecklistFocusId.current = newItem.id;
-    setChecklist((prev) => [...prev, newItem]);
-  };
-
-  const handleRemoveChecklistItem = (itemId: string) => {
-    setChecklist((prev) => prev.filter((item) => item.id !== itemId));
-  };
-
-  const handleAddTag = () => {
-    const trimmed = tagInput.trim();
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed]);
-      setTagInput('');
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      void handleSubmit();
     }
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter((t) => t !== tagToRemove));
-  };
-
-  const handleFilesSelected = (files: FileList | null) => {
-    if (!files || !files.length) return;
-
-    const drafts: AttachmentDraft[] = Array.from(files).map((file) => ({
-      id: generateUUID(),
-      file,
-      preview: URL.createObjectURL(file),
-    }));
-
-    setAttachments((prev) => [...prev, ...drafts]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleDateSelect = useCallback((date: Date | undefined) => {
+    if (date) {
+      // Use local date parts instead of toISOString() to avoid timezone shift
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      setDueDate(`${year}-${month}-${day}`);
     }
-  };
-
-  const handleRemoveAttachment = (attachmentId: string) => {
-    setAttachments((prev) => {
-      prev
-        .filter((item) => item.id === attachmentId)
-        .forEach((item) => URL.revokeObjectURL(item.preview));
-      return prev.filter((item) => item.id !== attachmentId);
-    });
-  };
-
-  const handleCalculatorInsert = useCallback((result: string) => {
-    setDescription((prev) => (prev ? `${prev} ${result}` : result));
-    setShowCalculator(false);
+    // Don't close the picker immediately so user can set time
   }, []);
 
-  // Click outside to save/close
-  useEffect(() => {
-    if (!expanded) return;
+  const handleClearDate = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDueDate('');
+    setDueTime('');
+  }, []);
 
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!composerRef.current) return;
-      if (composerRef.current.contains(event.target as Node)) return;
-      if (isSubmittingRef.current || isSubmitting) return;
+  const formatDueDate = (dateStr: string, timeStr: string): string => {
+    if (!dateStr) return '';
+    // Parse as local time to avoid timezone shift
+    const date = new Date(dateStr + 'T00:00:00');
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-      if (hasContent) {
-        void handleSubmit();
-      } else {
-        resetState();
-      }
-    };
+    let dateLabel: string;
+    if (date.toDateString() === today.toDateString()) {
+      dateLabel = 'Today';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      dateLabel = 'Tomorrow';
+    } else {
+      dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
 
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [expanded, hasContent, handleSubmit, resetState, isSubmitting]);
+    if (timeStr) {
+      // Format time to 12-hour format
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const hour12 = hours % 12 || 12;
+      return `${dateLabel} ${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+    }
+
+    return dateLabel;
+  };
 
   if (!user) return null;
 
-  const colorConfig = getEntryColorConfig(color);
+  const priorityConfig = PRIORITY_CONFIG[priority];
 
   return (
     <section className="w-full">
-      {!expanded ? (
-        <div className="flex w-full items-center gap-2 rounded-2xl border px-5 py-4 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700">
+      <div className="flex w-full items-center gap-2 rounded-xl border px-4 py-3 shadow-sm transition bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus-within:border-[var(--color-primary)] focus-within:ring-2 focus-within:ring-[var(--color-primary)]/20">
+        {/* Plus Icon */}
+        <Plus className="h-4 w-4 text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
+
+        {/* Title Input */}
+        <input
+          ref={inputRef}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={isSubmitting}
+          className="flex-1 min-w-0 bg-transparent text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none disabled:opacity-50"
+        />
+
+        {/* Due Date Button */}
+        <div ref={datePickerRef} className="relative flex-shrink-0">
           <button
             type="button"
-            data-composer-expand
-            className="flex-1 min-w-0 text-left text-sm text-zinc-400 dark:text-zinc-500 focus-visible:outline-none"
-            onClick={() => setExpanded(true)}
-          >
-            <span>{placeholder}</span>
-          </button>
-        </div>
-      ) : (
-        <div
-          ref={composerRef}
-          className={clsx(
-            'w-full rounded-2xl shadow-lg border transition-all',
-            colorConfig.cardClass,
-            'border-zinc-200 dark:border-zinc-800'
-          )}
-        >
-          <div className="flex flex-col gap-3 px-5 py-4">
-            {/* Title row with pin and close buttons */}
-            <div className="flex items-start gap-2">
-              <input
-                ref={titleInputRef}
-                data-composer-input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Task title"
-                className="w-full bg-transparent text-lg font-semibold focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-                autoFocus
-              />
-              <button
-                type="button"
-                onClick={() => setPinned((prev) => !prev)}
-                className={clsx(
-                  'p-2 rounded-full transition-colors',
-                  pinned
-                    ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                    : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                )}
-                aria-label={pinned ? 'Unpin task' : 'Pin task'}
-              >
-                {pinned ? <PinOff className="h-5 w-5" /> : <Pin className="h-5 w-5" />}
-              </button>
-              <button
-                type="button"
-                onClick={resetState}
-                className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Description or Checklist */}
-            {mode === 'text' ? (
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                onKeyDown={(event) => {
-                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-                    event.preventDefault();
-                    void handleSubmit();
-                  }
-                }}
-                placeholder="Add details..."
-                rows={3}
-                className="min-h-[80px] w-full resize-none bg-transparent text-[15px] focus:outline-none leading-7 tracking-[-0.01em] text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-              />
-            ) : (
-              <div className="space-y-2">
-                {checklist.map((item, idx) => (
-                  <div key={item.id} className="group flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={item.completed}
-                      onChange={(e) =>
-                        handleChecklistChange(item.id, { completed: e.target.checked })
-                      }
-                      className="h-4 w-4 accent-[var(--color-primary)]"
-                    />
-                    <input
-                      value={item.text}
-                      onChange={(e) =>
-                        handleChecklistChange(item.id, { text: e.target.value })
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                          e.preventDefault();
-                          const nextItem = checklist[idx + 1];
-                          if (nextItem) {
-                            checklistInputRefs.current[nextItem.id]?.focus();
-                          } else {
-                            handleAddChecklistItem();
-                          }
-                        }
-                      }}
-                      placeholder={`Item ${idx + 1}`}
-                      ref={(el) => {
-                        if (el) {
-                          checklistInputRefs.current[item.id] = el;
-                        } else {
-                          delete checklistInputRefs.current[item.id];
-                        }
-                      }}
-                      className="flex-1 bg-transparent border-b border-transparent pb-1 text-sm focus:border-zinc-300 dark:focus:border-zinc-600 focus:outline-none text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
-                    />
-                    <button
-                      type="button"
-                      className="opacity-0 transition group-hover:opacity-100"
-                      onClick={() => handleRemoveChecklistItem(item.id)}
-                      aria-label="Remove item"
-                    >
-                      <X className="h-4 w-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300" />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddChecklistItem}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition hover:border-zinc-300 dark:hover:border-zinc-600"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add item
-                </button>
-              </div>
+            onClick={(e) => {
+              e.stopPropagation();
+              if (datePickerRef.current) {
+                const rect = datePickerRef.current.getBoundingClientRect();
+                setDatePickerPos({
+                  x: rect.left + rect.width / 2,
+                  y: rect.bottom,
+                });
+              }
+              setShowDatePicker(!showDatePicker);
+              setShowPriorityPicker(false);
+            }}
+            className={clsx(
+              'flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-colors',
+              dueDate
+                ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)]/20'
+                : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
             )}
+            aria-label="Set due date"
+          >
+            <Calendar className="h-4 w-4" />
+            {dueDate && <span className="font-medium">{formatDueDate(dueDate, dueTime)}</span>}
+            {dueDate && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={handleClearDate}
+                onKeyDown={(e) => e.key === 'Enter' && handleClearDate(e as unknown as React.MouseEvent)}
+                className="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/20 transition-colors"
+                aria-label="Clear date"
+              >
+                <X className="h-3 w-3" />
+              </span>
+            )}
+          </button>
 
-            {/* Attachments Preview */}
-            {attachments.length > 0 && (
-              <div className="grid gap-3 sm:grid-cols-3">
-                {attachments.map((attachment) => (
-                  <figure
-                    key={attachment.id}
-                    className="relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800/60 shadow-sm"
-                  >
-                    <img
-                      src={attachment.preview}
-                      alt={attachment.file.name}
-                      className="h-24 w-full object-cover"
-                    />
+          {/* Date Picker Dropdown via Portal */}
+          {showDatePicker && typeof document !== 'undefined' && createPortal(
+            <div
+              ref={datePickerDropdownRef}
+              className="fixed z-[9999] rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
+              style={{
+                left: datePickerPos.x,
+                top: datePickerPos.y + 8,
+                transform: 'translateX(-50%)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <TremorCalendar
+                mode="single"
+                selected={dueDate ? new Date(dueDate + 'T00:00:00') : undefined}
+                onSelect={handleDateSelect}
+                enableYearNavigation
+              />
+
+              {/* Time Picker */}
+              <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-700">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-zinc-400" />
+                  <input
+                    type="time"
+                    value={dueTime}
+                    onChange={(e) => setDueTime(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none [&::-webkit-calendar-picker-indicator]:dark:invert"
+                    placeholder="Add time"
+                  />
+                  {dueTime && (
                     <button
                       type="button"
-                      onClick={() => handleRemoveAttachment(attachment.id)}
-                      className="absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white shadow-lg transition hover:bg-black/70"
-                      aria-label="Remove attachment"
+                      onClick={() => setDueTime('')}
+                      className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                     >
                       <X className="h-3 w-3" />
                     </button>
-                  </figure>
-                ))}
-              </div>
-            )}
-
-            {/* List Selection */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {effectiveSpace.lists.map((list: TaskList) => (
-                <button
-                  key={list.id}
-                  type="button"
-                  onClick={() => setListId(list.id)}
-                  className={clsx(
-                    'px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors',
-                    listId === list.id
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                   )}
-                >
-                  {list.title}
-                </button>
-              ))}
-            </div>
+                </div>
+              </div>
 
-            {/* Properties row - Priority & Due Date */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              {/* Priority buttons */}
-              <div className="flex items-center gap-1">
-                <Flag className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-                {(['low', 'medium', 'high'] as Priority[]).map((p) => (
+              {/* Done Button */}
+              <div className="px-3 pb-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(false)}
+                  className="w-full py-1.5 text-xs font-medium rounded-lg transition-colors bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90"
+                >
+                  Done
+                </button>
+              </div>
+            </div>,
+            document.body
+          )}
+        </div>
+
+        {/* Priority Button */}
+        <div ref={priorityPickerRef} className="relative flex-shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (priorityPickerRef.current) {
+                const rect = priorityPickerRef.current.getBoundingClientRect();
+                setPriorityPickerPos({
+                  x: rect.left + rect.width / 2,
+                  y: rect.top - 8,
+                });
+              }
+              setShowPriorityPicker(!showPriorityPicker);
+              setShowDatePicker(false);
+            }}
+            className="h-7 w-7 rounded-full flex items-center justify-center transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            aria-label="Set priority"
+            title={`${priorityConfig.label} priority`}
+          >
+            <Flame className={clsx('h-4 w-4', priorityConfig.iconColor)} />
+          </button>
+
+          {/* Priority Picker Dropdown via Portal */}
+          {showPriorityPicker && typeof document !== 'undefined' && createPortal(
+            <div
+              ref={priorityPickerDropdownRef}
+              className="fixed z-[9999] flex flex-col gap-0.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-1.5 shadow-2xl min-w-[110px] animate-in fade-in slide-in-from-bottom-2 duration-200"
+              style={{
+                left: priorityPickerPos.x,
+                top: priorityPickerPos.y,
+                transform: 'translate(-50%, -100%)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {(['high', 'medium', 'low', 'urgent'] as Priority[]).map((p) => {
+                const config = PRIORITY_CONFIG[p];
+                return (
                   <button
                     key={p}
                     type="button"
-                    onClick={() => setPriority(p)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPriority(p);
+                      setShowPriorityPicker(false);
+                    }}
                     className={clsx(
-                      'px-3 py-1 rounded-full text-xs capitalize transition-all',
+                      'flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-medium transition',
                       priority === p
-                        ? p === 'high'
-                          ? 'bg-red-500/20 text-red-500'
-                          : 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                        ? clsx(config.bgColor, config.color)
+                        : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                     )}
                   >
-                    {p}
+                    <Flame className={clsx('h-3 w-3', config.iconColor)} />
+                    {config.label}
                   </button>
-                ))}
-              </div>
-
-              {/* Due date */}
-              <div className="w-48">
-                <DatePicker
-                  value={dueDate ? new Date(dueDate) : null}
-                  onChange={(date) => setDueDate(date ? date.toISOString().split('T')[0] : '')}
-                  placeholder="Due date"
-                  presets="smart"
-                />
-              </div>
-            </div>
-
-            {/* Assignees */}
-            {effectiveSpace.members.length > 1 && (
-              <div className="flex items-center gap-2 pt-2">
-                <Users className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-                <div className="flex flex-wrap gap-2">
-                  {effectiveSpace.members.map((member: Member) => (
-                    <button
-                      key={member.uid}
-                      type="button"
-                      onClick={() => {
-                        setAssignees((prev) =>
-                          prev.includes(member.uid)
-                            ? prev.filter((id) => id !== member.uid)
-                            : [...prev, member.uid]
-                        );
-                      }}
-                      className={clsx(
-                        'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-all',
-                        assignees.includes(member.uid)
-                          ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary)]'
-                          : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                      )}
-                    >
-                      <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs text-zinc-900 dark:text-zinc-100 font-medium">
-                        {member.displayName.slice(0, 1).toUpperCase()}
-                      </div>
-                      {member.displayName}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tags Display */}
-            {tags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400"
-                  >
-                    #{tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 ml-0.5"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Bottom Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-              <div className="flex items-center gap-1">
-                {/* Checklist Toggle */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode((prev) => {
-                      if (prev === 'text') {
-                        // Convert text body to checklist items
-                        if (description.trim()) {
-                          const lines = description.split('\n').filter((line) => line.trim());
-                          const items = lines.map((line) => ({
-                            id: generateUUID(),
-                            text: line.trim(),
-                            completed: false,
-                          }));
-                          setChecklist(items);
-                          setDescription('');
-                        }
-                        return 'checklist';
-                      } else {
-                        // Convert checklist items to text body
-                        if (checklist.length) {
-                          const text = checklist.map((item) => item.text).filter((t) => t.trim()).join('\n');
-                          setDescription(text);
-                          setChecklist([]);
-                        }
-                        return 'text';
-                      }
-                    });
-                  }}
-                  className={clsx(
-                    'p-2 rounded-full transition-colors',
-                    mode === 'checklist'
-                      ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                      : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                  )}
-                  aria-label="Toggle checklist mode"
-                >
-                  <CheckSquare className="h-5 w-5" />
-                </button>
-
-                {/* Image Upload */}
-                <button
-                  type="button"
-                  className="p-2 rounded-full transition-colors text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  onClick={() => fileInputRef.current?.click()}
-                  aria-label="Add image"
-                >
-                  <ImageIcon className="h-5 w-5" />
-                </button>
-
-                {/* Color Picker */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    className={clsx(
-                      'p-2 rounded-full transition-colors',
-                      showPalette
-                        ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                        : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                    )}
-                    onClick={() => {
-                      setShowPalette((prev) => !prev);
-                      setShowTagInput(false);
-                      setShowCalculator(false);
-                    }}
-                    aria-label="Choose color"
-                  >
-                    <Palette className="h-5 w-5" />
-                  </button>
-                  {showPalette && (
-                    <div className="absolute bottom-12 left-0 z-30 flex gap-2 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-3 shadow-xl">
-                      {ENTRY_COLORS.map((option) => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => {
-                            setColor(option.id);
-                            setShowPalette(false);
-                          }}
-                          className={clsx(
-                            'h-7 w-7 rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]',
-                            option.swatchClass,
-                            option.id === color && 'ring-2 ring-[var(--color-primary)]'
-                          )}
-                          aria-label={`Set color ${option.label}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Tag Input */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    className={clsx(
-                      'p-2 rounded-full transition-colors',
-                      showTagInput
-                        ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                        : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                    )}
-                    onClick={() => {
-                      setShowTagInput((prev) => !prev);
-                      setShowPalette(false);
-                      setShowCalculator(false);
-                    }}
-                    aria-label="Add tags"
-                  >
-                    <Tag className="h-5 w-5" />
-                  </button>
-                  {showTagInput && (
-                    <div className="absolute bottom-12 left-0 z-30 w-56 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xl">
-                      <div className="flex gap-2">
-                        <input
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddTag();
-                            }
-                          }}
-                          placeholder="Add a tag..."
-                          className="flex-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:border-[var(--color-primary)]"
-                          autoFocus
-                        />
-                        <button
-                          onClick={handleAddTag}
-                          className="px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg text-xs font-medium hover:brightness-110"
-                        >
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Calculator */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    className={clsx(
-                      'p-2 rounded-full transition-colors',
-                      showCalculator
-                        ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                        : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                    )}
-                    onClick={() => {
-                      setShowCalculator((prev) => !prev);
-                      setShowPalette(false);
-                      setShowTagInput(false);
-                    }}
-                    aria-label="Calculator"
-                  >
-                    <Calculator className="h-5 w-5" />
-                  </button>
-                  {showCalculator && (
-                    <div className="absolute bottom-12 left-1/2 z-30 -translate-x-1/2">
-                      <InlineCalculator
-                        onInsert={handleCalculatorInsert}
-                        onClose={() => setShowCalculator(false)}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => void handleSubmit()}
-                  className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-[var(--color-primary)]/20 transition hover:brightness-110 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
-                  disabled={isSubmitting || !title.trim()}
-                >
-                  {isSubmitting ? 'Adding...' : 'Add task'}
-                </button>
-              </div>
-            </div>
-          </div>
+                );
+              })}
+            </div>,
+            document.body
+          )}
         </div>
-      )}
 
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        accept="image/*"
-        multiple
-        onChange={(e) => handleFilesSelected(e.target.files)}
-      />
+        {/* Enter Hint */}
+        <span className="text-xs text-zinc-300 dark:text-zinc-600 flex-shrink-0 hidden sm:block">
+          ↵
+        </span>
+      </div>
     </section>
   );
 }

@@ -7,7 +7,7 @@ import type { SearchableApp } from '@ainexsuite/types';
 import { clsx } from 'clsx';
 
 interface AuthBoxProps {
-  appId: SearchableApp | 'suite';
+  appId: SearchableApp | 'space';
   appName: string;
   onAuthSuccess?: (uid: string) => void;
   logoContent?: React.ReactNode;
@@ -18,7 +18,7 @@ interface ExistingAccount {
   email: string;
   displayName: string;
   photoURL?: string;
-  primaryApp: SearchableApp | 'suite';
+  primaryApp: SearchableApp | 'space';
   hasAppAccess: boolean;
 }
 

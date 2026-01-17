@@ -27,7 +27,7 @@ export function TopNavSection() {
                   <div className="h-8 w-8 rounded-lg bg-[var(--color-primary,#f97316)] flex items-center justify-center">
                     <span className="text-white font-bold text-sm">A</span>
                   </div>
-                  <span className="font-semibold text-foreground">AinexSuite</span>
+                  <span className="font-semibold text-foreground">AinexSpace</span>
                 </div>
               </div>
 

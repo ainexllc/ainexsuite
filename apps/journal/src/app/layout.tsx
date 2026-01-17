@@ -44,7 +44,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: 'Journal - AINexSuite',
+  title: 'Journal - AINexSpace',
   description: 'Daily reflections and mood tracking with AI insights',
   icons: {
     icon: '/favicon.svg',

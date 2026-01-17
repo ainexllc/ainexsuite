@@ -305,7 +305,7 @@ function MainHomePageContent() {
           cards: featureCards,
         }}
         footer={{
-          appDisplayName: "AINexSuite",
+          appDisplayName: "AINexSpace",
           productLinks,
           companyLinks,
           resourceLinks,

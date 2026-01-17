@@ -1,5 +1,5 @@
 /**
- * Suite utilities for tracking app usage and managing trial/subscription logic
+ * Space utilities for tracking app usage and managing trial/subscription logic
  */
 
 import type { User, SubscriptionStatus } from '@ainexsuite/types';
@@ -51,18 +51,18 @@ export function getRemainingTrialDays(user: User): number {
 }
 
 /**
- * Check if user needs Suite access
- * User needs Suite if:
+ * Check if user needs Space access
+ * User needs Space if:
  * 1. They've used 2+ apps AND
  * 2. Trial has expired OR subscription status is not 'active'
  */
-export function needsSuiteAccess(user: User): boolean {
-  // If they already have suite access, no need to check
-  if (user.suiteAccess) {
+export function needsSpaceAccess(user: User): boolean {
+  // If they already have space access, no need to check
+  if (user.spaceAccess) {
     return false;
   }
   
-  // If they've used fewer than 2 apps, no suite needed
+  // If they've used fewer than 2 apps, no space needed
   if (!hasUsedMultipleApps(user)) {
     return false;
   }
@@ -77,7 +77,7 @@ export function needsSuiteAccess(user: User): boolean {
     return false;
   }
   
-  // Otherwise, they need Suite access
+  // Otherwise, they need Space access
   return true;
 }
 
@@ -104,15 +104,15 @@ export function canAccessApp(user: User, appName: AppName): { allowed: boolean; 
     return { allowed: true };
   }
   
-  // If they've accessed 2+ apps, check Suite access
-  if (needsSuiteAccess(user)) {
+  // If they've accessed 2+ apps, check Space access
+  if (needsSpaceAccess(user)) {
     return {
       allowed: false,
-      reason: 'You need Suite access to use multiple apps. Your 30-day trial has expired.',
+      reason: 'You need Space access to use multiple apps. Your 30-day trial has expired.',
     };
   }
-  
-  // If they have Suite access, allow
+
+  // If they have Space access, allow
   return { allowed: true };
 }
 
@@ -135,14 +135,14 @@ export function getSubscriptionSummary(user: User): {
 } {
   const appsCount = getAppsUsedCount(user);
   const daysRemaining = getRemainingTrialDays(user);
-  const needsUpgrade = needsSuiteAccess(user);
+  const needsUpgrade = needsSpaceAccess(user);
   
   let message = '';
   
   if (appsCount === 0) {
     message = 'Start exploring apps to begin your 30-day trial';
   } else if (appsCount === 1) {
-    message = `You're using 1 app. Try another app to unlock the full Suite`;
+    message = `You're using 1 app. Try another app to unlock the full Space`;
   } else if (isTrialActive(user)) {
     message = `${daysRemaining} days left in your trial`;
   } else if (user.subscriptionStatus === 'active') {

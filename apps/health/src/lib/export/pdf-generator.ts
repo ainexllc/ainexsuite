@@ -225,7 +225,7 @@ export async function generateHealthReportPDF(
     doc.setFontSize(9);
     doc.setTextColor(150);
     doc.text(
-      `Page ${i} of ${pageCount} | AinexSuite Health`,
+      `Page ${i} of ${pageCount} | AinexSpace Health`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: 'center' }

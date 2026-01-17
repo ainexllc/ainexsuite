@@ -1,8 +1,8 @@
 # @ainexsuite/auth
 
-> SSO authentication with session cookies for AINexSuite
+> SSO authentication with session cookies for AINexSpace
 
-Unified authentication system providing Single Sign-On (SSO) across all AINexSuite applications using Firebase Authentication and domain-wide session cookies.
+Unified authentication system providing Single Sign-On (SSO) across all AINexSpace applications using Firebase Authentication and domain-wide session cookies.
 
 ## Features
 
@@ -25,7 +25,7 @@ pnpm add @ainexsuite/auth
 ### 1. Wrap your app with AuthProvider
 
 ```tsx
-import { AuthProvider } from '@ainexsuite/auth';
+import { AuthProvider } from "@ainexsuite/auth";
 
 export default function App({ children }: { children: React.ReactNode }) {
   return <AuthProvider>{children}</AuthProvider>;
@@ -35,7 +35,7 @@ export default function App({ children }: { children: React.ReactNode }) {
 ### 2. Use authentication in components
 
 ```tsx
-import { useAuth } from '@ainexsuite/auth';
+import { useAuth } from "@ainexsuite/auth";
 
 export function UserProfile() {
   const { user, loading, signOut } = useAuth();
@@ -55,7 +55,7 @@ export function UserProfile() {
 ### 3. Protect routes
 
 ```tsx
-import { ProtectedRoute } from '@/components/auth/protected-route';
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 export default function DashboardPage() {
   return (
@@ -69,10 +69,10 @@ export default function DashboardPage() {
 ### 4. Add app activation
 
 ```tsx
-import { AppActivationModal, useAppActivation } from '@ainexsuite/auth';
+import { AppActivationModal, useAppActivation } from "@ainexsuite/auth";
 
 export default function AppPage() {
-  const { needsActivation, checking } = useAppActivation('notes');
+  const { needsActivation, checking } = useAppActivation("notes");
 
   if (needsActivation && !checking) {
     return (
@@ -101,6 +101,7 @@ const { user, firebaseUser, loading, signOut, logout } = useAuth();
 ```
 
 **Returns:**
+
 - `user: User | null` - User data from Firestore
 - `firebaseUser: FirebaseUser | null` - Firebase Auth user
 - `loading: boolean` - Authentication state loading
@@ -108,6 +109,7 @@ const { user, firebaseUser, loading, signOut, logout } = useAuth();
 - `logout: () => Promise<void>` - Alias for signOut
 
 **User Type:**
+
 ```typescript
 interface User {
   uid: string;
@@ -123,7 +125,7 @@ interface User {
   appsEligible: string[];
   trialStartDate: string;
   subscriptionStatus: string;
-  suiteAccess: boolean;
+  spaceAccess: boolean;
 }
 ```
 
@@ -134,20 +136,22 @@ interface User {
 Check if user has activated the app.
 
 ```tsx
-const { needsActivation, appName, checking } = useAppActivation('notes');
+const { needsActivation, appName, checking } = useAppActivation("notes");
 
 // With options
 const { needsActivation } = useAppActivation({
-  appName: 'notes',
+  appName: "notes",
   skip: false, // Skip activation check
 });
 ```
 
 **Parameters:**
+
 - `appName: string` - App identifier (notes, journey, todo, etc.)
 - `options.skip?: boolean` - Skip activation check (for public pages)
 
 **Returns:**
+
 - `needsActivation: boolean` - True if user needs to activate
 - `appName: string` - The app being checked
 - `checking: boolean` - Loading state
@@ -168,6 +172,7 @@ User consent modal for app activation.
 ```
 
 **Props:**
+
 - `appName: string` - App identifier
 - `appDisplayName: string` - Display name for UI
 - `onActivated?: () => void` - Callback after successful activation
@@ -180,9 +185,9 @@ User consent modal for app activation.
 Check if email is already registered.
 
 ```tsx
-import { checkEmailExists } from '@ainexsuite/auth';
+import { checkEmailExists } from "@ainexsuite/auth";
 
-const status = await checkEmailExists('user@example.com');
+const status = await checkEmailExists("user@example.com");
 
 if (status.exists) {
   if (status.hasGoogle) {
@@ -195,6 +200,7 @@ if (status.exists) {
 ```
 
 **Returns:**
+
 ```typescript
 interface EmailStatus {
   exists: boolean;
@@ -218,7 +224,7 @@ const message = getAccountConflictMessage(status);
 Determine if user should see signup or signin flow.
 
 ```tsx
-const flow = await determineAuthFlow('user@example.com');
+const flow = await determineAuthFlow("user@example.com");
 // Returns: 'signup' | 'signin' | 'unknown'
 ```
 
@@ -232,7 +238,7 @@ import {
   getSessionCookie,
   removeSessionCookie,
   hasSessionCookie,
-} from '@ainexsuite/auth';
+} from "@ainexsuite/auth";
 
 // Set session cookie
 setSessionCookie(sessionCookie);
@@ -260,7 +266,7 @@ import {
   isSessionExpired,
   isSessionExpiringSoon,
   shouldRefreshSession,
-} from '@ainexsuite/auth';
+} from "@ainexsuite/auth";
 
 // Initialize session with timeout tracking
 initializeSession(sessionCookie);
@@ -288,7 +294,7 @@ if (isSessionExpired()) {
 
 if (isSessionExpiringSoon()) {
   // Less than 5 minutes remaining
-  showWarning('Your session will expire soon');
+  showWarning("Your session will expire soon");
 }
 
 // Check if refresh needed (75% elapsed)
@@ -307,7 +313,7 @@ clearSessionData();
 Parse Firebase Auth error into structured information.
 
 ```tsx
-import { parseAuthError } from '@ainexsuite/auth';
+import { parseAuthError } from "@ainexsuite/auth";
 
 try {
   await signInWithEmailAndPassword(auth, email, password);
@@ -319,6 +325,7 @@ try {
 ```
 
 **Returns:**
+
 ```typescript
 interface AuthErrorInfo {
   code: string;
@@ -343,7 +350,7 @@ import {
   requiresReauth,
   logAuthError,
   getErrorAction,
-} from '@ainexsuite/auth';
+} from "@ainexsuite/auth";
 
 // Get user-friendly message
 const message = getAuthErrorMessage(error);
@@ -365,7 +372,7 @@ if (isRecoverableAuthError(error)) {
 }
 
 // Log error with context
-logAuthError(error, 'Sign In Flow', { email, timestamp: Date.now() });
+logAuthError(error, "Sign In Flow", { email, timestamp: Date.now() });
 
 // Get recommended action
 const action = getErrorAction(error);
@@ -433,8 +440,8 @@ const action = getErrorAction(error);
 ### Protected Route Component
 
 ```tsx
-import { useAuth } from '@ainexsuite/auth';
-import { useRouter } from 'next/navigation';
+import { useAuth } from "@ainexsuite/auth";
+import { useRouter } from "next/navigation";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -443,7 +450,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) return <LoadingSpinner />;
 
   if (!user) {
-    router.push('/login');
+    router.push("/login");
     return null;
   }
 
@@ -454,7 +461,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 ### Email-First Login Flow
 
 ```tsx
-import { checkEmailExists, getAccountConflictMessage } from '@ainexsuite/auth';
+import { checkEmailExists, getAccountConflictMessage } from "@ainexsuite/auth";
 
 async function handleEmailSubmit(email: string) {
   const status = await checkEmailExists(email);
@@ -478,9 +485,9 @@ async function handleEmailSubmit(email: string) {
 ### Session Refresh Hook
 
 ```tsx
-import { useEffect } from 'react';
-import { shouldRefreshSession, updateLastActivity } from '@ainexsuite/auth';
-import { auth } from '@ainexsuite/firebase';
+import { useEffect } from "react";
+import { shouldRefreshSession, updateLastActivity } from "@ainexsuite/auth";
+import { auth } from "@ainexsuite/firebase";
 
 export function useSessionRefresh() {
   useEffect(() => {
@@ -502,7 +509,7 @@ export function useSessionRefresh() {
 ### Error Handling in Forms
 
 ```tsx
-import { parseAuthError, getErrorAction } from '@ainexsuite/auth';
+import { parseAuthError, getErrorAction } from "@ainexsuite/auth";
 
 async function handleSignIn(email: string, password: string) {
   try {
@@ -514,13 +521,13 @@ async function handleSignIn(email: string, password: string) {
 
     const action = getErrorAction(error);
     switch (action) {
-      case 'retry':
+      case "retry":
         setShowRetryButton(true);
         break;
-      case 'reauth':
-        router.push('/login');
+      case "reauth":
+        router.push("/login");
         break;
-      case 'contact':
+      case "contact":
         setShowContactSupport(true);
         break;
     }
@@ -553,20 +560,23 @@ Each app needs these API routes for full SSO functionality:
 Converts session cookie to Firebase custom token for silent auth.
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { getAdminAuth } from '@/lib/firebase/admin-app';
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { getAdminAuth } from "@/lib/firebase/admin-app";
 
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('__session')?.value;
+  const sessionCookie = cookieStore.get("__session")?.value;
 
   if (!sessionCookie) {
-    return NextResponse.json({ error: 'No session' }, { status: 401 });
+    return NextResponse.json({ error: "No session" }, { status: 401 });
   }
 
   const adminAuth = getAdminAuth();
-  const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+  const decodedClaims = await adminAuth.verifySessionCookie(
+    sessionCookie,
+    true,
+  );
   const customToken = await adminAuth.createCustomToken(decodedClaims.uid);
 
   return NextResponse.json({ customToken });
@@ -578,29 +588,35 @@ export async function POST(request: NextRequest) {
 Activates app for the user.
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { getAdminAuth, getAdminFirestore } from '@/lib/firebase/admin-app';
-import { FieldValue } from 'firebase-admin/firestore';
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { getAdminAuth, getAdminFirestore } from "@/lib/firebase/admin-app";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(request: NextRequest) {
   const { app } = await request.json();
   const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('__session')?.value;
+  const sessionCookie = cookieStore.get("__session")?.value;
 
   if (!sessionCookie) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const adminAuth = getAdminAuth();
-  const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+  const decodedClaims = await adminAuth.verifySessionCookie(
+    sessionCookie,
+    true,
+  );
 
   const adminDb = getAdminFirestore();
-  await adminDb.collection('users').doc(decodedClaims.uid).update({
-    appsEligible: FieldValue.arrayUnion(app),
-    [`apps.${app}`]: true,
-    [`appsUsed.${app}`]: Date.now(),
-  });
+  await adminDb
+    .collection("users")
+    .doc(decodedClaims.uid)
+    .update({
+      appsEligible: FieldValue.arrayUnion(app),
+      [`apps.${app}`]: true,
+      [`appsUsed.${app}`]: Date.now(),
+    });
 
   return NextResponse.json({ success: true });
 }
@@ -638,4 +654,4 @@ MIT
 
 ## Support
 
-For issues and questions, please contact the AINexSuite team.
+For issues and questions, please contact the AINexSpace team.

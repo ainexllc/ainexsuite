@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useState } from 'react';
-import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeResizer, useReactFlow, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 import { LockBadge } from './LockBadge';
 
@@ -14,7 +14,8 @@ interface DatabaseNodeData extends Record<string, unknown> {
 
 export type DatabaseNodeType = Node<DatabaseNodeData, 'database'>;
 
-function DatabaseNode({ data, selected }: NodeProps<DatabaseNodeType>) {
+function DatabaseNode({ id, data, selected }: NodeProps<DatabaseNodeType>) {
+  const { setNodes } = useReactFlow();
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const nodeBgColor = (data.bgColor as string) || 'rgba(10, 10, 10, 0.8)';
@@ -34,7 +35,14 @@ function DatabaseNode({ data, selected }: NodeProps<DatabaseNodeType>) {
     transition: 'opacity 0.2s',
   } as const;
 
-  const stopEditing = useCallback(() => setIsEditing(false), []);
+  const stopEditing = useCallback(() => {
+    setIsEditing(false);
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, label } } : node
+      )
+    );
+  }, [id, label, setNodes]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

@@ -3,8 +3,8 @@ import type { SearchableApp } from './search';
 
 // User types for authentication and account management
 export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'past_due' | 'canceled';
-export type SubscriptionTier = 'trial' | 'single-app' | 'three-apps' | 'pro' | 'premium';
-export type AccountType = 'single-app' | 'multi-app' | 'suite';
+export type SubscriptionTier = 'free' | 'trial' | 'pro' | 'premium';
+export type AccountType = 'single-app' | 'multi-app' | 'space';
 export type DomainPreference = 'subdomain' | 'standalone';
 
 export type UserRole = 'admin' | 'user';
@@ -22,11 +22,11 @@ export interface User {
   lastLoginAt: Timestamp;
 
   // App-scoped authentication
-  // The app user signed up with (e.g., "journey", "notes", "suite")
-  primaryApp?: SearchableApp | 'suite';
+  // The app user signed up with (e.g., "journey", "notes", "space")
+  primaryApp?: SearchableApp | 'space';
 
   // NEW: Account type detection (auto-calculated)
-  accountType?: AccountType; // 'single-app' | 'multi-app' | 'suite'
+  accountType?: AccountType; // 'single-app' | 'multi-app' | 'space'
   preferredDomain?: DomainPreference; // 'subdomain' | 'standalone'
 
   // NEW: Simplified app access control
@@ -46,7 +46,7 @@ export interface User {
     habits?: { approved: boolean; approvedAt: Timestamp };
     hub?: { approved: boolean; approvedAt: Timestamp };
     fit?: { approved: boolean; approvedAt: Timestamp };
-    suite?: { approved: boolean; approvedAt: Timestamp };
+    space?: { approved: boolean; approvedAt: Timestamp };
   };
 
   // Legacy apps field (kept for backward compatibility)
@@ -64,7 +64,7 @@ export interface User {
     calendar?: boolean;
   };
 
-  // Suite upsell tracking
+  // Space upsell tracking
   appsUsed: {
     notes?: Timestamp;
     journal?: Timestamp;
@@ -82,7 +82,7 @@ export interface User {
   subscriptionStatus: SubscriptionStatus;
   subscriptionTier?: SubscriptionTier; // 'trial' | 'single-app' | 'three-apps' | 'pro' | 'premium'
   subscriptionExpiresAt?: Timestamp;
-  suiteAccess: boolean; // true = has suite access, false = needs suite subscription
+  spaceAccess: boolean; // true = has space access, false = needs space subscription
 
   // Per-app subscription tracking
   subscribedApps?: string[]; // Array of app slugs user is subscribed to (e.g., ['notes', 'journal'])

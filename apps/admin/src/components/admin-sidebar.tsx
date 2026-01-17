@@ -12,6 +12,7 @@ import {
   Image,
   BookOpen,
   Video,
+  Bot,
   Palette,
   RefreshCw,
   Settings,
@@ -88,6 +89,11 @@ const navigation: NavSection[] = [
         href: '/workspace/video-backgrounds',
         label: 'Videos',
         icon: Video,
+      },
+      {
+        href: '/workspace/ai-avatars',
+        label: 'AI Avatars',
+        icon: Bot,
       },
     ],
   },
@@ -257,7 +263,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         {/* Footer */}
         <div className="p-4 border-t border-zinc-200 dark:border-[#27272a]">
           <div className="bg-zinc-100 dark:bg-[#18181b] rounded-xl p-4 text-center">
-            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-1">AinexSuite Admin</h4>
+            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-1">AinexSpace Admin</h4>
             <p className="text-xs text-zinc-500 dark:text-[#a1a1aa] mb-3">Platform management console</p>
             <Link
               href="/"

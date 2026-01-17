@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWorkspaceAuth, SuiteGuard } from '@ainexsuite/auth';
+import { useWorkspaceAuth, SpaceGuard } from '@ainexsuite/auth';
 import { WorkspaceLoadingScreen, SettingsModal, useFontPreference, useFontSizePreference } from '@ainexsuite/ui';
 import type { SpaceSettingsItem } from '@ainexsuite/ui';
 import { getQuickActionsForApp } from '@ainexsuite/types';
@@ -90,11 +90,6 @@ function WorkspaceLayoutInner({
     }
   }, [router]);
 
-  // Handle AI assistant
-  const handleAiAssistantClick = useCallback(() => {
-    setAiPanelOpen(true);
-  }, []);
-
   // Handle settings click
   const handleSettingsClick = useCallback(() => {
     setSettingsModalOpen(true);
@@ -107,7 +102,6 @@ function WorkspaceLayoutInner({
         onSignOut={handleSignOut}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
         onSettingsClick={handleSettingsClick}
         notifications={[]}
         onUpdatePreferences={updatePreferences}
@@ -202,7 +196,7 @@ export default function WorkspaceRootLayout({
   }
 
   return (
-    <SuiteGuard appName="health">
+    <SpaceGuard appName="health">
       <SpacesProvider>
         <PreferencesProvider>
           <HealthMetricsProvider>
@@ -228,6 +222,6 @@ export default function WorkspaceRootLayout({
           </HealthMetricsProvider>
         </PreferencesProvider>
       </SpacesProvider>
-    </SuiteGuard>
+    </SpaceGuard>
   );
 }

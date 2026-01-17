@@ -1,6 +1,6 @@
 /**
  * @ainexsuite/auth
- * SSO authentication with session cookies for AINexSuite
+ * SSO authentication with session cookies for AINexSpace
  *
  * Key features:
  * - Server-side session cookies scoped to .ainexspace.com
@@ -19,7 +19,7 @@ export * from './app-activation-modal';
 export * from './app-activation-box';
 export * from './use-app-activation';
 export * from './auth-box';
-export * from './suite-guard';
+export * from './space-guard';
 
 // Utilities
 export * from './email-detection';
@@ -27,13 +27,13 @@ export * from './auth-errors';
 export * from './user-utils';
 export * from './stripe-client';
 
-// Suite access utilities
+// Space access utilities
 export {
   getAppsUsedCount,
   hasUsedMultipleApps,
-  needsSuiteAccess,
+  needsSpaceAccess,
   markAppAsUsed,
-} from './suite-utils';
+} from './space-utils';
 
 // Subscription utilities
 export * from './subscription-utils';

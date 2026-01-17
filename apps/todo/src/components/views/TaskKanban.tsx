@@ -130,9 +130,18 @@ export function TaskKanban({ onEditTask, searchQuery = '' }: TaskKanbanProps) {
       }
     });
 
-    // Sort each column by order
+    // Sort each column by order, except done column sorts by completedAt
     Object.keys(grouped).forEach((status) => {
-      grouped[status as TaskStatus].sort((a, b) => (a.order || 0) - (b.order || 0));
+      if (status === 'done') {
+        // Sort done column by completedAt (most recently completed last)
+        grouped.done.sort((a, b) => {
+          const aTime = a.completedAt || 0;
+          const bTime = b.completedAt || 0;
+          return aTime - bTime;
+        });
+      } else {
+        grouped[status as TaskStatus].sort((a, b) => (a.order || 0) - (b.order || 0));
+      }
     });
 
     return grouped;

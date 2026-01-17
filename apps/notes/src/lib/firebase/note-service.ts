@@ -155,6 +155,7 @@ export async function createNote(
     reminderId?: string | null;
     noteDate?: Date | null;
     spaceId?: string;
+    position?: number;
   },
 ) {
   const type = input.type ?? (input.checklist?.length ? "checklist" : "text");

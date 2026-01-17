@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
+import { useAuth, SpaceGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -292,8 +292,8 @@ function ProfileContent() {
 
 export default function ProfilePage() {
   return (
-    <SuiteGuard appName="habits">
+    <SpaceGuard appName="habits">
       <ProfileContent />
-    </SuiteGuard>
+    </SpaceGuard>
   );
 }

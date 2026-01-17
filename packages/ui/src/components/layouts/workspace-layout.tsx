@@ -139,11 +139,6 @@ interface WorkspaceLayoutProps {
    * Callback when a quick action is selected
    */
   onQuickAction?: (actionId: string) => void;
-  // NEW: AI Assistant
-  /**
-   * Callback when AI assistant button is clicked
-   */
-  onAiAssistantClick?: () => void;
   // AI Insights Pulldown props
   /**
    * Sections for AI Insights Pulldown. If provided, shows the pulldown handle.
@@ -228,7 +223,6 @@ export function WorkspaceLayout({
   onDeclineInvitation,
   quickActions = [],
   onQuickAction,
-  onAiAssistantClick,
   // AI Insights Pulldown props
   insightsSections,
   insightsTitle,
@@ -354,7 +348,6 @@ export function WorkspaceLayout({
         onQuickAction={onQuickAction}
         isQuickActionsOpen={isQuickActionsOpen}
         onQuickActionsToggle={handleQuickActionsToggle}
-        onAiAssistantClick={onAiAssistantClick}
       />
 
       {/* Sidebar (Custom or Default) */}

@@ -1,6 +1,6 @@
 /**
  * @ainexsuite/ui
- * Shared UI components and design system for AINexSuite
+ * Shared UI components and design system for AINexSpace
  *
  * This package provides:
  * - Design system CSS (globals.css)

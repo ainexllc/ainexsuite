@@ -49,7 +49,7 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: 'Health - AINexSuite',
+  title: 'Health - AINexSpace',
   description: 'Health metrics and wellness tracking with AI insights',
   icons: {
     icon: '/favicon.svg',

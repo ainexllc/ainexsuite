@@ -107,6 +107,15 @@ service firebase.storage {
       allow delete: if request.auth != null;
     }
 
+    // Bot avatars (admin uploads for AI chatbot display)
+    // Public read for chat display, authenticated write (admin check at API level)
+    match /bot-avatars/{avatarId}/{allPaths=**} {
+      allow read: if true; // Public read for chat display
+      allow write: if request.auth != null
+        && request.resource.size <= 50 * 1024 * 1024; // 50MB max for source + video
+      allow delete: if request.auth != null;
+    }
+
     // Deny all other access
     match /{allPaths=**} {
       allow read, write: if false;

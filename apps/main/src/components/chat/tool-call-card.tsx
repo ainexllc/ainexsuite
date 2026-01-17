@@ -16,6 +16,50 @@ import {
   Copy,
   Star,
   Settings,
+  // Analytics & Insights icons
+  BarChart3,
+  TrendingUp,
+  LineChart,
+  PieChart,
+  Activity,
+  CalendarDays,
+  Flame,
+  Grid3X3,
+  // Content Analysis icons
+  Heart,
+  Palette,
+  FileText,
+  Key,
+  ScanSearch,
+  Files,
+  // Smart Suggestions icons
+  Wand2,
+  Link,
+  Lightbulb,
+  ListOrdered,
+  FolderCog,
+  // Batch Operations icons
+  RefreshCw,
+  Tags,
+  Sparkles,
+  // Writing Assistance icons
+  Pencil,
+  Maximize2,
+  Minimize2,
+  Languages,
+  AlignLeft,
+  // Knowledge Graph icons
+  Network,
+  Boxes,
+  Eye,
+  // Planning Tools icons
+  Clock,
+  Calendar,
+  Bell,
+  // Wellness Insights icons
+  Brain,
+  HeartPulse,
+  Leaf,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type ToolCall } from '@/lib/ai/chat-service';
@@ -25,6 +69,7 @@ interface ToolCallCardProps {
 }
 
 const toolIcons: Record<string, typeof Plus> = {
+  // Core note operations
   createNote: Plus,
   searchNotes: Search,
   listNotes: List,
@@ -45,8 +90,8 @@ const toolIcons: Record<string, typeof Plus> = {
   getCurrentSpace: FolderOpen,
   getUserContext: Settings,
   updateNote: Plus,
-  changeNoteColor: Plus,
-  setNotePriority: Plus,
+  changeNoteColor: Palette,
+  setNotePriority: ListOrdered,
   advancedSearch: Search,
   toggleChecklistItem: CheckCircle2,
   addChecklistItem: Plus,
@@ -56,9 +101,64 @@ const toolIcons: Record<string, typeof Plus> = {
   listTrashedNotes: Trash2,
   restoreFromTrash: Archive,
   emptyTrash: Trash2,
+
+  // Analytics & Insights (8 tools)
+  getNoteStatistics: BarChart3,
+  getProductivityInsights: TrendingUp,
+  getActivityTrends: LineChart,
+  getChecklistProgress: Activity,
+  getLabelAnalytics: PieChart,
+  getSpaceComparison: Grid3X3,
+  getWeeklyDigest: CalendarDays,
+  getActivityHeatmap: Flame,
+
+  // Content Analysis (6 tools)
+  analyzeNoteSentiment: Heart,
+  extractThemes: Palette,
+  generateSummary: FileText,
+  findSimilarNotes: ScanSearch,
+  extractKeywords: Key,
+  detectDuplicates: Files,
+
+  // Smart Suggestions (5 tools)
+  suggestLabels: Wand2,
+  predictPriority: ListOrdered,
+  suggestRelatedNotes: Link,
+  suggestNextActions: Lightbulb,
+  suggestOrganization: FolderCog,
+
+  // Batch Operations (5 tools)
+  bulkUpdateNotes: RefreshCw,
+  bulkArchive: Archive,
+  bulkDelete: Trash2,
+  bulkLabel: Tags,
+  autoOrganize: Sparkles,
+
+  // Writing Assistance (5 tools)
+  enhanceNote: Pencil,
+  expandNote: Maximize2,
+  condenseNote: Minimize2,
+  formatNote: AlignLeft,
+  translateNote: Languages,
+
+  // Knowledge Graph (3 tools)
+  getKnowledgeGraph: Network,
+  getTopicClusters: Boxes,
+  discoverInsights: Eye,
+
+  // Planning Tools (3 tools)
+  setDeadline: Clock,
+  getUpcomingDeadlines: Calendar,
+  createReminder: Bell,
+
+  // Wellness Insights (3 tools)
+  getMoodTrends: HeartPulse,
+  getEmotionalInsights: Brain,
+  getWellnessRecommendations: Leaf,
 };
 
 const toolLabels: Record<string, string> = {
+  // Core note operations
   createNote: 'Created note',
   searchNotes: 'Searched notes',
   listNotes: 'Listed notes',
@@ -90,6 +190,60 @@ const toolLabels: Record<string, string> = {
   listTrashedNotes: 'Listed trash',
   restoreFromTrash: 'Restored note',
   emptyTrash: 'Emptied trash',
+
+  // Analytics & Insights
+  getNoteStatistics: 'Note statistics',
+  getProductivityInsights: 'Productivity insights',
+  getActivityTrends: 'Activity trends',
+  getChecklistProgress: 'Checklist progress',
+  getLabelAnalytics: 'Label analytics',
+  getSpaceComparison: 'Space comparison',
+  getWeeklyDigest: 'Weekly digest',
+  getActivityHeatmap: 'Activity heatmap',
+
+  // Content Analysis
+  analyzeNoteSentiment: 'Sentiment analysis',
+  extractThemes: 'Extracted themes',
+  generateSummary: 'Generated summary',
+  findSimilarNotes: 'Similar notes',
+  extractKeywords: 'Extracted keywords',
+  detectDuplicates: 'Duplicate detection',
+
+  // Smart Suggestions
+  suggestLabels: 'Label suggestions',
+  predictPriority: 'Priority prediction',
+  suggestRelatedNotes: 'Related notes',
+  suggestNextActions: 'Next actions',
+  suggestOrganization: 'Organization tips',
+
+  // Batch Operations
+  bulkUpdateNotes: 'Bulk update',
+  bulkArchive: 'Bulk archive',
+  bulkDelete: 'Bulk delete',
+  bulkLabel: 'Bulk label',
+  autoOrganize: 'Auto-organize',
+
+  // Writing Assistance
+  enhanceNote: 'Enhanced note',
+  expandNote: 'Expanded note',
+  condenseNote: 'Condensed note',
+  formatNote: 'Formatted note',
+  translateNote: 'Translated note',
+
+  // Knowledge Graph
+  getKnowledgeGraph: 'Knowledge graph',
+  getTopicClusters: 'Topic clusters',
+  discoverInsights: 'Discovered insights',
+
+  // Planning Tools
+  setDeadline: 'Set deadline',
+  getUpcomingDeadlines: 'Upcoming deadlines',
+  createReminder: 'Created reminder',
+
+  // Wellness Insights
+  getMoodTrends: 'Mood trends',
+  getEmotionalInsights: 'Emotional insights',
+  getWellnessRecommendations: 'Wellness tips',
 };
 
 function getResultSummary(name: string, result?: string): { text: string; success: boolean } {
@@ -105,6 +259,7 @@ function getResultSummary(name: string, result?: string): { text: string; succes
     }
 
     switch (name) {
+      // Core note operations
       case 'createNote':
         return { text: parsed.message || 'Note created', success: true };
       case 'searchNotes':
@@ -152,6 +307,195 @@ function getResultSummary(name: string, result?: string): { text: string; succes
       case 'restoreFromTrash':
       case 'emptyTrash':
         return { text: parsed.message || 'Done', success: true };
+
+      // Analytics & Insights
+      case 'getNoteStatistics':
+        return {
+          text: `${parsed.statistics?.totalNotes || 0} notes analyzed`,
+          success: true,
+        };
+      case 'getProductivityInsights':
+        return {
+          text: parsed.writingStreak
+            ? `${parsed.writingStreak}-day streak`
+            : 'Insights ready',
+          success: true,
+        };
+      case 'getActivityTrends':
+        return {
+          text: parsed.trend
+            ? `Trending ${parsed.trend}`
+            : 'Trends analyzed',
+          success: true,
+        };
+      case 'getChecklistProgress':
+        return {
+          text: `${parsed.completionRate || 0}% complete`,
+          success: true,
+        };
+      case 'getLabelAnalytics':
+        return {
+          text: `${parsed.labels?.length || 0} labels analyzed`,
+          success: true,
+        };
+      case 'getSpaceComparison':
+        return {
+          text: `${parsed.spaces?.length || 0} spaces compared`,
+          success: true,
+        };
+      case 'getWeeklyDigest':
+        return {
+          text: `${parsed.notesCreated || 0} notes this week`,
+          success: true,
+        };
+      case 'getActivityHeatmap':
+        return { text: 'Heatmap generated', success: true };
+
+      // Content Analysis
+      case 'analyzeNoteSentiment':
+        return {
+          text: parsed.overallSentiment
+            ? `Overall: ${parsed.overallSentiment}`
+            : 'Sentiment analyzed',
+          success: true,
+        };
+      case 'extractThemes':
+        return {
+          text: `${parsed.themes?.length || 0} themes found`,
+          success: true,
+        };
+      case 'generateSummary':
+        return { text: 'Summary generated', success: true };
+      case 'findSimilarNotes':
+        return {
+          text: `${parsed.similarNotes?.length || 0} similar notes`,
+          success: true,
+        };
+      case 'extractKeywords':
+        return {
+          text: `${parsed.keywords?.length || 0} keywords found`,
+          success: true,
+        };
+      case 'detectDuplicates':
+        return {
+          text: `${parsed.duplicates?.length || 0} duplicates found`,
+          success: true,
+        };
+
+      // Smart Suggestions
+      case 'suggestLabels':
+        return {
+          text: `${parsed.suggestions?.length || 0} suggestions`,
+          success: true,
+        };
+      case 'predictPriority':
+        return {
+          text: parsed.suggestedPriority
+            ? `Suggested: ${parsed.suggestedPriority}`
+            : 'Priority predicted',
+          success: true,
+        };
+      case 'suggestRelatedNotes':
+        return {
+          text: `${parsed.relatedNotes?.length || 0} related notes`,
+          success: true,
+        };
+      case 'suggestNextActions':
+        return {
+          text: `${parsed.actions?.length || 0} actions suggested`,
+          success: true,
+        };
+      case 'suggestOrganization':
+        return {
+          text: `${parsed.tips?.length || 0} tips generated`,
+          success: true,
+        };
+
+      // Batch Operations
+      case 'bulkUpdateNotes':
+      case 'bulkArchive':
+      case 'bulkDelete':
+      case 'bulkLabel':
+        return {
+          text: `${parsed.affectedCount || parsed.affected || 0} notes affected`,
+          success: true,
+        };
+      case 'autoOrganize':
+        return {
+          text: parsed.preview
+            ? `Preview: ${parsed.changes?.length || 0} changes`
+            : `${parsed.organized || 0} notes organized`,
+          success: true,
+        };
+
+      // Writing Assistance
+      case 'enhanceNote':
+        return { text: 'Note enhanced', success: true };
+      case 'expandNote':
+        return { text: 'Content expanded', success: true };
+      case 'condenseNote':
+        return { text: 'Content condensed', success: true };
+      case 'formatNote':
+        return { text: 'Note formatted', success: true };
+      case 'translateNote':
+        return {
+          text: parsed.targetLanguage
+            ? `Translated to ${parsed.targetLanguage}`
+            : 'Note translated',
+          success: true,
+        };
+
+      // Knowledge Graph
+      case 'getKnowledgeGraph':
+        return {
+          text: `${parsed.nodes?.length || 0} nodes, ${parsed.edges?.length || 0} connections`,
+          success: true,
+        };
+      case 'getTopicClusters':
+        return {
+          text: `${parsed.clusters?.length || 0} clusters found`,
+          success: true,
+        };
+      case 'discoverInsights':
+        return {
+          text: `${parsed.insights?.length || 0} insights discovered`,
+          success: true,
+        };
+
+      // Planning Tools
+      case 'setDeadline':
+        return { text: parsed.message || 'Deadline set', success: true };
+      case 'getUpcomingDeadlines':
+        return {
+          text: `${parsed.deadlines?.length || 0} upcoming`,
+          success: true,
+        };
+      case 'createReminder':
+        return { text: parsed.message || 'Reminder created', success: true };
+
+      // Wellness Insights
+      case 'getMoodTrends':
+        return {
+          text: parsed.overallTrend
+            ? `Trend: ${parsed.overallTrend}`
+            : 'Mood analyzed',
+          success: true,
+        };
+      case 'getEmotionalInsights':
+        return {
+          text: parsed.currentMood?.description
+            ? parsed.currentMood.description.slice(0, 30)
+            : 'Insights ready',
+          success: true,
+        };
+      case 'getWellnessRecommendations':
+        return {
+          text: parsed.wellnessScore !== undefined
+            ? `Score: ${parsed.wellnessScore}/100`
+            : `${parsed.recommendations?.length || 0} tips`,
+          success: true,
+        };
+
       default:
         return { text: parsed.message || 'Completed', success: true };
     }

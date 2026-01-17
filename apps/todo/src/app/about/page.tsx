@@ -15,7 +15,7 @@ const history = [
       'We layered AI, automations, and contextual data so Todo could orchestrate work across teams, not just individuals.',
   },
   {
-    title: 'Integrated into AINexSuite',
+    title: 'Integrated into AINexSpace',
     description:
       'By connecting with Notes, Grow, and Journey, Todo now keeps planning aligned with learning, reflection, and execution across the entire suite.',
   },
@@ -51,7 +51,7 @@ export default function TodoAboutPage() {
             Built for leaders who keep teams moving
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            Todo is the operational heartbeat of AINexSuite. We help teams coordinate, adapt, and deliver without drowning in meetings or status updates.
+            Todo is the operational heartbeat of AINexSpace. We help teams coordinate, adapt, and deliver without drowning in meetings or status updates.
           </p>
         </section>
 

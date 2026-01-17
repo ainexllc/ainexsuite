@@ -26,7 +26,7 @@ export function ActivityPanel({ isOpen, activeView, onClose }: ActivityPanelProp
   } = useEnhancedAssistant({
     appName: 'main',
     includeFullContext: true, // Enable smart cross-app context
-    systemPrompt: `You are the intelligent assistant for AINexSuite.
+    systemPrompt: `You are the intelligent assistant for AINexSpace.
     You have access to the user's data across Notes, Tasks, Journal, Habits, Health, and Fitness apps.
     Use this context to provide personalized, actionable, and insightful responses.
     Be concise, encouraging, and proactive.`,

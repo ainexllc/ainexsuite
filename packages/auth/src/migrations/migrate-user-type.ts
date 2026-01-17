@@ -286,7 +286,7 @@ export async function dryRunMigration(
  * CLI-friendly migration runner
  */
 export async function runMigration() {
-  console.log('🔄 AinexSuite User Migration Tool');
+  console.log('🔄 AinexSpace User Migration Tool');
   console.log('==================================\n');
 
   console.log('Step 1: Dry Run (Preview Changes)');

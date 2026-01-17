@@ -6,7 +6,7 @@ import type { SearchableApp } from '@ainexsuite/types';
  * Grant an existing user permission to access a new app via SSO
  */
 type RequestAppPermissionRequest = {
-  appId: SearchableApp | 'suite';
+  appId: SearchableApp | 'space';
   userEmail: string;
 };
 

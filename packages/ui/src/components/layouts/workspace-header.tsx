@@ -3,7 +3,6 @@
 import { Menu, ChevronDown, Maximize, Minimize, Search } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { CommandPalette } from '../command-palette';
-import { MagicSparkMic } from '../ai';
 import Image from 'next/image';
 import { AinexStudiosLogo } from '../branding/ainex-studios-logo';
 import { HeaderBreadcrumbs } from '../navigation/header-breadcrumbs';
@@ -66,11 +65,6 @@ interface WorkspaceHeaderProps {
    * Callback to toggle quick actions menu
    */
   onQuickActionsToggle?: () => void;
-  // NEW: AI Assistant
-  /**
-   * Callback when AI button is clicked
-   */
-  onAiAssistantClick?: () => void;
 }
 
 /**
@@ -82,7 +76,6 @@ interface WorkspaceHeaderProps {
  * - Breadcrumbs navigation
  * - Quick actions menu
  * - Notification bell
- * - AI assistant button
  * - Profile toggle (triggers sidebar)
  *
  * @example
@@ -114,7 +107,6 @@ export function WorkspaceHeader({
   onQuickAction: _onQuickAction,
   isQuickActionsOpen: _isQuickActionsOpen = false,
   onQuickActionsToggle: _onQuickActionsToggle,
-  onAiAssistantClick,
 }: WorkspaceHeaderProps) {
   // Command palette state
   const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -254,21 +246,6 @@ export function WorkspaceHeader({
                 isOpen={isNotificationsOpen}
               />
             )}
-
-            {/* AI Assistant Button */}
-            <button
-              type="button"
-              onClick={onAiAssistantClick}
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95 cursor-pointer"
-              aria-label="AI Assistant (⌘J)"
-              title="AI Assistant (⌘J)"
-              style={{
-                backgroundColor: `${appColor || '#f59e0b'}20`,
-                boxShadow: `0 0 12px ${appColor || '#f59e0b'}40`,
-              }}
-            >
-              <MagicSparkMic size={24} color={appColor || '#f59e0b'} isAnimating={true} />
-            </button>
 
             {/* Fullscreen Toggle */}
             <button

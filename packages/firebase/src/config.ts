@@ -1,6 +1,6 @@
 /**
  * Firebase configuration
- * Used across all AINexSuite apps
+ * Used across all AINexSpace apps
  */
 
 export const firebaseConfig = {

@@ -19,8 +19,8 @@ const faqData: FAQCategory[] = [
     title: 'Getting Started',
     items: [
       {
-        question: 'What is AINexSuite?',
-        answer: 'AINexSuite is a comprehensive productivity platform that brings together 8 AI-powered apps to help you track, understand, and improve every aspect of your life. From journaling and habit tracking to task management and fitness monitoring, all your productivity tools work together in one seamless workspace.',
+        question: 'What is AINexSpace?',
+        answer: 'AINexSpace is a comprehensive productivity platform that brings together 8 AI-powered apps to help you track, understand, and improve every aspect of your life. From journaling and habit tracking to task management and fitness monitoring, all your productivity tools work together in one seamless workspace.',
       },
       {
         question: 'How do I get started?',
@@ -32,7 +32,7 @@ const faqData: FAQCategory[] = [
       },
       {
         question: 'Do I need to download anything?',
-        answer: 'No downloads required! AINexSuite is a web-based platform accessible from any modern browser. Simply visit our website, sign in, and start using all the apps immediately. We also offer progressive web app (PWA) capabilities for a native app-like experience.',
+        answer: 'No downloads required! AINexSpace is a web-based platform accessible from any modern browser. Simply visit our website, sign in, and start using all the apps immediately. We also offer progressive web app (PWA) capabilities for a native app-like experience.',
       },
     ],
   },
@@ -61,8 +61,8 @@ const faqData: FAQCategory[] = [
     title: 'Features & Apps',
     items: [
       {
-        question: 'What apps are included in AINexSuite?',
-        answer: 'AINexSuite includes 8 specialized apps: Journal (daily reflections and AI insights), Track (habit tracking and streaks), Todo (task management and priorities), Moments (photo diary and memories), Grow (goal setting and achievement), Pulse (mood and energy tracking), Fit (health and fitness monitoring), and Notes (quick capture and organization).',
+        question: 'What apps are included in AINexSpace?',
+        answer: 'AINexSpace includes 8 specialized apps: Journal (daily reflections and AI insights), Track (habit tracking and streaks), Todo (task management and priorities), Moments (photo diary and memories), Grow (goal setting and achievement), Pulse (mood and energy tracking), Fit (health and fitness monitoring), and Notes (quick capture and organization).',
       },
       {
         question: 'How does the AI work?',
@@ -70,7 +70,7 @@ const faqData: FAQCategory[] = [
       },
       {
         question: 'Can I use just one app instead of the whole suite?',
-        answer: 'While all apps are included in your subscription, you\'re free to use only the ones that fit your needs. However, the real power of AINexSuite comes from the integration between apps—insights from your journal can inform habit tracking, fitness data can correlate with mood, and so on.',
+        answer: 'While all apps are included in your subscription, you\'re free to use only the ones that fit your needs. However, the real power of AINexSpace comes from the integration between apps—insights from your journal can inform habit tracking, fitness data can correlate with mood, and so on.',
       },
       {
         question: 'Can I export my data?',
@@ -112,7 +112,7 @@ const faqData: FAQCategory[] = [
     items: [
       {
         question: 'What browsers are supported?',
-        answer: 'AINexSuite works best on modern browsers including Chrome (90+), Firefox (88+), Safari (14+), and Edge (90+). We recommend keeping your browser updated for the best experience and security.',
+        answer: 'AINexSpace works best on modern browsers including Chrome (90+), Firefox (88+), Safari (14+), and Edge (90+). We recommend keeping your browser updated for the best experience and security.',
       },
       {
         question: 'I found a bug. How do I report it?',
@@ -120,7 +120,7 @@ const faqData: FAQCategory[] = [
       },
       {
         question: 'Is there a mobile app?',
-        answer: 'Currently, AINexSuite is a progressive web app (PWA) that works great on mobile browsers and can be installed to your home screen for an app-like experience. Native iOS and Android apps are planned for future release.',
+        answer: 'Currently, AINexSpace is a progressive web app (PWA) that works great on mobile browsers and can be installed to your home screen for an app-like experience. Native iOS and Android apps are planned for future release.',
       },
       {
         question: 'How do I contact support?',
@@ -174,7 +174,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
-            Find answers to common questions about AINexSuite. Can’t find what you’re looking for?{' '}
+            Find answers to common questions about AINexSpace. Can’t find what you’re looking for?{' '}
             <a href="mailto:support@ainexspace.com" className="text-[#f97316] hover:underline">
               Contact our support team
             </a>

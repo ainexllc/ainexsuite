@@ -110,7 +110,7 @@ type AttachmentDraft = {
 
 type NoteEditorProps = {
   note: Note;
-  onClose: () => void;
+  onClose: (state?: { title: string; body: string; checklist: ChecklistItem[] }) => void;
 };
 
 // Sortable wrapper for checklist items with drag handle and tree lines
@@ -452,7 +452,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
   // Get the editor background class (single class, no theme switching)
   const editorBgClass = useMemo(() => {
     if (!currentColorConfig) return undefined;
-    return currentColorConfig.bgClass;
+    return currentColorConfig.cardClass;
   }, [currentColorConfig]);
 
   // Text color requirements based on textMode
@@ -801,7 +801,8 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
       });
     }
 
-    onClose();
+    // Pass current editor state so parent can check if note is empty
+    onClose({ title, body, checklist });
   }, [
     flushSave,
     pinned,
@@ -2038,7 +2039,7 @@ export function NoteEditor({ note, onClose }: NoteEditorProps) {
                 }}
               />
               <div
-                className="absolute bottom-16 left-4 right-4 sm:left-auto sm:right-4 sm:w-[400px] md:w-[480px] z-30 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
+                className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-[400px] md:w-[480px] z-30 rounded-2xl p-3 shadow-2xl backdrop-blur-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
               >

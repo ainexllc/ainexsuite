@@ -26,7 +26,6 @@ interface WorkspaceLayoutWithInsightsProps {
   onSignOut: () => void;
   quickActions?: QuickAction[];
   onQuickAction?: (actionId: string) => void;
-  onAiAssistantClick?: () => void;
   onSettingsClick?: () => void;
   onActivityClick?: () => void;
   onUpdatePreferences?: (updates: { theme?: 'light' | 'dark' | 'system' }) => Promise<void>;
@@ -41,7 +40,6 @@ export function WorkspaceLayoutWithInsights({
   onSignOut,
   quickActions = [],
   onQuickAction,
-  onAiAssistantClick,
   onSettingsClick,
   onActivityClick,
   onUpdatePreferences,
@@ -81,7 +79,6 @@ export function WorkspaceLayoutWithInsights({
       appColor={primary}
       quickActions={quickActions}
       onQuickAction={onQuickAction}
-      onAiAssistantClick={onAiAssistantClick}
       onSettingsClick={onSettingsClick}
       onActivityClick={onActivityClick}
       notifications={notifications}

@@ -37,6 +37,10 @@ interface WorkspacePageLayoutProps {
    */
   spaceSelector?: ReactNode;
   /**
+   * AI assistant button to show on the right of space selector row
+   */
+  aiButton?: ReactNode;
+  /**
    * Toolbar area below the composer (e.g., View Switchers, Filters)
    */
   toolbar?: ReactNode;
@@ -91,6 +95,7 @@ export function WorkspacePageLayout({
   spaces,
   composerActions,
   spaceSelector,
+  aiButton,
   toolbar,
   maxWidth = 'default',
   className = '',
@@ -109,10 +114,15 @@ export function WorkspacePageLayout({
       {/* AI Insights Banner - Full Width */}
       {insightsBanner}
 
-      {/* Space Selector Tabs - Centered above composer */}
-      {spaceSelector && (
-        <div className="flex justify-center">
+      {/* Space Selector Tabs with optional AI button on right */}
+      {(spaceSelector || aiButton) && (
+        <div className="relative flex items-center justify-center">
           {spaceSelector}
+          {aiButton && (
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              {aiButton}
+            </div>
+          )}
         </div>
       )}
 

@@ -43,7 +43,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: 'Subs - AINexSuite',
+  title: 'Subs - AINexSpace',
   description: 'Manage subscriptions and bills with AI insights',
   icons: {
     icon: '/favicon.svg',

@@ -287,6 +287,25 @@ export function NotesProvider({ children }: NotesProviderProps) {
       // Use the provided spaceId or fall back to current space ('personal' for personal notes)
       const effectiveSpaceId = input.spaceId ?? currentSpaceId ?? "personal";
 
+      // Calculate position for new note (put at top of list)
+      // Get minimum position from existing notes, subtract 1 for new note
+      const allNotes = [...ownedNotes, ...sharedNotes, ...spaceNotes];
+      const notesWithPosition = allNotes.filter((n) => n.position !== undefined);
+      const minPosition = notesWithPosition.length > 0
+        ? Math.min(...notesWithPosition.map((n) => n.position!))
+        : 0;
+      const newPosition = minPosition - 1;
+
+      // Calculate pinnedPosition for pinned notes (also put at top of pinned list)
+      let newPinnedPosition: number | undefined;
+      if (noteInput.pinned) {
+        const pinnedNotes = allNotes.filter((n) => n.pinned && n.pinnedPosition !== undefined);
+        const minPinnedPosition = pinnedNotes.length > 0
+          ? Math.min(...pinnedNotes.map((n) => n.pinnedPosition!))
+          : 0;
+        newPinnedPosition = minPinnedPosition - 1;
+      }
+
       const optimisticNote: Note = {
         id: tempId,
         ownerId: userId,
@@ -309,12 +328,19 @@ export function NotesProvider({ children }: NotesProviderProps) {
         updatedAt: now,
         sharedWith: [],
         sharedWithUserIds: [],
+        position: newPosition,
+        pinnedPosition: newPinnedPosition,
       };
 
       setPendingNotes((prev) => [optimisticNote, ...prev]);
 
       try {
-        const noteId = await createNoteMutation(userId, { ...noteInput, spaceId: effectiveSpaceId });
+        const noteId = await createNoteMutation(userId, {
+          ...noteInput,
+          spaceId: effectiveSpaceId,
+          position: newPosition,
+          ...(newPinnedPosition !== undefined && { pinnedPosition: newPinnedPosition }),
+        });
 
         if (attachments?.length) {
           const uploads = await Promise.all(
@@ -334,7 +360,7 @@ export function NotesProvider({ children }: NotesProviderProps) {
         });
       }
     },
-    [userId, currentSpaceId],
+    [userId, currentSpaceId, ownedNotes, sharedNotes, spaceNotes],
   );
 
   const handleUpdate = useCallback(

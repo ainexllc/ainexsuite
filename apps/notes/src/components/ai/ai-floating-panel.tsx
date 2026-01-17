@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
 import {
   GripVertical,
   Sparkles,
@@ -19,15 +18,83 @@ import {
 } from 'lucide-react';
 import { cn } from '@ainexsuite/ui';
 import { usePanelDragResize, type PanelState } from './use-panel-drag-resize';
-import { useNotesAI } from './use-notes-ai';
+import { useNotesAI, type NoteMutations } from './use-notes-ai';
 import { SUGGESTED_PROMPTS, type SuggestedPrompt } from './notes-ai-prompts';
 import { ChatMarkdown } from './chat-markdown';
-import type { Note, Label } from '@/lib/types/note';
+import { useBotAvatar } from '@/hooks/use-bot-avatar';
+import type { Note, Label, NoteSpace } from '@/lib/types/note';
+import type { SubscriptionTier } from '@ainexsuite/types';
 
 export interface AIFloatingPanelUser {
+  uid?: string;
   displayName?: string | null;
   photoURL?: string | null;
-  subscriptionTier?: 'free' | 'pro' | 'ultra' | string;
+  subscriptionTier?: SubscriptionTier;
+}
+
+/**
+ * Animated bot avatar display component
+ * Shows video if available, falls back to static icon
+ * @param videoURL - URL of the animated avatar video
+ * @param loop - If true, plays continuously. If false, plays 2x then stops.
+ * @param size - Size variant: 'sm' (default), 'lg' for welcome hero
+ */
+function BotAvatarDisplay({
+  videoURL,
+  loop = false,
+  size = 'sm',
+}: {
+  videoURL?: string | null;
+  loop?: boolean;
+  size?: 'sm' | 'lg';
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Auto-play with optional continuous looping
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !videoURL) return;
+
+    let playCount = 0;
+    const maxPlays = loop ? Infinity : 2;
+
+    const handleEnded = () => {
+      playCount++;
+      if (playCount < maxPlays) {
+        setTimeout(() => {
+          video.currentTime = 0;
+          video.play().catch(() => {});
+        }, loop ? 100 : 500); // Shorter pause for continuous loop
+      }
+    };
+
+    video.addEventListener('ended', handleEnded);
+    video.play().catch(() => {});
+
+    return () => {
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, [videoURL, loop]);
+
+  if (videoURL) {
+    return (
+      <video
+        ref={videoRef}
+        src={videoURL}
+        muted
+        playsInline
+        className="w-full h-full object-cover"
+      />
+    );
+  }
+
+  // Fallback to sparkles icon (sized based on container)
+  const iconSize = size === 'lg' ? 'w-10 h-10' : 'w-4 h-4';
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-500/20 to-orange-500/20">
+      <Sparkles className={cn(iconSize, 'text-amber-500')} />
+    </div>
+  );
 }
 
 export interface AIFloatingPanelProps {
@@ -35,16 +102,22 @@ export interface AIFloatingPanelProps {
   onClose: () => void;
   notes: Note[];
   labels: Label[];
+  /** User's available spaces for AI to reference when moving notes */
+  spaces?: NoteSpace[];
+  /** Currently selected space ID */
+  currentSpaceId?: string;
   appName?: string;
   appColor?: string;
   user?: AIFloatingPanelUser | null;
+  /** Note mutation functions for AI to execute */
+  mutations?: NoteMutations;
 }
 
 const DEFAULT_STATE: PanelState = {
   x: typeof window !== 'undefined' ? window.innerWidth - 400 : 800,
-  y: 80,
+  y: 80, // Just below header
   width: 380,
-  height: 550,
+  height: typeof window !== 'undefined' ? Math.floor(window.innerHeight * 0.75) : 600, // 75% of viewport
 };
 
 /**
@@ -63,9 +136,12 @@ export function AIFloatingPanel({
   onClose,
   notes,
   labels,
+  spaces,
+  currentSpaceId,
   appName = 'Notes',
   appColor = '#eab308',
   user,
+  mutations,
 }: AIFloatingPanelProps) {
   const [mounted, setMounted] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -82,22 +158,35 @@ export function AIFloatingPanel({
   } = usePanelDragResize({
     initialState: DEFAULT_STATE,
     minWidth: 320,
-    minHeight: 400,
-    maxWidth: 600,
-    maxHeight: typeof window !== 'undefined' ? window.innerHeight * 0.9 : 800,
+    minHeight: 300,
+    maxWidth: 500,
+    maxHeight: typeof window !== 'undefined' ? window.innerHeight - 40 : 500,
     storageKey: 'notes-ai-panel-state',
   });
 
-  // Initialize AI hook
+  // Initialize AI hook with mutations for function calling
   const {
     messages,
     loading,
     streaming,
     sendMessage,
     clearMessages,
+    modelName,
   } = useNotesAI({
     notes,
     labels,
+    spaces,
+    currentSpaceId,
+    mutations,
+    // Streaming disabled - function calling works better with client-side Gemini
+    // TODO: Implement hybrid approach (streaming for chat-only, non-streaming for actions)
+    enableStreaming: false,
+  });
+
+  // Get the bot avatar (animated video if available)
+  const { botAvatarURL } = useBotAvatar({
+    userId: user?.uid,
+    tier: user?.subscriptionTier,
   });
 
   // Mount check for portal
@@ -105,23 +194,29 @@ export function AIFloatingPanel({
     setMounted(true);
   }, []);
 
-  // Bounds check - reset position if panel is off-screen
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
-      const maxX = window.innerWidth - 100; // At least 100px visible
-      const maxY = window.innerHeight - 100;
+  // Calculate right-aligned position within content container (max-w-6xl = 1152px)
+  const getContainerRightEdge = useCallback(() => {
+    if (typeof window === 'undefined') return 800;
+    const containerMaxWidth = 1152; // max-w-6xl
+    const viewportWidth = window.innerWidth;
+    const containerWidth = Math.min(viewportWidth - 32, containerMaxWidth); // 32px = padding
+    const containerLeft = (viewportWidth - containerWidth) / 2;
+    const containerRight = containerLeft + containerWidth;
+    return containerRight - 380 - 16; // 380 = panel width, 16 = small gap from edge
+  }, []);
 
-      if (state.x > maxX || state.y > maxY || state.x < 0 || state.y < 0) {
-        // Panel was off-screen (likely from localStorage with different monitor), reset position
-        updateState({
-          x: Math.max(20, window.innerWidth - 400),
-          y: 80,
-          width: 380,
-          height: Math.min(550, window.innerHeight - 100),
-        });
-      }
+  // Position panel right-aligned to content container on open
+  useEffect(() => {
+    if (mounted && isOpen && typeof window !== 'undefined') {
+      const rightAlignedX = getContainerRightEdge();
+      updateState({
+        x: rightAlignedX,
+        y: 80, // Just below header
+        width: 380,
+        height: Math.floor(window.innerHeight * 0.75), // 75% of viewport
+      });
     }
-  }, [mounted, state.x, state.y, updateState]);
+  }, [mounted, isOpen, updateState, getContainerRightEdge]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -129,6 +224,17 @@ export function AIFloatingPanel({
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  // Auto-focus input when panel opens
+  useEffect(() => {
+    if (isOpen && mounted && inputRef.current) {
+      // Small delay to ensure animation completes and panel is visible
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, mounted]);
 
   // Handle Escape key to close
   useEffect(() => {
@@ -142,7 +248,7 @@ export function AIFloatingPanel({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Responsive: full screen on mobile
+  // Responsive: full screen on mobile, reposition on desktop resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
@@ -152,13 +258,21 @@ export function AIFloatingPanel({
           width: window.innerWidth,
           height: window.innerHeight,
         });
+      } else if (isOpen) {
+        // Reposition to stay right-aligned on resize
+        const rightAlignedX = getContainerRightEdge();
+        updateState({
+          x: rightAlignedX,
+          y: 80,
+          width: 380,
+          height: Math.floor(window.innerHeight * 0.75), // 75% of viewport
+        });
       }
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  }, [updateState]);
+  }, [updateState, isOpen, getContainerRightEdge]);
 
   // Handle send message
   const handleSend = useCallback(async () => {
@@ -238,12 +352,9 @@ export function AIFloatingPanel({
             {!isMobile && (
               <GripVertical className="h-4 w-4 text-zinc-500 flex-shrink-0" />
             )}
-            <Sparkles
-              className="h-4 w-4 flex-shrink-0"
-              style={{ color: appColor }}
-            />
+
             <span className="font-semibold text-white flex-1 text-sm">
-              AINex
+              Lumi
             </span>
 
             {/* Membership Badge - show for all tiers */}
@@ -262,18 +373,6 @@ export function AIFloatingPanel({
               >
                 {user.subscriptionTier.toUpperCase()}
               </span>
-            )}
-
-            {/* User Avatar */}
-            {user?.photoURL && (
-              <Image
-                src={user.photoURL}
-                alt={user.displayName || 'User'}
-                width={24}
-                height={24}
-                className="h-6 w-6 rounded-full object-cover ring-1 ring-zinc-600"
-                unoptimized
-              />
             )}
 
             {/* Menu button */}
@@ -315,11 +414,17 @@ export function AIFloatingPanel({
 
           {/* App Context Badge */}
           <div className="px-3 py-1.5 bg-zinc-800/50 border-b border-zinc-700">
-            <div className="flex items-center gap-1.5 text-xs">
-              <StickyNote className="h-3.5 w-3.5" style={{ color: appColor }} />
-              <span className="text-zinc-300">{appName}</span>
-              <span className="text-zinc-500">
-                • {notes.length} notes • {labels.length} labels
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5">
+                <StickyNote className="h-3.5 w-3.5" style={{ color: appColor }} />
+                <span className="text-zinc-300">{appName}</span>
+                <span className="text-zinc-500">
+                  • {notes.length} notes • {labels.length} labels
+                </span>
+              </div>
+              {/* Model indicator */}
+              <span className="px-1.5 py-0.5 rounded bg-zinc-700/50 text-[10px] text-zinc-400 font-medium">
+                {modelName}
               </span>
             </div>
           </div>
@@ -327,15 +432,47 @@ export function AIFloatingPanel({
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {messages.length === 0 ? (
-              // Welcome state
-              <>
-                <p className="text-zinc-400 text-xs">
-                  How can I help with your notes today?
-                </p>
+              // Welcome state with hero AI avatar
+              <div className="flex flex-col items-center text-center">
+                {/* Large animated avatar with glow effect */}
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="relative mb-3"
+                >
+                  {/* Glow ring - animated pulse */}
+                  <div className="absolute inset-[-8px] rounded-full bg-gradient-to-r from-amber-500 to-orange-500 blur-xl opacity-25 animate-pulse" />
 
-                <div className="space-y-1.5 mt-3">
+                  {/* Avatar container */}
+                  <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-amber-500/50 bg-zinc-800">
+                    <BotAvatarDisplay videoURL={botAvatarURL} loop size="lg" />
+                  </div>
+                </motion.div>
+
+                {/* Greeting */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                >
+                  <h3 className="text-base font-semibold text-white mb-0.5">
+                    Hey there! 👋
+                  </h3>
+                  <p className="text-zinc-400 text-xs max-w-[200px] mb-4">
+                    I&apos;m Lumi. How can I help with your notes?
+                  </p>
+                </motion.div>
+
+                {/* Suggestions */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                  className="w-full space-y-1.5"
+                >
                   <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider mb-1.5">
-                    💡 Suggestions
+                    💡 Try asking
                   </p>
                   {SUGGESTED_PROMPTS.slice(0, 4).map((prompt) => (
                     <button
@@ -355,8 +492,8 @@ export function AIFloatingPanel({
                       <span className="truncate">{prompt.label}</span>
                     </button>
                   ))}
-                </div>
-              </>
+                </motion.div>
+              </div>
             ) : (
               // Message list
               messages.map((message, index) => (
@@ -366,31 +503,51 @@ export function AIFloatingPanel({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
                   className={cn(
-                    'max-w-[85%] rounded-xl px-3 py-2',
-                    message.role === 'user'
-                      ? 'ml-auto rounded-br-sm text-black'
-                      : 'mr-auto rounded-bl-sm bg-zinc-800 text-white'
+                    'flex gap-2',
+                    message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                   )}
-                  style={
-                    message.role === 'user'
-                      ? { backgroundColor: appColor }
-                      : undefined
-                  }
                 >
-                  {message.role === 'user' ? (
-                    <p className="text-xs whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                  ) : (
-                    <ChatMarkdown content={message.content} />
+                  {/* Avatar (only for assistant messages) */}
+                  {message.role === 'assistant' && (
+                    <div className="w-7 h-7 rounded-lg flex-shrink-0 overflow-hidden bg-zinc-800 border border-zinc-700">
+                      <BotAvatarDisplay videoURL={botAvatarURL} />
+                    </div>
                   )}
+
+                  {/* Message bubble */}
+                  <div
+                    className={cn(
+                      'max-w-[85%] rounded-xl px-3 py-2',
+                      message.role === 'user'
+                        ? 'rounded-br-sm text-black'
+                        : 'rounded-bl-sm bg-zinc-800 text-white'
+                    )}
+                    style={
+                      message.role === 'user'
+                        ? { backgroundColor: appColor }
+                        : undefined
+                    }
+                  >
+                    {message.role === 'user' ? (
+                      <p className="text-xs whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                    ) : (
+                      <ChatMarkdown content={message.content} />
+                    )}
+                  </div>
                 </motion.div>
               ))
             )}
 
             {/* Loading indicator */}
             {(loading || streaming) && (
-              <div className="flex items-center gap-1.5 text-zinc-500">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span className="text-xs">Thinking...</span>
+              <div className="flex items-center gap-2 text-zinc-500">
+                <div className="w-7 h-7 rounded-lg flex-shrink-0 overflow-hidden bg-zinc-800 border border-zinc-700">
+                  <BotAvatarDisplay videoURL={botAvatarURL} />
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 rounded-xl rounded-bl-sm">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span className="text-xs">Thinking...</span>
+                </div>
               </div>
             )}
 

@@ -18,7 +18,7 @@ export function AcceptableUsePolicy() {
           <div className="prose prose-invert max-w-none space-y-8">
             <div>
               <p className="text-muted-foreground leading-relaxed">
-                This Acceptable Use Policy outlines the terms and conditions for using AINexSuite. By accessing
+                This Acceptable Use Policy outlines the terms and conditions for using AINexSpace. By accessing
                 or using our platform, you agree to comply with this policy. We reserve the right to modify this
                 policy at any time, and continued use of our services constitutes acceptance of any changes.
               </p>
@@ -32,7 +32,7 @@ export function AcceptableUsePolicy() {
                 <h2 className="text-2xl font-semibold text-foreground">Acceptable Use</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                AINexSuite is designed to help you improve productivity and personal growth. You may use our
+                AINexSpace is designed to help you improve productivity and personal growth. You may use our
                 platform to:
               </p>
               <div className="grid gap-4 md:grid-cols-2">
@@ -59,7 +59,7 @@ export function AcceptableUsePolicy() {
                 <h2 className="text-2xl font-semibold text-foreground">Prohibited Activities</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                The following activities are strictly prohibited when using AINexSuite:
+                The following activities are strictly prohibited when using AINexSpace:
               </p>
               <div className="space-y-4">
                 <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6">

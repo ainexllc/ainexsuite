@@ -216,11 +216,6 @@ export default function WorkspaceRootLayout({
     }
   }, [router]);
 
-  // Handle AI assistant
-  const handleAiAssistantClick = useCallback(() => {
-    // TODO: Open AI assistant panel
-  }, []);
-
   // Handle settings click
   const handleSettingsClick = useCallback(() => {
     setSettingsModalOpen(true);
@@ -238,7 +233,6 @@ export default function WorkspaceRootLayout({
         onSignOut={handleSignOut}
         quickActions={quickActions}
         onQuickAction={handleQuickAction}
-        onAiAssistantClick={handleAiAssistantClick}
         onSettingsClick={handleSettingsClick}
         // Notifications - empty for now, will be populated by notification service
         notifications={[]}

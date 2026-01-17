@@ -2,7 +2,7 @@
   "name": "@ainexsuite/calendar",
   "version": "1.0.0",
   "private": true,
-  "description": "AINexSuite calendar app for scheduling and events",
+  "description": "AINexSpace calendar app for scheduling and events",
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0 -p ${PORT:-3014}",
     "build": "next build",

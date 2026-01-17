@@ -15,7 +15,7 @@ export function ThemeShowcasePage({ sections, children }: ThemeShowcasePageProps
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-20 items-center px-6">
           <h1 className="text-2xl font-bold text-foreground">
-            AinexSuite Design System
+            AinexSpace Design System
           </h1>
         </div>
       </header>

@@ -1,5 +1,5 @@
 /**
- * Email Service for AINexSuite
+ * Email Service for AINexSpace
  * Uses Resend API for transactional emails
  */
 
@@ -152,7 +152,7 @@ export function generateInvitationEmailHtml(data: InvitationEmailData): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
-  <title>Space Invitation - AINexSuite</title>
+  <title>Space Invitation - AINexSpace</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -207,13 +207,13 @@ export function generateInvitationEmailHtml(data: InvitationEmailData): string {
                 <v:textbox inset="0,0,0,0">
               <![endif]-->
               <div style="background-color: rgba(0, 0, 0, 0.6); padding: 48px 40px;">
-                <!-- AINexSuite text logo -->
+                <!-- AINexSpace text logo -->
                 <div style="margin-bottom: 28px;">
                   <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 36px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
                     <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
                   </div>
                   <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 15px; font-weight: 900; letter-spacing: 3px; color: #ffffff; margin-top: 4px;">
-                    SUITE
+                    SPACE
                   </div>
                 </div>
                 <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #ffffff;">Space Invitation</h1>
@@ -307,10 +307,10 @@ export function generateInvitationEmailHtml(data: InvitationEmailData): string {
           <tr>
             <td class="email-footer" style="padding: 24px 40px; text-align: center;">
               <p class="email-text-subtle" style="margin: 0 0 8px; font-size: 14px;">
-                Sent by <a href="https://ainexspace.com" style="color: #f97316; text-decoration: none;">AINexSuite</a>
+                Sent by <a href="https://ainexspace.com" style="color: #f97316; text-decoration: none;">AINexSpace</a>
               </p>
               <p class="email-text-dim" style="margin: 0; font-size: 12px;">
-                Your personal productivity suite
+                Your personal productivity space
               </p>
             </td>
           </tr>
@@ -333,7 +333,7 @@ export function generateInvitationEmailText(data: InvitationEmailData): string {
   const expirationDate = formatExpirationDate(data.expiresAt);
 
   return `
-SPACE INVITATION - AINEXSUITE
+SPACE INVITATION - AINEXSPACE
 ==============================
 
 ${data.inviterName} has invited you to join "${data.spaceName}"
@@ -347,7 +347,7 @@ ${data.acceptUrl}
 This invitation expires on ${expirationDate}.
 
 ---
-Sent by AINexSuite
+Sent by AINexSpace
 https://ainexspace.com
   `.trim();
 }
@@ -365,7 +365,7 @@ export async function sendInvitationEmail(
 
   return sendEmail(config, {
     to: recipientEmail,
-    subject: `${data.inviterName} invited you to join "${data.spaceName}" on AINexSuite`,
+    subject: `${data.inviterName} invited you to join "${data.spaceName}" on AINexSpace`,
     html,
     text,
   });
@@ -392,7 +392,7 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <meta name="supported-color-schemes" content="light dark">
-  <title>Welcome to AINexSuite</title>
+  <title>Welcome to AINexSpace</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -447,17 +447,17 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
                 <v:textbox inset="0,0,0,0">
               <![endif]-->
               <div style="background-color: rgba(0, 0, 0, 0.6); padding: 56px 40px;">
-                <!-- AINexSuite text logo -->
+                <!-- AINexSpace text logo -->
                 <div style="margin-bottom: 32px;">
                   <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 44px; font-weight: 900; letter-spacing: -1px; line-height: 1;">
                     <span style="color: #f97316;">AI</span><span style="color: #ffffff;">NEX</span>
                   </div>
                   <div style="font-family: 'Arial Black', Arial, sans-serif; font-size: 17px; font-weight: 900; letter-spacing: 4px; color: #ffffff; margin-top: 6px;">
-                    SUITE
+                    SPACE
                   </div>
                 </div>
-                <h1 style="margin: 0 0 8px; font-size: 32px; font-weight: 700; color: #ffffff;">Welcome to AINexSuite!</h1>
-                <p style="margin: 0; font-size: 16px; color: rgba(255, 255, 255, 0.9);">Your personal productivity suite</p>
+                <h1 style="margin: 0 0 8px; font-size: 32px; font-weight: 700; color: #ffffff;">Welcome to AINexSpace!</h1>
+                <p style="margin: 0; font-size: 16px; color: rgba(255, 255, 255, 0.9);">Your personal productivity space</p>
               </div>
               <!--[if gte mso 9]>
                 </v:textbox>
@@ -476,14 +476,14 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
               </p>
 
               <p class="email-text-body" style="margin: 0 0 24px; font-size: 16px; line-height: 1.6;">
-                Thank you for joining AINexSuite! We're excited to have you on board. Your account has been created and you're ready to start organizing your life with our suite of productivity apps.
+                Thank you for joining AINexSpace! We're excited to have you on board. Your account has been created and you're ready to start organizing your life with our space of productivity apps.
               </p>
 
               <!-- Feature highlights -->
               <table role="presentation" style="width: 100%; margin: 32px 0;">
                 <tr>
                   <td class="email-card" style="border-radius: 12px; padding: 24px;">
-                    <h2 class="email-text" style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">What you can do with AINexSuite:</h2>
+                    <h2 class="email-text" style="margin: 0 0 16px; font-size: 18px; font-weight: 600;">What you can do with AINexSpace:</h2>
 
                     <table role="presentation" style="width: 100%;">
                       <tr>
@@ -569,10 +569,10 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
           <tr>
             <td class="email-footer" style="padding: 24px 40px; text-align: center;">
               <p class="email-text-subtle" style="margin: 0 0 8px; font-size: 14px;">
-                Sent by <a href="https://ainexspace.com" style="color: #f97316; text-decoration: none;">AINexSuite</a>
+                Sent by <a href="https://ainexspace.com" style="color: #f97316; text-decoration: none;">AINexSpace</a>
               </p>
               <p class="email-text-dim" style="margin: 0; font-size: 12px;">
-                You're receiving this because you created an account at AINexSuite
+                You're receiving this because you created an account at AINexSpace
               </p>
             </td>
           </tr>
@@ -591,14 +591,14 @@ export function generateWelcomeEmailHtml(data: WelcomeEmailData): string {
  */
 export function generateWelcomeEmailText(data: WelcomeEmailData): string {
   return `
-WELCOME TO AINEXSUITE!
+WELCOME TO AINEXSPACE!
 ======================
 
 Hi ${data.userName || 'there'} 👋
 
-Thank you for joining AINexSuite! We're excited to have you on board. Your account has been created and you're ready to start organizing your life with our suite of productivity apps.
+Thank you for joining AINexSpace! We're excited to have you on board. Your account has been created and you're ready to start organizing your life with our space of productivity apps.
 
-What you can do with AINexSuite:
+What you can do with AINexSpace:
 
 ✓ Manage tasks and projects across 14 integrated apps
 ✓ Create family spaces to collaborate with loved ones
@@ -617,8 +617,8 @@ Need help? Visit our Help Center: https://www.ainexspace.com/help
 Or reply to this email with any questions.
 
 ---
-Sent by AINexSuite
-You're receiving this because you created an account at AINexSuite
+Sent by AINexSpace
+You're receiving this because you created an account at AINexSpace
   `.trim();
 }
 
@@ -635,7 +635,7 @@ export async function sendWelcomeEmail(
 
   return sendEmail(config, {
     to: recipientEmail,
-    subject: 'Welcome to AINexSuite - Let\'s Get Started! 🚀',
+    subject: 'Welcome to AINexSpace - Let\'s Get Started! 🚀',
     html,
     text,
   });

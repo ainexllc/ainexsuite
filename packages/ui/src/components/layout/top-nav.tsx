@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useState, useEffect, useCallback } from "react";
-import { Menu, ChevronDown, Maximize, Minimize } from "lucide-react";
+import { Menu, ChevronDown, Maximize, Minimize, Sparkles } from "lucide-react";
 import { AIVoiceIcon } from "../ai";
 import { AnimatedAvatarPlayer } from "../animated-avatar-player";
 import { clsx } from "clsx";
@@ -183,6 +183,10 @@ export type TopNavAiButtonProps = {
   label?: string;
   /** Accent color for the AI icon (hex) */
   accentColor?: string;
+  /** Button style variant */
+  variant?: "icon" | "pill";
+  /** Text label for pill variant */
+  text?: string;
 };
 
 /**
@@ -192,7 +196,25 @@ export function TopNavAiButton({
   onClick,
   label = "AI Assistant",
   accentColor = "#f97316",
+  variant = "icon",
+  text,
 }: TopNavAiButtonProps) {
+  // Pill variant with text (matches space pill styling)
+  if (variant === "pill" && text) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800/50 px-4 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-300 transition hover:bg-zinc-200/80 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-zinc-100"
+        aria-label={label}
+      >
+        <Sparkles className="h-4 w-4" />
+        <span>{text}</span>
+      </button>
+    );
+  }
+
+  // Default icon-only variant
   return (
     <button
       type="button"

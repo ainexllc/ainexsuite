@@ -16,7 +16,13 @@
  * @returns {string} CSP header value
  */
 function buildCSP(options = {}) {
-  const defaultSrc = options.defaultSrc || "'self'";
+  const isDev = process.env.NODE_ENV === "development";
+  // Allow local network IPs in development
+  const localDevSources = isDev
+    ? " http://192.168.1.153:* http://localhost:* http://127.0.0.1:*"
+    : "";
+
+  const defaultSrc = options.defaultSrc || "'self'" + localDevSources;
   const scriptSrc =
     options.scriptSrc ||
     [
@@ -39,11 +45,20 @@ function buildCSP(options = {}) {
   const fontSrc = options.fontSrc || "'self' data: https://fonts.gstatic.com";
   const mediaSrc =
     options.mediaSrc ||
-    "'self' blob: https://firebasestorage.googleapis.com https://*.firebasestorage.app";
+    "'self' data: blob: https://firebasestorage.googleapis.com https://*.firebasestorage.app https://storage.googleapis.com";
   const connectSrc =
     options.connectSrc ||
     [
       "'self'",
+      ...(isDev
+        ? [
+            "http://192.168.1.153:*",
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "ws://192.168.1.153:*",
+            "ws://localhost:*",
+          ]
+        : []),
       "https://*.googleapis.com",
       "https://*.firebaseio.com",
       "https://*.cloudfunctions.net",
@@ -100,7 +115,28 @@ function buildCSP(options = {}) {
  * @returns {Array} Headers configuration for Next.js
  */
 function getSecurityHeaders(options = {}) {
+  const isDev = process.env.NODE_ENV === "development";
+
+  // CORS headers for local network development
+  const corsHeaders = isDev
+    ? [
+        {
+          key: "Access-Control-Allow-Origin",
+          value: "*",
+        },
+        {
+          key: "Access-Control-Allow-Methods",
+          value: "GET, POST, PUT, DELETE, OPTIONS",
+        },
+        {
+          key: "Access-Control-Allow-Headers",
+          value: "Content-Type, Authorization",
+        },
+      ]
+    : [];
+
   const headers = [
+    ...corsHeaders,
     // Prevent clickjacking
     {
       key: "X-Frame-Options",

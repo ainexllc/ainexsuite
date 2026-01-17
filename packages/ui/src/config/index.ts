@@ -1,5 +1,5 @@
 /**
- * Design System Configuration - AINexSuite
+ * Design System Configuration - AINexSpace
  *
  * Centralized exports for all design tokens, presets, and variants.
  * This module serves as the single source of truth for the design system.

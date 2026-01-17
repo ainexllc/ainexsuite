@@ -22,7 +22,7 @@ const quickStart = [
   {
     icon: Rocket,
     title: 'Getting Started',
-    description: 'Create your account and learn the basics of AINexSuite.',
+    description: 'Create your account and learn the basics of AINexSpace.',
     link: '#getting-started',
   },
   {
@@ -100,12 +100,12 @@ const advancedTopics = [
   {
     icon: Code,
     title: 'API & Integrations',
-    description: 'Connect AINexSuite with other tools and services.',
+    description: 'Connect AINexSpace with other tools and services.',
   },
   {
     icon: Smartphone,
     title: 'Mobile Apps',
-    description: 'Using AINexSuite on iOS and Android devices.',
+    description: 'Using AINexSpace on iOS and Android devices.',
   },
   {
     icon: Settings,
@@ -129,7 +129,7 @@ export default function DocsPage() {
             Documentation
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            Everything you need to know about using AINexSuite effectively. From getting started
+            Everything you need to know about using AINexSpace effectively. From getting started
             to advanced features.
           </p>
         </div>
@@ -153,7 +153,7 @@ export default function DocsPage() {
           <div className="text-center">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl mb-4">Quick Start</h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              New to AINexSuite? Start here to learn the fundamentals.
+              New to AINexSpace? Start here to learn the fundamentals.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -181,7 +181,7 @@ export default function DocsPage() {
           <div className="text-center">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl mb-4">App Guides</h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              In-depth documentation for each app in the AINexSuite platform.
+              In-depth documentation for each app in the AINexSpace platform.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -232,7 +232,7 @@ export default function DocsPage() {
             <div className="rounded-2xl border border-white/10 bg-zinc-700/50 p-6">
               <h3 className="text-lg font-semibold text-white mb-3">Connecting with third-party apps</h3>
               <p className="text-sm text-white/60 mb-3">
-                Integrate AINexSuite with Apple Health, Google Fit, and other services.
+                Integrate AINexSpace with Apple Health, Google Fit, and other services.
               </p>
               <Link href="#" className="text-sm text-[#f97316] font-semibold hover:underline">
                 Read guide →
@@ -250,7 +250,7 @@ export default function DocsPage() {
             <div className="rounded-2xl border border-white/10 bg-zinc-700/50 p-6">
               <h3 className="text-lg font-semibold text-white mb-3">Keyboard shortcuts</h3>
               <p className="text-sm text-white/60 mb-3">
-                Master keyboard shortcuts to navigate AINexSuite faster and more efficiently.
+                Master keyboard shortcuts to navigate AINexSpace faster and more efficiently.
               </p>
               <Link href="#" className="text-sm text-[#f97316] font-semibold hover:underline">
                 Read guide →
@@ -264,7 +264,7 @@ export default function DocsPage() {
           <div className="text-center">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl mb-4">Advanced</h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              For power users looking to get the most out of AINexSuite.
+              For power users looking to get the most out of AINexSpace.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -295,7 +295,7 @@ export default function DocsPage() {
               <Rocket className="h-8 w-8" />
             </div>
             <div>
-              <h2 className="text-3xl font-semibold text-white">Getting Started with AINexSuite</h2>
+              <h2 className="text-3xl font-semibold text-white">Getting Started with AINexSpace</h2>
               <p className="text-white/60">Everything you need for your first 7 days</p>
             </div>
           </div>

@@ -1,22 +1,22 @@
 /**
- * Subscription utilities for AinexSuite
+ * Subscription utilities for AinexSpace
  * Handles trial logic, subscription tiers, rate limits, and query limits
  *
- * Note: This extends suite-utils.ts with additional subscription-specific logic
+ * Note: This extends space-utils.ts with additional subscription-specific logic
  */
 
 import type { User, SubscriptionTier } from '@ainexsuite/types';
 import {
-  isTrialActive as suiteIsTrialActive,
-  getRemainingTrialDays as suiteGetRemainingTrialDays,
-  canAccessApp as suiteCanAccessApp,
+  isTrialActive as spaceIsTrialActive,
+  getRemainingTrialDays as spaceGetRemainingTrialDays,
+  canAccessApp as spaceCanAccessApp,
   type AppName,
-} from './suite-utils';
+} from './space-utils';
 
 // Re-export for convenience
-export type { AppName } from './suite-utils';
+export type { AppName } from './space-utils';
 
-// Constants (duplicated from suite-utils to avoid circular dependency issues)
+// Constants (duplicated from space-utils to avoid circular dependency issues)
 const TRIAL_DURATION_DAYS = 30;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -24,71 +24,57 @@ export { TRIAL_DURATION_DAYS };
 
 // Query limits per tier (monthly)
 export const QUERY_LIMITS: Record<SubscriptionTier, number> = {
+  free: 50,
   trial: 200,
-  'single-app': 200,
-  'three-apps': 500,
   pro: 2000,
   premium: 10000,
 } as const;
 
 // Rate limits per tier (requests per hour)
 export const RATE_LIMITS: Record<SubscriptionTier, number> = {
+  free: 5,
   trial: 10,
-  'single-app': 10,
-  'three-apps': 20,
   pro: 50,
   premium: 200,
 } as const;
 
 // App limits per tier
 export const APP_LIMITS: Record<SubscriptionTier, number> = {
+  free: 8,            // All apps with limited features
   trial: 8,           // All apps during trial
-  'single-app': 1,    // 1 app of user's choice
-  'three-apps': 3,    // 3 apps of user's choice
   pro: 8,             // All apps
   premium: 8,         // All apps
 } as const;
 
 /**
  * Check if user's trial is still active
- * Re-export from suite-utils for convenience
+ * Re-export from space-utils for convenience
  */
-export const isTrialActive = suiteIsTrialActive;
+export const isTrialActive = spaceIsTrialActive;
 
 /**
  * Check if user can access a specific app
  * Enhanced version that returns boolean instead of object
  */
 export function canAccessApp(user: User, appName: AppName): boolean {
-  const result = suiteCanAccessApp(user, appName);
+  const result = spaceCanAccessApp(user, appName);
   return result.allowed;
 }
 
 /**
  * Check if user has access to a specific app based on their subscription
- * For single-app and three-app tiers, checks the subscribedApps array
- * For trial, pro, and premium tiers, allows all apps
+ * All tiers (free, trial, pro, premium) have access to all apps
  */
-export function canAccessSubscribedApp(user: User, appName: string): boolean {
+export function canAccessSubscribedApp(user: User, _appName: string): boolean {
   const tier = getUserTier(user);
 
-  // Trial users can access all apps
-  if (tier === 'trial') {
+  // All tiers can access all apps (with different feature limits)
+  if (tier === 'free' || tier === 'trial' || tier === 'pro' || tier === 'premium') {
     return true;
   }
 
-  // Pro and Premium users can access all apps
-  if (tier === 'pro' || tier === 'premium') {
-    return true;
-  }
-
-  // For single-app and three-app tiers, check subscribedApps array
-  if (user.subscribedApps && Array.isArray(user.subscribedApps)) {
-    return user.subscribedApps.includes(appName);
-  }
-
-  // Default to no access if subscribedApps not defined
-  return false;
+  // Default to access for any valid tier
+  return true;
 }
 
 /**
@@ -100,14 +86,12 @@ export function getAppLimit(user: User): number {
 }
 
 /**
- * Check if user can select more apps (for upgrading single-app/three-app subscriptions)
+ * Check if user can select more apps
+ * Note: All current tiers have access to all 8 apps
  */
-export function canSelectMoreApps(user: User): boolean {
-  const tier = getUserTier(user);
-  const currentAppCount = user.subscribedApps?.length || 0;
-  const limit = APP_LIMITS[tier];
-
-  return currentAppCount < limit;
+export function canSelectMoreApps(_user: User): boolean {
+  // All tiers now have access to all apps
+  return true;
 }
 
 /**
@@ -158,9 +142,9 @@ export function getUserTier(user: User): SubscriptionTier {
 
 /**
  * Get remaining trial days
- * Re-export from suite-utils for convenience
+ * Re-export from space-utils for convenience
  */
-export const getRemainingTrialDays = suiteGetRemainingTrialDays;
+export const getRemainingTrialDays = spaceGetRemainingTrialDays;
 
 /**
  * Get trial expiration date

@@ -49,14 +49,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For single-app and three-apps tiers, validate selected apps
-    if ((tier === 'single-app' || tier === 'three-apps') && (!selectedApps || selectedApps.length === 0)) {
-      return NextResponse.json(
-        { error: `Tier ${tier} requires selected apps` },
-        { status: 400 }
-      );
-    }
-
     // Get or create Stripe customer
     const db = getFirestore();
     const userRef = db.collection('users').doc(userId);

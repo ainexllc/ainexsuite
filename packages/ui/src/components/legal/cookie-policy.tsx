@@ -20,7 +20,7 @@ export function CookiePolicy() {
               <p className="text-muted-foreground leading-relaxed">
                 Cookies are small text files that are placed on your device when you visit a website. They help
                 websites remember your preferences, authenticate your session, and provide a better user experience.
-                AINexSuite uses cookies to enhance your productivity platform experience.
+                AINexSpace uses cookies to enhance your productivity platform experience.
               </p>
             </div>
 

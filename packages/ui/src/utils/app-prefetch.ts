@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * App Prefetch Utility
  *
@@ -13,7 +14,7 @@
  * Savings: ~200ms reduction in navigation time
  */
 
-import { getAppUrl, SUITE_APPS } from '../config/apps';
+import { getAppUrl, SPACE_APPS } from '../config/apps';
 
 // Track which apps have been prefetched to avoid duplicates
 const prefetchedApps = new Set<string>();
@@ -64,7 +65,7 @@ export function prefetchApp(appSlug: string): void {
   }
 
   // Skip if invalid app
-  if (!SUITE_APPS[appSlug as keyof typeof SUITE_APPS]) {
+  if (!SPACE_APPS[appSlug as keyof typeof SPACE_APPS]) {
     return;
   }
 
@@ -127,7 +128,7 @@ export function cancelPrefetch(appSlug: string): void {
  * Called after successful authentication to warm up connections
  */
 export function prefetchAllApps(): void {
-  const appSlugs = Object.keys(SUITE_APPS);
+  const appSlugs = Object.keys(SPACE_APPS);
 
   // Stagger prefetches to avoid overwhelming the network
   appSlugs.forEach((slug, index) => {

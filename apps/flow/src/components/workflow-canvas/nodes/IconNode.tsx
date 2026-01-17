@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeResizer, type Node, type NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeResizer, useReactFlow, type Node, type NodeProps } from '@xyflow/react';
 import { useWorkflowTheme } from '@/lib/use-workflow-theme';
 import { LockBadge } from './LockBadge';
 
@@ -15,7 +15,8 @@ interface IconNodeData extends Record<string, unknown> {
 
 export type IconNodeType = Node<IconNodeData, 'icon'>;
 
-function IconNode({ data, selected }: NodeProps<IconNodeType>) {
+function IconNode({ id, data, selected }: NodeProps<IconNodeType>) {
+  const { setNodes } = useReactFlow();
   const theme = useWorkflowTheme();
   const nodeColor = (data.color as string) || theme.primary;
   const nodeBgColor = (data.bgColor as string) || '#1a1a1a';
@@ -37,8 +38,23 @@ function IconNode({ data, selected }: NodeProps<IconNodeType>) {
     transition: 'opacity 0.2s',
   } as const;
 
-  const stopEditingEmoji = useCallback(() => setIsEditingEmoji(false), []);
-  const stopEditingLabel = useCallback(() => setIsEditingLabel(false), []);
+  const stopEditingEmoji = useCallback(() => {
+    setIsEditingEmoji(false);
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, emoji } } : node
+      )
+    );
+  }, [id, emoji, setNodes]);
+
+  const stopEditingLabel = useCallback(() => {
+    setIsEditingLabel(false);
+    setNodes((nodes) =>
+      nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, label } } : node
+      )
+    );
+  }, [id, label, setNodes]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

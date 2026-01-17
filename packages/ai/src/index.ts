@@ -1,6 +1,6 @@
 /**
  * @ainexsuite/ai
- * AI integration for AINexSuite (Gemini, GPT, Grok)
+ * AI integration for AINexSpace (Gemini, GPT, Grok)
  */
 
 // Recommended: Unified AI integration

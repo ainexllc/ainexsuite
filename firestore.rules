@@ -275,29 +275,64 @@ service cloud.firestore {
         resource.data.ownerId == request.auth.uid ||
         (resource.data.assigneeIds != null && request.auth.uid in resource.data.assigneeIds) ||
         (resource.data.spaceId != null &&
-         exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
-         request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)).data.memberUids)
+         exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
       );
 
       // Allow create if user is owner (legacy) OR in the space
       allow create: if isAuthenticated() && (
         request.resource.data.ownerId == request.auth.uid ||
-        (exists(/databases/$(database)/documents/todo_spaces/$(request.resource.data.spaceId)) &&
-         request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(request.resource.data.spaceId)).data.memberUids)
+        (exists(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(request.resource.data.spaceId)).data.memberUids)
       );
 
       // Allow update if user is owner OR assigned OR in the space
       allow update: if isAuthenticated() && (
         resource.data.ownerId == request.auth.uid ||
         request.auth.uid in resource.data.assigneeIds ||
-        (exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
-         request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)).data.memberUids)
+        (exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
       );
 
       // Allow delete if user is owner OR in the space
       allow delete: if isAuthenticated() && (
         resource.data.ownerId == request.auth.uid ||
-        (exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
+        (exists(/databases/$(database)/documents/spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+    }
+
+    // Todo Groups (custom task groupings)
+    match /todo_groups/{groupId} {
+      // Allow read if user is owner (personal space) OR member of the todo_space
+      allow read: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      // Allow create if user is owner (personal space) OR member of the todo_space
+      allow create: if isAuthenticated() && (
+        request.resource.data.ownerId == request.auth.uid ||
+        (request.resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/todo_spaces/$(request.resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(request.resource.data.spaceId)).data.memberUids)
+      );
+
+      // Allow update if user is owner OR member of the todo_space
+      allow update: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)).data.memberUids)
+      );
+
+      // Allow delete if user is owner OR member of the todo_space
+      allow delete: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.spaceId != 'personal' &&
+         exists(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)) &&
          request.auth.uid in get(/databases/$(database)/documents/todo_spaces/$(resource.data.spaceId)).data.memberUids)
       );
     }
@@ -537,6 +572,12 @@ service cloud.firestore {
     // --- System Updates (Admin) ---
     match /system_updates/{updateId} {
       allow read: if true; // Public read for update banners
+      allow write: if isAdmin(); // Only admin can write
+    }
+
+    // --- Bot Avatars (Admin-managed, public read for chat display) ---
+    match /bot-avatars/{avatarId} {
+      allow read: if true; // Public read for chat display
       allow write: if isAdmin(); // Only admin can write
     }
 

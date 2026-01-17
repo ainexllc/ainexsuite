@@ -132,7 +132,7 @@ export default function HelpPage() {
             Help Center
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto sm:text-xl">
-            Everything you need to get the most out of AINexSuite. Browse guides, watch tutorials,
+            Everything you need to get the most out of AINexSpace. Browse guides, watch tutorials,
             or contact our support team for personalized assistance.
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function HelpPage() {
           <div className="text-center">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl mb-4">Getting Started</h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Follow these steps to set up AINexSuite and start your productivity journey.
+              Follow these steps to set up AINexSpace and start your productivity journey.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -184,7 +184,7 @@ export default function HelpPage() {
           <div className="text-center">
             <h2 className="text-3xl font-semibold text-white sm:text-4xl mb-4">App Guides</h2>
             <p className="text-white/70 max-w-2xl mx-auto">
-              Comprehensive guides for each app in the AINexSuite platform.
+              Comprehensive guides for each app in the AINexSpace platform.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -294,7 +294,7 @@ export default function HelpPage() {
               <div className="rounded-2xl border border-white/10 bg-zinc-700/50 p-6">
                 <h3 className="text-lg font-semibold text-white mb-2">Community Forum</h3>
                 <p className="text-sm text-white/70 mb-4">
-                  Connect with other AINexSuite users, share tips, and learn from the community.
+                  Connect with other AINexSpace users, share tips, and learn from the community.
                 </p>
                 <button className="inline-flex items-center gap-2 text-sm text-[#f97316] font-semibold hover:underline">
                   Join Forum

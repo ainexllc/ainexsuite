@@ -34,7 +34,7 @@ export function GDPRHelp() {
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-3">Our Commitment to Your Privacy</h2>
               <p className="text-muted-foreground leading-relaxed">
-                At AINexSuite, we are committed to protecting your personal data and respecting your privacy rights.
+                At AINexSpace, we are committed to protecting your personal data and respecting your privacy rights.
                 This page explains how we comply with the General Data Protection Regulation (GDPR) and what rights
                 you have regarding your personal information.
               </p>

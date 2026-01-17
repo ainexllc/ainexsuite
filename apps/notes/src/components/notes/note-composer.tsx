@@ -12,8 +12,8 @@ import { generateUUID } from "@ainexsuite/ui";
 
 export function NoteComposer() {
   const { user } = useAuth();
-  const { notes, createNote, deleteNote } = useNotes();
-  const { spaces } = useSpaces();
+  const { createNote } = useNotes();
+  const { spaces, currentSpaceId } = useSpaces();
 
   // State for opening NoteEditor modal for new notes
   const [creatingNote, setCreatingNote] = useState<Note | null>(null);
@@ -21,7 +21,7 @@ export function NoteComposer() {
   // Handler to create a new text note and open NoteEditor modal
   const handleCreateNote = useCallback(async () => {
     const now = new Date();
-    const spaceId = "personal";
+    const spaceId = currentSpaceId ?? "personal";
 
     const noteId = await createNote({
       title: "",
@@ -58,12 +58,12 @@ export function NoteComposer() {
       };
       setCreatingNote(tempNote);
     }
-  }, [createNote, user?.uid]);
+  }, [createNote, user?.uid, currentSpaceId]);
 
   // Handler to create a new checklist note and open NoteEditor modal
   const handleCreateList = useCallback(async () => {
     const now = new Date();
-    const spaceId = "personal";
+    const spaceId = currentSpaceId ?? "personal";
 
     const noteId = await createNote({
       title: "",
@@ -99,31 +99,33 @@ export function NoteComposer() {
       };
       setCreatingNote(tempNote);
     }
-  }, [createNote, user?.uid]);
+  }, [createNote, user?.uid, currentSpaceId]);
 
   // Handler to close NoteEditor modal and delete empty notes
-  const handleCloseCreator = useCallback(async () => {
-    if (!creatingNote) return;
+  const handleCloseCreator = useCallback(
+    async (state?: { title: string; body: string; checklist: { text: string }[] }) => {
+      if (!creatingNote) return;
 
-    // Get latest note state from Firestore (has auto-saved changes)
-    const latestNote = notes.find((n) => n.id === creatingNote.id);
-    const noteToCheck = latestNote || creatingNote;
+      // Use passed state from editor (current values) instead of stale notes array
+      const hasTitle = state ? state.title.trim().length > 0 : false;
+      const hasBody = state ? state.body.trim().length > 0 : false;
+      const hasChecklistContent = state
+        ? state.checklist.some((item) => item.text.trim().length > 0)
+        : false;
 
-    // Check if note is empty
-    const hasTitle = noteToCheck.title.trim().length > 0;
-    const hasBody = noteToCheck.body.trim().length > 0;
-    const hasChecklistContent = noteToCheck.checklist.some(
-      (item) => item.text.trim().length > 0
-    );
+      const isEmpty = !hasTitle && !hasBody && !hasChecklistContent;
 
-    const isEmpty = !hasTitle && !hasBody && !hasChecklistContent;
+      if (isEmpty) {
+        // Silently delete empty notes without showing "moved to trash" toast
+        // by directly removing from Firestore instead of using handleDelete
+        const { permanentlyDeleteNote } = await import("@/lib/firebase/note-service");
+        await permanentlyDeleteNote(creatingNote.ownerId, creatingNote.id);
+      }
 
-    if (isEmpty) {
-      await deleteNote(creatingNote.id);
-    }
-
-    setCreatingNote(null);
-  }, [creatingNote, notes, deleteNote]);
+      setCreatingNote(null);
+    },
+    [creatingNote],
+  );
 
   // Check if user only has personal space (for hint display)
   const hasOnlyPersonalSpace =
@@ -137,7 +139,7 @@ export function NoteComposer() {
           <button
             type="button"
             onClick={() => void handleCreateNote()}
-            className="group flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-3 transition-all bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5"
+            className="group flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 transition-all bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 hover:scale-[1.02] hover:shadow-sm active:scale-[0.98]"
           >
             <StickyNote className="h-5 w-5 text-zinc-400 group-hover:text-[var(--color-primary)]" />
             <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300 group-hover:text-[var(--color-primary)]">
@@ -148,7 +150,7 @@ export function NoteComposer() {
           <button
             type="button"
             onClick={() => void handleCreateList()}
-            className="group flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-3 transition-all bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5"
+            className="group flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 transition-all bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 hover:scale-[1.02] hover:shadow-sm active:scale-[0.98]"
           >
             <CheckSquare className="h-5 w-5 text-zinc-400 group-hover:text-[var(--color-primary)]" />
             <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300 group-hover:text-[var(--color-primary)]">
@@ -161,7 +163,7 @@ export function NoteComposer() {
       {creatingNote && (
         <NoteEditor
           note={creatingNote}
-          onClose={() => void handleCloseCreator()}
+          onClose={(state) => void handleCloseCreator(state)}
         />
       )}
     </section>

@@ -177,6 +177,9 @@ export { VideoBackground, type VideoBackgroundProps } from "./backgrounds/video-
 export { AinexStudiosLogo, type AinexStudiosLogoProps } from "./branding/ainex-studios-logo";
 export { LogoWordmark, type LogoWordmarkProps } from "./branding/logo-wordmark";
 
+// Animation Components
+export { MovingBorder, MovingBorderButton, type MovingBorderButtonProps } from './moving-border';
+
 // Core UI Components
 export * from './feedback/feedback-widget';
 export * from './buttons/button';
@@ -207,6 +210,12 @@ export {
   type EmptyStateProps,
   type ListSkeletonProps,
 } from './lists';
+
+// Section Divider
+export {
+  SectionDivider,
+  type SectionDividerProps,
+} from './section-divider';
 
 // Loading Components
 export {
@@ -304,8 +313,8 @@ export {
   type AppCard,
 } from "./marketing/homepage-template";
 
-// Suite Components
-export { SuiteNavigation, type SuiteNavigationProps } from "./suite-navigation";
+// Space Components
+export { SpaceNavigation, type SpaceNavigationProps } from "./space-navigation";
 export { AppSwitcher, type AppSwitcherProps } from "./app-switcher";
 export { AppLoginStatus, AppLoginStatusBadge, type AppLoginStatusProps } from "./app-login-status";
 
@@ -370,7 +379,7 @@ export {
   MainHomeIcon,
   MainHubIcon,
   MainOverviewIcon,
-  MainSuiteIcon,
+  MainSpaceIcon,
   MainNotificationsIcon,
   MainSearchIcon,
   MainSettingsIcon,
@@ -708,6 +717,12 @@ export {
   TimeInput,
   PresetButtons,
   RangePresetButtons,
+  // Utilities
+  getSmartPresets,
+  getBasicPresets,
+  getSmartRangePresets,
+  formatDisplayDate,
+  // Types
   type DatePickerProps,
   type DateTimePickerProps,
   type DateRangePickerProps,
@@ -788,3 +803,152 @@ export {
   type FireIconCanvasProps,
   type FireIcon3DProps,
 } from "./icons";
+
+// Text Effects
+export {
+  AnimatedGradientText,
+  type AnimatedGradientTextProps,
+} from "./text";
+
+// Checklist Components
+export {
+  AnimatedCheckbox,
+  ChecklistItemRow,
+  findParentIndex,
+  findChildrenIndices,
+  getSubtreeIndices,
+  getChildrenCompletionStats,
+  canIndent,
+  canUnindent,
+  MAX_INDENT_LEVEL,
+  INDENT_WIDTH,
+  type AnimatedCheckboxProps,
+  type ChecklistItemRowProps,
+} from "./checklist";
+
+// Keyboard Shortcuts Components
+export {
+  useKeyboardShortcuts,
+  KeyboardShortcutsModal,
+  formatShortcut,
+  getModifierKey,
+  type KeyboardShortcut,
+  type UseKeyboardShortcutsOptions,
+  type KeyboardShortcutsModalProps,
+} from "./keyboard-shortcuts";
+
+// Rich Text Editor Components
+export {
+  RichTextEditor,
+  EditorToolbar,
+  ToolbarButton as EditorToolbarButton,
+  ToolbarDivider,
+  runCommand,
+  FONT_COLORS,
+  type RichTextEditorRef,
+  type RichTextEditorProps,
+  type EditorToolbarProps,
+  type ToolbarButtonProps as EditorToolbarButtonProps,
+  type FontColor,
+  type Editor,
+} from "./rich-text-editor";
+
+// AI Panel Components
+export {
+  AIFloatingPanel,
+  BotAvatarDisplay,
+  ChatMarkdown,
+  usePanelDragResize,
+  type AIFloatingPanelProps,
+  type AIFloatingPanelUser,
+  type AIMessage,
+  type SuggestedPrompt,
+  type AIContextStats,
+  type BotAvatarDisplayProps,
+  type ChatMarkdownProps,
+  type PanelState,
+  type UsePanelDragResizeOptions,
+  type DragHandleProps,
+  type ResizeHandleProps,
+  type ResizeEdge,
+} from "./ai-panel";
+
+// Picker Components
+export {
+  ColorPicker,
+  PriorityPicker,
+  LabelPicker,
+  ReminderPicker,
+  BackgroundPicker,
+  getPriorityButtonStyles,
+  getPriorityColor,
+  formatDateTimeLocalInput,
+  DEFAULT_PRIORITY_OPTIONS,
+  DEFAULT_FREQUENCIES,
+  OVERLAY_OPTIONS,
+  type ColorPickerProps,
+  type PriorityPickerProps,
+  // PriorityLevel is exported from "./priority"
+  type PriorityOption,
+  type LabelPickerProps,
+  type PickerLabel,
+  type ReminderPickerProps,
+  type ReminderConfig,
+  type ReminderFrequency,
+  type ReminderChannel,
+  type ReminderChannelConfig,
+  type FrequencyOption,
+  type BackgroundPickerProps,
+} from "./pickers";
+
+// Entry Toolbar Components
+export {
+  EntryActionsToolbar,
+  type EntryActionsToolbarProps,
+  type EntryToolbarVariant,
+  type ToolbarAction,
+  type ToolbarActionGroup,
+} from "./entry-toolbar";
+
+// Bulk Action Bar Components
+export {
+  BulkActionBar,
+  type BulkActionBarProps,
+  type BulkAction,
+  type BulkActionLabel,
+} from "./bulk-action-bar";
+
+// Hints System Components
+export {
+  HintsProvider,
+  useHints,
+  createLocalStorageAdapter,
+  Hint,
+  type HintConfig,
+  type HintPlacement,
+  type HintsStorageAdapter,
+  type HintProps,
+} from "./hints";
+
+// Entry Footer Toolbar Components
+export {
+  EntryFooterToolbar,
+  type EntryFooterToolbarProps,
+  type EntryFooterVariant,
+  type FooterSpace,
+  type FooterAction,
+  type PriorityLevel as FooterPriorityLevel,
+} from "./entry-footer-toolbar";
+
+// Color Picker Dropdown Components
+export {
+  ColorPickerDropdown,
+  type ColorPickerDropdownProps,
+} from "./color-picker-dropdown";
+
+// Tremor Calendar Component
+export {
+  TremorCalendar,
+  type Matcher as TremorCalendarMatcher,
+  type TremorCalendarProps,
+} from "./tremor-calendar";

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth, SuiteGuard } from '@ainexsuite/auth';
+import { useAuth, SpaceGuard } from '@ainexsuite/auth';
 import { WorkspaceLayout } from '@ainexsuite/ui/components';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -186,7 +186,7 @@ function SettingsContent() {
         {/* Version Info */}
         <div className="text-center pt-8 pb-20">
           <p className="text-xs text-white/20">Grow v1.0.0</p>
-          <p className="text-xs text-white/20">Made with love by AinexSuite</p>
+          <p className="text-xs text-white/20">Made with love by AinexSpace</p>
         </div>
       </div>
 
@@ -197,8 +197,8 @@ function SettingsContent() {
 
 export default function SettingsPage() {
   return (
-    <SuiteGuard appName="habits">
+    <SpaceGuard appName="habits">
       <SettingsContent />
-    </SuiteGuard>
+    </SpaceGuard>
   );
 }
