@@ -8,7 +8,6 @@ import { useAuth } from '@ainexsuite/auth';
 import { useTodoStore } from '@/lib/store';
 import { useSpaces } from '@/components/providers/spaces-provider';
 import { Task, Priority, TaskList, Member } from '@/types/models';
-import { TremorCalendar } from '@ainexsuite/ui';
 
 interface TaskComposerProps {
   placeholder?: string;
@@ -170,17 +169,6 @@ export function TaskComposer({ placeholder = 'Create todo' }: TaskComposerProps)
     }
   };
 
-  const handleDateSelect = useCallback((date: Date | undefined) => {
-    if (date) {
-      // Use local date parts instead of toISOString() to avoid timezone shift
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      setDueDate(`${year}-${month}-${day}`);
-    }
-    // Don't close the picker immediately so user can set time
-  }, []);
-
   const handleClearDate = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setDueDate('');
@@ -288,12 +276,20 @@ export function TaskComposer({ placeholder = 'Create todo' }: TaskComposerProps)
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <TremorCalendar
-                mode="single"
-                selected={dueDate ? new Date(dueDate + 'T00:00:00') : undefined}
-                onSelect={handleDateSelect}
-                enableYearNavigation
-              />
+{/* Date Input */}
+              <div className="p-3">
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    if (newDate) {
+                      setDueDate(newDate);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50"
+                />
+              </div>
 
               {/* Time Picker */}
               <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-700">

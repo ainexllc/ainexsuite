@@ -9,7 +9,6 @@ import { CSS } from '@dnd-kit/utilities';
 import {
   ConfirmationDialog,
   EntryFooterToolbar,
-  TremorCalendar,
   type FooterPriorityLevel,
 } from '@ainexsuite/ui';
 import { useTodoStore } from '../../lib/store';
@@ -97,17 +96,6 @@ export function TaskCard({ task, isSubtask = false, childrenStats = null }: Task
   }, [task.dueDate]);
 
   // Date picker handlers
-  const handleDateSelect = useCallback(async (date: Date | undefined) => {
-    if (date) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      const fullDueDate = dueTime ? `${dateStr}T${dueTime}` : dateStr;
-      await updateTask(task.id, { dueDate: fullDueDate });
-    }
-  }, [task.id, dueTime, updateTask]);
-
   const handleTimeChange = useCallback(async (newTime: string) => {
     setDueTime(newTime);
     if (task.dueDate) {
@@ -398,12 +386,21 @@ export function TaskCard({ task, isSubtask = false, childrenStats = null }: Task
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <TremorCalendar
-                  mode="single"
-                  selected={task.dueDate ? new Date(task.dueDate.split('T')[0] + 'T00:00:00') : undefined}
-                  onSelect={handleDateSelect}
-                  enableYearNavigation
-                />
+{/* Date Input */}
+                <div className="p-3">
+                  <input
+                    type="date"
+                    value={task.dueDate ? task.dueDate.split('T')[0] : ''}
+                    onChange={(e) => {
+                      const newDate = e.target.value;
+                      if (newDate) {
+                        const fullDueDate = dueTime ? `${newDate}T${dueTime}` : newDate;
+                        void updateTask(task.id, { dueDate: fullDueDate });
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50"
+                  />
+                </div>
 
                 {/* Time Picker */}
                 <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-700">

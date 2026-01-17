@@ -156,7 +156,7 @@ async function optimizeWithCloudinary(videoBuffer: Buffer): Promise<{
 
   // Upload to Cloudinary
   const formData = new FormData();
-  formData.append('file', new Blob([videoBuffer], { type: 'video/mp4' }));
+  formData.append('file', new Blob([new Uint8Array(videoBuffer)], { type: 'video/mp4' }));
   formData.append('api_key', CLOUDINARY_API_KEY);
   formData.append('timestamp', timestamp.toString());
   formData.append('signature', signature);
