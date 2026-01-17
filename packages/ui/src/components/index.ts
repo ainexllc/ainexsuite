@@ -945,10 +945,3 @@ export {
   ColorPickerDropdown,
   type ColorPickerDropdownProps,
 } from "./color-picker-dropdown";
-
-// Tremor Calendar Component
-export {
-  TremorCalendar,
-  type Matcher as TremorCalendarMatcher,
-  type TremorCalendarProps,
-} from "./tremor-calendar";
